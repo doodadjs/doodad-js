@@ -1,0 +1,90 @@
+{
+  "name": "doodad-js",
+  "version": "1.0.3",
+  "description": "Object-oriented programming framework for Javascript",
+  "homepage": "https://sourceforge.net/projects/doodad-js/",
+  "config": {
+    "startup": {
+	  "settings": {
+	    "fromSource": "0",
+	    "nodeEnvDevValues": "development,dev",
+		"enableProperties": "0"
+	  }
+	},
+    "Doodad__Types": {
+      "settings": {
+        "toSourceItemsCount": "255",
+        "enableProxies": "0"
+      }
+    },
+    "Doodad__Tools": {
+      "settings": {
+        "logLevel": "-1",
+        "configPath": ""
+      }
+    },
+	"Doodad__Modules": {
+	  "settings": {
+	    "modulesUri": "/modules"
+	  }
+	},
+    "Doodad": {
+      "settings": {
+        "enforceScopes": "0",
+        "enforcePolicies": "0",
+        "publicOnDebug": "0"
+      }
+    }
+  },
+  "main": "index.js",
+  "directories": {},
+  "files": [
+    "src",
+    "dist",
+    "Bootstrap.min.js",
+    "Doodad.min.js",
+    "Namespaces.min.js",
+    "Tools.min.js",
+    "Types.min.js",
+    "Modules.min.js",
+    "NodeJs.min.js",
+    "config.json",
+    "make.json",
+    "README",
+	"LICENSE"
+  ],
+  "scripts": {
+    "prepublish": "node -r \"doodad-js-make/make.js\" . make",
+    "configure": "node -r \"doodad-js-make/make.js\" . custom=configure"
+  },
+  "keywords": [
+    "oop",
+    "objects",
+	"classes",
+    "framework",
+	"library"
+  ],
+  "author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=4.2.0"
+  },
+  "repository": {
+    "type": "svn",
+    "url": "https://svn.code.sf.net/p/doodad-js/code/node_modules/doodad-js/"
+  },
+  "bugs": {
+    "url" : "https://sourceforge.net/p/doodad-js/tickets/",
+    "email" : "doodadjs@gmail.com"
+  },
+  "optionalDependencies": {
+    "es6-promise": "^3.0.2"
+  },
+  "devDependencies": {
+    "doodad-js-make": "^0.1.0",
+    "npm-package-config": "^0.1.3"
+  },
+  "publishConfig": {
+    "registry": "http://www.doodad-js.local:5984/"
+  }
+}

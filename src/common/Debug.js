@@ -1,5 +1,5 @@
 //! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Class library for Javascript (BETA) with some extras (ALPHA)
+// dOOdad - Object-oriented programming framework with some extras
 // File: Debug.js - Debug file
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -26,26 +26,39 @@
 (function() {
 	var global = this;
 
-	global.DD_MODULES = (global.DD_MODULES || {});
-	global.DD_MODULES['Doodad.Debug'] = {
-		type: null,
-		version: '0d',
-		namespaces: null,
-		dependencies: ['Doodad.Namespaces'],
-		bootstrap: true,
+	var exports = {};
+	if (global.process) {
+		module.exports = exports;
+	};
+	
+	exports.add = function add(DD_MODULES) {
+		DD_MODULES = (DD_MODULES || {});
+		DD_MODULES['Doodad.Debug'] = {
+			type: null,
+			version: '1r',
+			namespaces: null,
+			dependencies: ['Doodad.Namespaces'],
+			bootstrap: true,
 
-		create: function create(root, /*optional*/_options) {
-			root.enableAsserts();
-			
-			var tools = root.Doodad.Tools;
-			tools.options.settings.logLevel = tools.LogLevels.Debug;
+			create: function create(root, /*optional*/_options) {
+				root.enableAsserts();
 				
-			return function init(/*optional*/options) {
-				var doodad = root.Doodad;
-				if (doodad.Stack) {
-					doodad.Stack.enable();
+				var tools = root.Doodad.Tools;
+				tools.options.settings.logLevel = tools.LogLevels.Debug;
+					
+				return function init(/*optional*/options) {
+					var doodad = root.Doodad;
+					if (doodad.Stack) {
+						doodad.Stack.enable();
+					};
 				};
-			};
-		},
+			},
+		};
+		return DD_MODULES;
+	};
+	
+	if (!global.process) {
+		// <PRB> export/import are not yet supported in browsers
+		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
 })();

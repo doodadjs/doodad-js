@@ -1,5 +1,5 @@
 //! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Class library for Javascript (BETA) with some extras (ALPHA)
+// dOOdad - Object-oriented programming framework with some extras
 // File: Bootstrap.js - Bootstrap module
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -26,12 +26,9 @@
 (function() {
 	var global = this;
 
-	// Node.js
-	var exports;
+	var exports = {};
 	if (global.process) {
-		exports = module.exports = {};
-	} else {
-		exports = global;
+		module.exports = exports;
 	};
 
 	// V8: Increment maximum number of stack frames
@@ -43,12 +40,7 @@
 	var __bootstraps__ = {},
 		__recordNewBootstraps__ = true;
 
-	var __createRoot__ = global.createRoot = exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options) {
-		//! IF_DEF('PACKAGE_CONFIG')
-		//! EVAL("'_options=_options||'+PACKAGE_CONFIG+';'")
-		//! END_IF('PACKAGE_CONFIG')
-//console.log(_options);
-
+	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options) {
 		var __Internal__ = {
 			//! REPLACE_BY("DD_DOC:function(d,v){return v;},")
 			DD_DOC: function(doc, value) {
@@ -66,42 +58,6 @@
 		};
 
 		var types = {
-				options: {
-					settings: {
-						reservedAttributes: {
-							$TYPE_NAME: undefined,
-							INITIALIZED: undefined,
-							apply: undefined, 
-							call: undefined, 
-							bind: undefined, 
-							arguments: undefined, 
-							caller: undefined, 
-							length: undefined, 
-							prototype: undefined, 
-							__proto__: undefined, 
-							constructor: undefined, 
-							isPrototypeOf: undefined, 
-							hasOwnProperty: undefined, 
-							watch: undefined, 
-							unwatch: undefined, 
-							isGenerator: undefined, 
-							propertyIsEnumerable: undefined, 
-							__EVENT_LISTENERS__: undefined,
-						},
-					},
-					hooks: {
-						invoke: function invoke(obj, fn, /*optional*/args) {
-							if (types.isString(fn)) {
-								fn = obj[fn];
-							};
-							if (args) {
-								return fn.apply(obj, args);
-							} else {
-								return fn.call(obj);
-							};
-						},
-					},
-				},
 			},
 			
 			tools = {
@@ -1476,13 +1432,47 @@
 		// Options
 		//==============
 		
-		var startupOptions = types.depthExtend(2, {
+		var __options__ = types.depthExtend(2, {
 			settings: {
+				fromSource: false,              // When 'true', runs from source code instead of built code
 				enableProperties: false,		// When 'true', enables "defineProperty"
+			},
+			hooks: {
+				reservedAttributes: {
+					$TYPE_NAME: undefined,
+					INITIALIZED: undefined,
+					apply: undefined, 
+					call: undefined, 
+					bind: undefined, 
+					arguments: undefined, 
+					caller: undefined, 
+					length: undefined, 
+					prototype: undefined, 
+					__proto__: undefined, 
+					constructor: undefined, 
+					isPrototypeOf: undefined, 
+					hasOwnProperty: undefined, 
+					watch: undefined, 
+					unwatch: undefined, 
+					isGenerator: undefined, 
+					propertyIsEnumerable: undefined, 
+					__EVENT_LISTENERS__: undefined,
+				},
+				invoke: function invoke(obj, fn, /*optional*/args) {
+					if (types.isString(fn)) {
+						fn = obj[fn];
+					};
+					if (args) {
+						return fn.apply(obj, args);
+					} else {
+						return fn.call(obj);
+					};
+				},
 			},
 		}, types.get(_options, 'startup'));
 		
-		startupOptions.settings.enableProperties = (startupOptions.settings.enableProperties === 'true') || !!(+startupOptions.settings.enableProperties);
+		__options__.settings.fromSource = (__options__.settings.fromSource === 'true') || !!(+__options__.settings.fromSource);
+		__options__.settings.enableProperties = (__options__.settings.enableProperties === 'true') || !!(+__options__.settings.enableProperties);
 		
 		//==============
 		// Properties
@@ -1523,7 +1513,7 @@
 						description: "Returns 'true' if 'defineProperty' is natively available. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (startupOptions.settings.enableProperties && __Natives__.objectDefineProperty ? (function hasDefinePropertyEnabled() {
+			, (__options__.settings.enableProperties && __Natives__.objectDefineProperty ? (function hasDefinePropertyEnabled() {
 				return true;
 			}) : (function hasDefinePropertyEnabled() {
 				return false;
@@ -2569,14 +2559,14 @@
 					};
 				} else {
 					_caller = function caller(/*paramarray*/) {
-						var oldSuper = types.options.hooks.invoke(this, 'getAttribute', ['_super']);
-						types.options.hooks.invoke(this, 'setAttribute', ['_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__], {enumerable: false, writable: false, configurable: true});
+						var oldSuper = __options__.hooks.invoke(this, 'getAttribute', ['_super']);
+						__options__.hooks.invoke(this, 'setAttribute', ['_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__], {enumerable: false, writable: false, configurable: true});
 						try {
 							return _caller.FUNCTION_PROTOTYPE[attr].apply(this, arguments);
 						} catch(ex) {
 							throw ex;
 						} finally {
-							types.options.hooks.invoke(this, 'setAttribute', ['_super', oldSuper], {enumerable: false, writable: false, configurable: true});
+							__options__.hooks.invoke(this, 'setAttribute', ['_super', oldSuper], {enumerable: false, writable: false, configurable: true});
 						};
 					};
 				};
@@ -2630,7 +2620,7 @@
 				};
 				
 				if (!type.$isSingleton) {
-					types.options.hooks.invoke(type, 'setAttribute', ['$isSingleton', true]);
+					__options__.hooks.invoke(type, 'setAttribute', ['$isSingleton', true]);
 					
 					var proto = types.getPrototypeOf(type);
 					proto.$inherit = types.createSuper(proto.$inherit, (function $inherit(/*paramarray*/) {
@@ -2641,7 +2631,7 @@
 						};
 						return obj;
 					}));
-					types.options.hooks.invoke(proto, 'setAttribute', ['$isSingleton', true]);
+					__options__.hooks.invoke(proto, 'setAttribute', ['$isSingleton', true]);
 					
 					var proto = type.prototype;
 					proto.$inherit = types.createSuper(type.prototype.$inherit, (function $inherit(/*paramarray*/) {
@@ -2688,7 +2678,7 @@
 				if (type.INITIALIZED) {
 					return type;
 				} else {
-					return types.options.hooks.invoke(type, '_new', args) || type;
+					return __options__.hooks.invoke(type, '_new', args) || type;
 				};
 			});
 		
@@ -2778,7 +2768,7 @@
 				type = types.setPrototypeOf(type, proto);
 
 				// Override type prototype
-				var reservedAttributes = types.options.settings.reservedAttributes;
+				var reservedAttributes = __options__.hooks.reservedAttributes;
 				if (typeProto) {
 					for (var key in typeProto) {
 						if (types.hasKey(typeProto, key) && (!types.hasKey(reservedAttributes, key))) {
@@ -3649,14 +3639,13 @@
 					DD_REGISTRY: null,  // Created by "Namespaces.js"
 					Namespace: types.Namespace,
 					Config: null,
+					startupOptions: __options__,
 					
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						"use strict";
 						
 						this._super(null, '<Root>', '<Root>');
 
-						this.Config = options;
-						
 						// Prebuild "Doodad.Types" and "Doodad.Tools"
 						var doodadNs = this.Doodad = new types.Namespace(this, 'Doodad', 'Doodad'),
 							typesNs = doodadNs.Types = new types.Namespace(doodadNs, 'Types', 'Doodad.Types'),
@@ -3671,19 +3660,19 @@
 							types.defineProperties(typesNs, {
 								'createRoot': {
 									get: function() {
-										return __createRoot__;
+										return exports.createRoot;
 									},
 								},
 								'invoke': {
 									get: function() {
-										return types.options.hooks.invoke;
+										return __options__.hooks.invoke;
 									},
 								},
 							});
 						} else {
-							typesNs.createRoot = __createRoot__;
+							typesNs.createRoot = exports.createRoot;
 							typesNs.invoke = function invoke(obj, fn, /*optional*/args) {
-								return types.options.hooks.invoke(obj, fn, args);
+								return __options__.hooks.invoke(obj, fn, args);
 							};
 						};
 						
@@ -3754,8 +3743,8 @@
 									};
 									parent = namespace;
 								};
-								
-								var opts = (types.hasKey(options, name) ? options[name] : undefined);
+				
+								var opts = types.get(options, name);
 								var init = mod.create && mod.create(this, opts);
 								init && init(opts);
 								
@@ -3769,7 +3758,7 @@
 						
 						__recordNewBootstraps__ = false;
 						
-						this.Doodad.Namespaces.loadNamespaces(false, options, loading, true);
+						//this.Doodad.Namespaces.loadNamespaces(null, true, options, modules);
 					}),
 					
 				enableAsserts: __Internal__.DD_DOC(
@@ -3808,22 +3797,12 @@
 					, function disableAsserts() {
 						delete this.DD_ASSERT;
 					}),
-
-				getConfig: __Internal__.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'undefined',
-							description: "Returns options passed to 'createRoot'.",
-					}
-					//! END_REPLACE()
-					, function getConfig() {
-						return this.Config;
-					}),
-
 				}
 			)));
+	};
+	
+	if (!global.process) {
+		// <PRB> export/import are not yet supported in browsers
+		global.createRoot = exports.createRoot;
 	};
 })();
