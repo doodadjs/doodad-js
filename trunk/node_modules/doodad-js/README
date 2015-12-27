@@ -1,0 +1,29 @@
+<<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
+
+dOOdad is a set of modules that can be run both at client-side and server-side. Some of the features are :
+
+  -  Classes
+  -  Inheritance
+  -  Interfaces (and Mix-ins)
+  -  Class extenders
+  -  Method and attribute scopes (public, protected and private)
+  -  Base classes and interfaces
+  -  Custom events management
+  -  DOM events management
+  -  Exceptions
+  -  Singletons
+  -  Polymorphism
+  -  Static classes
+  -  IO Streams
+  -  Usefull utility functions
+  -  Optional script loader
+  -  Unit tests tool
+  -  Namespaces and a registry
+  -  Mini Web applications server framework (alpha)
+  -  Compatible with most recent browsers
+  -  Compatible with Windows, Linux and MacOS X
+
+
+More information : https://sourceforge.net/p/doodad-js/wiki/Home/
+
+Latest version (SVN) : https://svn.code.sf.net/p/doodad-js/code/node/latest/
