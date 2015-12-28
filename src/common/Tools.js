@@ -5383,6 +5383,7 @@
 											var promise;
 											if (err) {
 												def.data = err;
+												def.ready = true;
 												promise = Promise.reject(err);
 											} else {
 												try {

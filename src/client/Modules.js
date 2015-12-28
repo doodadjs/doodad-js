@@ -107,7 +107,7 @@
 							if (!location.file) {
 								location = location.set({file: 'index.js'});
 							};
-							resolve(location.toString());
+							resolve(location);
 						});
 					});
 				
