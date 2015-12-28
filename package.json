@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -51,7 +51,7 @@
     "config.json",
     "make.json",
     "README",
-	"LICENSE"
+	  "LICENSE"
   ],
   "scripts": {
     "prepublish": "node -r \"doodad-js-make/make.js\" . make",
@@ -59,10 +59,9 @@
   },
   "keywords": [
     "oop",
-    "objects",
-	"classes",
-    "framework",
-	"library"
+    "object",
+	  "class",
+    "framework"
   ],
   "author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",
   "license": "Apache-2.0",
@@ -71,7 +70,7 @@
   },
   "repository": {
     "type": "svn",
-    "url": "https://svn.code.sf.net/p/doodad-js/code/node_modules/doodad-js/"
+    "url": "https://svn.code.sf.net/p/doodad-js/code/trunk/node_modules/doodad-js/"
   },
   "bugs": {
     "url" : "https://sourceforge.net/p/doodad-js/tickets/",

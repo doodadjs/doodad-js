@@ -1,5 +1,9 @@
 <<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
 
+This is the main package.
+
+
+
 dOOdad is a set of modules that can be run both at client-side and server-side. Some of the features are :
 
   -  Classes
@@ -19,7 +23,6 @@ dOOdad is a set of modules that can be run both at client-side and server-side. 
   -  Optional script loader
   -  Unit tests tool
   -  Namespaces and a registry
-  -  Mini Web applications server framework (alpha)
   -  Compatible with most recent browsers
   -  Compatible with Windows, Linux and MacOS X
 
