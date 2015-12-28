@@ -3,6 +3,26 @@
 This is the main package.
 
 
+Other packages available :
+
+  - doodad-js-cluster: Cluster manager
+  - doodad-js-dates: Dates formatting
+  - doodad-js-http: Http server
+  - doodad-js-http_json: JSON over http server
+  - doodad-js-io: I/O module
+  - doodad-js-ipc: IPC/RPC server
+  - doodad-js-loader: Scripts loader
+  - doodad-js-locale: Locales
+  - doodad-js-make: Make tools for doodad
+  - doodad-js-mime: Mime types
+  - doodad-js-minifiers: Javascript minifier used by doodad
+  - doodad-js-server: Servers base module
+  - doodad-js-templates: HTTP page templates
+  - doodad-js-terminal: Terminal
+  - doodad-js-test: Test application
+  - doodad-js-widgets: Widgets base module
+  - doodad-js-xml: DOM XML parser
+  
 
 dOOdad is a set of modules that can be run both at client-side and server-side. Some of the features are :
 

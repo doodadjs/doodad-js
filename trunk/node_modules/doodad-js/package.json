@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -82,8 +82,5 @@
   "devDependencies": {
     "doodad-js-make": "^0.1.0",
     "npm-package-config": "^0.1.3"
-  },
-  "publishConfig": {
-    "registry": "http://www.doodad-js.local:5984/"
   }
 }
