@@ -116,7 +116,7 @@
 							location = tools.Path.parse(location)
 								.set({file: ''})
 								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
-							resolve(location.toString());
+							resolve(location);
 						});
 					});
 				
@@ -165,7 +165,7 @@
 										};
 										return modules.locate(module, file, options).then(function(location) {
 											return new Promise(function(resolve, reject) {
-												const mod = Module._load(location, __Internal__.getRootModule());
+												const mod = Module._load(location.toString(), __Internal__.getRootModule());
 												const DD_MODULES = mod.add();
 												resolve(DD_MODULES);
 											})

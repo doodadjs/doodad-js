@@ -1246,6 +1246,9 @@
 									__Internal__.waiting = false;
 									__Internal__.waitCounter = 0;
 								};
+								//if (!__Internal__.loading && !__Internal__.waiting && !__Internal__.prevError) {
+								//	namespaces.dispatchEvent(new types.CustomEvent('ready'));
+								//};
 							};
 						} catch(ex) {
 							if (ex instanceof types.ScriptAbortedError) {
