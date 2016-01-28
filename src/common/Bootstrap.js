@@ -258,10 +258,6 @@
 			arrayPush: (global.Array && global.Array.prototype || []).push,
 		};
 		
-		types.getNative = function getNative(name) {
-			
-		};
-			
 		//===================================
 		// Format functions
 		//===================================

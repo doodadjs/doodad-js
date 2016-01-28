@@ -917,17 +917,30 @@
 								});
 							});
 						} else {
-							const stats = nodeFs.statSync(source.toString({os: null, dirChar: null, shell: 'api'}));
-							if (stats.isFile()) {
+							const stats = nodeFs.lstatSync(source.toString({os: null, dirChar: null, shell: 'api'}));
+							if (stats.isSymbolicLink()) {
+								// Copy symbolic link
+								if (!destination.file) {
+									destination = destination.set({ file: source.file });
+								};
+								var linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+								nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
+								if (types.get(options, 'preserveTimes')) {
+									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
+								};
+								return true;
+							} else if (stats.isFile()) {
 								// Copy file
 								if (!destination.file) {
 									destination = destination.set({ file: source.file });
 								};
+								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
 								let sourceFd = null,
 									destFd = null;
 								try {
 									sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
-									destFd = nodeFs.openSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), (types.get(options, 'override', false) ? 'w' : 'wx'));
+									destFd = nodeFs.openSync(dest, (types.get(options, 'override', false) ? 'w' : 'wx'));
 									const buf = new Buffer(bufferLength);
 									let bytesRead = 0;
 									do {
@@ -935,7 +948,10 @@
 										if (bytesRead) {
 											nodeFs.writeSync(destFd, buf, 0, bytesRead);
 										};
-									} while (bytesRead)
+									} while (bytesRead);
+									if (types.get(options, 'preserveTimes')) {
+										nodeFs.utimesSync(dest, stats.atime, stats.mtime);
+									};
 									return true;
 								} catch(ex) {
 									throw ex;
@@ -955,6 +971,10 @@
 								for (let i = 0; i < dirFiles.length; i++) {
 									const dirFile = dirFiles[i];
 									files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
+								};
+								if (types.get(options, 'preserveTimes')) {
+									// FIXME: Dates are not correct
+									nodeFs.utimesSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime);
 								};
 								return true;
 							} else if (!types.get(options, 'skipInvalid', false)) {
