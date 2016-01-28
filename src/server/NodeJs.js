@@ -949,10 +949,6 @@
 											nodeFs.writeSync(destFd, buf, 0, bytesRead);
 										};
 									} while (bytesRead);
-									if (types.get(options, 'preserveTimes')) {
-										nodeFs.utimesSync(dest, stats.atime, stats.mtime);
-									};
-									return true;
 								} catch(ex) {
 									throw ex;
 								} finally {
@@ -964,6 +960,10 @@
 										destFd && nodeFs.closeSync(destFd);
 									};
 								};
+								if (types.get(options, 'preserveTimes')) {
+									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
+								};
+								return true;
 							} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
 								// Recurse directory
 								files.mkdir(destination, options);
