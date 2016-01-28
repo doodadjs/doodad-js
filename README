@@ -1,30 +1,16 @@
+Fast object-oriented programming framework for Javascript and Node-Js.
+
+[![NPM Version][npm-image]][npm-url]
+ 
 <<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
 
-This is the main package.
+## Installation
 
+```bash
+$ npm install doodad-js
+```
 
-Other packages available :
-
-  - doodad-js-cluster: Cluster manager
-  - doodad-js-dates: Dates formatting
-  - doodad-js-http: Http server
-  - doodad-js-http_json: JSON over http server
-  - doodad-js-io: I/O module
-  - doodad-js-ipc: IPC/RPC server
-  - doodad-js-loader: Scripts loader
-  - doodad-js-locale: Locales
-  - doodad-js-make: Make tools for doodad
-  - doodad-js-mime: Mime types
-  - doodad-js-minifiers: Javascript minifier used by doodad
-  - doodad-js-server: Servers base module
-  - doodad-js-templates: HTTP page templates
-  - doodad-js-terminal: Terminal
-  - doodad-js-test: Test application
-  - doodad-js-widgets: Widgets base module
-  - doodad-js-xml: DOM XML parser
-  
-
-dOOdad is a set of modules that can be run both at client-side and server-side. Some of the features are :
+## Features
 
   -  Classes
   -  Inheritance
@@ -39,14 +25,225 @@ dOOdad is a set of modules that can be run both at client-side and server-side. 
   -  Polymorphism
   -  Static classes
   -  IO Streams
-  -  Usefull utility functions
-  -  Optional script loader
-  -  Unit tests tool
+  -  Useful utility functions
   -  Namespaces and a registry
   -  Compatible with most recent browsers
   -  Compatible with Windows, Linux and MacOS X
 
+## Quick Start
 
-More information : https://sourceforge.net/p/doodad-js/wiki/Home/
+By default, Doodad is running in production mode, which disables every validations. You may want to activate the development mode by setting the "NODE_ENV" environment variable :
 
-Latest version (SVN) : https://svn.code.sf.net/p/doodad-js/code/node/latest/
+Windows :
+```dos
+    set NODE_ENV=development
+```
+Linux :
+```bash
+    export NODE_ENV=development
+```
+Now create the root namespace :
+```js
+    const root = require('doodad-js').createRoot();
+```
+
+You can create a shortcut to the namespaces this way :
+```js
+    const doodad = root.Doodad,
+		extenders = doodad.Extenders,
+		.... ;
+```
+
+## Scopes
+
+  - **doodad.PUBLIC**: Accessible from the outside.
+  - **doodad.PROTECTED**: Accessible from the inside only.
+  - **doodad.PRIVATE**: Accessible only from the inside of the prototype. Can't be overriden or replaced.
+  - **doodad.PROTECTED_DEBUG**: Like "doodad.PROTECTED", but will be "doodad.PUBLIC" on debug mode.
+  - **doodad.PRIVATE_DEBUG**:  Like "doodad.PRIVATE", but will be "doodad.PUBLIC" on debug mode.
+
+## Class Modifiers
+
+  - **doodad.BASE**: The class is not ready for object instantiation and must be extended.
+  - **doodad.INTERFACE**: The class defines an interface. https://en.wikipedia.org/wiki/Protocol_%28object-oriented_programming%29
+  - **doodad.MIX_IN**: The class defines a mix-in. https://en.wikipedia.org/wiki/Mixin
+  - **doodad.SEALED**: Objects instantiated from this class are sealed. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal
+  - **doodad.STATIC**: The class do not allow instantiating.
+  - **doodad.ISOLATED**: The class defines an isolated interface. This kind of interface makes the methods separated from the methods of its host class. To get access to them, you must call "getInterface".
+
+## Attribute Modifiers :
+  
+  - **doodad.ATTRIBUTE**: Explicitly defines an attribute. Can be used to specify an extender, and/or extender options.
+  - **doodad.OPTIONS**: Define extender options.
+  - **doodad.PRE_EXTEND**: Tells that an attribute must be extended before normal (non pre-extended) attributes.
+  - **doodad.TYPE**: Attribute is accessible from its Type (ie class).
+  - **doodad.INSTANCE**: Attribute is accessible from an instance of its Type (ie class).
+  - **doodad.PERSISTENT**: Attribute is not deleted on destroy.
+  - **doodad.READ_ONLY**: Attribute can't be modified.
+  - **doodad.METHOD**: Explicitly defines an attribute as a method.
+  - **doodad.JS_METHOD**: Defines an attribute as a "pure" Javascript function.
+  - **doodad.PROPERTY**: Defines a property (with getter and setter).
+  - **doodad.EVENT**: Defines an event attribute.
+  - **doodad.ERROR_EVENT**: Defines an error event attribute.
+  - (client-side only) **doodad.JS_EVENT**: Defines a Js event attribute.
+  - (server-side only) **doodad.NODE_EVENT**: Defines a Node.Js event attribute.
+
+## Method Modifiers
+
+  - **doodad.MUST_OVERRIDE**: The method must be overriden within another class.
+  - **doodad.REPLACE**: The method's functions stack gets deleted and replaced by the new function.
+  - **doodad.OVERRIDE**: The new function is appended to the method's functions stack.
+  - **doodad.CREATE_REPLACE**: Same as "doodad.REPLACE", but the method will get created if it doesn't exist.
+  - **doodad.CREATE_OVERRIDE**: Same as "doodad.OVERRIDE", but the method will get created if it doesn't exist. 
+  - **doodad.OBSOLETE**: The method is obsolete and will write a warning on the "console" when called for the first time.
+  - **doodad.CALL_FIRST**: Roughly, the function is prepend to the method's functions stack.
+  - **doodad.CAN_BE_DESTROYED**: The method can be called even when the object has been destroyed.
+  - **doodad.NOT_IMPLEMENTED**: The method exists, but it is not implemented until it will get overriden or replaced.
+  - **doodad.RETURNS**: Specifies a validator to the method's returned value.
+  - **doodad.SUPER**: For methods defined with "doodad.JS_METHOD", used to override a method.
+  - **doodad.BIND**: Binds a method to its object.
+  - **doodad.NOT_REENTRANT**: The method must exits before being able to call it again.
+  - **doodad.EXTERNAL**: The method can't be called from inside the object.
+  - **doodad.AFTER**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack after the function of the specified class.
+  - **doodad.BEFORE**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack before the function of the specified class. 
+
+## Available extenders
+
+  - **extenders.Attribute**: (inherits 'extenders.Extender') Extends an attribute to a new value.
+  - **extenders.Null**: (inherits 'extenders.Attribute') Extends an attribute to 'null'.
+  - **extenders.ClonedAttribute**: (inherits 'extenders.Attribute') When an object gets instantiated, the value is cloned.
+  - **extenders.ExtendObject**: (inherits 'extenders.ClonedAttribute') When overriden, the object value will get extended instead of replaced.
+  - **extenders.UniqueArray**: (inherits 'extenders.ClonedAttribute') When overriden, the array value will get appended instead of replaced. Duplicates are removed.
+  - **extenders.Method**: (inherits 'extenders.ClonedAttribute') Extends a method.
+  - **extenders.JsMethod**: (inherits 'extenders.Method') Extends a Javascript method.
+  - **extenders.Property**: (inherits 'extenders.Method') Extends a property.
+  - **extenders.Event**: (inherits 'extenders.Method') Extends an event attribute.
+  - (client-side only) **extenders.JsEvent**: (inherits 'extenders.Event') Extends a Javascript event attribute.
+  - (server-side only) **extenders.NodeEvent**: (inherits 'extenders.Event') Extends a Node.Js event attribute.
+
+## Pre-built Interfaces and Mix-Ins
+
+  - **Clonable**: (interface) Makes a class clonable.
+  - **Serializable**: (interface) Makes a class serializable and desializable.
+  - **Creatable**: (mix-in) Makes a class creatable.
+  - **Translatable**: (mix-in) Makes a localized class object.
+  - **Configurable**: (mix-in) Makes a configurable class object.
+  - **Events**: (mix-in) Makes a class with events.
+  - (client-side only) **JsEvents**: (mix-in) Makes a class with managed Javascript events.
+  - (server-side only) **NodeEvents**: (mix-in) Makes a class with managed NodeJs events.
+  
+## Pre-built Classes
+
+  - **doodad.Class**: (inherits 'Types.Type') The base of every classes.
+  - **doodad.Object**: (inherits 'doodad.Class', implements 'Creatable') The base of every object classes.
+
+## Pre-built Exceptions
+  
+  -- **Error**: General error (alias to 'Types.Error').
+  -- **Application**: (inherits 'Error') Application error. An error with a title to be displayed to the end user. Exemple: "The selected customer is not allowed to buy the selected product."
+  
+## Namespaces Functions
+
+  - **[namespace].REGISTER**: Registers a class in the namespace.
+  - **[namespace].UNREGISTER**: Unregisters a class from the namespace.
+  
+## Examples
+
+Example 1 (inheritance):
+```js
+    const Turtle1 = doodad.Object.$extend({
+        $TYPE_NAME: 'Turtle1',
+
+        talk: doodad.PUBLIC(function() {
+            return "Hi !";
+        }),
+    })
+
+    let turtle = new Turtle1();
+
+    turtle.talk();
+
+    const Turtle2 = Turtle1.$extend({
+        $TYPE_NAME: 'Turtle2',
+
+        talk: doodad.OVERRIDE(function() {
+            return this._super() + " dOOOOdad";
+        }),
+    })
+
+    turtle = new Turtle2();
+
+    turtle.talk();
+```
+
+Example 2 (interfaces):
+```js
+    const Turtles = doodad.INTERFACE(doodad.Class.$extend({
+        $TYPE_NAME: 'Turtles',
+
+        talk: doodad.PUBLIC(doodad.METHOD()),
+    }));
+
+    const Turtle1 = doodad.Object.$extend(
+                Turtles,
+    {
+        $TYPE_NAME: 'Turtle1',
+
+        talk: doodad.OVERRIDE(function() {
+            return "Hi";
+        }),
+    })
+
+    const Turtle2 = doodad.Object.$extend(
+                Turtles,
+    {
+        $TYPE_NAME: 'Turtle2',
+
+        talk: doodad.OVERRIDE(function() {
+            return "Bonjour";
+        }),
+    })
+```
+Example 3 (mix-ins) :
+```js
+    const Turtles = doodad.MIX_IN(doodad.Class.$extend({
+        $TYPE_NAME: 'Turtles',
+
+        talk: doodad.PUBLIC(function() {
+            return "Hi";
+        }),
+    }));
+
+    const Turtle1 = doodad.Object.$extend(
+                Turtles,
+    {
+        $TYPE_NAME: 'Turtle1',
+    })
+```
+
+## Other available packages
+
+  - **doodad-js-cluster**: Cluster manager (alpha)
+  - **doodad-js-dates**: Dates formatting (release)
+  - **doodad-js-http**: Http server (alpha)
+  - **doodad-js-http_jsonrpc**: JSON-RPC over http server (alpha)
+  - **doodad-js-io**: I/O module (alpha)
+  - **doodad-js-ipc**: IPC/RPC server (alpha)
+  - **doodad-js-loader**: Scripts loader (beta)
+  - **doodad-js-locale**: Locales (release)
+  - **doodad-js-make**: Make tools for doodad (alpha)
+  - **doodad-js-mime**: Mime types (beta)
+  - **doodad-js-minifiers**: Javascript minifier used by doodad (alpha)
+  - **doodad-js-server**: Servers base module (alpha)
+  - **doodad-js-templates**: HTML page templates (alpha)
+  - **doodad-js-terminal**: Terminal (alpha)
+  - **doodad-js-test**: Test application
+  - **doodad-js-widgets**: Widgets base module (alpha)
+  - **doodad-js-xml**: DOM XML parser (release)
+  
+## License
+
+  [Apache-2.0](LICENSE)
+
+[npm-image]: https://img.shields.io/npm/v/doodad-js.svg
+[npm-url]: https://npmjs.org/package/doodad-js

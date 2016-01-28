@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Bootstrap.js - Bootstrap module
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 
@@ -191,7 +191,7 @@
 			// "createObject"
 			objectCreate: Object.create,
 			
-			// "hasDefinePropertyEnabled" and "defineProprty"
+			// "hasDefinePropertyEnabled" and "defineProperty"
 			objectDefineProperty: (types.isNativeFunction(Object.defineProperty) ? Object.defineProperty : undefined),
 			
 			// "defineProperties"
@@ -253,8 +253,14 @@
 
 			// "isFinite"
 			numberIsFinite: (global.Number && types.isNativeFunction(global.Number.isFinite) ? global.Number.isFinite : undefined),
+			
+			// "append"
+			arrayPush: (global.Array && global.Array.prototype || []).push,
 		};
 		
+		types.getNative = function getNative(name) {
+			
+		};
 			
 		//===================================
 		// Format functions
@@ -1228,6 +1234,50 @@
 				};
 			});
 		
+		types.getDefault = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object.",
+							},
+							key: {
+								type: 'string',
+								optional: false,
+								description: "Attribute name.",
+							},
+							_default: {
+								type: 'any',
+								optional: true,
+								description: "Default value.",
+							},
+							inherited: {
+								type: 'bool',
+								optional: true,
+								description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+							},
+						},
+						returns: 'any',
+						description: "Returns the value of an own property. If the own property doesn't exist, creates that own property with the value of the '_default' parameter and returns that value.",
+			}
+			//! END_REPLACE()
+			, function getDefault(obj, key, /*optional*/_default, /*optional*/inherited) {
+				if (types.isNothing(obj)) {
+					return _default;
+				};
+				obj = __Natives__.windowObject(obj);
+				var hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
+				if (hasKey(obj, key)) {
+					return obj[key];
+				} else if (_default !== undefined) {
+					return obj[key] = _default;
+				};
+			});
+		
 		types.keys = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -1330,7 +1380,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							depth: {
 								type: 'integer',
@@ -1370,12 +1420,14 @@
 							for (j = 0; j < keysLen; j++) {
 								key = keys[j];
 								objVal = obj[key];
-								if ((depth >= 0) && types.isObjectLike(objVal)) {
+								if ((depth >= 0) && types.isObject(objVal)) {
 									resultVal = result[key];
 									if (types.isNothing(resultVal)) {
 										result[key] = types.depthExtend(depth, {}, objVal);
 									} else if (types.isObjectLike(resultVal)) {
 										types.depthExtend(depth, resultVal, objVal);
+									} else {
+										result[key] = objVal;
 									};
 								} else {
 									result[key] = objVal;
@@ -1387,6 +1439,49 @@
 				return result;
 			});
 				
+		types.append = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'array',
+								optional: false,
+								description: "An array.",
+							},
+						},
+						returns: 'array',
+						description: "Appends the items of each array to the first array than returns that array.",
+			}
+			//! END_REPLACE()
+			, function append(obj /*paramarray*/) {
+				if (!types.isArrayLike(obj)) {
+					return null;
+				};
+				
+				var result,
+					start = 0;
+				if (types.isArray(obj)) {
+					result = obj;
+					start = 1;
+				} else {
+					result = [];
+				};
+				
+				var len = arguments.length;
+				for (var i = start; i < len; i++) {
+					obj = arguments[i];
+					if (types.isNothing(obj)) {
+						continue;
+					};
+					obj = __Natives__.windowObject(obj);
+					__Natives__.arrayPush.apply(result, obj);
+				};
+				
+				return result;
+			});
+			
 		// <PRB> JS has no function to test for objects ( new Object() )
 		types.isObject = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -1871,7 +1966,8 @@
 		//===================================
 		// Errors
 		//===================================
-			
+		
+		// TODO: Find a way to inherit both "types.Error" and "global.TypeError", or forget "global.TypeError" and inherit "types.Error"
 		types.TypeError = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -2547,14 +2643,14 @@
 					_caller = function caller(/*paramarray*/) {
 						var oldSuper = this._super;
 						//types.defineProperty(this, '_super', {value: _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__, enumerable: false, writable: false, configurable: true});
-						__setAttribute__.call(this, '_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__, {enumerable: false, writable: false, configurable: true});
+						__Internal__.typeSetAttribute.call(this, '_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__, {enumerable: false, writable: false, configurable: true});
 						try {
 							return _caller.FUNCTION_PROTOTYPE[attr].apply(this, arguments);
 						} catch(ex) {
 							throw ex;
 						} finally {
 							//types.defineProperty(this, '_super', {value: oldSuper, enumerable: false, writable: false, configurable: true});
-							__setAttribute__.call(this, '_super', oldSuper, {enumerable: false, writable: false, configurable: true});
+							__Internal__.typeSetAttribute.call(this, '_super', oldSuper, {enumerable: false, writable: false, configurable: true});
 						};
 					};
 				} else {
@@ -2675,7 +2771,7 @@
 			}
 			//! END_REPLACE()
 			, function INIT(type, /*optional*/args) {
-				if (type.INITIALIZED) {
+				if (!types.isType(type) || type.INITIALIZED) {
 					return type;
 				} else {
 					return __options__.hooks.invoke(type, '_new', args) || type;
@@ -2890,7 +2986,7 @@
 			});
 		
 
-		var __typeInherit__ = __Internal__.DD_DOC(
+		__Internal__.typeInherit = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -2956,7 +3052,7 @@
 				return type;
 			});
 		
-		var __newFunction__ = __Internal__.DD_DOC(
+		__Internal__.typeNew = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -2982,7 +3078,7 @@
 				this.setAttribute('INITIALIZED', true, {enumerable: false, writable: false, configurable: true});
 			});
 		
-		var __deleteFunction__ = __Internal__.DD_DOC(
+		__Internal__.typeDelete = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -2996,7 +3092,7 @@
 				this.setAttribute('INITIALIZED', false, {enumerable: false, writable: false, configurable: true});
 			});
 
-		var __getAttribute__ = __Internal__.DD_DOC(
+		__Internal__.typeGetAttribute = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3016,7 +3112,7 @@
 				return this[attr];
 			});
 		
-		var __getAttributes__ = __Internal__.DD_DOC(
+		__Internal__.typeGetAttributes = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3044,7 +3140,7 @@
 				return result;
 			});
 		
-		var __setAttribute__ = __Internal__.DD_DOC(
+		__Internal__.typeSetAttribute = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3085,7 +3181,7 @@
 				return value;
 			});
 		
-		var __setAttributes__ = __Internal__.DD_DOC(
+		__Internal__.typeSetAttributes = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3116,7 +3212,7 @@
 				return values;
 			});
 		
-		var __typeToString__ = __Internal__.DD_DOC(
+		__Internal__.typeToString = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3145,7 +3241,7 @@
 				};
 			});
 		
-		var __typeToLocaleString__ = __Internal__.DD_DOC(
+		__Internal__.typeToLocaleString = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -3176,7 +3272,7 @@
 						description: "Base type of every Doodad types.",
 			}
 			//! END_REPLACE()
-			, types.INIT(__typeInherit__.call(undefined,
+			, types.INIT(__Internal__.typeInherit.call(undefined,
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Type',
@@ -3185,34 +3281,34 @@
 					//_super: null,
 					INITIALIZED: false,
 					
-					$inherit: __typeInherit__,
+					$inherit: __Internal__.typeInherit,
 					
-					_new: __newFunction__,
-					_delete: __deleteFunction__,
+					_new: __Internal__.typeNew,
+					_delete: __Internal__.typeDelete,
 					
-					getAttribute: __getAttribute__,
-					getAttributes: __getAttributes__,
-					setAttribute: __setAttribute__,
-					setAttributes: __setAttributes__,
+					getAttribute: __Internal__.typeGetAttribute,
+					getAttributes: __Internal__.typeGetAttributes,
+					setAttribute: __Internal__.typeSetAttribute,
+					setAttributes: __Internal__.typeSetAttributes,
 					
-					toString: types.SUPER(__typeToString__),
-					toLocaleString: types.SUPER(__typeToLocaleString__),
+					toString: types.SUPER(__Internal__.typeToString),
+					toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 				},
 				/*instanceProto*/
 				{
 					//_super: null,
 					INITIALIZED: false,
 					
-					_new: __newFunction__,
-					_delete: __deleteFunction__,
+					_new: __Internal__.typeNew,
+					_delete: __Internal__.typeDelete,
 					
-					getAttribute: __getAttribute__,
-					getAttributes: __getAttributes__,
-					setAttribute: __setAttribute__,
-					setAttributes: __setAttributes__,
+					getAttribute: __Internal__.typeGetAttribute,
+					getAttributes: __Internal__.typeGetAttributes,
+					setAttribute: __Internal__.typeSetAttribute,
+					setAttributes: __Internal__.typeSetAttributes,
 					
-					toString: types.SUPER(__typeToString__),
-					toLocaleString: types.SUPER(__typeToLocaleString__),
+					toString: types.SUPER(__Internal__.typeToString),
+					toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 				}
 			)));
 
@@ -3338,7 +3434,6 @@
 					
 					_new: types.SUPER(function _new() {
 						this._super();
-						// TODO: What is the formal property name ? Where all listeners are stored ?
 						if (types.hasDefinePropertyEnabled()) {
 							types.defineProperty(this, '__EVENT_LISTENERS__', {
 								enumerable: false,
@@ -3590,6 +3685,7 @@
 					DD_PARENT: null,
 					DD_NAME: null,
 					DD_FULL_NAME: null,
+					DD_OPTIONS: null,
 					
 					_new: types.SUPER(function(parent, name, fullName) {
 						this._super();
@@ -3598,8 +3694,17 @@
 							DD_PARENT: parent,
 							DD_NAME: name,
 							DD_FULL_NAME: fullName,
+							DD_OPTIONS: {},
 						}, {writable: false, enumerable: false, configurable: true});
 					}),
+					
+					getOptions: function getOptions() {
+						return this.DD_OPTIONS;
+					},
+					
+					setOptions: function setOptions(/*paramarray*/) {
+						return types.depthExtend.apply(types, types.append([2, this.DD_OPTIONS], arguments));
+					},
 				}
 			)));
 		
@@ -3638,14 +3743,14 @@
 					DD_DOC: __Internal__.DD_DOC,
 					DD_REGISTRY: null,  // Created by "Namespaces.js"
 					Namespace: types.Namespace,
-					Config: null,
-					startupOptions: __options__,
 					
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						"use strict";
 						
 						this._super(null, '<Root>', '<Root>');
 
+						this.setAttribute('DD_OPTIONS', __options__);
+						
 						// Prebuild "Doodad.Types" and "Doodad.Tools"
 						var doodadNs = this.Doodad = new types.Namespace(this, 'Doodad', 'Doodad'),
 							typesNs = doodadNs.Types = new types.Namespace(doodadNs, 'Types', 'Doodad.Types'),
@@ -3677,10 +3782,8 @@
 						};
 						
 						// Load bootstrap modules
-						if (!modules) {
-							modules = {};
-						};
-						types.extend(modules, __bootstraps__);
+
+						modules = types.extend({}, modules, __bootstraps__);
 						
 						var names = types.keys(modules);
 						if (!names.length) {
@@ -3688,6 +3791,7 @@
 						};
 						
 						var loading = {},
+							nsObjs = {},
 							name;
 						whileName: while (name = names.shift()) {
 							var mod = modules[name];
@@ -3718,15 +3822,19 @@
 									fullName = '',
 									shortName,
 									j,
-									k;
+									k,
+									nsObj = null;
 								for (k = 0; k < shortNames.length; k++) {
 									shortName = shortNames[k];
 									fullName += '.' + shortName;
-									if (!types.hasKey(parent, shortName)) {
-										parent[shortName] = new types.Namespace(parent, shortName, fullName.slice(1));
+									if (types.hasKey(parent, shortName)) {
+										nsObj = parent[shortName];
+									} else {
+										parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
 									};
 									parent = parent[shortName];
 								};
+								nsObjs[name] = nsObj;
 								
 								var namespaces = (mod.namespaces || []),
 									namespace = parent;
@@ -3737,7 +3845,8 @@
 										shortName = shortNames[k];
 										fullName += '.' + shortName;
 										if (!types.hasKey(parent, shortName)) {
-											parent[shortName] = new types.Namespace(parent, shortName, fullName.slice(1));
+											parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
+											nsObjs[name] = nsObj;
 										};
 										parent = parent[shortName];
 									};
@@ -3758,7 +3867,17 @@
 						
 						__recordNewBootstraps__ = false;
 						
-						//this.Doodad.Namespaces.loadNamespaces(null, true, options, modules);
+						//this.Doodad.Namespaces.loadNamespaces(null, true, options, __bootstraps__);
+						names = types.keys(nsObjs);
+						var namespaces = this.Doodad.Namespaces,
+							entries = namespaces.Entries;
+						for (var i = 0; i < names.length; i++) {
+							name = names[i];
+							var spec = __bootstraps__[name];
+							spec.name = name;
+							var entry = new entries.Module(this, spec, nsObjs[name]);
+							this.DD_REGISTRY.add(name, entry);
+						};
 					}),
 					
 				enableAsserts: __Internal__.DD_DOC(
@@ -3797,12 +3916,26 @@
 					, function disableAsserts() {
 						delete this.DD_ASSERT;
 					}),
+					
+				setOptions: __Internal__.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Disables 'setOptions'.",
+					}
+					//! END_REPLACE()
+					, function setOptions() {
+						throw new types.Error("Startup options are read-only");
+					}),
 				}
 			)));
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.createRoot = exports.createRoot;
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

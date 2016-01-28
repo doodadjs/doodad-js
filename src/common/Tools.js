@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Tools.js - Useful tools
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@
 	var global = this;
 	
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -75,7 +75,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: ['Files', 'Config'],
 			dependencies: ['Doodad.Types'],
 			bootstrap: true,
@@ -95,10 +95,29 @@
 					config = tools.Config;
 					
 				//===================================
+				// Internal
+				//===================================
+					
+				// <FUTURE> Thread context
+				var __Internal__ = {
+					loadedConfigFiles: new types.Map(),
+					oldSetOptions: null,
+				};
+				
+				
+				//===================================
 				// Options
 				//===================================
 					
-				tools.options = types.depthExtend(2, {
+				__Internal__.oldSetOptions = tools.setOptions;
+				tools.setOptions = function setOptions(/*paramarray*/) {
+					var options = __Internal__.oldSetOptions.apply(this, arguments),
+						settings = types.getDefault(options, 'settings', {});
+						
+					settings.logLevel = parseInt(types.get(settings, 'logLevel'));
+				};
+				
+				tools.setOptions({
 					settings: {
 						logLevel: -1,
 
@@ -137,19 +156,8 @@
 						},
 					},
 				}, _options);
-
-				tools.options.settings.logLevel = parseInt(tools.options.settings.logLevel);
-
-				//===================================
-				// Internal
-				//===================================
-					
-				// <FUTURE> Thread context
-				var __Internal__ = {
-					loadedConfigFiles: new types.Map(),
-				};
 				
-				
+
 				//===================================
 				// Native functions
 				//===================================
@@ -811,7 +819,7 @@
 						return result;
 					});
 					
-					tools.title = root.DD_DOC(
+				tools.title = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
@@ -901,7 +909,7 @@
 					//! END_REPLACE()
 					, function log(level, message, /*optional*/params) {
 						// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
-						if (global.console && (level >= tools.options.settings.logLevel)) {
+						if (global.console && (level >= tools.getOptions().settings.logLevel)) {
 							if (params) {
 								message = tools.format(message + '', params);
 							};
@@ -920,7 +928,7 @@
 							} else {
 								fn = 'log';
 							};
-							var hook = tools.options.hooks.console;
+							var hook = tools.getOptions().hooks.console;
 							if (hook) {
 								hook(fn, message);
 							} else {
@@ -1120,7 +1128,6 @@
 							return (len > 1) && (path[len - 1] === '');
 						};
 						
-						// Resolve ".." and "."
 						var rootTrailing = dirRoot && isTrailing(dirRoot),
 							pathTrailing = isTrailing(path);
 						
@@ -1134,6 +1141,7 @@
 							return !!val;
 						});
 						
+						// Resolve ".." and "."
 						var pos = 0;
 						while (pos < path.length) {
 							var name = path[pos],   // NOTE: Don't trim because trailing spaces may be accepted by the OS and the file system. Paths must be parsed and validated before calling this function.
@@ -1246,6 +1254,7 @@
 						isRelative: false,
 						noEscapes: false,
 						shell: null,  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash'
+						forceDrive: false,
 					};
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 				
@@ -1274,7 +1283,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 2,
+											revision: 3,
 											params: {
 												path: {
 													type: 'string,array',
@@ -1293,6 +1302,7 @@
 								//! END_REPLACE()
 								, function parse(path, /*optional*/options) {
 									// WARNING: Validation is incomplete.
+									// TODO: Windows network paths ("\\server\...")
 									
 									if (!options) {
 										options = {};
@@ -1300,11 +1310,13 @@
 									
 									// Flags
 									var dontThrow = types.get(options, 'dontThrow', false),
-										pathWasNothing = types.isNothing(path);
+										pathWasNothing = types.isNothing(path),
+										pathWasPath = false;
 									
 									if (path instanceof tools.Path) {
 										options = types.fill(__Internal__.pathOptionsKeys, {}, path, options);
 										path = options.path;
+										pathWasPath = true;
 										
 									} else if (path instanceof tools.Url) {
 										var proto = types.get(options, 'protocol', path.protocol);
@@ -1315,8 +1327,8 @@
 												throw new types.ParseError("Bad url protocol.");
 											};
 										};
-
-										var pathTmp = tools.trim(path.path || [], '', 1, 1);
+										
+										var pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
 										
 										if (path.isWindows) {
 											options = types.fill(__Internal__.pathOptionsKeys, {
@@ -1332,8 +1344,12 @@
 										};
 
 										path = pathTmp;
+										pathWasPath = true;
 
-									} else if (!types.isNothing(path) && !types.isString(path) && !types.isArray(path)) {
+									} else if (types.isArray(path)) {
+										path = types.clone(path);
+
+									} else if (!types.isNothing(path) && !types.isString(path)) {
 										if (dontThrow) {
 											return null;
 										} else {
@@ -1351,14 +1367,15 @@
 										quote = types.get(options, 'quote', null),  // Default is Auto-detect
 										dirRoot = types.get(options, 'root', null),  // Default is no root
 										drive = types.get(options, 'drive', null),  // Default is Auto-detect
-										file = types.get(options, 'file', null);  // Default is Auto-detect
+										file = types.get(options, 'file', null),  // Default is Auto-detect
+										forceDrive = types.get(options, 'forceDrive', false);  // Default is False
 
 									path = types.get(options, 'path', path);
 									
 									var pathIsString = types.isString(path),
-										fileWasNothing = types.isNothing(file);
-									
-									var dirRootIsString = types.isString(dirRoot);
+										fileWasNothing = types.isNothing(file),
+										dirRootIsString = types.isString(dirRoot);
+										
 									if (!dirRootIsString && !types.isNothing(dirRoot) && !types.isArray(dirRoot)) {
 										if (dontThrow) {
 											return null;
@@ -1451,7 +1468,7 @@
 									if (dirRootIsString && quote) {
 										dirRoot = tools.trim(dirRoot, quote);
 									};
-									
+
 									// Unescape and validate chars
 									if (!noEscapes && shell) {
 										var unescapePath = null,
@@ -1541,37 +1558,96 @@
 										};
 									};
 										
+									// Split paths
+									if (dirRootIsString) {
+										dirRoot = dirRoot.split(dirChar);
+									};
+									if (!dirRoot || !dirRoot.length || ((dirRoot.length === 1) && !dirRoot[0])) {
+										dirRoot = null;
+									};
+									
+									if (pathIsString) {
+										path = path.split(dirChar);
+									};
+									if (!path || !path.length || ((path.length === 1) && !path[0])) {
+										path = null;
+									};
+									
+									if (types.isString(file)) {
+										file = file.split(dirChar);
+									};
+									if (!file || !file.length || ((file.length === 1) && !file[0])) {
+										file = null;
+									};
+									
+									// Relative or absolute ?
+									if (types.isNothing(isRelative)) {
+										// Auto-detect
+										isRelative = 
+											!drive && 
+											(
+												(!dirRoot && !path) ||
+												(!!dirRoot && !!dirRoot[0] && ((os !== 'windows') || (dirRoot[0].indexOf(':') < 0))) ||
+												(!!path && !!path[0] && ((os !== 'windows') || (path[0].indexOf(':') < 0))) ||
+												!!(tools.findItems(dirRoot, ['.', '..']).length) || 
+												!!(tools.findItems(path, ['.', '..']).length) || 
+												!!(tools.findItems(file, ['.', '..']).length)
+											);
+									};
+									
 									// Get and validate drive
 									if (os === 'windows') {
-										if (types.isNothing(drive)) {
-											drive = '';
-											// Auto-detect (take drive letter)
-											// NOTE: We don't allow "F:file.js" which refers to the current path of "F:" (Windows has a current path for every drives)
-											if (dirRoot && dirRootIsString) {
-												if (dirRoot[1] === ':') {
-													drive = dirRoot[0].toUpperCase();
-													dirRoot = dirRoot.slice(2);
+										if (!isRelative && types.isNothing(drive)) {
+											if (dirRoot) {
+												var tmp = dirRoot[0];
+												if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
+													drive = dirRoot.shift()[0];
 												};
-											} else if (pathIsString) {
-												if (path[1] === ':') {
-													drive = path[0];
-													path = path.slice(2);
+											};
+
+											if (path) {
+												var tmp = path[0];
+												if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
+													if (dirRoot) {
+														if (dontThrow) {
+															return null;
+														} else {
+															throw new types.ParseError("'path' can't have a drive letter because 'root' is defined.");
+														};
+													};
+													drive = path.shift()[0];
 												};
 											};
 										};
 
 										if (drive) {
+											if (isRelative) {
+												if (dontThrow) {
+													return null;
+												} else {
+													throw new types.ParseError("Relative paths can't have a drive letter.");
+												};
+											};
+											
 											// Validate drive letter
 											drive = drive.toUpperCase();
 											var chr = (drive.charCodeAt(0) || 0);
-											if ((drive.length > 1) || (chr < 65) || (chr > 90)) {
+											if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
 												if (dontThrow) {
 													return null;
 												} else {
 													throw new types.ParseError("Invalid drive.");
 												};
 											};
+											
+										} else if (!isRelative && forceDrive) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("A drive letter is mandatory for the absolute path.");
+											};
 										};
+										
 									} else {
 										if (drive) {
 											if (dontThrow) {
@@ -1580,62 +1656,46 @@
 												throw new types.ParseError("'drive' option is invalid for Unix-like systems.");
 											};
 										};
-										
-										drive = '';
 									};
 									
-									// Split paths
-									if (dirRootIsString) {
-										dirRoot = dirRoot.split(dirChar);
-									};
-									if (pathIsString) {
-										if (path.length) {
-											path = path.split(dirChar);
-										} else {
-											path = [];
-										};
-									};
-									if (types.isString(file)) {
-										if (file.length) {
-											file = file.split(dirChar);
-										} else {
-											file = [];
-										};
-									};
-									
-									if (types.isNothing(isRelative)) {
-										// Auto-detect
-										isRelative = (!path || !path.length || !!path[0].length) ||
-													!!(tools.findItems(path, ['.', '..']).length) || 
-													!!(tools.findItems(file, ['.', '..']).length)
-									};
-									
-									if (fileWasNothing && pathIsString && !pathWasNothing) {
+									if (!pathWasNothing && !pathWasPath && path && fileWasNothing) {
 										// Last item, when not empty, is the file name
-										if (path.length > 1) {
+										if (path[path.length - 1]) {
 											var tmp = path.pop();
 											if (tmp) {
 												// Auto-set
 												file = [tmp];
 											};
-										} else {
-											// Auto-set
-											file = path;
-											path = null;
 										};
 									};
 									
 									if (path) {
 										path = tools.trim(path, '');
+										if (!path.length) {
+											path = null;
+										};
 									};
 									if (file) {
 										file = tools.trim(file, '');
+										if (!file.length) {
+											file = null;
+										};
 									};
 									
 									if (types.isNothing(dirRoot)) {
 										// Auto-set
 										if (pathIsString && !isRelative) {
 											dirRoot = [];
+										} else {
+											dirRoot = null;
+										};
+									} else if (isRelative) {
+										if (dirRoot.length) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("'root' must be empty when relative.");
+											};
 										} else {
 											dirRoot = null;
 										};
@@ -1661,7 +1721,7 @@
 										};
 										
 										if (path) {
-											var abs = tools.relativeToAbsolute(path, dirRoot, {
+											var abs = tools.relativeToAbsolute(path, dirRoot || [], {
 												dirChar: dirChar,
 												dontThrow: dontThrow,
 											});
@@ -1673,7 +1733,7 @@
 										};
 
 										if (file) {
-											var abs = tools.relativeToAbsolute(file, path, {
+											var abs = tools.relativeToAbsolute(file, path || [], {
 												dirChar: dirChar,
 												dontThrow: dontThrow,
 											});
@@ -1762,9 +1822,7 @@
 									};
 									
 									if (file) {
-										if (isRelative) {
-											file = file.join(dirChar);
-										} else if (file.length <= 1) {
+										if (file.length <= 1) {
 											file = file[0];
 										} else  {
 											if (dontThrow) {
@@ -1778,7 +1836,7 @@
 									return new this({
 										os: os,
 										dirChar: dirChar,
-										drive: drive,
+										drive: drive || '',
 										root: dirRoot || [],
 										path: path || [],
 										file: file || null,
@@ -1786,13 +1844,13 @@
 										isRelative: isRelative,
 										noEscapes: noEscapes,
 										shell: shell,
+										forceDrive: forceDrive,
 									});
 								}),
+								
 						},
 						/*instanceProto*/
 						types.extend({
-							changed: false,
-							
 							_new: types.SUPER(function _new(options) {
 								if (this instanceof tools.Path) {
 									this._super();
@@ -1811,7 +1869,6 @@
 										};
 									});
 									types.defineProperties(this, properties);
-									this.changed = false;
 								};
 							}),
 							
@@ -1856,28 +1913,26 @@
 										return '';
 									};
 
-									var changed = this.changed;
-									
-									if (options) {
-										changed = true;
-									};
-
 									// Flags
 									var dontValidate = types.get(options, 'dontValidate', false);
 									
 									
-									if (changed && !dontValidate) {
-										// Validate
-										// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-										options = types.clone(options) || {};
-										if (!types.hasKey(options, 'dontThrow')) {
-											options.dontThrow = true;  // "parse" will returns null when invalid
-										};
-										options = tools.Path.parse(this, options);
-										if (!options) {
-											// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
-											//throw new types.PathError("Invalid path.");
-											return '';
+									if (options) {
+										if (dontValidate) {
+											options = types.extend({}, this, options);
+										} else {
+											// Validate
+											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+											options = types.clone(options) || {};
+											if (!types.hasKey(options, 'dontThrow')) {
+												options.dontThrow = true;  // "parse" will returns null when invalid
+											};
+											options = tools.Path.parse(this, options);
+											if (!options) {
+												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
+												//throw new types.PathError("Invalid path.");
+												return '';
+											};
 										};
 									} else {
 										options = this;
@@ -1930,7 +1985,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 3,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1957,12 +2012,33 @@
 										options = null;
 									};
 									
-									var data;
+									var thisRoot = tools.trim(this.root || [], '');
+									
+									var thisPath = tools.trim(this.path || [], '');
+									if (this.file) {
+										thisPath.push(this.file);
+									};
+
+									if (types.isString(dirRoot)) {
+										dirRoot = dirRoot.split(data.dirChar);
+									};
+									if (dirRoot) {
+										dirRoot = tools.trim(dirRoot, '');
+									};
+										
+									var dir = types.get(options, 'path', path.path);
+									if (types.isString(dir)) {
+										dir = dir.split(data.dirChar);
+									};
+									if (dir) {
+										dir = tools.trim(dir, '');
+									};
+
+									var data = types.fill(__Internal__.pathOptionsKeys, {}, this);
+
 									if (path instanceof tools.Path) {
-										data = types.fill(__Internal__.pathOptionsKeys, {}, this, tools.filter(path, function(val, key) {
-											return val && (key !== 'os') && (key !== 'dirChar') && (key !== 'root') && (key !== 'path') && (key !== 'quote') && (key !== 'isRelative') && (key !== 'noEscapes') && (key !== 'shell');
-										}), options);
-										if (data.drive && (data.drive !== this.drive)) {
+										var drive = types.get(options, 'drive', path.drive);
+										if ((path.os === 'windows') && drive && ((this.os !== 'windows') || (drive !== this.drive))) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -1970,39 +2046,17 @@
 											};
 										};
 										var dirRoot = types.get(options, 'root', path.root);
-										if (!types.isNothing(dirRoot)) {
-											if (types.isString(dirRoot)) {
-												dirRoot = dirRoot.split(data.dirChar);
-											};
-											dirRoot = tools.trim(dirRoot, '');
-										};
-										var dir = types.get(options, 'path', path.path);
-										if (!types.isNothing(dir)) {
-											if (types.isString(dir)) {
-												dir = dir.split(data.dirChar);
-											};
-											dir = tools.trim(dir, '');
-										};
-										data.path = types.append([], dirRoot, dir);
+
 									} else { //if (path instanceof tools.Url)
-										var proto = types.get(options, 'protocol', path.protocol);
-										if (proto && (proto !== 'file')) {
+										if (path.protocol && (path.protocol !== 'file')) {
 											if (dontThrow) {
 												return null;
 											} else {
 												throw new types.ParseError("Bad url protocol.");
 											};
 										};
-										data = types.fill(__Internal__.pathOptionsKeys, {}, this);
-										var dir = types.get(options, 'path', path.path);
-										if (!types.isNothing(dir)) {
-											if (types.isString(dir)) {
-												dir = dir.split('/');
-											};
-											dir = tools.trim(dir, '');
-										};
-										if (types.get(options, 'isWindows', path.isWindows)) {
-											if (dir.length && (dir[0][0] !== this.drive)) {
+										if (path.isWindows) {
+											if (dir.length && ((this.os !== 'windows') || (dir[0][0] !== this.drive))) {
 												if (dontThrow) {
 													return null;
 												} else {
@@ -2011,12 +2065,20 @@
 											};
 											dir.shift();
 										};
-										data.path = dir;
-										data.file = types.get(options, 'file', path.file);
+										var dirRoot = types.get(options, 'root');
 									};
 									
-									data.root = types.append([], tools.trim(this.root || [], ''), tools.trim(this.path || [], ''));
 									data.dontThrow = dontThrow;
+
+									if (this.isRelative) {
+										data.root = null;
+										data.path = types.append([], thisRoot, thisPath, dirRoot, dir);
+									} else {
+										data.root = types.append([], thisRoot, thisPath);
+										data.path = types.append([], dirRoot, dir);
+									};
+									
+									data.file = types.get(options, 'file', path.file);
 
 									path = tools.Path.parse(null, data);
 
@@ -2087,12 +2149,38 @@
 									};
 								}),
 							
+							toArray: root.DD_DOC(
+								//! REPLACE_BY("null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: null,
+											returns: 'arrayof(string)',
+											description: "Returns the path as an array.",
+								}
+								//! END_REPLACE()
+								, function toArray() {
+									var path = types.append([], this.root, this.path);
+									if (!this.isRelative) {
+										if (this.drive) {
+											path.unshift(this.drive + ':');
+										} else {
+											path.unshift('');
+										};
+									};
+									if (this.file) {
+										path.push(this.file);
+									} else {
+										path.push('');
+									};
+									return path;
+								}),
+								
 						}, __Internal__.pathOptions)
 					)));
 				
 				//===================================
 				// URLs
-				// TODO: View "window.URL" and "require('url')" implementations
 				//===================================
 				
 				//tools.UrlError = types.createErrorType("UrlError", global.Error);
@@ -2622,7 +2710,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2925,7 +3013,7 @@
 											path = abs.path;
 										};
 										if (file) {
-											var abs = tools.relativeToAbsolute(file, path, {
+											var abs = tools.relativeToAbsolute(file, path || [], {
 												dirChar: '/',
 												dontThrow: dontThrow,
 											});
@@ -2960,9 +3048,7 @@
 									};
 											
 									if (file) {
-										if (isRelative) {
-											file = file.join('/');
-										} else if (file.length <= 1) {
+										if (file.length <= 1) {
 											file = file[0];
 										} else  {
 											if (dontThrow) {
@@ -2993,8 +3079,6 @@
 						},
 						/*instanceProto*/
 						types.extend({
-							changed: false,
-							
 							_new: types.SUPER(function _new(options) {
 								if (this instanceof tools.Url) {
 									this._super();
@@ -3009,7 +3093,6 @@
 										};
 									});
 									types.defineProperties(this, properties);
-									this.changed = false;
 								} else {
 									return new tools.Url(options);
 								};
@@ -3088,32 +3171,31 @@
 										return '';
 									};
 
-									var changed = this.changed || this.args.changed;
-									
-									if (options) {
-										changed = true;
-									};
-									
 									// Flags
 									var dontValidate = types.get(options, 'dontValidate', false);
 									
-									if (changed && !dontValidate) {
-										// Validate
-										// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-										options = types.clone(options) || {};
-										if (!types.hasKey(options, 'dontThrow')) {
-											//options.dontThrow = true;  // "parse" will returns null when invalid
-										};
-										options = tools.Url.parse(this, options);
-										if (!options) {
-											// NOTE: Do not throw exceptions in "toString" because the javascript engine doesn't like it
-											//throw new tools.UrlError("Invalid url.");
-											return '';
+									if (options) {
+										if (dontValidate) {
+											options = types.extend({}, this, options);
+										} else {
+											// Validate
+											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+											options = types.clone(options) || {};
+											if (!types.hasKey(options, 'dontThrow')) {
+												options.dontThrow = true;  // "parse" will returns null when invalid
+											};
+											options = tools.Url.parse(this, options);
+											if (!options) {
+												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
+												//throw new types.ParseError("Invalid url.");
+												return '';
+											};
 										};
 									} else {
 										options = this;
 									};
 
+									
 									// Options
 									var noEscapes = types.get(options, 'noEscapes', false);
 
@@ -3204,7 +3286,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -3224,99 +3306,73 @@
 								, function combine(url, /*optional*/options) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, [tools.Url, tools.Path]), "Invalid url.");
 									
-									var dontThrow = types.get(options, 'dontThrow', false);
-									
 									if (types.isString(url)) {
 										url = tools.Url.parse(url, options);
 									};
 
-									var data;
+									var dontThrow = types.get(options, 'dontThrow', false);
+									
+									var data = types.fill(__Internal__.urlOptionsKeys, {}, this);
+
+									var thisPath = tools.trim(this.path, '');
+									if (this.file) {
+										thisPath.push(this.file);
+									};
+									
+									var pathRoot = null;
+
 									if (url instanceof tools.Url) {
-										data = types.fill(__Internal__.urlOptionsKeys, {}, this, tools.filter(url, function(val, key) {
-											return val && (key !== 'protocol') && (key !== 'port') && (key !== 'args') && (key !== 'isRelative') && (key !== 'noEscapes') && (key !== 'isWindows');
-										}), options);
-										if (!types.isNothing(data.path)) {
-											if (types.isString(data.path)) {
-												data.path = data.path.split('/');
-											};
-											data.path = tools.trim(data.path, '');
-										};
-										if (data.isWindows && this.isWindows && (data.path[0] !== this.path[0])) {
+										if (url.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
 											} else {
 												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										if (url.domain) {
-											data.port = url.port;
+										var domain = types.get(options, 'domain', url.domain);
+										if (domain) {
+											data.user = types.get(options, 'user', url.user);
+											data.password = types.get(options, 'password', url.password);
+											data.domain = domain;
+											data.port = types.get(options, 'port', url.port);
 										};
-										if (url.path) {
-											if (url.isRelative) {
-												data.path = types.append([], tools.trim(this.path, ''), url.path);
-											} else {
-												data.path = types.clone(url.path);
-											};
+										var anchor = types.get(options, 'anchor', url.anchor);
+										if (anchor) {
+											data.anchor = anchor;
 										};
-										if (url.file) {
-											data.file = url.file;
+										var args = types.get(options, 'args', url.args);
+										if (args) {
+											data.args = this.args.combine(args, options);
 										};
-										data.args = data.args.combine(url.args, options);
 									} else { // if (url instanceof tools.Path)
-										var thisPath = this.path;
-										if (thisPath) {
-											if (types.isString(thisPath)) {
-												thisPath = thisPath.split('/');
-											};
-											thisPath = tools.trim(thisPath, '');
+										if (url.root) {
+											pathRoot = tools.trim(url.root, '');
 										};
-										var os = types.get(options, 'os', url.os),
-											drive = types.get(options, 'drive', url.drive);
-										if (thisPath && (os === 'windows') && this.isWindows && drive) {
-											if (drive !== thisPath[0]) {
-												if (dontThrow) {
-													return null;
-												} else {
-													throw new types.ParseError("Drive mismatch.");
-												};
-											};
-											thisPath = thisPath.slice(1);
-										};
-										var pathRoot = types.get(options, 'root', url.root);
-										if (pathRoot) {
-											if (types.isString(pathRoot)) {
-												pathRoot = pathRoot.split('/');
-											};
-											pathRoot = tools.trim(pathRoot, '');
-										};
-										var path = types.get(options, 'path', url.path);
-										if (path) {
-											if (types.isString(path)) {
-												path = path.split('/');
-											};
-											path = tools.trim(path, '');
-										};
-										if (pathRoot || path) {
-											if (url.isRelative) {
-												path = types.append([], thisPath, pathRoot, path);
+										if ((url.os === 'windows') && url.drive && (!this.isWindows || (url.drive !== thisPath[0]))) {
+											if (dontThrow) {
+												return null;
 											} else {
-												path = types.append([], pathRoot, path);
+												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										if (drive) {
-											path = types.append([drive + ':'], path);
-										};
-										data = types.fill(__Internal__.urlOptionsKeys, {}, this);
-										if (path) {
-											data.path = path;
-										};
-										if (url.file) {
-											data.file = url.file;
-										};
-										data.isWindows = (os === 'windows');
 									};
 
 									data.dontThrow = dontThrow;
+									
+									var path = types.get(options, 'path', url.path);
+									if (types.isString(path)) {
+										path = path.split('/');
+									};
+									if (path) {
+										path = tools.trim(path, '');
+									};
+									
+									if (url.isRelative) {
+										data.path = types.append([], thisPath, pathRoot, path);
+									} else {
+										data.path = types.append([], pathRoot, path);
+									};
+									data.file = url.file;
 									
 									url = tools.Url.parse(null, data);
 
@@ -3386,6 +3442,7 @@
 										return tools.Url.parse(this);
 									};
 								}),
+								
 						}, __Internal__.urlOptions)
 					)));
 					
@@ -4928,7 +4985,7 @@
 						} else if (chr === '\\') {
 							// For simplicity
 							throw new types.AccessDenied("Escape sequences not allowed.");
-						} else if (tools.safeEval.alphaRegEx.test(chr) || (!tokenName && (chr === '.')) || ((tokenName.charCodeAt(0) >= 48) && (tokenName.charCodeAt(0) <= 57))) {
+						} else if (tools.safeEval.alphaRegEx.test(chr)) {
 							// Token
 							tokenName += chr;
 						} else if (ascii > 0x7F) {
@@ -4990,7 +5047,7 @@
 							root.DD_ASSERT && root.DD_ASSERT(types.isArray(globals), "Invalid global names array.");
 						};
 						
-						globals = tools.reduce(globals, function(locals, value, name) {
+						globals = tools.reduce(globals, function(locals, name) {
 							locals[name] = ((name in global) ? global[name] : tools.safeEval.evalNoLocals(name));
 							return locals;
 						}, {});
@@ -5008,7 +5065,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								expression: {
 									type: 'string',
@@ -5145,6 +5202,29 @@
 
 				__Internal__.Promise = null;
 				
+				tools.isPromise = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a Promise, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isPromise(obj) {
+						if (!__Internal__.Promise) {
+							return false;
+						};
+						return (obj instanceof __Internal__.Promise);
+					});
+				
 				tools.getPromise = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -5189,7 +5269,7 @@
 								!types.isFunction(Promise.prototype.then) ||
 								!types.isFunction(Promise.prototype['catch'])
 						) {
-							throw new types.TypeError("Invalid 'Promise' polyfill.");
+							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'prototype.then' and 'prototype.catch'.");
 						};
 
 						// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
@@ -5241,7 +5321,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -5260,14 +5340,14 @@
 					//! END_REPLACE()
 					, types.setPrototypeOf(function(/*optional*/obj, fn) {
 						var newFn = types.makeInside(obj, fn);
-						var callback = function callbackHandler(result) {
+						var callback = function callbackHandler(/*paramarray*/) {
 							try {
-								return newFn(result);
+								return newFn.apply(obj, arguments);
 							} catch(ex) {
 								try {
 									if (!(ex instanceof types.ScriptAbortedError)) {
 										tools.log(tools.LogLevels.Debug, "A Promise has been rejected due to an unhandled error :");
-										tools.log(tools.LogLevels.Debug, ex);
+										tools.log(tools.LogLevels.Debug, ex.stack);
 										tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
 									};
 								} catch(o) {
@@ -5340,7 +5420,7 @@
 							options = {};
 						};
 						
-						var configPath = types.get(options, 'configPath', tools.options.settings.configPath);
+						var configPath = types.get(options, 'configPath', tools.getOptions().settings.configPath);
 						if (configPath) {
 							root.DD_ASSERT && root.DD_ASSERT((configPath instanceof tools.Url) || (configPath instanceof tools.Path), "Invalid 'configPath' option.");
 							url = configPath.combine(url);
@@ -5373,6 +5453,10 @@
 								});
 							};
 						} else {
+							if (!options.headers) {
+								options.headers = {};
+							};
+							options.headers['Accept'] = 'application/json';
 							var def = {
 								callbacks: callbacks,
 								data: null,
@@ -5435,10 +5519,17 @@
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					__Natives__.windowPromise && tools.setPromise(__Natives__.windowPromise);
+					try {
+						__Natives__.windowPromise && tools.setPromise(__Natives__.windowPromise);
+					} catch(ex) {
+					};
 
 					// For production
-					tools.options.settings.logLevel = tools.LogLevels.Error;
+					tools.setOptions({
+						settings: {
+							logLevel: tools.LogLevels.Error,
+						}
+					});
 				};
 			},
 		};
@@ -5446,10 +5537,10 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
 	
 	return exports;
-})());
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this)));

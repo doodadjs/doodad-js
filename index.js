@@ -1,4 +1,4 @@
-// dOOdad - Object-oriented programming framework with some extras
+// dOOdad - Object-oriented programming framework
 // File: index.js - Module startup file
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -7,7 +7,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ module.exports = {
 
 		const dev_values = options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development'];
 
-		let env = options.node_env || process.env.node_env;
+		let env = options.node_env || process.env.node_env || process.env.NODE_ENV;
 
 		if ((options.startup.debug === "true") || +options.startup.debug) {
 			console.warn("warning: The 'startup.debug' flag is obsolete. Please set the environment variable 'NODE_ENV' to 'development' instead.");

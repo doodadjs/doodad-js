@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Modules.js - Doodad Modules management (client-side)
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: null,
 			dependencies: ['Doodad.Tools', 'Doodad.Types', 'Doodad.Namespaces'],
 			bootstrap: true,
@@ -57,7 +57,13 @@
 				
 
 
-				_options = types.depthExtend(2, {
+				//__Internal__.oldSetOptions = modules.setOptions;
+				//modules.setOptions = function setOptions(/*paramarray*/) {
+				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
+				//		settings = types.getDefault(options, 'settings', {});
+				//};
+				
+				modules.setOptions({
 					settings: {
 						modulesUri: '/modules',
 					},
@@ -99,8 +105,8 @@
 					, function locate(module, /*optional*/path, /*optional*/options) {
 						var Promise = tools.getPromise();
 						return new Promise(function(resolve, reject) {
-							var location = tools.getCurrentLocation().combine(types.get(options, 'modulesUri', _options.settings.modulesUri), {file: ''});
-							location = location.combine(tools.Path.parse(module, {os: 'linux', file: ''}));
+							var location = tools.getCurrentLocation().set({file: null}).combine(types.get(options, 'modulesUri', modules.getOptions().settings.modulesUri));
+							location = location.combine(tools.Path.parse(module, {os: 'linux'})).pushFile();
 							if (path) {
 								location = location.combine(tools.Path.parse(path, {os: 'linux', isRelative: true}));
 							};
@@ -123,7 +129,7 @@
 										description: "Module name",
 									},
 									file: {
-										type: 'string,Path,Url',
+										type: 'string,Path,Url,arrayof(string,Path,Url)',
 										optional: true,
 										description: "Module file",
 									},
@@ -137,7 +143,7 @@
 								description: "Loads a module.",
 					}
 					//! END_REPLACE()
-					, function load(module, /*optional*/path, /*optional*/options) {
+					, function load(module, /*optional*/file, /*optional*/options) {
 						var Promise = tools.getPromise();
 						return modules.locate(module, './config.json', options)
 							.then(function(location) {
@@ -148,20 +154,26 @@
 										} else {
 											types.depthExtend(2, conf, options);
 										};
-										return modules.locate(module, path, options).then(function(location) {
-											return new Promise(function(resolve, reject) {
-												var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
-												scriptLoader.addEventListener('load', resolve);
-												scriptLoader.addEventListener('error', reject);
-												scriptLoader.start();
-											})
-											['catch'](function(ev) {
-												throw new types.Error("Failed to load file '~0~'.", [location]);
-											})
+										if (!types.isArray(file)) {
+											file = [file];
+										};
+										var DD_MODULES = {};
+										return Promise.all(tools.map(file, function(fname) {
+												return modules.locate(module, fname, options).then(function(location) {
+													return new Promise(function(resolve, reject) {
+														var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+														scriptLoader.addEventListener('load', resolve);
+														scriptLoader.addEventListener('error', reject);
+														scriptLoader.start();
+													})
+													['catch'](function(ev) {
+														throw new types.Error("Failed to load file '~0~'.", [location.toString()]);
+													});
+												});
+											}))
 											.then(function(ev) {
 												return namespaces.loadNamespaces(null, true, conf);
 											});
-										});
 									});
 							})
 							['catch'](function(err) {
@@ -183,8 +195,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

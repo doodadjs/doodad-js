@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "1.0.5",
+  "version": "1.1.8",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -37,7 +37,6 @@
     }
   },
   "main": "index.js",
-  "directories": {},
   "files": [
     "src",
     "dist",
@@ -50,17 +49,24 @@
     "NodeJs.min.js",
     "config.json",
     "make.json",
-    "README",
-	  "LICENSE"
+    "README",    
+    "LICENSE",
+	"browserify.js",
+	"tonic.js"
   ],
   "scripts": {
     "prepublish": "node -r \"doodad-js-make/make.js\" . make",
     "configure": "node -r \"doodad-js-make/make.js\" . custom=configure"
   },
   "keywords": [
+	"inherit",
+	"extend",
+	"interface",
+	"mixin",
+	"mix-in",
     "oop",
     "object",
-	  "class",
+	"class",
     "framework"
   ],
   "author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",
@@ -82,5 +88,7 @@
   "devDependencies": {
     "doodad-js-make": "^0.1.0",
     "npm-package-config": "^0.1.3"
-  }
+  },
+  "tonicExampleFilename": "tonic.js",
+  "browser": "./browserify.js"
 }
