@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: NodeJs.js - Node.js Tools
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@
 //! END_REPLACE()
 
 (function() {
-	var global = this;
+	const global = this;
 
-	var exports = {};
-	if (global.process) {
+	const exports = {};
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.NodeJs'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: null,
-			dependencies: ['Doodad.Types', 'Doodad.Tools'],
+			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -45,6 +45,8 @@
 				"use strict";
 				
 				const doodad = root.Doodad,
+					mixIns = doodad.MixIns,
+					extenders = doodad.Extenders,
 					namespaces = doodad.Namespaces,
 					types = doodad.Types,
 					tools = doodad.Tools,
@@ -70,6 +72,7 @@
 					os: null,
 					watchedFiles: {},
 					tmpdir: null,
+					//oldSetOptions: null,
 				};
 				
 				
@@ -77,10 +80,14 @@
 				// Options
 				//=====================================
 				
-				//_options = types.depthExtend(2, {
-				//	settings: {
-				//	},
-				//}, _options)
+				//__Internal__.oldSetOptions = nodejs.setOptions;
+				//nodejs.setOptions = function setOptions(/*paramarray*/) {
+				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
+				//		settings = types.getDefault(options, 'settings', {});
+				//};
+				//
+				//nodejs.setOptions({
+				//})
 				
 				
 				//===================================
@@ -391,25 +398,25 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: null,
 								returns: 'object',
 								description: "Returns OS information.",
 					}
 					//! END_REPLACE()
-					, function() {
+					, function getOS() {
 						let os = __Internal__.os;
 						if (!os) {
-							let type = nodeOs.type();
-							type = ((type === 'Windows_NT') ? 'windows' : ((type === 'Linux') ? 'linux' : 'unix'));
+							const type = nodeOs.type(),
+								platform = nodeOs.platform();
 							__Internal__.os = os = {
-								//name: null,  // <FUTURE>
-								type: type,
-								//version: null,  // <FUTURE>
-								//architecture: null,  // <FUTURE>
+								name: platform,
+								type: ((type === 'Windows_NT') ? 'windows' : ((type === 'Linux') ? 'linux' : 'unix')),
+								//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
+								architecture: nodeOs.arch(),
 								dirChar: nodePath.sep,
 								newLine: nodeOs.EOL,
-								caseSensitive: (type !== 'windows'),
+								caseSensitive: ((type !== 'Windows_NT') && (type !== 'Darwin')), // TODO: Optional in MacOS X, so must detect
 							};
 						};
 						return os;
@@ -480,7 +487,7 @@
 					//! END_REPLACE()
 					, function loadFile(path, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(path)) {
-							path = tools.options.hooks.pathParser(path, types.get(options, 'parseOptions'));
+							path = tools.getOptions().hooks.pathParser(path, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(path, options, callbacks);
 					});
@@ -494,7 +501,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									path: {
 										type: 'string,Path',
@@ -507,51 +514,127 @@
 										description: "Options.",
 									},
 								},
-								returns: 'undefined',
+								returns: 'bool,Promise(bool)',
 								description: "Removes specified system folder.",
 					}
 					//! END_REPLACE()
 					, function rmdir(path, /*optional*/options) {
-						// TODO: Async
+						const Promise = tools.getPromise();
 						if (types.isString(path)) {
-							path = tools.options.hooks.pathParser(path);
+							path = tools.Path.parse(path);
 						};
-						path = path.pushFile();
 						const name = path.toString({
 							os: null,
 							dirChar: null,
 							shell: 'api',
 						});
-						try {
-							nodeFs.rmdirSync(name);
-						} catch(ex) {
-							if (ex.code === 'ENOENT') {
-								// Do nothing
-							} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
-								const dirFiles = nodeFs.readdirSync(name);
-								for (let i = 0; i < dirFiles.length; i++) {
-									const newPath = path.combine(null, {
-										file: dirFiles[i],
-									});
-									const fname = newPath.toString({
-										os: null,
-										dirChar: null,
-										shell: 'api',
-									});
-									try {
-										nodeFs.unlinkSync(fname);
-									} catch(ex) {
-										if (ex.code === 'EPERM') {
-											files.rmdir(newPath, options);
+						const async = types.get(options, 'async', false);
+						if (async) {
+							return new Promise(function(resolve, reject) {
+								nodeFs.rmdir(name, function(ex) {
+									if (ex) {
+										if (ex.code === 'ENOENT') {
+											resolve(true);
+										} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
+											const deleteContent = function deleteContent(dirFiles) {
+												const dirFile = dirFiles.shift();
+												if (dirFile) {
+													const newPath = path.combine(null, {
+														file: dirFile,
+													});
+													const fname = newPath.toString({
+														os: null,
+														dirChar: null,
+														shell: 'api',
+													});
+													nodeFs.unlink(fname, function(ex) {
+														if (ex) {
+															if (ex.code === 'ENOENT') {
+																deleteContent(dirFiles);
+															} else if (ex.code === 'EPERM') {
+																files.rmdir(newPath, options)
+																	.then(function() {
+																		deleteContent(dirFiles);
+																	});
+															} else {
+																reject(ex);
+															};
+														} else {
+															deleteContent(dirFiles);
+														};
+													});
+												} else {
+													// End
+													nodeFs.rmdir(name, function(ex) {
+														if (ex) {
+															if (ex.code === 'ENOENT') {
+																resolve(true);
+															} else {
+																reject(ex);
+															};
+														} else {
+															resolve(true);
+														};
+													});
+												};
+											};
+											nodeFs.readdir(name, function(ex, dirFiles) {
+												if (ex) {
+													reject(ex);
+												} else {
+													deleteContent(dirFiles);
+												};
+											});
 										} else {
+											reject(ex);
+										};
+									} else {
+										resolve(true);
+									};
+								});
+							});
+						} else {
+							try {
+								nodeFs.rmdirSync(name);
+							} catch(ex) {
+								if (ex.code === 'ENOENT') {
+									// Do nothing
+								} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
+									const dirFiles = nodeFs.readdirSync(name);
+									let dirFile;
+									while (dirFile = dirFiles.shift()) {
+										const newPath = path.combine(null, {
+											file: dirFile,
+										});
+										const fname = newPath.toString({
+											os: null,
+											dirChar: null,
+											shell: 'api',
+										});
+										try {
+											nodeFs.unlinkSync(fname);
+										} catch(ex) {
+											if (ex.code === 'ENOENT') {
+												// Do nothing
+											} else if (ex.code === 'EPERM') {
+												files.rmdir(newPath, options);
+											} else {
+												throw ex;
+											};
+										};
+									};
+									try {
+										nodeFs.rmdirSync(name);
+									} catch(ex) {
+										if (ex.code !== 'ENOENT') {
 											throw ex;
 										};
 									};
+								} else {
+									throw ex;
 								};
-								nodeFs.rmdirSync(name);
-							} else {
-								throw ex;
 							};
+							return true;
 						};
 					});
 					
@@ -559,7 +642,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									path: {
 										type: 'string,Path',
@@ -572,24 +655,81 @@
 										description: "Options.",
 									},
 								},
-								returns: 'undefined',
+								returns: 'bool,Promise(bool)',
 								description: "Creates specified system folder.",
 					}
 					//! END_REPLACE()
 					, function mkdir(path, /*optional*/options) {
-						// TODO: Async
+						const Promise = tools.getPromise();
 						if (types.isString(path)) {
-							path = tools.options.hooks.pathParser(path);
+							path = tools.Path.parse(path);
 						};
-						path = path.pushFile();
+						const async = types.get(options, 'async', false);
 						if (types.get(options, 'makeParents', false)) {
 							const dir = path.path;
-							for (let i = 0; i < dir.length; i++) {
-								const name = path.toString({
-									path: dir.slice(0, i + 1),
-									file: null,
-									shell: 'api',
+							const create = function(dir, index) {
+								if (index < dir.length) {
+									const name = path.toString({
+										path: dir.slice(0, index + 1),
+										file: null,
+										os: null,
+										dirChar: null,
+										shell: 'api',
+									});
+									if (async) {
+										return new Promise(function (resolve, reject) {
+											nodeFs.mkdir(name, function (ex) {
+												if (ex) {
+													if (ex.code === 'EEXIST') {
+														resolve(create(dir, ++index));
+													} else {
+														reject(ex);
+													};
+												} else {
+													resolve(create(dir, ++index));
+												};
+											});
+										});
+									} else {
+										try {
+											nodeFs.mkdirSync(name);
+										} catch(ex) {
+											if (ex.code !== 'EEXIST') {
+												throw ex;
+											};
+										};
+										return create(dir, ++index);
+									};
+								} else {
+									if (async) {
+										return Promise.resolve(true);
+									} else {
+										return true;
+									};
+								};
+							};
+							return create(path.path, 0);
+						} else {
+							const name = path.toString({
+								os: null,
+								dirChar: null,
+								shell: 'api',
+							});
+							if (async) {
+								return new Promise(function(resolve, reject) {
+									nodeFs.mkdir(name, function(ex) {
+										if (ex) {
+											if (ex.code === 'EEXIST') {
+												resolve(true);
+											} else {
+												reject(ex);
+											};
+										} else {
+											resolve(true);
+										};
+									});
 								});
+							} else {
 								try {
 									nodeFs.mkdirSync(name);
 								} catch(ex) {
@@ -597,19 +737,7 @@
 										throw ex;
 									};
 								};
-							};
-						} else {
-							const name = path.toString({
-								os: null,
-								dirChar: null,
-								shell: 'api',
-							});
-							try {
-								nodeFs.mkdirSync(name);
-							} catch(ex) {
-								if (ex.code !== 'EEXIST') {
-									throw ex;
-								};
+								return true;
 							};
 						};
 					});
@@ -618,7 +746,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									source: {
 										type: 'string,Path',
@@ -636,50 +764,211 @@
 										description: "Options.",
 									},
 								},
-								returns: 'undefined',
+								returns: 'bool,Promise(bool)',
 								description: "Copies source file or folder to destination.",
 					}
 					//! END_REPLACE()
 					, function copy(source, destination, /*optional*/options) {
-						// TODO: Async
-						// TODO: Option to preserve timestamps
+						const Promise = tools.getPromise();
 						if (types.isString(source)) {
-							source = tools.options.hooks.pathParser(source);
+							source = tools.Path.parse(source);
 						};
 						if (types.isString(destination)) {
-							destination = tools.options.hooks.pathParser(destination);
+							destination = tools.Path.parse(destination);
 						};
-						const stats = nodeFs.statSync(source.toString({os: null, dirChar: null, shell: 'api'}));
-						if (stats.isFile()) {
-							if (!destination.file) {
-								destination.file = source.file;
-							};
-							const sourceFd = nodeFs.openSync(source.toString({os: null, dirChar: null, shell: 'api'}), 'r'),
-								destFd = nodeFs.openSync(destination.toString({os: null, dirChar: null, shell: 'api'}), (types.get(options, 'override', false) ? 'w' : 'wx')),
-								buf = new Buffer(4096);
-							let bytesRead = 0;
-							do {
-								bytesRead = nodeFs.readSync(sourceFd, buf, null, buf.length);
-								if (bytesRead) {
-									nodeFs.writeSync(destFd, buf, 0, bytesRead);
+						const async = types.get(options, 'async', false),
+							bufferLength = types.get(options, 'bufferLength', 4096);
+						if (async) {
+							return new Promise(function(resolve, reject) {
+								nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
+									if (ex) {
+										reject(ex);
+									} else {
+										if (stats.isSymbolicLink()) {
+											// Copy symbolic link
+											if (!destination.file) {
+												destination = destination.set({ file: source.file });
+											};
+											nodeFs.readlink(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, linkString) {
+												if (ex) {
+													reject(ex);
+												} else {
+													const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+													nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
+														if (ex) {
+															reject(ex);
+														} else if (types.get(options, 'preserveTimes')) {
+															nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
+																if (ex) {
+																	reject(ex);
+																} else {
+																	resolve(true);
+																};
+															});
+														} else {
+															resolve(true);
+														};
+													});
+												};
+											});
+										} else if (stats.isFile()) {
+											// Copy file
+											if (!destination.file) {
+												destination = destination.set({ file: source.file });
+											};
+											const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+											const copyFile = function copyFile(buf, sourceFd, destFd) {
+												nodeFs.read(sourceFd, buf, null, buf.length, null, function(ex, bytesRead, _buf) {
+													if (ex) {
+														reject(ex);
+													} else if (bytesRead) {
+														nodeFs.write(destFd, _buf, 0, bytesRead, function(ex) {
+															if (ex) {
+																reject(ex);
+															} else {
+																copyFile(buf, sourceFd, destFd);
+															};
+														});
+													} else {
+														nodeFs.close(sourceFd, function(ex1) {
+															nodeFs.close(destFd, function(ex2) {
+																if (ex1 || ex2) {
+																	reject(ex1 || ex2);
+																} else if (types.get(options, 'preserveTimes')) {
+																	nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
+																		if (ex) {
+																			reject(ex);
+																		} else {
+																			resolve(true);
+																		};
+																	});
+																} else {
+																	resolve(true);
+																};
+															});
+														});
+													};
+												});
+											};
+											nodeFs.open(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r', function(ex, sourceFd) {
+												if (ex) {
+													reject(ex);
+												};
+												nodeFs.open(dest, (types.get(options, 'override', false) ? 'w' : 'wx'), function(ex, destFd) {
+													if (ex) {
+														nodeFs.close(sourceFd, function() {
+															reject(ex);
+														});
+													} else {
+														const buf = new Buffer(bufferLength);
+														copyFile(buf, sourceFd, destFd);
+													};
+												});
+											});
+										} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
+											// Recurse directory
+											const copyFile = function copyFile(dirFiles) {
+												const dirFile = dirFiles.shift();
+												if (dirFile) {
+													files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options)
+														.then(function() {
+															copyFile(dirFiles);
+														})
+														['catch'](function(ex) {
+															reject(ex);
+														});
+												} else if (types.get(options, 'preserveTimes')) {
+													// FIXME: Dates are not correct
+													nodeFs.utimes(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime, function(ex) {
+														if (ex) {
+															reject(ex);
+														} else {
+															resolve(true);
+														};
+													});
+												} else {
+													resolve(true);
+												};
+											};
+											files.mkdir(destination, options).then(function() {
+												nodeFs.readdir(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, dirFiles) {
+													if (ex) {
+														reject(ex);
+													} else {
+														copyFile(dirFiles);
+													};
+												});
+											});
+											
+										} else if (!types.get(options, 'skipInvalid', false)) {
+											// Invalid file system object
+											let ex;
+											if (stats.isDirectory()) {
+												ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+											} else {
+												ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+											};
+											reject(ex);
+										} else {
+											// Skip invalid file system object
+											resolve(false);
+										};
+									};
+								});
+							});
+						} else {
+							const stats = nodeFs.statSync(source.toString({os: null, dirChar: null, shell: 'api'}));
+							if (stats.isFile()) {
+								// Copy file
+								if (!destination.file) {
+									destination = destination.set({ file: source.file });
 								};
-							} while (bytesRead)
-							nodeFs.closeSync(sourceFd);
-							nodeFs.closeSync(destFd);
-						} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
-							source = source.pushFile();
-							destination = destination.pushFile();
-							files.mkdir(destination, options);
-							const dirFiles = nodeFs.readdirSync(source.toString({os: null, dirChar: null, shell: 'api'}));
-							for (let i = 0; i < dirFiles.length; i++) {
-								const dirFile = dirFiles[i];
-								files.copy(source.combine(null, {file: dirFile}), destination.combine(null, {file: dirFile}), options);
-							};
-						} else if (!types.get(options, 'skipInvalid', false)) {
-							if (stats.isDirectory()) {
-								throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({os: null, dirChar: null, shell: 'api'})]);
+								let sourceFd = null,
+									destFd = null;
+								try {
+									sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
+									destFd = nodeFs.openSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), (types.get(options, 'override', false) ? 'w' : 'wx'));
+									const buf = new Buffer(bufferLength);
+									let bytesRead = 0;
+									do {
+										bytesRead = nodeFs.readSync(sourceFd, buf, null, buf.length);
+										if (bytesRead) {
+											nodeFs.writeSync(destFd, buf, 0, bytesRead);
+										};
+									} while (bytesRead)
+									return true;
+								} catch(ex) {
+									throw ex;
+								} finally {
+									try {
+										sourceFd && nodeFs.closeSync(sourceFd);
+									} catch(ex) {
+										throw ex;
+									} finally {
+										destFd && nodeFs.closeSync(destFd);
+									};
+								};
+							} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
+								// Recurse directory
+								files.mkdir(destination, options);
+								const dirFiles = nodeFs.readdirSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+								for (let i = 0; i < dirFiles.length; i++) {
+									const dirFile = dirFiles[i];
+									files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
+								};
+								return true;
+							} else if (!types.get(options, 'skipInvalid', false)) {
+								// Invalid file system object
+								let ex;
+								if (stats.isDirectory()) {
+									ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+								} else {
+									ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+								};
+								throw ex;
 							} else {
-								throw new types.Error("Invalid file or folder : '~0~'.", [source.toString({os: null, dirChar: null, shell: 'api'})]);
+								// Skip invalid file system object
+								return false;
 							};
 						};
 					});
@@ -688,7 +977,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 2,
 								params: {
 									path: {
 										type: 'string,Path',
@@ -701,74 +990,154 @@
 										description: "Options.",
 									},
 								},
-								returns: 'undefined',
+								returns: 'arrayof(object),Promise(arrayof(object))',
 								description: "Returns files and folders list with stats.",
 					}
 					//! END_REPLACE()
 					, function readdir(path, /*optional*/options) {
+						// TODO: Returns just files and folders.
+						// TODO: 'depth' for synchronous
+						
 						if (types.isString(path)) {
-							path = tools.options.hooks.pathParser(path);
+							path = tools.Path.parse(path);
 						};
-						path = path.pushFile();
-						const name = path.toString({
-							os: null,
-							dirChar: null, 
-							shell: 'api',
-						});
-						const Promise = tools.getPromise(),
-							async = types.get(options, 'async');
 
-						return new Promise(function(resolve, reject) {
-							const result = [];
-							
-							function proceed(files) {
-								function getStats(file) {
-									const filePath = path.combine(null, {
-										file: file,
+						const Promise = tools.getPromise(),
+							async = types.get(options, 'async', false),
+							depth = (+types.get(options, 'depth') || 0) - 1,  // null|undefined|true|false|NaN|Infinity
+							relative = types.get(options, 'relative', false),
+							followLinks = types.get(options, 'followLinks', false);
+
+						const result = [];
+
+						if (depth >= -1) {
+							const getStats = function getStats(file, parent, parentRel) {
+								let filePath = parent.combine(null, {
+									file: file,
+								});
+								let filePathRel;
+								if (relative) {
+									filePathRel = parentRel.combine(null, {
+										file: file
 									});
-									function addFile(stats) {
-										result.push({
+								};
+								const addFile = function addFile(stats) {
+									if (stats.isDirectory()) {
+										filePath = filePath.pushFile();
+										if (relative) {
+											filePathRel = filePathRel.pushFile();
+										};
+									};
+									const isFolder = stats.isDirectory(),
+										isFile = stats.isFile();
+										
+									if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
+										const obj = {
 											name: file,
-											path: filePath,
-											isFolder: stats.isDirectory(), // || stats.isBlockDevice || stats.isCharacterDevice(),
+											path: (relative ? filePathRel : filePath),
+											isFolder: isFolder,
+											isFile: isFile,
 											size: stats.size, // bytes
 											// ...
-										});
-										proceed(files);
+										};
+										result.push(obj);
+										return isFolder;
+									} else {
+										return false;
 									};
-									if (async) {
-										nodeFs.stat(filePath.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
+								};
+								if (async) {
+									return new Promise(function(resolve, reject) {
+										const callback = function callback(ex, stats) {
 											if (ex) {
 												reject(ex);
 											} else {
-												addFile(stats);
+												try {
+													resolve(addFile(stats));
+												} catch(ex) {
+													reject(ex);
+												};
 											};
-										});
-									} else {
-										addFile(nodeFs.statSync(filePath.toString({os: null, dirChar: null, shell: 'api'})));
-									};
-								};
-								
-								const file = files.shift();
-								if (file) {
-									getStats(file);
+										};
+										if (followLinks) {
+											nodeFs.stat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+										} else {
+											nodeFs.lstat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+										};
+									});
 								} else {
-									resolve(result);
+									return addFile(nodeFs.statSync(filePath.toString({os: null, dirChar: null, shell: 'api'})));
 								};
 							};
 							
 							if (async) {
-								nodeFs.readdir(name, function(ex, files) {
-									if (ex) {
-										reject(ex);
+								const readdir = function readdir(name, parent, parentRel, depth) {
+									return new Promise(function(resolve, reject) {
+										const path = (name ? parent.combine(name) : parent);
+										let pathRel;
+										if (relative) {
+											pathRel = (name ? parentRel.combine(name) : parentRel);
+										};
+										nodeFs.readdir(path.toString({
+											os: null,
+											dirChar: null, 
+											shell: 'api',
+										}), function(ex, files) {
+											if (ex) {
+												reject(ex);
+											} else {
+												try {
+													resolve(proceed(files, path, pathRel, depth));
+												} catch(ex) {
+													reject(ex);
+												};
+											};
+										});
+									});
+								};
+								const proceed = function proceed(files, parent, parentRel, depth) {
+									const file = files.shift();
+									if (file) {
+										return getStats(file, parent, parentRel).then(function(isFolder) {
+											if (isFolder && (depth >= 0)) {
+												return readdir(file, parent, parentRel, depth - 1)
+													.then(function() {
+														return proceed(files, parent, parentRel, depth);
+													});
+											} else {
+												return proceed(files, parent, parentRel, depth);
+											};
+										});
 									} else {
-										proceed(files);
+										// End
+										return result;
 									};
-								});
+								};
+								return readdir(null, path, (relative ? tools.Path.parse('./', {os: 'linux'}) : null), depth);
 							} else {
-								proceed(nodeFs.readdirSync(name));
+								if (depth >= 0) {
+									throw new types.NotSupported("'depth' is not supported for the syncronous operation.");
+								};
+								const files = nodeFs.readdirSync(path.toString({
+										os: null,
+										dirChar: null, 
+										shell: 'api',
+									}));
+								let pathRel = (relative ? tools.Path.parse('./', {os: 'linux'}) : null),
+									file;
+								while (file = files.shift()) {
+									const isFolder = getStats(file, path, pathRel);
+									//...
+								};
+								return result;
 							};
-						});
+						} else {
+							if (async) {
+								return Promise.resolve(result);
+							} else {
+								return result;
+							};
+						};
 					});
 					
 					files.getTempFolder = root.DD_DOC(
@@ -781,7 +1150,7 @@
 								description: "Returns system temporary folder path.",
 					}
 					//! END_REPLACE()
-					, function() {
+					, function getTempFolder() {
 						if (__Internal__.tmpdir) {
 							return __Internal__.tmpdir;
 						};
@@ -793,14 +1162,14 @@
 						};
 						if (!stats || !stats.isDirectory()) {
 							// Android or other
-							folder = tools.Path.parse(process.cwd()).pushFile().combine('tmp/', {os: 'linux'});
+							folder = tools.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
 							try {
 								files.mkdir(folder);
 							} catch(ex) {
 							};
 							folder = folder.toString({os: null});
 						};
-						var os = tools.getOS();
+						const os = tools.getOS();
 						if (folder[folder.length - 1] !== os.dirChar) {
 							folder += os.dirChar;
 						};
@@ -812,7 +1181,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 5,
 								params: {
 									path: {
 										type: 'string,Url,Path',
@@ -831,22 +1200,26 @@
 					//! END_REPLACE()
 					, function readFile(path, /*optional*/options) {
 						const Promise = tools.getPromise();
+						if (types.isString(path)) {
+							const url = tools.Url.parse(path);
+							if (url.protocol) {
+								path = url;
+							} else {
+								path = tools.Path.parse(path);
+							};
+						};
+						const async = types.get(options, 'async', false),
+							encoding = types.get(options, 'encoding', null),
+							timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
+							maxLength = types.get(options, 'maxLength', 1024 * 1024 * 100);
+						if (!async) {
+							throw new types.NotSupported("Synchronous read is not implemented.");
+						};
 						return new Promise(function(resolve, reject) {
-							if (types.isString(path)) {
-								path = tools.options.hooks.pathParser(path, types.get(options, 'parseOptions'));
-							};
-							const async = types.get(options, 'async', false),
-								encoding = types.get(options, 'encoding', null),
-								timeout = types.get(options, 'timeout', 0) || 5000;  // Don't allow "0" (for infinite)
-							if (!async) {
-								// TODO: Synchronous read
-								throw new types.NotSupported("Synchronous read is not implemented.");
-							};
 							const state = {
-									request: null,
-									ready: false,
-									timeoutId: null,
-									data: null,
+								ready: false,
+								timeoutId: null,
+								data: null,
 							};
 							if ((path instanceof tools.Path) || ((path instanceof tools.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
 								if (path instanceof tools.Url) {
@@ -859,46 +1232,27 @@
 								});
 				
 								try {
-									state.timeoutId = setTimeout(function(ev) {
-										state.timeoutId = null;
-										if (!state.ready) {
-											state.ready = true;
-											if (state.request) {
-												// TODO: Call the real method when it will be implemented by NodeJs
-												state.request.abort && state.request.abort();
-												state.request = null;
-											};
-											reject(new types.TimeoutError("Request has timed out."));
-										};
-									}, timeout);
-									// NOTE: There is no returned value like a "request" object. It has been written for the future.
-									state.request = nodeFs.readFile(path, {encoding: encoding}, function(ex, data) {
-										if (state.timeoutId) {
-											clearTimeout(state.timeoutId);
-											state.timeoutId = null;
-										};
-										if (!state.ready) {
-											state.ready = true;
-											state.request = null;
-											if (ex) {
-												reject(ex);
-											} else {
-												resolve(data);
-											};
+									nodeFs.stat(path, function(ex, stats) {
+										if (ex) {
+											reject(ex);
+										} else if (stats.size > maxLength) {
+											throw new types.Error("File size exceeds maximum length.");
+										} else {
+											nodeFs.readFile(path, {encoding: encoding}, function(ex, data) {
+												if (!state.ready) {
+													state.ready = true;
+													if (ex) {
+														reject(ex);
+													} else {
+														resolve(data);
+													};
+												};
+											});
 										};
 									});
-									//if (!async) {
-									//  NOTE: We avoid the use of "readFileSync" because it has no timeout option.
-									//	TODO: Wait request completion (thread lock or thread pause or something else)
-									//};
 								} catch(ex) {
-									if (state.timeoutId) {
-										clearTimeout(state.timeoutId);
-										state.timeoutId = null;
-									};
 									if (!state.ready) {
 										state.ready = true;
-										state.request = null;
 										reject(ex);
 									};
 								};
@@ -906,10 +1260,6 @@
 								// "path" is a URL
 								// TODO: HTTPS
 								if (path.protocol === 'http') {
-									if (!encoding) {
-										// TODO: Implement binary
-										throw new types.NotSupported("Binary data not supported.");
-									};
 									const onEnd = function onEnd(ex) {
 										if (state.timeoutId) {
 											clearTimeout(state.timeoutId);
@@ -948,16 +1298,25 @@
 												response.setEncoding(encoding);
 											};
 											response.on('data', function(chunk) {
-												// TODO: Implement binary
-												//if (!encoding) {
-												//	chunk = chunk.????
-												//};
-												state.data = (state.data || '') + chunk;
+												if (!state.data || ((state.data.length + chunk.length) < maxLength)) {
+													if (encoding) {
+														state.data = (state.data || '') + chunk;
+													} else if (state.data) {
+														state.data = Buffer.concat([state.data, chunk]);
+													} else {
+														state.data = chunk;
+													};
+												} else {
+													state.request.abort();
+												};
 											});
 											response.on('error', onEnd);
 											response.on('end', onEnd);
 											response.on('close', function() {
 												onEnd(new types.Error("The transfer has been interrupted."));
+											});
+											response.on('abort', function() {
+												onEnd(new types.Error("The transfer has been aborted."));
 											});
 										});
 										state.request.on('error', onEnd);
@@ -1010,6 +1369,14 @@
 					}
 					//! END_REPLACE()
 					, function watch(path, callbacks, /*optional*/options) {
+						if (types.isString(path)) {
+							const url = tools.Url.parse(path);
+							if (url.protocol) {
+								path = url;
+							} else {
+								path = tools.Path.parse(path);
+							};
+						};
 						if (!types.isArray(callbacks)) {
 							callbacks = [callbacks];
 						};
@@ -1029,15 +1396,16 @@
 								fileCallbacks = __Internal__.watchedFiles[path];
 							} else {
 								fileCallbacks = [];
-								// TODO: Make "doodad.Callback" available here
-								//nodeFs.watch(path, {persistent: false}, new doodad.Callback(function(event, filename) {
 								nodeFs.watch(path, {persistent: false}, function(event, filename) {
-									try { // "try" IS TEMPORARY UNTIL "doodad.Callback" IS AVAILABLE
+									try {
 										const callbacks = __Internal__.watchedFiles[path];
 										for (let i = callbacks.length - 1; i >= 0; i--) {
 											let callback = callbacks[i];
 											if (callback) {
-												callback.apply(this, arguments);
+												try {
+													callback.apply(this, arguments);
+												} catch(ex) {
+												};
 												if (types.get(callback.__OPTIONS__, 'once', false)) {
 													callback = null;
 												};
@@ -1047,7 +1415,6 @@
 											};
 										};
 									} catch(ex) {
-										console.error(ex.stack);
 									};
 								});
 							};
@@ -1273,6 +1640,230 @@
 				));
 
 				
+				//===================================
+				// Doodad extension
+				//===================================
+				
+				mixIns.REGISTER(root.DD_DOC(
+				//! REPLACE_BY("null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: null,
+							description: "Class mix-in to implement for NodeJs events.",
+				}
+				//! END_REPLACE()
+				, doodad.MIX_IN(doodad.Class.$extend({
+					$TYPE_NAME: "NodeEvents",
+					
+					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
+						
+					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters, /*optional*/useCapture) {
+						const events = this.__NODE_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].detach(emitters, useCapture);
+						};
+					})))),
+					
+					clearNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearNodeEvents() {
+						const events = this.__NODE_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].clear();
+						};
+					})))),
+				}))));
+				
+				doodad.REGISTER(root.DD_DOC(
+				//! REPLACE_BY("null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: null,
+							description: "NodeJs event handler prototype.",
+				}
+				//! END_REPLACE()
+				, doodad.EventHandler.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'NodeEventHandler',
+						
+						attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
+							if (!types.isArrayLike(emitters)) {
+								emitters = [emitters];
+							};
+
+							this.detach(emitters);
+
+							const self = this;
+							let ignore = false;
+							
+							const createHandler = function(emitter, type) {
+								return function nodeEventHandler(/*paramarray*/) {
+									if (!ignore) {
+										if (once) {
+											ignore = true;
+											self.clear();
+										};
+										const ctx = {
+											emitter: emitter,
+											type: type,
+											data: context,
+										};
+										return types.invoke(self.obj, self, types.append([ctx], arguments));
+									};
+								};
+							};
+							
+							const eventTypes = this.extender.types;
+								
+							for (let i = 0; i < eventTypes.length; i++) {
+								if (types.hasIndex(eventTypes, i)) {
+									const type = eventTypes[i];
+									for (let j = 0; j < emitters.length; j++) {
+										if (types.hasIndex(emitters, j)) {
+											const emitter = emitters[j],
+												handler = createHandler(emitter, type);
+											if (this._super(this.obj, this, null, [emitter, type, handler])) {
+												if (once) {
+													emitter.once(type, handler);
+												} else {
+													emitter.on(type, handler);
+												};
+											};
+										};
+									};
+								};
+							};
+						}),
+						attachOnce: function attachOnce(emitters, /*optional*/context) {
+							this.attach(emitters, context, true);
+						},
+						detach: types.SUPER(function detach(/*optional*/emitters) {
+							if (types.isNothing(emitters)) {
+								const evs = this._super(this.obj, this);
+								for (let j = 0; j < evs.length; j++) {
+									const evData = evs[j][3],
+										emitter = evData[0],
+										type = evData[1],
+										handler = evData[2];
+									emitter.removeListener(type, handler);
+								};
+							} else {
+								if (!types.isArrayLike(emitters)) {
+									emitters = [emitters];
+								};
+								
+								//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
+								//	return nodeJs.isEventEmitter(emitter);
+								//}), "Invalid emitters.");
+								
+								for (let i = 0; i < emitters.length; i++) {
+									const evs = this._super(this.obj, this, [emitters[i]]);
+									for (let j = 0; j < evs.length; j++) {
+										const evData = evs[j][3],
+											emitter = evData[0],
+											type = evData[1],
+											handler = evData[2];
+										emitter.removeListener(type, handler);
+									};
+								};
+							};
+						}),
+						clear: function clear() {
+							this.detach();
+						},
+						promise: function promise(emitters, /*optional*/context) {
+							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
+							var canReject = this.extender.canReject;
+							var self = this;
+							var Promise = tools.getPromise();
+							return new Promise(function(resolve, reject) {
+								self.attachOnce(emitters, context, function(ev) {
+									if (canReject && (ev instanceof doodad.ErrorEvent)) {
+										return reject.call(self.obj, ev);
+									} else {
+										return resolve.call(self.obj, ev);
+									};
+								});
+							});
+						},
+					}
+				)));
+				
+				extenders.REGISTER(root.DD_DOC(
+				//! REPLACE_BY("null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: null,
+							description: "Node.Js event extender.",
+				}
+				//! END_REPLACE()
+				, extenders.Event.$inherit({
+					$TYPE_NAME: "NodeEvent",
+					
+					eventsAttr: '__NODE_EVENTS',
+					eventsImplementation: 'Doodad.MixIns.NodeEvents',
+					types: null,
+					
+					enableScopes: true,
+					
+					eventProto: doodad.NodeEventHandler,
+					
+					_new: types.SUPER(function _new(/*optional*/options) {
+						this._super(options);
+						this.types = types.get(options, 'types', this.types);
+					}),
+					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+						if (types.isNothing(options)) {
+							options = {};
+						};
+						return this._super(options) + 
+							',' + tools.unique(types.get(options, 'types', this.types)).sort().join('|');
+					}),
+					overrideOptions: types.SUPER(function overrideOptions(options, newOptions) {
+						this._super(options, newOptions);
+						options.types = tools.unique([], newOptions.types, this.types);
+						return options;
+					}),
+				})));
+
+				
+				doodad.NODE_EVENT = root.DD_DOC(
+				//! REPLACE_BY("null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: null,
+							description: "NodeJs event attribute modifier.",
+				}
+				//! END_REPLACE()
+				, function NODE_EVENT(eventTypes, /*optional*/fn) {
+					if (types.isStringAndNotEmpty(eventTypes)) {
+						eventTypes = eventTypes.split(' ');
+					};
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isNothing(eventTypes) || types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
+						if (eventTypes) {
+							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
+						};
+						const val = types.unbox(fn);
+						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+					};
+					return doodad.PROTECTED(doodad.ATTRIBUTE(fn, extenders.NodeEvent, {
+						types: eventTypes,
+					}));
+				});
+				
+				
+				
+
 
 				return function init(/*optional*/options) {
 					// ES6 Promise polyfills
@@ -1301,8 +1892,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

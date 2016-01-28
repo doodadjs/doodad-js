@@ -1,6 +1,6 @@
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
 // dOOdad - Object-oriented programming framework
-// File: Debug.js - Debug file
+// File: Browserify.js - Browserify
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -33,31 +33,54 @@
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Debug'] = {
+		DD_MODULES['Doodad.Client.Browserify'] = {
 			type: null,
 			version: '1.1r',
 			namespaces: null,
-			dependencies: ['Doodad.Namespaces'],
+			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Client'],
 			bootstrap: true,
-
+			exports: exports,
+			
 			create: function create(root, /*optional*/_options) {
-				root.enableAsserts();
-				
-				var tools = root.Doodad.Tools;
-				tools.setOptions({
-					settings: {
-						logLevel: tools.LogLevels.Debug,
-					},
-				});
-					
+				"use strict";
+
+				//===================================
+				// Get namespaces
+				//===================================
+
+				var doodad = root.Doodad,
+					types = doodad.Types,
+					tools = doodad.Tools;
+
+
+				//===================================
+				// Init
+				//===================================
 				return function init(/*optional*/options) {
-					var doodad = root.Doodad;
-					if (doodad.Stack) {
-						doodad.Stack.enable();
+					try {
+						tools.getPromise();
+					} catch(ex) {
+						var Promise = null;
+						try {
+							var mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
+							Promise = require(mod); // tiny Promise/A+ implementation
+						} catch(o) {
+						};
+						if (!types.isFunction(Promise)) {
+							try {
+								var mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
+								Promise = require(mod); // subset of RSVP
+							} catch(o) {
+							};
+						};
+						if (types.isFunction(Promise)) {
+							tools.setPromise(Promise);
+						};
 					};
 				};
 			},
 		};
+		
 		return DD_MODULES;
 	};
 	

@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Modules.js - Doodad Modules management (server-side)
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: null,
 			dependencies: ['Doodad.Tools', 'Doodad.Types', 'Doodad.Namespaces'],
 			bootstrap: true,
@@ -132,7 +132,7 @@
 										description: "Module name",
 									},
 									file: {
-										type: 'string,Path,Url',
+										type: 'string,Path,Url,arrayof(string,Path,Url)',
 										optional: true,
 										description: "Module file",
 									},
@@ -163,16 +163,22 @@
 										} else {
 											types.depthExtend(2, conf, options);
 										};
-										return modules.locate(module, file, options).then(function(location) {
-											return new Promise(function(resolve, reject) {
-												const mod = Module._load(location.toString(), __Internal__.getRootModule());
-												const DD_MODULES = mod.add();
-												resolve(DD_MODULES);
-											})
-											.then(function(DD_MODULES) {
+										if (!types.isArray(file)) {
+											file = [file];
+										};
+										const DD_MODULES = {};
+										return Promise.all(file.map(function(fname) {
+												return modules.locate(module, fname, options).then(function(location) {
+													return new Promise(function(resolve, reject) {
+														const mod = Module._load(location.toString(), __Internal__.getRootModule());
+														mod.add(DD_MODULES);
+														resolve(mod);
+													});
+												});
+											}))
+											.then(function(mods) {
 												return namespaces.loadNamespaces(null, false, conf, DD_MODULES);
 											});
-										});
 									});
 							})
 							['catch'](function(err) {
@@ -194,8 +200,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

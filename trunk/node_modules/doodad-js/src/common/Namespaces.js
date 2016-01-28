@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Namespace.js - Namespaces management
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: ['Entries'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -56,15 +56,6 @@
 					nodejs = tools.NodeJs;
 					
 				//===================================
-				// Options
-				//===================================
-					
-				//namespaces.options = types.depthExtend(2, {
-				//	settings: {
-				//	},
-				//}, _options);
-				
-				//===================================
 				// Internals
 				//===================================
 				// <FUTURE> Thread context
@@ -84,8 +75,25 @@
 					loadModules: null,
 					loading: false,
 					cbPromises: [],
+					
+					//oldSetOptions: null,
 				};
 
+				//===================================
+				// Options
+				//===================================
+					
+				//__Internal__.oldSetOptions = namespaces.setOptions;
+				//namespaces.setOptions = function setOptions(/*paramarray*/) {
+				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
+				//		settings = types.getDefault(options, 'settings', {});
+				//		
+				//};
+				//
+				//namespaces.setOptions({
+				//	
+				//}, _options);
+				
 				//===================================
 				// Events
 				//===================================
@@ -403,7 +411,7 @@
 							if (!spec.bootstrap && spec.create) {
 								var retval = spec.create(root, options);
 								if (retval) {
-									if (retval instanceof Promise) {
+									if (tools.isPromise(retval)) {
 										promises.push(
 											retval
 												['finally'](new namespaces.ReadyCallback())
@@ -497,7 +505,7 @@
 							if (entry.objectInit) {
 								if (types.isFunction(entry.objectInit)) {
 									var retval = entry.objectInit(options);
-									if (retval instanceof Promise) {
+									if (tools.isPromise(retval)) {
 										promises.push(
 											retval
 												['finally'](new namespaces.ReadyCallback())
@@ -634,40 +642,39 @@
 							};
 						};
 						
-						if (!modules) {
-							modules = {};
-						};
-						
 						__Internal__.loadModules = types.extend(__Internal__.loadModules || {}, modules);
 						
 						if (!dontMergeGlobalSpecs) {
 							global.DD_MODULES = {};
 						};
 
-						var terminate = function _terminate() {
-							//if (__Internal__.prevError) {
-							if (!dontThrow && __Internal__.prevError) {
+						var terminate = function _terminate(err, result) {
+							if (err) {
 								// Manually reject every pending callback promises
 								while (__Internal__.cbPromises.length) {
 									var promise = __Internal__.cbPromises[0];
-									promise.reject(__Internal__.prevError);
+									promise.reject(err);
 								};
 								
 								// Rejects current promise
-								return Promise.reject(__Internal__.prevError);
+								if (dontThrow) {
+									return Promise.resolve(false);
+								} else {
+									return Promise.reject(err);
+								};
 								
 							} else {
 								// Dispatches "onReady"
-								if (!__Internal__.waiting && !__Internal__.prevError) {
+								if (!__Internal__.loading && !__Internal__.waiting) {
 									namespaces.dispatchEvent(new types.CustomEvent('ready'));
 								};
 								
 								// Returns the callback promise or a "done" flag.
-								if (cbPromise && !__Internal__.prevError) {
+								if (cbPromise) {
 									// NOTE: Returns the result of "cbPromise". This allows to "catch" callback errors.
 									return cbPromise;
 								} else {
-									return Promise.resolve(!__Internal__.prevError);
+									return Promise.resolve(true);
 								};
 							};
 						};
@@ -677,6 +684,7 @@
 						};
 						
 						__Internal__.loading = true;
+						var toInit = [];
 
 						var createModules = function createModules(ignoreOptionals) {
 							var names = types.keys(__Internal__.loadModules),
@@ -691,30 +699,13 @@
 							};
 							
 							return Promise.all(promises)
-								.then(loopCreateModules)
-								['catch'](function(err) {
-									__Internal__.prevError = err;
-								});
-						};
-						
-						var initModules = function initModules(toInit) {
-							var promises = [];
-								
-							for (var i = 0; i < toInit.length; i++) {
-								var promise = namespaces.initNamespace(toInit[i], options);
-								promises.push(promise);
-							};
-
-							__Internal__.prevError = null;
-
-							return Promise.all(promises);
+								.then(loopCreateModules);
 						};
 						
 						var loopCreateModules = function loopCreateModules(entries) {
 							if (entries.length) {
 								var missings = 0,
-									optionals = 0,
-									toInit = [];
+									optionals = 0;
 								
 								for (var i = 0; i < entries.length; i++) {
 									var entry = entries[i];
@@ -740,18 +731,32 @@
 									ignoreOptionals = true;
 								};
 								
-								return initModules(toInit)
-									.then(function() {
-										return createModules(ignoreOptionals);
-									});
+								return createModules(ignoreOptionals);
 							};
 						};
 						
+						var initModules = function initModules() {
+							var promises = [];
+								
+							for (var i = 0; i < toInit.length; i++) {
+								var promise = namespaces.initNamespace(toInit[i], options);
+								promises.push(promise);
+							};
+
+							return Promise.all(promises);
+						};
+						
 						return createModules(false)
-							['finally'](function _finally() {
+							.then(initModules)
+							.nodeify(function _finally(err, result) {
 								__Internal__.loading = false;
+								if (err) {
+									throw err;
+								} else {
+									return result;
+								};
 							})
-							.then(terminate);
+							.nodeify(terminate);
 						
 					} catch(ex) {
 						__Internal__.loading = false;
@@ -1230,9 +1235,6 @@
 					if (__Internal__.waitCounter < 0) {
 						__Internal__.waitCounter = 0;
 					};
-					if (__Internal__.waitCounter === 0) {
-						__Internal__.prevError = null;
-					};
 					__Internal__.waitCounter++;
 					var fn = function wait() {
 						try {
@@ -1246,9 +1248,6 @@
 									__Internal__.waiting = false;
 									__Internal__.waitCounter = 0;
 								};
-								//if (!__Internal__.loading && !__Internal__.waiting && !__Internal__.prevError) {
-								//	namespaces.dispatchEvent(new types.CustomEvent('ready'));
-								//};
 							};
 						} catch(ex) {
 							if (ex instanceof types.ScriptAbortedError) {
@@ -1284,8 +1283,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

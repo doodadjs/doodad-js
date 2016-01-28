@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Types.js - Types management
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: null,
 			dependencies: null,
 			bootstrap: true,
@@ -192,20 +192,6 @@
 					});
 				
 				//===================================
-				// Options
-				//===================================
-					
-				types.options = types.depthExtend(2, {
-					settings: {
-						toSourceItemsCount: 255,		// Max number of items
-						enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
-					},
-				}, _options);
-				
-				types.options.settings.toSourceItemsCount = parseInt(types.options.settings.toSourceItemsCount);
-				types.options.settings.enableProxies = types.toBoolean(types.options.settings.enableProxies);
-				
-				//===================================
 				// Internal
 				//===================================
 				
@@ -213,8 +199,30 @@
 					// "toSource"
 					supportsVerticalTabEscape: ('\v' !== 'v'),
 					supportsNullCharEscape: ('\0' !== '0'),
+					
+					oldSetOptions: null,
 				};
 
+				//===================================
+				// Options
+				//===================================
+					
+				__Internal__.oldSetOptions = types.setOptions;
+				types.setOptions = function setOptions(/*paramarray*/) {
+					var options = __Internal__.oldSetOptions.apply(this, arguments),
+						settings = types.getDefault(options, 'settings', {});
+						
+					settings.toSourceItemsCount = parseInt(types.get(settings, 'toSourceItemsCount'));
+					settings.enableProxies = types.toBoolean(types.get(settings, 'enableProxies'));
+				};
+				
+				types.setOptions({
+					settings: {
+						toSourceItemsCount: 255,		// Max number of items
+						enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
+					},
+				}, _options);
+				
 				//===================================
 				// Native functions
 				//===================================
@@ -239,9 +247,6 @@
 					// "popAt", "popItem", "popItems"
 					arraySplice: __arrayObj__.splice,
 					
-					// "append"
-					arrayPush: __arrayObj__.push,
-					
 					// "prepend"
 					arrayUnshift: __arrayObj__.unshift,
 					
@@ -256,7 +261,7 @@
 					// ES6
 					windowSet: (types.isNativeFunction(global.Set) ? global.Set : undefined),
 					windowMap: (types.isNativeFunction(global.Map) ? global.Map : undefined),
-					windowProxy: (types.options.settings.enableProxies && types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+					windowProxy: (types.getOptions().settings.enableProxies && types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
 				};
 				
 				__arrayObj__ = null;   // free memory
@@ -712,50 +717,6 @@
 						return result;
 					});
 				
-				types.getDefault = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'object',
-										optional: false,
-										description: "An object.",
-									},
-									key: {
-										type: 'string',
-										optional: false,
-										description: "Attribute name.",
-									},
-									_default: {
-										type: 'any',
-										optional: true,
-										description: "Default value.",
-									},
-									inherited: {
-										type: 'bool',
-										optional: true,
-										description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-									},
-								},
-								returns: 'any',
-								description: "Returns the value of an own property. If the own property doesn't exist, creates that own property with the value of the '_default' parameter and returns that value.",
-					}
-					//! END_REPLACE()
-					, function getDefault(obj, key, /*optional*/_default, /*optional*/inherited) {
-						if (types.isNothing(obj)) {
-							return _default;
-						};
-						obj = __Natives__.windowObject(obj);
-						var hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
-						if (hasKey(obj, key)) {
-							return obj[key];
-						} else if (_default !== undefined) {
-							return obj[key] = _default;
-						};
-					});
-				
 				types.getsDefault = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1096,12 +1057,11 @@
 									},
 								},
 								returns: 'any',
-								description: "Clone a value.",
+								description: "Clones a value.",
 					}
 					//! END_REPLACE()
 					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions) {
 						// NOTE: This function will get replaced when "Doodad.js" is loaded.
-						// TODO: "defineProperty", "Symbols", ...
 						var result;
 
 						if (types.isNothing(obj)) {
@@ -1133,6 +1093,10 @@
 									} else {
 										return obj;
 									};
+								} else if (obj instanceof types.Map) {
+									result = new types.Map(obj);
+								} else if (obj instanceof types.Set) {
+									result = new types.Set(obj);
 								} else {  // if (types.isObject(obj))
 									result = types.createObject(types.getPrototypeOf(obj));
 								};
@@ -1141,18 +1105,18 @@
 							};
 
 							// Copy properties
-							if (depth >= 0) {
-								// "types.extend"
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									result[key] = types.clone(obj[key], depth, cloneFunctions);
+							var keys = types.keys(obj),
+								props = {};
+							for (var i = 0; i < keys.length; i++) {
+								var key = keys[i];
+								var prop = types.getOwnPropertyDescriptor(obj, key);
+								key = keys[i];
+								if (types.hasKey(prop, 'value') && (depth >= 0)) {
+									prop.value = types.clone(obj[key], depth, cloneFunctions);
 								};
-							} else {
-								types.extend(result, obj);
+								props[key] = prop;
 							};
+							types.defineProperties(result, props);
 						};
 						
 						return result;
@@ -1651,49 +1615,6 @@
 						return result;
 					});
 				
-				types.append = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									paramarray: {
-										type: 'array',
-										optional: false,
-										description: "An array.",
-									},
-								},
-								returns: 'array',
-								description: "Appends the items of each array to the first array than returns that array.",
-					}
-					//! END_REPLACE()
-					, function append(obj /*paramarray*/) {
-						if (!types.isArrayLike(obj)) {
-							return null;
-						};
-						
-						var result,
-							start = 0;
-						if (types.isArray(obj)) {
-							result = obj;
-							start = 1;
-						} else {
-							result = [];
-						};
-						
-						var len = arguments.length;
-						for (var i = start; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
-							};
-							obj = __Natives__.windowObject(obj);
-							__Natives__.arrayPush.apply(result, obj);
-						};
-						
-						return result;
-					});
-				
 				types.prepend = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1856,8 +1777,9 @@
 										len = val.length,
 										continued = '';
 									depth--;
-									if (len > types.options.toSourceItemsCount) {
-										len = types.options.toSourceItemsCount;
+									var max = types.getOptions().toSourceItemsCount;
+									if (len > max) {
+										len = max;
 										continued = ', ...';
 									};
 									for (var key = 0; key < len; key++) {
@@ -1874,7 +1796,7 @@
 									};
 									var str = '',
 										len = 0,
-										maxLen = types.options.toSourceItemsCount;
+										maxLen = types.getOptions().toSourceItemsCount;
 									depth--;
 									for (var key in val) {
 										if (types.hasKey(val, key)) {
@@ -2370,6 +2292,85 @@
 				
 				
 				//===================================
+				// HTTP Status Codes
+				//===================================
+				
+				types.HttpStatus = types.extend(types.createObject({
+					isInformative: function isInformative(status) {
+						return (status >= 100) && (status < 200);
+					},
+					
+					isSuccessful: function isSuccessful(status) {
+						return (status >= 200) && (status < 300);
+					},
+					
+					isRedirect: function isRedirect(status) {
+						return (status >= 300) && (status < 400);
+					},
+					
+					isClientError: function isClientError(status) {
+						return (status >= 400) && (status < 500);
+					},
+					
+					isServerError: function isServerError(status) {
+						return (status >= 500) && (status < 600);
+					},
+					
+					isError: function isError(status) {
+						return (status >= 400) && (status < 600);
+					},
+				}), {
+					// Information
+					Continue: 100,
+					SwitchingProtocol: 101,
+					
+					// Success
+					OK: 200,
+					Created: 201,
+					Accepted: 202,
+					NonAuthoritativeInformation: 203,
+					NoContent: 204,
+					ResetContent: 205,
+					PartialContent: 206,
+					
+					// Redirect
+					MultipleChoices: 300,
+					MovedPermanently: 301,
+					Found: 302,
+					SeeOther : 303,
+					NotModified: 304,
+					UseProxy: 305,
+					TemporaryRedirect: 307,
+					
+					// Client errors
+					BadRequest: 400,
+					Unauthorized: 401,
+					Forbidden: 403,
+					NotFound: 404,
+					MethodNotAllowed: 405,
+					NotAcceptable: 406,
+					ProxyAuthenticationRequired: 407,
+					RequestTimeout: 408,
+					Conflict: 409,
+					Gone: 410,
+					LengthRequired: 411,
+					PreconditionFailed: 412,
+					EntityTooLarge: 413,
+					UrlTooLong: 414,
+					UnsupportedMediaType: 415,
+					RangeNotSatisfiable: 416,
+					ExpectationFailed: 417,
+
+					// Server errors
+					InternalError: 500,
+					NotImplemented: 501,
+					BadGateway: 502,
+					ServiceUnavailable: 503,
+					GatewayTimeout: 504,
+					VersionNotSupported: 505,
+				});
+				
+				//===================================
 				// Init
 				//===================================
 				//return function init(/*optional*/options) {
@@ -2380,8 +2381,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

@@ -1,5 +1,5 @@
-//! REPLACE_BY("// Copyright 2015 Claude Petit, licensed under Apache License version 2.0\n")
-// dOOdad - Object-oriented programming framework with some extras
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+// dOOdad - Object-oriented programming framework
 // File: Client.js - Client functions
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
@@ -8,7 +8,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2015 Claude Petit
+//	Copyright 2016 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	var global = this;
 
 	var exports = {};
-	if (global.process) {
+	if (typeof process === 'object') {
 		module.exports = exports;
 	};
 	
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
 			type: null,
-			version: '1a',
+			version: '1.1r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
 			bootstrap: true,
@@ -58,23 +58,30 @@
 					mixIns = doodad.MixIns;
 
 
-				client.options = {
+				var __Internal__ = {
+					loadedScripts: {},   // <FUTURE> global to every thread
+					
+					oldSetOptions: null,
+				};
+
+				
+				__Internal__.oldSetOptions = client.setOptions;
+				client.setOptions = function setOptions(/*paramarray*/) {
+					var options = __Internal__.oldSetOptions.apply(this, arguments),
+						settings = types.getDefault(options, 'settings', {});
+						
+					settings.enableDomObjectsModel = types.toBoolean(types.get(settings, 'enableDomObjectsModel'));
+					settings.defaultScriptTimeout = parseInt(types.get(settings, 'defaultScriptTimeout'));
+				};
+				
+				client.setOptions({
 					settings: {
 						enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 						defaultScriptTimeout: 3000,		// milliseconds
 					},
-				};
-				types.depthExtend(1, tools.options, _options);
+				}, _options);
 
-				client.options.settings.enableDomObjectsModel = types.toBoolean(client.options.settings.enableDomObjectsModel);
-				client.options.settings.defaultScriptTimeout = parseInt(client.options.settings.defaultScriptTimeout);
 					
-					
-				var __Internal__ = {
-					loadedScripts: {},   // <FUTURE> global to every thread
-				};
-
-				
 				var __Natives__ = {
 					windowObject: global.Object,
 
@@ -184,7 +191,7 @@
 							description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.options.enableDomObjectsModel && __Natives__.windowWindow ? (function isWindow(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Natives__.windowWindow ? (function isWindow(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -217,7 +224,7 @@
 							description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.options.enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlDocument ? (function isDocument(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlDocument ? (function isDocument(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -257,7 +264,7 @@
 							description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.options.enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowNode ? (function isNode(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowNode ? (function isNode(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -298,7 +305,7 @@
 							description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.options.enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlElement ? (function isElement(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlElement ? (function isElement(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -426,27 +433,38 @@
 					{
 						$TYPE_NAME: 'JsEventHandler',
 						
-						attach: types.SUPER(function attach(elements, /*optional*/context, /*optional*/useCapture) {
+						attach: types.SUPER(function attach(elements, /*optional*/context, /*optional*/useCapture, /*optional*/once) {
 							if (!types.isArrayLike(elements)) {
 								elements = [elements];
 							};
-
+							
 							this.detach(elements, useCapture);
 
 							useCapture = !!useCapture;
 							
 							//var handler	= types.bind(this.obj, this),
 							var self = this,
-								handler = function(ev) {
-									ev = ev || global.event;
-									//if (!ev.currentTarget) {
-									//	ev.currentTarget = this;
-									//};
-									ev.getUnified = self.extender.getUnified;
-									delete ev.__unified;
-									return types.invoke(self.obj, self, [ev, (context || null)]);
-								},
-								eventTypes = this.extender.types,
+								ignore = false;
+							
+							var createHandler = function(element) {
+								return function jsEventHandler(ev) {
+									if (!ignore) {
+										if (once) {
+											ignore = true;
+											self.clear();
+										};
+										ev = ev || global.event;
+										//if (!ev.currentTarget) {
+										//	ev.currentTarget = this;
+										//};
+										ev.getUnified = self.extender.getUnified;
+										delete ev.__unified;
+										return types.invoke(self.obj, self, [ev, context]);
+									};
+								};
+							};
+							
+							var eventTypes = this.extender.types,
 								eventTypesLen = eventTypes.length;
 								
 							for (var i = 0; i < eventTypesLen; i++) {
@@ -455,7 +473,8 @@
 										elementsLen = elements.length;
 									for (var j = 0; j < elementsLen; j++) {
 										if (types.hasIndex(elements, j)) {
-											var element = elements[j];
+											var element = elements[j],
+												handler = createHandler(element);
 											if (this._super(this.obj, this, null, [useCapture, element, type, handler])) {
 												element.addEventListener(type, handler, useCapture);
 											};
@@ -464,6 +483,9 @@
 								};
 							};
 						}),
+						attachOnce: function attachOnce(elements, /*optional*/context, /*optional*/useCapture) {
+							this.attach(elements, context, useCapture, true);
+						},
 						detach: types.SUPER(function detach(/*optional*/elements, /*optional*/useCapture) {
 							if (types.isNothing(elements)) {
 								var evs;
@@ -513,6 +535,21 @@
 						}),
 						clear: function clear() {
 							this.detach();
+						},
+						promise: function promise(elements, /*optional*/context, /*optional*/useCapture) {
+							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
+							var canReject = this.extender.canReject;
+							var self = this;
+							var Promise = tools.getPromise();
+							return new Promise(function(resolve, reject) {
+								self.attachOnce(elements, context, useCapture, function(ev) {
+									if (canReject && (ev instanceof doodad.ErrorEvent)) {
+										return reject.call(self.obj, ev);
+									} else {
+										return resolve.call(self.obj, ev);
+									};
+								});
+							});
 						},
 					}
 				)));
@@ -618,16 +655,14 @@
 					// NOTE: Windows older than Windows NT not supported
 					// NOTE: Macintosh older than OS/X not supported
 					var type = global.navigator.platform.toLowerCase().slice(0, 3);
-					type = ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix'));
 					return {
-						//name: null,  // <FUTURE> 'Windows XP', 'Ubuntu', 'Sun OS', 'OS X', ...
-						type: type,  // 'windows', 'linux', 'unix'
+						name: global.navigator.platform,
+						type: ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix')),  // 'windows', 'linux', 'unix'
 						//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
-						//version: null,  // <FUTURE>
-						//architecture: null,  // <FUTURE> 'x86','amd64', ...
-						dirChar: ((type === 'windows') ? '\\' : '/'),
-						newLine: ((type === 'windows') ? '\r\n' : '\n'),
-						caseSensitive: (type !== 'windows'),
+						//architecture: null, // TODO: Detect
+						dirChar: ((type === 'win') ? '\\' : '/'),
+						newLine: ((type === 'win') ? '\r\n' : '\n'),
+						caseSensitive: ((type !== 'win') && (type !== 'mac')), // TODO: Optional in MacOS X, so must detect
 						//...
 					};
 				});
@@ -651,7 +686,9 @@
 				, function getDefaultLanguage(/*optional*/alt) {
 					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
 					var navigator = __Natives__.windowNavigator;
-					return ((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_');
+					var tmp = ((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_').split('_', 2);
+					tmp[1] = tmp[1].toUpperCase();
+					return tmp.join('_');
 				});
 				
 				//===================================
@@ -791,7 +828,7 @@
 							this.tag = tag;
 							this.target = target;
 							if (types.isNothing(timeout)) {
-								this.timeout = client.options.settings.defaultScriptTimeout;
+								this.timeout = client.getOptions().settings.defaultScriptTimeout;
 							} else {
 								this.timeout = timeout;
 							};
@@ -1277,7 +1314,7 @@
 					//! END_REPLACE()
 					, function loadFile(url, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(url)) {
-							url = tools.options.hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = tools.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(url, options, callbacks);
 					});
@@ -1291,7 +1328,7 @@
 				//! REPLACE_BY("null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 5,
 							params: {
 								url: {
 									type: 'string,Url',
@@ -1313,23 +1350,30 @@
 				, function readFile(url, /*optional*/options) {
 					var Promise = tools.getPromise();
 					return new Promise(function(resolve, reject) {
-						// TODO: Headers in options
 						if (types.isString(url)) {
-							url = tools.options.hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = tools.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
 						};
 						root.DD_ASSERT && root.DD_ASSERT(url instanceof tools.Url, "Invalid url.");
 						var async = types.get(options, 'async', false),
 							encoding = types.get(options, 'encoding', null);
+						if (encoding === 'iso-8859') {
+							// Fix for some browsers
+							encoding = 'iso-8859-1';
+						} else if (encoding === 'utf8') {
+							// Fix for IE
+							encoding = 'utf-8';
+						};
 						if (async && __Natives__.windowFetch && __Natives__.windowHeaders && __Natives__.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
 							});
-							var headers = new __Natives__.windowHeaders();
-							if (encoding) {
-								headers.append('Accept', 'text/plain');
-								headers.append('Accept-Charset', encoding);
-							} else {
-								headers.append('Accept', '*/*');
+							var headers = new __Natives__.windowHeaders(types.get(options, 'headers'));
+							if (!headers.has('Accept')) {
+								if (encoding) {
+									headers.set('Accept', 'text/plain');
+								} else {
+									headers.set('Accept', '*/*');
+								};
 							};
 							var init = {
 								method: 'GET',
@@ -1338,8 +1382,12 @@
 							if (!types.get(options, 'enableCache', false)) {
 								init.cache = 'no-cache';
 							};
+							if (types.get(options, 'enableCookies', false)) {
+								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
+								init.credentials = 'include';
+							};
 							__Natives__.windowFetch.call(global, url, init).then(function(response) {
-								if (response.ok || (response.status === 0)) {
+								if (response.ok || types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
 										var reader = new __Natives__.windowFileReader();
 										reader.onloadend = function(ev) {
@@ -1352,7 +1400,7 @@
 										if (encoding) {
 											reader.readAsText(blob, encoding);
 										} else {
-											reader.readAsBinaryString(blob);
+											reader.readAsArrayBuffer(blob);
 										};
 									});
 								} else {
@@ -1378,29 +1426,28 @@
 								ready: false,
 							};
 							xhr.open('GET', url, async);
+							var headers = types.get(options, 'headers');
+							if (headers) {
+								tools.forEach(headers, function(value, name) {
+									xhr.setRequestHeader(name, value);
+								});
+							};
 							if (encoding) {
-								if (encoding === 'iso-8859') {
-									// Fix for some browsers
-									encoding = 'iso-8859-1';
-								} else if (encoding === 'utf8') {
-									// Fix for IE
-									encoding = 'utf-8';
-								};
 								if ('overrideMimeType' in xhr) { // IE 11+ and other browsers
-									xhr.overrideMimeType('text/plain; charset=' + encoding);
+									xhr.overrideMimeType(types.get(options, 'contentType', 'text/plain') + '; charset=' + encoding);
 								} else {
-									xhr.setRequestHeader('Accept', 'text/plain');
-									xhr.setRequestHeader('Accept-Charset', encoding); // <<<< Refused ?????
+									xhr.setRequestHeader('Accept', types.get(options, 'contentType', 'text/plain'));
+									//xhr.setRequestHeader('Accept-Charset', encoding); // <<<< Refused ?????
 								};
 							} else {
-								xhr.setRequestHeader('Accept', '*/*');
+								xhr.setRequestHeader('Accept', types.get(options, 'contentType', '*/*'));
 							};
 							if ('responseType' in xhr) { // IE 10+ and other browsera
 								xhr.responseType = (encoding ? 'text' : 'blob');
 							};
 							var loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
 							xhr.addEventListener(loadEv, function(ev) {
-								if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && ((xhr.status == 200) || (xhr.status == 304)))) {
+								if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
 									if (state.timeoutId) {
 										clearTimeout(state.timeoutId);
 										state.timeoutId = null;
@@ -1504,8 +1551,8 @@
 		return DD_MODULES;
 	};
 	
-	if (!global.process) {
+	if (typeof process !== 'object') {
 		// <PRB> export/import are not yet supported in browsers
 		global.DD_MODULES = exports.add(global.DD_MODULES);
 	};
-})();
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));

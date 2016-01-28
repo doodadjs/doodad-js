@@ -1,7 +1,7 @@
 {
 	"//": "Encoding: utf8",
 	"//": "",
-	"//": "    dOOdad - Object-oriented programming framework with some extras",
+	"//": "    dOOdad - Object-oriented programming framework",
 	"//": "    File: make.json - Make data file",
 	"//": "    Project home: https://sourceforge.net/projects/doodad-js/",
 	"//": "    Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code",
@@ -10,7 +10,7 @@
 	"//": "    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !",
 	"//": "    Licence: Apache V2",
 	"//": "",
-	"//": "    Copyright 2015 Claude Petit",
+	"//": "    Copyright 2016 Claude Petit",
 	"//": "",
 	"//": "    Licensed under the Apache License, Version 2.0 (the \"License\");",
 	"//": "    you may not use this file except in compliance with the License.",
@@ -31,37 +31,44 @@
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Bootstrap.js",
-						"destination": "%PACKAGEDIR%/Bootstrap.min.js"
+						"destination": "%PACKAGEDIR%/Bootstrap.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Doodad.js",
-						"destination": "%PACKAGEDIR%/Doodad.min.js"
+						"destination": "%PACKAGEDIR%/Doodad.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Namespaces.js",
-						"destination": "%PACKAGEDIR%/Namespaces.min.js"
+						"destination": "%PACKAGEDIR%/Namespaces.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Tools.js",
-						"destination": "%PACKAGEDIR%/Tools.min.js"
+						"destination": "%PACKAGEDIR%/Tools.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Types.js",
-						"destination": "%PACKAGEDIR%/Types.min.js"
+						"destination": "%PACKAGEDIR%/Types.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/server/Modules.js",
-						"destination": "%PACKAGEDIR%/Modules.min.js"
+						"destination": "%PACKAGEDIR%/Modules.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/server/NodeJs.js",
-						"destination": "%PACKAGEDIR%/NodeJs.min.js"
+						"destination": "%PACKAGEDIR%/NodeJs.min.js",
+						"runDirectives": true
 					},
 					
 					{
@@ -82,73 +89,25 @@
 					},
 					{
 						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/client/Browserify.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Browserify.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/client/Browserify.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Browserify.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
 						"source": "%SOURCEDIR%/client/Client.js",
 						"destination": "%INSTALLDIR%/%PACKAGENAME%/Client.js"
 					},
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/client/Client.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Client.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Debug.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Debug.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Debug.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Debug.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Bootstrap.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Bootstrap.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Bootstrap.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Bootstrap.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Doodad.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Doodad.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Doodad.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Doodad.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Namespaces.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Namespaces.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Namespaces.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Namespaces.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Tools.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Tools.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools.min.js"
-					},
-					{
-						"class": "Make.File.Copy",
-						"source": "%SOURCEDIR%/common/Types.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Types.js"
-					},
-					{
-						"class": "Make.File.Javascript",
-						"source": "%SOURCEDIR%/common/Types.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Types.min.js"
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Client.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Copy",
@@ -158,7 +117,74 @@
 					{
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/client/Modules.js",
-						"destination": "%INSTALLDIR%/%PACKAGENAME%/Modules.min.js"
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Modules.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Debug.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Debug.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Debug.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Debug.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Bootstrap.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Bootstrap.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Bootstrap.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Bootstrap.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Doodad.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Doodad.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Doodad.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Doodad.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Namespaces.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Namespaces.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Namespaces.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Namespaces.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Tools.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Tools.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Types.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Types.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Types.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Types.min.js",
+						"runDirectives": true
 					},
 					{
 						"class": "Make.File.Copy",
