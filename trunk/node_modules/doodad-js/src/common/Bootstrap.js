@@ -900,32 +900,6 @@
 						if (stack) {
 							stack.splice(0, 1);  // remove "getStackTrace" call entry
 						};
-					/*
-					} else {
-						// Safari
-						var callers = __getCallers__();
-						if (callers) {
-							stack = [];
-							var callersLen = callers.length;
-							for (var i = 0; i < callersLen; i++) {
-								var caller = callers[i],
-									fn = caller.toString(),
-									pos = fn.indexOf("function ");
-								if (pos >= 0) {
-									fn = fn.slice(pos + 9, fn.indexOf('(')).trim();
-								} else {
-									fn = null;
-								};
-								stack.push({
-									rawFunctionName: fn,
-									functionName: fn || '<anonymous>',
-									url: null,
-									lineNumber: -1,
-									columnNumber: -1,
-								});
-							};
-						};
-					*/
 					};
 					return stack;
 				};
@@ -1111,8 +1085,7 @@
 						keys = [keys];
 					};
 					
-					var len = keys.length,
-						protos = [],
+					var protos = [],
 						lastProto;
 						
 					do {
@@ -1125,17 +1098,10 @@
 					
 					var protosLen = protos.length;
 					
-					if (protosLen) {
-						for (var i = 0; i < len; i++) {
-							if (i in keys) {
-								var key = keys[i];
-								for (var j = 0; j < protosLen; j++) {
-									obj = protos[j];
-									if (types.hasKey(obj, key)) {
-										return true;
-									};
-								};
-							};
+					for (var i = 0; i < protosLen; i++) {
+						obj = protos[i];
+						if (types.hasKey(obj, keys)) {
+							return true;
 						};
 					};
 				};
