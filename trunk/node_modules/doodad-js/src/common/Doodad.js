@@ -45,7 +45,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad'] = {
 			type: null,
-			version: '1r',
+			version: '1.2r',
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
@@ -84,7 +84,16 @@
 					inTrapException: false, // <FUTURE> thread level
 					
 					oldSetOptions: null, // <FUTURE> global to all threads
+					
+					arrayObj: (global.Array && global.Array.prototype || []),
 				};
+
+				var __Natives__ = {
+					arraySplice: __Internal__.arrayObj.splice,
+					arrayUnshift: __Internal__.arrayObj.unshift,
+				};
+				
+				delete __Internal__.arrayObj;  // free memory
 				
 				
 				__Internal__.oldSetOptions = doodad.setOptions;
@@ -957,6 +966,8 @@
 					CALL_FIRST_LENGTH: null,
 					POSITION: null,
 					USAGE_MESSAGE: null,
+					RENAMED_FROM: null,
+					RENAMED_TO: null,
 					superEnabled: null,
 				};
 				doodad.ATTRIBUTE_BOX_PROPERTIES_KEYS = types.keys(doodad.ATTRIBUTE_BOX_PROPERTIES);
@@ -1907,7 +1918,7 @@
 									
 								var src = types.unbox(sourceAttribute);
 								if (src) {
-									Array.prototype.push.apply(dest, src);
+									types.append(dest, src);
 								};
 								
 								sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
@@ -1918,7 +1929,7 @@
 								var value = types.unbox(destAttribute);
 								
 								if (!types.isNothing(value)) {
-									value = tools.unique(value);
+									value = types.unique(value);
 									destAttribute = destAttribute.setValue(value);  // preserve attribute flags of "destAttribute"
 								};
 								
@@ -2107,7 +2118,7 @@
 									
 									// Obsolete methods
 									if (modifiers & doodad.MethodModifiers.Obsolete) {
-										tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete.~2~", [_dispatch.METHOD_NAME, types.getTypeName(type), (boxedCallers.USAGE_MESSAGE ? ' ' + boxedCallers.USAGE_MESSAGE : '')]);
+										tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch.METHOD_NAME, types.getTypeName(type), boxedCallers.USAGE_MESSAGE || '']);
 										_dispatch.METHOD_MODIFIERS = (modifiers ^ doodad.MethodModifiers.Obsolete);
 									};
 
@@ -2298,7 +2309,7 @@
 									j = i - 1;
 									while (j >= boxedCallers.CALL_FIRST_LENGTH) {
 										if (callers[j].PROTOTYPE === proto) {
-											callers.splice(j, 1);
+											__Natives__.arraySplice.call(callers, j, 1);
 											i--;
 										};
 										j--;
@@ -2325,14 +2336,14 @@
 												if (position.position === 0) {
 													toRemove = 1;
 												};
-												callers.splice(i, 1);
+												__Natives__.arraySplice.call(callers, i, 1);
 												if (i < boxedCallers.CALL_FIRST_LENGTH) {
 													boxedCallers.CALL_FIRST_LENGTH--;
 												};
 												if (pos > i) {
 													pos--;
 												};
-												callers.splice(pos, toRemove, callerI);
+												__Natives__.arraySplice.call(callers, pos, toRemove, callerI);
 												if (pos < boxedCallers.CALL_FIRST_LENGTH) {
 													boxedCallers.CALL_FIRST_LENGTH++;
 												};
@@ -2362,6 +2373,15 @@
 								dispatch.METHOD_NAME = attr;
 								dispatch.METHOD_MODIFIERS = boxedCallers.METHOD_MODIFIERS;
 								dispatch.CALLERS = callers;
+
+								// Clear "MustOverride" if method has been overriden
+								var caller = callers.length && callers[0];
+								if (caller && !((caller.METHOD_MODIFIERS || 0) & doodad.MethodModifiers.MustOverride)) {
+									caller = (callers.length > boxedCallers.CALL_FIRST_LENGTH) && callers[boxedCallers.CALL_FIRST_LENGTH];
+									if (!caller || !((caller.METHOD_MODIFIERS || 0) & doodad.MethodModifiers.MustOverride)) {
+										dispatch.METHOD_MODIFIERS = (dispatch.METHOD_MODIFIERS || 0) & (~ doodad.MethodModifiers.MustOverride);
+									};
+								};
 
 								return dispatch;
 							}),
@@ -2417,7 +2437,7 @@
 								};
 								
 								var modifiers = ((destAttribute.METHOD_MODIFIERS || 0) & doodad.preservedMethodModifiers) | (sourceAttribute.METHOD_MODIFIERS || 0);
-									
+								
 								if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
 									// Override or replace
 									var start = destAttribute.CALL_FIRST_LENGTH;
@@ -2440,7 +2460,7 @@
 											// Replace non "call firsts"
 											toRemove = destCallers.length - start;
 										};
-										Array.prototype.splice.apply(destCallers, types.append([start, toRemove], callersOrFn));
+										__Natives__.arraySplice.apply(destCallers, types.append([start, toRemove], callersOrFn));
 									};
 									destAttribute.CALL_FIRST_LENGTH = start + (sourceAttribute ? sourceAttribute.CALL_FIRST_LENGTH : 0);
 								} else {
@@ -2479,7 +2499,7 @@
 												callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 											};
 											destCallers.length = 0;
-											Array.prototype.push.apply(destCallers, callersOrFn);
+											types.append(destCallers, callersOrFn);
 										};
 										destAttribute.CALL_FIRST_LENGTH = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0);
 									};
@@ -2489,18 +2509,19 @@
 									destAttribute.METHOD_MODIFIERS = modifiers;
 									destAttribute.RETURNS = (sourceAttribute.RETURNS || destAttribute.RETURNS);
 									destAttribute.USAGE_MESSAGE = (sourceAttribute.USAGE_MESSAGE || destAttribute.USAGE_MESSAGE);
+									destAttribute.RENAMED_TO = sourceAttribute.RENAMED_TO;
 								};
 								
 								return destAttribute;
 							}),
 						setValue: types.SUPER(function setValue(attr, proto, typeStorage, instanceStorage, forType, destAttribute) {
+								var dispatch = this.createDispatch(attr, destAttribute);
+
 								if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
-									if (!typeStorage.$MUST_OVERRIDE && (destAttribute.METHOD_MODIFIERS & doodad.MethodModifiers.MustOverride)) {
+									if (!typeStorage.$MUST_OVERRIDE && (dispatch.METHOD_MODIFIERS & doodad.MethodModifiers.MustOverride)) {
 										typeStorage.$MUST_OVERRIDE = attr;
 									};
 								};
-
-								var dispatch = this.createDispatch(attr, destAttribute);
 
 								destAttribute = destAttribute.setValue(dispatch);
 								
@@ -2633,7 +2654,7 @@
 									callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 								};
 								
-								Array.prototype.unshift.apply(destCallers, callersOrFn);
+								__Natives__.arrayUnshift.apply(destCallers, callersOrFn);
 								
 								return destAttribute;
 							},
@@ -3706,7 +3727,8 @@
 						return cls;
 					});
 				
-				doodad.MIX_IN = root.DD_DOC(
+				// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
+				doodad.TRAIT = doodad.MIX_IN = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
@@ -4108,7 +4130,7 @@
 								},
 							},
 							returns: 'AttributeBox',
-							description: "Specifies that a method will must be overridden (or replaced).",
+							description: "Specifies that a method must be overridden (or replaced).",
 					}
 					//! END_REPLACE()
 					, function MUST_OVERRIDE(/*optional*/fn) {
@@ -4221,7 +4243,7 @@
 						return fn;
 					});
 				
-				doodad.NOT_IMPLEMENTED = root.DD_DOC(
+				doodad.ABSTRACT = doodad.NOT_IMPLEMENTED = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
@@ -4273,6 +4295,100 @@
 						return fn;
 					});
 
+				doodad.RENAME_OVERRIDE = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							paramsDirection: 'rightToLeft',
+							params: {
+								fn: {
+									type: 'AttributeBox,function',
+									optional: true,
+									description: "Method function.",
+								},
+								name: {
+									type: 'string',
+									optional: true,
+									description: "New name. If not specified, the name of the provided function will be taken.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Specifies that a method will override the existing one with a new name.",
+					}
+					//! END_REPLACE()
+					, function RENAME_OVERRIDE(/*<<< optional[name]*/ /*optional*/fn) {
+						var name = null;
+						if (arguments.length > 1) {
+							name = fn;
+							fn = arguments[1];
+						};
+						fn = doodad.AttributeBox(fn);
+						var val = types.unbox(fn);
+						if (!name) {
+							if (!val || !val.name) {
+								throw new types.TypeError("A new name is required.");
+							};
+							name = val.name;
+						};
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+						};
+						fn.METHOD_MODIFIERS = ((fn.METHOD_MODIFIERS || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
+						if (!fn.EXTENDER) {
+							fn.EXTENDER = extenders.Method;
+						};
+						fn.RENAMED_TO = name;
+						return doodad.PRE_EXTEND(fn);
+					});
+				
+				doodad.RENAME_REPLACE = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							paramsDirection: 'rightToLeft',
+							params: {
+								fn: {
+									type: 'AttributeBox,function',
+									optional: true,
+									description: "Method function.",
+								},
+								name: {
+									type: 'string',
+									optional: true,
+									description: "New name. If not specified, the name of the provided function will be taken.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Specifies that a method will be renamed and replace the previous one.",
+					}
+					//! END_REPLACE()
+					, function RENAME_REPLACE(/*<<< optional[name]*/ /*optional*/fn) {
+						var name = null;
+						if (arguments.length > 1) {
+							name = fn;
+							fn = arguments[1];
+						};
+						fn = doodad.AttributeBox(fn);
+						var val = types.unbox(fn);
+						if (!name) {
+							if (!val || !val.name) {
+								throw new types.TypeError("A new name is required.");
+							};
+							name = val.name;
+						};
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+						};
+						fn.METHOD_MODIFIERS = ((fn.METHOD_MODIFIERS || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
+						if (!fn.EXTENDER) {
+							fn.EXTENDER = extenders.Method;
+						};
+						fn.RENAMED_TO = name;
+						return doodad.PRE_EXTEND(fn);
+					});
+				
 
 				//==================================
 				// Internal stack
@@ -4477,6 +4593,8 @@
 
 					attributes.$__ATTRIBUTES = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(attributes, extenders.Attribute)))))));
 					
+					root.DD_ASSERT && root.DD_ASSERT(types.isObject(__Internal__.classProto));
+					
 					tools.forEach(attributes, function(attribute, name) {
 						attributes[name] = attribute = doodad.OPTIONS({isEnumerable: false}, attribute);
 						attribute.PROTOTYPE = __Internal__.classProto;
@@ -4489,6 +4607,31 @@
 					};
 					
 					return attributes;
+				};
+				
+				__Internal__.extendRenamed = function extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender) {
+					// NOTE: The contract must be fullfilled (source: Sorella in freenode) : `compose({ a(){ return 1 }, b(){ return a() + 1 }, {a renamed to _a(){ return 3 } }).b()` should returns 2
+
+					var sourceAttribute = doodad.AttributeBox(destAttribute);
+					sourceAttribute.RENAMED_TO = null;
+					sourceAttribute.RENAMED_FROM = attr;
+
+					if (types.hasKey(destAttributes, newAttr)) {
+						extender = destAttributes[newAttr].EXTENDER;
+					};
+
+					if (extender.getValue) {
+						destAttribute = doodad.AttributeBox(extender.getValue(newAttr, destAttributes, forType, false));
+					} else {
+						destAttribute = doodad.AttributeBox(destAttributes[newAttr]);
+					};
+
+					if (extender.extend) {
+						var result = extender.extend(newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false);
+						destAttribute = destAttribute.setValue(result);
+					};
+
+					return destAttribute;
 				};
 				
 				__Internal__.preExtendAttribute = function preExtendAttribute(attr, baseProto, source, sourceProto, destAttributes, baseIsProto, sourceIsProto, forType, _isolated) {
@@ -4607,9 +4750,12 @@
 										} else {
 											destAttribute = result; //result.clone();
 										};
-										//if (sourceIsProto) {
-										//	destAttribute.PROTOTYPE = sourceProto;
-										//};
+										var newAttr = sourceIsProto && destAttribute.RENAMED_TO;
+										if (newAttr) {
+											destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender);
+											attr = newAttr;
+										};
+										destAttribute.PROTOTYPE = sourceAttribute.PROTOTYPE;
 										destAttributes[attr] = destAttribute;
 									} else {
 										return [
@@ -4659,11 +4805,11 @@
 							sourceAttrs = types.keys(source);
 							sourceIsProto = true;
 						};
-						//sourceNames = tools.unique(types.keysInherited(sourceTypeProto), types.keysInherited(sourceInstanceProto));
+						//sourceNames = types.unique(types.keysInherited(sourceTypeProto), types.keysInherited(sourceInstanceProto));
 					};
 					
 					// Pre-extend
-					var attrs = tools.unique(sourceAttrs, types.keys(destAttributes));
+					var attrs = types.unique(sourceAttrs, types.keys(destAttributes));
 					var attrsLen = attrs.length;
 					var toExtend = [];
 					
@@ -4684,15 +4830,15 @@
 					// Extend
 					var toExtendLen = toExtend.length;
 					for (var k = 0; k < toExtendLen; k++) {
-						var data = toExtend[k];
-						var params = data[1];
+						var data = toExtend[k],
+							params = data[1];
 						data = data[0];
-						var extender = data[0];
-						var attr = params[0];
-						var destAttributes = params[3];
-						var sourceAttribute = params[5];
-						var destAttribute = params[6];
-						var result = extender.extend.apply(extender, params);
+						var extender = data[0],
+							attr = params[0],
+							destAttributes = params[3],
+							sourceAttribute = params[5],
+							destAttribute = params[6],
+							result = extender.extend.apply(extender, params);
 						if (destAttribute) {
 							destAttribute = destAttribute.setValue(result);
 						} else {
@@ -4750,9 +4896,9 @@
 						if (!types.baseof(source, base)) { // prevents cyclic extend
 							if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
 								if (source !== base) {
-									if (!baseIsBase && types.isBase(source)) {
-										throw new exceptions.Error("Can't implement base type '~0~' in a non-base type.", [sourceName]);
-									};
+									//if (!baseIsBase && types.isBase(source)) {
+									//	throw new exceptions.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName, types.getTypeName(base)]);
+									//};
 									if (baseIsMixIn) {
 										if (sourceIsClass && !types.isMixIn(source) && !types.isInterface(source)) {
 											throw new exceptions.Error("Can't implement non-mix-in or non-interface type '~0~' in a mix-in.", [sourceName]);
@@ -4873,107 +5019,7 @@
 							var attribute = attributes[attr],
 								extender = attribute.EXTENDER;
 							
-							// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice".
-							//var value = types.get(storage, attr, obj[attr]);
-							var value;
-							if (types.hasKey(storage, attr)) {
-								value = storage[attr];
-							} else {
-								value = obj[attr];
-							};
-							extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, value);
-							if (extender.isPreserved) {
-								if (types.hasKey(storage, attr)) {
-									value = storage[attr];
-								} else {
-									value = obj[attr];
-								};
-								var presAttr = '__' + attr + '_preserved__';
-								if (extender.clone) {
-									extender.clone(attr, presAttr, obj, attributes, typeStorage, instanceStorage, forType, value, {isPreserved: false});
-									if (types.hasDefinePropertyEnabled()) {
-										types.defineProperty(obj, presAttr, {
-											enumerable: false,
-										});
-									};
-								} else {
-									if (types.hasDefinePropertyEnabled()) {
-										types.defineProperty(obj, presAttr, {
-											writable: false,
-											enumerable: false,
-											configurable: true, // to allow "delete"
-											value: obj[attr],
-										});
-									} else {
-										obj[presAttr] = obj[attr];
-									};
-								};
-							};
-						};
-					};
-				};
-				
-				__Internal__.initializeAttributes2 = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType) {
-					var storage = (forType ? typeStorage : instanceStorage);
-					var attrs = types.keys(attributes);
-					for (var i = attrs.length - 1; i >= 0; i--) {
-						var attr = attrs[i],
-							attribute = attributes[attr],
-							extender = attribute.EXTENDER;
-						
-						var value;
-						
-						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
-							if (extender.preExtend) {
-								//var value = types.get(storage, attr, obj[attr]);
-								if (types.hasKey(storage, attr)) {
-									value = storage[attr];
-								} else {
-									value = obj[attr];
-								};
-								extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, value);
-								if (extender.isPreserved) {
-									//var value = types.get(storage, attr, obj[attr]);
-									if (types.hasKey(storage, attr)) {
-										value = storage[attr];
-									} else {
-										value = obj[attr];
-									};
-									var presAttr = '__' + attr + '_preserved__';
-									if (extender.clone) {
-										extender.clone(attr, presAttr, obj, attributes, typeStorage, instanceStorage, forType, value, {isPreserved: false});
-										if (types.hasDefinePropertyEnabled()) {
-											types.defineProperty(obj, presAttr, {
-												enumerable: false,
-											});
-										};
-									} else {
-										if (types.hasDefinePropertyEnabled()) {
-											types.defineProperty(obj, presAttr, {
-												writable: false,
-												enumerable: false,
-												configurable: true, // to allow "delete"
-												value: obj[attr],
-											});
-										} else {
-											obj[presAttr] = obj[attr];
-										};
-									};
-								};
-								delete attrs[i]; //attrs.splice(i, 1);
-							};
-						} else {
-							delete attrs[i]; //attrs.splice(i, 1);
-						};
-					};
-					for (var i = attrs.length - 1; i >= 0; i--) {
-						var attr = attrs[i];
-						
-						if (attr) {
-							var attribute = attributes[attr],
-								extender = attribute.EXTENDER;
-							
-							// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice".
+							// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice()".
 							//var value = types.get(storage, attr, obj[attr]);
 							var value;
 							if (types.hasKey(storage, attr)) {
@@ -5190,7 +5236,7 @@
 									attribute = attributes[attr],
 									extender = attribute.EXTENDER;
 									
-								// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice".
+								// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
 								if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 									extender.remove && extender.remove(attr, this, storage, forType);
 									if (extender.isPreserved) {
@@ -5597,6 +5643,58 @@
 							};
 							return false;
 						}))))),
+						
+					_superFrom: root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										cls: {
+											type: 'Class',
+											optional: false,
+											description: "Class.",
+										},
+										paramarray: {
+											type: 'arrayof(any)',
+											optional: true,
+											description: "Method arguments.",
+										},
+									},
+									returns: 'any',
+									description: "Call '_super' from the specified implemented class.",
+						}
+						//! END_REPLACE()
+						, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
+						function _superFrom(cls /*paramarray*/) {
+							var thisType = types.getType(this),
+								dispatch = thisType && thisType.$CURRENT_DISPATCH;
+							if (!dispatch) {
+								throw new types.TypeError("Invalid call to '_superFrom'.");
+							};
+							
+							if (!types.isType(cls)) {
+								throw new types.TypeError("The 'cls' argument must be a type.");
+							};
+							
+							if (!this._implements(cls)) {
+								throw new types.TypeError(tools.format("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls), types.getTypeName(this)]));
+							};
+							
+							if (!types.isType(this)) {
+								cls = cls.prototype;
+							};
+							
+							var name = dispatch.METHOD_NAME;
+
+							if (!types.isMethod(cls, name)) {
+								throw new types.TypeError(tools.format("Method '~0~' doesn't exist in type '~1~'.", [name, types.getTypeName(cls)]));
+							};
+
+							this.overrideSuper();
+							
+							return cls[name].apply(this, types.toArray(arguments).slice(1));
+						})))))))),
 				};
 				
 				root.DD_DOC(

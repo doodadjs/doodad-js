@@ -222,7 +222,7 @@
 			objectToString: Object.prototype.toString,
 			
 			// "isArray"
-			arrayIsArray: (types.isNativeFunction(Array.isArray) ? Array.isArray : undefined),
+			arrayIsArray: (global.Array && types.isNativeFunction(global.Array.isArray) ? Array.isArray : undefined),
 
 			// "isArray"
 			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
@@ -1269,7 +1269,8 @@
 				if (types.isArrayLike(obj)) {
 					result = [];
 					for (key in obj) {
-						if ((isNaN(key) || !isFinite(key)) && types.hasKey(obj, key)) {
+						var number = Number(key);
+						if ((types.isNaN(number) || !types.isFinite(number)) && types.hasKey(obj, key)) {
 							result.push(key);
 						};
 					};

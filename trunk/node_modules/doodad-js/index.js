@@ -42,16 +42,10 @@ module.exports = {
 			options.startup.settings = {};
 		};
 
-		const dev_values = options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development'];
-
-		let env = options.node_env || process.env.node_env || process.env.NODE_ENV;
-
-		if ((options.startup.debug === "true") || +options.startup.debug) {
-			console.warn("warning: The 'startup.debug' flag is obsolete. Please set the environment variable 'NODE_ENV' to 'development' instead.");
-			env = dev_values[0];
-		};
-
-		const dev = (dev_values.indexOf(env) >= 0);
+		const dev_values = (options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development']),
+			env = (options.node_env || process.env.node_env || process.env.NODE_ENV),
+			dev = (dev_values.indexOf(env) >= 0);
+			
 		let bootstrap;
 		if (dev || (options.startup.settings.fromSource === 'true') || +options.startup.settings.fromSource) {
 			if (dev) {

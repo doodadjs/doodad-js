@@ -596,11 +596,11 @@
 							options = {};
 						};
 						return this._super(options) + 
-							',' + tools.unique(types.get(options, 'types', this.types)).sort().join('|');
+							',' + types.unique(types.get(options, 'types', this.types)).sort().join('|');
 					}),
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions) {
 						this._super(options, newOptions);
-						options.types = tools.unique([], newOptions.types, this.types);
+						options.types = types.unique([], newOptions.types, this.types);
 						return options;
 					}),
 				})));

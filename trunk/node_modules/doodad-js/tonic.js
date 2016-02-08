@@ -1,7 +1,9 @@
 "use strict";
 
 const root = require('doodad-js').createRoot(null, {node_env: 'development'}),
-	doodad = root.Doodad;
+	doodad = root.Doodad,
+    mixins = doodad.MixIns,
+	types = doodad.Types;
 
 const Animal = doodad.BASE(doodad.Object.$extend(
 {
@@ -14,15 +16,15 @@ const Perrot = Animal.$extend(
 {
 	$TYPE_NAME: 'Perrot',
 	
-    word: doodad.PROTECTED(null),
+    __word: doodad.PROTECTED(null),
     
     create: doodad.OVERRIDE(function(word) {
         this._super();
-        this.word = word;
+        this.__word = word;
     }),
     
 	makeNoise: doodad.OVERRIDE(function() {
-		return this.word;
+		return this.__word;
 	}),
 });
 
@@ -31,6 +33,7 @@ let obj = new Perrot("hello");
 console.log("Instance of Object: " + String(obj instanceof doodad.Object));
 console.log("Instance of Animal: " + String(obj instanceof Animal));
 console.log("Instance of Perrot: " + String(obj instanceof Perrot));
+console.log("Implements Creatable: " + types._implements(obj, mixins.Creatable));
 
 console.log("Noise: " + obj.makeNoise());
 
