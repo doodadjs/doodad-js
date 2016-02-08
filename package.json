@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "1.1.14",
+  "version": "1.2.0",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -59,14 +59,21 @@
     "configure": "node -r \"doodad-js-make/make.js\" . custom=configure"
   },
   "keywords": [
+    "oop",
+	"interface",
+	"interfaces",
+	"mixin",
+	"mixins",
+	"mix-in",
+	"mix-ins",
+	"class",
+	"classes",
+	"trait",
+	"traits",
+    "object",
+	"objects",
 	"inherit",
 	"extend",
-	"interface",
-	"mixin",
-	"mix-in",
-    "oop",
-    "object",
-	"class",
     "framework"
   ],
   "author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",

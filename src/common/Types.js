@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.2r',
 			namespaces: null,
 			dependencies: null,
 			bootstrap: true,
@@ -49,6 +49,66 @@
 				//===================================
 
 				var types = root.Doodad.Types;
+				
+				//===================================
+				// Internal
+				//===================================
+				
+				var __Internal__ = {
+					// "toSource"
+					supportsVerticalTabEscape: ('\v' !== 'v'),
+					supportsNullCharEscape: ('\0' !== '0'),
+					
+					oldSetOptions: null,
+				};
+
+				//===================================
+				// Native functions
+				//===================================
+					
+				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
+				// NOTE: Store everything because third-parties can override them.
+				
+				__Internal__.arrayObj = global.Array && global.Array.prototype || []; // temporary
+				
+				var __Natives__ = {
+					// No polyfills
+					
+					// "toArray"
+					arrayConstructor: __Internal__.arrayObj.constructor,
+					
+					// "clone", "toArray"
+					arraySlice: __Internal__.arrayObj.slice,
+					//functionToString: Function.prototype.toString,
+					
+					// "popAt", "popItem", "popItems"
+					arraySplice: __Internal__.arrayObj.splice,
+					
+					// "prepend"
+					arrayUnshift: __Internal__.arrayObj.unshift,
+					
+					mathFloor: global.Math.floor,
+					mathAbs: global.Math.abs,
+
+					objectToString: Object.prototype.toString,
+					
+					windowObject: global.Object,
+
+					// Polyfills
+					
+					// "bind"
+					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
+					
+					// ES6
+					windowSet: (types.isNativeFunction(global.Set) ? global.Set : undefined),
+					windowMap: (types.isNativeFunction(global.Map) ? global.Map : undefined),
+					windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+
+					// "toArray"
+					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? Array.from : undefined),
+				};
+				
+				delete __Internal__.arrayObj;   // free memory
 				
 				//===================================
 				// Cast functions
@@ -117,7 +177,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -126,24 +186,37 @@
 									},
 								},
 								returns: 'array',
-								description: "Converts any value to an array.",
+								description: "Converts a value to an array.",
 					}
 					//! END_REPLACE()
-					, function toArray(obj) {
+					, (__Natives__.arrayFrom || function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
 						if (types.isNothing(obj)) {
-							return obj;
+							throw new types.TypeError(tools.format("can't convert ~0~ to object", [((obj === null) ? 'null' : 'undefined')]));
+						};
+						obj = Object(obj);
+						var result;
+						if (types.isString(obj)) {
+							result = __Natives__.arraySlice.call(obj);
 						} else if (types.isArrayLike(obj)) {
-							obj = Object(obj);
 							if (obj.length === 1) {
 								// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
-								return [obj[0]];
+								result = [obj[0]];
 							} else {
-								return __Natives__.arrayConstructor.apply(null, obj);
+								result = __Natives__.arrayConstructor.apply(null, obj);
 							};
 						} else {
-							return [obj];
+							return [];
 						};
-					});
+						if (mapFn) {
+							var len = result.length;
+							for (var key = 0; key < len; key++) {
+								if (key in result) {
+									result[key] = mapFn.call(thisObj, result[key], key);
+								};
+							};
+						};
+						return result;
+					}));
 				
 				types.toBoolean = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -191,18 +264,34 @@
 						};
 					});
 				
-				//===================================
-				// Internal
-				//===================================
+				types.toInteger = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "A value to convert.",
+									},
+								},
+								returns: 'number',
+								description: "Converts the value to an integer.",
+					}
+					//! END_REPLACE()
+					, function toInteger(obj) {
+						// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+						var number = Number(obj);
+						if (types.isNaN(number)) {
+							return 0;
+						};
+						if ((number === 0) || !types.isFinite(number)) {
+							return number;
+						};
+						return (number > 0 ? 1 : -1) * __Natives__.mathFloor(__Natives__.mathAbs(number));
+					});
 				
-				var __Internal__ = {
-					// "toSource"
-					supportsVerticalTabEscape: ('\v' !== 'v'),
-					supportsNullCharEscape: ('\0' !== '0'),
-					
-					oldSetOptions: null,
-				};
-
 				//===================================
 				// Options
 				//===================================
@@ -222,49 +311,6 @@
 						enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
 					},
 				}, _options);
-				
-				//===================================
-				// Native functions
-				//===================================
-					
-				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
-				// NOTE: Store everything because third-parties can override them.
-				
-				var __arrayObj__ = global.Array && global.Array.prototype || []; // temporary
-				
-				var __Natives__ = {
-					// No polyfills
-					
-					objectToString: Object.prototype.toString,
-					
-					// "toArray"
-					arrayConstructor: __arrayObj__.constructor,
-					
-					// "clone"
-					arraySlice: __arrayObj__.slice,
-					//functionToString: Function.prototype.toString,
-					
-					// "popAt", "popItem", "popItems"
-					arraySplice: __arrayObj__.splice,
-					
-					// "prepend"
-					arrayUnshift: __arrayObj__.unshift,
-					
-					windowObject: global.Object,
-					
-
-					// Polyfills
-					
-					// "bind"
-					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
-					
-					// ES6
-					windowSet: (types.isNativeFunction(global.Set) ? global.Set : undefined),
-					windowMap: (types.isNativeFunction(global.Map) ? global.Map : undefined),
-					windowProxy: (types.getOptions().settings.enableProxies && types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
-				};
-				
-				__arrayObj__ = null;   // free memory
 				
 				types.isArrayAndNotEmpty = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -501,7 +547,8 @@
 							if (types.isArrayLike(obj)) {
 								var len = obj.length;
 								for (key in obj) {
-									if ((isNaN(key) || !isFinite(key)) && types.hasKey(obj, key)) {
+									var number = Number(key);
+									if ((types.isNaN(number) || !types.isFinite(number)) && types.hasKey(obj, key)) {
 										return true;
 									};
 								};
@@ -826,7 +873,8 @@
 							
 							if (types.isArrayLike(obj)) {
 								for (var key in obj) {
-									if ((isNaN(key) || !isFinite(key)) && hasKeyInherited(key)) {
+									var number = Number(key);
+									if ((types.isNaN(number) || !types.isFinite(number)) && hasKeyInherited(key)) {
 										result.push(key);
 									};
 								};
@@ -1157,8 +1205,9 @@
 							};
 							for (var i = 0; i < len; i++) {
 								if (i in indexes) {
-									var index = indexes[i];
-									if (isNaN(index) || !isFinite(index) || !(index in obj)) {
+									var index = indexes[i],
+										number = Number(index);
+									if (types.isNaN(number) || !types.isFinite(number) || !(index in obj)) {
 										return false;
 									};
 								};
@@ -1659,6 +1708,102 @@
 					});
 				
 				
+				types.unique = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								comparer: {
+									type: 'function',
+									optional: true,
+									description: 
+										"A comparer function. Arguments passed to the function are : \n" +
+										"  value1 (any): The value to compare from\n" +
+										"  value2 (any): The value to compare to\n" +
+										"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
+								},
+								paramarray: {
+									type: 'arraylike',
+									optional: true,
+									description: "Arrays.",
+								},
+							},
+							returns: 'arrayof(any)',
+							description: "Compare every items of every arrays, and returns a new array with unique items.",
+					}
+					//! END_REPLACE()
+					, function unique(/*optional*/comparer, /*paramarray*/obj) {
+						var start = 1;
+						if (!types.isFunction(comparer)) {
+							comparer = null;
+							start = 0;
+						};
+						
+						var result = [];
+						
+						if (comparer) {
+							var len = arguments.length;
+							for (var i = start; i < len; i++) {
+								obj = arguments[i];
+								if (types.isNothing(obj)) {
+									continue;
+								};
+								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
+								obj = Object(obj);
+								var objLen = obj.length;
+								for (var key1 = 0; key1 < objLen; key1++) {
+									if (key1 in obj) {
+										var value1 = obj[key1],
+											found = false,
+											resultLen = result.length;
+										for (var key2 = 0; key2 < resultLen; key2++) {
+											var res = comparer(value1, result[key2]);
+											if ((res === true) || (res === 0)) {
+												found = true;
+												break;
+											};
+										};
+										if (!found) {
+											result.push(value1);
+										};
+									};
+								};
+							};
+						} else {
+							var len = arguments.length;
+							for (var i = start; i < len; i++) {
+								obj = arguments[i];
+								obj = arguments[i];
+								if (types.isNothing(obj)) {
+									continue;
+								};
+								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
+								obj = Object(obj);
+								var objLen = obj.length;
+								for (var key1 = 0; key1 < objLen; key1++) {
+									if (key1 in obj) {
+										var value1 = obj[key1],
+											found = false,
+											resultLen = result.length;
+										for (var key2 = 0; key2 < resultLen; key2++) {
+											if (value1 === result[key2]) {
+												found = true;
+												break;
+											};
+										};
+										if (!found) {
+											result.push(value1);
+										};
+									};
+								};
+							};
+						};
+						
+						return result;
+					});
+			
+
 				//===================================
 				// "toSource" function
 				//===================================
@@ -1833,7 +1978,7 @@
 					}
 					//! END_REPLACE()
 					, (__Natives__.windowProxy ? (function hasProxiesEnabled() {
-						return true;
+						return types.getOptions().settings.enableProxies;
 					}) : (function hasProxiesEnabled() {
 						return false;
 					})));
@@ -2113,7 +2258,7 @@
 							} else if (ar instanceof types.Map) {
 								this.__ar = ar.entries();
 							} else if (types.isArrayLike(ar)) {
-								this.__ar = tools.unique(ar);
+								this.__ar = types.unique(ar);
 							} else {
 								throw types.TypeError("Invalid array.");
 							};
@@ -2154,9 +2299,13 @@
 							return types.clone(this.__ar);
 						},
 						entries: function entries() {
-							return types.map(this.__ar, function(item) {
-								return [item, item];
-							});
+							var ar = this.__ar,
+								len = ar.length,
+								newAr = Array(len);
+							for (var key = 0; key < len; key++) {
+								var val = ar[key];
+								newAr[key] = [val, val];
+							};
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
 							for (var i = 0; i < this.__ar.length; i++) {
@@ -2255,9 +2404,12 @@
 						},
 						entries: function entries() {
 							var values = this.__values;
-							return types.map(this.__keys, function(key, i) {
-								return [key, values[i]];
-							});
+							var ar = this.__ar,
+								len = ar.length,
+								newAr = Array(len);
+							for (var key = 0; key < len; key++) {
+								newAr[key] = [key, ar[key]];
+							};
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
 							for (var i = 0; i < this.__keys.length; i++) {

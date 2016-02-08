@@ -75,7 +75,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.2r',
 			namespaces: ['Files', 'Config'],
 			dependencies: ['Doodad.Types'],
 			bootstrap: true,
@@ -3621,7 +3621,7 @@
 					}
 					//! END_REPLACE()
 					, function allKeys(obj) {
-						return obj && tools.unique(types.getOwnPropertyNames(obj), types.allKeys(types.getPrototypeOf(obj)));
+						return obj && types.unique(types.getOwnPropertyNames(obj), types.allKeys(types.getPrototypeOf(obj)));
 					});
 				
 				tools.indexOf = root.DD_DOC(
@@ -4500,104 +4500,6 @@
 						};
 					});
 				
-				tools.unique = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								comparer: {
-									type: 'function',
-									optional: true,
-									description: 
-										"A comparer function. Arguments passed to the function are : \n" +
-										"  value1 (any): The value to compare from\n" +
-										"  value2 (any): The value to compare to\n" +
-										"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
-								},
-								paramarray: {
-									type: 'arraylike',
-									optional: true,
-									description: "Arrays.",
-								},
-							},
-							returns: 'arrayof(any)',
-							description: "Compare every items of every arrays, and returns a new array with unique items.",
-					}
-					//! END_REPLACE()
-					, function unique(/*optional*/comparer, /*paramarray*/obj) {
-						// NOTE: Use it when each array mainly contains unique values.
-
-						var start = 1;
-						if (!types.isFunction(comparer)) {
-							comparer = null;
-							start = 0;
-						};
-						
-						var result = [];
-						
-						if (comparer) {
-							var len = arguments.length;
-							for (var i = start; i < len; i++) {
-								obj = arguments[i];
-								if (types.isNothing(obj)) {
-									continue;
-								};
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
-								obj = Object(obj);
-								var objLen = obj.length;
-								for (var key1 = 0; key1 < objLen; key1++) {
-									if (key1 in obj) {
-										var value1 = obj[key1],
-											found = false,
-											resultLen = result.length;
-										for (var key2 = 0; key2 < resultLen; key2++) {
-											var res = comparer(value1, result[key2]);
-											if ((res === true) || (res === 0)) {
-												found = true;
-												break;
-											};
-										};
-										if (!found) {
-											result.push(value1);
-										};
-									};
-								};
-							};
-						} else {
-							var len = arguments.length;
-							for (var i = start; i < len; i++) {
-								obj = arguments[i];
-								obj = arguments[i];
-								if (types.isNothing(obj)) {
-									continue;
-								};
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
-								obj = Object(obj);
-								var objLen = obj.length;
-								for (var key1 = 0; key1 < objLen; key1++) {
-									if (key1 in obj) {
-										var value1 = obj[key1],
-											found = false,
-											resultLen = result.length;
-										for (var key2 = 0; key2 < resultLen; key2++) {
-											if (value1 === result[key2]) {
-												found = true;
-												break;
-											};
-										};
-										if (!found) {
-											result.push(value1);
-										};
-									};
-								};
-							};
-						};
-						
-						return result;
-					});
-			
-
 				//===================================
 				// Math functions
 				//===================================
@@ -5432,7 +5334,7 @@
 						
 						if (__Internal__.loadedConfigFiles.has(key)) {
 							var def = __Internal__.loadedConfigFiles.get(key);
-							def.callbacks = tools.unique(def.callbacks, callbacks);
+							def.callbacks = types.unique(def.callbacks, callbacks);
 							if (types.get(options, 'force')) {
 								promise = def.read();
 							} else if (def.ready) {

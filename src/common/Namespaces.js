@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.2r',
 			namespaces: ['Entries'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -1131,6 +1131,43 @@
 				)));
 
 				entries.NamespaceObject = types.Namespace;
+				
+				//-----------------------------------
+				// Package entry object
+				//-----------------------------------
+				entries.Package = root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									root: {
+										type: 'Root',
+										optional: false,
+										description: "Root namespace object",
+									},
+									spec: {
+										type: 'object',
+										optional: false,
+										description: "Namespace specifications",
+									},
+									namespace: {
+										type: 'Namespace',
+										optional: false,
+										description: "Namespace object",
+									},
+								},
+								returns: 'ModuleEntry',
+								description: "Module registry entry.",
+						}
+						//! END_REPLACE()
+				, types.INIT(entries.Namespace.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'PackageEntry'
+					}
+				)));
+				
 				
 				//-----------------------------------
 				// Module entry object

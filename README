@@ -14,21 +14,22 @@ $ npm install doodad-js
 
   -  Classes
   -  Inheritance
-  -  Interfaces (and Mix-ins)
+  -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
   -  Base classes and interfaces
   -  Custom events management
   -  DOM events management
+  -  NodeJs events management
   -  Exceptions
   -  Singletons
   -  Polymorphism
   -  Static classes
-  -  IO Streams
   -  Useful utility functions
   -  Namespaces and a registry
-  -  Compatible with most recent browsers
-  -  Compatible with Windows, Linux and MacOS X
+  -  Compatible with most recent browsers and NodeJs.
+  -  Compatible with Windows, Linux and MacOS X.
+  -  Supports browserify.
 
 ## Quick Start
 
@@ -50,6 +51,10 @@ Now create the root namespace :
 You can create a shortcut to the namespaces this way :
 ```js
     const doodad = root.Doodad,
+		types = doodad.Types,
+		tools = doodad.Tools,
+		mixins = doodad.MixIns,
+		interfaces = doodad.Interfaces,
 		extenders = doodad.Extenders,
 		.... ;
 ```
@@ -66,7 +71,8 @@ You can create a shortcut to the namespaces this way :
 
   - **doodad.BASE**: The class is not ready for object instantiation and must be extended.
   - **doodad.INTERFACE**: The class defines an interface. https://en.wikipedia.org/wiki/Protocol_%28object-oriented_programming%29
-  - **doodad.MIX_IN**: The class defines a mix-in. https://en.wikipedia.org/wiki/Mixin
+  - **doodad.MIX_IN**: The class defines a Mix-in. https://en.wikipedia.org/wiki/Mixin
+  - **doodad.TRAIT**: The class defines a Trait (currently implemented as "per convention", ie without validation). http://scg.unibe.ch/research/traits
   - **doodad.SEALED**: Objects instantiated from this class are sealed. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal
   - **doodad.STATIC**: The class do not allow instantiating.
   - **doodad.ISOLATED**: The class defines an isolated interface. This kind of interface makes the methods separated from the methods of its host class. To get access to them, you must call "getInterface".
@@ -74,7 +80,7 @@ You can create a shortcut to the namespaces this way :
 ## Attribute Modifiers :
   
   - **doodad.ATTRIBUTE**: Explicitly defines an attribute. Can be used to specify an extender, and/or extender options.
-  - **doodad.OPTIONS**: Define extender options.
+  - **doodad.OPTIONS**: Defines extender options.
   - **doodad.PRE_EXTEND**: Tells that an attribute must be extended before normal (non pre-extended) attributes.
   - **doodad.TYPE**: Attribute is accessible from its Type (ie class).
   - **doodad.INSTANCE**: Attribute is accessible from an instance of its Type (ie class).
@@ -85,7 +91,7 @@ You can create a shortcut to the namespaces this way :
   - **doodad.PROPERTY**: Defines a property (with getter and setter).
   - **doodad.EVENT**: Defines an event attribute.
   - **doodad.ERROR_EVENT**: Defines an error event attribute.
-  - (client-side only) **doodad.JS_EVENT**: Defines a Js event attribute.
+  - (client-side only) **doodad.JS_EVENT**: Defines a DOM event attribute.
   - (server-side only) **doodad.NODE_EVENT**: Defines a Node.Js event attribute.
 
 ## Method Modifiers
@@ -106,31 +112,33 @@ You can create a shortcut to the namespaces this way :
   - **doodad.EXTERNAL**: The method can't be called from inside the object.
   - **doodad.AFTER**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack after the function of the specified class.
   - **doodad.BEFORE**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack before the function of the specified class. 
+  - **doodad.RENAME_OVERRIDE**: Like "doodad.OVERRIDE", but also renames the method. To be used when implementing a Trait.
+  - **doodad.RENAME_REPLACE**: Like "doodad.REPLACE", but also renames the method. To be used when implementing a Trait.
 
 ## Available extenders
 
-  - **extenders.Attribute**: (inherits 'extenders.Extender') Extends an attribute to a new value.
-  - **extenders.Null**: (inherits 'extenders.Attribute') Extends an attribute to 'null'.
-  - **extenders.ClonedAttribute**: (inherits 'extenders.Attribute') When an object gets instantiated, the value is cloned.
-  - **extenders.ExtendObject**: (inherits 'extenders.ClonedAttribute') When overriden, the object value will get extended instead of replaced.
-  - **extenders.UniqueArray**: (inherits 'extenders.ClonedAttribute') When overriden, the array value will get appended instead of replaced. Duplicates are removed.
+  - **extenders.Attribute**: (inherits 'extenders.Extender') Extends an attribute with a new value.
+  - **extenders.Null**: (inherits 'extenders.Attribute') Extends an attribute with 'null'.
+  - **extenders.ClonedAttribute**: (inherits 'extenders.Attribute') When an object gets instantiated, the attribute's value is cloned.
+  - **extenders.ExtendObject**: (inherits 'extenders.ClonedAttribute') When overriden, the attribute's object value will get extended instead of replaced.
+  - **extenders.UniqueArray**: (inherits 'extenders.ClonedAttribute') When overriden, the attribute's array value will get appended instead of replaced. Duplicates are removed.
   - **extenders.Method**: (inherits 'extenders.ClonedAttribute') Extends a method.
   - **extenders.JsMethod**: (inherits 'extenders.Method') Extends a Javascript method.
   - **extenders.Property**: (inherits 'extenders.Method') Extends a property.
   - **extenders.Event**: (inherits 'extenders.Method') Extends an event attribute.
-  - (client-side only) **extenders.JsEvent**: (inherits 'extenders.Event') Extends a Javascript event attribute.
+  - (client-side only) **extenders.JsEvent**: (inherits 'extenders.Event') Extends a DOM event attribute.
   - (server-side only) **extenders.NodeEvent**: (inherits 'extenders.Event') Extends a Node.Js event attribute.
 
 ## Pre-built Interfaces and Mix-Ins
 
-  - **Clonable**: (interface) Makes a class clonable.
-  - **Serializable**: (interface) Makes a class serializable and desializable.
-  - **Creatable**: (mix-in) Makes a class creatable.
-  - **Translatable**: (mix-in) Makes a localized class object.
-  - **Configurable**: (mix-in) Makes a configurable class object.
-  - **Events**: (mix-in) Makes a class with events.
-  - (client-side only) **JsEvents**: (mix-in) Makes a class with managed Javascript events.
-  - (server-side only) **NodeEvents**: (mix-in) Makes a class with managed NodeJs events.
+  - **interfaces.Clonable**: (interface) Makes a class clonable.
+  - **interfaces.Serializable**: (interface) Makes a class serializable and desializable.
+  - **mixins.Creatable**: (mix-in) Makes a class creatable.
+  - **mixins.Translatable**: (mix-in) Makes a localized class object.
+  - **mixins.Configurable**: (mix-in) Makes a configurable class object.
+  - **mixins.Events**: (mix-in) Makes a class with events.
+  - (client-side only) **mixins.JsEvents**: (mix-in) Makes a class with managed Javascript events.
+  - (server-side only) **mixins.NodeEvents**: (mix-in) Makes a class with managed NodeJs events.
   
 ## Pre-built Classes
 
@@ -139,8 +147,8 @@ You can create a shortcut to the namespaces this way :
 
 ## Pre-built Exceptions
   
-  -- **Error**: General error (alias to 'Types.Error').
-  -- **Application**: (inherits 'Error') Application error. An error with a title to be displayed to the end user. Exemple: "The selected customer is not allowed to buy the selected product."
+  - **Error**: General error (alias to 'Types.Error').
+  - **Application**: (inherits 'Error') Application error. An error with a title to be displayed to the end user. Exemple: "The selected customer is not allowed to buy the selected product."
   
 ## Namespaces Functions
 
@@ -203,6 +211,8 @@ Example 2 (interfaces):
             return "Bonjour";
         }),
     })
+
+	types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles);
 ```
 Example 3 (mix-ins) :
 ```js
@@ -219,6 +229,8 @@ Example 3 (mix-ins) :
     {
         $TYPE_NAME: 'Turtle1',
     })
+	
+	types._implements(Turtle1, Turtles);
 ```
 
 ## Other available packages
@@ -243,7 +255,8 @@ Example 3 (mix-ins) :
   
 ## License
 
-  [Apache-2.0](LICENSE)
+  [Apache-2.0][license-url]
 
 [npm-image]: https://img.shields.io/npm/v/doodad-js.svg
 [npm-url]: https://npmjs.org/package/doodad-js
+[license-url]: http://opensource.org/licenses/Apache-2.0
