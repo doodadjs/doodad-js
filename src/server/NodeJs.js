@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.NodeJs'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.3r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
 			bootstrap: true,

@@ -42,14 +42,6 @@
 
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options) {
 		var __Internal__ = {
-			//! REPLACE_BY("DD_DOC:function(d,v){return v;},")
-			DD_DOC: function(doc, value) {
-				value = Object(value);
-				value.__DD_DOC__ = doc;
-				return value;
-			},
-			//! END_REPLACE()
-		
 			// "isNativeFunction", "isCustomFunction"
 			hasIncompatibleFunctionToStringBug: false,
 			
@@ -66,61 +58,29 @@
 		//===================================
 		// Native functions
 		//===================================
-		var __objectHasOwnProperty__ = Object.prototype.hasOwnProperty;
-		var __functionToString__ = Function.prototype.toString;
+		__Internal__.objectHasOwnProperty = Object.prototype.hasOwnProperty;
+		__Internal__.functionToString = Function.prototype.toString;
 			
 		// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 		try {
 			if (typeof global.Event === 'function') {
-				__functionToString__.call(global.Event);
+				__Internal__.functionToString.call(global.Event);
 			};
 		} catch(ex) {
 			__Internal__.hasIncompatibleFunctionToStringBug = true;
 		};
 		
-		types.isFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a function, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isFunction(obj) {
+		types.isFunction = function isFunction(obj) {
 				return (typeof obj === 'function');
-			});
+			};
 		
-		types.isNativeFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a native function, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isNativeFunction(obj) {
+		types.isNativeFunction = function isNativeFunction(obj) {
 				if (types.isFunction(obj)) {
 					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && __objectHasOwnProperty__.call(obj, 'toString') && types.isNativeFunction(obj.toString)) {
+					if (__Internal__.hasIncompatibleFunctionToStringBug && __Internal__.objectHasOwnProperty.call(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = __functionToString__.call(obj);
+						str = __Internal__.functionToString.call(obj);
 					};
 					var index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
@@ -139,31 +99,15 @@
 				} else {
 					return false;
 				};
-			});
+			};
 		
-		types.isCustomFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isCustomFunction(obj) {
+		types.isCustomFunction = function isCustomFunction(obj) {
 				if (types.isFunction(obj)) {
 					var str;
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.hasKey(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = __functionToString__.call(obj);
+						str = __Internal__.functionToString.call(obj);
 					};
 					var index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
@@ -180,7 +124,26 @@
 					};
 				};
 				return false;
-			});
+			};
+		
+		types.getFunctionName = function getFunctionName(obj) {
+				if (types.isFunction(obj)) {
+					if ('name' in obj) {
+						return obj.name;
+					} else {
+						// Internet Explorer
+						if (__Internal__.hasIncompatibleFunctionToStringBug && types.hasKey(obj, 'toString') && types.isNativeFunction(obj.toString)) {
+							str = obj.toString();
+						} else {
+							str = __Internal__.functionToString.call(obj);
+						};
+						str = str.match(/function\s+(\S*).*\(/);
+						return str && str[1] || null;
+					};
+				} else {
+					return null;
+				};
+			};
 		
 			
 			
@@ -213,12 +176,12 @@
 			objectKeys: (types.isNativeFunction(Object.keys) ? Object.keys : undefined),
 			
 			// "propertyIsEnumerable"
-			objectPropertyIsEnumerable: Object.prototype.propertyIsEnumerable,
+			objectPropertyIsEnumerable: (types.isNativeFunction(Object.prototype.propertyIsEnumerable) ? Object.prototype.propertyIsEnumerable : undefined),
 			
 			// "setPrototypeOf"
 			objectSetPrototypeOf: (types.isNativeFunction(Object.setPrototypeOf) ? Object.setPrototypeOf : undefined),
 			
-			// "isNumber", "isDate", "isArray", "isObject", "isJsObject"
+			// "isNumber", "isDate", "isArray", "isObject", "isJsObject", "isCallable"
 			objectToString: Object.prototype.toString,
 			
 			// "isArray"
@@ -233,8 +196,8 @@
 			// "isDate"
 			windowDate: (types.isNativeFunction(global.Date) ? global.Date : undefined),
 			
-			// "createErrorType"
-			windowError: global.Error,
+			// "createErrorType", "isError"
+			windowError: (global.Error || Error), // NOTE: "node.js" does not include "Error" in "global".
 
 			// "isNumber"
 			windowNumber: (types.isNativeFunction(global.Number) ? global.Number : undefined),
@@ -245,8 +208,11 @@
 			// "isString"
 			windowString: (types.isNativeFunction(global.String) ? global.String : undefined),
 			
-			// "isSymbol"
+			// "hasSymbols", "isSymbol"
 			windowSymbol: (types.isNativeFunction(global.Symbol) ? global.Symbol : undefined),
+			
+			// "getSymbol", "DD_DOC", "DD_GET_DOC"
+			windowSymbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol['for']) ? global.Symbol['for'] : undefined),
 			
 			// "isNaN"
 			numberIsNaN: (global.Number && types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
@@ -256,7 +222,225 @@
 			
 			// "append"
 			arrayPush: (global.Array && global.Array.prototype || []).push,
+			
+			// "isInteger"
+			numberIsInteger: (global.Number && types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
 		};
+
+		//===================================
+		// Symbols
+		//===================================
+		
+		types.hasSymbols = (__Natives__.windowSymbol ? function hasSymbols() {
+				return true;
+			} : function hasSymbols() {
+				return false;
+			});
+			
+		types.isSymbol = (__Natives__.windowSymbol ? function isSymbol(obj) {
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				return __Natives__.windowObject(obj) instanceof __Natives__.windowSymbol;
+			} : function isSymbol(obj) {
+				// "Symbol" not implemented.
+				return false;
+			});
+			
+		types.getSymbol = (__Natives__.windowSymbolFor ? function getSymbol(name) {
+				return __Natives__.windowSymbolFor(name);
+			} : function getSymbol(name) {
+				// "Symbol" not implemented.
+				return null;
+			});
+		
+
+		//===================================
+		// DD_DOC
+		//===================================
+		
+		//! REPLACE_BY("__Internal__.DD_DOC=function(d,v){return v;};")
+		__Internal__.DD_DOC = (types.hasSymbols() ? function DD_DOC(doc, value) {
+			value = Object(value);
+			value[types.getSymbol('DD_DOC')] = doc;
+			return value;
+		} : (__Natives__.objectDefineProperty ? function DD_DOC(doc, value) {
+			value = Object(value);
+			__Natives__.objectDefineProperty(value, '__DD_DOC__', {
+				configurable: true,
+				enumerable: false,
+				value: doc,
+				writable: false,
+			});
+			return value;
+		} : function DD_DOC(doc, value) {
+			value = Object(value);
+			value.__DD_DOC__ = doc;
+			return value;
+		}));
+		//! END_REPLACE()
+
+		__Internal__.DD_DOC = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						doc: {
+							type: 'object',
+							optional: false,
+							description: "Document to apply.",
+						},
+						value: {
+							type: 'any',
+							optional: false,
+							description: "Target value",
+						},
+					},
+					returns: 'object',
+					description: "Applies a document to an object and returns that object.",
+			}
+			//! END_REPLACE()
+			, __Internal__.DD_DOC);
+		
+		__Internal__.DD_GET_DOC = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'object',
+					description: "Get the document applied to an object.",
+			}
+			//! END_REPLACE()
+			, (types.hasSymbols() ? function DD_GET_DOC(value) {
+				value = Object(value);
+				return value[types.getSymbol('DD_DOC')];
+			} : function DD_GET_DOC(value) {
+				value = Object(value);
+				return value['__DD_DOC__'];
+			}));
+		
+		
+		types.isFunction = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a function, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, types.isFunction);
+		
+		types.isNativeFunction =  __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a native function, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, types.isNativeFunction);
+		
+		types.isCustomFunction = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, types.isCustomFunction);
+		
+		types.getFunctionName = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'function',
+								optional: false,
+								description: "A function.",
+							},
+						},
+						returns: 'string',
+						description: "Returns function name.",
+			}
+			//! END_REPLACE()
+			, types.getFunctionName);
+		
+		types.hasSymbols = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'bool',
+						description: "Returns 'true' if the engine has symbols. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, types.hasSymbols);
+		
+		types.isSymbol = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is a Symbol. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, types.isSymbol);
+		
+		types.getSymbol = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'string',
+								optional: true,
+								description: "Symbol name.",
+							},
+						},
+						returns: 'Symbol',
+						description: "Returns a Symbol by its name.",
+			}
+			//! END_REPLACE()
+			, types.getSymbol);
 		
 		//===================================
 		// Format functions
@@ -363,7 +547,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -376,7 +560,7 @@
 			}
 			//! END_REPLACE()
 			, function isNothing(obj) {
-				return (obj === null) || (obj === undefined);
+				return (obj == null);
 			});
 		
 		// <PRB> JS has no function to test for primitives
@@ -384,7 +568,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -397,7 +581,9 @@
 			}
 			//! END_REPLACE()
 			, function isPrimitive(obj) {
-				return !(obj instanceof __Natives__.windowObject);
+				// Source: http://cwestblog.com/2011/08/02/javascript-isprimitive-function/
+				var type = (typeof obj);
+				return (obj == null) || ((type !== "object") && (type !== "function"));
 			});
 		
 		// <PRB> JS has no function to test for numbers
@@ -441,7 +627,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -458,11 +644,20 @@
 					return false;
 				};
 				obj = __Natives__.windowObject(obj);
-				if (!types.isNumber(obj)) {
-					return false;
+				if (__Natives__.numberIsInteger) {
+					// <PRB> "Number.isInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
+					if (obj instanceof __Natives__.windowNumber) {
+						return __Natives__.numberIsInteger(obj.valueOf());
+					} else {
+						return false;
+					};
+				} else {
+					if (!types.isNumber(obj)) {
+						return false;
+					};
+					obj = obj.valueOf();
+					return (obj === (obj | 0));
 				};
-				obj = obj.valueOf();
-				return (obj === (obj | 0));
 			});
 		
 		types.isFinite = __Internal__.DD_DOC(
@@ -666,7 +861,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -679,8 +874,13 @@
 			}
 			//! END_REPLACE()
 			, function isArrayLike(obj) {
-				//     Unbelievable : There is not an official way to detect an array-like object !!!!
-				return !types.isNothing(obj) && !types.isObject(obj) && !types.isFunction(obj) && types.isInteger(__Natives__.windowObject(obj).length);
+				// Unbelievable : There is not an official way to detect an array-like object !!!!
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				obj = __Natives__.windowObject(obj);
+				var len = obj.length;
+				return !types.isFunction(obj) && ((len >>> 0) === len);
 			});
 		
 		types.isError = __Internal__.DD_DOC(
@@ -700,7 +900,7 @@
 			}
 			//! END_REPLACE()
 			, function isError(obj) {
-				return (obj instanceof Error);
+				return (obj instanceof __Natives__.windowError);
 			});
 		
 		types.isNaN = __Internal__.DD_DOC(
@@ -726,7 +926,7 @@
 				return (obj !== obj);
 			}));
 		
-		types.isSymbol = __Internal__.DD_DOC(
+		types.isCallable = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
@@ -739,18 +939,14 @@
 							},
 						},
 						returns: 'bool',
-						description: "Returns 'true' if object is a Symbol. Returns 'false' otherwise.",
+						description: "Returns 'true' if object is callable. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, __Natives__.windowSymbol ? function isSymbol(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				return __Natives__.windowObject(obj) instanceof __Natives__.windowSymbol;
-			} : function isSymbol(obj) {
-				// "Symbol" not implemented.
-				return false;
+			, function isCallable(obj) {
+				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+				return (typeof obj === 'function') || (__Natives__.objectToString.call(obj) === '[object Function]');
 			});
+			
 		
 		//===================================
 		// Stack functions
@@ -1143,7 +1339,7 @@
 					for (var i = 0; i < len; i++) {
 						if (i in keys) {
 							var key = keys[i];
-							if (__objectHasOwnProperty__.call(obj, key)) {
+							if (__Internal__.objectHasOwnProperty.call(obj, key)) {
 								return true;
 							};
 						};
@@ -1470,7 +1666,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1479,11 +1675,11 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if the object is an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
+						description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isObjectLike(obj) {
-				return (obj instanceof __Natives__.windowObject);
+				return (types.isObject(obj) || (obj instanceof __Natives__.windowObject));
 			});
 		
 		//==============
@@ -1536,11 +1732,27 @@
 		// Properties
 		//==============
 		
-		types.propertyIsEnumerable = __Internal__.DD_DOC(
+		types.hasProperties = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
 						revision: 0,
+						params: null,
+						returns: 'boolean',
+						description: "Returns 'true' if properties are available. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, (__Natives__.objectDefineProperty ? (function hasProperties() {
+				return true;
+			}) : (function hasProperties() {
+				return false;
+			})));
+		
+		types.propertyIsEnumerable = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1554,12 +1766,14 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if the property of the object is enumrable. Returns 'false' otherwise.",
+						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function(obj, key) {
+			, (__Natives__.objectPropertyIsEnumerable ? function propertyIsEnumerable(obj, key) {
 				return __Natives__.objectPropertyIsEnumerable.call(obj, key);
-			});
+			} : function propertyIsEnumerable(obj, key) {
+				return true;
+			}));
 		
 		types.hasDefinePropertyEnabled = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -1568,7 +1782,7 @@
 						revision: 0,
 						params: null,
 						returns: 'boolean',
-						description: "Returns 'true' if 'defineProperty' is natively available. Returns 'false' otherwise.",
+						description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, (__options__.settings.enableProperties && __Natives__.objectDefineProperty ? (function hasDefinePropertyEnabled() {
@@ -1941,7 +2155,7 @@
 						description: "Raised on invalid value type.",
 			}
 			//! END_REPLACE()
-			, global.TypeError || types.createErrorType("TypeError", global.Error));
+			, global.TypeError || types.createErrorType("TypeError", __Natives__.windowError));
 		
 		types.Error = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -1964,9 +2178,9 @@
 						description: "Generic error with message formatting.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType('Error', global.Error, function _new(message, /*optional*/params) {
+			, types.createErrorType('Error', __Natives__.windowError, function _new(message, /*optional*/params) {
 				message = tools.format(message, params);
-				return global.Error.call(this, message);
+				return __Natives__.windowError.call(this, message);
 			}));
 
 		types.AssertionFailed = __Internal__.DD_DOC(
@@ -2038,7 +2252,7 @@
 						description: "Raised on HTTP error.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType('HttpError', global.Error, function _new(code, message, /*optionla*/params) {
+			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optionla*/params) {
 				this.code = code;
 				return types.Error.call(this, message, params);
 			}));
@@ -2119,7 +2333,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'object',
@@ -2132,7 +2346,7 @@
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !(obj === types.Type) && (obj !== types.Type) && !types.baseof(types.Type, obj);
+				return types.isFunction(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
 			});
 
 		types.isJsObject = __Internal__.DD_DOC(
@@ -2432,7 +2646,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -2455,7 +2669,7 @@
 				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
 					return null;
 				};
-				return obj.$TYPE_NAME || obj.name;
+				return obj.$TYPE_NAME || types.getFunctionName(obj);
 			});
 		
 		types.getBase = __Internal__.DD_DOC(
@@ -2846,7 +3060,7 @@
 								if (baseProto && types.isObjectLike(value)) {
 									var baseValue = baseProto[key];
 									if (types.isObjectLike(baseValue)) {
-										value = __Internal__.DD_DOC(baseValue.__DD_DOC__, value);
+										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
 									};
 								};
 								
@@ -3704,6 +3918,7 @@
 				/*instanceProto*/
 				{
 					DD_DOC: __Internal__.DD_DOC,
+					DD_GET_DOC: __Internal__.DD_GET_DOC,
 					DD_REGISTRY: null,  // Created by "Namespaces.js"
 					Namespace: types.Namespace,
 					
@@ -3750,7 +3965,7 @@
 						
 						var names = types.keys(modules);
 						if (!names.length) {
-							throw new Error("Missing bootstrap modules.");
+							throw new types.Error("Missing bootstrap modules.");
 						};
 						
 						var loading = {},
@@ -3772,7 +3987,7 @@
 										if (optional) {
 											bootstrapping = true;
 										} else {
-											throw new Error("Missing bootstrap module '" + dep + "'.");
+											throw new types.Error("Missing bootstrap module '~0~'.", [dep]);
 										};
 									};
 									if (!bootstrapping) {

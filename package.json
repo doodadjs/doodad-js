@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -74,6 +74,7 @@
 	"objects",
 	"inherit",
 	"extend",
+	"multiple inheritance",
     "framework"
   ],
   "author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",

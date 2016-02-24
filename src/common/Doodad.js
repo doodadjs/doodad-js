@@ -45,7 +45,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad'] = {
 			type: null,
-			version: '1.2r',
+			version: '1.3r',
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
@@ -4299,7 +4299,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							paramsDirection: 'rightToLeft',
 							params: {
 								fn: {
@@ -4317,7 +4317,7 @@
 							description: "Specifies that a method will override the existing one with a new name.",
 					}
 					//! END_REPLACE()
-					, function RENAME_OVERRIDE(/*<<< optional[name]*/ /*optional*/fn) {
+					, function RENAME_OVERRIDE(/*<<< optional[name]*/ fn) {
 						var name = null;
 						if (arguments.length > 1) {
 							name = fn;
@@ -4325,14 +4325,14 @@
 						};
 						fn = doodad.AttributeBox(fn);
 						var val = types.unbox(fn);
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isJsFunction(val), "Invalid function.");
+						};
 						if (!name) {
-							if (!val || !val.name) {
+							name = types.getFunctionName(val);
+							if (!name) {
 								throw new types.TypeError("A new name is required.");
 							};
-							name = val.name;
-						};
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 						};
 						fn.METHOD_MODIFIERS = ((fn.METHOD_MODIFIERS || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
 						if (!fn.EXTENDER) {
@@ -4346,7 +4346,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							paramsDirection: 'rightToLeft',
 							params: {
 								fn: {
@@ -4372,14 +4372,14 @@
 						};
 						fn = doodad.AttributeBox(fn);
 						var val = types.unbox(fn);
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isJsFunction(val), "Invalid function.");
+						};
 						if (!name) {
-							if (!val || !val.name) {
+							name = types.getFunctionName(val);
+							if (!name) {
 								throw new types.TypeError("A new name is required.");
 							};
-							name = val.name;
-						};
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 						};
 						fn.METHOD_MODIFIERS = ((fn.METHOD_MODIFIERS || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
 						if (!fn.EXTENDER) {
@@ -5655,18 +5655,13 @@
 											optional: false,
 											description: "Class.",
 										},
-										paramarray: {
-											type: 'arrayof(any)',
-											optional: true,
-											description: "Method arguments.",
-										},
 									},
 									returns: 'any',
 									description: "Call '_super' from the specified implemented class.",
 						}
 						//! END_REPLACE()
 						, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-						function _superFrom(cls /*paramarray*/) {
+						function _superFrom(cls) {
 							var thisType = types.getType(this),
 								dispatch = thisType && thisType.$CURRENT_DISPATCH;
 							if (!dispatch) {
@@ -5688,12 +5683,12 @@
 							var name = dispatch.METHOD_NAME;
 
 							if (!types.isMethod(cls, name)) {
-								throw new types.TypeError(tools.format("Method '~0~' doesn't exist in type '~1~'.", [name, types.getTypeName(cls)]));
+								throw new types.TypeError(tools.format("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls)]));
 							};
 
 							this.overrideSuper();
 							
-							return cls[name].apply(this, types.toArray(arguments).slice(1));
+							return cls[name].bind(this);
 						})))))))),
 				};
 				

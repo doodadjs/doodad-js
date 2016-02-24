@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
 			type: null,
-			version: '1.2r',
+			version: '1.3r',
 			namespaces: null,
 			dependencies: null,
 			bootstrap: true,
@@ -90,10 +90,23 @@
 					mathFloor: global.Math.floor,
 					mathAbs: global.Math.abs,
 
-					objectToString: Object.prototype.toString,
+					objectToString: global.Object.prototype.toString,
 					
 					windowObject: global.Object,
+					
+					// "toString"
+					windowString: global.String,
 
+					// "hasIterators", "isIterable", "isIterator"
+					windowSymbolIterator: undefined,
+					
+					// "hasGenerators", "getGeneratorFunction", "isGeneratorFunction", "isGenerator"
+					GeneratorFunction: undefined,
+					
+					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
+					functionIsGenerator: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator : undefined),
+
+					
 					// Polyfills
 					
 					// "bind"
@@ -105,25 +118,25 @@
 					windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
 
 					// "toArray"
-					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? Array.from : undefined),
+					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
 				};
 				
 				delete __Internal__.arrayObj;   // free memory
-				
+
 				//===================================
 				// Cast functions
 				//===================================
 				
-				var __returnUndefined__ = function() {
+				__Internal__.returnUndefined = function() {
 					return undefined;
 				};
-				var __returnUndefinedString__ = function() {
+				__Internal__.returnUndefinedString = function() {
 					return 'undefined';
 				};
-				var __returnNull__ = function() {
+				__Internal__.returnNull = function() {
 					return null;
 				};
-				var __returnNullString__ = function() {
+				__Internal__.returnNullString = function() {
 					return 'null';
 				};
 				
@@ -132,9 +145,9 @@
 						throw new types.Error("Can't create object.");
 					};
 				};
-				types.Undefined.prototype.valueOf = __returnUndefined__;
-				types.Undefined.prototype.toString = __returnUndefinedString__;
-				types.Undefined.prototype.toSource = __returnUndefinedString__;
+				types.Undefined.prototype.valueOf = __Internal__.returnUndefined;
+				types.Undefined.prototype.toString = __Internal__.returnUndefinedString;
+				types.Undefined.prototype.toSource = __Internal__.returnUndefinedString;
 				types.undefined = new types.Undefined();
 
 				types.Null = function Null() {
@@ -142,9 +155,9 @@
 						throw new types.Error("Can't create object.");
 					};
 				};
-				types.Null.prototype.valueOf = __returnNull__;
-				types.Null.prototype.toString = __returnNullString__;
-				types.Null.prototype.toSource = __returnNullString__;
+				types.Null.prototype.valueOf = __Internal__.returnNull;
+				types.Null.prototype.toString = __Internal__.returnNullString;
+				types.Null.prototype.toSource = __Internal__.returnNullString;
 				types.null = new types.Null();
 				
 				types.toObject = root.DD_DOC(
@@ -177,7 +190,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -191,10 +204,11 @@
 					//! END_REPLACE()
 					, (__Natives__.arrayFrom || function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
 						if (types.isNothing(obj)) {
-							throw new types.TypeError(tools.format("can't convert ~0~ to object", [((obj === null) ? 'null' : 'undefined')]));
+							throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
 						};
 						obj = Object(obj);
-						var result;
+						var result,
+							fill = false;
 						if (types.isString(obj)) {
 							result = __Natives__.arraySlice.call(obj);
 						} else if (types.isArrayLike(obj)) {
@@ -205,14 +219,17 @@
 								result = __Natives__.arrayConstructor.apply(null, obj);
 							};
 						} else {
-							return [];
+							result = __Natives__.arrayConstructor.call(null, obj.length >>> 0);
+							fill = true;
 						};
+						var len = result.length;
 						if (mapFn) {
-							var len = result.length;
 							for (var key = 0; key < len; key++) {
-								if (key in result) {
-									result[key] = mapFn.call(thisObj, result[key], key);
-								};
+								result[key] = mapFn.call(thisObj, result[key], key);
+							};
+						} else if (fill) {
+							for (var key = 0; key < len; key++) {
+								result[key] = undefined;
 							};
 						};
 						return result;
@@ -242,7 +259,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -255,13 +272,7 @@
 					}
 					//! END_REPLACE()
 					, function toString(obj) {
-						if (obj === undefined) {
-							return "undefined";
-						} else if (obj === null) {
-							return "null";
-						} else {
-							return (obj + '');
-						};
+						return __Natives__.windowString(obj);
 					});
 				
 				types.toInteger = root.DD_DOC(
@@ -572,7 +583,7 @@
 						return false;
 					});
 
-				
+				// TODO: To remove
 				types._typeof = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1774,7 +1785,6 @@
 							var len = arguments.length;
 							for (var i = start; i < len; i++) {
 								obj = arguments[i];
-								obj = arguments[i];
 								if (types.isNothing(obj)) {
 									continue;
 								};
@@ -1962,6 +1972,168 @@
 							};
 						};
 					});
+				
+				//===================================
+				// Iterators
+				//===================================
+
+				__Natives__.windowSymbolIterator = (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+				
+				types.hasIterators = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'bool',
+								description: "Returns 'true' if engine supports iterators. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.windowSymbolIterator ? function hasIterators(obj) {
+						return true;
+					} : function hasIterators(obj) {
+						return false;
+					}));
+				
+				
+				types.isIterable = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.windowSymbolIterator ? function isIterable(obj) {
+						return (__Natives__.windowSymbolIterator in __Natives__.windowObject(obj));
+					} : function isIterable(obj) {
+						return false;
+					}));
+				
+				
+				types.isIterator = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is an iterator. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.windowSymbolIterator ? function isIterator(obj) {
+						return types.isObjectLike(obj) && types.isFunction(obj.next);
+					} : function isIterator(obj) {
+						return false;
+					}));
+				
+				
+				//===================================
+				// Generators
+				//===================================
+				
+				// <PRB> "Generator" and "GeneratorFunction" are not in the global space !!!
+				// <PRB> "Generator" looks like not having a class !!!
+				// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
+				
+				try {
+					__Natives__.GeneratorFunction = types.getPrototypeOf(eval("(function*(){})")).constructor;
+				} catch(ex) {
+				};
+
+				types.hasGenerators = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'bool',
+								description: "Returns 'true' if the engine supports generators. 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.GeneratorFunction ? function hasGenerators() {
+						return true;
+					} : function hasGenerators() {
+						return false;
+					}));
+				
+				types.getGeneratorFunction = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'function',
+								description: "Returns the 'GeneratorFunction' constructor.",
+					}
+					//! END_REPLACE()
+					, function getGeneratorFunction() {
+						return (__Natives__.GeneratorFunction || null);
+					});
+				
+				types.isGeneratorFunction = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.functionIsGenerator ? function isGeneratorFunction(obj) {
+						return __Natives__.functionIsGenerator.call(obj);
+					} : (__Natives__.GeneratorFunction ? function isGeneratorFunction(obj) {
+						return (Object(obj) instanceof __Natives__.GeneratorFunction);
+					} : function isGeneratorFunction(obj) {
+						return false;
+					})));
+				
+				types.isGenerator = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.GeneratorFunction ? function isGenerator(obj) {
+						var proto = types.getPrototypeOf(Object(obj));
+						if (proto) {
+							proto = types.getPrototypeOf(proto);
+						};
+						return (proto && proto.constructor ? (proto.constructor.constructor === __Natives__.GeneratorFunction) : false);
+					} : function isGenerator(obj) {
+						return false;
+					}));
 				
 				//===================================
 				// ECMA 6 Proxies functions
@@ -2236,7 +2408,7 @@
 					}
 					//! END_REPLACE()
 					, function unbox(value) {
-						return ((value instanceof types.box) ? value.__BOXED_VALUE__ : value);
+						return ((value instanceof types.box) ? value.valueOf() : value);
 					});
 					
 					
@@ -2465,11 +2637,11 @@
 					},
 					
 					isServerError: function isServerError(status) {
-						return (status >= 500) && (status < 600);
+						return (status >= 500);
 					},
 					
 					isError: function isError(status) {
-						return (status >= 400) && (status < 600);
+						return (status >= 400);
 					},
 				}), {
 					// Information

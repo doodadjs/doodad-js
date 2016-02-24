@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client.Browserify'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.3r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Client'],
 			bootstrap: true,
