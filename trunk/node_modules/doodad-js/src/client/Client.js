@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
 			type: null,
-			version: '1.1r',
+			version: '1.3r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
 			bootstrap: true,
@@ -91,6 +91,8 @@
 					windowNode: (types.isNativeFunction(global.Node) ? global.Node : undefined),
 					windowHtmlDocument: (types.isNativeFunction(global.HTMLDocument) ? global.HTMLDocument : undefined),
 					windowHtmlElement: (types.isNativeFunction(global.HTMLElement) ? global.HTMLElement : undefined),
+
+					windowError: global.Error,
 					
 					// getDefaultLanguage
 					windowNavigator: global.navigator,
@@ -706,7 +708,7 @@
 				}
 				//! END_REPLACE()
 				, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _new() {
-					return global.Error.call(this, "Page moved.");
+					return __Natives__.windowError.call(this, "Page moved.");
 				}));
 
 				tools.getCurrentLocation = root.DD_DOC(

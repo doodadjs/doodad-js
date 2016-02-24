@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '1.2r',
+			version: '1.3r',
 			namespaces: ['Entries'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -1158,7 +1158,7 @@
 									},
 								},
 								returns: 'ModuleEntry',
-								description: "Module registry entry.",
+								description: "Package registry entry.",
 						}
 						//! END_REPLACE()
 				, types.INIT(entries.Namespace.$inherit(

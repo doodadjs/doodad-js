@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Debug'] = {
 			type: null,
-			version: '1.2r',
+			version: '1.3r',
 			namespaces: null,
 			dependencies: ['Doodad.Namespaces'],
 			bootstrap: true,

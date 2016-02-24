@@ -1,4 +1,4 @@
-Fast object-oriented programming framework for Javascript and Node-Js.
+Object-oriented programming framework for Javascript.
 
 [![NPM Version][npm-image]][npm-url]
  
@@ -13,7 +13,7 @@ $ npm install doodad-js
 ## Features
 
   -  Classes
-  -  Inheritance
+  -  Inheritance (and Multiple Inheritance)
   -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
@@ -27,8 +27,8 @@ $ npm install doodad-js
   -  Static classes
   -  Useful utility functions
   -  Namespaces and a registry
-  -  Compatible with most recent browsers and NodeJs.
-  -  Compatible with Windows, Linux and MacOS X.
+  -  Compatible with most recent browsers and NodeJs (and some older browsers).
+  -  Compatible with Windows, Linux and MacOS X (and Android).
   -  Supports browserify.
 
 ## Quick Start
@@ -51,12 +51,27 @@ Now create the root namespace :
 You can create a shortcut to the namespaces this way :
 ```js
     const doodad = root.Doodad,
-		types = doodad.Types,
-		tools = doodad.Tools,
-		mixins = doodad.MixIns,
-		interfaces = doodad.Interfaces,
-		extenders = doodad.Extenders,
-		.... ;
+        types = doodad.Types,
+        tools = doodad.Tools,
+        mixins = doodad.MixIns,
+        interfaces = doodad.Interfaces,
+        extenders = doodad.Extenders,
+        namespaces = doodad.Namespaces,
+        ... ;
+```
+
+If you want to load additional Doodad modules :
+```js
+    const modules = {};
+    require('doodad-js-locale').add(modules);
+    require('doodad-js-dates').add(modules);
+    // ...
+    
+    function startup() {
+        // your code here...
+    };
+    
+    namespaces.loadNamespaces(startup, false, null, modules);
 ```
 
 ## Scopes
@@ -70,11 +85,11 @@ You can create a shortcut to the namespaces this way :
 ## Class Modifiers
 
   - **doodad.BASE**: The class is not ready for object instantiation and must be extended.
-  - **doodad.INTERFACE**: The class defines an interface. https://en.wikipedia.org/wiki/Protocol_%28object-oriented_programming%29
+  - **doodad.INTERFACE**: The class defines an Interface. https://en.wikipedia.org/wiki/Protocol_%28object-oriented_programming%29
   - **doodad.MIX_IN**: The class defines a Mix-in. https://en.wikipedia.org/wiki/Mixin
   - **doodad.TRAIT**: The class defines a Trait (currently implemented as "per convention", ie without validation). http://scg.unibe.ch/research/traits
   - **doodad.SEALED**: Objects instantiated from this class are sealed. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal
-  - **doodad.STATIC**: The class do not allow instantiating.
+  - **doodad.STATIC**: The class does not allow instantiating.
   - **doodad.ISOLATED**: The class defines an isolated interface. This kind of interface makes the methods separated from the methods of its host class. To get access to them, you must call "getInterface".
 
 ## Attribute Modifiers :
@@ -140,20 +155,55 @@ You can create a shortcut to the namespaces this way :
   - (client-side only) **mixins.JsEvents**: (mix-in) Makes a class with managed Javascript events.
   - (server-side only) **mixins.NodeEvents**: (mix-in) Makes a class with managed NodeJs events.
   
+## Pre-built Types
+
+  - **types.Type**: The base of every types.
+  - **types.CustomEvent**: (inherits 'types.Type') Custom event type for custom event targets.
+  - **types.CustomEventTarget**: (inherits 'types.Type') Custom event targets.
+  - **types.Namespace**: (inherits 'types.CustomEventTarget') Namespace object.
+
+## Pre-built Errors
+
+  - **types.TypeError**: (alias to 'global.TypeError') Raised on invalid value type.
+  - **types.Error**: (inherits 'global.Error') Generic error with message formatting.
+  - **types.AssertionFailed**: (inherits 'types.Error') Raised when an assertion fail.
+  - **types.ParseError**: (inherits 'types.Error') Raised on parse error.
+  - **types.NotSupported**: (inherits 'types.Error') Raised when something is not supported.
+  - **types.HttpError**: (inherits 'types.Error') Raised on HTTP error.
+  - **types.BufferOverflow**: (inherits 'types.Error') Raised on buffer overflow.
+  - **types.TimeoutError**: (inherits 'types.Error') Raised on timeout.
+  - **types.AccessDenied**: (inherits 'types.Error') Raised on access denied or not allowed operation.
+  
 ## Pre-built Classes
 
-  - **doodad.Class**: (inherits 'Types.Type') The base of every classes.
-  - **doodad.Object**: (inherits 'doodad.Class', implements 'Creatable') The base of every object classes.
+  - **doodad.Class**: (inherits 'types.Type') The base of every classes.
+  - **doodad.Object**: (inherits 'doodad.Class', implements 'mixins.Creatable') The base of every object classes.
 
 ## Pre-built Exceptions
   
-  - **Error**: General error (alias to 'Types.Error').
-  - **Application**: (inherits 'Error') Application error. An error with a title to be displayed to the end user. Exemple: "The selected customer is not allowed to buy the selected product."
+  - **doodad.Error**: (alias to 'types.Error') General error.
+  - **doodad.Application**: (inherits 'doodad.Error') Application error. An error with a title to be displayed to the end user. Exemple: "This customer is not allowed to buy this product."
   
-## Namespaces Functions
+## Namespaces
 
-  - **[namespace].REGISTER**: Registers a class in the namespace.
-  - **[namespace].UNREGISTER**: Unregisters a class from the namespace.
+  - **namespaces.Registry**: (inherits 'types.Type') Namespaces registry.
+  - **namespaces.Entries.Namespace**: (inherits 'types.Type') Namespace registry entry.
+  - **namespaces.Entries.Package**: (inherits 'namespaces.Entries.Namespace') Package registry entry.
+  - **namespaces.Entries.Module**: (inherits 'namespaces.Entries.Namespace') Module registry entry.
+  - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
+  - **namespaces.getEntry**: Returns the entry of the specified namespace from the registry.
+  - **namespaces.getNamespace**: Returns the namespace object of the specified namespace from the registry.
+  - **namespaces.loadNamespaces**: Load modules and get them ready to be used. Usage: namespaces.loadNamespaces(/*optional*/callback, /*optional*/dontThrow, /*optional*/options, /*optional*/specs, /*optional*/dontMergeGlobalSpecs)
+  - **namespaces.createNamespace**: INTERNAL.
+  - **namespaces.initNamespace**: INTERNAL.
+  - **namespaces.cloneNamespace**: INTERNAL.
+  
+  - **[namespace].REGISTER**: Registers a class in the namespace object.
+  - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.
+
+## More documentation
+
+Incomming... In the meantime, you can browse the source files and look at the "DD_DOC" headers.
   
 ## Examples
 
@@ -212,8 +262,9 @@ Example 2 (interfaces):
         }),
     })
 
-	types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles);
+    types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles);
 ```
+
 Example 3 (mix-ins) :
 ```js
     const Turtles = doodad.MIX_IN(doodad.Class.$extend({
@@ -229,8 +280,46 @@ Example 3 (mix-ins) :
     {
         $TYPE_NAME: 'Turtle1',
     })
-	
-	types._implements(Turtle1, Turtles);
+    
+    types._implements(Turtle1, Turtles);
+```
+
+Example 4 (traits) :
+```js
+    const TAnimals = doodad.TRAIT(doodad.Class.$extend({
+        $TYPE_NAME: 'TAnimals',
+
+        talk: doodad.PUBLIC(function() {
+            return this.getPhrase();
+        }),
+        
+        getPhrase: doodad.PROTECTED(doodad.MUST_OVERRIDE()),
+    }));
+
+    const Turtle = doodad.Object.$extend(
+                TAnimals,
+    {
+        $TYPE_NAME: 'Turtles',
+
+        phrase: doodad.PUBLIC(null),
+        
+        create: doodad.OVERRIDE(function(phrase) {
+            this.phrase = phrase;
+        }),
+        
+        talk: doodad.RENAME_OVERRIDE(function slowTalk() {
+            return this._super().split('').join('...');
+        }),
+
+        getPhrase: doodad.OVERRIDE(function() {
+            return this.phrase;
+        }),
+    });
+
+    const turtle = new Turtle("Hi !");
+
+    console.log(turtle.talk());
+    console.log(turtle.slowTalk());
 ```
 
 ## Other available packages

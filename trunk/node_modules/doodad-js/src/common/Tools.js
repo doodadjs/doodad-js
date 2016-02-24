@@ -75,7 +75,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
 			type: null,
-			version: '1.2r',
+			version: '1.3r',
 			namespaces: ['Files', 'Config'],
 			dependencies: ['Doodad.Types'],
 			bootstrap: true,
@@ -1074,7 +1074,7 @@
 								description: "Path error.",
 					}
 					//! END_REPLACE()
-					, types.createErrorType("PathError", global.Error)
+					, types.createErrorType("PathError", types.Error)
 					);
 					
 				tools.relativeToAbsolute = root.DD_DOC(
@@ -2183,7 +2183,7 @@
 				// URLs
 				//===================================
 				
-				//tools.UrlError = types.createErrorType("UrlError", global.Error);
+				//tools.UrlError = types.createErrorType("UrlError", types.Error);
 
 				tools.UrlArguments = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -3443,6 +3443,29 @@
 									};
 								}),
 								
+							toArray: root.DD_DOC(
+								//! REPLACE_BY("null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: null,
+											returns: 'arrayof(string)',
+											description: "Returns the path as an array.",
+								}
+								//! END_REPLACE()
+								, function toArray() {
+									var path = types.clone(this.path);
+									if (!this.isRelative) {
+										path.unshift('');
+									};
+									if (this.file) {
+										path.push(this.file);
+									} else {
+										path.push('');
+									};
+									return path;
+								}),
+								
 						}, __Internal__.urlOptions)
 					)));
 					
@@ -4540,8 +4563,8 @@
 							description: "Signals that script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
 					}
 					//! END_REPLACE()
-					, types.createErrorType("ScriptAbortedError", global.Error, function _new() {
-						return global.Error.call(this, "Script aborted.");
+					, types.createErrorType("ScriptAbortedError", types.Error, function _new() {
+						return types.Error.call(this, "Script aborted.");
 					}));
 				
 				tools.abortScript = root.DD_DOC(
