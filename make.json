@@ -54,6 +54,18 @@
 					},
 					{
 						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Tools_Files.js",
+						"destination": "%PACKAGEDIR%/Tools_Files.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Tools_Config.js",
+						"destination": "%PACKAGEDIR%/Tools_Config.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Types.js",
 						"destination": "%PACKAGEDIR%/Types.min.js",
 						"runDirectives": true
@@ -173,6 +185,28 @@
 						"class": "Make.File.Javascript",
 						"source": "%SOURCEDIR%/common/Tools.js",
 						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Tools_Files.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools_Files.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Tools_Files.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools_Files.min.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Copy",
+						"source": "%SOURCEDIR%/common/Tools_Config.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools_Config.js"
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/common/Tools_Config.js",
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/Tools_Config.min.js",
 						"runDirectives": true
 					},
 					{

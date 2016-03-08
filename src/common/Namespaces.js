@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: ['Entries'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -175,7 +175,7 @@
 					return namespace;
 				});
 				
-				namespaces.createNamespace = root.DD_DOC(
+				__Internal__.createNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -202,7 +202,7 @@
 						}
 						//! END_REPLACE()
 				, function createNamespace(spec, /*optional*/options, /*optional*/ignoreOptionals) {
-					var Promise = tools.getPromise();
+					var Promise = types.getPromise();
 					
 					try {
 						if (types.isString(spec)) {
@@ -286,7 +286,7 @@
 							};
 						};
 						
-						var parent = spec.parent,
+						var parent = spec.parent || null,
 							fullName;
 							
 						if (parent) {
@@ -295,9 +295,11 @@
 							delete spec.parent;
 						} else {
 							fullName = '';
-							parent = root;
+							if ((specType !== entries.Package) && !types.baseof(entries.Package, specType)) {
+								parent = root;
+							};
 						};
-							
+						
 						var shortNames = spec.name.split('.'),
 							shortNamesLen = shortNames.length,
 							shortName,
@@ -392,7 +394,7 @@
 										newSpec.type = entries.Namespace;
 									};
 									newSpec.parent = namespace; // Temporary property
-									var promise = namespaces.createNamespace(newSpec, options, ignoreOptionals);
+									var promise = __Internal__.createNamespace(newSpec, options, ignoreOptionals);
 									promises.push(promise);
 								};
 							};
@@ -411,7 +413,7 @@
 							if (!spec.bootstrap && spec.create) {
 								var retval = spec.create(root, options);
 								if (retval) {
-									if (tools.isPromise(retval)) {
+									if (types.isPromise(retval)) {
 										promises.push(
 											retval
 												['finally'](new namespaces.ReadyCallback())
@@ -451,7 +453,7 @@
 					};
 				});
 				
-				namespaces.initNamespace = root.DD_DOC(
+				__Internal__.initNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -473,7 +475,7 @@
 						}
 						//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
-					var Promise = tools.getPromise();
+					var Promise = types.getPromise();
 						
 					try {
 						if (entry && !entry.objectInitialized) {
@@ -492,7 +494,7 @@
 									if (depEntry && (depEntry instanceof entries.Module)) {
 										if (!depEntry.objectInitialized) {
 											if (depEntry.spec.autoInit !== false) {
-												var promise = namespaces.initNamespace(depEntry, options);
+												var promise = __Internal__.initNamespace(depEntry, options);
 												promises.push(promise);
 											};
 										};
@@ -505,7 +507,7 @@
 							if (entry.objectInit) {
 								if (types.isFunction(entry.objectInit)) {
 									var retval = entry.objectInit(options);
-									if (tools.isPromise(retval)) {
+									if (types.isPromise(retval)) {
 										promises.push(
 											retval
 												['finally'](new namespaces.ReadyCallback())
@@ -555,40 +557,35 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
+									specs: {
+										type: 'object',
+										optional: false,
+										description: "Namespaces specifications.",
+									},
 									callback: {
 										type: 'function',
 										optional: true,
 										description: "Callback function.",
-									},
-									dontThrow: {
-										type: 'boolean',
-										optional: true,
-										description: "'true' will not throw an error when it happens. 'false' will throw errors. Default is 'false'.",
 									},
 									options: {
 										type: 'object',
 										optional: true,
 										description: "Options.",
 									},
-									specs: {
-										type: 'object',
+									dontThrow: {
+										type: 'boolean',
 										optional: true,
-										description: "Namespaces specifications. Default is \"global.DD_MODULES\".",
-									},
-									dontMergeGlobalSpecs: {
-										type: 'bool',
-										optional: true,
-										description: "'true' will not merge specifications with \"global.DD_MODULES\". 'false' will merge. Default is 'false'.",
+										description: "'true' will not throw an error when it happens. 'false' will throw errors. Default is 'false'.",
 									},
 								},
 								returns: 'Promise(bool)',
 								description: "Returns 'true' when successful. Returns 'false' otherwise.",
 						}
 						//! END_REPLACE()
-				, function loadNamespaces(/*optional*/callback, /*optional*/dontThrow, /*optional*/options, /*optional*/specs, /*optional*/dontMergeGlobalSpecs) {
-					var Promise = tools.getPromise();
+				, function loadNamespaces(specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow) {
+					var Promise = types.getPromise();
 					
 					try {
 						var cbPromise = null;
@@ -632,22 +629,8 @@
 							__Internal__.cbPromises.push(cbPromise);
 						};
 						
-						var modules = global.DD_MODULES;
+						__Internal__.loadModules = types.extend(__Internal__.loadModules || {}, specs);
 						
-						if (specs) {
-							if (dontMergeGlobalSpecs) {
-								modules = specs;
-							} else {
-								modules = types.extend({}, modules, specs);
-							};
-						};
-						
-						__Internal__.loadModules = types.extend(__Internal__.loadModules || {}, modules);
-						
-						if (!dontMergeGlobalSpecs) {
-							global.DD_MODULES = {};
-						};
-
 						var terminate = function _terminate(err, result) {
 							if (err) {
 								// Manually reject every pending callback promises
@@ -694,7 +677,7 @@
 								var name = names[i],
 									spec = types.get(__Internal__.loadModules, name);
 								spec.name = name;
-								var promise = namespaces.createNamespace(spec, options, ignoreOptionals);
+								var promise = __Internal__.createNamespace(spec, options, ignoreOptionals);
 								promises.push(promise);
 							};
 							
@@ -739,7 +722,7 @@
 							var promises = [];
 								
 							for (var i = 0; i < toInit.length; i++) {
-								var promise = namespaces.initNamespace(toInit[i], options);
+								var promise = __Internal__.initNamespace(toInit[i], options);
 								promises.push(promise);
 							};
 
@@ -768,6 +751,7 @@
 					};
 				});
 
+				/*
 				namespaces.cloneNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
@@ -809,7 +793,7 @@
 								description: "Clones a namespace and returns the entry from the registry when successful. Returns 'null' otherwise.",
 						}
 						//! END_REPLACE()
-				, function cloneNamespace(name, /*optional*/newName, /*optional*/targetRoot, /*optional*/cloneDeps, /*optional*/dontThrow, /*optional*/options) {
+				, function cloneNamespace(name, / *optional* /newName, / *optional* /targetRoot, / *optional* /cloneDeps, / *optional* /dontThrow, / *optional* /options) {
 					if (!newName) {
 						newName = name;
 					};
@@ -830,7 +814,7 @@
 					
 					var specs = {};
 
-					var fillSpecs = function fillSpecs(name, /*optional*/newName) {
+					var fillSpecs = function fillSpecs(name, / *optional* /newName) {
 						if (!types.hasKey(specs, name)) {
 							var entry = namespaces.getEntry(name);
 							if (entry) {
@@ -854,7 +838,7 @@
 					
 					fillSpecs(name, newName);
 					
-					return targetNamespaces.loadNamespaces(null, dontThrow, options, specs, false)
+					return targetNamespaces.loadNamespaces(specs, null, options, dontThrow)
 						.then(function() {
 							var entry = targetNamespaces.getEntry(newName);
 							if (!entry) {
@@ -867,6 +851,7 @@
 							return entry;
 						});
 				});
+				*/
 				
 				//===================================
 				// Objects
@@ -1133,43 +1118,6 @@
 				entries.NamespaceObject = types.Namespace;
 				
 				//-----------------------------------
-				// Package entry object
-				//-----------------------------------
-				entries.Package = root.DD_DOC(
-						//! REPLACE_BY("null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									root: {
-										type: 'Root',
-										optional: false,
-										description: "Root namespace object",
-									},
-									spec: {
-										type: 'object',
-										optional: false,
-										description: "Namespace specifications",
-									},
-									namespace: {
-										type: 'Namespace',
-										optional: false,
-										description: "Namespace object",
-									},
-								},
-								returns: 'ModuleEntry',
-								description: "Package registry entry.",
-						}
-						//! END_REPLACE()
-				, types.INIT(entries.Namespace.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'PackageEntry'
-					}
-				)));
-				
-				
-				//-----------------------------------
 				// Module entry object
 				//-----------------------------------
 				entries.Module = root.DD_DOC(
@@ -1207,6 +1155,43 @@
 				
 				
 				//-----------------------------------
+				// Package entry object
+				//-----------------------------------
+				entries.Package = root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									root: {
+										type: 'Root',
+										optional: false,
+										description: "Root namespace object",
+									},
+									spec: {
+										type: 'object',
+										optional: false,
+										description: "Namespace specifications",
+									},
+									namespace: {
+										type: 'Namespace',
+										optional: false,
+										description: "Namespace object",
+									},
+								},
+								returns: 'PackageEntry',
+								description: "Package registry entry.",
+						}
+						//! END_REPLACE()
+				, types.INIT(entries.Namespace.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'PackageEntry'
+					}
+				)));
+				
+				
+				//-----------------------------------
 				// Application entry object
 				//-----------------------------------
 				entries.Application = root.DD_DOC(
@@ -1235,7 +1220,7 @@
 								description: "Application registry entry.",
 						}
 						//! END_REPLACE()
-				, types.INIT(entries.Module.$inherit(
+				, types.INIT(entries.Namespace.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ApplicationEntry'

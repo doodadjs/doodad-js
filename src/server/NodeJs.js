@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.NodeJs'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
+			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -161,8 +161,8 @@
 					//! END_REPLACE()
 					, function getCurrentLocation() {
 						const args = [],
-							path = tools.Path.parse(process.argv[1]),
-							url = tools.Url.parse(path);
+							path = files.Path.parse(process.argv[1]),
+							url = files.Url.parse(path);
 						for (let i = 2; i < process.argv.length; i++) {
 							args.push(process.argv[i]);
 						};
@@ -196,11 +196,11 @@
 						// FIXME: Does "nothing"
 						
 						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof tools.Url), "Invalid url.");
+							root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof files.Url), "Invalid url.");
 						};
 						
 						if (types.isString(url)) {
-							url = tools.Url.parse(url);
+							url = files.Url.parse(url);
 						};
 						
 						if (url.protocol !== 'file') {
@@ -215,7 +215,7 @@
 							args = args.split('&');
 						};
 						
-						url = tools.Path.parse(url).toString({
+						url = files.Path.parse(url).toString({
 							os: null,
 							dirChar: null,
 							quote: '"',
@@ -358,11 +358,11 @@
 					}
 					//! END_REPLACE()
 					, function getJsScriptFileLoader(file, /*optional*/async, /*optional*/timeout, /*optional*/reload) {
-						if (file instanceof tools.Url) {
-							file = tools.Path.parse(file);
+						if (file instanceof files.Url) {
+							file = files.Path.parse(file);
 						};
 
-						if (file instanceof tools.Path) {
+						if (file instanceof files.Path) {
 							file = file.toString({
 								os: null,
 								dirChar: null,
@@ -487,7 +487,7 @@
 					//! END_REPLACE()
 					, function loadFile(path, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(path)) {
-							path = tools.getOptions().hooks.pathParser(path, types.get(options, 'parseOptions'));
+							path = files.getOptions().hooks.pathParser(path, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(path, options, callbacks);
 					});
@@ -519,9 +519,9 @@
 					}
 					//! END_REPLACE()
 					, function rmdir(path, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						if (types.isString(path)) {
-							path = tools.Path.parse(path);
+							path = files.Path.parse(path);
 						};
 						const name = path.toString({
 							os: null,
@@ -660,9 +660,9 @@
 					}
 					//! END_REPLACE()
 					, function mkdir(path, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						if (types.isString(path)) {
-							path = tools.Path.parse(path);
+							path = files.Path.parse(path);
 						};
 						const async = types.get(options, 'async', false);
 						if (types.get(options, 'makeParents', false)) {
@@ -769,12 +769,12 @@
 					}
 					//! END_REPLACE()
 					, function copy(source, destination, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						if (types.isString(source)) {
-							source = tools.Path.parse(source);
+							source = files.Path.parse(source);
 						};
 						if (types.isString(destination)) {
-							destination = tools.Path.parse(destination);
+							destination = files.Path.parse(destination);
 						};
 						const async = types.get(options, 'async', false),
 							bufferLength = types.get(options, 'bufferLength', 4096);
@@ -1019,10 +1019,10 @@
 						// TODO: 'depth' for synchronous
 						
 						if (types.isString(path)) {
-							path = tools.Path.parse(path);
+							path = files.Path.parse(path);
 						};
 
-						const Promise = tools.getPromise(),
+						const Promise = types.getPromise(),
 							async = types.get(options, 'async', false),
 							depth = (+types.get(options, 'depth') || 0) - 1,  // null|undefined|true|false|NaN|Infinity
 							relative = types.get(options, 'relative', false),
@@ -1133,7 +1133,7 @@
 										return result;
 									};
 								};
-								return readdir(null, path, (relative ? tools.Path.parse('./', {os: 'linux'}) : null), depth);
+								return readdir(null, path, (relative ? files.Path.parse('./', {os: 'linux'}) : null), depth);
 							} else {
 								if (depth >= 0) {
 									throw new types.NotSupported("'depth' is not supported for the syncronous operation.");
@@ -1143,7 +1143,7 @@
 										dirChar: null, 
 										shell: 'api',
 									}));
-								let pathRel = (relative ? tools.Path.parse('./', {os: 'linux'}) : null),
+								let pathRel = (relative ? files.Path.parse('./', {os: 'linux'}) : null),
 									file;
 								while (file = files.shift()) {
 									const isFolder = getStats(file, path, pathRel);
@@ -1182,7 +1182,7 @@
 						};
 						if (!stats || !stats.isDirectory()) {
 							// Android or other
-							folder = tools.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
+							folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
 							try {
 								files.mkdir(folder);
 							} catch(ex) {
@@ -1219,13 +1219,13 @@
 					}
 					//! END_REPLACE()
 					, function readFile(path, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						if (types.isString(path)) {
-							const url = tools.Url.parse(path);
+							const url = files.Url.parse(path);
 							if (url.protocol) {
 								path = url;
 							} else {
-								path = tools.Path.parse(path);
+								path = files.Path.parse(path);
 							};
 						};
 						const async = types.get(options, 'async', false),
@@ -1241,9 +1241,9 @@
 								timeoutId: null,
 								data: null,
 							};
-							if ((path instanceof tools.Path) || ((path instanceof tools.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
-								if (path instanceof tools.Url) {
-									path = tools.Path.parse(path);
+							if ((path instanceof files.Path) || ((path instanceof files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+								if (path instanceof files.Url) {
+									path = files.Path.parse(path);
 								};
 								path = path.toString({
 									os: null,
@@ -1390,20 +1390,20 @@
 					//! END_REPLACE()
 					, function watch(path, callbacks, /*optional*/options) {
 						if (types.isString(path)) {
-							const url = tools.Url.parse(path);
+							const url = files.Url.parse(path);
 							if (url.protocol) {
 								path = url;
 							} else {
-								path = tools.Path.parse(path);
+								path = files.Path.parse(path);
 							};
 						};
 						if (!types.isArray(callbacks)) {
 							callbacks = [callbacks];
 						};
 						
-						if ((path instanceof tools.Path) || ((path instanceof tools.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
-							if (path instanceof tools.Url) {
-								path = tools.Path.parse(path);
+						if ((path instanceof files.Path) || ((path instanceof files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+							if (path instanceof files.Url) {
+								path = files.Path.parse(path);
 							};
 							path = path.toString({
 								os: null,
@@ -1521,7 +1521,13 @@
 							description: "NodeJS Console with hooks.",
 				}
 				//! END_REPLACE()
-				, types.createType("Console", nodeConsole, 
+				, types.createType(
+					/*name*/
+					"Console", 
+					
+					/*base*/
+					nodeConsole, 
+					
 					/*constructor*/
 					function(hook, /*optional*/stdout, /*optional*/stderr) {
 						if (!types.isJsFunction(hook)) {
@@ -1537,6 +1543,7 @@
 						};
 						return nodeConsole.call(this, stdout, stderr);
 					}, 
+					
 					/*typeProto*/
 					{
 						__oldConsole: null,
@@ -1608,6 +1615,7 @@
 							};
 						}),
 					},
+					
 					/*instanceProto*/
 					{
 						__hook: null,
@@ -1800,7 +1808,7 @@
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 							var canReject = this.extender.canReject;
 							var self = this;
-							var Promise = tools.getPromise();
+							var Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
 								self.attachOnce(emitters, context, function(ev) {
 									if (canReject && (ev instanceof doodad.ErrorEvent)) {
@@ -1888,7 +1896,7 @@
 				return function init(/*optional*/options) {
 					// ES6 Promise polyfills
 					try {
-						tools.getPromise();
+						types.getPromise();
 					} catch(ex) {
 						let Promise;
 						try {
@@ -1902,7 +1910,7 @@
 							};
 						};
 						if (types.isFunction(Promise)) {
-							tools.setPromise(Promise);
+							types.setPromise(Promise);
 						};
 					};
 				};

@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Tools', 'Doodad.Types', 'Doodad.Namespaces'],
+			dependencies: ['Doodad.Tools', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -50,6 +50,7 @@
 
 				var doodad = root.Doodad,
 					tools = doodad.Tools,
+					files = tools.Files,
 					config = tools.Config,
 					types = doodad.Types,
 					namespaces = doodad.Namespaces,
@@ -103,12 +104,12 @@
 					}
 					//! END_REPLACE()
 					, function locate(module, /*optional*/path, /*optional*/options) {
-						var Promise = tools.getPromise();
+						var Promise = types.getPromise();
 						return new Promise(function(resolve, reject) {
 							var location = tools.getCurrentLocation().set({file: null}).combine(types.get(options, 'modulesUri', modules.getOptions().settings.modulesUri));
-							location = location.combine(tools.Path.parse(module, {os: 'linux'})).pushFile();
+							location = location.combine(files.Path.parse(module, {os: 'linux'})).pushFile();
 							if (path) {
-								location = location.combine(tools.Path.parse(path, {os: 'linux', isRelative: true}));
+								location = location.combine(files.Path.parse(path, {os: 'linux', isRelative: true}));
 							};
 							if (!location.file) {
 								location = location.set({file: 'index.js'});
@@ -144,7 +145,7 @@
 					}
 					//! END_REPLACE()
 					, function load(module, /*optional*/file, /*optional*/options) {
-						var Promise = tools.getPromise();
+						var Promise = types.getPromise();
 						return modules.locate(module, './config.json', options)
 							.then(function(location) {
 								return config.loadFile(location, {async: true, encoding: 'utf8'})
@@ -157,7 +158,6 @@
 										if (!types.isArray(file)) {
 											file = [file];
 										};
-										var DD_MODULES = {};
 										return Promise.all(tools.map(file, function(fname) {
 												return modules.locate(module, fname, options).then(function(location) {
 													return new Promise(function(resolve, reject) {
@@ -172,7 +172,7 @@
 												});
 											}))
 											.then(function(ev) {
-												return namespaces.loadNamespaces(null, true, conf);
+												return namespaces.loadNamespaces(global.DD_MODULES, null, conf, true);
 											});
 									});
 							})

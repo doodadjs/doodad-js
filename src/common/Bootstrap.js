@@ -31,6 +31,9 @@
 		module.exports = exports;
 	};
 
+	var MODULE_NAME = 'doodad-js';
+	var MODULE_VERSION = '2.0.0r';
+
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
 	if (Error.stackTraceLimit < 50) {
@@ -259,7 +262,7 @@
 		// DD_DOC
 		//===================================
 		
-		//! REPLACE_BY("__Internal__.DD_DOC=function(d,v){return v;};")
+		//! REPLACE_BY(";__Internal__.DD_DOC=function(d,v){return v;};")
 		__Internal__.DD_DOC = (types.hasSymbols() ? function DD_DOC(doc, value) {
 			value = Object(value);
 			value[types.getSymbol('DD_DOC')] = doc;
@@ -1694,6 +1697,7 @@
 			hooks: {
 				reservedAttributes: {
 					$TYPE_NAME: undefined,
+					$isSingleton: undefined,
 					INITIALIZED: undefined,
 					apply: undefined, 
 					call: undefined, 
@@ -1712,6 +1716,7 @@
 					propertyIsEnumerable: undefined, 
 					__EVENT_LISTENERS__: undefined,
 				},
+				
 				invoke: function invoke(obj, fn, /*optional*/args) {
 					if (types.isString(fn)) {
 						fn = obj[fn];
@@ -1721,6 +1726,45 @@
 					} else {
 						return fn.call(obj);
 					};
+				},
+				
+				getAttribute: function getAttribute(obj, attr) {
+					return obj[attr];
+				},
+				
+				getAttributes: function getAttributes(obj, attrs) {
+					var attrsLen = attrs.length,
+						result = {};
+					for (var i = 0; i < attrsLen; i++) {
+						var attr = attrs[i];
+						result[attr] = __options__.hooks.getAttribute(obj, attr);
+					};
+					return result;
+				},
+				
+				setAttribute: function setAttribute(obj, attr, value, /*optional*/options) {
+					var descriptor = types.getPropertyDescriptor(obj, attr);
+					if (descriptor && !descriptor.writable && !descriptor.get && !descriptor.set && descriptor.configurable) {
+						descriptor.value = value;
+						types.defineProperty(obj, attr, descriptor);
+					} else if (!descriptor && options && types.hasDefinePropertyEnabled()) {
+						descriptor = types.extend({}, options);
+						descriptor.value = value;
+						types.defineProperty(obj, attr, descriptor);
+					} else {
+						obj[attr] = value;
+					};
+					return value;
+				},
+				
+				setAttributes: function setAttributes(obj, values, /*optional*/options) {
+					var keys = types.keys(values),
+						keysLen = keys.length;
+					for (var i = 0; i < keysLen; i++) {
+						var key = keys[i];
+						__options__.hooks.setAttribute(obj, keys[i], values[key], options);
+					};
+					return values;
 				},
 			},
 		}, types.get(_options, 'startup'));
@@ -1908,7 +1952,7 @@
 							},
 						},
 						returns: 'object',
-						description: "Returns the descriptor of the own property of the object.",
+						description: "Returns the descriptor of an own property of an object.",
 			}
 			//! END_REPLACE()
 			, (__Natives__.objectGetOwnPropertyDescriptor || (function getOwnPropertyDescriptor(obj, key) {
@@ -1923,6 +1967,39 @@
 					return undefined;
 				};
 			})));
+		
+		types.getPropertyDescriptor = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+							key: {
+								type: 'string',
+								optional: false,
+								description: "Property name.",
+							},
+						},
+						returns: 'object',
+						description: "Returns the current descriptor of a property of an object.",
+			}
+			//! END_REPLACE()
+			, function getPropertyDescriptor(obj, key) {
+				var proto = obj,
+					descriptor = undefined;
+				if (key in obj) {
+					do {
+						descriptor = types.getOwnPropertyDescriptor(proto, key);
+						proto = types.getPrototypeOf(proto);
+					} while (!descriptor && proto);
+				};
+				return descriptor;
+			});
 		
 		types.createObject = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -2426,7 +2503,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -2460,7 +2537,6 @@
 					baseName,
 					i,
 					t;
-				obj = types.getPrototypeOf(obj);
 				for (i = 0; i < typeLen; i++) {
 					if (i in type) {
 						t = type[i];
@@ -2468,7 +2544,6 @@
 							if (!types.isFunction(t)) {
 								t = t.constructor;
 							};
-							t = types.getPrototypeOf(t);
 							if ((t === obj) || types.isPrototypeOf(t, obj)) {
 								return true;
 							};
@@ -2484,7 +2559,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							base: {
 								type: 'type',
@@ -2514,12 +2589,10 @@
 				var baseLen = base.length,
 					i,
 					b;
-				type = types.getPrototypeOf(type);
 				for (i = 0; i < baseLen; i++) {
 					if (i in base) {
 						b = base[i];
 						if (types.isFunction(b)) {
-							b = types.getPrototypeOf(b);
 							if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
 								return true;
 							};
@@ -2533,7 +2606,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							base: {
 								type: 'object',
@@ -2562,9 +2635,7 @@
 				if (!(type instanceof Array)) {
 					type = [type];
 				};
-				var proto = types.getPrototypeOf(obj),
-					typeLen = type.length,
-					baseName,
+				var typeLen = type.length,
 					i,
 					t;
 				for (i = 0; i < typeLen; i++) {
@@ -2585,7 +2656,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -2601,11 +2672,8 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				obj = __Natives__.windowObject(obj);
-				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
-				};
-				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
+				obj = types.getType(obj);
+				if (!obj) {
 					return false;
 				};
 				return !!obj.$isSingleton;
@@ -2676,7 +2744,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -2699,7 +2767,7 @@
 				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
 					return null;
 				};
-				return (types.getPrototypeOf(obj.prototype).constructor || null);
+				return types.getPrototypeOf(obj);
 			});
 
 		//===================================
@@ -2750,7 +2818,7 @@
 				return type;
 			});
 
-		var __emptyFunction__ = function empty() {};
+		__Internal__.emptyFunction = function empty() {};
 		
 		types.SUPER = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -2773,89 +2841,87 @@
 				return fn;
 			});
 		
-		types.createSuper = __Internal__.DD_DOC(
+		types.createCaller = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
-							superProto: {
-								type: ['object', 'method'],
-								optional: true,
-								description: "The prototype where the overridden method is stored, or the method itself.",
-							},
-							fnProto: {
-								type: ['object', 'method'],
-								optional: false,
-								description: "The prototype where the new method is stored, or the method itself.",
-							},
 							attr: {
 								type: 'string',
+								optional: false,
+								description: "The method name.",
+							},
+							proto: {
+								type: 'object',
+								optional: false,
+								description: "The new function.",
+							},
+							superFn: {
+								type: 'object',
 								optional: true,
-								description: "The method name. If not provided, 'superProto' and 'fnProto' must be the methods themselves.",
+								description: "The old function from base.",
 							},
 						},
 						returns: 'method',
 						description: "Returns a new method which is the result of the override.",
 			}
 			//! END_REPLACE()
-			, function createSuper(/*optional*/superProto, fnProto, /*optional*/attr, /*optional*/noGetSet) {
-				if (!fnProto) {
-					return null;
-				};
-				if (!attr) {
-					attr = 'value';
-					var tmp = {};
-					tmp[attr] = superProto;
-					superProto = tmp;
-					var tmp = {};
-					tmp[attr] = fnProto;
-					fnProto = tmp;
-				};
-				if (!superProto) {
-					superProto = {};
-				};
-				var _caller;
-				if (noGetSet) {
-					_caller = function caller(/*paramarray*/) {
-						var oldSuper = this._super;
-						//types.defineProperty(this, '_super', {value: _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__, enumerable: false, writable: false, configurable: true});
-						__Internal__.typeSetAttribute.call(this, '_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__, {enumerable: false, writable: false, configurable: true});
-						try {
-							return _caller.FUNCTION_PROTOTYPE[attr].apply(this, arguments);
-						} catch(ex) {
-							throw ex;
-						} finally {
-							//types.defineProperty(this, '_super', {value: oldSuper, enumerable: false, writable: false, configurable: true});
-							__Internal__.typeSetAttribute.call(this, '_super', oldSuper, {enumerable: false, writable: false, configurable: true});
-						};
-					};
-				} else {
-					_caller = function caller(/*paramarray*/) {
-						var oldSuper = __options__.hooks.invoke(this, 'getAttribute', ['_super']);
-						__options__.hooks.invoke(this, 'setAttribute', ['_super', _caller.SUPER_PROTOTYPE[attr] || __emptyFunction__], {enumerable: false, writable: false, configurable: true});
-						try {
-							return _caller.FUNCTION_PROTOTYPE[attr].apply(this, arguments);
-						} catch(ex) {
-							throw ex;
-						} finally {
-							__options__.hooks.invoke(this, 'setAttribute', ['_super', oldSuper], {enumerable: false, writable: false, configurable: true});
-						};
+			, function createCaller(attr, fn, /*optional*/superFn) {
+				var superFn = superFn || __Internal__.emptyFunction;
+				var _caller = function caller(/*paramarray*/) {
+					var oldSuper = __options__.hooks.getAttribute(this, '_super');
+					__options__.hooks.setAttribute(this, '_super', superFn, { configurable: true, enumerable: false, writable: false });
+					try {
+						return fn.apply(this, arguments);
+					} catch (ex) {
+						throw ex;
+					} finally {
+						__options__.hooks.setAttribute(this, '_super', oldSuper, { configurable: true, enumerable: false, writable: false });
 					};
 				};
 				_caller = types.setPrototypeOf(_caller, types.SUPER);
-				_caller.SUPER_PROTOTYPE = superProto;
-				_caller.FUNCTION_PROTOTYPE = fnProto;
 				_caller.METHOD_NAME = attr;
-				_caller.__DD_DOC__ = null;
 				return _caller;
+			});
+
+		types.createSuper = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							attr: {
+								type: 'string',
+								optional: false,
+								description: "The method name.",
+							},
+							proto: {
+								type: 'object',
+								optional: false,
+								description: "The prototype where the new method is stored.",
+							},
+							base: {
+								type: 'object',
+								optional: true,
+								description: "The prototype where the overridden method is stored.",
+							},
+						},
+						returns: 'method',
+						description: "Returns a new method which is the result of the override.",
+			}
+			//! END_REPLACE()
+			, function createSuper(attr, proto, /*optional*/base) {
+				var fn = __options__.hooks.getAttribute(proto, attr);
+				var superFn = base && __options__.hooks.getAttribute(base, attr);
+				return types.createCaller(attr, fn, superFn);
 			});
 
 		types.SINGLETON = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						paramsDirection: 'rightToLeft',
 						params: {
 							type: {
@@ -2893,26 +2959,27 @@
 				};
 				
 				if (!type.$isSingleton) {
-					__options__.hooks.invoke(type, 'setAttribute', ['$isSingleton', true]);
+					var name = types.getTypeName(type);
 					
-					var proto = types.getPrototypeOf(type);
-					proto.$inherit = types.createSuper(proto.$inherit, (function $inherit(/*paramarray*/) {
-						var obj = this._super.apply(this, arguments) || this;
-						if (types.baseof(types.Type, obj)) {
-							// Object is a type, so instantiate it
-							obj = types._new(obj, args);
-						};
-						return obj;
-					}));
-					__options__.hooks.invoke(proto, 'setAttribute', ['$isSingleton', true]);
-					
-					var proto = type.prototype;
-					proto.$inherit = types.createSuper(type.prototype.$inherit, (function $inherit(/*paramarray*/) {
-						var type = this._super.apply(this, arguments) || this;
-						type = types.getType(type);
-						return type.$inherit.apply(type, arguments);
-					})); 
-					
+					__options__.hooks.setAttributes(type, {
+						$isSingleton: true,
+						$inherit: types.createCaller('$inherit', function $inherit(/*paramarray*/) {
+							var obj = this._super.apply(this, arguments) || this;
+							if (types.baseof(types.Type, obj)) {
+								// Object is a type, so instantiate it
+								obj = types._new(obj, args);
+							};
+							return obj;
+						}, type.$inherit),
+					}, { configurable: true, enumerable: false, writable: false });
+
+					__options__.hooks.setAttributes(type.prototype, {
+						$inherit: types.createCaller('$inherit', function $inherit(/*paramarray*/) {
+							var type = this._super.apply(this, arguments) || this;
+							type = types.getType(type);
+							return type.$inherit.apply(type, arguments);
+						}, type.prototype.$inherit),
+					}, { configurable: true, enumerable: false, writable: false });
 				};
 				
 				type = types.INIT(type, args);
@@ -2959,11 +3026,11 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							name: {
 								type: 'string',
-								optional: false,
+								optional: true,
 								description: "Name of the new type.",
 							},
 							base: {
@@ -2996,49 +3063,33 @@
 						description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
 			}
 			//! END_REPLACE()
-			, function createType(name, /*optional*/base, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructorContext) {
+			, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructorContext) {
+				if (types.isNothing(name)) {
+					name = '';
+				};
+				
 				name = name.replace(/[.]/g, "_");
 				
-				var typeProtoIsFn = types.isFunction(typeProto);
+				var expr = "(" + (types.isFunction(constructor) ? "constructor" : "function " + name + "(/*paramarray*/) {" + (types.isString(constructor) ? constructor : (base ? "return base.apply(this, arguments) || this;" : "return this;")) + "}") + 
+							");";
 				
-				var expr = "[(" + (types.isFunction(constructor) ? "constructor" : "function " + name + "(/*paramarray*/) {" + (types.isString(constructor) ? constructor : (base ? "return base.apply(this, arguments) || this;" : "return this;")) + "}") + 
-							"),(" + (typeProtoIsFn ? "null" : "function " + name + "_Prototype(){}") + ")];";
+				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
+				var type = eval(expr),
+				    proto = type.prototype;
 				
-				var result = eval(expr);
-				
-				var type = result[0],
-					proto,
-					baseProto;
-				
-				// Attach type prototype
-				if (typeProtoIsFn) {
-					proto = typeProto;
-				} else {
-					proto = result[1];
-				};
-
-		/*
-				if (!base) {
-					// Create root prototype
-					proto = types.setPrototypeOf({
-						...
-					}, proto);
-				};
-		*/
-
 				// Inherit base
-				var baseProto,
-					baseIsType = false;
+				var baseIsType = false;
 				if (base) {
 					type = types.INHERIT(base, type);
-					
+					proto = type.prototype;
+
 					baseIsType = types.isType(base);
-					baseProto = types.getPrototypeOf(base);
-					proto = types.setPrototypeOf(proto, baseProto);
+					type = types.setPrototypeOf(type, base);
 				};
 			
-				// Set type prototype
-				type = types.setPrototypeOf(type, proto);
+				proto.constructor = type;
+				
+				var propsEnabled = types.hasDefinePropertyEnabled();
 
 				// Override type prototype
 				var reservedAttributes = __options__.hooks.reservedAttributes;
@@ -3050,112 +3101,86 @@
 									createSuper = (types.isFunction(value) ? value.superEnabled : false);
 									
 								if (createSuper) {
-									if (baseProto) {
-										value = types.createSuper(baseProto, typeProto, key, !baseIsType);
-									} else {
-										value = types.createSuper(proto, typeProto, key, !baseIsType);
-									};
+									value = types.createSuper(key, typeProto, base);
 								};
 								
-								if (baseProto && types.isObjectLike(value)) {
-									var baseValue = baseProto[key];
-									if (types.isObjectLike(baseValue)) {
-										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
-									};
-								};
+//								if (base && types.isObjectLike(value)) {
+//									var baseValue = base[key];
+//									if (types.isObjectLike(baseValue)) {
+//										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
+//									};
+//								};
 								
-								types.defineProperty(proto, key, {
-									configurable: true,
-									enumerable: true,
-									value: value,
-									writable: true,
-								});
+								if (propsEnabled) {
+									types.defineProperty(type, key, {
+										configurable: true,
+										enumerable: true,
+										value: value,
+										writable: true,
+									});
+								} else {
+									type[key] = value;
+								};
 							};
 						};
 					};
 				};
+				
+				if (propsEnabled) {
+					types.defineProperty(type, 'INITIALIZED', {
+						configurable: true,
+						enumerable: false,
+						value: false,
+						writable: false,
+					});
+				} else {
+					type.INITIALIZED = false;
+				};
 
 				// Override instance prototype
 				if (instanceProto) {
-					if (types.isFunction(instanceProto)) {
-						// var t1 = function(){};
-						// t1.prototype.value1 = 1;
-						// t1.prototype.value2 = 2;
-						// var t2 = function(){};
-						// t2.prototype = Object.types.setPrototypeOf(t2.prototype, new t1());
-						// var obj1 = new t2();
-						// console.log(obj1.value1);
-						// >>> 1
-						// console.log(obj1.value2);
-						// >>> 2
-						// t1.prototype.value1 = 5;
-						// var obj2 = new t2();
-						// console.log(obj1.value1);
-						// >>> 5
-						type.prototype = types.setPrototypeOf(type.prototype, new instanceProto());
-						
-						// var t1 = function(){};
-						// console.log(t1.prototype.constructor === t1);
-						// >>> true
-						// var proto1 = {a: 1};
-						// t1.prototype = proto1;
-						// console.log(t1.prototype.constructor === t1);
-						// >>> false  // BAD
-						// t1.prototype.constructor = t1;
-						// console.log(t1.prototype.constructor === t1);
-						// >>> true   // OK
-						type.prototype.constructor = type;
-
-					} else {
-						// [example: We don't know the prototype chain of the prototype object "proto"]
-						// 		var t1 = function() {};
-						// 		t1.prototype.junk = 'junk';
-						// 		t1.prototype.toString = function() {return 'oops';};
-						// 		var proto = new t1();
-						// [/example]
-						// proto.value = 'value';
-						// var t2 = function() {};
-						// t2.prototype = proto;
-						// var obj1 = new t2();
-						// console.log(obj1.value);
-						// >>> value
-						// console.log(obj1.junk);
-						// >>> junk    // BAD
-						// console.log(obj1.toString());
-						// >>> oops    // BAD
-						proto = type.prototype;
-						baseProto = (base ? base.prototype : null);
-						for (var key in instanceProto) {
-							if (types.hasKey(instanceProto, key) && (!types.hasKey(reservedAttributes, key))) {
-								if (types.hasKey(instanceProto, key)) {
-									var value = instanceProto[key],
-										createSuper = (types.isFunction(value) ? value.superEnabled : false);
-										
-									if (createSuper) {
-										if (baseProto) {
-											value = types.createSuper(baseProto, instanceProto, key, !baseIsType);
-										} else {
-											value = types.createSuper(proto, instanceProto, key, !baseIsType);
-										};
-									};
+					var baseProto = (base ? base.prototype : null);
+					for (var key in instanceProto) {
+						if (types.hasKey(instanceProto, key) && (!types.hasKey(reservedAttributes, key))) {
+							if (types.hasKey(instanceProto, key)) {
+								var value = instanceProto[key],
+									createSuper = (types.isFunction(value) ? value.superEnabled : false);
 									
-									if (baseProto && types.isObjectLike(value)) {
-										var baseValue = baseProto[key];
-										if (types.isObjectLike(baseValue)) {
-											value = __Internal__.DD_DOC(baseValue.__DD_DOC__, value);
-										};
-									};
+								if (createSuper) {
+									value = types.createSuper(key, instanceProto, baseProto);
+								};
+								
+//								if (baseProto && types.isObjectLike(value)) {
+//									var baseValue = baseProto[key];
+//									if (types.isObjectLike(baseValue)) {
+//										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
+//									};
+//								};
 
+								if (propsEnabled) {
 									types.defineProperty(proto, key, {
 										configurable: true,
 										enumerable: true,
 										value: value,
 										writable: true,
 									});
+								} else {
+									proto[key] = value;
 								};
 							};
 						};
 					};
+				};
+				
+				if (propsEnabled) {
+					types.defineProperty(proto, 'INITIALIZED', {
+						configurable: true,
+						enumerable: false,
+						value: false,
+						writable: false,
+					});
+				} else {
+					proto.INITIALIZED = false;
 				};
 				
 				// Return type
@@ -3167,7 +3192,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							typeProto: {
 								type: 'object',
@@ -3194,12 +3219,14 @@
 						description: "Creates and returns a new Doodad type that inherits from 'this'.",
 			}
 			//! END_REPLACE()
-			, function $inherit(typeProto, instanceProto, /*optional*/constructor, /*optional*/constructorContext) {
+			, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructor, /*optional*/constructorContext) {
 				// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
-				var base = ((this === global) ? undefined: this),
-					type = types.createType(
+				var name = (typeProto ? typeProto.$TYPE_NAME : null),
+					base = ((this === global) ? undefined: this);
+					
+				var type = types.createType(
 						/*name*/
-						typeProto.$TYPE_NAME, 
+						name,
 						
 						/*base*/
 						base, 
@@ -3216,16 +3243,18 @@
 						/*constructorContext*/
 						constructorContext
 					);
+					
 				if (types.hasDefinePropertyEnabled()) {
 					types.defineProperty(type, '$TYPE_NAME', {
 						configurable: true,
-						enumerable: true,
-						value: typeProto.$TYPE_NAME,
+						enumerable: false,
+						value: (name || ''),
 						writable: false,
 					});
 				} else {
-					type.$TYPE_NAME = typeProto.$TYPE_NAME;
+					type.$TYPE_NAME = (name || '');
 				};
+				
 				return type;
 			});
 		
@@ -3233,160 +3262,28 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'undefined',
 						description: "Object or type creator.",
 			}
 			//! END_REPLACE()
 			, function _new() {
-				if (!types.hasKey(this, '$isSingleton')) {
-					if (types.hasDefinePropertyEnabled()) {
-						types.defineProperty(this, '$isSingleton', {
-								configurable: false,
-								enumerable: false,
-								value: false,
-								writable: false,
-						});
-					} else {
-						this.$isSingleton = false;
-					};
-				};
-				this.setAttribute('INITIALIZED', true, {enumerable: false, writable: false, configurable: true});
+				__options__.hooks.setAttribute(this, 'INITIALIZED', true, {enumerable: false, writable: false, configurable: true});
 			});
 		
 		__Internal__.typeDelete = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'undefined',
 						description: "Object or type destructor.",
 			}
 			//! END_REPLACE()
 			, function _delete() {
-				this.setAttribute('INITIALIZED', false, {enumerable: false, writable: false, configurable: true});
-			});
-
-		__Internal__.typeGetAttribute = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							attr: {
-								type: 'string',
-								optional: false,
-								description: "Attribute name.",
-							},
-						},
-						returns: 'any',
-						description: "Returns the value of an attribute. Returns 'undefined' if the attribute doesn't exist.",
-			}
-			//! END_REPLACE()
-			, function getAttribute(attr) {
-				return this[attr];
-			});
-		
-		__Internal__.typeGetAttributes = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							attrs: {
-								type: 'arrayof(string)',
-								optional: false,
-								description: "Array of attribute names.",
-							},
-						},
-						returns: 'object',
-						description: "Returns an object with the attributes and their value.",
-			}
-			//! END_REPLACE()
-			, function getAttributes(attrs) {
-				var attrsLen = attrs.length,
-					result = {};
-				for (var i = 0; i < attrsLen; i++) {
-					var attr = attrs[i],
-						descriptor = types.getOwnPropertyDescriptor(this, attr);
-					if (descriptor)
-					result[attr] = this[attr];
-				};
-				return result;
-			});
-		
-		__Internal__.typeSetAttribute = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							attr: {
-								type: 'string',
-								optional: false,
-								description: "Attribute name.",
-							},
-							value: {
-								type: 'any',
-								optional: false,
-								description: "Attribute value.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Default property options.",
-							},
-						},
-						returns: 'any',
-						description: "Set the value to the attribute and returns that value.",
-			}
-			//! END_REPLACE()
-			, function setAttribute(attr, value, /*optional*/options) {
-				var descriptor = types.getOwnPropertyDescriptor(this, attr);
-				if (descriptor && !descriptor.writable && !descriptor.set && descriptor.configurable) {
-					descriptor.value = value;
-					types.defineProperty(this, attr, descriptor);
-				} else if (!descriptor && options && types.hasDefinePropertyEnabled()) {
-					descriptor = types.extend({}, options);
-					descriptor.value = value;
-					types.defineProperty(this, attr, descriptor);
-				} else {
-					this[attr] = value;
-				};
-				return value;
-			});
-		
-		__Internal__.typeSetAttributes = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							values: {
-								type: 'object',
-								optional: false,
-								description: "An object with the attributes and their value.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Default property options.",
-							},
-						},
-						returns: 'object',
-						description: "Set the value to each attributes and returns that values.",
-			}
-			//! END_REPLACE()
-			, function setAttributes(values, /*optional*/options) {
-				var keys = types.keys(values),
-					keysLen = keys.length;
-				for (var i = 0; i < keysLen; i++) {
-					var key = keys[i];
-					this.setAttribute(keys[i], values[key], options);
-				};
-				return values;
+				__options__.hooks.setAttribute(this, 'INITIALIZED', false, {enumerable: false, writable: false, configurable: true});
 			});
 		
 		__Internal__.typeToString = __Internal__.DD_DOC(
@@ -3443,7 +3340,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'object',
 						description: "Base type of every Doodad types.",
@@ -3454,19 +3351,10 @@
 				{
 					$TYPE_NAME: 'Type',
 					
-					$isSingleton: false,
-					//_super: null,
-					INITIALIZED: false,
-					
 					$inherit: __Internal__.typeInherit,
 					
 					_new: __Internal__.typeNew,
 					_delete: __Internal__.typeDelete,
-					
-					getAttribute: __Internal__.typeGetAttribute,
-					getAttributes: __Internal__.typeGetAttributes,
-					setAttribute: __Internal__.typeSetAttribute,
-					setAttributes: __Internal__.typeSetAttributes,
 					
 					toString: types.SUPER(__Internal__.typeToString),
 					toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
@@ -3478,11 +3366,6 @@
 					
 					_new: __Internal__.typeNew,
 					_delete: __Internal__.typeDelete,
-					
-					getAttribute: __Internal__.typeGetAttribute,
-					getAttributes: __Internal__.typeGetAttributes,
-					setAttribute: __Internal__.typeSetAttribute,
-					setAttributes: __Internal__.typeSetAttributes,
 					
 					toString: types.SUPER(__Internal__.typeToString),
 					toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
@@ -3594,7 +3477,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'object',
 						description: "Custom event target.",
@@ -3611,17 +3494,7 @@
 					
 					_new: types.SUPER(function _new() {
 						this._super();
-						if (types.hasDefinePropertyEnabled()) {
-							types.defineProperty(this, '__EVENT_LISTENERS__', {
-								enumerable: false,
-								writable: false,
-								configurable: false,
-								value: {},
-							});
-						} else {
-							// NOTE: Will enumerate
-							this.__EVENT_LISTENERS__ = {};
-						};
+						__options__.hooks.setAttribute(this, '__EVENT_LISTENERS__', {}, {configurable: true, enumerable: false, writable: false});
 					}),
 					
 					addEventListener: __Internal__.DD_DOC(
@@ -3830,7 +3703,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							parent: {
 								type: 'Doodad.Types.Namespace',
@@ -3864,10 +3737,10 @@
 					DD_FULL_NAME: null,
 					DD_OPTIONS: null,
 					
-					_new: types.SUPER(function(parent, name, fullName) {
+					_new: types.SUPER(function _new(parent, name, fullName) {
 						this._super();
 						
-						this.setAttributes({
+						__options__.hooks.setAttributes(this, {
 							DD_PARENT: parent,
 							DD_NAME: name,
 							DD_FULL_NAME: fullName,
@@ -3893,7 +3766,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							modules: {
 								type: 'arrayof(object)',
@@ -3927,7 +3800,7 @@
 						
 						this._super(null, '<Root>', '<Root>');
 
-						this.setAttribute('DD_OPTIONS', __options__);
+						__options__.hooks.setAttribute(this, 'DD_OPTIONS', __options__);
 						
 						// Prebuild "Doodad.Types" and "Doodad.Tools"
 						var doodadNs = this.Doodad = new types.Namespace(this, 'Doodad', 'Doodad'),
@@ -3941,14 +3814,34 @@
 						
 						if (types.hasDefinePropertyEnabled()) {
 							types.defineProperties(typesNs, {
-								'createRoot': {
+								createRoot: {
 									get: function() {
 										return exports.createRoot;
 									},
 								},
-								'invoke': {
+								invoke: {
 									get: function() {
 										return __options__.hooks.invoke;
+									},
+								},
+								getAttribute: {
+									get: function() {
+										return __options__.hooks.getAttribute;
+									},
+								},
+								getAttributes: {
+									get: function() {
+										return __options__.hooks.getAttributes;
+									},
+								},
+								setAttribute: {
+									get: function() {
+										return __options__.hooks.setAttribute;
+									},
+								},
+								setAttributes: {
+									get: function() {
+										return __options__.hooks.setAttributes;
 									},
 								},
 							});
@@ -3956,6 +3849,18 @@
 							typesNs.createRoot = exports.createRoot;
 							typesNs.invoke = function invoke(obj, fn, /*optional*/args) {
 								return __options__.hooks.invoke(obj, fn, args);
+							};
+							typesNs.getAttribute = function getAttribute(obj, attr) {
+								return __options__.hooks.getAttribute(obj, attr);
+							};
+							typesNs.getAttributes = function getAttributes(obj, attrs) {
+								return __options__.hooks.getAttributes(obj, attrs);
+							};
+							typesNs.setAttribute = function setAttribute(obj, attr, value, /*optional*/options) {
+								return __options__.hooks.setAttribute(obj, attr, value, options);
+							};
+							typesNs.setAttributes = function setAttributes(obj, values, /*optional*/options) {
+								return __options__.hooks.setAttributes(obj, values, options);
 							};
 						};
 						
@@ -3967,7 +3872,7 @@
 						if (!names.length) {
 							throw new types.Error("Missing bootstrap modules.");
 						};
-						
+
 						var loading = {},
 							nsObjs = {},
 							name;
@@ -4030,7 +3935,7 @@
 									};
 									parent = namespace;
 								};
-				
+					
 								var opts = types.get(options, name);
 								var init = mod.create && mod.create(this, opts);
 								init && init(opts);
@@ -4043,71 +3948,57 @@
 							};
 						};
 						
-						__recordNewBootstraps__ = false;
-						
-						//this.Doodad.Namespaces.loadNamespaces(null, true, options, __bootstraps__);
-						names = types.keys(nsObjs);
-						var namespaces = this.Doodad.Namespaces,
-							entries = namespaces.Entries;
-						for (var i = 0; i < names.length; i++) {
-							name = names[i];
-							var spec = __bootstraps__[name];
-							spec.name = name;
-							var entry = new entries.Module(this, spec, nsObjs[name]);
-							this.DD_REGISTRY.add(name, entry);
+						if (__recordNewBootstraps__) {
+							__bootstraps__[MODULE_NAME] = {
+								type: 'Package',
+								version: MODULE_VERSION,
+								namespaces: null,
+								dependencies: null,
+								bootstrap: true,
+							};
+							
+							__recordNewBootstraps__ = false;
 						};
+
+						this.Doodad.Namespaces.loadNamespaces(__bootstraps__, null, options, false);
 					}),
 					
-				enableAsserts: __Internal__.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Enables 'DD_ASSERT'.",
-					}
-					//! END_REPLACE()
-					, function enableAsserts() {
-						if (types.hasDefinePropertyEnabled()) {
-							types.defineProperty(this, 'DD_ASSERT', {
-								configurable: true, 
-								enumerable: false, 
-								value: __ASSERT__,
-								writable: false,
-							});
-						} else {
-							this.DD_ASSERT = __ASSERT__;
-						};
-					}),
-				
-				disableAsserts: __Internal__.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Disables 'DD_ASSERT'.",
-					}
-					//! END_REPLACE()
-					, function disableAsserts() {
-						delete this.DD_ASSERT;
-					}),
+					enableAsserts: __Internal__.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: null,
+								returns: 'undefined',
+								description: "Enables 'DD_ASSERT'.",
+						}
+						//! END_REPLACE()
+						, function enableAsserts() {
+							if (types.hasDefinePropertyEnabled()) {
+								types.defineProperty(this, 'DD_ASSERT', {
+									configurable: true, 
+									enumerable: false, 
+									value: __ASSERT__,
+									writable: false,
+								});
+							} else {
+								this.DD_ASSERT = __ASSERT__;
+							};
+						}),
 					
-				setOptions: __Internal__.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'undefined',
-							description: "Disables 'setOptions'.",
-					}
-					//! END_REPLACE()
-					, function setOptions() {
-						throw new types.Error("Startup options are read-only");
-					}),
+					disableAsserts: __Internal__.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: null,
+								returns: 'undefined',
+								description: "Disables 'DD_ASSERT'.",
+						}
+						//! END_REPLACE()
+						, function disableAsserts() {
+							delete this.DD_ASSERT;
+						}),
 				}
 			)));
 	};

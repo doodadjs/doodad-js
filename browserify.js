@@ -32,6 +32,7 @@ module.exports = {
 		} catch(ex) {
 		};
 		
+		
 		DD_MODULES = (DD_MODULES || {});
 		
 		if (Object.assign) {
@@ -69,46 +70,23 @@ module.exports = {
 		var dev = (dev_values.indexOf(env) >= 0),
 			bootstrap;
 			
-		if (dev || (options.startup.settings.fromSource === 'true') || +options.startup.settings.fromSource) {
-			if (dev) {
-				options.startup.settings.fromSource = true;
-				options.startup.settings.enableProperties = true;
-				require("./dist/doodad-js/Debug.js").add(DD_MODULES);
-			};
-
-			require("./dist/doodad-js/Types.js").add(DD_MODULES);
-			require("./dist/doodad-js/Tools.js").add(DD_MODULES);
-			require("./dist/doodad-js/Namespaces.js").add(DD_MODULES);
-			require("./dist/doodad-js/Doodad.js").add(DD_MODULES);
-			require("./dist/doodad-js/Modules.js").add(DD_MODULES);
-			require("./dist/doodad-js/Client.js").add(DD_MODULES);
-			require("./dist/doodad-js/Browserify.js").add(DD_MODULES);
-
-			bootstrap = require("./dist/doodad-js/Bootstrap.js");
-
-		} else {
-			// TODO: Find a way to prevent browserify to bundle both versions.
-			//require("./dist/doodad-js/Types.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Tools.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Namespaces.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Doodad.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Modules.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Client.min.js").add(DD_MODULES);
-			//require("./dist/doodad-js/Browserify.min.js").add(DD_MODULES);
-
-			require("./dist/doodad-js/Types.js").add(DD_MODULES);
-			require("./dist/doodad-js/Tools.js").add(DD_MODULES);
-			require("./dist/doodad-js/Namespaces.js").add(DD_MODULES);
-			require("./dist/doodad-js/Doodad.js").add(DD_MODULES);
-			require("./dist/doodad-js/Modules.js").add(DD_MODULES);
-			require("./dist/doodad-js/Client.js").add(DD_MODULES);
-			require("./dist/doodad-js/Browserify.js").add(DD_MODULES);
-			
-			// TODO: Find a way to prevent browserify to bundle both versions.
-			//bootstrap = require("./dist/doodad-js/Bootstrap.min.js");
-			
-			bootstrap = require("./dist/doodad-js/Bootstrap.js");
+		if (dev) {
+			options.startup.settings.fromSource = true;
+			options.startup.settings.enableProperties = true;
+			require("./dist/doodad-js/Debug.js").add(DD_MODULES);
 		};
+
+		require("./dist/doodad-js/Types.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools_Files.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools_Config.js").add(DD_MODULES);
+		require("./dist/doodad-js/Namespaces.js").add(DD_MODULES);
+		require("./dist/doodad-js/Doodad.js").add(DD_MODULES);
+		require("./dist/doodad-js/Modules.js").add(DD_MODULES);
+		require("./dist/doodad-js/Client.js").add(DD_MODULES);
+		require("./dist/doodad-js/Browserify.js").add(DD_MODULES);
+
+		bootstrap = require("./dist/doodad-js/Bootstrap.js");
 
 		return bootstrap.createRoot(DD_MODULES, options);
 	},

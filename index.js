@@ -23,9 +23,18 @@
 
 "use strict";
 
-module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
-		let config = null;
+(function() {
+	var global = this;
+
+	var exports = {};
+	if (typeof process === 'object') {
+		module.exports = exports;
+	};
+	
+	var MODULE_NAME = 'doodad-js';
+	
+	exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
+		var config = null;
 		try {
 			// Generated from 'doodad-js-make'
 			config = require('./config.json');
@@ -33,6 +42,7 @@ module.exports = {
 		};
 		
 		DD_MODULES = (DD_MODULES || {});
+
 		options = Object.assign({}, config, options);
 
 		if (!options.startup) {
@@ -42,11 +52,11 @@ module.exports = {
 			options.startup.settings = {};
 		};
 
-		const dev_values = (options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development']),
+		var dev_values = (options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development']),
 			env = (options.node_env || process.env.node_env || process.env.NODE_ENV),
 			dev = (dev_values.indexOf(env) >= 0);
 			
-		let bootstrap;
+		var bootstrap;
 		if (dev || (options.startup.settings.fromSource === 'true') || +options.startup.settings.fromSource) {
 			if (dev) {
 				options.startup.settings.fromSource = true;
@@ -56,6 +66,8 @@ module.exports = {
 
 			require("./src/common/Types.js").add(DD_MODULES);
 			require("./src/common/Tools.js").add(DD_MODULES);
+			require("./src/common/Tools_Files.js").add(DD_MODULES);
+			require("./src/common/Tools_Config.js").add(DD_MODULES);
 			require("./src/common/Namespaces.js").add(DD_MODULES);
 			require("./src/common/Doodad.js").add(DD_MODULES);
 			require("./src/server/Modules.js").add(DD_MODULES);
@@ -66,6 +78,8 @@ module.exports = {
 		} else {
 			require("./Types.min.js").add(DD_MODULES);
 			require("./Tools.min.js").add(DD_MODULES);
+			require("./Tools_Files.min.js").add(DD_MODULES);
+			require("./Tools_Config.min.js").add(DD_MODULES);
 			require("./Namespaces.min.js").add(DD_MODULES);
 			require("./Doodad.min.js").add(DD_MODULES);
 			require("./Modules.min.js").add(DD_MODULES);
@@ -75,5 +89,11 @@ module.exports = {
 		};
 
 		return bootstrap.createRoot(DD_MODULES, options);
-	},
-};
+	};
+
+	
+	if (typeof process !== 'object') {
+		// <PRB> export/import are not yet supported in browsers
+		global.DD_MODULES = exports.add(global.DD_MODULES);
+	};
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
