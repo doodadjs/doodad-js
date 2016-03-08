@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+﻿//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
 // dOOdad - Object-oriented programming framework
 // File: Types.js - Types management
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
 			dependencies: null,
 			bootstrap: true,
@@ -58,8 +58,6 @@
 					// "toSource"
 					supportsVerticalTabEscape: ('\v' !== 'v'),
 					supportsNullCharEscape: ('\0' !== '0'),
-					
-					oldSetOptions: null,
 				};
 
 				//===================================
@@ -106,6 +104,9 @@
 					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
 					functionIsGenerator: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator : undefined),
 
+					// "toSource"
+					stringCharCodeAt: String.prototype.charCodeAt,
+					
 					
 					// Polyfills
 					
@@ -113,6 +114,7 @@
 					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
 					
 					// ES6
+					windowPromise: (types.isNativeFunction(global.Promise) ? global.Promise : undefined),
 					windowSet: (types.isNativeFunction(global.Set) ? global.Set : undefined),
 					windowMap: (types.isNativeFunction(global.Map) ? global.Map : undefined),
 					windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
@@ -583,58 +585,6 @@
 						return false;
 					});
 
-				// TODO: To remove
-				types._typeof = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value.",
-								},
-							},
-							returns: 'string',
-							description: "Returns the type of a value. It does something similar to what 'typeof' should do instead of its current ECMA specification.",
-					}
-					//! END_REPLACE()
-					, function _typeof(obj) {
-						if (types.isNothing(obj)) {
-							return 'undefined';
-						} else if (types.isType(obj)) {
-							return '[' + types.getTypeName(obj) + ']';
-						} else if (types.isFunction(obj)) {
-							return 'function';
-						} else if (types.isInfinite(obj)) {
-							return 'infinite';
-						} else if (types.isInteger(obj)) {
-							return 'integer';
-						} else if (types.isFloat(obj)) {
-							return 'float';
-						} else if (types.isBoolean(obj)) {
-							return 'boolean';
-						} else if (types.isString(obj)) {
-							return 'string';
-						} else if (types.isDate(obj)) {
-							return 'date';
-						} else if (types.isArray(obj)) {
-							return 'array';
-						} else if (types.isError(obj)) {
-							return 'error';
-						} else if (types.isNaN(obj)) {
-							return 'nan';
-						} else if (types.isSymbol(obj)) {
-							return 'symbol';
-						} else if (types.isObject(obj)) {
-							return 'object';
-						} else {
-							return 'unknown'; // not supported
-						};
-					});
-					
-					
 				types.gets = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1813,7 +1763,6 @@
 						return result;
 					});
 			
-
 				//===================================
 				// "toSource" function
 				//===================================
@@ -1822,7 +1771,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -1837,7 +1786,7 @@
 									options: {
 										type: 'object',
 										optional: true,
-										description: "Options... 'allowToSource' (bool): When 'true', calls the function 'toSource' of the object when it exists.",
+										description: "Options.",
 									},
 								},
 								returns: 'string',
@@ -1862,10 +1811,16 @@
 								if (types.isString(obj)) {
 									var str = '',
 										len = val.length;
+									var allowNullChar = types.get(options, 'allowNullChar', __Internal__.supportsNullCharEscape);
+									var allowVerticalTab = types.get(options, 'allowVerticalTab', __Internal__.supportsVerticalTabEscape);
+									//var allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
+									//for (var i = 0; i < len; ) {
 									for (var i = 0; i < len; i++) {
-										var chr = val[i],
-											code = chr.charCodeAt(0);
-										if (__Natives__.supportsNullCharEscape && (code === 0x0000)) { // Null
+										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [__Natives__.stringCharCodeAt.call(val, i), 1]);
+										//var size = code[1];
+										//code = code[0];
+										var code = __Natives__.stringCharCodeAt.call(val, i);
+										if (allowNullChar && (code === 0x0000)) { // Null
 											str += '\\0';
 										} else if (code === 0x0008) { // Backspace
 											str += '\\b';
@@ -1873,7 +1828,7 @@
 											str += '\\t';
 										} else if (code === 0x000A) { // Line Feed
 											str += '\\n';
-										} else if (__Natives__.supportsVerticalTabEscape && (code === 0x000B)) { // Vertical Tab
+										} else if (allowVerticalTab && (code === 0x000B)) { // Vertical Tab
 											str += '\\v';
 										} else if (code === 0x000C) { // Form Feed
 											str += '\\f';
@@ -1891,11 +1846,15 @@
 											str += '\\u2029';
 										} else if (code === 0xFEFF) { // Byte order mark
 											str += '\\uFEFF';
-										} else if (((code >= 0x0000) && (code <= 0x001F)) || ((code >= 0x007F) && (code <= 0x009F))) { // Other control chars
+										//} else if (allowCodePoint && (code >= 0x10000)) {
+										//	str += '\\u{' + ('0000000' + code.toString(16)).slice(-8) + '}';
+										} else if (((code >= 0x0000) && (code <= 0x001F)) || ((code >= 0x007F) && (code <= 0x009F)) || ((code >= 0xD800) && (code <= 0xDFFF))) { // Other control chars
 											str += '\\u' + ('000' + code.toString(16)).slice(-4);
 										} else {
-											str += chr;
+											//str += val.slice(i, i + size);
+											str += val.slice(i, i + 1);
 										};
+										//i += size;
 									};
 									if (primitive) {
 										return "'" + str + "'";
@@ -1973,6 +1932,194 @@
 						};
 					});
 				
+				//===================================
+				// Callback base type
+				//===================================
+				
+				types.Callback = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Base of every callback handlers.",
+					}
+					//! END_REPLACE()
+					, function(/*optional*/obj, fn) {
+						throw new types.NotSupported("Type is a base type.");
+					});
+				
+				// NOTE: Will be replaced by "Doodad.js"
+				types.makeInside = function(/*optional*/obj, fn) {
+					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
+				};
+				
+				
+				//===================================
+				// ES6 Promise
+				//===================================
+
+				__Internal__.Promise = null;
+				
+				types.isPromise = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a Promise, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isPromise(obj) {
+						if (!__Internal__.Promise) {
+							return false;
+						};
+						return (obj instanceof __Internal__.Promise);
+					});
+				
+				types.getPromise = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'Promise',
+							description: "Returns the ES6 Promise class or a polyfill.",
+					}
+					//! END_REPLACE()
+					, function getPromise() {
+						var Promise = __Internal__.Promise;
+						if (!Promise) {
+							throw new types.NotSupported("ES6 Promises are not supported. You must include the polyfill 'es6-promise' or 'rsvp' in your project. You can also use another polyfill (see 'types.setPromise').");
+						};
+						return Promise;
+					});
+					
+				types.setPromise = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								Promise: {
+									type: 'Promise',
+									optional: false,
+									description: "A Promise polyfill.",
+								},
+							},
+							returns: 'Promise',
+							description: "Sets a custom polyfill for ES6 Promises.",
+					}
+					//! END_REPLACE()
+					, function setPromise(Promise) {
+						// Make some tests...
+						if (
+								!types.isFunction(Promise) || 
+								!types.isFunction(Promise.resolve) || 
+								!types.isFunction(Promise.reject) || 
+								!types.isFunction(Promise.all) ||
+								!types.isFunction(Promise.prototype.then) ||
+								!types.isFunction(Promise.prototype['catch'])
+						) {
+							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'prototype.then' and 'prototype.catch'.");
+						};
+
+						// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
+						if (!types.isFunction(Promise.prototype.nodeify)) {
+							Promise.prototype.nodeify = function nodeify(callback) {
+								return this.then(function(result) {
+									var retval = callback(null, result);
+									if (retval === undefined) {
+										retval = result;
+									} else if (types.isError(retval)) {
+										throw retval;
+									};
+									return retval;
+								}, function(err) {
+									var retval = callback(err);
+									if (retval === undefined) {
+										throw err;
+									} else if (types.isError(retval)) {
+										throw retval;
+									};
+									return retval;
+								});
+							};
+						};
+						
+						
+						// Bluebird "finally" polyfill
+						if (!types.isFunction(Promise.prototype['finally'])) {
+							Promise.prototype['finally'] = function _finally(callback) {
+								return this.then(function(result) {
+									var retval = callback();
+									return Promise.resolve(retval).then(function() {
+										return result;
+									});
+								}, function(err) {
+									var retval = callback();
+									return Promise.resolve(retval).then(function() {
+										throw err;
+									});
+								});
+							};
+						};
+						
+						__Internal__.Promise = Promise;
+					});
+					
+					
+				types.PromiseCallback = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								obj: {
+									type: 'object,Object',
+									optional: true,
+									description: "Object to bind with the callback function.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Callback function.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a callback handler specially for a Promise.",
+					}
+					//! END_REPLACE()
+					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+						var newFn = types.makeInside(obj, fn);
+						var callback = function callbackHandler(/*paramarray*/) {
+							try {
+								return newFn.apply(obj, arguments);
+							} catch(ex) {
+								try {
+									if (!(ex instanceof types.ScriptAbortedError)) {
+										tools.log(tools.LogLevels.Debug, "A Promise has been rejected due to an unhandled error :");
+										tools.log(tools.LogLevels.Debug, ex.stack);
+										tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+									};
+								} catch(o) {
+								};
+								throw ex;
+							};
+						};
+						callback = types.setPrototypeOf(callback, types.PromiseCallback);
+						return callback;
+					}, types.Callback));
+				
+					
 				//===================================
 				// Iterators
 				//===================================
@@ -2220,7 +2367,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object',
@@ -2256,8 +2403,12 @@
 							};
 						} else {
 							if (args) {
-								newFn = function(/*fixed to 'args'*/) {
-									return fn.apply(obj, args);
+								newFn = function(/*paramarray*/) {
+									if (arguments.length > 0) {
+										return fn.apply(obj, types.append([], args, arguments));
+									} else {
+										return fn.apply(obj, args);
+									};
 								};
 							} else {
 								newFn = function(/*paramarray*/) {
@@ -2592,31 +2743,8 @@
 				));
 				
 				//===================================
-				// Callback base type
-				//===================================
-				
-				types.Callback = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'undefined',
-							description: "Base of every callback handlers.",
-					}
-					//! END_REPLACE()
-					, function(/*optional*/obj, fn) {
-						throw new types.NotSupported("Type is a base type.");
-					});
-				
-				// NOTE: Will be replaced by "Doodad.js"
-				types.makeInside = function(/*optional*/obj, fn) {
-					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
-				};
-				
-				
-				//===================================
 				// HTTP Status Codes
+				// TODO: Move elsewhere
 				//===================================
 				
 				types.HttpStatus = types.extend(types.createObject({
@@ -2697,8 +2825,12 @@
 				//===================================
 				// Init
 				//===================================
-				//return function init(/*optional*/options) {
-				//};
+				return function init(/*optional*/options) {
+					try {
+						__Natives__.windowPromise && types.setPromise(__Natives__.windowPromise);
+					} catch(ex) {
+					};
+				};
 			},
 		};
 		

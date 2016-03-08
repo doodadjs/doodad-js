@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Tools', 'Doodad.Types', 'Doodad.Namespaces'],
+			dependencies: ['Doodad.Tools', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -51,6 +51,7 @@
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
+					files = tools.Files,
 					config = tools.Config,
 					namespaces = doodad.Namespaces,
 					modules = doodad.Modules;
@@ -108,12 +109,12 @@
 					}
 					//! END_REPLACE()
 					, function locate(module, /*optional*/file, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						return new Promise(function(resolve, reject) {
-							let location = tools.Path.parse(module, {file: 'package.json'})
+							let location = files.Path.parse(module, {file: 'package.json'})
 								.toString({isRelative: true});
 							location = Module._resolveFilename(location, __Internal__.getRootModule());
-							location = tools.Path.parse(location)
+							location = files.Path.parse(location)
 								.set({file: ''})
 								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
 							resolve(location);
@@ -147,7 +148,7 @@
 					}
 					//! END_REPLACE()
 					, function load(module, /*optional*/file, /*optional*/options) {
-						const Promise = tools.getPromise();
+						const Promise = types.getPromise();
 						return modules.locate(module, './config.json', options)
 							.nodeify(function(err, location) {
 								return (err
@@ -177,7 +178,7 @@
 												});
 											}))
 											.then(function(mods) {
-												return namespaces.loadNamespaces(null, false, conf, DD_MODULES);
+												return namespaces.loadNamespaces(DD_MODULES, null, conf, false);
 											});
 									});
 							})

@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client.Browserify'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Client'],
 			bootstrap: true,
@@ -58,7 +58,7 @@
 				//===================================
 				return function init(/*optional*/options) {
 					try {
-						tools.getPromise();
+						types.getPromise();
 					} catch(ex) {
 						var Promise = null;
 						try {
@@ -74,7 +74,7 @@
 							};
 						};
 						if (types.isFunction(Promise)) {
-							tools.setPromise(Promise);
+							types.setPromise(Promise);
 						};
 					};
 				};

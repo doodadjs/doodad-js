@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
 			type: null,
-			version: '1.3r',
+			version: '2.0.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad'],
+			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -51,8 +51,8 @@
 				var doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					config = tools.Config,
 					files = tools.Files,
+					config = tools.Config,
 					client = doodad.Client,
 					extenders = doodad.Extenders,
 					mixIns = doodad.MixIns;
@@ -542,7 +542,7 @@
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 							var canReject = this.extender.canReject;
 							var self = this;
-							var Promise = tools.getPromise();
+							var Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
 								self.attachOnce(elements, context, useCapture, function(ev) {
 									if (canReject && (ev instanceof doodad.ErrorEvent)) {
@@ -731,7 +731,7 @@
 					if (!_window) {
 						_window = global.window;
 					};
-					return tools.Url.parse(_window.location.href);
+					return files.Url.parse(_window.location.href);
 				});
 				
 				tools.setCurrentLocation = root.DD_DOC(
@@ -767,12 +767,12 @@
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort, /*optional*/noReload, /*optional*/_window) {
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof tools.Url), "Invalid url.");
+						root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof files.Url), "Invalid url.");
 						root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
 					};
 					
-					if (!(url instanceof tools.Url)) {
-						url = tools.Url.parse(url);
+					if (!(url instanceof files.Url)) {
+						url = files.Url.parse(url);
 					};
 					
 					if (!_window) {
@@ -925,7 +925,7 @@
 								if (this.tag === 'link') {
 									var url = (this.element.src || this.element.href);
 									if (url) {
-										url = tools.Url.parse(url);
+										url = files.Url.parse(url);
 									};
 									if (url) {
 										var waitDownload = this.target.ownerDocument.createElement('img');
@@ -1006,11 +1006,11 @@
 
 					var loader = null;
 					
-					if (url instanceof tools.Path) {
-						url = tools.Url.parse(url);
+					if (url instanceof files.Path) {
+						url = files.Url.parse(url);
 					};
 					
-					if (url instanceof tools.Url) {
+					if (url instanceof files.Url) {
 						url = url.toString();
 					};
 					
@@ -1150,11 +1150,11 @@
 						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
 
-					if (url instanceof tools.Path) {
-						url = tools.Url.parse(url);
+					if (url instanceof files.Path) {
+						url = files.Url.parse(url);
 					};
 					
-					if (url instanceof tools.Url) {
+					if (url instanceof files.Url) {
 						url = url.toString();
 					};
 					
@@ -1316,7 +1316,7 @@
 					//! END_REPLACE()
 					, function loadFile(url, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(url)) {
-							url = tools.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = files.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(url, options, callbacks);
 					});
@@ -1350,12 +1350,12 @@
 				}
 				//! END_REPLACE()
 				, function readFile(url, /*optional*/options) {
-					var Promise = tools.getPromise();
+					var Promise = types.getPromise();
 					return new Promise(function(resolve, reject) {
 						if (types.isString(url)) {
-							url = tools.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = files.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
 						};
-						root.DD_ASSERT && root.DD_ASSERT(url instanceof tools.Url, "Invalid url.");
+						root.DD_ASSERT && root.DD_ASSERT(url instanceof files.Url, "Invalid url.");
 						var async = types.get(options, 'async', false),
 							encoding = types.get(options, 'encoding', null);
 						if (encoding === 'iso-8859') {
@@ -1537,13 +1537,13 @@
 				//===================================
 				return function init(/*optional*/options) {
 					try {
-						tools.getPromise();
+						types.getPromise();
 					} catch(ex) {
 						var Promise = 
 							(types.isObject(global.RSVP) && global.RSVP.Promise) || // tiny Promise/A+ implementation
 							(types.isObject(global.ES6Promise) && global.ES6Promise.Promise); // subset of RSVP
 						if (types.isFunction(Promise)) {
-							tools.setPromise(Promise);
+							types.setPromise(Promise);
 						};
 					};
 				};
