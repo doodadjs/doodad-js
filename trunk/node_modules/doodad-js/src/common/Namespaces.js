@@ -74,7 +74,6 @@
 					waiting: false,
 					loadModules: null,
 					loading: false,
-					cbPromises: [],
 					
 					//oldSetOptions: null,
 				};
@@ -101,6 +100,7 @@
 				namespaces.oncreatenamespace = null;
 				namespaces.oninitnamespace = null;
 				namespaces.onready = null;
+				namespaces.onerror = null;
 
 				
 				//===================================
@@ -557,7 +557,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 4,
+								revision: 5,
 								params: {
 									specs: {
 										type: 'object',
@@ -588,73 +588,59 @@
 					var Promise = types.getPromise();
 					
 					try {
-						var cbPromise = null;
-						if (callback) {
-							var cbPromiseReject;
-							cbPromise = new Promise(function(resolve, reject) {
-								var handler = function(ev) {
-									try {
-										namespaces.removeEventListener('ready', handler);
-										callback();
-										resolve(true);
-									} catch(ex) {
-										if (dontThrow) {
-											resolve(false);
-										} else {
-											cbPromiseReject(ex);
-										};
-									} finally {
-										types.popItem(__Internal__.cbPromises, cbPromise);
-									};
-								};
-								cbPromiseReject = function(reason) {
-									try {
-										namespaces.removeEventListener('ready', handler);
-										if (dontThrow) {
-											resolve(false);
-										} else {
-											reject(reason);
-										};
-									} catch(ex) {
-									} finally {
-										types.popItem(__Internal__.cbPromises, cbPromise);
-									};
-								};
-								namespaces.addEventListener('ready', handler);
-							});
-							
-							// <PRB> We can't manually reject a promise with a reason 
-							cbPromise.reject = cbPromiseReject;
-							
-							__Internal__.cbPromises.push(cbPromise);
-						};
-						
 						__Internal__.loadModules = types.extend(__Internal__.loadModules || {}, specs);
 						
 						var terminate = function _terminate(err, result) {
 							if (err) {
-								// Manually reject every pending callback promises
-								while (__Internal__.cbPromises.length) {
-									var promise = __Internal__.cbPromises[0];
-									promise.reject(err);
+								// Dispatches "onerror"
+								if (!__Internal__.loading && !__Internal__.waiting) {
+									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
 								};
-								
-								// Rejects current promise
+
 								if (dontThrow) {
 									return Promise.resolve(false);
 								} else {
 									return Promise.reject(err);
 								};
-								
+
 							} else {
-								// Dispatches "onReady"
+								// Create Promise for callback result
+								var cbPromise = null;
+								if (callback) {
+									cbPromise = new Promise(function(resolve, reject) {
+										var cbReadyHandler = function(ev) {
+											namespaces.removeEventListener('ready', cbReadyHandler);
+											namespaces.removeEventListener('error', cbErrorHandler);
+											resolve(callback());
+										};
+										var cbErrorHandler = function(ev) {
+											namespaces.removeEventListener('ready', cbReadyHandler);
+											namespaces.removeEventListener('error', cbErrorHandler);
+											reject(ev.detail.error);
+										};
+										namespaces.addEventListener('ready', cbReadyHandler);
+										namespaces.addEventListener('error', cbErrorHandler);
+									})
+										.then(function() {
+											return true;
+										})
+										['catch'](function(ex) {
+											if (dontThrow) {
+												return false;
+											} else {
+												throw ex;
+											};
+										});
+								};
+								
+								// Dispatches "onready"
 								if (!__Internal__.loading && !__Internal__.waiting) {
 									namespaces.dispatchEvent(new types.CustomEvent('ready'));
 								};
 								
 								// Returns the callback promise or a "done" flag.
 								if (cbPromise) {
-									// NOTE: Returns the result of "cbPromise". This allows to "catch" callback errors.
+									// NOTE: Returns the result of "cbPromise". This allows to catch callback errors.
 									return cbPromise;
 								} else {
 									return Promise.resolve(true);
