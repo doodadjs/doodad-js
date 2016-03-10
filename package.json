@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Object-oriented programming framework for Javascript",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -96,9 +96,6 @@
   "bugs": {
     "url" : "https://sourceforge.net/p/doodad-js/tickets/",
     "email" : "doodadjs@gmail.com"
-  },
-  "optionalDependencies": {
-    "es6-promise": "^3.0.2"
   },
   "devDependencies": {
     "doodad-js-make": "^0.3.0",

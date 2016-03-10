@@ -37,7 +37,7 @@
 			type: null,
 			version: '2.0.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files', 'Doodad'],
+			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
 			exports: exports,
 			
