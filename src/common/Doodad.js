@@ -45,7 +45,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
@@ -99,7 +99,7 @@
 				__Internal__.oldSetOptions = doodad.setOptions;
 				doodad.setOptions = function setOptions(/*paramarray*/) {
 					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.getDefault(options, 'settings', {});
+						settings = types.get(options, 'settings', {});
 						
 					settings.enforceScopes = types.toBoolean(types.get(settings, 'enforceScopes'));
 					settings.enforcePolicies = types.toBoolean(types.get(settings, 'enforcePolicies'));
@@ -626,14 +626,14 @@
 				
 				__Internal__.makeInsideForNew = function makeInsideForNew() {
 					return (
-						"var oldInvokedClass = constructorContext.invokedClass;" +
-						"constructorContext.invokedClass = types.getType(this);" +
+						"var oldInvokedClass = ctx.internal.invokedClass;" +
+						"ctx.internal.invokedClass = ctx.types.getType(this);" +
 						"try {" +
 							"return this._new.apply(this, arguments);" +
 						"} catch(ex) {" +
 							"throw ex;" +
 						"} finally {" +
-							"constructorContext.invokedClass = oldInvokedClass;" +
+							"ctx.internal.invokedClass = oldInvokedClass;" +
 						"};"
 					);
 				};
@@ -932,7 +932,7 @@
 							// Public type
 							var regType = registry.get(fullName, entries.Type);
 							if (regType) {
-								doodad.UNREGISTER(regType);
+								doodad.UNREGISTER(regType.namespace);
 							};
 							
 							//this[name] = type;
@@ -3653,6 +3653,45 @@
 					});
 				};
 				
+				__Internal__.RAW_EVENT = function RAW_EVENT() {
+					return doodad.PROTECTED(function handleEvent(/*paramarray*/) {
+						var type = types.getType(this),
+							dispatch = types.getAttribute(type, '$CURRENT_DISPATCH'),
+							stack = dispatch.stack;
+						
+						if (stack) {
+							if (!dispatch.sorted) {
+								stack.sort(function(value1, value2) {
+									return tools.compareNumbers(value1[2], value2[2]);
+								});
+								dispatch.sorted = true;
+							};
+							
+							var i = 0;
+							while (i < stack.length) {
+								var data = stack[i],
+									obj = data[0],
+									fn = data[1];
+									
+								types.invoke(obj, fn, arguments);
+								
+								data[4]--;
+								if (data[4] === 0) {
+									stack.splice(i, 1);
+								} else {
+									i++;
+								};
+							};
+							
+							return !!stack.length; // event emitted if stack not empty
+							
+						} else {
+							return false; // no event emitted
+							
+						};
+					});
+				};
+				
 				doodad.EVENT = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -3696,6 +3735,20 @@
 					//! END_REPLACE()
 					, function ERROR_EVENT(/*optional*/fn) {
 						return doodad.OPTIONS({canReject: false}, doodad.EVENT(false, fn));
+					});
+
+				doodad.RAW_EVENT = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'AttributeBox,Extender',
+							description: "Creates a special event.",
+					}
+					//! END_REPLACE()
+					, function RAW_EVENT() {
+						return doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.RAW_EVENT(), extenders.Event, {enableScopes: false}));
 					});
 
 				//==================================
@@ -4675,7 +4728,7 @@
 						$MUST_OVERRIDE: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(extenders.Null))))),
 						$BASE: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(base, extenders.Attribute)))))),
 						$ISOLATED: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(_isolated, extenders.Attribute)))))),
-						__ISOLATED_CACHE: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(new types.Map(), extenders.Attribute)))))),
+						__ISOLATED_CACHE: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))),
 						$__ATTRIBUTES_STORAGE: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(typeStorage, extenders.Attribute))))))),
 						__ATTRIBUTES_STORAGE: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(instanceStorage, extenders.Attribute))))))),
 						$CURRENT_DISPATCH: doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.TYPE(extenders.Null))))),
@@ -4900,7 +4953,8 @@
 					};
 					
 					// Pre-extend
-					var attrs = types.unique(sourceAttrs, types.keys(destAttributes));
+					var destAttributesKeys = types.keys(destAttributes);
+					var attrs = types.unique(sourceAttrs, destAttributesKeys);
 					var attrsLen = attrs.length;
 					var toExtend = [];
 					
@@ -5003,7 +5057,7 @@
 								};
 							};
 							
-							if (types.isIsolated(source)) {
+							if (types.isIsolated(source) && !types.isIsolated(base)) {
 								_implements.add(source);
 								var protoName = (sourceName ? sourceName + '_Interface' : null);
 								base = doodad.Interface;
@@ -5217,7 +5271,7 @@
 						__Internal__.makeInsideForNew(),
 						
 						/*constructorContext*/
-						__Internal__
+						{internal: __Internal__, types: types}
 					);
 					
 					if (__Internal__.creatingClass) {
@@ -5432,7 +5486,7 @@
 									__Internal__.makeInsideForNew(),
 									
 									/*constructorContext*/
-									__Internal__
+									{internal: __Internal__, types: types}
 								);
 
 								var typeProto = type;
@@ -5454,6 +5508,9 @@
 								return type;
 							};
 							var cache = this.__ISOLATED_CACHE;
+                            if (!cache) {
+                                cache = types.setAttribute(this, '__ISOLATED_CACHE', new types.Map());
+                            }
 							if (cache.has(type)) {
 								_isolated = cache.get(type);
 							} else {
@@ -6461,7 +6518,7 @@
 									},
 									self = this;
 								value = tools.forEach(value, function(value, key) {
-									if (self.$ERROR_IGNORED_ATTRIBUTES.indexOf(key) < 0) {
+									if (tools.indexOf(self.$ERROR_IGNORED_ATTRIBUTES, key) < 0) {
 										tmp[key] = self.$pack(value);
 									};
 								});
@@ -6513,7 +6570,7 @@
 									var tmp = new types.Error(value.message),
 										self = this;
 									value = tools.forEach(value, function(value, key) {
-										if (self.$ERROR_IGNORED_ATTRIBUTES.indexOf(key) < 0) {
+										if (tools.indexOf(self.$ERROR_IGNORED_ATTRIBUTES, key) < 0) {
 											tmp[key] = self.$unpack(value);
 										};
 									});

@@ -35,8 +35,8 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.NodeJs'] = {
 			type: null,
-			version: '2.0.0r',
-			namespaces: null,
+			version: '2.2.0r',
+			namespaces: ['MixIns', 'Interfaces'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
 			exports: exports,
@@ -53,6 +53,8 @@
 					config = tools.Config,
 					files = tools.Files,
 					nodejs = doodad.NodeJs,
+					nodejsMixIns = nodejs.MixIns,
+					nodejsInterfaces = nodejs.Interfaces,
 					
 					nodeOs = require('os'),
 					nodePath = require('path'),
@@ -75,6 +77,15 @@
 					//oldSetOptions: null,
 				};
 				
+				//===================================
+				// Natives
+				//===================================
+				
+				const __Natives__ = {
+					// "isBuffer"
+					globalBuffer: global.Buffer,
+					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
+				};
 				
 				//=====================================
 				// Options
@@ -82,14 +93,38 @@
 				
 				//__Internal__.oldSetOptions = nodejs.setOptions;
 				//nodejs.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.getDefault(options, 'settings', {});
+				//	const options = __Internal__.oldSetOptions.apply(this, arguments),
+				//		settings = types.get(options, 'settings', {});
 				//};
 				//
 				//nodejs.setOptions({
 				//})
 				
+				//===================================
+				// Buffers
+				//===================================
 				
+				types.isBuffer = (__Natives__.globalBufferIsBuffer || (function(buffer) {
+					return (buffer instanceof __Natives__.globalBuffer);
+				}));
+				
+				if (global.global.Uint8Array) {
+					// Source: http://stackoverflow.com/questions/23822724/nodejs-javascript-typedarray-to-buffer-to-string-and-back-again
+					// TODO: Test and Check if there is not a faster way
+					types.typedArrayToBuffer = function typedArrayToBuffer(ab) {
+						const buffer = new global.Buffer(ab.byteLength);
+						const view = new global.Uint8Array(ab);
+						for (let i = 0; i < buffer.length; i++) {
+							buffer[i] = view[i];
+						}
+						return buffer;
+					};
+				} else {
+					types.typedArrayToBuffer = function typedArrayToBuffer(ab) {
+						throw new types.NotSupported("'typedArrayToBuffer' is not supported.");
+					};
+				};
+
 				//===================================
 				// Asynchronous functions
 				//===================================
@@ -923,7 +958,7 @@
 								if (!destination.file) {
 									destination = destination.set({ file: source.file });
 								};
-								var linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+								const linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
 								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
 								nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
 								if (types.get(options, 'preserveTimes')) {
@@ -1806,9 +1841,9 @@
 						},
 						promise: function promise(emitters, /*optional*/context) {
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							var canReject = this.extender.canReject;
-							var self = this;
-							var Promise = types.getPromise();
+							const canReject = this.extender.canReject;
+							const self = this;
+							const Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
 								self.attachOnce(emitters, context, function(ev) {
 									if (canReject && (ev instanceof doodad.ErrorEvent)) {
@@ -1890,7 +1925,91 @@
 				});
 				
 				
+				//*********************************************
+				// Emitter
+				//*********************************************
 				
+				nodejsInterfaces.REGISTER(doodad.ISOLATED(doodad.MIX_IN(doodad.Class.$extend(
+										mixIns.Events,
+				{
+					$TYPE_NAME: 'IEmitter',
+					
+					onnewListener: doodad.RAW_EVENT(),
+					onremoveListener: doodad.RAW_EVENT(),
+
+					addListener: doodad.PUBLIC(function addListener(event, listener) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].attach(listener);
+							this.emit('newListener', event, listener);
+						};
+						return this;
+					}),
+					
+					emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							return this[name].apply(this, types.toArray(arguments).slice(1));
+						};
+						return false;
+					}),
+					
+					getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
+						// TODO:
+						return 999999;
+					}),
+					
+					listenerCount: doodad.PUBLIC(function listenerCount(event) {
+						// TODO:
+						return 0;
+					}),
+					
+					listeners: doodad.PUBLIC(function listeners(event) {
+						// TODO:
+						return [];
+					}),
+					
+					on: doodad.PUBLIC(function on(event, listener) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].attach(null, listener);
+							this.emit('newListener', event, listener);
+						};
+						return this;
+					}),
+					
+					once: doodad.PUBLIC(function once(event, listener) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].attachOnce(null, listener);
+							this.emit('newListener', event, listener);
+						};
+						return this;
+					}),
+					
+					removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].clear();
+							//TODO:  this.emit('removeListener', event, listener);
+						};
+						return this;
+					}),
+					
+					removeListener: doodad.PUBLIC(function removeListener(event, listener) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].detach(null, listener);
+							this.emit('removeListener', event, listener);
+						};
+						return this;
+					}),
+					
+					setMaxListeners: doodad.PUBLIC(function setMaxListeners() {
+						// TODO:
+						return this;
+					}),
+				}))));
 
 
 				return function init(/*optional*/options) {

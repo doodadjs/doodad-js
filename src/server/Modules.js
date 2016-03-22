@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces'],
+			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces', 'Doodad.NodeJs'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -154,9 +154,9 @@
 								return (err
 											? (npmConfig
 													? npmConfig.list(module, {beautify: true, async: true})
-													: Promise.resolve({}
-											))
-											: config.loadFile(location, {parseOptions: {}, async: true, encoding: 'utf8'})
+													: Promise.resolve({})
+											  )
+											: config.loadFile(location, {parseOptions: {}, async: true, encoding: 'utf-8'})
 									)
 									.nodeify(function(err, conf) {
 										if (err) {

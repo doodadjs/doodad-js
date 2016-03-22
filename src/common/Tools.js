@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types'],
 			bootstrap: true,
@@ -71,7 +71,7 @@
 				__Internal__.oldSetOptions = tools.setOptions;
 				tools.setOptions = function setOptions(/*paramarray*/) {
 					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.getDefault(options, 'settings', {});
+						settings = types.get(options, 'settings', {});
 						
 					settings.logLevel = parseInt(types.get(settings, 'logLevel'));
 				};
@@ -96,55 +96,37 @@
 					windowXMLHttpRequest: global.XMLHttpRequest,
 
 					// Prototype functions
-					stringIndexOf: String.prototype.indexOf,
-					stringLastIndexOf: String.prototype.lastIndexOf,
-					stringReplace: String.prototype.replace,
-					stringSearch: String.prototype.search,
+					stringIndexOf: global.String.prototype.indexOf,
+					stringLastIndexOf: global.String.prototype.lastIndexOf,
+					stringReplace: global.String.prototype.replace,
+					stringSearch: global.String.prototype.search,
 				
 					windowError: (global.Error || Error), // NOTE: "node.js" does not include "Error" in "global".
 					
 					windowRegExp: (global.RegExp || RegExp),
 					
-					stringTrim: String.prototype.trim,
-
 					windowObject: global.Object,
 
 					// Polyfills
 
-					// "Object.keys" Polyfill from Mozilla Developer Network.
-					// NOTE: "hasDontEnumBug" is "true" when a property in "defaultNonEnumerables" is still non-enumerable with "for (... in ...)" while being changed to an own property.
-					hasDontEnumBug: !types.propertyIsEnumerable({ toString: null }, 'toString'),
-					defaultNonEnumerables: [
-					  'toString',
-					  'toLocaleString',
-					  'valueOf',
-					  'hasOwnProperty',
-					  'isPrototypeOf',
-					  'propertyIsEnumerable',
-					  'constructor',
-					  'length',
-					],
-
-					// Other Polyfills
-
-					mathSign: (types.isNativeFunction(Math.sign) ? Math.sign : undefined),
+					mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
 
 					//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
 					
 					// ES5
-					stringRepeat: (types.isNativeFunction(String.prototype.repeat) ? String.prototype.repeat : undefined),
-					arrayIndexOf: (types.isNativeFunction(Array.prototype.indexOf) ? Array.prototype.indexOf : undefined),
-					arrayLastIndexOf: (types.isNativeFunction(Array.prototype.lastIndexOf) ? Array.prototype.lastIndexOf : undefined),
-					arrayForEach: (types.isNativeFunction(Array.prototype.forEach) ? Array.prototype.forEach : undefined),
-					arrayMap: (types.isNativeFunction(Array.prototype.map) ? Array.prototype.map : undefined),
-					arrayFilter: (types.isNativeFunction(Array.prototype.filter) ? Array.prototype.filter : undefined),
-					arrayEvery: (types.isNativeFunction(Array.prototype.every) ? Array.prototype.every : undefined),
-					arraySome: (types.isNativeFunction(Array.prototype.some) ? Array.prototype.some : undefined),
-					arrayReduce: (types.isNativeFunction(Array.prototype.reduce) ? Array.prototype.reduce : undefined),
-					arrayReduceRight: (types.isNativeFunction(Array.prototype.reduceRight) ? Array.prototype.reduceRight : undefined),
+					stringRepeat: (types.isNativeFunction(global.String.prototype.repeat) ? global.String.prototype.repeat : undefined),
+					arrayIndexOf: (types.isNativeFunction(global.Array.prototype.indexOf) ? global.Array.prototype.indexOf : undefined),
+					arrayLastIndexOf: (types.isNativeFunction(global.Array.prototype.lastIndexOf) ? global.Array.prototype.lastIndexOf : undefined),
+					arrayForEach: (types.isNativeFunction(global.Array.prototype.forEach) ? global.Array.prototype.forEach : undefined),
+					arrayMap: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map : undefined),
+					arrayFilter: (types.isNativeFunction(global.Array.prototype.filter) ? global.Array.prototype.filter : undefined),
+					arrayEvery: (types.isNativeFunction(global.Array.prototype.every) ? global.Array.prototype.every : undefined),
+					arraySome: (types.isNativeFunction(global.Array.prototype.some) ? global.Array.prototype.some : undefined),
+					arrayReduce: (types.isNativeFunction(global.Array.prototype.reduce) ? global.Array.prototype.reduce : undefined),
+					arrayReduceRight: (types.isNativeFunction(global.Array.prototype.reduceRight) ? global.Array.prototype.reduceRight : undefined),
 					
 					// ES7
-					regExpEscape: (types.isNativeFunction(RegExp.escape) ? RegExp.escape : undefined),
+					regExpEscape: (types.isNativeFunction(global.RegExp.escape) ? global.RegExp.escape : undefined),
 				};
 				
 				//===================================
@@ -443,89 +425,6 @@
 						};
 					});
 
-				tools.trim = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									str: {
-										type: 'string,array',
-										optional: false,
-										description: "String or array to trim",
-									},
-									chr: {
-										type: 'any',
-										optional: true,
-										description: "Value used to trim. Default is a space.",
-									},
-									direction: {
-										type: 'integer',
-										optional: true,
-										description: "'-1' to trim from the end. '1' to trim from the beginning. '0' for bidirectional. Default is '0'.",
-									},
-									count: {
-										type: 'integer',
-										optional: true,
-										description: "Number of occurrences of 'chr' to trim from both sides.",
-									},
-								},
-								returns: 'string',
-								description: "Returns the trimmed string or array.",
-					}
-					//! END_REPLACE()
-					, function trim(str, /*optional*/chr, /*optional*/direction, /*optional*/count) {
-						var isArray = types.isArray(str);
-
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isString(str) || isArray, "Invalid string.");
-							!isArray && root.DD_ASSERT(types.isNothing(chr) || types.isString(chr), "Invalid character.");
-							root.DD_ASSERT(types.isNothing(direction) || types.isInteger(direction), "Invalid direction.");
-							root.DD_ASSERT(types.isNothing(count) || types.isInteger(count), "Invalid count.");
-						};
-						
-						if (isArray || (arguments.length > 1)) {
-							if (types.isNothing(chr)) {
-								chr = " ";
-							};
-							
-							if (types.isNothing(count)) {
-								count = Infinity;
-							};
-							
-							var strLen = str.length;
-							
-							var start = 0,
-								x = 0;
-							if (!direction || direction > 0) {
-								for (; start < strLen; start++, x++) {
-									if ((x >= count) || (str[start] !== chr)) {
-										break;
-									};
-								};
-							};
-
-							var end = strLen - 1;
-							x = 0;
-							if (!direction || direction < 0) {
-								for (; end >= 0; end--, x++) {
-									if ((x >= count) || (str[end] !== chr)) {
-										break;
-									};
-								};
-							};
-
-							if (end >= start) {
-								return str.slice(start, end + 1);
-							} else {
-								return (isArray ? [] : '');
-							};
-							
-						} else {
-							return __Natives__.stringTrim.call(str);
-						};
-					});
-				
 				tools.replace = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -830,7 +729,7 @@
 					//! END_REPLACE()
 					, function log(level, message, /*optional*/params) {
 						// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
-						if (global.console && (level >= tools.getOptions().settings.logLevel)) {
+						if (level >= tools.getOptions().settings.logLevel) {
 							if (params) {
 								message = tools.format(message + '', params);
 							};
@@ -838,22 +737,31 @@
 								message = __logLevelsName__[level] + ': ' + message;
 							};
 							var fn;
-							if ((level === tools.LogLevels.Info) && console.info) {
-								fn = 'info';
-							} else if ((level === tools.LogLevels.Warning) && console.warn) {
-								fn = 'warn';
-							} else if ((level === tools.LogLevels.Error) && console.error) {
-								fn = 'error';
-							} else if ((level === tools.LogLevels.Error) && console.exception) {
-								fn = 'exception';
-							} else {
-								fn = 'log';
-							};
 							var hook = tools.getOptions().hooks.console;
 							if (hook) {
+								if (level === tools.LogLevels.Info) {
+									fn = 'info';
+								} else if (level === tools.LogLevels.Warning) {
+									fn = 'warn';
+								} else if (level === tools.LogLevels.Error) {
+									fn = 'error';
+								} else {
+									fn = 'log';
+								};
 								hook(fn, message);
 							} else {
-								console[fn](message);
+								if (global.console) {
+									if ((level === tools.LogLevels.Info) && global.console.info) {
+										fn = 'info';
+									} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
+										fn = 'warn';
+									} else if ((level === tools.LogLevels.Error) && (global.console.error || global.console.exception)) {
+										fn = 'error';
+									} else {
+										fn = 'log';
+									};
+									global.console[fn](message);
+								};
 							};
 						};
 					});
@@ -2135,7 +2043,7 @@
 										};
 									};
 									var subval = val.slice(start, (end >= 0 ? end: undefined));
-									var subvalTrim = subval.trim();
+									var subvalTrim = tools.trim(subval);
 									var subvalNumber;
 									if (identifiers && types.hasKey(identifiers, subvalTrim)) {
 										subvalNumber = parseInt(identifiers[subvalTrim]);
@@ -2237,6 +2145,7 @@
 							options: null,
 							
 							_new: types.SUPER(function _new(data, /*optional*/options) {
+								//if (new.target) {
 								if (this instanceof tools.Version) {
 									this._super();
 									this.data = data;

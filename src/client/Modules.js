@@ -35,9 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
-			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces'],
+			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces', 'Doodad.Client'],
 			bootstrap: true,
 			exports: exports,
 			
@@ -61,7 +61,7 @@
 				//__Internal__.oldSetOptions = modules.setOptions;
 				//modules.setOptions = function setOptions(/*paramarray*/) {
 				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.getDefault(options, 'settings', {});
+				//		settings = types.get(options, 'settings', {});
 				//};
 				
 				modules.setOptions({
@@ -148,7 +148,7 @@
 						var Promise = types.getPromise();
 						return modules.locate(module, './config.json', options)
 							.then(function(location) {
-								return config.loadFile(location, {async: true, encoding: 'utf8'})
+								return config.loadFile(location, {async: true, encoding: 'utf-8'})
 									.nodeify(function(err, conf) {
 										if (err) {
 											conf = options;
@@ -156,20 +156,21 @@
 											types.depthExtend(2, conf, options);
 										};
 										if (!types.isArray(file)) {
-											file = [file];
+											file = [file || null];
 										};
 										return Promise.all(tools.map(file, function(fname) {
-												return modules.locate(module, fname, options).then(function(location) {
-													return new Promise(function(resolve, reject) {
-														var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
-														scriptLoader.addEventListener('load', resolve);
-														scriptLoader.addEventListener('error', reject);
-														scriptLoader.start();
+												return modules.locate(module, fname, options)
+													.then(function(location) {
+														return new Promise(function(resolve, reject) {
+															var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+															scriptLoader.addEventListener('load', resolve);
+															scriptLoader.addEventListener('error', reject);
+															scriptLoader.start();
+														});
 													})
 													['catch'](function(ev) {
-														throw new types.Error("Failed to load file '~0~'.", [location.toString()]);
+														throw new types.Error("Failed to load file '~0~' from module '~1~'.", [file, module]);
 													});
-												});
 											}))
 											.then(function(ev) {
 												return namespaces.loadNamespaces(global.DD_MODULES, null, conf, true);

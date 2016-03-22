@@ -1,5 +1,5 @@
 // dOOdad - Object-oriented programming framework
-// File: main.js - Module startup file for 'browserify'.
+// File: browserify.js - Module startup file for 'browserify'.
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -67,26 +67,33 @@ module.exports = {
 			env = dev_values[0];
 		};
 
-		var dev = (dev_values.indexOf(env) >= 0),
+		var dev = false,
 			bootstrap;
+			
+		for (var i = 0; i < dev_values.length; i++) {
+			if (dev_values[i] === env) {
+				dev = true;
+				break;
+			};
+		};
 			
 		if (dev) {
 			options.startup.settings.fromSource = true;
 			options.startup.settings.enableProperties = true;
-			require("./dist/doodad-js/Debug.js").add(DD_MODULES);
+			require("./dist/doodad-js/Debug.min.js").add(DD_MODULES);
 		};
 
-		require("./dist/doodad-js/Types.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools_Files.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools_Config.js").add(DD_MODULES);
-		require("./dist/doodad-js/Namespaces.js").add(DD_MODULES);
-		require("./dist/doodad-js/Doodad.js").add(DD_MODULES);
-		require("./dist/doodad-js/Modules.js").add(DD_MODULES);
-		require("./dist/doodad-js/Client.js").add(DD_MODULES);
-		require("./dist/doodad-js/Browserify.js").add(DD_MODULES);
+		require("./dist/doodad-js/Types.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools_Files.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Tools_Config.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Namespaces.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Doodad.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Modules.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Client.min.js").add(DD_MODULES);
+		require("./dist/doodad-js/Browserify.min.js").add(DD_MODULES);
 
-		bootstrap = require("./dist/doodad-js/Bootstrap.js");
+		bootstrap = require("./dist/doodad-js/Bootstrap.min.js");
 
 		return bootstrap.createRoot(DD_MODULES, options);
 	},

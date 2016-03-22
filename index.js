@@ -54,7 +54,14 @@
 
 		var dev_values = (options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development']),
 			env = (options.node_env || process.env.node_env || process.env.NODE_ENV),
-			dev = (dev_values.indexOf(env) >= 0);
+			dev = false;
+			
+		for (var i = 0; i < dev_values.length; i++) {
+			if (dev_values[i] === env) {
+				dev = true;
+				break;
+			};
+		};
 			
 		var bootstrap;
 		if (dev || (options.startup.settings.fromSource === 'true') || +options.startup.settings.fromSource) {
