@@ -23,7 +23,7 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
+(function(getEvals) {
 	var global = this;
 
 	var exports = {};
@@ -32,7 +32,7 @@
 	};
 
 	var MODULE_NAME = 'doodad-js';
-	var MODULE_VERSION = '2.0.0r';
+	var MODULE_VERSION = '2.2.0r';
 
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
@@ -228,7 +228,32 @@
 			
 			// "isInteger"
 			numberIsInteger: (global.Number && types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
+
+			// "trim"
+			stringTrim: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim : undefined),
 		};
+		
+		//===================================
+		// For old browsers
+		//===================================
+		
+		if (!__Natives__.objectGetPrototypeOf || !__Natives__.objectSetPrototypeOf) {
+			__Natives__.objectGetPrototypeOf = undefined;
+			__Natives__.objectSetPrototypeOf = undefined;
+			__Natives__.objectIsPrototypeOf = undefined;
+		};
+		
+//IE8		//===================================
+//IE8		// IE 8 Bug
+//IE8		//===================================
+//IE8		
+//IE8		try {
+//IE8			__Natives__.objectDefineProperty({}, 'test', {value: 1});
+//IE8		} catch(ex) {
+//IE8			__Natives__.objectDefineProperty = undefined;
+//IE8			__Natives__.objectDefineProperties = undefined;
+//IE8			__Natives__.objectGetOwnPropertyDescriptor = undefined;
+//IE8		};
 
 		//===================================
 		// Symbols
@@ -445,6 +470,172 @@
 			//! END_REPLACE()
 			, types.getSymbol);
 		
+		//===================================
+		// Eval
+		//===================================
+		
+		// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
+		__Internal__.evals = getEvals();
+		
+		types.eval = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							expr: {
+								type: 'string',
+								optional: false,
+								description: "Expression",
+							},
+							ctx: {
+								type: 'any',
+								optional: true,
+								description: "Context, accessible by the expression from the variable 'ctx'.",
+							},
+						},
+						returns: 'string',
+						description: "Evaluates an expression accross JS engines. NOT to be used with arbitrary expressions.",
+			}
+			//! END_REPLACE()
+			, function _eval(expr, /*optional*/ctx) {
+				if (ctx) {
+					return __Internal__.evals.evalWithCtx(ctx, expr);
+				} else {
+					return __Internal__.evals.eval(expr);
+				};
+			});
+
+		types.evalStrict = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							expr: {
+								type: 'string',
+								optional: false,
+								description: "Expression",
+							},
+							ctx: {
+								type: 'any',
+								optional: true,
+								description: "Context, accessible by the expression from the variable 'ctx'.",
+							},
+						},
+						returns: 'string',
+						description: "Evaluates an expression accross JS engines in strict mode. NOT to be used with arbitrary expressions.",
+			}
+			//! END_REPLACE()
+			, function evalStrict(expr, /*optional*/ctx) {
+				if (ctx) {
+					return __Internal__.evals.evalWithCtxStrict(ctx, expr);
+				} else {
+					return __Internal__.evals.evalStrict(expr);
+				};
+			});
+
+		//===================================
+		// String Tools
+		//===================================
+		
+		tools.trim = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							str: {
+								type: 'string,array',
+								optional: false,
+								description: "String or array to trim",
+							},
+							chr: {
+								type: 'any',
+								optional: true,
+								description: "Value used to trim. Default is a space.",
+							},
+							direction: {
+								type: 'integer',
+								optional: true,
+								description: "'-1' to trim from the end. '1' to trim from the beginning. '0' for bidirectional. Default is '0'.",
+							},
+							count: {
+								type: 'integer',
+								optional: true,
+								description: "Number of occurrences of 'chr' to trim from both sides.",
+							},
+						},
+						returns: 'string',
+						description: "Returns the trimmed string or array.",
+			}
+			//! END_REPLACE()
+			, function trim(str, /*optional*/chr, /*optional*/direction, /*optional*/count) {
+				var isArray = types.isArray(str);
+
+				if (types.isNothing(chr)) {
+					chr = ' ';
+				};
+				if (types.isNothing(count)) {
+					count = Infinity;
+				};
+				
+				if (isArray || (arguments.length > 1)) {
+					var strLen = str.length;
+					
+					var start = 0,
+						x = 0;
+					if (!direction || direction > 0) {
+						for (; start < strLen; start++, x++) {
+							if ((x >= count) || (str[start] !== chr)) {
+								break;
+							};
+						};
+					};
+
+					var end = strLen - 1;
+					x = 0;
+					if (!direction || direction < 0) {
+						for (; end >= 0; end--, x++) {
+							if ((x >= count) || (str[end] !== chr)) {
+								break;
+							};
+						};
+					};
+
+					if (end >= start) {
+						return str.slice(start, end + 1);
+					} else {
+						return (isArray ? [] : '');
+					};
+					
+				} else if (__Natives__.stringTrim && (chr === ' ') && !direction && (count === Infinity)) {
+					return __Natives__.stringTrim.call(str);
+				} else {
+					var i = 0,
+						x = 0,
+						chrLen = chr.length;
+					if (chrLen <= 0) {
+						chrLen = 1;
+					};
+					if (!direction || (direction > 0)) {
+						while ((x < count) && (i < str.length) && (str.slice(i, i + chrLen) === chr)) {
+							i += chrLen;
+							x++;
+						};
+					};
+					var j = str.length - chrLen,
+						x = 0;
+					if (!direction || (direction < 0)) {
+						while ((x < count) && (j > i) && (j >= 0) && (str.slice(j, j + chrLen) === chr)) {
+							j -= chrLen;
+							x++;
+						};
+					};
+					return str.slice(i, j + chrLen);
+				};
+			});
+
 		//===================================
 		// Format functions
 		//===================================
@@ -859,7 +1050,7 @@
 			}) : (function isArray(obj) {
 				return (__Natives__.objectToString.call(obj) === '[object Array]');
 			}))));
-		
+
 		types.isArrayLike = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -1047,7 +1238,7 @@
 					if (pos >= 0) {
 						functionName = functionName.slice(pos + 1);
 					};
-					functionName = functionName.trim();
+					functionName = tools.trim(functionName);
 					if (functionName.slice(0, 4) === 'new ') { // Chrome "new" operator
 						functionName = functionName.slice(4);
 					};
@@ -1140,12 +1331,12 @@
 					base = __Natives__.windowError;
 				};
 				name = name.replace(/[.]/g, '_');
-				var type = eval("(function " + name + "(/*paramarray*/) {" +
+				var expr = "function " + name + "(/*paramarray*/) {" +
 					(constructor ? (
-						"var error = constructor.apply(this, arguments) || this;" +
+						"var error = ctx.constructor.apply(this, arguments) || this;" +
 						"this.throwLevel++;"
 					) : (
-						"var error = base.apply(this, arguments) || this;"
+						"var error = ctx.base.apply(this, arguments) || this;"
 					)) +
 					"if (error !== this) {" +
 						// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
@@ -1170,10 +1361,16 @@
 						"};" +
 					"};" +
 					"this.throwLevel++;" +
-					"this.name = name;" +
+					"this.name = ctx.name;" +
 					"this.description = this.message;" +
 					"return this;" +
-				"})");
+				"}";
+				
+				var type = types.eval(expr, {
+					base: base,
+					constructor: constructor,
+					name: name,
+				});
 				
 				// For "instanceof".
 				type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
@@ -1294,7 +1491,7 @@
 						};
 						obj = types.getPrototypeOf(obj);
 					} while (obj && (obj !== lastProto));
-					
+
 					var protosLen = protos.length;
 					
 					for (var i = 0; i < protosLen; i++) {
@@ -1439,6 +1636,48 @@
 				};
 			});
 		
+		
+		types.propertyIsEnumerable = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+							key: {
+								type: 'string',
+								optional: false,
+								description: "A property name to test for.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, (__Natives__.objectPropertyIsEnumerable ? function propertyIsEnumerable(obj, key) {
+				return __Natives__.objectPropertyIsEnumerable.call(obj, key);
+			} : function propertyIsEnumerable(obj, key) {
+				return true;
+			}));
+		
+//IE8		// "Object.keys" Polyfill from Mozilla Developer Network.
+//IE8		// NOTE: "hasDontEnumBug" is "true" when a property in "defaultNonEnumerables" is still non-enumerable with "for (... in ...)" while being changed to an own property.
+//IE8		__Internal__.hasDontEnumBug = !types.propertyIsEnumerable({ toString: null }, 'toString');
+//IE8		__Internal__.defaultNonEnumerables = [
+//IE8		  'toString',
+//IE8		  'toLocaleString',
+//IE8		  'valueOf',
+//IE8		  'hasOwnProperty',
+//IE8		  'isPrototypeOf',
+//IE8		  'propertyIsEnumerable',
+//IE8		  'constructor',
+//IE8		  'length',
+//IE8		];
+		
 		types.keys = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -1486,14 +1725,15 @@
 					};
 				};
 				
-				if (__Natives__.hasDontEnumBug) {
-					for (var i = 0; i < __Natives__.defaultNonEnumerables.length; i++) {
-						key = __Natives__.defaultNonEnumerables[i];
-						if (types.hasKey(obj, key)) {
-							result.push(key);
-						};
-					};
-				};
+//IE8				if (__Internal__.hasDontEnumBug) {
+//IE8					for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
+//IE8						key = __Internal__.defaultNonEnumerables[i];
+//IE8						if (types.hasKey(obj, key)) {
+//IE8							result.push(key);
+//IE8						};
+//IE8					};
+//IE8				};
+
 				return result;
 			});
 		
@@ -1662,6 +1902,9 @@
 			}
 			//! END_REPLACE()
 			, function isObject(obj) {
+				if (types.isNothing(obj)) {
+					return false;
+				};
 				return (__Natives__.objectToString.call(obj) === '[object Object]');
 			});
 			
@@ -1762,7 +2005,7 @@
 						keysLen = keys.length;
 					for (var i = 0; i < keysLen; i++) {
 						var key = keys[i];
-						__options__.hooks.setAttribute(obj, keys[i], values[key], options);
+						__options__.hooks.setAttribute(obj, key, values[key], options);
 					};
 					return values;
 				},
@@ -1791,33 +2034,6 @@
 			}) : (function hasProperties() {
 				return false;
 			})));
-		
-		types.propertyIsEnumerable = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-							key: {
-								type: 'string',
-								optional: false,
-								description: "A property name to test for.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, (__Natives__.objectPropertyIsEnumerable ? function propertyIsEnumerable(obj, key) {
-				return __Natives__.objectPropertyIsEnumerable.call(obj, key);
-			} : function propertyIsEnumerable(obj, key) {
-				return true;
-			}));
 		
 		types.hasDefinePropertyEnabled = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -2001,6 +2217,10 @@
 				return descriptor;
 			});
 		
+		//===========================
+		// Object
+		//===========================
+		
 		types.createObject = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -2022,23 +2242,24 @@
 						description: "Creates an object with the specified prototype. Optionally appends properties.",
 			}
 			//! END_REPLACE()
-			, (__Natives__.objectCreate || (function() {
-				// Enhanced polyfill taken from Mozilla Developer Network. 
-				if (__Internal__.hasProto) {
-					var tmp = function Object() {};
-					return (function createObject(proto, /*optional*/properties) {
-						tmp.prototype = proto;
-						var obj = new tmp();
-						tmp.prototype = null; // free memory
+			, (__Natives__.objectCreate || (__Internal__.hasProto ? 
+					// Enhanced polyfill taken from Mozilla Developer Network. 
+					(function() {
+						var tmp = function Object() {};
+						return (function createObject(proto, /*optional*/properties) {
+							tmp.prototype = proto;
+							var obj = new tmp();
+							tmp.prototype = null; // free memory
 
-						if (properties) {
-							types.defineProperties(obj, properties);
-						};
-						
-						return obj;
-					});
-				} else {
-					return (function createObject(proto, /*optional*/properties) {
+							if (properties) {
+								types.defineProperties(obj, properties);
+							};
+							
+							return obj;
+						});
+					})()
+				:
+					(function createObject(proto, /*optional*/properties) {
 						var tmp = function Object() {};
 						tmp.prototype = proto;
 						var obj = new tmp();
@@ -2046,11 +2267,14 @@
 						if (properties) {
 							types.defineProperties(obj, properties);
 						};
+
+//IE8						if (!__Natives__.objectGetPrototypeOf) {
+//IE8							types.defineProperty(obj, '__dd_proto__', {value: proto, configurable: true, enumerable: true, writable: true});
+//IE8						};
 						
 						return obj;
-					});
-				};
-			})()));
+					})
+			)));
 
 		types._new = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -2106,20 +2330,32 @@
 						description: "Returns the prototype of an object.",
 			}
 			//! END_REPLACE()
-			, (__Natives__.objectGetPrototypeOf || (function getPrototypeOf(obj) {
-				if (__Internal__.hasProto) {
+			, (__Natives__.objectGetPrototypeOf || (__Internal__.hasProto ? 
 					// For browsers implementing "__proto__".
-					return function getPrototypeOf(obj) {
+					(function getPrototypeOf(obj) {
 						return __Natives__.windowObject(obj).__proto__;
-					};
-				} else {
-					// For very old browsers.
-					// TODO: Test with old browsers.
-					return function getPrototypeOf(obj) {
-						return __Natives__.windowObject(obj).constructor.prototype;
-					};
-				};
-			})()));
+					})
+				:
+					(function getPrototypeOf(obj) {
+						throw new global.Error("Browser not supported.");
+					})
+//IE8					// For very old browsers.
+//IE8					(function getPrototypeOf(obj) {
+//IE8						if ((obj === __Internal__.fnProto) || (obj === __Internal__.objProto)) {
+//IE8							return null;
+//IE8						};
+//IE8						// "__dd_proto__" is injected by "types.createObject" and "types.setPrototypeOf"
+//IE8						if (types.isFunction(obj)) {
+//IE8							return types.get(obj, '__dd_proto__') || __Internal__.fnProto;
+//IE8						} else {
+//IE8							obj = __Natives__.windowObject(obj);
+//IE8							return types.get(obj, '__dd_proto__') || (obj.constructor && obj.constructor.prototype) || __Internal__.objProto;
+//IE8						};
+//IE8					})
+			)));
+		
+		__Internal__.fnProto = (__Natives__.objectGetPrototypeOf ? types.getPrototypeOf(function(){}) : (function(){}).constructor.prototype);
+//IE8		__Internal__.objProto = (__Natives__.objectGetPrototypeOf ? types.getPrototypeOf({}) : (({}).constructor.prototype));
 		
 		types.setPrototypeOf = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -2165,19 +2401,38 @@
 						return obj;
 					};
 
-					var tmp = types.createObject(proto, {
-						constructor: {
-							value: obj.constructor,
-							writable: true,
-						},
-					});
-
-					for (var key in obj) {
-						if (types.hasKey(obj, key)) {
-							tmp[key] = obj[key];
+					var tmp;
+					if (types.isFunction(obj)) {
+						throw new global.Error("Browser not supported.");
+//IE8						// Impossible to change the prototype of the function !
+//IE8						var p = proto;
+//IE8						while (p) {
+//IE8							for (var key in p) {
+//IE8								if (!types.hasKey(obj, key) && types.hasKey(p, key)) {
+//IE8									obj[key] = p[key];
+//IE8								};
+//IE8							};
+//IE8							p = types.getPrototypeOf(p);
+//IE8						};
+//IE8						tmp = obj;
+					} else {
+						tmp = types.createObject(proto, {
+							constructor: {
+								value: obj.constructor,
+								writable: true,
+							},
+						});
+						for (var key in obj) {
+							if (types.hasKey(obj, key)) {
+								tmp[key] = obj[key];
+							};
 						};
 					};
-
+					
+//IE8					if (!__Natives__.objectSetPrototypeOf && !__Internal__.hasProto) {
+//IE8						types.defineProperty(tmp, '__dd_proto__', {value: proto, configurable: true, enumerable: true, writable: true});
+//IE8					};
+					
 					return tmp;
 				};
 			});
@@ -2207,7 +2462,6 @@
 				// NOTE: Why does this function is part of Object prototype ?
 				return __Natives__.objectIsPrototypeOf.call(protoObj, obj);
 			}) : (function isPrototypeOf(protoObj, obj) {
-				// TODO: Test me
 				obj = __Natives__.windowObject(obj);
 				while (obj = types.getPrototypeOf(obj)) {
 					if (obj === protoObj) {
@@ -2553,8 +2807,6 @@
 				return false;
 			});
 
-		__Internal__.fnProto = types.getPrototypeOf(function(){});
-		
 		types.baseof = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -2813,7 +3065,16 @@
 				// t2.prototype = Object.setPrototypeOf(t2.prototype, t1.prototype);
 				// console.log(Object.prototype.isPrototypeOf.call(t1.prototype, t2.prototype));
 				// >>> true    // OK
+				
 				type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
+//IE8				type.prototype = types.createObject(base.prototype, {
+//IE8					constructor: {
+//IE8						value: type,
+//IE8						configurable: true,
+//IE8						enumerable: true,
+//IE8						writable: true,
+//IE8					},
+//IE8				});
 				
 				return type;
 			});
@@ -3070,21 +3331,28 @@
 				
 				name = name.replace(/[.]/g, "_");
 				
-				var expr = "(" + (types.isFunction(constructor) ? "constructor" : "function " + name + "(/*paramarray*/) {" + (types.isString(constructor) ? constructor : (base ? "return base.apply(this, arguments) || this;" : "return this;")) + "}") + 
-							");";
+				var expr = (types.isFunction(constructor) ? "ctx.constructor" : "function " + name + "(/*paramarray*/) {" + (types.isString(constructor) ? constructor : (base ? "return ctx.base.apply(this, arguments) || this;" : "return this;")) + "}");
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-				var type = eval(expr),
-				    proto = type.prototype;
+				var ctx = types.extend({}, constructorContext, {
+					base: base,
+					constructor: constructor,
+				});
+				var type = types.eval(expr, ctx);
 				
 				// Inherit base
+				var proto;
 				var baseIsType = false;
 				if (base) {
 					type = types.INHERIT(base, type);
 					proto = type.prototype;
-
 					baseIsType = types.isType(base);
 					type = types.setPrototypeOf(type, base);
+				} else {
+//IE8					// IE 8
+//IE8					proto = types.createObject({});
+//IE8					type.prototype = proto;
+					proto = type.prototype;
 				};
 			
 				proto.constructor = type;
@@ -3094,8 +3362,10 @@
 				// Override type prototype
 				var reservedAttributes = __options__.hooks.reservedAttributes;
 				if (typeProto) {
-					for (var key in typeProto) {
-						if (types.hasKey(typeProto, key) && (!types.hasKey(reservedAttributes, key))) {
+					var keys = types.keys(typeProto);
+					for (var i = 0; i < keys.length; i++) {
+						var key = keys[i];
+						if (!types.hasKey(reservedAttributes, key)) {
 							if (types.hasKey(typeProto, key)) {
 								var value = typeProto[key],
 									createSuper = (types.isFunction(value) ? value.superEnabled : false);
@@ -3104,12 +3374,12 @@
 									value = types.createSuper(key, typeProto, base);
 								};
 								
-//								if (base && types.isObjectLike(value)) {
-//									var baseValue = base[key];
-//									if (types.isObjectLike(baseValue)) {
-//										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
-//									};
-//								};
+								//if (base && types.isObjectLike(value)) {
+								//	var baseValue = base[key];
+								//	if (types.isObjectLike(baseValue)) {
+								//		value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
+								//	};
+								//};
 								
 								if (propsEnabled) {
 									types.defineProperty(type, key, {
@@ -3140,8 +3410,10 @@
 				// Override instance prototype
 				if (instanceProto) {
 					var baseProto = (base ? base.prototype : null);
-					for (var key in instanceProto) {
-						if (types.hasKey(instanceProto, key) && (!types.hasKey(reservedAttributes, key))) {
+					var keys = types.keys(instanceProto);
+					for (var i = 0; i < keys.length; i++) {
+						var key = keys[i];
+						if (!types.hasKey(reservedAttributes, key)) {
 							if (types.hasKey(instanceProto, key)) {
 								var value = instanceProto[key],
 									createSuper = (types.isFunction(value) ? value.superEnabled : false);
@@ -3150,12 +3422,12 @@
 									value = types.createSuper(key, instanceProto, baseProto);
 								};
 								
-//								if (baseProto && types.isObjectLike(value)) {
-//									var baseValue = baseProto[key];
-//									if (types.isObjectLike(baseValue)) {
-//										value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
-//									};
-//								};
+								//if (baseProto && types.isObjectLike(value)) {
+								//	var baseValue = baseProto[key];
+								//	if (types.isObjectLike(baseValue)) {
+								//		value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
+								//	};
+								//};
 
 								if (propsEnabled) {
 									types.defineProperty(proto, key, {
@@ -3881,23 +4153,25 @@
 							if (mod.bootstrap) {
 								var deps = (mod.dependencies || []);
 								for (var i = 0; i < deps.length; i++) {
-									var dep = deps[i],
-										optional = false;
-									if (types.isObject(dep)) {
-										optional = dep.optional;
-										dep = dep.name;
-									};
-									var bootstrapping = types.hasKey(loading, dep);
-									if (!types.hasKey(modules, dep) && !bootstrapping) {
-										if (optional) {
-											bootstrapping = true;
-										} else {
-											throw new types.Error("Missing bootstrap module '~0~'.", [dep]);
+									if (i in deps) {
+										var dep = deps[i],
+											optional = false;
+										if (types.isObject(dep)) {
+											optional = dep.optional;
+											dep = dep.name;
 										};
-									};
-									if (!bootstrapping) {
-										names.push(name);
-										continue whileName;
+										var bootstrapping = types.hasKey(loading, dep);
+										if (!types.hasKey(modules, dep) && !bootstrapping) {
+											if (optional) {
+												bootstrapping = true;
+											} else {
+												throw new types.Error("Missing bootstrap module '~0~'.", [dep]);
+											};
+										};
+										if (!bootstrapping) {
+											names.push(name);
+											continue whileName;
+										};
 									};
 								};
 								var shortNames = name.split('.'),
@@ -3922,20 +4196,22 @@
 								var namespaces = (mod.namespaces || []),
 									namespace = parent;
 								for (j = 0; j < namespaces.length; j++) {
-									shortNames = namespaces[j].split('.');
-									fullName = '.' + name;
-									for (k = 0; k < shortNames.length; k++) {
-										shortName = shortNames[k];
-										fullName += '.' + shortName;
-										if (!types.hasKey(parent, shortName)) {
-											parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
-											nsObjs[name] = nsObj;
+									if (j in namespaces) {
+										shortNames = namespaces[j].split('.');
+										fullName = '.' + name;
+										for (k = 0; k < shortNames.length; k++) {
+											shortName = shortNames[k];
+											fullName += '.' + shortName;
+											if (!types.hasKey(parent, shortName)) {
+												parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
+												nsObjs[name] = nsObj;
+											};
+											parent = parent[shortName];
 										};
-										parent = parent[shortName];
+										parent = namespace;
 									};
-									parent = namespace;
 								};
-					
+
 								var opts = types.get(options, name);
 								var init = mod.create && mod.create(this, opts);
 								init && init(opts);
@@ -4007,4 +4283,77 @@
 		// <PRB> export/import are not yet supported in browsers
 		global.createRoot = exports.createRoot;
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this), 
+	// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
+	// WARNING: Do not declare any variable and parameter inside these functions.
+
+	// getEvals
+	(function() {
+		//return ((typeof eval("(function(){})") === 'function') ?
+		return (
+		
+			// Recent engines
+			{
+				eval: function(/*expr*/) {
+					// <PRB> "{...}" and "function ..." need parentheses.
+					return eval('(' + arguments[0] + ')');
+				},
+				evalStrict: function(/*expr*/) {
+					"use strict";
+					// <PRB> "{...}" and "function ..." need parentheses.
+					return eval('(' + arguments[0] + ')');
+					
+				},
+				evalWithCtx: function(ctx /*, expr*/) {
+					// NOTE: "ctx" is to be used by the expression
+					ctx = ctx || {}; // force variable to be preserved
+					// <PRB> "{...}" and "function ..." need parentheses.
+					return eval('(' + arguments[1] + ')');
+				},
+				evalWithCtxStrict: function(ctx /*, expr*/) {
+					"use strict";
+					// NOTE: "ctx" is to be used by the expression
+					ctx = ctx || {}; // force variable to be preserved
+					// <PRB> "{...}" and "function ..." need parentheses.
+					return eval('(' + arguments[1] + ')');
+				},
+			}
+//IE8			:
+//IE8			// Old engines
+//IE8			{
+//IE8				eval: function(/*expr*/) {
+//IE8					var result;
+//IE8					// <PRB> "{...}" and "function ..." need parentheses.
+//IE8					eval('result=(' + arguments[0] + ')');
+//IE8					return result;
+//IE8				},
+//IE8				evalStrict: function(/*expr*/) {
+//IE8					"use strict";
+//IE8					var result;
+//IE8					// <PRB> "{...}" and "function ..." need parentheses.
+//IE8					eval('result=(' + arguments[0] + ')');
+//IE8					return result;
+//IE8				},
+//IE8				evalWithCtx: function(ctx /*, expr*/) {
+//IE8					// NOTE: "ctx" is to be used by the expression
+//IE8					ctx = ctx || {}; // force variable to be preserved
+//IE8					var result;
+//IE8					// <PRB> "{...}" and "function ..." need parentheses.
+//IE8					eval('result=(' + arguments[1] + ')');
+//IE8					return result;
+//IE8				},
+//IE8				evalWithCtxStrict: function(ctx /*, expr*/) {
+//IE8					"use strict";
+//IE8					// NOTE: "ctx" is to be used by the expression
+//IE8					ctx = ctx || {}; // force variable to be preserved
+//IE8					var result;
+//IE8					// <PRB> "{...}" and "function ..." need parentheses.
+//IE8					eval('result=(' + arguments[1] + ')');
+//IE8					return result;
+//IE8				},
+//IE8			}
+			
+		);
+	})
+	
+);

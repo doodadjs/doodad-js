@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
@@ -68,7 +68,7 @@
 				__Internal__.oldSetOptions = client.setOptions;
 				client.setOptions = function setOptions(/*paramarray*/) {
 					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.getDefault(options, 'settings', {});
+						settings = types.get(options, 'settings', {});
 						
 					settings.enableDomObjectsModel = types.toBoolean(types.get(settings, 'enableDomObjectsModel'));
 					settings.defaultScriptTimeout = parseInt(types.get(settings, 'defaultScriptTimeout'));
@@ -107,6 +107,7 @@
 					windowFileReader: (types.isNativeFunction(global.FileReader) ? global.FileReader : undefined),
 					windowFetch: (types.isNativeFunction(global.fetch) ? global.fetch : undefined),
 					windowHeaders: (types.isNativeFunction(global.Headers) ? global.Headers : undefined),
+					windowXMLHttpRequest: global.XMLHttpRequest,
 					
 					// isEventTarget
 					windowEventTarget: (types.isNativeFunction(global.EventTarget) ? global.EventTarget : undefined),
@@ -126,6 +127,92 @@
 				tools.onscripterror = null;
 
 
+				__Internal__.hasAddEventListener = types.isNativeFunction(global.addEventListener);
+				
+				client.addEventListener = (__Internal__.hasAddEventListener ? 
+						function addEventListener(element, name, handler, /*optional*/capture) {
+							element.addEventListener(name, handler, !!capture);
+						} 
+						
+					:
+						function addEventListener(element, name, handler, /*optional*/capture) {
+							name = 'on' + name;
+							var handlersName = '__DD_EVENT_HANDLERS__' + name;
+							var handlers = types.get(element, handlersName);
+							//if (types.isNativeFunction(element.attachEvent)) {
+							if (element.attachEvent) {
+								// IE
+								var caller = function(ev) {
+									ev = ev || global.event;
+									return handler.call(this, ev);
+								};
+								if (!handlers) {
+									element[handlersName] = handlers = new types.Map();
+								};
+								handlers.set(handler, caller);
+								element.attachEvent(name, caller);
+							} else {
+								if (!handlers) {
+									element[handlersName] = handlers = [];
+									var caller = function _caller(ev) {
+										ev = ev || global.event;
+										var handlers = types.get(element, handlersName, []),
+											retval;
+										for (var i = handlers.length - 1; i >= 0; i--) {
+											var handler = handlers[i];
+											retval = handler.call(this, ev);
+											if (retval === false) {
+												break;
+											};
+										};
+										return retval;
+									};
+									var oldHandler = element[name];
+									if (oldHandler) {
+										handlers.push(oldHandler);
+									};
+									element[name] = caller;
+								};
+								if (tools.indexOf(handlers, handler) < 0) {
+									handlers.push(handler);
+								};
+							};
+						}
+						
+					);
+				
+				client.removeEventListener = (__Internal__.hasAddEventListener ? 
+						function removeEventListener(element, name, handler, /*optional*/capture) {
+							element.removeEventListener(name, handler, !!capture);
+						}
+						
+					: 
+						function removeEventListener(element, name, handler, /*optional*/capture) {
+							name = 'on' + name;
+							var handlersName = '__DD_EVENT_HANDLERS__' + name;
+							var handlers = types.get(element, handlersName);
+							//if (types.isNativeFunction(element.attachEvent)) {
+							if (element.attachEvent) {
+								// IE
+								var caller;
+								if (handlers) {
+									caller = handlers.get(handler);
+								};
+								element.detachEvent(name, caller || handler);
+							} else {
+								if (handlers) {
+									for (var i = handlers.length - 1; i >= 0; i--) {
+										if (handlers[i] === handler) {
+											handlers.splice(i, 1);
+										};
+									};
+								};
+							};
+						}
+
+					);
+				
+				
 				//===================================
 				// Asynchronous functions
 				//===================================
@@ -478,7 +565,7 @@
 											var element = elements[j],
 												handler = createHandler(element);
 											if (this._super(this.obj, this, null, [useCapture, element, type, handler])) {
-												element.addEventListener(type, handler, useCapture);
+												client.addEventListener(element, type, handler, useCapture);
 											};
 										};
 									};
@@ -503,7 +590,7 @@
 										element = evData[1],
 										type = evData[2],
 										handler = evData[3];
-									element.removeEventListener(type, handler, capture);
+									client.removeEventListener(element, type, handler, capture);
 								};
 							} else {
 								if (!types.isArrayLike(elements)) {
@@ -530,7 +617,7 @@
 											element = evData[1],
 											type = evData[2],
 											handler = evData[3];
-										element.removeEventListener(type, handler, capture);
+										client.removeEventListener(element, type, handler, capture);
 									};
 								};
 							};
@@ -598,7 +685,7 @@
 							options = {};
 						};
 						return this._super(options) + 
-							',' + types.unique(types.get(options, 'types', this.types)).sort().join('|');
+							',' + types.unique([], types.get(options, 'types', this.types)).sort().join('|');
 					}),
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions) {
 						this._super(options, newOptions);
@@ -888,12 +975,12 @@
 								var self = this;
 								
 								// NOTE: Safari: "onload" doesn't raise for the 'link' tag
-								this.element.addEventListener(this.loadEv, function scriptOnSuccess(ev) {
+								client.addEventListener(this.element, this.loadEv, function scriptOnSuccess(ev) {
 									return self.__handleSuccess(ev);
 								});
 								
 								// NOTE: IE and Safari: "onerror" doesn't raise, so we can't know if there was an error
-								this.element.addEventListener('error', function scriptOnError(ev) {
+								client.addEventListener(this.element, 'error', function scriptOnError(ev) {
 									return self.__handleError(ev);
 								});
 
@@ -929,7 +1016,7 @@
 									};
 									if (url) {
 										var waitDownload = this.target.ownerDocument.createElement('img');
-										waitDownload.addEventListener('error', function handleWaitDownload(ev) {
+										client.addEventListener(waitDownload, 'error', function handleWaitDownload(ev) {
 											if (waitDownload.parentNode) {
 												waitDownload.parentNode.removeChild(waitDownload);
 											};
@@ -1362,7 +1449,7 @@
 							// Fix for some browsers
 							encoding = 'iso-8859-1';
 						} else if (encoding === 'utf8') {
-							// Fix for IE
+							// Fix
 							encoding = 'utf-8';
 						};
 						if (async && __Natives__.windowFetch && __Natives__.windowHeaders && __Natives__.windowFileReader) {
@@ -1410,7 +1497,7 @@
 								};
 							});
 						} else {
-							var xhr = new XMLHttpRequest();
+							var xhr = new __Natives__.windowXMLHttpRequest();
 							if (!('response' in xhr) && !('responseBody' in xhr)) {
 								throw new types.NotSupported("Incompatible browser.");
 							};
@@ -1448,7 +1535,7 @@
 								xhr.responseType = (encoding ? 'text' : 'blob');
 							};
 							var loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
-							xhr.addEventListener(loadEv, function(ev) {
+							client.addEventListener(xhr, loadEv, function(ev) {
 								if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
 									if (state.timeoutId) {
 										clearTimeout(state.timeoutId);
@@ -1475,7 +1562,7 @@
 									reject(ex);
 								};
 							};
-							xhr.addEventListener('error', function(ev) {
+							client.addEventListener(xhr, 'error', function(ev) {
 								handleError(new types.HttpError(xhr.status, xhr.statusText));
 							});
 							var timeout = types.get(options, 'timeout', 0) || 5000;  // Don't allow "0" (for infinite)

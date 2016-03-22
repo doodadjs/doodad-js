@@ -1,6 +1,6 @@
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
 // dOOdad - Object-oriented programming framework
-// File: Browserify.js - Browserify
+// File: browserify.js - Browserify
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client.Browserify'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Client'],
 			bootstrap: true,

@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Files'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -919,23 +919,27 @@
 						/*instanceProto*/
 						types.extend({
 							_new: types.SUPER(function _new(options) {
+								//if (new.target) {
 								if (this instanceof files.Path) {
 									this._super();
 									var dirChar = options.dirChar,
-										properties = types.fill(__Internal__.pathOptionsKeys, {}, options),
-										self = this;
-									tools.forEach(properties, function(value, key) {
-										//if (((key === 'path') || (key === 'root')) && types.isString(value)) {
-										//	value = value.split(dirChar || '/');
-										//};
-										properties[key] = {
-											configurable: true,
-											enumerable: true,
-											value: value,
-											writable: false,
-										};
-									});
-									types.defineProperties(this, properties);
+										properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
+									if (types.hasDefinePropertyEnabled()) {
+										tools.forEach(properties, function(value, key) {
+											//if (((key === 'path') || (key === 'root')) && types.isString(value)) {
+											//	value = value.split(dirChar || '/');
+											//};
+											properties[key] = {
+												configurable: true,
+												enumerable: true,
+												value: value,
+												writable: false,
+											};
+										});
+										types.defineProperties(this, properties);
+									} else {
+										types.extend(this, properties);
+									};
 								};
 							}),
 							
@@ -1359,6 +1363,7 @@
 							__args: null,
 							
 							_new: types.SUPER(function(args, /*optional*/options) {
+								//if (new.target) {
 								if (this instanceof files.UrlArguments) {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
@@ -1858,7 +1863,7 @@
 									
 									
 									if (url) {
-										url = url.trim();
+										url = tools.trim(url);
 										
 										var pos;
 										
@@ -2147,19 +2152,24 @@
 						/*instanceProto*/
 						types.extend({
 							_new: types.SUPER(function _new(options) {
+								//if (new.target) {
 								if (this instanceof files.Url) {
 									this._super();
 									var properties = types.fill(__Internal__.urlOptionsKeys, {}, options),
 										self = this;
-									tools.forEach(properties, function(value, key) {
-										properties[key] = {
-											configurable: true,
-											enumerable: true,
-											value: value,
-											writable: false,
-										};
-									});
-									types.defineProperties(this, properties);
+									if (types.hasDefinePropertyEnabled()) {
+										tools.forEach(properties, function(value, key) {
+											properties[key] = {
+												configurable: true,
+												enumerable: true,
+												value: value,
+												writable: false,
+											};
+										});
+										types.defineProperties(this, properties);
+									} else {
+										types.extend(this, properties);
+									};
 								} else {
 									return new files.Url(options);
 								};

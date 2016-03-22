@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Config'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files'],
 			bootstrap: true,

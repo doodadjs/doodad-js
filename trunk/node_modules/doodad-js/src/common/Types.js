@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: null,
 			dependencies: null,
 			bootstrap: true,
@@ -48,7 +48,9 @@
 				// Get namespaces
 				//===================================
 
-				var types = root.Doodad.Types;
+				var doodad = root.Doodad,
+					types = doodad.Types,
+					tools = doodad.Tools;
 				
 				//===================================
 				// Internal
@@ -121,6 +123,9 @@
 
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
+					
+					// "isArrayBuffer"
+					windowArrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
 				};
 				
 				delete __Internal__.arrayObj;   // free memory
@@ -153,14 +158,14 @@
 				types.undefined = new types.Undefined();
 
 				types.Null = function Null() {
-					if (types.null) {
+					if (types['null']) {
 						throw new types.Error("Can't create object.");
 					};
 				};
 				types.Null.prototype.valueOf = __Internal__.returnNull;
 				types.Null.prototype.toString = __Internal__.returnNullString;
 				types.Null.prototype.toSource = __Internal__.returnNullString;
-				types.null = new types.Null();
+				types['null'] = new types.Null();
 				
 				types.toObject = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -182,7 +187,7 @@
 						if (val === undefined) {
 							return types.undefined;
 						} else if (val === null) {
-							return types.null;
+							return types['null'];
 						} else {
 							return __Natives__.windowObject(val);
 						};
@@ -312,7 +317,7 @@
 				__Internal__.oldSetOptions = types.setOptions;
 				types.setOptions = function setOptions(/*paramarray*/) {
 					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.getDefault(options, 'settings', {});
+						settings = types.get(options, 'settings', {});
 						
 					settings.toSourceItemsCount = parseInt(types.get(settings, 'toSourceItemsCount'));
 					settings.enableProxies = types.toBoolean(types.get(settings, 'enableProxies'));
@@ -325,6 +330,11 @@
 					},
 				}, _options);
 				
+
+				//===================================
+				// is*
+				//===================================
+
 				types.isArrayAndNotEmpty = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -497,7 +507,7 @@
 					}
 					//! END_REPLACE()
 					, function isStringAndNotEmptyTrim(obj) {
-						return types.isString(obj) && !!obj.trim().length;
+						return types.isString(obj) && !!tools.trim(obj).length;
 					});
 				
 				types.isObjectAndNotEmpty = root.DD_DOC(
@@ -585,6 +595,10 @@
 						return false;
 					});
 
+				//=======================================================
+				// Objects
+				//=======================================================
+					
 				types.gets = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1097,8 +1111,8 @@
 									};
 								} else if (types.isCustomFunction(obj)) {
 									if (cloneFunctions >= 0) {
-										//result = eval('(' + __Natives__.functionToString.call(obj) + ')');
-										result = eval('(' + obj.toString() + ')');
+										//result = types.eval(__Natives__.functionToString.call(obj));
+										result = types.eval(obj.toString());
 									} else {
 										return obj;
 									};
@@ -1132,7 +1146,9 @@
 					});
 				
 
-
+				//========================================
+				// Arrays
+				//========================================
 				
 				types.hasIndex = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -1696,22 +1712,23 @@
 					//! END_REPLACE()
 					, function unique(/*optional*/comparer, /*paramarray*/obj) {
 						var start = 1;
-						if (!types.isFunction(comparer)) {
-							comparer = null;
+						var comparerFn = comparer;
+						if (!types.isFunction(comparerFn)) {
+							comparerFn = null;
 							start = 0;
 						};
 						
 						var result = [];
 						
-						if (comparer) {
+						if (comparerFn) {
 							var len = arguments.length;
 							for (var i = start; i < len; i++) {
 								obj = arguments[i];
 								if (types.isNothing(obj)) {
 									continue;
 								};
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 								obj = Object(obj);
+								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 								var objLen = obj.length;
 								for (var key1 = 0; key1 < objLen; key1++) {
 									if (key1 in obj) {
@@ -1719,7 +1736,7 @@
 											found = false,
 											resultLen = result.length;
 										for (var key2 = 0; key2 < resultLen; key2++) {
-											var res = comparer(value1, result[key2]);
+											var res = comparerFn(value1, result[key2]);
 											if ((res === true) || (res === 0)) {
 												found = true;
 												break;
@@ -1738,8 +1755,8 @@
 								if (types.isNothing(obj)) {
 									continue;
 								};
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 								obj = Object(obj);
+								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 								var objLen = obj.length;
 								for (var key1 = 0; key1 < objLen; key1++) {
 									if (key1 in obj) {
@@ -2198,7 +2215,7 @@
 				// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
 				try {
-					__Natives__.GeneratorFunction = types.getPrototypeOf(eval("(function*(){})")).constructor;
+					__Natives__.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
 				} catch(ex) {
 				};
 
@@ -2359,6 +2376,89 @@
 						return types.createObject(target);
 					})));
 				
+				//===================================
+				// Buffers
+				//===================================
+
+				types.isArrayBuffer = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.windowArrayBuffer ? (function isArrayBuffer(obj) {
+						return (obj instanceof __Natives__.windowArrayBuffer);
+						
+					}) : (function isArrayBuffer(obj) {
+						// ArrayBuffer is not implemented.
+						return false;
+						
+					})));
+				
+				//===================================
+				// Typed Arrays
+				//===================================
+				
+				if (global.Int8Array) {
+					try {
+						__Natives__.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
+						
+						if (__Natives__.windowTypedArray === global.Object) {
+							// <PRB> NodeJs has no TypedArray constructor.
+							delete __Natives__.windowTypedArray;
+							__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
+													global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
+													global.Float64Array];
+						};
+					} catch(ex) {
+					};
+				};
+					
+				types.isTypedArray = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (__Natives__.windowTypedArray ? (function isTypedArray(obj) {
+						return (obj instanceof __Natives__.windowTypedArray);
+						
+					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
+						// <PRB> NodeJs has no TypedArray constructor.
+						for (var i = 0; i < __Internal__.TypedArrays.length; i++) {
+							var type = __Internal__.TypedArrays[i];
+							if (type && (obj instanceof type)) {
+								return true;
+							};
+						};
+						return false;
+						
+					}) : (function isTypedArray(obj) {
+						// Typed arrays are not implemented.
+						return false;
+						
+					}))));
+
 				//===================================
 				// Bind/Unbind
 				//===================================
@@ -2534,6 +2634,7 @@
 						},
 						/*constructor*/
 						function box(value) {
+							//if (new.target) {
 							if (this instanceof types.box) {
 								return (this._new(value) || this);
 							} else {
@@ -2601,7 +2702,7 @@
 							};
 							return this;
 						},
-						delete: function _delete(value) {
+						'delete': function _delete(value) {
 							for (var i = 0; i < this.__ar.length; i++) {
 								if (this.__ar[i] === value) {
 									this.__ar.splice(i, 1);
@@ -2703,7 +2804,7 @@
 							};
 							return this;
 						},
-						delete: function _delete(key) {
+						'delete': function _delete(key) {
 							for (var i = 0; i < this.__keys.length; i++) {
 								if (this.__keys[i] === key) {
 									this.__keys.splice(i, 1);

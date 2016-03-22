@@ -35,7 +35,7 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '2.0.0r',
+			version: '2.2.0r',
 			namespaces: ['Entries'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools'],
 			bootstrap: true,
@@ -72,7 +72,7 @@
 					
 					waitCounter: 0,
 					waiting: false,
-					loadModules: null,
+					loadingModules: null,
 					loading: false,
 					
 					//oldSetOptions: null,
@@ -85,7 +85,7 @@
 				//__Internal__.oldSetOptions = namespaces.setOptions;
 				//namespaces.setOptions = function setOptions(/*paramarray*/) {
 				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.getDefault(options, 'settings', {});
+				//		settings = types.get(options, 'settings', {});
 				//		
 				//};
 				//
@@ -97,8 +97,8 @@
 				// Events
 				//===================================
 				
-				namespaces.oncreatenamespace = null;
-				namespaces.oninitnamespace = null;
+				namespaces.oncreate = null;
+				namespaces.oninit = null;
 				namespaces.onready = null;
 				namespaces.onerror = null;
 
@@ -106,6 +106,22 @@
 				//===================================
 				// Utilities
 				//===================================
+				
+				__Internal__.incrementWait = function incrementWait() {
+					__Internal__.waiting = true;
+					if (__Internal__.waitCounter < 0) {
+						__Internal__.waitCounter = 0;
+					};
+					__Internal__.waitCounter++;
+				};
+				
+				__Internal__.decrementWait = function decrementWait() {
+					__Internal__.waitCounter--;
+					if (__Internal__.waitCounter <= 0) {
+						__Internal__.waiting = false;
+						__Internal__.waitCounter = 0;
+					};
+				};
 				
 				namespaces.getEntry = root.DD_DOC(
 						//! REPLACE_BY("null")
@@ -174,7 +190,8 @@
 					//};
 					return namespace;
 				});
-				
+
+
 				__Internal__.createNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
@@ -204,17 +221,17 @@
 				, function createNamespace(spec, /*optional*/options, /*optional*/ignoreOptionals) {
 					var Promise = types.getPromise();
 					
-					try {
-						if (types.isString(spec)) {
-							spec = {
-								name: spec,
-							};
+					if (types.isString(spec)) {
+						spec = {
+							name: spec,
 						};
-						
-						var deps = spec.dependencies;
-						if (deps) {
-							var depsLen = deps.length;
-							for (var i = 0; i < depsLen; i++) {
+					};
+					
+					var deps = spec.dependencies;
+					if (deps) {
+						var depsLen = deps.length;
+						for (var i = 0; i < depsLen; i++) {
+							if (i in deps) {
 								var dep = deps[i],
 									optional = false,
 									version = null;
@@ -243,147 +260,149 @@
 								};
 							};
 						};
-						
-						var specType = spec.type;
-						if (specType) {
-							var val;
-							if (types.isString(specType)) {
-								val = entries[specType];
-							} else {
-								val = specType;
-							};
-							if (val && (val === entries.Namespace) || types.baseof(entries.Namespace, val)) {
-								specType = val;
-							} else {
-								throw new types.Error("Invalid registry entry type : '~0~'.", [(specType + '').slice(0, 50)]);
-							};
+					};
+					
+					var specType = spec.type;
+					if (specType) {
+						var val;
+						if (types.isString(specType)) {
+							val = entries[specType];
 						} else {
-							specType = entries.Module;
+							val = specType;
 						};
-						
-						var specNamespaceType = spec.namespaceType;
-						if (specNamespaceType) {
-							var val;
-							if (types.isString(specNamespaceType)) {
-								val = namespaces[specNamespaceType];
-							} else {
-								val = specNamespaceType;
-							};
-							if (val && (val === types.Namespace) || types.baseof(types.Namespace, val)) {
-								specNamespaceType = val;
-							} else {
-								throw new types.Error("Invalid namespace object type : '~0~'.", [(specNamespaceType + '').slice(0, 50)]);
-							};
+						if (val && (val === entries.Namespace) || types.baseof(entries.Namespace, val)) {
+							specType = val;
 						} else {
-							specNamespaceType = types.Namespace;
+							throw new types.Error("Invalid registry entry type : '~0~'.", [(specType + '').slice(0, 50)]);
 						};
-						
-						var name = spec.name;
-						var entry = namespaces.getEntry(name);
-						if (entry) {
-							if (!types.is(entry, entries.Namespace) || (specType === entries.Namespace)) {
-								return Promise.resolve(entry);
-							};
-						};
-						
-						var parent = spec.parent || null,
-							fullName;
-							
-						if (parent) {
-							fullName = (parent.DD_FULL_NAME ? '.' + parent.DD_FULL_NAME : '');
-							// Delete temporary property
-							delete spec.parent;
+					} else {
+						specType = entries.Module;
+					};
+					
+					var specNamespaceType = spec.namespaceType;
+					if (specNamespaceType) {
+						var val;
+						if (types.isString(specNamespaceType)) {
+							val = namespaces[specNamespaceType];
 						} else {
-							fullName = '';
-							if ((specType !== entries.Package) && !types.baseof(entries.Package, specType)) {
-								parent = root;
-							};
+							val = specNamespaceType;
 						};
+						if (val && (val === types.Namespace) || types.baseof(types.Namespace, val)) {
+							specNamespaceType = val;
+						} else {
+							throw new types.Error("Invalid namespace object type : '~0~'.", [(specNamespaceType + '').slice(0, 50)]);
+						};
+					} else {
+						specNamespaceType = types.Namespace;
+					};
+					
+					var name = spec.name;
+					var entry = namespaces.getEntry(name);
+					if (entry) {
+						if (!types.is(entry, entries.Namespace) || (specType === entries.Namespace)) {
+							return Promise.resolve(entry);
+						};
+					};
+					
+					var parent = spec.parent || null,
+						fullName;
 						
-						var shortNames = spec.name.split('.'),
-							shortNamesLen = shortNames.length,
-							shortName,
-							fName,
-							type,
-							namespaceType,
-							newSpec = {},
-							namespace,
-							i,
-							replaceEntry = false;
+					if (parent) {
+						fullName = (parent.DD_FULL_NAME ? '.' + parent.DD_FULL_NAME : '');
+						// Delete temporary property
+						delete spec.parent;
+					} else {
+						fullName = '';
+						if ((specType !== entries.Package) && !types.baseof(entries.Package, specType)) {
+							parent = root;
+						};
+					};
+					
+					var shortNames = spec.name.split('.'),
+						shortNamesLen = shortNames.length,
+						shortName,
+						fName,
+						type,
+						namespaceType,
+						newSpec = {},
+						namespace,
+						i,
+						replaceEntry = false;
 
-						entry = null;
+					entry = null;
 
-						for (i = 0; i < shortNamesLen; i++) {
-							shortName = shortNames[i];
-							fullName += ('.' + shortName);
-							fName = fullName.slice(1);
-							
-							if (i < shortNamesLen - 1) {
-								type = entries.Namespace;
-								namespaceType = types.Namespace;
-								namespace = null;
-							} else {
-								type = specType;
-								namespaceType = specNamespaceType;
-								newSpec = spec;
-								if (type !== entries.Namespace) {
-									replaceEntry = true;
-								};
-								namespace = spec.object;
-								if (namespace) {
-									if (!types.isLike(namespace, namespaceType)) {
-										throw new types.Error("Invalid namespace object.");
-									};
-								};
+					for (i = 0; i < shortNamesLen; i++) {
+						shortName = shortNames[i];
+						fullName += ('.' + shortName);
+						fName = fullName.slice(1);
+						
+						if (i < shortNamesLen - 1) {
+							type = entries.Namespace;
+							namespaceType = types.Namespace;
+							namespace = null;
+						} else {
+							type = specType;
+							namespaceType = specNamespaceType;
+							newSpec = spec;
+							if (type !== entries.Namespace) {
+								replaceEntry = true;
 							};
-							newSpec.name = fName;
-							
-							entry = namespaces.getEntry(fName);
-
+							namespace = spec.object;
 							if (namespace) {
-								if (entry && replaceEntry) {
-									root.DD_REGISTRY.remove(fName);
-									entry = null;
-								};
-							} else {
-								var prevNamespace = null;
-								if (types.hasKey(parent, shortName)) {
-									prevNamespace = parent[shortName];
-									if ((!replaceEntry && (namespace instanceof types.Namespace)) || !spec.replaceObject) {
-										namespace = prevNamespace;
-										prevNamespace = null;
-									};
-								};
-								
-								if (entry && replaceEntry) {
-									root.DD_REGISTRY.remove(fName);
-									entry = null;
-								};
-								
-								if (!namespace) {
-									namespace = new namespaceType(parent, shortName, fName);
-								};
-								
-								if (prevNamespace) {
-									types.complete(namespace, prevNamespace);
+								if (!types.isLike(namespace, namespaceType)) {
+									throw new types.Error("Invalid namespace object.");
 								};
 							};
-							
-							if (!entry) {
-								entry = new type(root, newSpec, namespace);
-								root.DD_REGISTRY.add(fName, entry);
-							};
-							
-							parent = namespace;
 						};
-
-						var promises = [];
+						newSpec.name = fName;
 						
-						if (entry) {
-							var specNamespaces = spec.namespaces;
-							if (specNamespaces) {
-								var namespacesLen = specNamespaces.length;
-								for (var i = 0; i < namespacesLen; i++) {
+						entry = namespaces.getEntry(fName);
+
+						if (namespace) {
+							if (entry && replaceEntry) {
+								root.DD_REGISTRY.remove(fName);
+								entry = null;
+							};
+						} else {
+							var prevNamespace = null;
+							if (types.hasKey(parent, shortName)) {
+								prevNamespace = parent[shortName];
+								if ((!replaceEntry && (namespace instanceof types.Namespace)) || !spec.replaceObject) {
+									namespace = prevNamespace;
+									prevNamespace = null;
+								};
+							};
+							
+							if (entry && replaceEntry) {
+								root.DD_REGISTRY.remove(fName);
+								entry = null;
+							};
+							
+							if (!namespace) {
+								namespace = new namespaceType(parent, shortName, fName);
+							};
+							
+							if (prevNamespace) {
+								types.complete(namespace, prevNamespace);
+							};
+						};
+						
+						if (!entry) {
+							entry = new type(root, newSpec, namespace);
+							root.DD_REGISTRY.add(fName, entry);
+						};
+						
+						parent = namespace;
+					};
+
+					var promises = [];
+					
+					if (entry) {
+						var specNamespaces = spec.namespaces;
+						if (specNamespaces) {
+							var namespacesLen = specNamespaces.length;
+							for (var i = 0; i < namespacesLen; i++) {
+								if (i in specNamespaces) {
 									var newSpec = specNamespaces[i];
 									if (types.isString(newSpec)) {
 										newSpec = {
@@ -398,66 +417,67 @@
 									promises.push(promise);
 								};
 							};
+						};
 
-							var proto = spec.proto;
-							if (proto) {
-								for (var key in proto) {
-									if (types.hasKey(proto, key)) {
-										namespace[key] = proto[key];
-									};
-								};
-							};
-							
-							options = types.get(options, spec.name);
-							
-							if (!spec.bootstrap && spec.create) {
-								var retval = spec.create(root, options);
-								if (retval) {
-									if (types.isPromise(retval)) {
-										promises.push(
-											retval
-												['finally'](new namespaces.ReadyCallback())
-										);
-									} else if (types.isFunction(retval)) {
-										entry.objectInit = retval;
-									} else {
-										throw new types.Error("'create' of '~0~' has returned an invalid value.", [spec.name]);
-									};
+						var proto = spec.proto;
+						if (proto) {
+							for (var key in proto) {
+								if (types.hasKey(proto, key)) {
+									namespace[key] = proto[key];
 								};
 							};
 						};
 						
-						var terminate = function terminate() {
-							namespaces.dispatchEvent(new types.CustomEvent('createnamespace', 
-								{
-									detail: {
-										entry: entry,
-										options: options,
-									},
-								}
-							));
-							
-							tools.log(tools.LogLevels.Debug, "Entry '~0~' created.", [entry.spec.name]);
-							
-							return entry;
-						};
+						options = types.get(options, spec.name);
 						
-						return Promise.all(promises).then(terminate);
-						
-					} catch(ex) {
-						if (ex instanceof types.ScriptAbortedError) {
-							throw ex;
-						} else {
-							return Promise.reject(ex);
+						if (!spec.bootstrap && spec.create) {
+							var retval = spec.create(root, options);
+							if (retval) {
+								if (types.isPromise(retval)) {
+									__Internal__.incrementWait();
+									promises.push(
+										retval
+											.nodeify(function(err, result) {
+												__Internal__.decrementWait();
+												if (err) {
+													throw err;
+												} else {
+													return result;
+												};
+											})
+									);
+								} else if (types.isFunction(retval)) {
+									entry.objectInit = retval;
+								} else {
+									throw new types.Error("'create' of '~0~' has returned an invalid value.", [spec.name]);
+								};
+							};
 						};
 					};
+					
+					var terminate = function terminate() {
+						namespaces.dispatchEvent(new types.CustomEvent('create', 
+							{
+								detail: {
+									entry: entry,
+									options: options,
+								},
+							}
+						));
+						
+						tools.log(tools.LogLevels.Debug, "Entry '~0~' created.", [entry.spec.name]);
+						
+						return entry;
+					};
+					
+					return Promise.all(promises).then(terminate);
 				});
 				
 				__Internal__.initNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									entry: {
 										type: 'NamespaceEntry',
@@ -477,14 +497,14 @@
 				, function initNamespace(entry, /*optional*/options) {
 					var Promise = types.getPromise();
 						
-					try {
-						if (entry && !entry.objectInitialized) {
-							var promises = [];
-							
-							var deps = entry.spec.dependencies;
-							if (deps) {
-								var depsLen = deps.length;
-								for (var i = 0; i < depsLen; i++) {
+					if (entry && !entry.objectInitialized) {
+						var promises = [];
+						
+						var deps = entry.spec.dependencies;
+						if (deps) {
+							var depsLen = deps.length;
+							for (var i = 0; i < depsLen; i++) {
+								if (i in deps) {
 									var dep = deps[i];
 									if (!types.isString(dep)) {
 										dep = dep.name;
@@ -492,64 +512,65 @@
 									
 									var depEntry = namespaces.getEntry(dep);
 									if (depEntry && (depEntry instanceof entries.Module)) {
-										if (!depEntry.objectInitialized) {
+										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
 											if (depEntry.spec.autoInit !== false) {
 												var promise = __Internal__.initNamespace(depEntry, options);
 												promises.push(promise);
+												depEntry.objectInitializing = true;
 											};
 										};
 									};
 								};
 							};
-							
-							options = types.get(options, entry.spec.name);
-							
-							if (entry.objectInit) {
-								if (types.isFunction(entry.objectInit)) {
-									var retval = entry.objectInit(options);
-									if (types.isPromise(retval)) {
-										promises.push(
-											retval
-												['finally'](new namespaces.ReadyCallback())
-										);
-									} else {
-										entry.init(options);
-									};
+						};
+						
+						options = types.get(options, entry.spec.name);
+						
+						if (entry.objectInit) {
+							if (types.isFunction(entry.objectInit)) {
+								var retval = entry.objectInit(options);
+								if (types.isPromise(retval)) {
+									__Internal__.incrementWait();
+									promises.push(
+										retval
+											.nodeify(function(err, result) {
+												__Internal__.decrementWait();
+												if (err) {
+													throw err;
+												} else {
+													return result;
+												};
+											})
+									);
 								} else {
-									throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
+									entry.init(options);
 								};
 							} else {
-								entry.init(options);
+								throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
 							};
-							
-							var terminate = function terminate() {
-								namespaces.dispatchEvent(new types.CustomEvent('initnamespace', 
-									{
-										detail: {
-											entry: entry,
-											options: options,
-										},
-									}
-								));
-								
-								tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
-								
-								return entry;
-							};
-							
-							return Promise.all(promises).then(terminate);
-							
 						} else {
-							return Promise.resolve(entry);
+							entry.init(options);
 						};
 						
-						
-					} catch(ex) {
-						if (ex instanceof types.ScriptAbortedError) {
-							throw ex;
-						} else {
-							return Promise.reject(ex);
+						var terminate = function terminate() {
+							namespaces.dispatchEvent(new types.CustomEvent('init', 
+								{
+									detail: {
+										entry: entry,
+										options: options,
+									},
+								}
+							));
+							
+							tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
+							
+							return entry;
 						};
+						
+						return Promise.all(promises).then(terminate);
+						
+					} else {
+						return Promise.resolve(entry);
 					};
 				});
 				
@@ -557,7 +578,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 5,
+								revision: 6,
 								params: {
 									specs: {
 										type: 'object',
@@ -588,10 +609,11 @@
 					var Promise = types.getPromise();
 					
 					try {
-						__Internal__.loadModules = types.extend(__Internal__.loadModules || {}, specs);
+						__Internal__.loadingModules = types.extend(__Internal__.loadingModules || {}, specs);
 						
 						var terminate = function _terminate(err, result) {
 							if (err) {
+								debugger;
 								// Dispatches "onerror"
 								if (!__Internal__.loading && !__Internal__.waiting) {
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
@@ -611,7 +633,11 @@
 										var cbReadyHandler = function(ev) {
 											namespaces.removeEventListener('ready', cbReadyHandler);
 											namespaces.removeEventListener('error', cbErrorHandler);
-											resolve(callback());
+											try {
+												resolve(callback());
+											} catch(ex) {
+												reject(ex);
+											};
 										};
 										var cbErrorHandler = function(ev) {
 											namespaces.removeEventListener('ready', cbReadyHandler);
@@ -656,12 +682,12 @@
 						var toInit = [];
 
 						var createModules = function createModules(ignoreOptionals) {
-							var names = types.keys(__Internal__.loadModules),
+							var names = types.keys(__Internal__.loadingModules),
 								promises = [];
 							
 							for (var i = 0; i < names.length; i++) {
 								var name = names[i],
-									spec = types.get(__Internal__.loadModules, name);
+									spec = types.get(__Internal__.loadingModules, name);
 								spec.name = name;
 								var promise = __Internal__.createNamespace(spec, options, ignoreOptionals);
 								promises.push(promise);
@@ -685,7 +711,7 @@
 											missings++;
 										};
 									} else {
-										delete __Internal__.loadModules[entry.spec.name];
+										delete __Internal__.loadingModules[entry.spec.name];
 										if ((entry.spec.autoInit === undefined) || entry.spec.autoInit) {
 											toInit.push(entry);
 										};
@@ -708,8 +734,12 @@
 							var promises = [];
 								
 							for (var i = 0; i < toInit.length; i++) {
-								var promise = __Internal__.initNamespace(toInit[i], options);
-								promises.push(promise);
+								var entry = toInit[i];
+								if (!entry.objectInitialized && !entry.objectInitializing) {
+									var promise = __Internal__.initNamespace(entry, options);
+									promises.push(promise);
+									entry.objectInitializing = true;
+								};
 							};
 
 							return Promise.all(promises);
@@ -891,7 +921,7 @@
 								return null;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type.prototype)) {
+								if (!types.baseof(entries.Namespace, type)) {
 									return null;
 								};
 							} else {
@@ -929,7 +959,7 @@
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type.prototype)) {
+								if (!types.baseof(entries.Namespace, type)) {
 									return false;
 								};
 							} else {
@@ -964,7 +994,7 @@
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type.prototype)) {
+								if (!types.baseof(entries.Namespace, type)) {
 									return false;
 								};
 							} else {
@@ -1070,6 +1100,7 @@
 						created: false,
 						objectInit: null,
 						objectInitialized: false,
+						objectInitializing: false,
 						
 						_new: types.SUPER(function _new(root, spec, namespace) {
 							this._super();
@@ -1097,6 +1128,7 @@
 								//! END_REPLACE()
 						, function init(/*optional*/options) {
 							this.objectInitialized = true;
+							this.objectInitializing = false;
 						}),
 					}
 				)));
@@ -1214,62 +1246,6 @@
 				)));
 				
 
-				//-----------------------------------
-				// Ready Event
-				//-----------------------------------
-				namespaces.ReadyCallback = root.DD_DOC(
-						//! REPLACE_BY("null")
-						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'object,Object',
-										optional: true,
-										description: "Object to bind with the callback function.",
-									},
-									callback: {
-										type: 'function',
-										optional: true,
-										description: "Additional callback function to be called.",
-									},
-								},
-								returns: 'ReadyCallback',
-								description: "Callback function for Namespaces 'ready' event. Use it when an asynchronous operation is made on the initialization of a namespace so that the application will start after every namespaces are correctly initialized.",
-						}
-						//! END_REPLACE()
-				, types.setPrototypeOf(function(/*optional*/obj, /*optional*/callback) {
-					__Internal__.waiting = true;
-					if (__Internal__.waitCounter < 0) {
-						__Internal__.waitCounter = 0;
-					};
-					__Internal__.waitCounter++;
-					var fn = function wait() {
-						try {
-							if (!fn.CALLED) {
-								fn.CALLED = true;
-								__Internal__.waitCounter--;
-								if (callback) {
-									callback.call(obj);
-								};
-								if (__Internal__.waitCounter <= 0) {
-									__Internal__.waiting = false;
-									__Internal__.waitCounter = 0;
-								};
-							};
-						} catch(ex) {
-							if (ex instanceof types.ScriptAbortedError) {
-								throw ex;
-							} else {
-								doodad.trapException(obj, null, ex);
-							};
-						};
-					};
-					fn = types.setPrototypeOf(fn, namespaces.ReadyCallback);
-					fn.CALLED = false;
-					return fn;
-				}, types.Callback));
-		
 				//===================================
 				// Init
 				//===================================
