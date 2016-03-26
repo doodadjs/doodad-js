@@ -35,11 +35,13 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
 			type: null,
-			version: '2.2.0r',
+			//! INSERT("version:'" + VERSION('doodad-js') + "',")
 			namespaces: ['Entries'],
-			dependencies: ['Doodad.Types', 'Doodad.Tools'],
+			dependencies: [
+				'Doodad.Types', 
+				'Doodad.Tools',
+			],
 			bootstrap: true,
-			exports: exports,
 
 			create: function(root, /*optional*/_options) {
 				"use strict";
@@ -72,8 +74,7 @@
 					
 					waitCounter: 0,
 					waiting: false,
-					loadingModules: null,
-					loading: false,
+					toInit: [],
 					
 					//oldSetOptions: null,
 				};
@@ -196,7 +197,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									spec: {
 										type: 'object,string',
@@ -229,8 +230,7 @@
 					
 					var deps = spec.dependencies;
 					if (deps) {
-						var depsLen = deps.length;
-						for (var i = 0; i < depsLen; i++) {
+						for (var i = 0; i < deps.length; i++) {
 							if (i in deps) {
 								var dep = deps[i],
 									optional = false,
@@ -247,13 +247,13 @@
 										depEntry = null;
 									};
 								};
-								if (!depEntry || !(depEntry instanceof entries.Module)) {
+								if (!depEntry) {
 									if (!optional || !ignoreOptionals) {
 										var result = {
+											spec: spec,
 											missingDep: dep, 
-											optional: optional,
-											version: version,
-											parent: spec,
+											depOptional: optional,
+											depVersion: version,
 										};
 										return Promise.resolve(result);
 									};
@@ -329,8 +329,6 @@
 						i,
 						replaceEntry = false;
 
-					entry = null;
-
 					for (i = 0; i < shortNamesLen; i++) {
 						shortName = shortNames[i];
 						fullName += ('.' + shortName);
@@ -395,9 +393,8 @@
 						parent = namespace;
 					};
 
-					var promises = [];
-					
-					if (entry) {
+					var createNamespaces = function createNamespaces() {
+						var promises = [];
 						var specNamespaces = spec.namespaces;
 						if (specNamespaces) {
 							var namespacesLen = specNamespaces.length;
@@ -413,12 +410,14 @@
 										newSpec.type = entries.Namespace;
 									};
 									newSpec.parent = namespace; // Temporary property
-									var promise = __Internal__.createNamespace(newSpec, options, ignoreOptionals);
-									promises.push(promise);
+									promises.push(__Internal__.createNamespace(newSpec, options, ignoreOptionals));
 								};
 							};
 						};
+						return Promise.all(promises);
+					};
 
+					var create = function create() {
 						var proto = spec.proto;
 						if (proto) {
 							for (var key in proto) {
@@ -432,20 +431,22 @@
 						
 						if (!spec.bootstrap && spec.create) {
 							var retval = spec.create(root, options);
-							if (retval) {
+							if (!types.isNothing(retval)) {
 								if (types.isPromise(retval)) {
 									__Internal__.incrementWait();
-									promises.push(
-										retval
-											.nodeify(function(err, result) {
-												__Internal__.decrementWait();
-												if (err) {
-													throw err;
+									return retval
+										.nodeify(function(err, result) {
+											__Internal__.decrementWait();
+											if (err) {
+												throw err;
+											} else if (!types.isNothing(result)) {
+												if (types.isFunction(result)) {
+													entry.objectInit = result;
 												} else {
-													return result;
+													throw new types.Error("'create' of '~0~' has returned an invalid value.", [spec.name]);
 												};
-											})
-									);
+											};
+										});
 								} else if (types.isFunction(retval)) {
 									entry.objectInit = retval;
 								} else {
@@ -470,7 +471,9 @@
 						return entry;
 					};
 					
-					return Promise.all(promises).then(terminate);
+					return createNamespaces()
+						.then(create)
+						.then(terminate);
 				});
 				
 				__Internal__.initNamespace = root.DD_DOC(
@@ -498,7 +501,7 @@
 					var Promise = types.getPromise();
 						
 					if (entry && !entry.objectInitialized) {
-						var promises = [];
+						var promise = Promise.resolve();
 						
 						var deps = entry.spec.dependencies;
 						if (deps) {
@@ -511,12 +514,14 @@
 									};
 									
 									var depEntry = namespaces.getEntry(dep);
-									if (depEntry && (depEntry instanceof entries.Module)) {
+									if (depEntry) {
 										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
 											if (depEntry.spec.autoInit !== false) {
-												var promise = __Internal__.initNamespace(depEntry, options);
-												promises.push(promise);
 												depEntry.objectInitializing = true;
+												promise = promise
+													.then(function() {
+														return __Internal__.initNamespace(depEntry, options);
+													});
 											};
 										};
 									};
@@ -531,25 +536,22 @@
 								var retval = entry.objectInit(options);
 								if (types.isPromise(retval)) {
 									__Internal__.incrementWait();
-									promises.push(
-										retval
-											.nodeify(function(err, result) {
-												__Internal__.decrementWait();
-												if (err) {
-													throw err;
-												} else {
-													return result;
-												};
-											})
-									);
-								} else {
-									entry.init(options);
+									promise = promise
+										.then(function() {
+											return retval;
+										})
+										.nodeify(function(err, result) {
+											__Internal__.decrementWait();
+											if (err) {
+												throw err;
+											} else {
+												return result;
+											};
+										});
 								};
 							} else {
 								throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
 							};
-						} else {
-							entry.init(options);
 						};
 						
 						var terminate = function terminate() {
@@ -562,12 +564,14 @@
 								}
 							));
 							
+							entry.init(options);
+							
 							tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
 							
 							return entry;
 						};
 						
-						return Promise.all(promises).then(terminate);
+						return promise.then(terminate);
 						
 					} else {
 						return Promise.resolve(entry);
@@ -578,7 +582,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 6,
+								revision: 7,
 								params: {
 									specs: {
 										type: 'object',
@@ -609,13 +613,13 @@
 					var Promise = types.getPromise();
 					
 					try {
-						__Internal__.loadingModules = types.extend(__Internal__.loadingModules || {}, specs);
+						var names = types.keys(specs);
 						
 						var terminate = function _terminate(err, result) {
 							if (err) {
 								debugger;
 								// Dispatches "onerror"
-								if (!__Internal__.loading && !__Internal__.waiting) {
+								if (!__Internal__.waiting) {
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
 								};
 
@@ -660,7 +664,7 @@
 								};
 								
 								// Dispatches "onready"
-								if (!__Internal__.loading && !__Internal__.waiting) {
+								if (!__Internal__.waiting) {
 									namespaces.dispatchEvent(new types.CustomEvent('ready'));
 								};
 								
@@ -674,91 +678,91 @@
 							};
 						};
 
-						if (__Internal__.loading) {
-							return terminate();
-						};
-						
-						__Internal__.loading = true;
-						var toInit = [];
-
-						var createModules = function createModules(ignoreOptionals) {
-							var names = types.keys(__Internal__.loadingModules),
-								promises = [];
-							
-							for (var i = 0; i < names.length; i++) {
-								var name = names[i],
-									spec = types.get(__Internal__.loadingModules, name);
+						var loopCreateModules = function loopCreateModules(state) {
+							if (names.length) {
+								if (state.missings.length >= names.length) {
+									var entry = state.missings[0];
+									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.spec.name, entry.missingDep, (entry.depVersion || '<unspecified>')]);
+								} else if ((state.missings.length + state.optionals.length) >= names.length) {
+									state.ignoreOptionals = true;
+								};
+								var name = names.shift(),
+									spec = specs[name];
 								spec.name = name;
-								var promise = __Internal__.createNamespace(spec, options, ignoreOptionals);
-								promises.push(promise);
+								return __Internal__.createNamespace(spec, options, state.ignoreOptionals)
+									.then(function(entry) {
+										if (entry.missingDep) {
+											if (entry.depOptional) {
+												state.optionals.push(entry);
+											} else {
+												state.missings.push(entry);
+											};
+											names.push(name);
+										} else {
+											state.missings = [];
+											state.optionals = [];
+											if (entry.spec.autoInit !== false) {
+												__Internal__.toInit.push(entry);
+											};
+										};
+										return loopCreateModules(state);
+									});
 							};
-							
-							return Promise.all(promises)
-								.then(loopCreateModules);
 						};
-						
-						var loopCreateModules = function loopCreateModules(entries) {
-							if (entries.length) {
-								var missings = 0,
-									optionals = 0;
+
+
+/*
+								var missings = [],
+									optionalsCount = 0,
+									count = entries.length;
 								
 								for (var i = 0; i < entries.length; i++) {
 									var entry = entries[i];
 									if (entry.missingDep) {
 										if (entry.optional) {
-											optionals++;
+											optionalsCount++;
 										} else {
-											missings++;
+											missings.push(entry);
 										};
 									} else {
-										delete __Internal__.loadingModules[entry.spec.name];
+										delete specs[entry.spec.name];
 										if ((entry.spec.autoInit === undefined) || entry.spec.autoInit) {
-											toInit.push(entry);
+											__Internal__.toInit.push(entry);
 										};
 									};
 								};
 								
-								var ignoreOptionals = false;
-								if (missings >= entries.length) {
-									var entry = entries[0];
-									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.parent.name, entry.missingDep, (entry.version || '<any>')]);
-								} else if ((missings + optionals) >= entries.length) {
+								if (missings.length >= entries.length) {
+									var entry = missings[0];
+									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.parent.name, entry.missingDep, (entry.version || '<unspecified>')]);
+								} else if ((missings.length + optionalsCount) >= entries.length) {
 									ignoreOptionals = true;
 								};
+*/
 								
-								return createModules(ignoreOptionals);
-							};
-						};
 						
-						var initModules = function initModules() {
-							var promises = [];
-								
-							for (var i = 0; i < toInit.length; i++) {
-								var entry = toInit[i];
+						var loopInitModules = function loopInitModules() {
+							if (!__Internal__.waiting && __Internal__.toInit.length) {
+								var promise;
+								var entry = __Internal__.toInit.shift(); 
 								if (!entry.objectInitialized && !entry.objectInitializing) {
-									var promise = __Internal__.initNamespace(entry, options);
-									promises.push(promise);
 									entry.objectInitializing = true;
+									promise = __Internal__.initNamespace(entry, options);
+								} else {
+									promise = Promise.resolve();
 								};
-							};
 
-							return Promise.all(promises);
+								return promise.then(function() {
+									return loopInitModules();
+								});
+							};
 						};
 						
-						return createModules(false)
-							.then(initModules)
-							.nodeify(function _finally(err, result) {
-								__Internal__.loading = false;
-								if (err) {
-									throw err;
-								} else {
-									return result;
-								};
-							})
+						return loopCreateModules({missings: [], optionals: [], ignoreOptionals: false})
+							.then(loopInitModules)
 							.nodeify(terminate);
 						
 					} catch(ex) {
-						__Internal__.loading = false;
 						if (ex instanceof types.ScriptAbortedError) {
 							throw ex;
 						} else {
@@ -1097,7 +1101,6 @@
 						spec: null,
 						namespace: null,
 						version: null,
-						created: false,
 						objectInit: null,
 						objectInitialized: false,
 						objectInitializing: false,
@@ -1107,7 +1110,7 @@
 							this.root = root;
 							this.spec = spec;
 							this.namespace = namespace;
-							this.version = tools.Version.parse(spec.version, __Internal__.versionIdentifiers);
+							this.version = spec.version && tools.Version.parse(spec.version, __Internal__.versionIdentifiers);
 						}),
 					
 						init: root.DD_DOC(
