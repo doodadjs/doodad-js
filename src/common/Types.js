@@ -1,4 +1,4 @@
-﻿//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
 // dOOdad - Object-oriented programming framework
 // File: Types.js - Types management
 // Project home: https://sourceforge.net/projects/doodad-js/

@@ -1067,7 +1067,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									root: {
 										type: 'Root',
