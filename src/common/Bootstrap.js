@@ -32,7 +32,8 @@
 	};
 
 	var MODULE_NAME = 'doodad-js';
-	var MODULE_VERSION = '2.2.0r';
+	var MODULE_VERSION;
+	//! INSERT(";MODULE_VERSION='" + VERSION('doodad-js') + "'")
 
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
@@ -4138,6 +4139,16 @@
 						
 						// Load bootstrap modules
 
+						if (__recordNewBootstraps__) {
+							__bootstraps__[MODULE_NAME] = {
+								type: 'Package',
+								version: MODULE_VERSION,
+								namespaces: null,
+								dependencies: null,
+								bootstrap: true,
+							};
+						};
+
 						modules = types.extend({}, modules, __bootstraps__);
 						
 						var names = types.keys(modules);
@@ -4224,19 +4235,21 @@
 							};
 						};
 						
-						if (__recordNewBootstraps__) {
-							__bootstraps__[MODULE_NAME] = {
-								type: 'Package',
-								version: MODULE_VERSION,
-								namespaces: null,
-								dependencies: null,
-								bootstrap: true,
-							};
-							
-							__recordNewBootstraps__ = false;
+						__recordNewBootstraps__ = false;
+						
+						var namespaces = this.Doodad.Namespaces,
+							entries = namespaces.Entries;
+						//namespaces.loadNamespaces(__bootstraps__, null, options, false);
+						
+						names = types.keys(__bootstraps__);
+						while (name = names.shift()) {
+							var spec = __bootstraps__[name];
+							var entryType = entries[spec.type || 'Module'];
+							var entry = new entryType(this, spec, nsObjs[name]);
+							var opts = types.get(options, name);
+							entry.init(opts);
+							this.DD_REGISTRY.add(name, entry);
 						};
-
-						this.Doodad.Namespaces.loadNamespaces(__bootstraps__, null, options, false);
 					}),
 					
 					enableAsserts: __Internal__.DD_DOC(

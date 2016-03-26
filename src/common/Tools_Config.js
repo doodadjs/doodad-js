@@ -35,11 +35,14 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Config'] = {
 			type: null,
-			version: '2.2.0r',
+			//! INSERT("version:'" + VERSION('doodad-js') + "',")
 			namespaces: null,
-			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files'],
+			dependencies: [
+				'Doodad.Types', 
+				'Doodad.Tools', 
+				'Doodad.Tools.Files',
+			],
 			bootstrap: true,
-			exports: exports,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";

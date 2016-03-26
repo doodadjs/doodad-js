@@ -39,7 +39,6 @@
 			namespaces: ['MixIns', 'Interfaces'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
-			exports: exports,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";

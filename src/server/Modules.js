@@ -39,7 +39,6 @@
 			namespaces: null,
 			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces', 'Doodad.NodeJs'],
 			bootstrap: true,
-			exports: exports,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
@@ -56,13 +55,6 @@
 					namespaces = doodad.Namespaces,
 					modules = doodad.Modules;
 				
-				let npmConfig = null;
-				try {
-					npmConfig = require('npm-package-config');
-				} catch(ex) {
-				};
-				
-
 				const Module = module.constructor;
 				
 				const __Internal__ = {
@@ -110,22 +102,20 @@
 					//! END_REPLACE()
 					, function locate(module, /*optional*/file, /*optional*/options) {
 						const Promise = types.getPromise();
-						return new Promise(function(resolve, reject) {
-							let location = files.Path.parse(module, {file: 'package.json'})
-								.toString({isRelative: true});
-							location = Module._resolveFilename(location, __Internal__.getRootModule());
-							location = files.Path.parse(location)
-								.set({file: ''})
-								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
-							resolve(location);
-						});
+						let location = files.Path.parse(module, {file: 'package.json'})
+							.toString({isRelative: true});
+						location = Module._resolveFilename(location, __Internal__.getRootModule());
+						location = files.Path.parse(location)
+							.set({file: ''})
+							.combine(file, {dirChar: ['/', '\\'], isRelative: true});
+						return Promise.resolve(location);
 					});
 				
 				modules.load = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									module: {
 										type: 'string',
@@ -149,37 +139,37 @@
 					//! END_REPLACE()
 					, function load(module, /*optional*/file, /*optional*/options) {
 						const Promise = types.getPromise();
+						if (!types.isArray(file)) {
+							file = [file];
+						};
+						const DD_MODULES = {};
 						return modules.locate(module, './config.json', options)
-							.nodeify(function(err, location) {
-								return (err
-											? (npmConfig
-													? npmConfig.list(module, {beautify: true, async: true})
-													: Promise.resolve({})
-											  )
-											: config.loadFile(location, {parseOptions: {}, async: true, encoding: 'utf-8'})
-									)
-									.nodeify(function(err, conf) {
-										if (err) {
-											conf = options;
-										} else {
-											types.depthExtend(2, conf, options);
-										};
-										if (!types.isArray(file)) {
-											file = [file];
-										};
-										const DD_MODULES = {};
-										return Promise.all(file.map(function(fname) {
-												return modules.locate(module, fname, options).then(function(location) {
-													return new Promise(function(resolve, reject) {
+							.then(function(location) {
+								return config.loadFile(location, {async: true, encoding: 'utf-8'});
+							})
+							.nodeify(function(err, conf) {
+								if (err) {
+									conf = options;
+								} else {
+									conf = types.depthExtend(2, {}, conf, options);
+								};
+								return Promise.all(file.map(function(fname) {
+										return modules.locate(module, fname, options).then(function(location) {
+											return new Promise(function(resolve, reject) {
+												tools.callAsync(function() {
+													try {
 														const mod = Module._load(location.toString(), __Internal__.getRootModule());
 														mod.add(DD_MODULES);
 														resolve(mod);
-													});
-												});
-											}))
-											.then(function(mods) {
-												return namespaces.loadNamespaces(DD_MODULES, null, conf, false);
+													} catch(ex) {
+														reject(new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [fname, module, ex]));
+													};
+												}, 0);
 											});
+										});
+									}))
+									.then(function() {
+										return namespaces.loadNamespaces(DD_MODULES, null, conf, false);
 									});
 							})
 							['catch'](function(err) {

@@ -35,9 +35,11 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Debug'] = {
 			type: null,
-			version: '2.2.0r',
+			//! INSERT("version:'" + VERSION('doodad-js') + "',")
 			namespaces: null,
-			dependencies: ['Doodad.Namespaces'],
+			dependencies: [
+				'Doodad.Namespaces',
+			],
 			bootstrap: true,
 
 			create: function create(root, /*optional*/_options) {

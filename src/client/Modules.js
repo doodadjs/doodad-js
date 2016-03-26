@@ -35,11 +35,17 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
 			type: null,
-			version: '2.2.0r',
+			//! INSERT("version:'" + VERSION('doodad-js') + "',")
 			namespaces: null,
-			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces', 'Doodad.Client'],
+			dependencies: [
+				'Doodad.Tools', 
+				'Doodad.Tools.Config', 
+				'Doodad.Tools.Files', 
+				'Doodad.Types', 
+				'Doodad.Namespaces', 
+				'Doodad.Client',
+			],
 			bootstrap: true,
-			exports: exports,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
@@ -122,7 +128,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									module: {
 										type: 'string',
@@ -153,7 +159,7 @@
 										if (err) {
 											conf = options;
 										} else {
-											types.depthExtend(2, conf, options);
+											conf = types.depthExtend(2, {}, conf, options);
 										};
 										if (!types.isArray(file)) {
 											file = [file || null];
@@ -169,7 +175,7 @@
 														});
 													})
 													['catch'](function(ev) {
-														throw new types.Error("Failed to load file '~0~' from module '~1~'.", [file, module]);
+														throw new types.Error("Failed to load file '~0~' from module '~1~'.", [fname, module]);
 													});
 											}))
 											.then(function(ev) {

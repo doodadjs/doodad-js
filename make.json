@@ -82,6 +82,22 @@
 						"destination": "%PACKAGEDIR%/NodeJs.min.js",
 						"runDirectives": true
 					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/server/index.js",
+						"destination": "%PACKAGEDIR%/index.js",
+						"runDirectives": true
+					},
+					{
+						"class": "Make.File.Javascript",
+						"source": "%SOURCEDIR%/browserify/browserify.js",
+						"destination": "%PACKAGEDIR%/browserify.js",
+						"runDirectives": true
+					},
+					
+					{
+						"class": "Make.Update.PackageJson"
+					},
 					
 					{
 						"class": "Make.Task",
@@ -224,6 +240,39 @@
 						"class": "Make.File.Copy",
 						"source": "%SOURCEDIR%/LICENSE",
 						"destination": "%INSTALLDIR%/%PACKAGENAME%/LICENSE"
+					},
+					{
+						"class": "Make.File.Merge",
+						"source": [
+							"%INSTALLDIR%/%PACKAGENAME%/Types.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools_Files.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools_Config.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Namespaces.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Doodad.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Modules.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Client.min.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Bootstrap.min.js"
+						],
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/index.js",
+						"separator": "\n"
+					},
+					{
+						"class": "Make.File.Merge",
+						"source": [
+							"%INSTALLDIR%/%PACKAGENAME%/Debug.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Types.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools_Files.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Tools_Config.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Namespaces.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Doodad.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Modules.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Client.js",
+							"%INSTALLDIR%/%PACKAGENAME%/Bootstrap.js"
+						],
+						"destination": "%INSTALLDIR%/%PACKAGENAME%/index_debug.js",
+						"separator": "\n"
 					},
 					{
 						"class": "Make.Generate.Configuration",
