@@ -1,3 +1,4 @@
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: index.js - Module startup file
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -20,10 +21,13 @@
 //	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
+//! END_REPLACE()
+
+//! IF_UNDEF("debug")
+	//! DEFINE("debug", false)
+//! END_IF()
 
 "use strict";
-
-const MODULE_NAME = 'doodad-js';
 
 exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
 	let config = null;
@@ -40,11 +44,8 @@ exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
 	if (!options.startup) {
 		options.startup = {};
 	};
-	if (!options.startup.settings) {
-		options.startup.settings = {};
-	};
 
-	const dev_values = (options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development']),
+	const dev_values = (options.startup.nodeEnvDevValues && options.startup.nodeEnvDevValues.split(',') || ['development']),
 		env = (options.node_env || process.env.node_env || process.env.NODE_ENV);
 	
 	let dev = false;
@@ -57,35 +58,30 @@ exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
 	};
 		
 	let bootstrap;
-	if (dev || (options.startup.settings.fromSource === 'true') || +options.startup.settings.fromSource) {
+
+	if (dev || (options.startup.fromSource === 'true') || +options.startup.fromSource) {
 		if (dev) {
-			options.startup.settings.fromSource = true;
-			options.startup.settings.enableProperties = true;
-			require("doodad-js/src/common/Debug.js").add(DD_MODULES);
+			options.startup.fromSource = true;
+			options.startup.enableProperties = true;
+			require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("sourceDir") + "/common/Debug.js")) */).add(DD_MODULES);
 		};
 
-		require("doodad-js/src/common/Types.js").add(DD_MODULES);
-		require("doodad-js/src/common/Tools.js").add(DD_MODULES);
-		require("doodad-js/src/common/Tools_Files.js").add(DD_MODULES);
-		require("doodad-js/src/common/Tools_Config.js").add(DD_MODULES);
-		require("doodad-js/src/common/Namespaces.js").add(DD_MODULES);
-		require("doodad-js/src/common/Doodad.js").add(DD_MODULES);
-		require("doodad-js/src/server/Modules.js").add(DD_MODULES);
-		require("doodad-js/src/server/NodeJs.js").add(DD_MODULES);
+		//! FOR_EACH(VAR("modulesSrc"), "mod")
+			//! IF(!(VAR("mod.manual")))
+				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+			//! END_IF()
+		//! END_FOR()
 
-		bootstrap = require("doodad-js/src/common/Bootstrap.js");
+		bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js")) */);
 
 	} else {
-		require("./Types.min.js").add(DD_MODULES);
-		require("./Tools.min.js").add(DD_MODULES);
-		require("./Tools_Files.min.js").add(DD_MODULES);
-		require("./Tools_Config.min.js").add(DD_MODULES);
-		require("./Namespaces.min.js").add(DD_MODULES);
-		require("./Doodad.min.js").add(DD_MODULES);
-		require("./Modules.min.js").add(DD_MODULES);
-		require("./NodeJs.min.js").add(DD_MODULES);
+		//! FOR_EACH(VAR("modules"), "mod")
+			//! IF(!VAR("mod.manual"))
+				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+			//! END_IF()
+		//! END_FOR()
 
-		bootstrap = require("./Bootstrap.min.js");
+		bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
 	};
 
 	return bootstrap.createRoot(DD_MODULES, options);

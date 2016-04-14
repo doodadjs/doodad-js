@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: NodeJs.js - Node.js Tools
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,14 +27,20 @@
 	const global = this;
 
 	const exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.NodeJs'] = {
-			type: null,
 			version: '2.2.0r',
 			namespaces: ['MixIns', 'Interfaces'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
@@ -92,8 +98,7 @@
 				
 				//__Internal__.oldSetOptions = nodejs.setOptions;
 				//nodejs.setOptions = function setOptions(/*paramarray*/) {
-				//	const options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.get(options, 'settings', {});
+				//	const options = __Internal__.oldSetOptions.apply(this, arguments);
 				//};
 				//
 				//nodejs.setOptions({
@@ -432,7 +437,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: null,
 								returns: 'object',
 								description: "Returns OS information.",
@@ -450,9 +455,10 @@
 								architecture: nodeOs.arch(),
 								dirChar: nodePath.sep,
 								newLine: nodeOs.EOL,
-								caseSensitive: ((type !== 'Windows_NT') && (type !== 'Darwin')), // TODO: Optional in MacOS X, so must detect
 							};
 						};
+						const filesOptions = files.getOptions();
+						os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
 						return os;
 					});
 							
@@ -464,7 +470,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									alt: {
 										type: 'bool',
@@ -477,8 +483,9 @@
 					}
 					//! END_REPLACE()
 					, function getDefaultLanguage(/*optional*/alt) {
-						// TODO: Get OS language
-						return 'en_US';
+						// TODO: Windows
+						const lang = process.env.LANG || '';
+						return lang.split('.')[0] || 'en_US';
 					});
 					
 				//===================================
@@ -676,7 +683,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									path: {
 										type: 'string,Path',
@@ -700,7 +707,6 @@
 						};
 						const async = types.get(options, 'async', false);
 						if (types.get(options, 'makeParents', false)) {
-							const dir = path.path;
 							const create = function(dir, index) {
 								if (index < dir.length) {
 									const name = path.toString({
@@ -2012,24 +2018,72 @@
 
 
 				return function init(/*optional*/options) {
-					// ES6 Promise polyfills
+					// Detect case-sensitive OS
+					const temp = files.getTempFolder();
 					try {
-						types.getPromise();
+						files.rmdir(temp + 'DoOdAd');
 					} catch(ex) {
-						let Promise;
+					};
+					try {
+						files.rmdir(temp + 'dOoDaD');
+					} catch(ex) {
+					};
+					try {
+						files.mkdir(temp + 'DoOdAd');
 						try {
-							// tiny Promise/A+ implementation
-							Promise = require('rsvp').Promise;
+							files.mkdir(temp + 'dOoDaD');
+							files.setOptions({
+								caseSensitive: true,
+							});
 						} catch(ex) {
-							try {
-								// subset of RSVP
-								Promise = require('es6-promise').Promise;
-							} catch(ex) {
-							};
+							files.setOptions({
+								caseSensitive: false,
+							});
 						};
-						if (types.isFunction(Promise)) {
-							types.setPromise(Promise);
+					} catch(ex) {
+						// Test failed
+					};
+					try {
+						files.rmdir(temp + 'DoOdAd');
+					} catch(ex) {
+					};
+					try {
+						files.rmdir(temp + 'dOoDaD');
+					} catch(ex) {
+					};
+
+					
+					// Detect Unicode case-sensitive OS
+					try {
+						files.rmdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
+					} catch(ex) {
+					};
+					try {
+						files.rmdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
+					} catch(ex) {
+					};
+					try {
+						files.mkdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
+						try {
+							files.mkdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
+							files.setOptions({
+								caseSensitiveUnicode: true,
+							});
+						} catch(ex) {
+							files.setOptions({
+								caseSensitiveUnicode: false,
+							});
 						};
+					} catch(ex) {
+						// Test failed
+					};
+					try {
+						files.rmdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
+					} catch(ex) {
+					};
+					try {
+						files.rmdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
+					} catch(ex) {
 					};
 				};
 			},
@@ -2038,8 +2092,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

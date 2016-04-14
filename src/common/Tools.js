@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Tools.js - Useful tools
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,16 +27,21 @@
 	var global = this;
 	
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
-			namespaces: null,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			dependencies: [
 				'Doodad.Types',
 			],
@@ -71,18 +76,53 @@
 					
 				__Internal__.oldSetOptions = tools.setOptions;
 				tools.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.get(options, 'settings', {});
+					var options = __Internal__.oldSetOptions.apply(this, arguments);
 						
-					settings.logLevel = parseInt(types.get(settings, 'logLevel'));
+					options.logLevel = parseInt(types.get(options, 'logLevel'));
 				};
 				
 				tools.setOptions({
-					settings: {
-						logLevel: -1,
-					},
+					logLevel: -1,
 					hooks: {
-						console: null,
+						console: function(level, message) {
+							if (global.console) {
+								var fn;
+								if ((level === tools.LogLevels.Info) && global.console.info) {
+									//! BEGIN_REMOVE()
+										if ((typeof process === 'object') && (typeof module === 'object')) {
+											fn = 'warn'; // force stderr
+										} else {
+											fn = 'info';
+										};
+									//! END_REMOVE()
+									
+									//! IF_DEF("serverSide")
+										//! INJECT("fn = 'warn'") // force stderr
+									//! ELSE()
+										//! INJECT("fn = 'info'")
+									//! END_IF()
+								} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
+									fn = 'warn';
+								} else if ((level === tools.LogLevels.Error) && (global.console.error || global.console.exception)) {
+									fn = 'error';
+								} else {
+									//! BEGIN_REMOVE()
+										if ((typeof process === 'object') && (typeof module === 'object')) {
+											fn = 'warn'; // force stderr
+										} else {
+											fn = 'log';
+										};
+									//! END_REMOVE()
+									
+									//! IF_DEF("serverSide")
+										//! INJECT("fn = 'warn'") // force stderr
+									//! ELSE()
+										//! INJECT("fn = 'log'")
+									//! END_IF()
+								};
+								global.console[fn](message);
+							};
+						},
 					},
 				}, _options);
 				
@@ -706,7 +746,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									leval: {
 										type: 'integer',
@@ -730,39 +770,16 @@
 					//! END_REPLACE()
 					, function log(level, message, /*optional*/params) {
 						// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
-						if (level >= tools.getOptions().settings.logLevel) {
+						if (level >= tools.getOptions().logLevel) {
 							if (params) {
 								message = tools.format(message + '', params);
 							};
 							if (types.isString(message) && types.hasIndex(__logLevelsName__, level)) {
 								message = __logLevelsName__[level] + ': ' + message;
 							};
-							var fn;
 							var hook = tools.getOptions().hooks.console;
 							if (hook) {
-								if (level === tools.LogLevels.Info) {
-									fn = 'info';
-								} else if (level === tools.LogLevels.Warning) {
-									fn = 'warn';
-								} else if (level === tools.LogLevels.Error) {
-									fn = 'error';
-								} else {
-									fn = 'log';
-								};
-								hook(fn, message);
-							} else {
-								if (global.console) {
-									if ((level === tools.LogLevels.Info) && global.console.info) {
-										fn = 'info';
-									} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
-										fn = 'warn';
-									} else if ((level === tools.LogLevels.Error) && (global.console.error || global.console.exception)) {
-										fn = 'error';
-									} else {
-										fn = 'log';
-									};
-									global.console[fn](message);
-								};
+								hook(level, message);
 							};
 						};
 					});
@@ -878,80 +895,6 @@
 					, (__Natives__.regExpEscape || function escapeRegExp(text) {
 						return tools.escape(text, __Internal__.regExpReserved, __Internal__.regExpReservedSubstitutions);
 					}));
-				
-				//===================================
-				// Script functions
-				//===================================
-				
-				tools.getCurrentScript = root.DD_DOC(
-						//! REPLACE_BY("null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									currentScript: {
-										type: 'string,object,error',
-										optional: true,
-										description: "Some Javascript engines provide a way to get the information. You should give it here.",
-									},
-								},
-								returns: 'Url,Path',
-								description:
-									"Returns location of the current running script. Multiple usages :\n" + 
-									'- Client-side only: Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-									'- Client-side and server-side: Doodad.Tools.getCurrentScript((global.document?document.currentScript:module.filename)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-									'- Server-side only: Don\'t use this function. Instead, do : Doodad.Tools.Files.Path.parse(module.filename)\n',
-						}
-						//! END_REPLACE()
-					, function getCurrentScript(/*optional*/currentScript) {
-						var url,
-							ex,
-							exLevel = 0;
-					
-						if (types.isError(currentScript)) {
-							ex = currentScript;
-						} else if (types.isString(currentScript)) {
-							// NodeJs
-							url = files.Path.parse(currentScript);
-						} else if (types.isObject(currentScript) && types.isString(currentScript.src)) {
-							// NOTE: currentScript is 'document.currentScript'
-							// Google Chrome 39 Windows: OK
-							// Firefox 34: undefined
-							// IE 11: undefined
-							// Opera 26 Windows: OK
-							// Safari 5: undefined
-							url = files.Url.parse(currentScript.src);
-						};
-						
-						if (!url) {
-							if (ex && types.isString(ex.sourceURL)) {
-								// Safari
-								url = files.Url.parse(ex.sourceURL);
-							} else {
-								// Other browsers
-								if (!ex) {
-									exLevel = 1;
-									try {
-										throw new __Natives__.windowError("");
-									} catch(o) {
-										ex = o;
-									};
-								};
-								var stack = tools.parseStack(ex);
-								if (stack && (stack.length > exLevel)) {
-									var trace = stack[exLevel];
-									if (trace.isSystemPath) {
-										url = files.Path.parse(trace.path);
-									} else {
-										url = files.Url.parse(trace.path);
-									};
-								};
-							};
-						};
-						
-						return url;
-					});
-				
 				
 				//===================================
 				// Compare functions
@@ -2268,9 +2211,7 @@
 				return function init(/*optional*/options) {
 					// For production
 					tools.setOptions({
-						settings: {
-							logLevel: tools.LogLevels.Error,
-						}
+						logLevel: tools.LogLevels.Error,
 					});
 				};
 			},
@@ -2279,8 +2220,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

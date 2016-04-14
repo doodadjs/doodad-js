@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Doodad.js - Main file
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -37,15 +37,21 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
@@ -97,22 +103,19 @@
 				
 				__Internal__.oldSetOptions = doodad.setOptions;
 				doodad.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.get(options, 'settings', {});
+					var options = __Internal__.oldSetOptions.apply(this, arguments);
 						
-					settings.enforceScopes = types.toBoolean(types.get(settings, 'enforceScopes'));
-					settings.enforcePolicies = types.toBoolean(types.get(settings, 'enforcePolicies'));
-					settings.publicOnDebug = types.toBoolean(types.get(settings, 'publicOnDebug'));
+					options.enforceScopes = types.toBoolean(types.get(options, 'enforceScopes'));
+					options.enforcePolicies = types.toBoolean(types.get(options, 'enforcePolicies'));
+					options.publicOnDebug = types.toBoolean(types.get(options, 'publicOnDebug'));
 				};
 				
 
 				doodad.setOptions({
 					// Settings
-					settings: {
-						enforceScopes: false,    // for performance, set it to "false"
-						enforcePolicies: false,  // for performance, set it to "false"
-						publicOnDebug: false,    // to be able to read core attributes in debug mode, set it to "true"
-					},
+					enforceScopes: false,    // for performance, set it to "false"
+					enforcePolicies: false,  // for performance, set it to "false"
+					publicOnDebug: false,    // to be able to read core attributes in debug mode, set it to "true"
 					
 					// Hooks
 					hooks: {
@@ -127,7 +130,6 @@
 							var functionName = (caller && types.unbox(caller.PROTOTYPE.$TYPE_NAME)) || types.getTypeName(obj) || '<anonymous>';
 							functionName += '.';
 							if (ex.stack) {
-								tools.log(tools.LogLevels.Error, ex.toString());
 								tools.log(tools.LogLevels.Error, ex.stack);
 							} else {
 								// FIXME: Information is wrong
@@ -941,7 +943,7 @@
 						};
 						
 						if (!types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-							if ((root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies)) {
+							if ((root.DD_ASSERT || doodad.getOptions().enforcePolicies)) {
 								var mustOverride = type.$MUST_OVERRIDE;
 								if (mustOverride) {
 									throw new exceptions.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
@@ -1431,7 +1433,7 @@
 									storage: null,
 								};
 								return function getter() {
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforceScopes) {
+									if (root.DD_ASSERT || doodad.getOptions().enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
 											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
@@ -1500,7 +1502,7 @@
 									storage: null,
 								};
 								return function setter(value) {
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforceScopes) {
+									if (root.DD_ASSERT || doodad.getOptions().enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
 											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
@@ -1520,7 +1522,7 @@
 											};
 										};
 									};
-									if ((root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) && extender.isReadOnly) {
+									if ((root.DD_ASSERT || doodad.getOptions().enforcePolicies) && extender.isReadOnly) {
 										throw new exceptions.Error("Attribute '~0~' of '~1~' is read-only.", [attr, types.getTypeName(this) || '<anonymous>']);
 									} else {
 										if (storage) {
@@ -1613,7 +1615,7 @@
 							}
 							//! END_REPLACE()
 							, types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto) {
-								if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+								if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 									if (sourceIsProto) {
 										if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute.SCOPE === doodad.Scopes.Private)) {
 											throw new exceptions.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.unbox(destAttribute.PROTOTYPE.$TYPE_NAME) || '<anonymous>']);
@@ -1626,13 +1628,13 @@
 								if (
 										(
 											(
-												(root.DD_ASSERT || doodad.getOptions().settings.enforceScopes) 
+												(root.DD_ASSERT || doodad.getOptions().enforceScopes) 
 												&& 
 												(this.enableScopes && (destAttribute.SCOPE !== doodad.Scopes.Public))
 											) 
 											||
 											(
-												(root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies)
+												(root.DD_ASSERT || doodad.getOptions().enforcePolicies)
 												&&
 												(this.isReadOnly)
 											)
@@ -2121,7 +2123,7 @@
 
 										_caller.CALLED = true;
 										
-										if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+										if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 											if ((_caller.METHOD_MODIFIERS & doodad.MethodModifiers.Override) && !_super.CALLED) {
 												throw new exceptions.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || '<anonymous>']);
 											};
@@ -2181,14 +2183,14 @@
 										oldInvokedClass = __Internal__.invokedClass;
 									
 									// External methods (can't be called internally)
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+									if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 										if (extender.isExternal && (type === oldInvokedClass)) {
 											throw new exceptions.Error("Method '~0~' of '~1~' is external-only.", [_dispatch.METHOD_NAME, types.getTypeName(type) || '<anonymous>']);
 										};
 									};
 									
 									// Public methods
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforceScopes) {
+									if (root.DD_ASSERT || doodad.getOptions().enforceScopes) {
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
 											if ((boxedCallers.SCOPE !== doodad.Scopes.Public) && !oldDispatch) {
 												throw new exceptions.Error("Method '~0~' of '~1~' is not public.", [_dispatch.METHOD_NAME, types.getTypeName(type) || '<anonymous>']);
@@ -2218,7 +2220,7 @@
 										_dispatch.METHOD_MODIFIERS = (modifiers ^ doodad.MethodModifiers.Obsolete);
 									};
 
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+									if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 										// Must override methods
 										if (modifiers & doodad.MethodModifiers.MustOverride) {
 											throw new exceptions.Error("You must override the method '~0~' in '~1~'.", [_dispatch.METHOD_NAME, types.getTypeName(type) || '<anonymous>']);
@@ -2239,7 +2241,7 @@
 									var oldCallerCalled = caller.CALLED;
 
 									// Private methods
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforceScopes) {
+									if (root.DD_ASSERT || doodad.getOptions().enforceScopes) {
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
 											if ((boxedCallers.SCOPE === doodad.Scopes.Private) && oldDispatch && (oldDispatch.CALLERS[oldCaller - 1].PROTOTYPE !== caller.PROTOTYPE)) {
 												throw new exceptions.Error("Method '~0~' of '~1~' is private.", [_dispatch.METHOD_NAME, types.unbox(caller.PROTOTYPE.$TYPE_NAME) || '<anonymous>']);
@@ -2269,7 +2271,7 @@
 										
 										var retVal = caller.apply(this, arguments);
 										
-										if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+										if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 											var validator = boxedCallers.RETURNS;
 											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 											if (validator && !validator.call(this, retVal)) {
@@ -2539,7 +2541,7 @@
 									var start = destAttribute.CALL_FIRST_LENGTH;
 									if (callersOrFn) {
 										if (sourceIsProto) {
-											if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+											if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 												if (destAttribute.SCOPE === doodad.Scopes.Private) {
 													throw new exceptions.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, destAttributes.$TYPE_NAME.valueOf() || '<anonymous>']);
 												};
@@ -2562,7 +2564,7 @@
 								} else {
 									// Create
 									if (sourceIsProto) {
-										if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+										if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 											if (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)) {
 												if (!hasDestCallers && !(modifiers & doodad.MethodModifiers.ForceCreate)) {
 													throw new exceptions.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, destAttributes.$TYPE_NAME.valueOf() || '<anonymous>']);
@@ -2575,7 +2577,7 @@
 										};
 									} else if (srcIsInterface) {
 										if (callersOrFn && (sourceAttribute.PROTOTYPE === sourceProto)) {
-											if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+											if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 												if (hasDestCallers) {
 													throw new exceptions.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, destAttributes.$TYPE_NAME.valueOf() || '<anonymous>']);
 												};
@@ -2613,7 +2615,7 @@
 						setValue: types.SUPER(function setValue(attr, proto, typeStorage, instanceStorage, forType, destAttribute) {
 								var dispatch = this.createDispatch(attr, destAttribute);
 
-								if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+								if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 									if (!typeStorage.$MUST_OVERRIDE && (dispatch.METHOD_MODIFIERS & doodad.MethodModifiers.MustOverride)) {
 										typeStorage.$MUST_OVERRIDE = attr;
 									};
@@ -2736,7 +2738,7 @@
 								};
 								
 								if (sourceIsProto) {
-									if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+									if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 										if (destAttribute.SCOPE === doodad.Scopes.Private) {
 											throw new exceptions.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, destAttributes.$TYPE_NAME.valueOf() || '<anonymous>']);
 										};
@@ -3826,8 +3828,8 @@
 						return value;
 					});
 				
-				doodad.PROTECTED_DEBUG = (root.DD_ASSERT && doodad.getOptions().settings.publicOnDebug ? doodad.PUBLIC : doodad.PROTECTED);
-				doodad.PRIVATE_DEBUG = (root.DD_ASSERT && doodad.getOptions().settings.publicOnDebug ? doodad.PUBLIC : doodad.PRIVATE);
+				doodad.PROTECTED_DEBUG = (root.DD_ASSERT && doodad.getOptions().publicOnDebug ? doodad.PUBLIC : doodad.PROTECTED);
+				doodad.PRIVATE_DEBUG = (root.DD_ASSERT && doodad.getOptions().publicOnDebug ? doodad.PUBLIC : doodad.PRIVATE);
 				
 				//==================================
 				// Class Modifiers
@@ -3889,7 +3891,7 @@
 					//! END_REPLACE()
 					, function MIX_IN(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+						if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 							var base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
 								throw new exceptions.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
@@ -3920,7 +3922,7 @@
 					//! END_REPLACE()
 					, function INTERFACE(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+						if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 							var base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
 								throw new exceptions.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
@@ -4001,7 +4003,7 @@
 					//! END_REPLACE()
 					, function ISOLATED(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+						if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 							if (!types.isInterface(cls) && !types.isMixIn(cls)) {
 								throw new exceptions.Error("Isolation can only be applied on interfaces and mix-ins.");
 							};
@@ -4822,7 +4824,7 @@
 							};
 						};
 						
-						if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+						if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 							if (!!extender.isType !== !!extender.isInstance) {
 								if (attr[0] === '$') {
 									if (!extender.isType) {
@@ -5039,7 +5041,7 @@
 					//if (!sourceIsClass || (sourceName && !_implements.has(source))) {
 					if (!sourceIsClass || !_implements.has(source)) {
 						if (!types.baseof(source, base)) { // prevents cyclic extend
-							if (root.DD_ASSERT || doodad.getOptions().settings.enforcePolicies) {
+							if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
 								if (source !== base) {
 									//if (!baseIsBase && types.isBase(source)) {
 									//	throw new exceptions.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName || '<anonymous>', types.getTypeName(base) || '<anonymous>']);
@@ -6614,8 +6616,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Bootstrap.js - Bootstrap module
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,13 +27,20 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 
 	var MODULE_NAME = 'doodad-js';
 	var MODULE_VERSION;
-	//! INSERT(";MODULE_VERSION='" + VERSION('doodad-js') + "'")
+	//! "MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js'))
 
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
@@ -232,6 +239,9 @@
 
 			// "trim"
 			stringTrim: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim : undefined),
+			
+			// "depthExtend"
+			functionBind: global.Function.prototype.bind,
 		};
 		
 		//===================================
@@ -288,7 +298,7 @@
 		// DD_DOC
 		//===================================
 		
-		//! REPLACE_BY(";__Internal__.DD_DOC=function(d,v){return v;};")
+		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
 		__Internal__.DD_DOC = (types.hasSymbols() ? function DD_DOC(doc, value) {
 			value = Object(value);
 			value[types.getSymbol('DD_DOC')] = doc;
@@ -1783,12 +1793,12 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							depth: {
-								type: 'integer',
+								type: 'integer,function',
 								optional: false,
-								description: "Depth.",
+								description: "Depth, or extender function.",
 							},
 							paramarray: {
 								type: 'any',
@@ -1803,7 +1813,34 @@
 			, function depthExtend(depth, /*paramarray*/obj) {
 				var result;
 				if (!types.isNothing(obj)) {
-					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+					var extender;
+					if (types.isFunction(depth)) {
+						extender = depth;
+						depth = Infinity;
+					} else {
+						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+						extender = function(result, val, key, extend) {
+							if ((extender.depth >= 0) && types.isObject(val)) {
+								var resultVal = result[key];
+								if (types.isNothing(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										result[key] = extend({}, val);
+									};
+								} else if (types.isObjectLike(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										extend(resultVal, val);
+									};
+								} else {
+									result[key] = val;
+								};
+							} else {
+								result[key] = val;
+							};
+						};
+						extender.depth = depth;
+					};
 					if (depth >= -1) {
 						result = __Natives__.windowObject(obj);
 						var len = arguments.length;
@@ -1815,26 +1852,10 @@
 							// "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = __Natives__.windowObject(obj);
 							var keys = types.keys(obj),
-								keysLen = keys.length, // performance
-								j, 
-								key, 
-								objVal,
-								resultVal;
-							for (j = 0; j < keysLen; j++) {
-								key = keys[j];
-								objVal = obj[key];
-								if ((depth >= 0) && types.isObject(objVal)) {
-									resultVal = result[key];
-									if (types.isNothing(resultVal)) {
-										result[key] = types.depthExtend(depth, {}, objVal);
-									} else if (types.isObjectLike(resultVal)) {
-										types.depthExtend(depth, resultVal, objVal);
-									} else {
-										result[key] = objVal;
-									};
-								} else {
-									result[key] = objVal;
-								};
+								keysLen = keys.length; // performance
+							for (var j = 0; j < keysLen; j++) {
+								var key = keys[j];
+								extender(result, obj[key], key, __Natives__.functionBind.call(types.depthExtend, types, extender));
 							};
 						};
 					};
@@ -1934,10 +1955,8 @@
 		//==============
 		
 		var __options__ = types.depthExtend(2, {
-			settings: {
-				fromSource: false,              // When 'true', runs from source code instead of built code
-				enableProperties: false,		// When 'true', enables "defineProperty"
-			},
+			fromSource: false,              // When 'true', runs from source code instead of built code
+			enableProperties: false,		// When 'true', enables "defineProperty"
 			hooks: {
 				reservedAttributes: {
 					$TYPE_NAME: undefined,
@@ -2013,8 +2032,13 @@
 			},
 		}, types.get(_options, 'startup'));
 		
-		__options__.settings.fromSource = (__options__.settings.fromSource === 'true') || !!(+__options__.settings.fromSource);
-		__options__.settings.enableProperties = (__options__.settings.enableProperties === 'true') || !!(+__options__.settings.enableProperties);
+		//! BEGIN_REMOVE()
+			__options__.fromSource = true;
+		//! END_REMOVE()
+		
+		//! INJECT("__options__.fromSource = (__options__.fromSource === 'true') || !!(+__options__.fromSource);")
+
+		__options__.enableProperties = (__options__.enableProperties === 'true') || !!(+__options__.enableProperties);
 		
 		//==============
 		// Properties
@@ -2046,7 +2070,7 @@
 						description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.settings.enableProperties && __Natives__.objectDefineProperty ? (function hasDefinePropertyEnabled() {
+			, (__options__.enableProperties && __Natives__.objectDefineProperty ? (function hasDefinePropertyEnabled() {
 				return true;
 			}) : (function hasDefinePropertyEnabled() {
 				return false;
@@ -4143,8 +4167,6 @@
 							__bootstraps__[MODULE_NAME] = {
 								type: 'Package',
 								version: MODULE_VERSION,
-								namespaces: null,
-								dependencies: null,
 								bootstrap: true,
 							};
 						};
@@ -4239,7 +4261,7 @@
 						
 						var namespaces = this.Doodad.Namespaces,
 							entries = namespaces.Entries;
-						//namespaces.loadNamespaces(__bootstraps__, null, options, false);
+						//namespaces.load(__bootstraps__, null, options, false);
 						
 						names = types.keys(__bootstraps__);
 						while (name = names.shift()) {
@@ -4292,11 +4314,26 @@
 			)));
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.createRoot = exports.createRoot;
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.createRoot = exports.createRoot;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this), 
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+,
 	// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
 	// WARNING: Do not declare any variable and parameter inside these functions.
 

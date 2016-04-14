@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Tools_Files.js - Files Tools
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,16 +27,21 @@
 	var global = this;
 	
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Files'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
-			namespaces: null,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools',
@@ -68,11 +73,18 @@
 				// Options
 				//===================================
 					
-				//__Internal__.oldSetOptions = files.setOptions;
-				//files.setOptions = function setOptions(/*paramarray*/) {
-				//};
+				__Internal__.oldSetOptions = files.setOptions;
+				files.setOptions = function setOptions(/*paramarray*/) {
+					var options = __Internal__.oldSetOptions.apply(this, arguments);
+						
+					options.caseSensitive = types.toBoolean(types.get(options, 'caseSensitive'));
+					options.caseSensitiveUnicode = types.toBoolean(types.get(options, 'caseSensitiveUnicode'));
+				};
 				
 				files.setOptions({
+					caseSensitive: true,
+					caseSensitiveUnicode: true,
+					
 					hooks: {
 						urlParser: function(url, /*optional*/options) {
 							if (types.isString(url)) {
@@ -969,7 +981,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 1,
 											params: {
 												options: {
 													type: 'object',
@@ -989,14 +1001,19 @@
 									// Flags
 									var dontValidate = types.get(options, 'dontValidate', false);
 									
-									
 									if (options) {
+										options = types.clone(options);
+										if (types.hasKey(options, 'os')) {
+											if (!types.hasKey(options, 'dirChar')) {
+												options.dirChar = null;
+											};
+										};
+										
 										if (dontValidate) {
 											options = types.extend({}, this, options);
 										} else {
 											// Validate
 											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-											options = types.clone(options) || {};
 											if (!types.hasKey(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
@@ -1249,6 +1266,64 @@
 									return path;
 								}),
 								
+							relative: function relative(to, /*optional*/options) {
+								if (this.isRelative) {
+									throw new types.ParseError("'this' must be an absolute path.");
+								};
+								
+								if (!(to instanceof files.Path)) {
+									to = files.Path.parse(to, options);
+								};
+								if (to.isRelative) {
+									throw new types.ParseError("'to' must be an absolute path.");
+								};
+								
+								if ((this.os === 'windows') && (to.os !== 'windows')) {
+									throw new types.ParseError("Incompatible OSes.");
+								};
+								
+								if ((this.os === 'windows') && (this.drive !== to.drive)) {
+									throw new types.ParseError("'this' and 'to' must be from the same drive.");
+								};
+								
+								var filesOptions = files.getOptions(),
+									caseSensitive = types.get(options, 'caseSensitive', filesOptions.caseSensitive);
+
+								var thisAr = this.toArray(),
+									toAr = to.toArray();
+								
+								var pathAr = [],
+									i = 0;
+								
+								for (; (i < thisAr.length) && (i < toAr.length); i++) {
+									if (caseSensitive) {
+										if (thisAr[i] !== toAr[i]) {
+											break;
+										};
+									} else {
+										// TODO: Unicode letters (others than ascii)
+										if (thisAr[i].toLowerCase() !== toAr[i].toLowerCase()) {
+											break;
+										};
+									};
+								};
+								
+								var j = i;
+								
+								for (; i < toAr.length; i++) {
+									pathAr.push('..');
+								};
+								
+								if (pathAr.length === 0) {
+									pathAr.push('.');
+								};
+								
+								for (; j < thisAr.length; j++) {
+									pathAr.push(thisAr[j]);
+								};
+								
+								return files.Path.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
+							},
 						}, __Internal__.pathOptions)
 					)));
 				
@@ -2560,8 +2635,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

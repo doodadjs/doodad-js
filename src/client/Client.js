@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Client.js - Client functions
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,16 +27,21 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
-			namespaces: null,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools', 
@@ -72,18 +77,15 @@
 				
 				__Internal__.oldSetOptions = client.setOptions;
 				client.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.get(options, 'settings', {});
+					var options = __Internal__.oldSetOptions.apply(this, arguments);
 						
-					settings.enableDomObjectsModel = types.toBoolean(types.get(settings, 'enableDomObjectsModel'));
-					settings.defaultScriptTimeout = parseInt(types.get(settings, 'defaultScriptTimeout'));
+					options.enableDomObjectsModel = types.toBoolean(types.get(options, 'enableDomObjectsModel'));
+					options.defaultScriptTimeout = parseInt(types.get(options, 'defaultScriptTimeout'));
 				};
 				
 				client.setOptions({
-					settings: {
-						enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
-						defaultScriptTimeout: 3000,		// milliseconds
-					},
+					enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
+					defaultScriptTimeout: 3000,		// milliseconds
 				}, _options);
 
 					
@@ -736,7 +738,7 @@
 				//! REPLACE_BY("null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: 'object',
 							description: "Returns OS information.",
@@ -748,17 +750,21 @@
 					// NOTE: Why it's never simple like this ?
 					// NOTE: Windows older than Windows NT not supported
 					// NOTE: Macintosh older than OS/X not supported
-					var type = global.navigator.platform.toLowerCase().slice(0, 3);
-					return {
-						name: global.navigator.platform,
-						type: ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix')),  // 'windows', 'linux', 'unix'
-						//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
-						//architecture: null, // TODO: Detect
-						dirChar: ((type === 'win') ? '\\' : '/'),
-						newLine: ((type === 'win') ? '\r\n' : '\n'),
-						caseSensitive: ((type !== 'win') && (type !== 'mac')), // TODO: Optional in MacOS X, so must detect
-						//...
+					var os = __Internal__.os;
+					if (!os) {
+						var type = __Natives__.windowNavigator.platform.toLowerCase().slice(0, 3);
+						__Internal__.os = os = {
+							name: __Natives__.windowNavigator.platform,
+							type: ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix')),  // 'windows', 'linux', 'unix'
+							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
+							//architecture: null, // TODO: Detect
+							dirChar: ((type === 'win') ? '\\' : '/'),
+							newLine: ((type === 'win') ? '\r\n' : '\n'),
+						};
 					};
+					var filesOptions = files.getOptions();
+					os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
+					return os;
 				});
 
 				tools.getDefaultLanguage = root.DD_DOC(
@@ -922,7 +928,7 @@
 							this.tag = tag;
 							this.target = target;
 							if (types.isNothing(timeout)) {
-								this.timeout = client.getOptions().settings.defaultScriptTimeout;
+								this.timeout = client.getOptions().defaultScriptTimeout;
 							} else {
 								this.timeout = timeout;
 							};
@@ -1645,8 +1651,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);
