@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Types.js - Types management
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,17 +27,21 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
-			namespaces: null,
-			dependencies: null,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			bootstrap: true,
 			
 			create: function create(root, /*optional*/_options) {
@@ -315,18 +319,15 @@
 					
 				__Internal__.oldSetOptions = types.setOptions;
 				types.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments),
-						settings = types.get(options, 'settings', {});
+					var options = __Internal__.oldSetOptions.apply(this, arguments);
 						
-					settings.toSourceItemsCount = parseInt(types.get(settings, 'toSourceItemsCount'));
-					settings.enableProxies = types.toBoolean(types.get(settings, 'enableProxies'));
+					options.toSourceItemsCount = parseInt(types.get(options, 'toSourceItemsCount'));
+					options.enableProxies = types.toBoolean(types.get(options, 'enableProxies'));
 				};
 				
 				types.setOptions({
-					settings: {
-						toSourceItemsCount: 255,		// Max number of items
-						enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
-					},
+					toSourceItemsCount: 255,		// Max number of items
+					enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
 				}, _options);
 				
 
@@ -1787,7 +1788,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -1914,7 +1915,7 @@
 									};
 									for (var key = 0; key < len; key++) {
 										if (key in val) {
-											str += types.toSource(val[key], depth) + ', ';
+											str += types.toSource(val[key], depth, options) + ', ';
 										} else {
 											str += ', ';
 										};
@@ -1922,7 +1923,7 @@
 									return '[' + str.slice(0, -2) + continued + ']';
 								} else if (types.isObject(obj)) {
 									if (depth < 0) {
-										return '(new Object())';
+										return '{}';
 									};
 									var str = '',
 										len = 0,
@@ -1934,7 +1935,7 @@
 												str += '..., ';
 												break;
 											};
-											str += types.toSource(key) + ': ' + types.toSource(val[key], depth) + ', ';
+											str += types.toSource(key) + ': ' + types.toSource(val[key], depth, options) + ', ';
 											len++;
 										};
 									};
@@ -2313,7 +2314,7 @@
 					}
 					//! END_REPLACE()
 					, (__Natives__.windowProxy ? (function hasProxiesEnabled() {
-						return types.getOptions().settings.enableProxies;
+						return types.getOptions().enableProxies;
 					}) : (function hasProxiesEnabled() {
 						return false;
 					})));
@@ -2937,8 +2938,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Namespace.js - Namespaces management
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,15 +27,21 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js') + "',")
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			namespaces: ['Entries'],
 			dependencies: [
 				'Doodad.Types', 
@@ -85,8 +91,7 @@
 					
 				//__Internal__.oldSetOptions = namespaces.setOptions;
 				//namespaces.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.get(options, 'settings', {});
+				//	var options = __Internal__.oldSetOptions.apply(this, arguments);
 				//		
 				//};
 				//
@@ -578,7 +583,7 @@
 					};
 				});
 				
-				namespaces.loadNamespaces = root.DD_DOC(
+				namespaces.load = namespaces.loadNamespaces = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -609,7 +614,7 @@
 								description: "Returns 'true' when successful. Returns 'false' otherwise.",
 						}
 						//! END_REPLACE()
-				, function loadNamespaces(specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow) {
+				, function load(specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow) {
 					var Promise = types.getPromise();
 					
 					try {
@@ -707,40 +712,11 @@
 										};
 										return loopCreateModules(state);
 									});
+							} else {
+								return Promise.resolve();
 							};
 						};
 
-
-/*
-								var missings = [],
-									optionalsCount = 0,
-									count = entries.length;
-								
-								for (var i = 0; i < entries.length; i++) {
-									var entry = entries[i];
-									if (entry.missingDep) {
-										if (entry.optional) {
-											optionalsCount++;
-										} else {
-											missings.push(entry);
-										};
-									} else {
-										delete specs[entry.spec.name];
-										if ((entry.spec.autoInit === undefined) || entry.spec.autoInit) {
-											__Internal__.toInit.push(entry);
-										};
-									};
-								};
-								
-								if (missings.length >= entries.length) {
-									var entry = missings[0];
-									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.parent.name, entry.missingDep, (entry.version || '<unspecified>')]);
-								} else if ((missings.length + optionalsCount) >= entries.length) {
-									ignoreOptionals = true;
-								};
-*/
-								
-						
 						var loopInitModules = function loopInitModules() {
 							if (!__Internal__.waiting && __Internal__.toInit.length) {
 								var promise;
@@ -755,6 +731,8 @@
 								return promise.then(function() {
 									return loopInitModules();
 								});
+							} else {
+								return Promise.resolve();
 							};
 						};
 						
@@ -858,7 +836,7 @@
 					
 					fillSpecs(name, newName);
 					
-					return targetNamespaces.loadNamespaces(specs, null, options, dontThrow)
+					return targetNamespaces.load(specs, null, options, dontThrow)
 						.then(function() {
 							var entry = targetNamespaces.getEntry(newName);
 							if (!entry) {
@@ -1270,8 +1248,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

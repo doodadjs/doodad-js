@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: Modules.js - Doodad Modules management (server-side)
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,16 +27,21 @@
 	var global = this;
 
 	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
-			type: null,
 			version: '2.2.0r',
-			namespaces: null,
 			dependencies: ['Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad.Types', 'Doodad.Namespaces', 'Doodad.NodeJs'],
 			bootstrap: true,
 			
@@ -111,18 +116,38 @@
 						return Promise.resolve(location);
 					});
 				
+				modules.loadFiles = function loadFiles(module, files, /*optional*/options) {
+					const Promise = types.getPromise();
+					if (!types.isArray(files)) {
+						files = [files];
+					};
+					return Promise.all(tools.map(files, function(fname) {
+						return modules.locate(module, fname, options)
+							.then(function(location) {
+								const content = Module._load(location.toString(), __Internal__.getRootModule());
+								return {
+									name: fname, 
+									content: content,
+								};
+							})
+							['catch'](function(err) {
+								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~.", [fname, module, err]);
+							});
+					}));
+				};
+				
 				modules.load = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									module: {
 										type: 'string',
 										optional: false,
 										description: "Module name",
 									},
-									file: {
+									files: {
 										type: 'string,Path,Url,arrayof(string,Path,Url)',
 										optional: true,
 										description: "Module file",
@@ -137,47 +162,84 @@
 								description: "Loads a module.",
 					}
 					//! END_REPLACE()
-					, function load(module, /*optional*/file, /*optional*/options) {
-						const Promise = types.getPromise();
-						if (!types.isArray(file)) {
-							file = [file];
-						};
-						const DD_MODULES = {};
-						return modules.locate(module, './config.json', options)
-							.then(function(location) {
-								return config.loadFile(location, {async: true, encoding: 'utf-8'});
+					, function load(module, /*optional*/files, /*optional*/options) {
+						const opts = {};
+						return modules.loadFiles(module, 'config.json', options)
+							.nodeify(function(err, _files) {
+								if (!err) {
+									types.depthExtend(2, opts, _files[0].content, options);
+								}
+								return modules.loadFiles(module, files || 'index.js', options);
 							})
-							.nodeify(function(err, conf) {
-								if (err) {
-									conf = options;
-								} else {
-									conf = types.depthExtend(2, {}, conf, options);
-								};
-								return Promise.all(file.map(function(fname) {
-										return modules.locate(module, fname, options).then(function(location) {
-											return new Promise(function(resolve, reject) {
-												tools.callAsync(function() {
-													try {
-														const mod = Module._load(location.toString(), __Internal__.getRootModule());
-														mod.add(DD_MODULES);
-														resolve(mod);
-													} catch(ex) {
-														reject(new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [fname, module, ex]));
-													};
-												}, 0);
-											});
-										});
-									}))
-									.then(function() {
-										return namespaces.loadNamespaces(DD_MODULES, null, conf, false);
-									});
-							})
-							['catch'](function(err) {
-								tools.log(tools.LogLevels.Error, err.stack);
-								throw err;
+							.then(function(_files) {
+								const DD_MODULES = {};
+								tools.forEach(_files, function(file) {
+									const mod = file.content;
+									mod.add(DD_MODULES);
+									return mod;
+								});
+								return namespaces.load(DD_MODULES, null, opts, false);
 							});
 					});
 				
+				
+				modules.loadManifest = function loadManifest(manifest, /*optional*/options) {
+					const Promise = types.getPromise();
+					let promise;
+					if (types.isString(manifest)) {
+						promise = modules.loadFiles(manifest, ['package.json', 'make.json'], options)
+							.then(function(contents) {
+								return {
+									manifest: contents[0].content,
+									makeManifest: contents[1].content,
+								};
+							});
+					} else {
+						promise = Promise.resolve(manifest);
+					};
+					return promise.then(function(manifests) {
+						const manifest = manifests.manifest,
+							makeManifest = manifests.makeManifest;
+						
+						return {
+							add: function add(DD_MODULES) {
+								DD_MODULES = (DD_MODULES || {});
+								DD_MODULES[manifest.name] = {
+									type: makeManifest.type,
+									version: manifest.version + (manifest.stage || 'd'),
+									dependencies: tools.filter(makeManifest.dependencies, function(dep) {
+										return dep.server;
+									}),
+									
+									create: function create(root, /*optional*/_options) {
+										"use strict";
+										
+										const doodad = root.Doodad,
+											modules = doodad.Modules,
+											fromSource = root.getOptions().fromSource;
+										
+										const files = tools.map(tools.filter(makeManifest.modules, function(mod) {
+											return mod.server;
+										}), function(mod) {
+											return (fromSource 
+												?
+													(makeManifest.sourceDir || './src') + '/' + mod.src 
+												: 
+													(makeManifest.buildDir || './build') + '/' + mod.src.replace(/([.]js)$/, ".min.js")
+											);
+										});
+										
+										return modules.load(manifest.name, files, _options)
+											.then(function() {
+												// Returns nothing
+											});
+									},
+								};
+								return DD_MODULES;
+							},
+						};
+					});
+				};
 				
 				
 				//===================================
@@ -191,8 +253,23 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

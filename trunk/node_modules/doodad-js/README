@@ -71,7 +71,7 @@ If you want to load additional Doodad modules :
         // your code here...
     };
     
-    namespaces.loadNamespaces(modules, startup);
+    namespaces.load(modules, startup);
 ```
 
 ## Scopes
@@ -193,7 +193,7 @@ If you want to load additional Doodad modules :
   - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
   - **namespaces.getEntry**: Returns the entry of the specified namespace from the registry.
   - **namespaces.getNamespace**: Returns the namespace object of the specified namespace from the registry.
-  - **namespaces.loadNamespaces**: Load modules and get them ready to be used. Usage: namespaces.loadNamespaces(/*optional*/specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow)
+  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow)
   
   - **[namespace].REGISTER**: Registers a class in the namespace object.
   - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.

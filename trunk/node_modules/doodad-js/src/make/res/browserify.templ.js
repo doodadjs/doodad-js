@@ -1,3 +1,4 @@
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: browserify.js - Module startup file for 'browserify'.
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -20,6 +21,11 @@
 //	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
+//! END_REPLACE()
+
+//! IF_UNDEF("debug")
+	//! DEFINE("debug", false)
+//! END_IF()
 
 "use strict";
 
@@ -28,7 +34,7 @@ module.exports = {
 		var config = null;
 		try {
 			// Generated from 'doodad-js-make'
-			config = require('./dist/doodad-js/config.json');
+			config = require('./config.json');
 		} catch(ex) {
 		};
 		
@@ -55,11 +61,8 @@ module.exports = {
 		if (!options.startup) {
 			options.startup = {};
 		};
-		if (!options.startup.settings) {
-			options.startup.settings = {};
-		};
 
-		var dev_values = options.startup.settings.nodeEnvDevValues && options.startup.settings.nodeEnvDevValues.split(',') || ['development'],
+		var dev_values = options.startup.nodeEnvDevValues && options.startup.nodeEnvDevValues.split(',') || ['development'],
 			env = options.node_env;
 
 		if ((options.startup.debug === "true") || +options.startup.debug) {
@@ -76,24 +79,20 @@ module.exports = {
 				break;
 			};
 		};
-			
+		
 		if (dev) {
-			options.startup.settings.fromSource = true;
-			options.startup.settings.enableProperties = true;
-			require("./dist/doodad-js/Debug.min.js").add(DD_MODULES);
+			options.startup.fromSource = true;
+			options.startup.enableProperties = true;
+			require(/*! INJECT(TO_SOURCE(VAR("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Debug.js" : MAKE_MANIFEST("browserifyDir") + "/common/Debug.min.js")) */).add(DD_MODULES);
 		};
 
-		require("./dist/doodad-js/Types.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools_Files.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Tools_Config.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Namespaces.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Doodad.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Modules.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Client.min.js").add(DD_MODULES);
-		require("./dist/doodad-js/Browserify.min.js").add(DD_MODULES);
+		//! FOR_EACH(VAR("modules"), "mod")
+			//! IF(!(VAR("mod.manual")))
+				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+			//! END_IF()
+		//! END_FOR()
 
-		bootstrap = require("./dist/doodad-js/Bootstrap.min.js");
+		bootstrap = require(/*! INJECT(TO_SOURCE(VAR("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : MAKE_MANIFEST("browserifyDir") + "/common/Bootstrap.min.js")) */);
 
 		return bootstrap.createRoot(DD_MODULES, options);
 	},
