@@ -51,6 +51,18 @@
 			],
 			bootstrap: true,
 			
+			proto: function(root) {
+				var types = root.Doodad.Types;
+				return {
+					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+						options = this._super.apply(this, arguments);
+						options.enableDomObjectsModel = types.toBoolean(types.get(options, 'enableDomObjectsModel'));
+						options.defaultScriptTimeout = parseInt(types.get(options, 'defaultScriptTimeout'));
+						return options;
+					}),
+				};
+			},
+			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -70,18 +82,8 @@
 
 				var __Internal__ = {
 					loadedScripts: {},   // <FUTURE> global to every thread
-					
-					oldSetOptions: null,
 				};
 
-				
-				__Internal__.oldSetOptions = client.setOptions;
-				client.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments);
-						
-					options.enableDomObjectsModel = types.toBoolean(types.get(options, 'enableDomObjectsModel'));
-					options.defaultScriptTimeout = parseInt(types.get(options, 'defaultScriptTimeout'));
-				};
 				
 				client.setOptions({
 					enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.

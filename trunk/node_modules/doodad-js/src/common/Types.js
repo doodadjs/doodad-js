@@ -44,6 +44,19 @@
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			bootstrap: true,
 			
+			proto: function(root) {
+				var types = root.Doodad.Types;
+				return {
+					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+						options = this._super.apply(this, arguments);
+						options.toSourceItemsCount = parseInt(types.get(options, 'toSourceItemsCount'));
+						var val = types.get(options, 'enableProxies');
+						options.enableProxies = (val === 'true') || !!val; // "toBoolean"
+						return options;
+					}),
+				};
+			},
+			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -317,14 +330,6 @@
 				// Options
 				//===================================
 					
-				__Internal__.oldSetOptions = types.setOptions;
-				types.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments);
-						
-					options.toSourceItemsCount = parseInt(types.get(options, 'toSourceItemsCount'));
-					options.enableProxies = types.toBoolean(types.get(options, 'enableProxies'));
-				};
-				
 				types.setOptions({
 					toSourceItemsCount: 255,		// Max number of items
 					enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies

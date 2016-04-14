@@ -69,11 +69,6 @@
 				
 
 
-				//__Internal__.oldSetOptions = modules.setOptions;
-				//modules.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments);
-				//};
-				
 				modules.setOptions({
 					modulesUri: './',
 				}, _options);

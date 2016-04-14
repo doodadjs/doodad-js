@@ -79,7 +79,6 @@
 					os: null,
 					watchedFiles: {},
 					tmpdir: null,
-					//oldSetOptions: null,
 				};
 				
 				//===================================
@@ -96,11 +95,6 @@
 				// Options
 				//=====================================
 				
-				//__Internal__.oldSetOptions = nodejs.setOptions;
-				//nodejs.setOptions = function setOptions(/*paramarray*/) {
-				//	const options = __Internal__.oldSetOptions.apply(this, arguments);
-				//};
-				//
 				//nodejs.setOptions({
 				//})
 				
