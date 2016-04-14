@@ -81,20 +81,12 @@
 					waitCounter: 0,
 					waiting: false,
 					toInit: [],
-					
-					//oldSetOptions: null,
 				};
 
 				//===================================
 				// Options
 				//===================================
 					
-				//__Internal__.oldSetOptions = namespaces.setOptions;
-				//namespaces.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments);
-				//		
-				//};
-				//
 				//namespaces.setOptions({
 				//	
 				//}, _options);
@@ -202,7 +194,7 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									spec: {
 										type: 'object,string',
@@ -233,7 +225,18 @@
 						};
 					};
 					
+					var name = spec.name,
+						baseName = name.split('/', 2)[0];
+					
 					var deps = spec.dependencies;
+					if (name !== baseName) {
+						if (!deps) {
+							spec.dependencies = deps = [];
+						};
+						if (tools.indexOf(deps, baseName) < 0) {
+							deps.push(baseName);
+						};
+					};
 					if (deps) {
 						for (var i = 0; i < deps.length; i++) {
 							if (i in deps) {
@@ -301,7 +304,6 @@
 						specNamespaceType = types.Namespace;
 					};
 					
-					var name = spec.name;
 					var entry = namespaces.getEntry(name);
 					if (entry) {
 						if (!types.is(entry, entries.Namespace) || (specType === entries.Namespace)) {
@@ -309,22 +311,10 @@
 						};
 					};
 					
-					var parent = spec.parent || null,
-						fullName;
-						
-					if (parent) {
-						fullName = (parent.DD_FULL_NAME ? '.' + parent.DD_FULL_NAME : '');
-						// Delete temporary property
-						delete spec.parent;
-					} else {
-						fullName = '';
-						if ((specType !== entries.Package) && !types.baseof(entries.Package, specType)) {
-							parent = root;
-						};
-					};
-					
-					var shortNames = spec.name.split('.'),
+					var parent = root,
+                        shortNames = baseName.split('.'),
 						shortNamesLen = shortNames.length,
+                        fullName = '',
 						shortName,
 						fName,
 						type,
@@ -344,8 +334,20 @@
 							namespaceType = types.Namespace;
 							namespace = null;
 						} else {
+							fName = name;
 							type = specType;
 							namespaceType = specNamespaceType;
+							var proto = spec.proto;
+							if (proto) {
+								// Extend namespace object
+								if (types.isFunction(proto)) {
+									proto = proto(root);
+								};
+								if (!types.isArray(proto)) {
+									proto = [/*typeProto*/{}, /*instanceProto*/proto];
+								};
+								namespaceType = namespaceType.$inherit.apply(namespaceType, proto)
+							};
 							newSpec = spec;
 							if (type !== entries.Namespace) {
 								replaceEntry = true;
@@ -411,10 +413,10 @@
 											name: newSpec,
 										};
 									};
+                                    newSpec.name = baseName + '.' + newSpec.name; 
 									if (!newSpec.type) {
 										newSpec.type = entries.Namespace;
 									};
-									newSpec.parent = namespace; // Temporary property
 									promises.push(__Internal__.createNamespace(newSpec, options, ignoreOptionals));
 								};
 							};
@@ -423,16 +425,7 @@
 					};
 
 					var create = function create() {
-						var proto = spec.proto;
-						if (proto) {
-							for (var key in proto) {
-								if (types.hasKey(proto, key)) {
-									namespace[key] = proto[key];
-								};
-							};
-						};
-						
-						options = types.get(options, spec.name);
+						options = types.get(options, baseName);
 						
 						if (!spec.bootstrap && spec.create) {
 							var retval = spec.create(root, options);

@@ -66,6 +66,19 @@
 			//replaceObject: true,
 			bootstrap: true,
 			
+			proto: function(root) {
+				var types = root.Doodad.Types;
+				return {
+					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+						options = this._super.apply(this, arguments);
+						options.enforceScopes = types.toBoolean(types.get(options, 'enforceScopes'));
+						options.enforcePolicies = types.toBoolean(types.get(options, 'enforcePolicies'));
+						options.publicOnDebug = types.toBoolean(types.get(options, 'publicOnDebug'));
+						return options;
+					}),
+				};
+			},
+			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -88,8 +101,6 @@
 					invokedClass: null,	// <FUTURE> thread level
 					inTrapException: false, // <FUTURE> thread level
 					
-					oldSetOptions: null, // <FUTURE> global to all threads
-					
 					arrayObj: (global.Array && global.Array.prototype || []),
 				};
 
@@ -99,16 +110,6 @@
 				};
 				
 				delete __Internal__.arrayObj;  // free memory
-				
-				
-				__Internal__.oldSetOptions = doodad.setOptions;
-				doodad.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments);
-						
-					options.enforceScopes = types.toBoolean(types.get(options, 'enforceScopes'));
-					options.enforcePolicies = types.toBoolean(types.get(options, 'enforcePolicies'));
-					options.publicOnDebug = types.toBoolean(types.get(options, 'publicOnDebug'));
-				};
 				
 
 				doodad.setOptions({

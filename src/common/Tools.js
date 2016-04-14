@@ -47,6 +47,17 @@
 			],
 			bootstrap: true,
 			
+			proto: function(root) {
+				var types = root.Doodad.Types;
+				return {
+					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+						options = this._super.apply(this, arguments);
+						options.logLevel = parseInt(types.get(options, 'logLevel'));
+						return options;
+					}),
+				};
+			},
+
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -66,7 +77,6 @@
 					
 				// <FUTURE> Thread context
 				var __Internal__ = {
-					oldSetOptions: null,
 				};
 				
 				
@@ -74,13 +84,6 @@
 				// Options
 				//===================================
 					
-				__Internal__.oldSetOptions = tools.setOptions;
-				tools.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments);
-						
-					options.logLevel = parseInt(types.get(options, 'logLevel'));
-				};
-				
 				tools.setOptions({
 					logLevel: -1,
 					hooks: {

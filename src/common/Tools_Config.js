@@ -76,10 +76,6 @@
 				// Options
 				//===================================
 					
-				//__Internal__.oldSetOptions = config.setOptions;
-				//config.setOptions = function setOptions(/*paramarray*/) {
-				//};
-				
 				config.setOptions({
 					configPath: null,
 				}, _options);

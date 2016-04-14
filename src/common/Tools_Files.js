@@ -48,6 +48,18 @@
 			],
 			bootstrap: true,
 			
+			proto: function(root) {
+				var types = root.Doodad.Types;
+				return {
+					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+						options = this._super.apply(this, arguments);
+						options.caseSensitive = types.toBoolean(types.get(options, 'caseSensitive'));
+						options.caseSensitiveUnicode = types.toBoolean(types.get(options, 'caseSensitiveUnicode'));
+						return options;
+					}),
+				};
+			},
+
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -73,14 +85,6 @@
 				// Options
 				//===================================
 					
-				__Internal__.oldSetOptions = files.setOptions;
-				files.setOptions = function setOptions(/*paramarray*/) {
-					var options = __Internal__.oldSetOptions.apply(this, arguments);
-						
-					options.caseSensitive = types.toBoolean(types.get(options, 'caseSensitive'));
-					options.caseSensitiveUnicode = types.toBoolean(types.get(options, 'caseSensitiveUnicode'));
-				};
-				
 				files.setOptions({
 					caseSensitive: true,
 					caseSensitiveUnicode: true,
