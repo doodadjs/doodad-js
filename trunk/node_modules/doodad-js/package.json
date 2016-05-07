@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "stage": "r",
   "description": "Object-oriented programming framework for Javascript",
   "config": {
@@ -11,7 +11,7 @@
 		"loadTests": false
 	},
     "Doodad__Types": {
-      "toSourceItemsCount": "255",
+      "toSourceItemsCount": 255,
       "enableProxies": false
     },
     "Doodad__Tools": {
