@@ -1735,7 +1735,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											names: {
 												type: 'string,arrayof(string)',
@@ -1757,7 +1757,7 @@
 									};
 									var args = [];
 									if (!types.isNothing(this.__args)) {
-										for (var i = this.__args.length - 1; i >= 0; i--) {
+										for (var i = 0; i < this.__args.length; i++) {
 											var arg = this.__args[i],
 												found = false;
 											for (var j = 0; j < names.length; j++) {
@@ -2377,6 +2377,28 @@
 								, function setArgs(name, /*optional*/value, /*optional*/replace) {
 									return this.set({
 										args: this.args.set(name, value, replace),
+									});
+								}),
+							
+							removeArgs: root.DD_DOC(
+								//! REPLACE_BY("null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											name: {
+												type: 'string,arrayof(string)',
+												optional: false,
+												description: "Name of the argument.",
+											},
+										},
+										returns: 'Url',
+										description: "Removes URL arguments and returns a new Url object.",
+								}
+								//! END_REPLACE()
+								, function setArgs(name, /*optional*/value, /*optional*/replace) {
+									return this.set({
+										args: this.args.remove(name),
 									});
 								}),
 							

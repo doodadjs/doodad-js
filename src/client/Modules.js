@@ -109,13 +109,19 @@
 					, function locate(module, /*optional*/path, /*optional*/options) {
 						var Promise = types.getPromise();
 						return new Promise(function(resolve, reject) {
-							var location = tools.getCurrentLocation().set({file: null}).combine(types.get(options, 'modulesUri', modules.getOptions().modulesUri));
-							location = location.combine(files.Path.parse(module, {os: 'linux'})).pushFile();
+							var location = tools.getCurrentLocation()
+								.removeArgs('redirects')
+								.set({file: null})
+								.combine(types.get(options, 'modulesUri', modules.getOptions().modulesUri))
+								.combine(files.Path.parse(module, {os: 'linux'}))
+								.pushFile();
 							if (path) {
-								location = location.combine(files.Path.parse(path, {os: 'linux', isRelative: true}));
+								location = location
+									.combine(files.Path.parse(path, {os: 'linux', isRelative: true}));
 							};
 							if (!location.file) {
-								location = location.set({file: 'index.js'});
+								location = location
+									.set({file: 'index.js'});
 							};
 							resolve(location);
 						});
