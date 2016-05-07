@@ -209,7 +209,6 @@
 															data = tools.trim(data, '\uFFFE', 1);
 														};
 													};
-													// TODO: Polyfill for JSON
 													data = __Natives__.windowJSON.parse(data);
 													def.data = data;
 													def.ready = true;

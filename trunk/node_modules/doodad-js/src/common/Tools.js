@@ -52,7 +52,7 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.logLevel = parseInt(types.get(options, 'logLevel'));
+						options.logLevel = parseInt(options.logLevel);
 						return options;
 					}),
 				};
@@ -1495,7 +1495,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set',
@@ -1555,11 +1555,13 @@
 									};
 								};
 							} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
-								var ar = obj.entries(),
-									len = ar.length; // performance
-								for (i = 0; i < len; i++) {
-									var val = ar[i];
-									if (invert === !!items.call(thisObj, val[1], val[0], obj)) {
+								var entries = obj.entries(),
+									entry;
+								while (entry = entries.next()) {
+									if (entry.done) {
+										break;
+									};
+									if (invert === !!items.call(thisObj, entry.value[1], entry.value[0], obj)) {
 										return false;
 									};
 								};
@@ -1588,14 +1590,17 @@
 									};
 								};
 							} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
-								obj = obj.entries();
-								var len = obj.length; // performance
-								for (i = 0; i < len; i++) {
-									var val = obj[i];
-									if (invert === (tools.findItem(items, val[1], undefined, true) !== null)) {
+								var entries = obj.entries(),
+									entry;
+								while (entry = entries.next()) {
+									if (entry.done) {
+										break;
+									};
+									if (invert === (tools.findItem(items, entry.value[1], undefined, true) !== null)) {
 										return false;
 									};
 								};
+								
 							} else {
 								// "Object.assign" Polyfill from Mozilla Developer Network.
 								var keys = types.keys(obj),
@@ -1617,7 +1622,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set',
@@ -1675,11 +1680,13 @@
 										};
 									};
 								} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
-									var ar = obj.entries(),
-										len = ar.length; // performance
-									for (i = 0; i < len; i++) {
-										var val = ar[i];
-										if (invert === !items.call(thisObj, val[1], val[0], obj)) {
+									var entries = obj.entries(),
+										entry;
+									while (entry = entries.next()) {
+										if (entry.done) {
+											break;
+										};
+										if (invert === !items.call(thisObj, entry.value[1], entry.value[0], obj)) {
 											return true;
 										};
 									};
@@ -1710,11 +1717,13 @@
 										};
 									};
 								} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
-									obj = obj.entries();
-									var len = obj.length; // performance
-									for (i = 0; i < len; i++) {
-										var val = obj[i];
-										if (invert === (tools.findItem(items, val[1], undefined, true) === null)) {
+									var entries = obj.entries(),
+										entry;
+									while (entry = entries.next()) {
+										if (entry.done) {
+											break;
+										};
+										if (invert === (tools.findItem(items, entry.value[1], undefined, true) === null)) {
 											return true;
 										};
 									};

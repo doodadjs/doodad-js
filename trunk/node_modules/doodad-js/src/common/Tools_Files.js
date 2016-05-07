@@ -53,8 +53,8 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.caseSensitive = types.toBoolean(types.get(options, 'caseSensitive'));
-						options.caseSensitiveUnicode = types.toBoolean(types.get(options, 'caseSensitiveUnicode'));
+						options.caseSensitive = types.toBoolean(options.caseSensitive);
+						options.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
 						return options;
 					}),
 				};
@@ -333,7 +333,8 @@
 						root: null,   // null = auto-detect
 						drive: null,  // For Windows only. null = auto-detect 
 						path: null,
-						file: null,   // null = auto-detect
+						file: null,   // null = auto-detect. when set, changes 'extension'.
+						extension: null, // when set, changes 'file'
 						quote: null,  // null = auto-detect
 						isRelative: false,
 						noEscapes: false,
@@ -367,7 +368,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 3,
+											revision: 4,
 											params: {
 												path: {
 													type: 'string,array',
@@ -387,10 +388,6 @@
 								, function parse(path, /*optional*/options) {
 									// WARNING: Validation is incomplete.
 									// TODO: Windows network paths ("\\server\...")
-									
-									if (!options) {
-										options = {};
-									};
 									
 									// Flags
 									var dontThrow = types.get(options, 'dontThrow', false),
@@ -419,11 +416,13 @@
 												os: 'windows',
 												drive: pathTmp.shift()[0],
 												file: path.file,
+												extension: path.extension,
 											}, options);
 										} else {
 											options = types.fill(__Internal__.pathOptionsKeys, {
 												os: 'linux',
 												file: path.file,
+												extension: path.extension,
 											}, options);
 										};
 
@@ -452,6 +451,7 @@
 										dirRoot = types.get(options, 'root', null),  // Default is no root
 										drive = types.get(options, 'drive', null),  // Default is Auto-detect
 										file = types.get(options, 'file', null),  // Default is Auto-detect
+										extension = types.get(options, 'extension', null), // Default is "file" 's extension
 										forceDrive = types.get(options, 'forceDrive', false);  // Default is False
 
 									path = types.get(options, 'path', path);
@@ -917,7 +917,29 @@
 											};
 										};
 									};
-
+									
+									if (file) {
+										var pos = file.indexOf('.');
+										if (types.isNothing(extension)) {
+											if (pos >= 0) {
+												extension = file.slice(pos + 1);
+											} else {
+												extension = '';
+											};
+										} else if (extension) {
+											if (pos >= 0) {
+												file = file.slice(0, pos + 1) + extension;
+											} else {
+												file = file + '.' + extension;
+											};
+										} else if (pos >= 0) {
+											// Remove trailing '.'
+											file = file.slice(0, pos);
+										};
+									} else {
+										extension = null;
+									};
+									
 									return new this({
 										os: os,
 										dirChar: dirChar,
@@ -925,6 +947,7 @@
 										root: dirRoot || [],
 										path: path || [],
 										file: file || null,
+										extension: extension,
 										quote: quote,
 										isRelative: isRelative,
 										noEscapes: noEscapes,
@@ -965,7 +988,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 1,
+											revision: 2,
 											params: {
 												options: {
 													type: 'object',
@@ -978,7 +1001,10 @@
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									return files.Path.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, options));
+									var newOptions = types.fill(__Internal__.pathOptionsKeys, {}, this);
+									delete newOptions.extension;
+									newOptions = types.fill(__Internal__.pathOptionsKeys, newOptions, options);
+									return files.Path.parse(null, newOptions);
 								}),
 							
 							toString: root.DD_DOC(
@@ -1079,7 +1105,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 3,
+											revision: 4,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1173,6 +1199,7 @@
 									};
 									
 									data.file = types.get(options, 'file', path.file);
+									data.extension = types.get(options, 'extension', path.extension);
 
 									path = files.Path.parse(null, data);
 
@@ -1229,7 +1256,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 1,
+											revision: 2,
 											params: null,
 											returns: 'Path',
 											description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
@@ -1237,7 +1264,7 @@
 								//! END_REPLACE()
 								, function pushFile() {
 									if (this.file) {
-										return files.Path.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {file: null, path: types.append([], this.path, [this.file])}));
+										return files.Path.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
 										return files.Path.parse(this);
 									};
@@ -1305,7 +1332,6 @@
 											break;
 										};
 									} else {
-										// TODO: Unicode letters (others than ascii)
 										if (thisAr[i].toLowerCase() !== toAr[i].toLowerCase()) {
 											break;
 										};
@@ -1829,7 +1855,8 @@
 					domain: null,
 					port: null,
 					path: null,
-					file: null,
+					file: null,   // when set, changes 'extension'.
+					extension: null, // when set, changes 'file'
 					args: null,
 					anchor: null,
 					isRelative: false,
@@ -1863,7 +1890,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 3,
+										revision: 4,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -1888,9 +1915,15 @@
 									};
 									
 									// Flags
-									var dontThrow = types.get(options, 'dontThrow', false);
+									var dontThrow = types.get(options, 'dontThrow', false),
+										urlIsArray = types.isArray(url),
+										path = null; // Default is Auto-detect
 									
-									if (url instanceof files.Url) {
+									if (urlIsArray) {
+										path = url;
+										url = null;
+										
+									} else if (url instanceof files.Url) {
 										var args = types.get(options, 'args', null);
 										
 										options = types.fill(__Internal__.urlOptionsKeys, {}, url, options);
@@ -1913,6 +1946,7 @@
 											protocol: 'file',
 											path: pathTmp,
 											file: url.file,
+											extension: url.extension,
 											isWindows: isWindows,
 										}, options);
 										
@@ -1934,8 +1968,9 @@
 										user = types.get(options, 'user', null), // Default is Auto-detect
 										password = types.get(options, 'password', null), // Default is Auto-detect
 										port = types.get(options, 'port', null), // Default is Auto-detect
-										path = types.get(options, 'path', null), // Default is Auto-detect
+										path = types.get(options, 'path', path),
 										file = types.get(options, 'file', null), // Default is Auto-detect
+										extension = types.get(options, 'extension', null), // Default is "file" 's extension
 										args = types.get(options, 'args', null), // Default is Auto-detect
 										anchor = types.get(options, 'anchor', null), // Default is Auto-detect
 										isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
@@ -2102,44 +2137,55 @@
 										anchor = __Natives__.windowUnescape(anchor);
 									};
 									
-									if (types.isNothing(path)) {
-										path = [];
+									if (urlIsArray) {
+										if (path[path.length - 1]) {
+											var tmp = path.pop();
+											if (tmp) {
+												// Auto-set
+												file = [tmp];
+											};
+										};
+										
 									} else {
-										if (types.isString(path)) {
-											if (!noEscapes) {
-												path = __Natives__.windowUnescape(path);
-											};
-											if (path.length) {
-												path = path.split('/');
-											} else {
-												path = [];
-											};
+										if (types.isNothing(path)) {
+											path = [];
 										} else {
-											if (!noEscapes) {
-												path = tools.map(path, __Natives__.windowUnescape);
+											if (types.isString(path)) {
+												if (!noEscapes) {
+													path = __Natives__.windowUnescape(path);
+												};
+												if (path.length) {
+													path = path.split('/');
+												} else {
+													path = [];
+												};
+											} else {
+												if (!noEscapes) {
+													path = tools.map(path, __Natives__.windowUnescape);
+												};
+											};
+										};
+										
+										if (types.isNothing(file)) {
+											file = null;
+										} else {
+											if (types.isString(file)) {
+												if (!noEscapes) {
+													file = __Natives__.windowUnescape(file);
+												};
+												if (file.length) {
+													file = file.split('/');
+												} else {
+													file = null;
+												};
+											} else {
+												if (!noEscapes) {
+													file = tools.map(file, __Natives__.windowUnescape);
+												};
 											};
 										};
 									};
 
-									if (types.isNothing(file)) {
-										file = null;
-									} else {
-										if (types.isString(file)) {
-											if (!noEscapes) {
-												file = __Natives__.windowUnescape(file);
-											};
-											if (file.length) {
-												file = file.split('/');
-											} else {
-												file = null;
-											};
-										} else {
-											if (!noEscapes) {
-												file = tools.map(file, __Natives__.windowUnescape);
-											};
-										};
-									};
-									
 									if (types.isNothing(isRelative)) {
 										// Auto-detect
 										isRelative = (!path || !path.length || !!path[0].length) ||
@@ -2212,6 +2258,28 @@
 										};
 									};
 
+									if (file) {
+										var pos = file.indexOf('.');
+										if (types.isNothing(extension)) {
+											if (pos >= 0) {
+												extension = file.slice(pos + 1);
+											} else {
+												extension = '';
+											};
+										} else if (extension) {
+											if (pos >= 0) {
+												file = file.slice(0, pos + 1) + extension;
+											} else {
+												file = file + '.' + extension;
+											};
+										} else if (pos >= 0) {
+											// Remove trailing '.'
+											file = file.slice(0, pos);
+										};
+									} else {
+										extension = null;
+									};
+									
 									url = new files.Url({
 										protocol: protocol,
 										domain: domain,
@@ -2220,6 +2288,7 @@
 										port: port,
 										path: path || [],
 										file: file || null,
+										extension: extension,
 										args: args,
 										anchor: anchor,
 										noEscapes: !!noEscapes,
@@ -2260,7 +2329,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											options: {
 												type: 'object',
@@ -2273,7 +2342,10 @@
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									return files.Url.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, options));
+									var newOptions = types.fill(__Internal__.urlOptionsKeys, {}, this);
+									delete newOptions.extension;
+									newOptions = types.fill(__Internal__.urlOptionsKeys, newOptions, options);
+									return files.Url.parse(null, newOptions);
 								}),
 							
 							setArgs: root.DD_DOC(
@@ -2444,7 +2516,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2530,7 +2602,8 @@
 									} else {
 										data.path = types.append([], pathRoot, path);
 									};
-									data.file = url.file;
+									data.file = types.get(options, 'file', url.file);
+									data.extension = types.get(options, 'extension', url.extension);
 									
 									url = files.Url.parse(null, data);
 
@@ -2587,7 +2660,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 1,
 											params: null,
 											returns: 'Url',
 											description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
@@ -2595,7 +2668,7 @@
 								//! END_REPLACE()
 								, function pushFile() {
 									if (this.file) {
-										return files.Url.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {file: null, path: types.append([], this.path, [this.file])}));
+										return files.Url.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
 										return files.Url.parse(this);
 									};

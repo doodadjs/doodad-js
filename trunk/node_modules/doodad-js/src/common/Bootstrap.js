@@ -60,6 +60,13 @@
 			hasProto: !!({}.__proto__),
 		};
 
+		//__Internal__.MAX_INTEGER = ((~0) >>> 0);
+		//__Internal__.MAX_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_UNSIGNED_INTEGER) / global.Math.LN2, 0);
+		__Internal__.SAFE_INTEGER_LEN = global.Number.MAX_VALUE.toString(2).replace(/[(]e[+]\d+[)]|[.]|[0]/g, '').length;   // TODO: Find a mathematical way
+		__Internal__.MAX_SAFE_INTEGER = global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1;
+		__Internal__.MIN_SAFE_INTEGER = -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1;
+
+		// Temporary. Will get replaced.
 		var types = {
 			},
 			
@@ -148,7 +155,7 @@
 						} else {
 							str = __Internal__.functionToString.call(obj);
 						};
-						str = str.match(/function\s+(\S*).*\(/);
+						str = str.match(/function\s+([^(\s]*)[^(]*\(/);
 						return str && str[1] || null;
 					};
 				} else {
@@ -210,6 +217,8 @@
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" does not include "Error" in "global".
 
+			windowTypeError: (types.isNativeFunction(global.TypeError) ? global.TypeError : undefined),
+			
 			// "isNumber"
 			windowNumber: (types.isNativeFunction(global.Number) ? global.Number : undefined),
 			
@@ -242,8 +251,12 @@
 			
 			// "depthExtend"
 			functionBind: global.Function.prototype.bind,
+			
+			// "isSafeInteger"
+			numberIsSafeInteger: (types.isNativeFunction(global.Number.isSafeInteger) ? global.Number.isSafeInteger : undefined),
+			mathFloor: global.Math.floor,
 		};
-		
+
 		//===================================
 		// For old browsers
 		//===================================
@@ -419,7 +432,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'function',
@@ -832,7 +845,7 @@
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -845,23 +858,51 @@
 			}
 			//! END_REPLACE()
 			, function isInteger(obj) {
-				if (types.isNothing(obj)) {
+				// <PRB> "Number.isInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
+				obj = __Natives__.windowObject(obj);
+				if (!types.isNumber(obj)) {
 					return false;
 				};
-				obj = __Natives__.windowObject(obj);
 				if (__Natives__.numberIsInteger) {
-					// <PRB> "Number.isInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
-					if (obj instanceof __Natives__.windowNumber) {
-						return __Natives__.numberIsInteger(obj.valueOf());
-					} else {
-						return false;
-					};
+					obj = obj.valueOf();
+					return __Natives__.numberIsInteger(obj.valueOf());
 				} else {
-					if (!types.isNumber(obj)) {
+					if (!types.isFinite(obj)) {
 						return false;
 					};
 					obj = obj.valueOf();
-					return (obj === (obj | 0));
+					return (obj === __Natives__.mathFloor(obj));
+				};
+			});
+		
+		types.isSafeInteger = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is an integer that correctly fits into 'Number'. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isSafeInteger(obj) {
+				// <PRB> "Number.isSafeInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
+				obj = __Natives__.windowObject(obj);
+				if (__Natives__.numberIsSafeInteger) {
+					obj = obj.valueOf();
+					return __Natives__.numberIsSafeInteger(obj);
+				} else {
+					if  (!types.isInteger(obj)) {
+						return false;
+					};
+					obj = obj.valueOf();
+					return (obj >= __Internal__.MIN_SAFE_INTEGER) && (obj <= __Internal__.MAX_SAFE_INTEGER);
 				};
 			});
 		
@@ -1863,6 +1904,50 @@
 				return result;
 			});
 				
+		types.complete = __Internal__.DD_DOC(
+			//! REPLACE_BY("null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+						},
+						returns: 'object',
+						description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
+			}
+			//! END_REPLACE()
+			, function complete(/*paramarray*/obj) {
+				var result;
+				if (!types.isNothing(obj)) {
+					result = __Natives__.windowObject(obj);
+					var len = arguments.length;
+					for (var i = 1; i < len; i++) {
+						obj = arguments[i];
+						if (types.isNothing(obj)) {
+							continue;
+						};
+						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+						obj = __Natives__.windowObject(obj);
+						var keys = types.keys(obj),
+							keysLen = keys.length, // performance
+							j, 
+							key;
+						for (j = 0; j < keysLen; j++) {
+							key = keys[j];
+							if (!types.hasKey(result, key)) {
+								result[key] = obj[key];
+							};
+						};
+					};
+				};
+				
+				return result;
+			});
+		
 		types.append = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
@@ -2500,24 +2585,33 @@
 		// Errors
 		//===================================
 		
-		// TODO: Find a way to inherit both "types.Error" and "global.TypeError", or forget "global.TypeError" and inherit "types.Error"
+		__Internal__.createErrorConstructor = function(base) {
+			return function _new(message, /*optional*/params) {
+				message = tools.format(message, params);
+				return base.call(this, message);
+			};
+		};
+		
 		types.TypeError = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'error',
 						description: "Raised on invalid value type.",
 			}
 			//! END_REPLACE()
-			, global.TypeError || types.createErrorType("TypeError", __Natives__.windowError));
+			, (__Natives__.windowTypeError
+				? types.createErrorType("TypeError", __Natives__.windowTypeError, __Internal__.createErrorConstructor(__Natives__.windowTypeError))
+				: types.createErrorType("TypeError", __Natives__.windowError, __Internal__.createErrorConstructor(__Natives__.windowError))
+			));
 		
 		types.Error = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							message: {
 								type: 'string',
@@ -2534,10 +2628,7 @@
 						description: "Generic error with message formatting.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType('Error', __Natives__.windowError, function _new(message, /*optional*/params) {
-				message = tools.format(message, params);
-				return __Natives__.windowError.call(this, message);
-			}));
+			, types.createErrorType('Error', __Natives__.windowError, __Internal__.createErrorConstructor(__Natives__.windowError)));
 
 		types.AssertionFailed = __Internal__.DD_DOC(
 			//! REPLACE_BY("null")
@@ -4107,58 +4198,21 @@
 						types.extend(typesNs, types);
 						types.extend(toolsNs, tools);
 						
-						var self = this;
-						
-						if (types.hasDefinePropertyEnabled()) {
-							types.defineProperties(typesNs, {
-								createRoot: {
-									get: function() {
-										return exports.createRoot;
-									},
-								},
-								invoke: {
-									get: function() {
-										return __options__.hooks.invoke;
-									},
-								},
-								getAttribute: {
-									get: function() {
-										return __options__.hooks.getAttribute;
-									},
-								},
-								getAttributes: {
-									get: function() {
-										return __options__.hooks.getAttributes;
-									},
-								},
-								setAttribute: {
-									get: function() {
-										return __options__.hooks.setAttribute;
-									},
-								},
-								setAttributes: {
-									get: function() {
-										return __options__.hooks.setAttributes;
-									},
-								},
-							});
-						} else {
-							typesNs.createRoot = exports.createRoot;
-							typesNs.invoke = function invoke(obj, fn, /*optional*/args) {
-								return __options__.hooks.invoke(obj, fn, args);
-							};
-							typesNs.getAttribute = function getAttribute(obj, attr) {
-								return __options__.hooks.getAttribute(obj, attr);
-							};
-							typesNs.getAttributes = function getAttributes(obj, attrs) {
-								return __options__.hooks.getAttributes(obj, attrs);
-							};
-							typesNs.setAttribute = function setAttribute(obj, attr, value, /*optional*/options) {
-								return __options__.hooks.setAttribute(obj, attr, value, options);
-							};
-							typesNs.setAttributes = function setAttributes(obj, values, /*optional*/options) {
-								return __options__.hooks.setAttributes(obj, values, options);
-							};
+						typesNs.createRoot = exports.createRoot;
+						typesNs.invoke = function invoke(obj, fn, /*optional*/args) {
+							return __options__.hooks.invoke(obj, fn, args);
+						};
+						typesNs.getAttribute = function getAttribute(obj, attr) {
+							return __options__.hooks.getAttribute(obj, attr);
+						};
+						typesNs.getAttributes = function getAttributes(obj, attrs) {
+							return __options__.hooks.getAttributes(obj, attrs);
+						};
+						typesNs.setAttribute = function setAttribute(obj, attr, value, /*optional*/options) {
+							return __options__.hooks.setAttribute(obj, attr, value, options);
+						};
+						typesNs.setAttributes = function setAttributes(obj, values, /*optional*/options) {
+							return __options__.hooks.setAttributes(obj, values, options);
 						};
 						
 						// Load bootstrap modules
@@ -4213,21 +4267,39 @@
 									shortName,
 									j,
 									k,
-									nsObj = null;
+									nsObj = null,
+									nsType = types.Namespace,
+									prevNsObj;
+								var proto = mod.proto;
+								if (proto) {
+									// Extend namespace object
+									if (types.isFunction(proto)) {
+										proto = proto(this);
+									};
+									if (!types.isArray(proto)) {
+										proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(nsType)}, /*instanceProto*/proto];
+									};
+									nsType = nsType.$inherit.apply(nsType, proto)
+								};
 								for (k = 0; k < shortNames.length; k++) {
 									shortName = shortNames[k];
 									fullName += '.' + shortName;
-									if (types.hasKey(parent, shortName)) {
-										nsObj = parent[shortName];
+									prevNsObj = types.get(parent, shortName);
+									if (k === (shortNames.length - 1)) {
+										nsObj = new nsType(parent, shortName, fullName.slice(1));
+										types.complete(nsObj, prevNsObj);
+									} else if (!prevNsObj) {
+										nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
 									} else {
-										parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
+										nsObj = prevNsObj;
 									};
-									parent = parent[shortName];
+									parent[shortName] = nsObj;
+									parent = nsObj;
 								};
+								
 								nsObjs[name] = nsObj;
 								
-								var namespaces = (mod.namespaces || []),
-									namespace = parent;
+								var namespaces = (mod.namespaces || []);
 								for (j = 0; j < namespaces.length; j++) {
 									if (j in namespaces) {
 										shortNames = namespaces[j].split('.');
@@ -4236,12 +4308,11 @@
 											shortName = shortNames[k];
 											fullName += '.' + shortName;
 											if (!types.hasKey(parent, shortName)) {
-												parent[shortName] = nsObj = new types.Namespace(parent, shortName, fullName.slice(1));
-												nsObjs[name] = nsObj;
+												parent[shortName] = new types.Namespace(parent, shortName, fullName.slice(1));
 											};
 											parent = parent[shortName];
 										};
-										parent = namespace;
+										parent = nsObj;
 									};
 								};
 
@@ -4259,9 +4330,47 @@
 						
 						__recordNewBootstraps__ = false;
 						
-						var namespaces = this.Doodad.Namespaces,
+						var doodad = this.Doodad,
+							namespaces = doodad.Namespaces,
 							entries = namespaces.Entries;
-						//namespaces.load(__bootstraps__, null, options, false);
+
+						types = doodad.Types;
+						tools = doodad.Tools;
+						
+						if (types.hasDefinePropertyEnabled()) {
+							types.defineProperties(types, {
+								createRoot: {
+									get: function() {
+										return exports.createRoot;
+									},
+								},
+								invoke: {
+									get: function() {
+										return __options__.hooks.invoke;
+									},
+								},
+								getAttribute: {
+									get: function() {
+										return __options__.hooks.getAttribute;
+									},
+								},
+								getAttributes: {
+									get: function() {
+										return __options__.hooks.getAttributes;
+									},
+								},
+								setAttribute: {
+									get: function() {
+										return __options__.hooks.setAttribute;
+									},
+								},
+								setAttributes: {
+									get: function() {
+										return __options__.hooks.setAttributes;
+									},
+								},
+							});
+						};
 						
 						names = types.keys(__bootstraps__);
 						while (name = names.shift()) {
@@ -4269,6 +4378,7 @@
 							var entryType = entries[spec.type || 'Module'];
 							var entry = new entryType(this, spec, nsObjs[name]);
 							var opts = types.get(options, name);
+							entry.objectCreated = true;
 							entry.init(opts);
 							this.DD_REGISTRY.add(name, entry);
 						};

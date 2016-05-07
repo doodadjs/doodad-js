@@ -71,9 +71,9 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.enforceScopes = types.toBoolean(types.get(options, 'enforceScopes'));
-						options.enforcePolicies = types.toBoolean(types.get(options, 'enforcePolicies'));
-						options.publicOnDebug = types.toBoolean(types.get(options, 'publicOnDebug'));
+						options.enforceScopes = types.toBoolean(options.enforceScopes);
+						options.enforcePolicies = types.toBoolean(options.enforcePolicies);
+						options.publicOnDebug = types.toBoolean(options.publicOnDebug);
 						return options;
 					}),
 				};
@@ -423,7 +423,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Object,Class',
@@ -440,7 +440,7 @@
 							return null;
 						};
 						if (types.isObject(obj)) {
-							obj = obj.constructor;
+							obj = types.getType(obj);
 						};
 						if (!obj) {
 							return false;
@@ -503,7 +503,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Object,Class',
@@ -521,7 +521,7 @@
 						};
 						//obj = types.getType(obj);
 						if (types.isObject(obj)) {
-							obj = obj.constructor;
+							obj = types.getType(obj);
 						};
 						if (!obj) {
 							return null;
@@ -529,7 +529,7 @@
 						if ((obj !== doodad.Class) && !types.baseof(doodad.Class, obj)) {
 							return null;
 						};
-						return types.clone(types.getAttribute(obj, '$IMPLEMENTS'));
+						return types.toArray(types.getAttribute(obj, '$IMPLEMENTS'));
 					});
 				
 				types.isMethod = root.DD_DOC(
@@ -568,7 +568,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Object,Class',
@@ -589,25 +589,7 @@
 						if (!types.isLike(obj, doodad.Class)) {
 							return false;
 						};
-						var isType = types.isType(obj),
-							type = types.getType(obj);
-						if (!type) {
-							return false;
-						};
-						var attrs = types.getAttribute(type, '$__ATTRIBUTES');
-						if (!types.hasKey(attrs, name)) {
-							return false;
-						};
-						var attr = attrs[name],
-							extender = attr.EXTENDER;
-						if (!types.isLike(extender, extenders.Method)) {
-							return false;
-						};
-						if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
-							return false;
-						}
-						var method = obj[name];
-						return !((method.METHOD_MODIFIERS || 0) & doodad.MethodModifiers.NotImplemented);
+						return obj.isImplemented(name);
 					});
 				
 				__Internal__.makeInside = function makeInside(fn) {
@@ -887,7 +869,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								paramsDirection: 'rightToLeft',
 								params: {
 									type: {
@@ -905,26 +887,30 @@
 								description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
 					}
 					//! END_REPLACE()
-					, function REGISTER(type) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type), "Invalid type.");
-						
+					, function REGISTER(/*<<< optional*/args, type) {
 						var args;
-						if (arguments.length > 1) {
-							args = type;
-							type = arguments[1];
+						if (arguments.length <= 1) {
+							type = args;
+							args = undefined;
+						};
+						
+						root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type), "Invalid type.");
+
+						if (!types.isSingleton(type) && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+							if ((root.DD_ASSERT || doodad.getOptions().enforcePolicies)) {
+								var mustOverride = type.$MUST_OVERRIDE;
+								if (mustOverride) {
+									throw new exceptions.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
+								};
+							};
+							type = types.INIT(type);
 						};
 						
 						var name = (types.getTypeName(type) || ''),
 							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : ''),
 							isPrivate = (!name || (name.slice(0, 2) === '__'));
 						
-						var retval = type;
-						
-						if (!types.isType(type)) {
-							type = types.getType(type);
-						};
-						
-						types.setAttributes(retval, {
+						types.setAttributes(type, {
 								DD_FULL_NAME: fullName,
 								DD_NAME: name,
 								DD_PARENT: this,
@@ -938,22 +924,12 @@
 							};
 							
 							//this[name] = type;
-							var entry = new entries.Type(root, {name: fullName}, retval);
+							var entry = new entries.Type(root, {name: fullName}, type);
 							entry.init();
 							root.DD_REGISTRY.add(fullName, entry);
 						};
 						
-						if (!types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-							if ((root.DD_ASSERT || doodad.getOptions().enforcePolicies)) {
-								var mustOverride = type.$MUST_OVERRIDE;
-								if (mustOverride) {
-									throw new exceptions.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
-								};
-							};
-							types.INIT(type);
-						};
-						
-						return retval;
+						return type;
 					});
 				
 				types.Namespace.prototype.UNREGISTER = root.DD_DOC(
@@ -2064,7 +2040,7 @@
 							//! REPLACE_BY("null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										attr: {
 											type: 'string',
@@ -2090,36 +2066,37 @@
 								var extender = this;
 								var fn = types.unbox(sourceAttribute);
 								var _caller = function caller(/*paramarray*/) {
-									if (doodad.Stack.isEnabled()) {
-										doodad.Stack.push(types.unbox(_caller.PROTOTYPE.$TYPE_NAME) || '<anonymous>', attr, arguments);
-									};
-
+									var oldSuper,
+										currentCaller,
+										_super,
+										oldCalled = false;
 									try {
+										if (doodad.Stack.isEnabled()) {
+											doodad.Stack.push(types.unbox(_caller.PROTOTYPE.$TYPE_NAME) || '<anonymous>', attr, arguments);
+										};
+
+										oldSuper = types.getAttribute(this, '_super');
+
 										var type = types.getType(this);
-										
-										var oldSuper = types.getAttribute(this, '_super');
 										
 										var result = types.getAttributes(type, ['$CURRENT_DISPATCH', '$CURRENT_CALLER_INDEX']),
 											currentDispatch = result.$CURRENT_DISPATCH,
-											currentCaller = result.$CURRENT_CALLER_INDEX + 1,
 											callers = currentDispatch.CALLERS;
-											
-										types.setAttribute(type, '$CURRENT_CALLER_INDEX', currentCaller);
-										
-										var _super;
+
+										currentCaller = result.$CURRENT_CALLER_INDEX + 1;
 										if (currentCaller < callers.length) {
 											_super = callers[currentCaller];
+											oldCalled = _super.CALLED;
 											_super.CALLED = false;
 										} else {
 											_super = function() {};
 											_super.CALLED = true;
 										};
-										
 										types.setAttribute(this, '_super', _super);
-										
-										var oldSuperCalled = _super.CALLED;
+										types.setAttribute(type, '$CURRENT_CALLER_INDEX', currentCaller);
 										
 										fn = (extender.byReference ? fn : types.unbox(_caller.PROTOTYPE[attr]));
+										
 										var retVal = fn.apply(this, arguments);
 
 										_caller.CALLED = true;
@@ -2146,9 +2123,15 @@
 										
 									} finally {
 										doodad.Stack.pop();
-										_super.CALLED = oldSuperCalled;
-										types.setAttribute(this, '_super', oldSuper);
-										types.setAttribute(type, '$CURRENT_CALLER_INDEX', currentCaller - 1);
+										if (oldSuper !== undefined) {
+											types.setAttribute(this, '_super', oldSuper);
+										};
+										if (currentCaller !== undefined) {
+											types.setAttribute(type, '$CURRENT_CALLER_INDEX', currentCaller - 1);
+										};
+										if (_super !== undefined) {
+											_super.CALLED = oldCalled;
+										};
 									};
 								};
 								return _caller;
@@ -2157,7 +2140,7 @@
 							//! REPLACE_BY("null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										attr: {
 											type: 'string',
@@ -2255,7 +2238,7 @@
 									var oldHostDispatch,
 										oldHostCaller,
 										hostType;
-									if (types.baseof(doodad.Interface, type)) {
+									if (types.baseof(doodad.Interface, type) && this.__host) {
 										hostType = types.getType(this.__host);
 										var result = types.getAttributes(hostType, ['$CURRENT_DISPATCH', '$CURRENT_CALLER_INDEX']),
 											oldHostDispatch = result.$CURRENT_DISPATCH,
@@ -2550,12 +2533,12 @@
 											callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 										};
 										var toRemove = 0;
-										if ((start > 0) && ((callersOrFn[0].METHOD_MODIFIERS || 0) & doodad.MethodModifiers.Replace)) {
+										if ((start > 0) && callersOrFn.length && ((callersOrFn[0].METHOD_MODIFIERS || 0) & doodad.MethodModifiers.Replace)) {
 											// Replace "call firsts"
 											toRemove = start;
 											start = 0;
 										};
-										if ((callersOrFn.length) && ((callersOrFn[callersOrFn.length - 1].METHOD_MODIFIERS || 0) & doodad.MethodModifiers.Replace)) {
+										if (callersOrFn.length && ((callersOrFn[callersOrFn.length - 1].METHOD_MODIFIERS || 0) & doodad.MethodModifiers.Replace)) {
 											// Replace non "call firsts"
 											toRemove = destCallers.length - start;
 										};
@@ -2640,7 +2623,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								options: {
 									type: 'object',
@@ -2654,6 +2637,27 @@
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Method.$inherit({
 						$TYPE_NAME: "JsMethod",
+						
+						dontSetSuper: false,
+						
+						_new: types.SUPER(function _new(/*optional*/options) {
+								this._super(options);
+								this.dontSetSuper = types.get(options, 'dontSetSuper', this.dontSetSuper);
+								return this;
+							}),
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+								return this._super(options) + 
+									',' + (types.get(options, 'dontSetSuper', this.dontSetSuper) ? '1' : '0');
+							}),
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+								options = this._super(options, newOptions, replace);
+								if (replace) {
+									types.fill(['dontSetSuper'], options, this, newOptions);
+								} else {
+									options.dontSetSuper = !!newOptions.dontSetSuper || this.dontSetSuper;
+								};
+								return options;
+							}),
 						
 						callerTemplate: function callerTemplate(attr, sourceAttribute, destAttribute) {
 								var fn = types.unbox(sourceAttribute);
@@ -2691,19 +2695,33 @@
 							//! END_REPLACE()
 							, function jsCallerTemplate(attr, /*optional*/fn, /*optional*/_super) {
 								var _caller;
-								_super = _super || (function(){});
-                                _caller = function caller(/*paramarray*/) {
-                                    var oldSuper = types.getAttribute(this, '_super');
-                                    types.setAttribute(this, '_super', _super);
-                                    try {
-                                        var target = (fn || types.unbox(_caller.PROTOTYPE[attr]));
-                                        return target.apply(this, arguments);
-                                    } catch(ex) {
-                                        throw ex;
-                                    } finally {
-                                        types.setAttribute(this, '_super', oldSuper);
-                                    };
-                                };
+								if (this.dontSetSuper) {
+									_caller = function caller(/*paramarray*/) {
+										var oldSuper = types.getAttribute(this, '_super');
+										try {
+											var target = (fn || types.unbox(_caller.PROTOTYPE[attr]));
+											return target.apply(this, arguments);
+										} catch(ex) {
+											throw ex;
+										} finally {
+											types.setAttribute(this, '_super', oldSuper);
+										};
+									};
+								} else {
+									_super = _super || (function(){});
+									_caller = function caller(/*paramarray*/) {
+										var oldSuper = types.getAttribute(this, '_super');
+										types.setAttribute(this, '_super', _super);
+										try {
+											var target = (fn || types.unbox(_caller.PROTOTYPE[attr]));
+											return target.apply(this, arguments);
+										} catch(ex) {
+											throw ex;
+										} finally {
+											types.setAttribute(this, '_super', oldSuper);
+										};
+									};
+								};
 								return _caller;
 							}),
 						dispatchTemplate: function dispatchTemplate(attr, boxedCallers) {
@@ -2874,7 +2892,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: 'EventHandler',
 							description: "Event handler prototype.",
@@ -2888,6 +2906,7 @@
 							obj: null,
 							extender: null,
 							stack: null,
+							stackSize: 10,
 							sorted: true,
 							
 							attach: root.DD_DOC(
@@ -2963,10 +2982,12 @@
 											};
 										};
 										return false;
-									} else {
+									} else if (this.stack.length < this.stackSize) {
 										this.stack.push([obj, fn, priority, datas, count]);
 										this.sorted = false;
 										return true;
+									} else {
+										throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [types.getFunctionName(this)]);
 									};
 								}),
 							detach: root.DD_DOC(
@@ -3070,7 +3091,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: null,
 										returns: 'Promise',
 										description: "Creates a promise for an event.",
@@ -3078,16 +3099,11 @@
 								//! END_REPLACE()
 								, function promise() {
 									// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-									var canReject = this.extender.canReject;
 									var self = this;
 									var Promise = types.getPromise();
 									return new Promise(function(resolve, reject) {
 										self.attachOnce(null, function(ev) {
-											if (canReject && (ev instanceof doodad.ErrorEvent)) {
-												return reject.call(self.obj, ev);
-											} else {
-												return resolve.call(self.obj, ev);
-											};
+											return resolve(ev);
 										});
 									});
 								}),
@@ -3117,28 +3133,9 @@
 						eventsImplementation: 'Doodad.MixIns.Events',
 						
 						enableScopes: false,
-						canReject: true,
 						
 						eventProto: doodad.EventHandler,
 						
-						_new: types.SUPER(function _new(/*optional*/options) {
-								this._super(options);
-								this.canReject = types.get(options, 'canReject', this.canReject);
-							}),
-						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-								return this._super(options) + 
-									',' + types.get(options, 'canReject', this.canReject);
-							}),
-						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-								options = this._super(options, newOptions, replace);
-								if (replace) {
-									types.fill(['canReject'], options, this, newOptions);
-								} else {
-									options.canReject = !!newOptions.canReject || this.canReject;
-								};
-								return options;
-							}),
-
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto) {
 								if (root.DD_ASSERT) {
 									if (!types.hasKey(destAttributes, this.eventsAttr) && !types.hasKey(types.unbox(destAttributes.$IMPLEMENTS), this.eventsImplementation)) {
@@ -3723,7 +3720,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								fn: {
 									type: 'function',
@@ -3736,7 +3733,7 @@
 					}
 					//! END_REPLACE()
 					, function ERROR_EVENT(/*optional*/fn) {
-						return doodad.OPTIONS({canReject: false}, doodad.EVENT(false, fn));
+						return doodad.EVENT(false, fn);
 					});
 
 				doodad.RAW_EVENT = root.DD_DOC(
@@ -5007,10 +5004,10 @@
 					};
 					
 					if (sourceImplements) {
-						//types.complete(_implements, sourceImplements);
-						//NOT COMPATIBLE for (var item of sourceImplements) { 
+						var isIsolated = types.isIsolated(source);
+						//NOT COMPATIBLE: for (var item of sourceImplements) { 
 						sourceImplements.forEach(function(item) {
-							if (!_implements.has(item)) {
+							if ((!isIsolated || types.isIsolated(item)) && !_implements.has(item)) {
 								_implements.add(item);
 							};
 						});
@@ -5029,7 +5026,21 @@
 							if (!_isolated.has(_interface)) {
 								data = types.clone(data);
 								data[6] = null; // clear constructed type (see "getInterface")
+
 								_isolated.set(_interface, data);
+
+								var impls = types.getAttribute(_interface, '$IMPLEMENTS').values(),
+									impl;
+									
+								while (impl = impls.next()) {
+									if (impl.done) {
+										break;
+									};
+									impl = impl.value;
+									if (types.isIsolated(impl) && !_isolated.has(impl)) {
+										_isolated.set(impl, data);
+									};
+								};
 							};
 						});
 					};
@@ -5039,7 +5050,6 @@
 					var sourceIsClass = types.isClass(source),
 						sourceName = (sourceIsClass ? types.getTypeName(source) : types.unbox(source.$TYPE_NAME));
 
-					//if (!sourceIsClass || (sourceName && !_implements.has(source))) {
 					if (!sourceIsClass || !_implements.has(source)) {
 						if (!types.baseof(source, base)) { // prevents cyclic extend
 							if (root.DD_ASSERT || doodad.getOptions().enforcePolicies) {
@@ -5060,25 +5070,45 @@
 							};
 							
 							if (types.isIsolated(source) && !types.isIsolated(base)) {
-								_implements.add(source);
-								var protoName = (sourceName ? sourceName + '_Interface' : null);
-								base = doodad.Interface;
-								baseIsClass = true;
-								_implements = new types.Set();
-								typeStorage = {};
-								instanceStorage = {};
-								destAttributes = __Internal__.getDefaultAttributes(base, _implements, typeStorage, instanceStorage, null, null, proto, protoName);
-								var typeProto = {
-									$TYPE_NAME: protoName,
+								if (!_implements.has(source)) {
+									var protoName = (sourceName ? sourceName + '_Interface' : null);
+									base = doodad.Interface;
+									baseIsClass = true;
+									var newImplements = new types.Set();
+									typeStorage = {};
+									instanceStorage = {};
+									destAttributes = __Internal__.getDefaultAttributes(base, newImplements, typeStorage, instanceStorage, null, null, proto, protoName);
+									var typeProto = {
+										$TYPE_NAME: protoName,
+									};
+									
+									_implements.add(source);
+									var data = [/*0*/ typeProto, /*1 : instanceProto*/ {}, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 : type*/ null];
+									_isolated.set(source, data);
+									var impls = types.getAttribute(source, '$IMPLEMENTS').values(),
+										impl;
+									while (impl = impls.next()) {
+										if (impl.done) {
+											break;
+										};
+										impl = impl.value;
+										if (types.isIsolated(impl)) {
+											if (!_implements.has(impl)) {
+												_implements.add(impl);
+											};
+											_isolated.set(impl, data);
+										};
+									};
+									
+									_implements = newImplements;
+									
+									var sourceData = types.getAttributes(base, ['$BASE', '$IMPLEMENTS', '$__ATTRIBUTES', '$ISOLATED']);
+									baseAttributes = sourceData.$__ATTRIBUTES;
+									__Internal__.addImplements(_implements, destAttributes, _isolated, base, sourceData.$BASE, sourceData.$IMPLEMENTS, baseAttributes, sourceData.$ISOLATED);
 								};
-								_isolated.set(source, [/*0*/ typeProto, /*1 : instanceProto*/ {}, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 : type*/ null]);
-								
-								var sourceData = types.getAttributes(base, ['$BASE', '$IMPLEMENTS', '$__ATTRIBUTES', '$ISOLATED']);
-								baseAttributes = sourceData.$__ATTRIBUTES;
-								__Internal__.addImplements(_implements, destAttributes, _isolated, base, sourceData.$BASE, sourceData.$IMPLEMENTS, baseAttributes, sourceData.$ISOLATED);
 							};
-
-							var sourceAttributes;
+							
+							var sourceAttributes = undefined;
 							if (sourceIsClass) {
 								var sourceData = types.getAttributes(source, ['$BASE', '$IMPLEMENTS', '$__ATTRIBUTES', '$ISOLATED']);
 								sourceAttributes = sourceData.$__ATTRIBUTES;
@@ -5501,7 +5531,7 @@
 
 								__Internal__.initializeAttributes(type, attributes, typeStorage, instanceStorage, true);
 
-								types.INIT(type, [cls]);
+								type = types.INIT(type, [cls]);
 							};
 							if (!types.baseof(doodad.Interface, type)) {
 								return null;
@@ -5596,24 +5626,24 @@
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: null,
 								returns: 'undefined',
 								description: "Prevents the need to call '_super'. Use when '_super' is conditionally called.",
 						}
 						//! END_REPLACE()
-						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
+						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
 						function overrideSuper() {
 							if (this._super) {
 								this._super.CALLED = true;
 							};
-						}))))),
+						})))))),
 				
 					_implements: root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										cls: {
 											type: 'arrayof(Class),Class',
@@ -5635,7 +5665,7 @@
 							for (var i = 0; i < clsLen; i++) {
 								var cl = cls[i];
 								if (types.isObject(cl)) {
-									cl = cl.constructor;
+									cl = types.getType(cl);
 								};
 								if (!cl) {
 									continue;
@@ -5650,6 +5680,45 @@
 							return false;
 						}))))),
 						
+					isImplemented: root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										name: {
+											type: 'string',
+											optional: false,
+											description: "Method name.",
+										},
+									},
+									returns: 'bool',
+									description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
+						}
+						//! END_REPLACE()
+						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
+						function isImplemented(name) {
+							var isType = types.isType(this),
+								type = types.getType(this);
+							if (!type) {
+								return false;
+							};
+							var attrs = type.$__ATTRIBUTES;
+							if (!types.hasKey(attrs, name)) {
+								return false;
+							};
+							var attr = attrs[name],
+								extender = attr.EXTENDER;
+							if (!types.isLike(extender, extenders.Method)) {
+								return false;
+							};
+							if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
+								return false;
+							}
+							var method = types.getAttribute(this, name);
+							return !((method.METHOD_MODIFIERS || 0) & doodad.MethodModifiers.NotImplemented);
+						}))))),
+
 					_superFrom: root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
@@ -5679,7 +5748,7 @@
 							};
 							
 							if (!this._implements(cls)) {
-								throw new types.TypeError(tools.format("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || '<anonymous>', types.getTypeName(this) || '<anonymous>']));
+								throw new types.TypeError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || '<anonymous>', types.getTypeName(this) || '<anonymous>']);
 							};
 							
 							if (!types.isType(this)) {
@@ -5689,7 +5758,7 @@
 							var name = dispatch.METHOD_NAME;
 
 							if (!types.isMethod(cls, name)) {
-								throw new types.TypeError(tools.format("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || '<anonymous>']));
+								throw new types.TypeError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || '<anonymous>']);
 							};
 
 							this.overrideSuper();
@@ -5738,13 +5807,13 @@
 						__host: doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(null)))),
 						
 						_new: doodad.SUPER(function _new(host) {
-							root.DD_ASSERT && root.DD_ASSERT((types.isClass(this) && types.isClass(host)) || (types.isObject(this) && types._instanceof(host, doodad.Class)), "Invalid host.");
+							var retval = this._super();
 							
-							this._super();
+							root.DD_ASSERT && root.DD_ASSERT((types.isClass(retval) && types.isClass(host)) || (types.isObject(retval) && types._instanceof(host, doodad.Class)), "Invalid host.");
+								
+							types.setAttribute(retval, '__host', host);
 							
-							types.setAttribute(this, '__host', host);
-							
-							return this;
+							return retval;
 						}),
 					}))));
 				
@@ -6272,7 +6341,7 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								data: {
 									type: 'any',
@@ -6305,7 +6374,7 @@
 
 							this._super();
 							
-							this.data = data;
+							this.data = data || {};
 						}),
 						
 						preventDefault: root.DD_DOC(
@@ -6410,6 +6479,9 @@
 					}
 					//! END_REPLACE()
 					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+						if (fn instanceof types.Callback) {
+							return fn;
+						};
 						var attr;
 						if (types.isString(fn)) {
 							attr = fn;
@@ -6433,6 +6505,56 @@
 						callback = types.setPrototypeOf(callback, doodad.Callback);
 						return callback;
 					}, types.Callback));
+				
+				doodad.AsyncCallback = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								obj: {
+									type: 'object,Object',
+									optional: true,
+									description: "Object to bind with the callback function.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Callback function.",
+								},
+							},
+							returns: 'function',
+							description: "Creates an asynchronous callback handler.",
+					}
+					//! END_REPLACE()
+					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+						if (fn instanceof types.Callback) {
+							return fn;
+						};
+						var attr;
+						if (types.isString(fn)) {
+							attr = fn;
+							fn = obj[attr];
+						};
+						var isCreatable = types._implements(obj, mixIns.Creatable);
+						var callback = function callbackHandler(/*paramarray*/) {
+							tools.callAsync(function async(/*paramarray*/) {
+								try {
+									if (!obj || !isCreatable || !obj.isDestroyed()) {
+										return root.getOptions().hooks.invoke(obj, fn, arguments);
+									};
+								} catch(ex) {
+									if (ex instanceof types.ScriptAbortedError) {
+										throw ex;
+									} else {
+										doodad.trapException(obj, attr, ex);
+									};
+								};
+							}, 0, obj, arguments);
+						};
+						callback = types.setPrototypeOf(callback, doodad.AsyncCallback);
+						return callback;
+					}, doodad.Callback));
 				
 				//==================================
 				// Serializable objects

@@ -110,6 +110,111 @@
 			"client": false,
 			"server": true,
 			"browserify": false
+		},
+		{
+			"src": "test/Unit_Tools.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Array.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Dictionary.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Files.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Files_Path.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Files_Urls.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_Misc.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Tools_String.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_Array.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_Conversion.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_Dictionary.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_Is.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_ToSource.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
+		},
+		{
+			"src": "test/Unit_Types_Type.js",
+			"client": true,
+			"server": true,
+			"browserify": true,
+			"test": true
 		}
 	],
 	"tasks": {
