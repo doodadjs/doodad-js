@@ -56,8 +56,8 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.enableDomObjectsModel = types.toBoolean(types.get(options, 'enableDomObjectsModel'));
-						options.defaultScriptTimeout = parseInt(types.get(options, 'defaultScriptTimeout'));
+						options.enableDomObjectsModel = types.toBoolean(options.enableDomObjectsModel);
+						options.defaultScriptTimeout = parseInt(options.defaultScriptTimeout);
 						return options;
 					}),
 				};
@@ -81,6 +81,8 @@
 
 
 				var __Internal__ = {
+					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
+					
 					loadedScripts: {},   // <FUTURE> global to every thread
 				};
 
@@ -95,7 +97,6 @@
 					windowObject: global.Object,
 
 					// DOM
-					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					windowWindow: (types.isNativeFunction(global.Window) ? global.Window : undefined),
 					windowNode: (types.isNativeFunction(global.Node) ? global.Node : undefined),
 					windowHtmlDocument: (types.isNativeFunction(global.HTMLDocument) ? global.HTMLDocument : undefined),
@@ -123,6 +124,12 @@
 					
 					// callAsync
 					windowSetTimeout: global.setTimeout,
+					
+					// isEvent
+					windowEventConstructor: types.isFunction(global.Event) ? global.Event : global.Event.constructor,
+					
+					// callAsync
+					mathMax: global.Math.max,
 				};
 				
 				
@@ -230,7 +237,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 2,
 								params: {
 									fn: {
 										type: 'function',
@@ -261,7 +268,7 @@
 						if (types.isNothing(delay)) {
 							delay = 1;
 						} else {
-							delay = Math.max(delay, 1); // can't be less than 1 ms
+							delay = __Natives__.mathMax(delay, 1);
 						};
 						if (!types.isNothing(thisObj) || !types.isNothing(args)) {
 							fn = types.bind(thisObj, fn, args);
@@ -272,6 +279,26 @@
 				//===================================
 				// Client functions
 				//===================================
+				
+				client.isEvent = root.DD_DOC(
+				//! REPLACE_BY("null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' when the object is a DOM 'event' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isEvent(obj) {
+					return obj instanceof __Natives__.windowEventConstructor;
+				});
 				
 				client.isWindow = root.DD_DOC(
 				//! REPLACE_BY("null")
@@ -322,7 +349,7 @@
 							description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlDocument ? (function isDocument(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowHtmlDocument ? (function isDocument(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -362,7 +389,7 @@
 							description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowNode ? (function isNode(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowNode ? (function isNode(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {
@@ -403,7 +430,7 @@
 							description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Natives__.documentHasParentWindow && __Natives__.windowHtmlElement ? (function isElement(obj) {
+				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowHtmlElement ? (function isElement(obj) {
 					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 					// NOTE: Browsers really need to review their objects model.
 					if (!obj) {

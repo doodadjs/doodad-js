@@ -1,20 +1,21 @@
 {
   "name": "doodad-js",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "stage": "r",
   "description": "Object-oriented programming framework for Javascript",
   "config": {
     "startup": {
-		"fromSource": "0",
+		"fromSource": false,
 		"nodeEnvDevValues": "development,dev",
-		"enableProperties": "0"
+		"enableProperties": false,
+		"loadTests": false
 	},
     "Doodad__Types": {
       "toSourceItemsCount": "255",
-      "enableProxies": "0"
+      "enableProxies": false
     },
     "Doodad__Tools": {
-      "logLevel": "-1"
+      "logLevel": -1
     },
     "Doodad__Tools__Config": {
       "configPath": ""
@@ -23,9 +24,9 @@
 		"modulesUri": "./"
 	},
     "Doodad": {
-        "enforceScopes": "0",
-        "enforcePolicies": "0",
-        "publicOnDebug": "0"
+        "enforceScopes": false,
+        "enforcePolicies": false,
+        "publicOnDebug": false
     }
   },
   "files": [

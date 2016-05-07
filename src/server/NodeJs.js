@@ -131,7 +131,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									fn: {
 										type: 'function',
@@ -160,9 +160,11 @@
 					//! END_REPLACE()
 					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args) {
 						if (types.isNothing(delay)) {
-							delay = 1;
+							delay = -1;
 						};
-						if (!types.isNothing(thisObj) || !types.isNothing(args)) {
+						if (types.isClass(types.getType(thisObj))) {
+							fn = types.bind(null, types.invoke, [thisObj, fn, args]);
+						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
 							fn = types.bind(thisObj, fn, args);
 						};
 						if (delay === 0) {
@@ -1170,7 +1172,7 @@
 								return readdir(null, path, (relative ? files.Path.parse('./', {os: 'linux'}) : null), depth);
 							} else {
 								if (depth >= 0) {
-									throw new types.NotSupported("'depth' is not supported for the syncronous operation.");
+									throw new types.NotSupported("'depth' is not supported for the synchronous operation.");
 								};
 								const files = nodeFs.readdirSync(path.toString({
 										os: null,
@@ -1405,7 +1407,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									path: {
 										type: 'string,Url,Path',
@@ -1450,30 +1452,32 @@
 								fileCallbacks = __Internal__.watchedFiles[path];
 							} else {
 								fileCallbacks = [];
-								nodeFs.watch(path, {persistent: false}, function(event, filename) {
-									try {
-										const callbacks = __Internal__.watchedFiles[path];
-										for (let i = callbacks.length - 1; i >= 0; i--) {
-											let callback = callbacks[i];
-											if (callback) {
-												try {
-													callback.apply(this, arguments);
-												} catch(ex) {
-												};
-												if (types.get(callback.__OPTIONS__, 'once', false)) {
-													callback = null;
-												};
+								nodeFs.watch(path, {persistent: false}, new doodad.Callback(this, function(event, filename) {
+									const callbacks = __Internal__.watchedFiles[path];
+									for (let i = callbacks.length - 1; i >= 0; i--) {
+										let callback = callbacks[i];
+										if (callback) {
+											try {
+												callback.apply(null, arguments);
+											} catch(ex) {
 											};
-											if (!callback) {
-												callbacks.splice(i, 0);
+											if (types.get(callback.__OPTIONS__, 'once', false)) {
+												callback = null;
 											};
 										};
-									} catch(ex) {
+										if (!callback) {
+											callbacks.splice(i, 1);
+										};
 									};
-								});
+								}));
 							};
 							
+							const cbObj = types.get(options, 'callbackObj');
+							
 							tools.forEach(callbacks, function(callback) {
+								if (!(callback instanceof types.Callback)) {
+									callback = new doodad.Callback(cbObj, callback);
+								};
 								callback.__OPTIONS__ = options;
 							});
 							
@@ -1742,7 +1746,7 @@
 				//! REPLACE_BY("null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: null,
 							description: "NodeJs event handler prototype.",
@@ -1764,20 +1768,21 @@
 							let ignore = false;
 							
 							const createHandler = function(emitter, type) {
-								return function nodeEventHandler(/*paramarray*/) {
+								const handler = new doodad.Callback(self.obj, function nodeEventHandler(/*paramarray*/) {
 									if (!ignore) {
 										if (once) {
 											ignore = true;
-											self.clear();
+											self.detach(self.obj, handler);
 										};
 										const ctx = {
 											emitter: emitter,
 											type: type,
 											data: context,
 										};
-										return types.invoke(self.obj, self, types.append([ctx], arguments));
+										return self.apply(this, types.append([ctx], arguments));
 									};
-								};
+								});
+								return handler;
 							};
 							
 							const eventTypes = this.extender.types;
@@ -1844,13 +1849,19 @@
 							const self = this;
 							const Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
-								self.attachOnce(emitters, context, function(ev) {
-									if (canReject && (ev instanceof doodad.ErrorEvent)) {
-										return reject.call(self.obj, ev);
-									} else {
-										return resolve.call(self.obj, ev);
-									};
-								});
+								if (canReject) {
+									self.attachOnce(emitters, context, function(context, err /*, paramarray*/) {
+										if (canReject && types.isError(err)) {
+											return reject(err);
+										} else {
+											return resolve(types.toArray(arguments));
+										};
+									});
+								} else {
+									self.attachOnce(emitters, context, function(/*paramarray*/) {
+										return resolve(types.toArray(arguments));
+									});
+								};
 							});
 						},
 					}
@@ -1860,7 +1871,7 @@
 				//! REPLACE_BY("null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: null,
 							description: "Node.Js event extender.",
@@ -1871,6 +1882,7 @@
 					
 					eventsAttr: '__NODE_EVENTS',
 					eventsImplementation: 'Doodad.MixIns.NodeEvents',
+					canReject: true,
 					types: null,
 					
 					enableScopes: true,
@@ -1879,18 +1891,22 @@
 					
 					_new: types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
+						this.canReject = types.get(options, 'canReject', this.canReject);
 						this.types = types.get(options, 'types', this.types);
 					}),
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-						if (types.isNothing(options)) {
-							options = {};
-						};
 						return this._super(options) + 
+							',' + types.get(options, 'canReject', this.canReject) +
 							',' + types.unique(types.get(options, 'types', this.types)).sort().join('|');
 					}),
-					overrideOptions: types.SUPER(function overrideOptions(options, newOptions) {
-						this._super(options, newOptions);
-						options.types = types.unique([], newOptions.types, this.types);
+					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							types.fill(['canReject', 'types'], options, this, newOptions);
+						} else {
+							options.canReject = !!newOptions.canReject || this.canReject;
+							options.types = types.unique([], newOptions.types, this.types);
+						};
 						return options;
 					}),
 				})));
@@ -1936,10 +1952,29 @@
 					onnewListener: doodad.RAW_EVENT(),
 					onremoveListener: doodad.RAW_EVENT(),
 
+					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
+						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].attach(null, listener, 10);
+							this.emit('newListener', event, listener);
+						};
+						return this;
+					}),
+					
+					prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							this[name].attach(null, listener, 10, null, 1);
+							this.emit('newListener', event, listener);
+						};
+						return this;
+					}),
+					
 					addListener: doodad.PUBLIC(function addListener(event, listener) {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							this[name].attach(listener);
+							this[name].attach(null, listener);
 							this.emit('newListener', event, listener);
 						};
 						return this;
@@ -1954,21 +1989,33 @@
 					}),
 					
 					getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
-						// TODO:
-						return 999999;
+						let max = 10; // NodeJs default value
+						if (this.__EVENTS.length) {
+							max = this[this.__EVENTS[0]].stackSize;
+						};
+						return max;
 					}),
 					
 					listenerCount: doodad.PUBLIC(function listenerCount(event) {
-						// TODO:
-						return 0;
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							const stack = this[name].stack;
+							return stack && stack.length || 0;
+						};
 					}),
 					
 					listeners: doodad.PUBLIC(function listeners(event) {
-						// TODO:
-						return [];
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							const stack = this[name].stack;
+							return stack && types.map(stack, function(ev) {
+								return ev[1]; // fn
+							}) || [];
+						};
 					}),
 					
 					on: doodad.PUBLIC(function on(event, listener) {
+						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
 							this[name].attach(null, listener);
@@ -1987,10 +2034,11 @@
 					}),
 					
 					removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
-						const name = 'on' + event;
-						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							this[name].clear();
-							//TODO:  this.emit('removeListener', event, listener);
+						const listeners = this.listeners(event);
+						if (listeners) {
+							for (let i = 0; i < listeners.length; i++) {
+								this.removeListener(event, listeners[i]);
+							};
 						};
 						return this;
 					}),
@@ -2004,8 +2052,10 @@
 						return this;
 					}),
 					
-					setMaxListeners: doodad.PUBLIC(function setMaxListeners() {
-						// TODO:
+					setMaxListeners: doodad.PUBLIC(function setMaxListeners(number) {
+						for (let i = 0; i < this.__EVENTS; i++) {
+							this[this.__EVENTS[i]].stackSize = number;
+						};
 						return this;
 					}),
 				}))));

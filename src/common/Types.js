@@ -49,8 +49,8 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.toSourceItemsCount = parseInt(types.get(options, 'toSourceItemsCount'));
-						var val = types.get(options, 'enableProxies');
+						options.toSourceItemsCount = parseInt(options.toSourceItemsCount);
+						var val = options.enableProxies;
 						options.enableProxies = (val === 'true') || !!val; // "toBoolean"
 						return options;
 					}),
@@ -133,8 +133,8 @@
 					
 					// ES6
 					windowPromise: (types.isNativeFunction(global.Promise) ? global.Promise : undefined),
-					windowSet: (types.isNativeFunction(global.Set) ? global.Set : undefined),
-					windowMap: (types.isNativeFunction(global.Map) ? global.Map : undefined),
+					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
+					windowMap: (types.isNativeFunction(global.Map) && types.isNativeFunction(global.Map.prototype.values) && types.isNativeFunction(global.Map.prototype.keys) ? global.Map : undefined),
 					windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
 
 					// "toArray"
@@ -872,50 +872,6 @@
 									var key = __Natives__.defaultNonEnumerables[i];
 									if (hasKeyInherited(key)) {
 										result.push(key);
-									};
-								};
-							};
-						};
-						
-						return result;
-					});
-				
-				types.complete = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									paramarray: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'object',
-								description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
-					}
-					//! END_REPLACE()
-					, function complete(/*paramarray*/obj) {
-						var result;
-						if (!types.isNothing(obj)) {
-							result = __Natives__.windowObject(obj);
-							var len = arguments.length;
-							for (var i = 1; i < len; i++) {
-								obj = arguments[i];
-								if (types.isNothing(obj)) {
-									continue;
-								};
-								// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-								obj = __Natives__.windowObject(obj);
-								var keys = types.keys(obj),
-									keysLen = keys.length, // performance
-									j, 
-									key;
-								for (j = 0; j < keysLen; j++) {
-									key = keys[j];
-									if (!types.hasKey(result, key)) {
-										result[key] = obj[key];
 									};
 								};
 							};
@@ -2121,6 +2077,9 @@
 					}
 					//! END_REPLACE()
 					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+						if (fn instanceof types.Callback) {
+							return fn;
+						};
 						var newFn = types.makeInside(obj, fn);
 						var callback = function callbackHandler(/*paramarray*/) {
 							try {
@@ -2155,7 +2114,7 @@
 								revision: 0,
 								params: null,
 								returns: 'bool',
-								description: "Returns 'true' if engine supports iterators. Returns 'false' otherwise.",
+								description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, (__Natives__.windowSymbolIterator ? function hasIterators(obj) {
@@ -2192,7 +2151,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -2204,11 +2163,9 @@
 								description: "Returns 'true' if object is an iterator. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.windowSymbolIterator ? function isIterator(obj) {
+					, function isIterator(obj) {
 						return types.isObjectLike(obj) && types.isFunction(obj.next);
-					} : function isIterator(obj) {
-						return false;
-					}));
+					});
 				
 				
 				//===================================
@@ -2258,7 +2215,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -2273,7 +2230,7 @@
 					, (__Natives__.functionIsGenerator ? function isGeneratorFunction(obj) {
 						return __Natives__.functionIsGenerator.call(obj);
 					} : (__Natives__.GeneratorFunction ? function isGeneratorFunction(obj) {
-						return (Object(obj) instanceof __Natives__.GeneratorFunction);
+						return (__Natives__.windowObject(obj) instanceof __Natives__.GeneratorFunction);
 					} : function isGeneratorFunction(obj) {
 						return false;
 					})));
@@ -2669,6 +2626,74 @@
 					});
 					
 					
+				types.Iterator = types.Type.$inherit(
+					{
+						$TYPE_NAME: 'Iterator',
+					},
+					{
+						close: null, // function()
+						
+						next: function next() {
+							return {
+								done: true,
+							};
+						},
+					})
+					
+				__Internal__.SetIterator = (!__Natives__.windowSet && types.Iterator.$inherit(
+					{
+						$TYPE_NAME: 'SetIterator',
+					},
+					{
+						__index: 0,
+						__set: null,
+						
+						_new: types.SUPER(function _new(setObj) {
+							this._super();
+							this.__set = setObj;
+						}),
+					}))
+					
+				__Internal__.SetValuesIterator = (!__Natives__.windowSet && __Internal__.SetIterator.$inherit(
+					{
+						$TYPE_NAME: 'SetValuesIterator',
+					},
+					{
+						next: function next() {
+							var ar = this.__set.__ar;
+							if (this.__index < ar.length) {
+								return {
+									value: ar[this.__index++],
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}))
+					
+				__Internal__.SetEntriesIterator = (!__Natives__.windowSet && __Internal__.SetIterator.$inherit(
+					{
+						$TYPE_NAME: 'SetEntriesIterator',
+					},
+					{
+						next: function next() {
+							var ar = this.__set.__ar;
+							if (this.__index < ar.length) {
+								var val = ar[this.__index++];
+								return {
+									value: [val, val],
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}))
+					
+					
 				types.Set = (__Natives__.windowSet || types.Type.$inherit(
 					/*typeProto*/
 					{
@@ -2679,19 +2704,27 @@
 						size: 0,
 						__ar: null,
 
-						_new: function _new(/*optional*/ar) {
+						_new: types.SUPER(function _new(/*optional*/ar) {
+							this._super();
+							
 							if (types.isNothing(ar)) {
 								this.__ar = [];
 							} else if (ar instanceof types.Set) {
-								this.__ar = ar.values();
+								this.__ar = types.clone(ar.__ar);
 							} else if (ar instanceof types.Map) {
-								this.__ar = ar.entries();
+								var mapAr = ar.__keys,
+									mapVals = ar.__values,
+									newAr = new Array(mapAr.length);
+								for (var i = 0; i < mapAr.length; i++) {
+									newAr[i] = [mapAr[i], mapVals[i]];
+								};
+								this.__ar = newAr;
 							} else if (types.isArrayLike(ar)) {
 								this.__ar = types.unique(ar);
 							} else {
 								throw types.TypeError("Invalid array.");
 							};
-						},
+						}),
 						has: function has(value) {
 							for (var i = 0; i < this.__ar.length; i++) {
 								if (this.__ar[i] === value) {
@@ -2722,19 +2755,13 @@
 							this.size = 0;
 						},
 						keys: function keys() {
-							return types.clone(this.__ar);
+							return new __Internal__.SetValuesIterator(this);
 						},
 						values: function values() {
-							return types.clone(this.__ar);
+							return new __Internal__.SetValuesIterator(this);
 						},
 						entries: function entries() {
-							var ar = this.__ar,
-								len = ar.length,
-								newAr = Array(len);
-							for (var key = 0; key < len; key++) {
-								var val = ar[key];
-								newAr[key] = [val, val];
-							};
+							return new __Internal__.SetEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
 							for (var i = 0; i < this.__ar.length; i++) {
@@ -2749,6 +2776,79 @@
 					}
 				));
 				
+				__Internal__.MapIterator = (!__Natives__.windowMap && types.Iterator.$inherit(
+					{
+						$TYPE_NAME: 'MapIterator',
+					},
+					{
+						__index: 0,
+						__map: null,
+						
+						_new: types.SUPER(function _new(mapObj) {
+							this._super();
+							this.__map = mapObj;
+						}),
+					}))
+					
+				__Internal__.MapKeysIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+					{
+						$TYPE_NAME: 'MapKeysIterator',
+					},
+					{
+						next: function next() {
+							var ar = this.__map.__keys;
+							if (this.__index < ar.length) {
+								return {
+									value: ar[this.__index++],
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}))
+					
+				__Internal__.MapValuesIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+					{
+						$TYPE_NAME: 'MapValuesIterator',
+					},
+					{
+						next: function next() {
+							var ar = this.__map.__values;
+							if (this.__index < ar.length) {
+								return {
+									value: ar[this.__index++],
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}))
+					
+				__Internal__.MapEntriesIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+					{
+						$TYPE_NAME: 'MapEntriesIterator',
+					},
+					{
+						next: function next() {
+							var ar = this.__map.__keys,
+								vals = this.__map.__values;
+							if (this.__index < ar.length) {
+								return {
+									value: [ar[this.__index], vals[this.__index++]],
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}))
+					
+					
 				types.Map = (__Natives__.windowMap || types.Type.$inherit(
 					/*typeProto*/
 					{
@@ -2760,7 +2860,9 @@
 						__keys: null,
 						__values: null,
 
-						_new: function _new(ar) {
+						_new: types.SUPER(function _new(ar) {
+							this._super();
+							
 							if (types.isNothing(ar)) {
 								// Do nothing
 							} else if (ar instanceof types.Map) {
@@ -2785,7 +2887,7 @@
 									this.__values.push(item[1]);
 								};
 							};
-						},
+						}),
 						has: function has(key) {
 							for (var i = 0; i < this.__keys.length; i++) {
 								if (this.__keys[i] === key) {
@@ -2826,19 +2928,13 @@
 							this.size = 0;
 						},
 						keys: function keys() {
-							return types.clone(this.__keys);
+							return new __Internal__.MapKeysIterator(this);
 						},
 						values: function values() {
-							return types.clone(this.__values);
+							return new __Internal__.MapValuesIterator(this);
 						},
 						entries: function entries() {
-							var values = this.__values;
-							var ar = this.__ar,
-								len = ar.length,
-								newAr = Array(len);
-							for (var key = 0; key < len; key++) {
-								newAr[key] = [key, ar[key]];
-							};
+							return new __Internal__.MapEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
 							for (var i = 0; i < this.__keys.length; i++) {

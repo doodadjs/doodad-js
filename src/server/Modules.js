@@ -208,7 +208,7 @@
 									type: makeManifest.type,
 									version: manifest.version + (manifest.stage || 'd'),
 									dependencies: tools.filter(makeManifest.dependencies, function(dep) {
-										return dep.server;
+										return dep.server && !dep.manual && !dep.test;
 									}),
 									
 									create: function create(root, /*optional*/_options) {
@@ -219,7 +219,7 @@
 											fromSource = root.getOptions().fromSource;
 										
 										const files = tools.map(tools.filter(makeManifest.modules, function(mod) {
-											return mod.server;
+											return mod.server && !mod.manual && !mod.test;
 										}), function(mod) {
 											return (fromSource 
 												?

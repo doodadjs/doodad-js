@@ -67,7 +67,7 @@ exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
 		};
 
 		//! FOR_EACH(VAR("modulesSrc"), "mod")
-			//! IF(!(VAR("mod.manual")))
+			//! IF(!VAR("mod.manual"))
 				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
 			//! END_IF()
 		//! END_FOR()

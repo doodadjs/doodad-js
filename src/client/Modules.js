@@ -161,7 +161,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									module: {
 										type: 'string',
@@ -185,24 +185,28 @@
 					//! END_REPLACE()
 					, function load(module, /*optional*/files, /*optional*/options) {
 						var opts = {};
+						var fromSource = root.getOptions().fromSource;
+						global.DD_MODULES = {};
 						return modules.loadFiles(module, 'config.json', options)
 							.nodeify(function(err, _files) {
 								if (!err) {
 									types.depthExtend(2, opts, _files[0].content, options);
 								};
-								return modules.loadFiles(module, files || 'index.js', options);
+								return modules.loadFiles(module, files || (fromSource ? 'index.js' : 'bundle.js'), options);
 							})
 							.then(function(_files) {
 								// <FUTURE>
 								//var DD_MODULES = {};
 								//tools.forEach(_files, function(file) {
-								//	var mod = file.content;
+								//	var mod = file.exports;
 								//	mod.add(DD_MODULES);
 								//	return mod;
 								//});
 								//return namespaces.load(DD_MODULES, null, opts, false);
 								// </FUTURE>
-								return namespaces.load(global.DD_MODULES, null, opts, false);
+								var retval = namespaces.load(global.DD_MODULES, null, opts, false);
+								delete global.DD_MODULES;
+								return retval;
 							});
 					});
 				
