@@ -107,13 +107,15 @@
 					//! END_REPLACE()
 					, function locate(module, /*optional*/file, /*optional*/options) {
 						const Promise = types.getPromise();
-						let location = files.Path.parse(module, {file: 'package.json'})
-							.toString({isRelative: true});
-						location = Module._resolveFilename(location, __Internal__.getRootModule());
-						location = files.Path.parse(location)
-							.set({file: ''})
-							.combine(file, {dirChar: ['/', '\\'], isRelative: true});
-						return Promise.resolve(location);
+						return Promise.try(function() {
+							let location = files.Path.parse(module, {file: 'package.json'})
+								.toString({isRelative: true});
+							location = Module._resolveFilename(location, __Internal__.getRootModule());
+							location = files.Path.parse(location)
+								.set({file: ''})
+								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
+							return location;
+						});
 					});
 				
 				modules.loadFiles = function loadFiles(module, files, /*optional*/options) {

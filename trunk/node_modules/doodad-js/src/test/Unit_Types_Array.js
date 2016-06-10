@@ -83,7 +83,7 @@
 					createArrays();
 					
 					
-					var command = test.prepareCommand(types.hasKey, "Doodad.Types.hasKey");
+					var command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "ar1");
@@ -97,7 +97,7 @@
 					command.end();
 
 					
-					var command = test.prepareCommand(types.hasKeyInherited, "Doodad.Types.hasKeyInherited");
+					var command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "ar1");

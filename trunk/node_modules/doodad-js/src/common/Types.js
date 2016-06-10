@@ -49,9 +49,8 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.toSourceItemsCount = parseInt(options.toSourceItemsCount);
-						var val = options.enableProxies;
-						options.enableProxies = (val === 'true') || !!val; // "toBoolean"
+						options.toSourceItemsCount = types.toInteger(options.toSourceItemsCount);
+						options.enableProxies = types.toBoolean(options.enableProxies);
 						return options;
 					}),
 				};
@@ -65,8 +64,7 @@
 				//===================================
 
 				var doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools;
+					types = doodad.Types;
 				
 				//===================================
 				// Internal
@@ -76,6 +74,10 @@
 					// "toSource"
 					supportsVerticalTabEscape: ('\v' !== 'v'),
 					supportsNullCharEscape: ('\0' !== '0'),
+					
+					symbolOriginalValue: (types.getSymbolFor('__ORIGINAL_VALUE__') || '__ORIGINAL_VALUE__'),
+					
+					symbolName: (types.getSymbolFor('__NAME__') || '__NAME__'),
 				};
 
 				//===================================
@@ -103,17 +105,17 @@
 					// "prepend"
 					arrayUnshift: __Internal__.arrayObj.unshift,
 					
-					mathFloor: global.Math.floor,
+					// "trapUnhandledRejections"
 					mathAbs: global.Math.abs,
 
 					objectToString: global.Object.prototype.toString,
-					
+
 					windowObject: global.Object,
 					
 					// "toString"
 					windowString: global.String,
 
-					// "hasIterators", "isIterable", "isIterator"
+					// "hasIterators", "isIterable"
 					windowSymbolIterator: undefined,
 					
 					// "hasGenerators", "getGeneratorFunction", "isGeneratorFunction", "isGenerator"
@@ -123,8 +125,11 @@
 					functionIsGenerator: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator : undefined),
 
 					// "toSource"
-					stringCharCodeAt: String.prototype.charCodeAt,
+					stringCharCodeAt: global.String.prototype.charCodeAt,
 					
+					// "isObjectLikeAndNotEmpty", "hasIndex"
+					windowNumber: global.Number,
+
 					
 					// Polyfills
 					
@@ -147,7 +152,7 @@
 				delete __Internal__.arrayObj;   // free memory
 
 				//===================================
-				// Cast functions
+				// Conversion
 				//===================================
 				
 				__Internal__.returnUndefined = function() {
@@ -163,31 +168,21 @@
 					return 'null';
 				};
 				
-				types.Undefined = function Undefined() {
-					if (types.undefined) {
-						throw new types.Error("Can't create object.");
-					};
-				};
+				types.Undefined = function Undefined() {};
 				types.Undefined.prototype.valueOf = __Internal__.returnUndefined;
 				types.Undefined.prototype.toString = __Internal__.returnUndefinedString;
 				types.Undefined.prototype.toSource = __Internal__.returnUndefinedString;
-				types.undefined = new types.Undefined();
 
-				types.Null = function Null() {
-					if (types['null']) {
-						throw new types.Error("Can't create object.");
-					};
-				};
+				types.Null = function Null() {};
 				types.Null.prototype.valueOf = __Internal__.returnNull;
 				types.Null.prototype.toString = __Internal__.returnNullString;
 				types.Null.prototype.toSource = __Internal__.returnNullString;
-				types['null'] = new types.Null();
 				
 				types.toObject = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -201,9 +196,9 @@
 					//! END_REPLACE()
 					, function(val) {
 						if (val === undefined) {
-							return types.undefined;
+							return new types.Undefined();
 						} else if (val === null) {
-							return types['null'];
+							return new types.Null();
 						} else {
 							return __Natives__.windowObject(val);
 						};
@@ -258,74 +253,6 @@
 						return result;
 					}));
 				
-				types.toBoolean = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "A value to convert.",
-									},
-								},
-								returns: 'bool',
-								description: "Converts a value to a boolean.",
-					}
-					//! END_REPLACE()
-					, function toBoolean(obj) {
-						return (obj === 'true') || !!(+obj);
-					});
-
-				types.toString = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "A value to convert.",
-									},
-								},
-								returns: 'string',
-								description: "Converts the value to a string.",
-					}
-					//! END_REPLACE()
-					, function toString(obj) {
-						return __Natives__.windowString(obj);
-					});
-				
-				types.toInteger = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "A value to convert.",
-									},
-								},
-								returns: 'number',
-								description: "Converts the value to an integer.",
-					}
-					//! END_REPLACE()
-					, function toInteger(obj) {
-						// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-						var number = Number(obj);
-						if (types.isNaN(number)) {
-							return 0;
-						};
-						if ((number === 0) || !types.isFinite(number)) {
-							return number;
-						};
-						return (number > 0 ? 1 : -1) * __Natives__.mathFloor(__Natives__.mathAbs(number));
-					});
-				
 				//===================================
 				// Options
 				//===================================
@@ -333,8 +260,26 @@
 				types.setOptions({
 					toSourceItemsCount: 255,		// Max number of items
 					enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
+					trapUnhandledRejections: true,    // "true" will trap unhandled promise rejections, "false" will not
+					unhandledRejectionsTimeout: 1000,
+					unhandledRejectionsMaxSize: 20,
 				}, _options);
+
+				//===================================
+				// Public Symbols
+				//===================================
 				
+				if (types.hasDefinePropertyEnabled()) {
+					types.defineProperties(types, {
+						OriginalValueSymbol: {configurable: false, enumerable: false, value: __Internal__.symbolOriginalValue, writable: false},
+						
+						NameSymbol: {configurable: false, enumerable: false, value: __Internal__.symbolName, writable: false},
+					});
+				} else {
+					types.OriginalValueSymbol = __Internal__.symbolOriginalValue;
+					
+					types.NameSymbol = __Internal__.symbolName;
+				};
 
 				//===================================
 				// is*
@@ -401,7 +346,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -428,9 +373,12 @@
 						} else if (types.isObjectLike(obj)) {
 							obj = __Natives__.windowObject(obj);
 							for (var key in obj) {
-								if (types.hasKey(obj, key)) {
+								if (types.has(obj, key)) {
 									return false;
 								};
+							};
+							if (types.symbols(obj).length) {
+								return false;
 							};
 							return true;
 						};
@@ -441,7 +389,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -466,9 +414,12 @@
 						} else if (types.isObjectLike(obj)) {
 							obj = __Natives__.windowObject(obj);
 							for (var key in obj) {
-								if (types.hasKey(obj, key)) {
+								if (types.has(obj, key)) {
 									return false;
 								};
+							};
+							if (types.symbols(obj).length) {
+								return false;
 							};
 							return true;
 						};
@@ -512,14 +463,14 @@
 					}
 					//! END_REPLACE()
 					, function isStringAndNotEmptyTrim(obj) {
-						return types.isString(obj) && !!tools.trim(obj).length;
+						return types.isString(obj) && !!root.Doodad.Tools.trim(obj).length;
 					});
 				
 				types.isObjectAndNotEmpty = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -534,19 +485,21 @@
 					, function isObjectAndNotEmpty(obj) {
 						// "Object.keys" Polyfill from Mozilla Developer Network.
 						if (types.isObject(obj)) {
-							var key, i;
-							for (key in obj) {
-								if (types.hasKey(obj, key)) {
+							for (var key in obj) {
+								if (types.has(obj, key)) {
 									return true;
 								};
 							};
-							if (__Natives__.hasDontEnumBug) {
-								for (i = 0; i < __Natives__.defaultNonEnumerables.length; i++) {
-									key = __Natives__.defaultNonEnumerables[i];
-									if (types.hasKey(obj, key)) {
-										return true;
-									};
-								};
+							//IE8 if (__Internal__.hasDontEnumBug) {
+							//IE8 	for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
+							//IE8 		var key = __Internal__.defaultNonEnumerables[i];
+							//IE8 		if (types.has(obj, key)) {
+							//IE8 			return true;
+							//IE8 		};
+							//IE8 	};
+							//IE8 };
+							if (types.symbols(obj).length) {
+								return true;
 							};
 						};
 						return false;
@@ -571,31 +524,33 @@
 					, function isObjectLikeAndNotEmpty(obj) {
 						if (types.isObjectLike(obj)) {
 							obj = __Natives__.windowObject(obj);
-							var key, i;
 							if (types.isArrayLike(obj)) {
 								var len = obj.length;
-								for (key in obj) {
-									var number = Number(key);
-									if ((types.isNaN(number) || !types.isFinite(number)) && types.hasKey(obj, key)) {
+								for (var key in obj) {
+									var number = __Natives__.windowNumber(key);
+									if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
 										return true;
 									};
 								};
 							} else {
 								// "Object.keys" Polyfill from Mozilla Developer Network.
 								for (key in obj) {
-									if (types.hasKey(obj, key)) {
+									if (types.has(obj, key)) {
 										return true;
 									};
 								};
-							};
-							if (__Natives__.hasDontEnumBug) {
-								for (i = 0; i < __Natives__.defaultNonEnumerables.length; i++) {
-									key = __Natives__.defaultNonEnumerables[i];
-									if (types.hasKey(obj, key)) {
-										return true;
-									};
+								if (types.symbols(obj).length) {
+									return true;
 								};
 							};
+							//IE8 if (__Internal__.hasDontEnumBug) {
+							//IE8 	for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
+							//IE8 		var key = __Internal__.defaultNonEnumerables[i];
+							//IE8 		if (types.has(obj, key)) {
+							//IE8 			return true;
+							//IE8 		};
+							//IE8 	};
+							//IE8 };
 						};
 						return false;
 					});
@@ -608,7 +563,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object',
@@ -616,7 +571,7 @@
 										description: "An object.",
 									},
 									keys: {
-										type: 'arrayof(string)',
+										type: 'arrayof(string,symbol),string,symbol',
 										optional: false,
 										description: "Attribute names.",
 									},
@@ -645,12 +600,12 @@
 							keys = [keys];
 						};
 						var keysLen = keys.length,
-							hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
+							hasKey = (inherited ? types.hasInherited : types.has);
 						for (var i = 0; i < keysLen; i++) {
 							var key = keys[i];
 							if (obj && hasKey(obj, key)) {
 								result[key] = obj[key];
-							} else if (_defaults && types.hasKey(_defaults, key)) {
+							} else if (_defaults && types.has(_defaults, key)) {
 								result[key] = _defaults[key];
 							};
 						};
@@ -661,7 +616,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object',
@@ -669,7 +624,7 @@
 										description: "An object.",
 									},
 									key: {
-										type: 'string',
+										type: 'string,symbol',
 										optional: false,
 										description: "Attribute name.",
 									},
@@ -693,7 +648,7 @@
 							return;
 						};
 						obj = __Natives__.windowObject(obj);
-						var hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
+						var hasKey = (inherited ? types.hasInherited : types.has);
 						if (hasKey(obj, key)) {
 							obj[key] = value;
 							return value;
@@ -704,7 +659,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object',
@@ -732,9 +687,9 @@
 							return result;
 						};
 						obj = __Natives__.windowObject(obj);
-						var keys = types.keys(values),
+						var keys = types.append(types.keys(values), types.symbols(values)),
 							keysLen = keys.length,
-							hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
+							hasKey = (inherited ? types.hasInherited : types.has);
 						for (var i = 0; i < keysLen; i++) {
 							var key = keys[i];
 							if (hasKey(obj, key)) {
@@ -748,7 +703,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object',
@@ -756,7 +711,7 @@
 										description: "An object.",
 									},
 									keys: {
-										type: 'arrayof(string)',
+										type: 'arrayof(string,symbol),string,symbol',
 										optional: false,
 										description: "Attribute names.",
 									},
@@ -785,12 +740,12 @@
 							keys = [keys];
 						};
 						var keysLen = keys.length,
-							hasKey = (inherited ? types.hasKeyInherited : types.hasKey);
+							hasKey = (inherited ? types.hasInherited : types.has);
 						for (var i = 0; i < keysLen; i++) {
 							var key = keys[i];
 							if (obj && hasKey(obj, key)) {
 								result[key] = obj[key];
-							} else if (types.hasKey(_defaults, key)) {
+							} else if (types.has(_defaults, key)) {
 								var val = _defaults[key];
 								if (obj) {
 									obj[key] = val;
@@ -805,6 +760,30 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
+								revision: 2,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'arrayof(string)',
+								description: "Returns an array of enumerable owned property names and inherited property names of an object. For array-like objects, index properties are excluded.",
+					}
+					//! END_REPLACE()
+					, function keysInherited(obj) {
+						if (types.isNothing(obj)) {
+							return [];
+						};
+						obj = __Natives__.windowObject(obj);
+						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
+					});
+				
+				types.symbolsInherited = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
 								revision: 0,
 								params: {
 									obj: {
@@ -813,78 +792,71 @@
 										description: "An object.",
 									},
 								},
-								returns: 'bool',
-								description: "Returns an array of enumerable owned property names and inherited property names of an object. For array-like objects, index properties are excluded.",
+								returns: 'arrayof(symbol)',
+								description: "Returns an array of enumerable owned property symbols and inherited property symbols of an object. For array-like objects, index properties are excluded.",
 					}
 					//! END_REPLACE()
-					, function keysInherited(obj) {
-						// Returns enumerable own properties (those not inherited).
-						// Doesn't not include array items.
-						var result = [];
-							
-						if (!types.isNothing(obj)) {
-							obj = __Natives__.windowObject(obj);
-							
-							var proto = obj,
-								protos = [],
-								lastProto;
-								
-							do {
-								protos.push(proto);
-								if (!lastProto && types.isNativeFunction(proto.constructor)) {
-									lastProto = proto.constructor.prototype;
-								};
-								proto = types.getPrototypeOf(proto);
-							} while (proto && (proto !== lastProto));
-							
-							var protosLen = protos.length;
-							
-							var hasKeyInherited = function hasKeyInherited(key) {
-								if (protosLen) {
-									for (var j = 0; j < protosLen; j++) {
-										var proto = protos[j];
-										if (types.hasKey(proto, key)) {
-											return true;
-										};
-									};
-								};
-								return false;
-							};
-							
-							if (types.isArrayLike(obj)) {
-								for (var key in obj) {
-									var number = Number(key);
-									if ((types.isNaN(number) || !types.isFinite(number)) && hasKeyInherited(key)) {
-										result.push(key);
-									};
-								};
-							} else {
-								// Polyfill from Mozilla Developer Network.
-								for (var key in obj) {
-									if (hasKeyInherited(key)) {
-										result.push(key);
-									};
-								};
-							};
-
-							if (__Natives__.hasDontEnumBug) {
-								for (var i = 0; i < __Natives__.defaultNonEnumerables.length; i++) {
-									var key = __Natives__.defaultNonEnumerables[i];
-									if (hasKeyInherited(key)) {
-										result.push(key);
-									};
-								};
-							};
+					, function symbolsInherited(obj) {
+						if (types.isNothing(obj)) {
+							return [];
 						};
-						
-						return result;
+						obj = __Natives__.windowObject(obj);
+						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
+					});
+				
+				types.allKeysInherited = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'arrayof(string)',
+								description: "Returns an array of all inherited enumerable and not enumerable property names of an object.",
+					}
+					//! END_REPLACE()
+					, function allKeysInherited(obj) {
+						if (types.isNothing(obj)) {
+							return [];
+						};
+						obj = __Natives__.windowObject(obj);
+						return types.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
+					});
+				
+				types.allSymbolsInherited = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'arrayof(symbol)',
+								description: "Returns an array of all inherited enumerable and not enumerable symbols of an object.",
+					}
+					//! END_REPLACE()
+					, function allSymbolsInherited(obj) {
+						if (types.isNothing(obj)) {
+							return [];
+						};
+						obj = __Natives__.windowObject(obj);
+						return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 					});
 				
 				types.depthComplete = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 2,
 								params: {
 									depth: {
 										type: 'integer',
@@ -915,23 +887,19 @@
 									};
 									// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 									obj = __Natives__.windowObject(obj);
-									var keys = types.keys(obj),
-										keysLen = keys.length, // performance
-										j, 
-										key, 
-										objVal,
-										resultVal;
-									for (j = 0; j < keysLen; j++) {
-										key = keys[j];
-										objVal = obj[key];
+									var keys = types.append(types.keys(obj), types.symbols(obj)),
+										keysLen = keys.length; // performance
+									for (var j = 0; j < keysLen; j++) {
+										var key = keys[j];
+										var objVal = obj[key];
 										if ((depth >= 0) && types.isObjectLike(objVal)) {
-											resultVal = result[key];
+											var resultVal = result[key];
 											if (types.isNothing(resultVal)) {
 												result[key] = types.depthComplete(depth, {}, objVal);
 											} else if (types.isObjectLike(resultVal)) {
 												types.depthComplete(depth, resultVal, objVal);
 											};
-										} else if (!types.hasKey(result, key)) {
+										} else if (!types.has(result, key)) {
 											result[key] = objVal;
 										};
 									};
@@ -946,10 +914,10 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									keys: {
-										type: 'arrayof(string)',
+										type: 'arrayof(string,symbol),string,symbol',
 										optional: false,
 										description: "Attribute names.",
 									},
@@ -981,7 +949,7 @@
 									for (var k = 0; k < keysLen; k++) {
 										if (k in keys) {
 											var key = keys[k];
-											if (types.hasKey(obj, key)) {
+											if (types.has(obj, key)) {
 												result[key] = obj[key];
 											};
 										};
@@ -1022,7 +990,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'any',
@@ -1051,18 +1019,17 @@
 						if (types.isNothing(obj)) {
 							result = obj;
 						} else {
+							var isArray = types.isArrayLike(obj);
 							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							
-							var key;
-							
 							if (types.isClonable(obj)) {
-								if (types.isArrayLike(obj)) {
+								if (isArray) {
 									obj = __Natives__.windowObject(obj);
 									if (depth >= 0) {
 										result = Array(obj.length);
 										var len = obj.length;
-										for (key = 0; key < len; key++) {
+										for (var key = 0; key < len; key++) {
 											if (key in obj) {
 												result[key] = types.clone(obj[key], depth, cloneFunctions);
 											};
@@ -1089,14 +1056,22 @@
 							};
 
 							// Copy properties
-							var keys = types.keys(obj),
+							var keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
 								props = {};
 							for (var i = 0; i < keys.length; i++) {
 								var key = keys[i];
+								if (isArray) {
+									if (key === 'length') {
+										continue;
+									};
+									var tmp = __Natives__.windowNumber(key);
+									if (!types.isNaN(tmp) && !types.isInfinite(tmp)) {
+										continue;
+									};
+								};
 								var prop = types.getOwnPropertyDescriptor(obj, key);
-								key = keys[i];
-								if (types.hasKey(prop, 'value') && (depth >= 0)) {
-									prop.value = types.clone(obj[key], depth, cloneFunctions);
+								if (types.has(prop, 'value') && (depth >= 0)) {
+									prop.value = types.clone(prop.value, depth, cloneFunctions);
 								};
 								props[key] = prop;
 							};
@@ -1144,7 +1119,7 @@
 							for (var i = 0; i < len; i++) {
 								if (i in indexes) {
 									var index = indexes[i],
-										number = Number(index);
+										number = __Natives__.windowNumber(index);
 									if (types.isNaN(number) || !types.isFinite(number) || !(index in obj)) {
 										return false;
 									};
@@ -1411,7 +1386,7 @@
 									return item;
 								};
 							};
-							if (types.hasKey(obj, key)) {
+							if (types.has(obj, key)) {
 								var item = obj[key];
 								delete obj[key];
 								return item;
@@ -1423,7 +1398,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1452,15 +1427,13 @@
 					//! END_REPLACE()
 					, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
-							var key, 
-								val;
 							obj = __Natives__.windowObject(obj);
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArray(obj)) {
 									var len = obj.length;
-									for (key = 0; key < len; key++) {
+									for (var key = 0; key < len; key++) {
 										if (key in obj) {
-											val = obj[key];
+											var val = obj[key];
 											if (item.call(thisObj, val, key, obj)) {
 												__Natives__.arraySplice.call(obj, key, 1);
 												return val;
@@ -1469,11 +1442,10 @@
 									};
 								};
 								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									val = obj[key];
+									len = keys.length; // performance
+								for (var i = 0; i < len; i++) {
+									var key = keys[i];
+									var val = obj[key];
 									if (item.call(thisObj, val, key, obj)) {
 										delete obj[key];
 										return val;
@@ -1482,9 +1454,9 @@
 							} else {
 								if (types.isArray(obj)) {
 									var len = obj.length;
-									for (key = 0; key < len; key++) {
+									for (var key = 0; key < len; key++) {
 										if (key in obj) {
-											val = obj[key];
+											var val = obj[key];
 											if (val === item) {
 												__Natives__.arraySplice.call(obj, key, 1);
 												return val;
@@ -1493,11 +1465,10 @@
 									};
 								};
 								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									val = obj[key];
+									len = keys.length; // performance
+								for (var i = 0; i < len; i++) {
+									var key = keys[i];
+									var val = obj[key];
 									if (val === item) {
 										delete obj[key];
 										return val;
@@ -1511,7 +1482,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1541,15 +1512,13 @@
 					, function popItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
 						var result = [];
 						if (!types.isNothing(obj)) {
-							var key, 
-								val;
 							obj = __Natives__.windowObject(obj);
 								
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArray(obj)) {
-									for (key = obj.length - 1; key >= 0; key--) {
+									for (var key = obj.length - 1; key >= 0; key--) {
 										if (key in obj) {
-											val = obj[key];
+											var val = obj[key];
 											if (items.call(thisObj, val, key, obj)) {
 												__Natives__.arraySplice.call(obj, key, 1);
 												result.push(val);
@@ -1558,11 +1527,10 @@
 									};
 								};
 								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									val = obj[key];
+									len = keys.length; // performance
+								for (var i = 0; i < len; i++) {
+									var key = keys[i];
+									var val = obj[key];
 									if (items.call(thisObj, val, key, obj)) {
 										delete obj[key];
 										result.push(val);
@@ -1572,9 +1540,9 @@
 								var values = types.values(items),
 									valuesLen = values.length;
 								if (types.isArray(obj)) {
-									for (key = obj.length - 1; key >= 0; key--) {
+									for (var key = obj.length - 1; key >= 0; key--) {
 										if (key in obj) {
-											val = obj[key];
+											var val = obj[key];
 											for (var j = 0; j < valuesLen; j++) {
 												if (values[j] === val) {
 													__Natives__.arraySplice.call(obj, key, 1);
@@ -1585,11 +1553,10 @@
 									};
 								};
 								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									val = obj[key];
+									len = keys.length; // performance
+								for (var i = 0; i < len; i++) {
+									var key = keys[i];
+									var val = obj[key];
 									for (var j = 0; j < valuesLen; j++) {
 										if (values[j] === val) {
 											delete obj[key];
@@ -1749,7 +1716,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'any',
@@ -1772,6 +1739,7 @@
 					}
 					//! END_REPLACE()
 					, function toSource(obj, /*optional*/depth, /*optional*/options) {
+						// TODO: "chain" option to generate the prototypes chain with "Object.setPrototypeOf"
 						if (obj === undefined) {
 							return 'undefined';
 						} else if (obj === null) {
@@ -1853,8 +1821,10 @@
 									};
 								} else if (types.isDate(obj)) {
 									return '(new Date(' + obj.getFullYear() + ', ' + obj.getMonth() + ', ' + obj.getDate() + ', ' + obj.getHours() + ', ' + obj.getMinutes() + ', ' + obj.getSeconds() + ', ' + obj.getMilliseconds() + '))';
+								} else if (types.isSymbol(obj)) {
+									return (types.symbolIsGlobal(obj) ? "Symbol.for(" + types.toSource(types.getSymbolKey(obj), null, options) + ")" : "Symbol()");
 								} else if (types.isError(obj)) {
-									return '(new Error(' + types.toSource(obj.message || obj.description) + '))';
+									return '(new Error(' + types.toSource(obj.message || obj.description, null, options) + '))';
 								} else if (types.isFunction(obj)) {
 									if ((depth >= 0) && types.isCustomFunction(obj)) {
 										return obj.toString();
@@ -1890,16 +1860,19 @@
 										len = 0,
 										maxLen = types.getOptions().toSourceItemsCount;
 									depth--;
-									for (var key in val) {
-										if (types.hasKey(val, key)) {
+									var inherited = types.get(options, 'inherited', false);
+									do {
+										var keys = types.append(types.keys(obj), types.symbols(obj));
+										for (var i = 0; i < keys.length; i++) {
 											if (len >= maxLen) {
 												str += '..., ';
 												break;
 											};
-											str += types.toSource(key) + ': ' + types.toSource(val[key], depth, options) + ', ';
+											var key = keys[i];
+											str += types.toSource(key) + ': ' + types.toSource(obj[key], depth, options) + ', ';
 											len++;
 										};
-									};
+									} while (inherited && (obj = types.getPrototypeOf(obj)));
 									return '{' + str.slice(0, -2) + '}';
 								} else if (types.isObjectLike(obj)) {
 									return types.toSource(__Natives__.objectToString.call(obj));
@@ -2010,56 +1983,143 @@
 							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'prototype.then' and 'prototype.catch'.");
 						};
 
+						
 						// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
-						if (!types.isFunction(Promise.prototype.nodeify)) {
-							Promise.prototype.nodeify = function nodeify(callback) {
-								return this.then(function(result) {
-									var retval = callback(null, result);
-									if (retval === undefined) {
-										retval = result;
-									} else if (types.isError(retval)) {
-										throw retval;
-									};
-									return retval;
-								}, function(err) {
-									var retval = callback(err);
-									if (retval === undefined) {
-										throw err;
-									} else if (types.isError(retval)) {
-										throw retval;
-									};
-									return retval;
-								});
+						// Bluebird "asCallback" polyfill
+						if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
+							Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
+								var promise = this.then(function(result) {
+										var retval = callback(null, result);
+										if (retval === undefined) {
+											retval = result;
+										//} else if (types.isError(retval)) {
+										//	throw retval;
+										};
+										return retval;
+									}, function(err) {
+										var retval = callback(err);
+										if (retval === undefined) {
+											throw err;
+										//} else if (types.isError(retval)) {
+										//	throw retval;
+										};
+										return retval;
+									});
+								return promise;
 							};
+						} else if (!types.isFunction(Promise.prototype.asCallback)) {
+							Promise.prototype.asCallback = Promise.prototype.nodeify;
+						} else if (!types.isFunction(Promise.prototype.nodeify)) {
+							Promise.prototype.nodeify = Promise.prototype.asCallback;
 						};
 						
 						
 						// Bluebird "finally" polyfill
 						if (!types.isFunction(Promise.prototype['finally'])) {
 							Promise.prototype['finally'] = function _finally(callback) {
-								return this.then(function(result) {
-									var retval = callback();
-									return Promise.resolve(retval).then(function() {
-										return result;
+								var promise = this.then(function(result) {
+										var retval = callback();
+										return Promise.resolve(retval).then(function() {
+											return result;
+										});
+									}, function(err) {
+										var retval = callback();
+										return Promise.resolve(retval).then(function() {
+											throw err;
+										});
 									});
-								}, function(err) {
-									var retval = callback();
-									return Promise.resolve(retval).then(function() {
-										throw err;
-									});
+								return promise;
+							};
+						};
+						
+						
+						// Bluebird "try" polyfill
+						if (!types.isFunction(Promise['try'])) {
+							Promise['try'] = function _try(callback) {
+								return new this(function(resolve, reject) {
+									try {
+										resolve(callback());
+									} catch(ex) {
+										reject(ex);
+									};
 								});
 							};
 						};
 						
+						
+/*
+						// <PRB> Promise has no id
+						
+						var getPromiseName = function(callback) {
+							var original;
+							while (original = types.get(callback, __Internal__.symbolOriginalValue)) {
+								callback = original;
+							};
+							return types.get(callback, types.NameSymbol) || types.getFunctionName(callback);
+						};
+						
+							//var newPromise = function _Promise(callback) {
+							//	var promise = Promise.call(this, callback) || this;
+							//	promise.name = getPromiseName(callback);
+							//	return promise;
+							//};
+							//types.setPrototypeOf(newPromise.prototype, Promise.prototype);
+							//newPromise = types.setPrototypeOf(newPromise, Promise);
+						var oldThen = Promise.prototype.then;
+						Promise.prototype.then = function(callback) {
+							var promise = oldThen.call(this, callback);
+							if (callback) {
+								promise.name = getPromiseName(callback);
+							};
+							return promise;
+						};
+						var oldCatch = Promise.prototype['catch'];
+						Promise.prototype['catch'] = function(callback) {
+							var promise = oldCatch.call(this, callback);
+							if (callback) {
+								promise.name = getPromiseName(callback);
+							};
+							return promise;
+						};
+						var oldNodeify = Promise.prototype.nodeify;
+						Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(callback) {
+							var promise = oldNodeify.call(this, callback);
+							if (callback) {
+								promise.name = getPromiseName(callback);
+							};
+							return promise;
+						};
+						var oldFinally = Promise.prototype['finally'];
+						Promise.prototype['finally'] = function _finally(callback) {
+							var promise = oldFinally.call(this, callback);
+							if (callback) {
+								promise.name = getPromiseName(callback);
+							};
+							return promise;
+						};
+						var oldTry = Promise['try'];
+						Promise['try'] = function(callback) {
+							var promise = oldTry.call(this, callback);
+							if (callback) {
+								promise.name = getPromiseName(callback);
+							};
+							return promise;
+						};
+*/
+						
 						__Internal__.Promise = Promise;
 					});
-					
-					
+				
+				//types.PromiseRejectedError = types.createErrorType("PromiseRejectedError", types.Error, function _new(reason, /*optional*/message, /*optional*/params) {
+				//	this.reason = reason;
+				//	return types.Error.call(this, message || "Promise rejected.", params);
+				//});
+
 				types.PromiseCallback = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -2077,35 +2137,134 @@
 					}
 					//! END_REPLACE()
 					, types.setPrototypeOf(function(/*optional*/obj, fn) {
-						if (fn instanceof types.Callback) {
+						if (types.isPrototypeOf(types.Callback, fn)) {
 							return fn;
 						};
-						var newFn = types.makeInside(obj, fn);
+						var insideFn = types.makeInside(obj, fn);
 						var callback = function callbackHandler(/*paramarray*/) {
 							try {
-								return newFn.apply(obj, arguments);
+								return insideFn.apply(obj, arguments);
 							} catch(ex) {
-								try {
-									if (!(ex instanceof types.ScriptAbortedError)) {
-										tools.log(tools.LogLevels.Debug, "A Promise has been rejected due to an unhandled error :");
-										tools.log(tools.LogLevels.Debug, ex.stack);
-										tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+								//if (ex instanceof types.PromiseRejectedError) {
+								//	throw ex.reason;
+								//} else {
+									try {
+										var tools = root.Doodad.Tools;
+										if (!(ex instanceof types.ScriptInterruptedError)) {
+											tools.log(tools.LogLevels.Debug, "A Promise has been rejected due to an unhandled error :");
+											tools.log(tools.LogLevels.Debug, ex.stack);
+											tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+										};
+									} catch(o) {
 									};
-								} catch(o) {
-								};
-								throw ex;
+									throw ex;
+								//};
 							};
 						};
 						callback = types.setPrototypeOf(callback, types.PromiseCallback);
+						callback[__Internal__.symbolOriginalValue] = fn;
 						return callback;
 					}, types.Callback));
 				
+					
+				types.trapUnhandledRejections = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Will trap unhandled Promise rejections and logs them.",
+					}
+					//! END_REPLACE()
+					, function() {
+						if (!__Internal__.unhandledRejections) {
+							__Internal__.unhandledRejections = new types.Map();
+							
+							var options = types.getOptions();
+							
+							types.addPromiseEventListener('unhandledrejection', function(ev) {
+								if (!(ev.detail.reason instanceof types.ScriptInterruptedError)) {
+									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
+										 __Internal__.unhandledRejections.set(ev.detail.promise, {
+											reason: ev.detail.reason,
+											time: (new Date()).valueOf(),
+										 });
+									};
+								};
+							});
+							
+							types.addPromiseEventListener('rejectionhandled', function(promise) {
+								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
+									__Internal__.unhandledRejections['delete'](ev.detail.promise);
+								};
+							});
+							
+							var dumpRejections = function() {
+								try {
+									var curTime = (new Date()).valueOf(),
+										iter = __Internal__.unhandledRejections.entries(),
+										result;
+										
+									// TODO: for ... of
+									while (result = iter.next()) {
+										if (result.done) {
+											break;
+										};
+										var promise = result.value[0],
+											val = result.value[1];
+										if (__Natives__.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
+											var tools = root.Doodad.Tools;
+											//tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, 'name') || '<anonymous>'));
+											tools.log(tools.LogLevels.Error, "Unhandled rejected promise.");
+											if (val.reason) {
+												tools.log(tools.LogLevels.Error, val.reason);
+												if (val.reason.stack) {
+													tools.log(tools.LogLevels.Error, val.reason.stack);
+												};
+											};
+											__Internal__.unhandledRejections['delete'](promise);
+										};
+									};
+								} catch(o) {
+									__Internal__.unhandledRejections.clear();
+								};
+								
+								var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								//! IF_DEF("serverSide")
+									if (types.isObject(timer) && types.isFunction(timer.unref)) {
+										// Node.Js: Allows the process to exit
+										timer.unref();
+									};
+								//! END_IF()
+							}
+							
+							var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							//! IF_DEF("serverSide")
+								if (types.isObject(timer) && types.isFunction(timer.unref)) {
+									// Node.Js: Allows the process to exit
+									timer.unref();
+								};
+							//! END_IF()
+							
+							// TEST
+							//global.setTimeout(function() {
+							//	Promise.try(function Promise1() {
+							//		throw new types.Error("Test");
+							//	});
+							//	new Promise(function Promise2() {
+							//		throw new types.Error("Test");
+							//	});
+							//}, 1000);
+						};
+					});
+					
 					
 				//===================================
 				// Iterators
 				//===================================
 
-				__Natives__.windowSymbolIterator = (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+				__Natives__.windowSymbolIterator = (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined);
 				
 				types.hasIterators = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -2147,11 +2306,12 @@
 					}));
 				
 				
-				types.isIterator = root.DD_DOC(
+				// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
+				types.isIteratorLike = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -2160,10 +2320,10 @@
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if object is an iterator. Returns 'false' otherwise.",
+								description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, function isIterator(obj) {
+					, function isIteratorLike(obj) {
 						return types.isObjectLike(obj) && types.isFunction(obj.next);
 					});
 				
@@ -2317,7 +2477,7 @@
 					, (__Natives__.windowProxy ? (function createProxy(target, handler) {
 						return new __Natives__.windowProxy(target, handler);
 					}) : (function createProxy(target, handler) {
-						if (types.hasKey(handler, [
+						if (types.has(handler, [
 								'getPrototypeOf', 'setPrototypeOf', 'isExtensible', 'preventExtensions', 
 								'getOwnPropertyDescriptor', 'defineProperty', 'has', 'get', 'set', 'deleteProperty', 
 								'enumerate', 'ownKeys', 'construct'
@@ -2448,7 +2608,7 @@
 									},
 								},
 								returns: 'object',
-								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. The original function is preserved in the property '__ORIGINAL_FUNCTION__'.",
+								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. The original function is preserved in the symbol 'types.OriginalValueSymbol'.",
 					}
 					//! END_REPLACE()
 					, function bind(obj, fn, /*optional*/args) {
@@ -2478,22 +2638,8 @@
 								};
 							};
 						};
-						for (var key in fn) {
-							if (types.hasKey(fn, key)) {
-								newFn[key] = fn[key];
-							};
-						};
-						if (types.hasDefinePropertyEnabled()) {
-							types.defineProperty(newFn, '__ORIGINAL_FUNCTION__', {
-								writable: false,
-								configurable: false,
-								enumerable: false,
-								value: fn,
-							});
-						} else {
-							// NOTE: Will enumerate
-							newFn.__ORIGINAL_FUNCTION__ = fn;
-						};
+						types.extend(newFn, fn);
+						newFn[__Internal__.symbolOriginalValue] = fn;
 						return newFn;
 					});
 				
@@ -2501,7 +2647,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 2,
 								params: {
 									fn: {
 										type: 'function',
@@ -2510,21 +2656,18 @@
 									},
 								},
 								returns: 'object',
-								description: "Unbinds a function and returns the resulting function. In fact, it returns the value of its '__ORIGINAL_FUNCTION__' attribute. Owned properties are also copied.",
+								description: "Unbinds a function and returns the resulting function. In fact, it returns the value of its 'types.OriginalValueSymbol' attribute. Owned properties are also copied.",
 					}
 					//! END_REPLACE()
 					, function unbind(fn) {
 						if (!types.isFunction(fn)) {
 							return null;
 						};
-						var oldFn = fn.__ORIGINAL_FUNCTION__;
+						var oldFn = types.get(fn, __Internal__.symbolOriginalValue);
 						if (oldFn) {
-							for (var key in fn) {
-								if (types.hasKey(fn, key)) {
-									oldFn[key] = fn[key];
-								};
-							};
-							fn = oldFn;
+							types.extend(oldFn, fn);
+							delete oldFn[__Internal__.symbolOriginalValue];
+							return oldFn;
 						};
 						return fn;
 					});
@@ -2532,11 +2675,12 @@
 				//===================================
 				// Box/Unbox
 				//===================================
+				
 				types.box = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									value: {
 										type: 'any',
@@ -2558,30 +2702,22 @@
 							_new: function box(value) {
 								if (value instanceof types.box) {
 									value.setAttributes(this);
-									value = value.__BOXED_VALUE__;
+									value = value[__Internal__.symbolOriginalValue];
 								};
-								if (types.hasDefinePropertyEnabled()) {
-									types.defineProperty(this, '__BOXED_VALUE__', {
-										writable: false,
-										configurable: false,
-										enumerable: false,
-										value: value,
-									});
-								} else {
-									// NOTE: Will enumerate
-									this.__BOXED_VALUE__ = value;
-								};
+								this[__Internal__.symbolOriginalValue] = value;
 							},
 							
 							setAttributes: function setAttributes(dest, /*optional*/override) {
-								for (var key in this) {
-									if ((key !== '__BOXED_VALUE__') && types.hasKey(this, key) && (override || !types.hasKey(dest, key))) {
+								var keys = types.append(types.keys(this), types.symbols(this));
+								for (var i = 0; i < keys.length; i++) {
+									var key = keys[i];
+									if ((key !== __Internal__.symbolOriginalValue) && (override || !types.has(dest, key))) {
 										dest[key] = this[key];
 									};
 								};
 							},
 							valueOf: function valueOf() {
-								return this.__BOXED_VALUE__;
+								return this[__Internal__.symbolOriginalValue];
 							},
 							setValue: function setValue(value, /*optional*/override) {
 								// NOTE: "box" is immutable
@@ -2591,7 +2727,7 @@
 								return newBox;
 							},
 							clone: function clone() {
-								return this.setValue(this.__BOXED_VALUE__);
+								return this.setValue(this[__Internal__.symbolOriginalValue]);
 							},
 						},
 						/*constructor*/
@@ -2646,11 +2782,11 @@
 					},
 					{
 						__index: 0,
-						__set: null,
+						__ar: null,
 						
 						_new: types.SUPER(function _new(setObj) {
 							this._super();
-							this.__set = setObj;
+							this.__ar = types.clone(setObj.__ar);
 						}),
 					}))
 					
@@ -2660,7 +2796,7 @@
 					},
 					{
 						next: function next() {
-							var ar = this.__set.__ar;
+							var ar = this.__ar;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -2679,7 +2815,7 @@
 					},
 					{
 						next: function next() {
-							var ar = this.__set.__ar;
+							var ar = this.__ar;
 							if (this.__index < ar.length) {
 								var val = ar[this.__index++];
 								return {
@@ -2782,11 +2918,13 @@
 					},
 					{
 						__index: 0,
-						__map: null,
+						__keys: null,
+						__values: null,
 						
 						_new: types.SUPER(function _new(mapObj) {
 							this._super();
-							this.__map = mapObj;
+							this.__keys = types.clone(mapObj.__keys);
+							this.__values = types.clone(mapObj.__values);
 						}),
 					}))
 					
@@ -2796,7 +2934,7 @@
 					},
 					{
 						next: function next() {
-							var ar = this.__map.__keys;
+							var ar = this.__keys;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -2815,7 +2953,7 @@
 					},
 					{
 						next: function next() {
-							var ar = this.__map.__values;
+							var ar = this.__values;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -2834,8 +2972,8 @@
 					},
 					{
 						next: function next() {
-							var ar = this.__map.__keys,
-								vals = this.__map.__values;
+							var ar = this.__keys,
+								vals = this.__values;
 							if (this.__index < ar.length) {
 								return {
 									value: [ar[this.__index], vals[this.__index++]],
@@ -3024,13 +3162,20 @@
 					VersionNotSupported: 505,
 				});
 				
+
 				//===================================
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					try {
-						__Natives__.windowPromise && types.setPromise(__Natives__.windowPromise);
-					} catch(ex) {
+					if (__Natives__.windowPromise) {
+						try {
+							types.setPromise(__Natives__.windowPromise);
+						} catch(ex) {
+						};
+					};
+					
+					if (types.getOptions().trapUnhandledRejections) {
+						types.trapUnhandledRejections();
 					};
 				};
 			},

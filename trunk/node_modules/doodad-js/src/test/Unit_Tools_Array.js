@@ -156,7 +156,7 @@
 					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ ["a", "b", "c", "d", "e", "f"]);
 					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ ["a", "b", "c", "d", "e", "f"], "");
-					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return val});
+					command.run(['a', 'b', 'c', 'd', 'e', 'f'],             {repetitions: 100},   /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return val});
 
 					command.end();
 					

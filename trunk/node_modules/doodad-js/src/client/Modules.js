@@ -108,7 +108,7 @@
 					//! END_REPLACE()
 					, function locate(module, /*optional*/path, /*optional*/options) {
 						var Promise = types.getPromise();
-						return new Promise(function(resolve, reject) {
+						return Promise['try'](function() {
 							var location = tools.getCurrentLocation()
 								.removeArgs('redirects')
 								.set({file: null})
@@ -123,7 +123,7 @@
 								location = location
 									.set({file: 'index.js'});
 							};
-							resolve(location);
+							return location;
 						});
 					});
 				

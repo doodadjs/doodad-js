@@ -71,8 +71,8 @@
 					
 					
 					var command = test.prepareCommand(types.toObject, "Doodad.Types.toObject");
-					command.run(types.undefined, {},                            /**/ undefined);
-					command.run(types['null'], {},                                 /**/ null);
+					command.run(types.Undefined, {eval: true, mode: 'is'}, /**/ "undefined");
+					command.run(types.Null, {eval: true, mode: 'is'},      /**/ "null");
 					command.run("String", {eval: true, mode: 'is'},        /**/ "''");
 					command.run("Number", {eval: true, mode: 'is'},        /**/ "1");
 					command.run("Number", {eval: true, mode: 'is'},        /**/ "0.1");
