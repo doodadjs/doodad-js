@@ -960,9 +960,9 @@
 						/*instanceProto*/
 						types.extend({
 							_new: types.SUPER(function _new(options) {
+								this._super();
 								//if (new.target) {
 								if (this instanceof files.Path) {
-									this._super();
 									var dirChar = options.dirChar,
 										properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
 									if (types.hasDefinePropertyEnabled()) {
@@ -1033,8 +1033,8 @@
 									
 									if (options) {
 										options = types.clone(options);
-										if (types.hasKey(options, 'os')) {
-											if (!types.hasKey(options, 'dirChar')) {
+										if (types.has(options, 'os')) {
+											if (!types.has(options, 'dirChar')) {
 												options.dirChar = null;
 											};
 										};
@@ -1044,7 +1044,7 @@
 										} else {
 											// Validate
 											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-											if (!types.hasKey(options, 'dontThrow')) {
+											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
 											options = files.Path.parse(this, options);
@@ -1470,14 +1470,13 @@
 							__args: null,
 							
 							_new: types.SUPER(function(args, /*optional*/options) {
+								this._super();
 								//if (new.target) {
 								if (this instanceof files.UrlArguments) {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
 									};
 
-									this._super();
-									
 									if (types.hasDefinePropertyEnabled()) {
 										types.defineProperties(this, {
 											options: {
@@ -1640,14 +1639,14 @@
 										revision: 1,
 										params: {
 											name: {
-												type: 'string,arrayof(string)',
+												type: 'string,arrayof(string),object',
 												optional: false,
-												description: "Name of the argument.",
+												description: "Name of the argument. When an object, it is used as name/value pairs.",
 											},
 											value: {
-												type: 'string',
+												type: 'any,arrayof(any)',
 												optional: true,
-												description: "Value of the argument. When value is nothing, the name is parsed like a \"name=value\" pair.",
+												description: "Value of the argument. When value is nothing and the name is not an object, the name is parsed as a single \"name=value\" pair.",
 											},
 											replace: {
 												type: 'bool',
@@ -1662,11 +1661,12 @@
 								, function set(name, /*optional*/value, /*optional*/replace) {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT((this instanceof files.UrlArguments), "Invalid arguments object.");
-										root.DD_ASSERT(types.isNothing(name) || types.isString(name) || types.isArray(name), "Invalid name.");
-										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || (types.isArray(value) && tools.every(value, types.isString)), "Invalid value.");
+										root.DD_ASSERT(types.isString(name) || types.isArray(name) || types.isJsObject(name), "Invalid name.");
+										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || types.isArray(value), "Invalid value.");
 									};
+									var isObj = types.isObject(name);
 									var noEscapes = types.get(this.options, 'noEscapes', false);
-									if (!types.isArray(name)) {
+									if (!types.isArray(name) && !isObj) {
 										name = [name];
 									};
 									if (types.isNothing(replace)) {
@@ -1681,24 +1681,30 @@
 									} else {
 										args = types.clone(this.__args, 1);
 									};
-									for (var j = 0; j < name.length; j++) {
-										var n = name[j],
+									tools.forEach(name, function(v, n) {
+										if (isObj) {
+											if (!types.isArray(v)) {
+												v = [v];
+											};
+										} else {
+											n = v;
 											v = value;
-										if (types.isNothing(v)) {
-											n = n.split('=', 2);
-											if (n.length < 2) {
-												v = null;
-											} else {
-												v = n[1];
-											};
-											n = n[0];
-											if (!noEscapes) {
-												if (v) {
-													v = __Natives__.windowUnescape(v);
+											if (types.isNothing(v)) {
+												n = n.split('=', 2);
+												if (n.length < 2) {
+													v = null;
+												} else {
+													v = n[1];
 												};
-												n = __Natives__.windowUnescape(n);
+												n = n[0];
+												if (!noEscapes) {
+													if (v) {
+														v = __Natives__.windowUnescape(v);
+													};
+													n = __Natives__.windowUnescape(n);
+												};
+												v = [v];
 											};
-											v = [v];
 										};
 										if (replace) {
 											for (var i = 0; i < args.length;) {
@@ -1709,7 +1715,7 @@
 														if (!noEscapes) {
 															val = __Natives__.windowUnescape(val);
 														};
-														args[i].value = val;
+														args[i].value = types.toString(val);
 													} else {
 														args.pop(i);
 														continue;
@@ -1724,7 +1730,7 @@
 												value: v[i],
 											});
 										};
-									};
+									});
 									if ((!args.length) && !this.__args) {
 										args = null;
 									};
@@ -2111,8 +2117,8 @@
 									};
 									
 									if (!types.isNothing(port)) {
-										port = parseInt(port);
-										if (isNaN(port) || (port <= 0) || (port > 65535)) {
+										port = types.toInteger(port);
+										if ((port <= 0) || (port > 65535)) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -2302,9 +2308,9 @@
 						/*instanceProto*/
 						types.extend({
 							_new: types.SUPER(function _new(options) {
+								this._super();
 								//if (new.target) {
 								if (this instanceof files.Url) {
-									this._super();
 									var properties = types.fill(__Internal__.urlOptionsKeys, {}, options),
 										self = this;
 									if (types.hasDefinePropertyEnabled()) {
@@ -2352,17 +2358,12 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
-											name: {
-												type: 'string,arrayof(string)',
+											args: {
+												type: 'object',
 												optional: false,
-												description: "Name of the argument.",
-											},
-											value: {
-												type: 'string',
-												optional: true,
-												description: "Value of the argument. When value is nothing, the name is parsed like a \"name=value\" pair.",
+												description: "name/value pairs.",
 											},
 											replace: {
 												type: 'bool',
@@ -2374,9 +2375,9 @@
 										description: "Sets URL arguments and returns a new Url object.",
 								}
 								//! END_REPLACE()
-								, function setArgs(name, /*optional*/value, /*optional*/replace) {
+								, function setArgs(args, /*optional*/replace) {
 									return this.set({
-										args: this.args.set(name, value, replace),
+										args: this.args.set(args, null, replace),
 									});
 								}),
 							
@@ -2396,7 +2397,7 @@
 										description: "Removes URL arguments and returns a new Url object.",
 								}
 								//! END_REPLACE()
-								, function setArgs(name, /*optional*/value, /*optional*/replace) {
+								, function removeArgs(name) {
 									return this.set({
 										args: this.args.remove(name),
 									});
@@ -2433,7 +2434,7 @@
 											// Validate
 											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
 											options = types.clone(options) || {};
-											if (!types.hasKey(options, 'dontThrow')) {
+											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
 											options = files.Url.parse(this, options);

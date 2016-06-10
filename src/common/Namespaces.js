@@ -309,7 +309,7 @@
 							if (val && (val === entries.Namespace) || types.baseof(entries.Namespace, val)) {
 								entryType = val;
 							} else {
-								throw new types.Error("Invalid registry entry type : '~0~'.", [(entryType + '').slice(0, 50)]);
+								throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
 							};
 						} else {
 							entryType = entries.Module;
@@ -333,7 +333,7 @@
 							if (val && (val === types.Namespace) || types.baseof(types.Namespace, val)) {
 								namespaceType = val;
 							} else {
-								throw new types.Error("Invalid namespace object type : '~0~'.", [(namespaceType + '').slice(0, 50)]);
+								throw new types.Error("Invalid namespace object type : '~0~'.", [types.toString(namespaceType).slice(0, 50)]);
 							};
 						} else {
 							namespaceType = types.Namespace;
@@ -365,7 +365,7 @@
 						};
 						
 						var prevNamespace = null;
-						if (types.hasKey(parent, shortName)) {
+						if (types.has(parent, shortName)) {
 							prevNamespace = parent[shortName];
 							if ((!replaceEntry && (namespace instanceof types.Namespace)) || !spec.replaceObject) {
 								namespace = prevNamespace;
@@ -604,7 +604,7 @@
 					};
 				});
 				
-				namespaces.load = namespaces.loadNamespaces = root.DD_DOC(
+				namespaces.load = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -762,7 +762,7 @@
 							.nodeify(terminate);
 						
 					} catch(ex) {
-						if (ex instanceof types.ScriptAbortedError) {
+						if (ex instanceof types.ScriptInterruptedError) {
 							throw ex;
 						} else {
 							return Promise.reject(ex);
@@ -834,7 +834,7 @@
 					var specs = {};
 
 					var fillSpecs = function fillSpecs(name, / *optional* /newName) {
-						if (!types.hasKey(specs, name)) {
+						if (!types.has(specs, name)) {
 							var entry = namespaces.getEntry(name);
 							if (entry) {
 								var spec = tools.clone(entry.spec);
@@ -920,7 +920,7 @@
 								}
 								//! END_REPLACE()
 						, function get(name, /*optional*/type) {
-							if (!types.hasKey(this, name)) {
+							if (!types.has(this, name)) {
 								return null;
 							};
 							if (type) {
@@ -958,7 +958,7 @@
 								}
 								//! END_REPLACE()
 						, function has(name, /*optional*/type) {
-							if (!types.hasKey(this, name)) {
+							if (!types.has(this, name)) {
 								return false;
 							};
 							if (type) {
@@ -993,7 +993,7 @@
 								}
 								//! END_REPLACE()
 						, function remove(name, /*optional*/type) {
-							if (!types.hasKey(this, name)) {
+							if (!types.has(this, name)) {
 								return false;
 							};
 							if (type) {
@@ -1039,7 +1039,7 @@
 								}
 								//! END_REPLACE()
 						, function add(name, entry) {
-							if (types.hasKey(this, name)) {
+							if (types.has(this, name)) {
 								return false;
 							};
 							if (!(entry instanceof entries.Namespace)) {
@@ -1057,6 +1057,17 @@
 						}),
 					}
 				)));
+				
+				if (types.hasDefinePropertyEnabled()) {
+					types.defineProperty(root, 'DD_REGISTRY', {
+						value: new namespaces.Registry(), 
+						writable: false, 
+						enumerable: true, 
+						configurable: true
+					});
+				} else {
+					root.DD_REGISTRY = new namespaces.Registry();
+				};
 				
 				//-----------------------------------
 				// Namespace entry object
@@ -1253,18 +1264,8 @@
 				//===================================
 				// Init
 				//===================================
-				return function init(/*optional*/options) {
-					if (types.hasDefinePropertyEnabled()) {
-						types.defineProperty(root, 'DD_REGISTRY', {
-							value: new namespaces.Registry(), 
-							writable: false, 
-							enumerable: true, 
-							configurable: true
-						});
-					} else {
-						root.DD_REGISTRY = new namespaces.Registry();
-					};
-				};
+				//return function init(/*optional*/options) {
+				//};
 			},
 		};
 		

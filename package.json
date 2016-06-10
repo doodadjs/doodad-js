@@ -1,18 +1,20 @@
 {
   "name": "doodad-js",
-  "version": "3.3.1",
+  "version": "4.0.0",
   "stage": "r",
   "description": "Object-oriented programming framework for Javascript",
   "config": {
     "startup": {
 		"fromSource": false,
 		"nodeEnvDevValues": "development,dev",
-		"enableProperties": false,
-		"loadTests": false
+		"enableProperties": false
 	},
     "Doodad__Types": {
       "toSourceItemsCount": 255,
-      "enableProxies": false
+      "enableProxies": false,
+	  "trapUnhandledRejections": true,
+	  "unhandledRejectionsTimeout": 1000,
+	  "unhandledRejectionsMaxSize": 20
     },
     "Doodad__Tools": {
       "logLevel": -1

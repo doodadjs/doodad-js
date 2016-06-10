@@ -52,7 +52,7 @@
 				return {
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
-						options.logLevel = parseInt(options.logLevel);
+						options.logLevel = types.toInteger(options.logLevel);
 						return options;
 					}),
 				};
@@ -145,11 +145,12 @@
 					stringReplace: global.String.prototype.replace,
 					stringSearch: global.String.prototype.search,
 				
-					windowError: (global.Error || Error), // NOTE: "node.js" does not include "Error" in "global".
-					
-					windowRegExp: (global.RegExp || RegExp),
-					
+					windowError: global.Error,
+					windowRegExp: global.RegExp,
 					windowObject: global.Object,
+
+					windowParseInt: global.parseInt,
+					windowIsNaN: global.isNaN,
 
 					// Polyfills
 
@@ -676,7 +677,7 @@
 								if (str && (count > 0)) {
 									result += str;
 								};
-								result += (ar[i] + '');
+								result += types.toString(ar[i]);
 								count++;
 							};
 						};
@@ -749,7 +750,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									leval: {
 										type: 'integer',
@@ -775,7 +776,7 @@
 						// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
 						if (level >= tools.getOptions().logLevel) {
 							if (params) {
-								message = tools.format(message + '', params);
+								message = tools.format(types.toString(message), params);
 							};
 							if (types.isString(message) && types.hasIndex(__logLevelsName__, level)) {
 								message = __logLevelsName__[level] + ': ' + message;
@@ -982,26 +983,6 @@
 				// Object functions
 				//===================================
 					
-				types.allKeys = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns an array of all enumerable and not enumerable property names of an object.",
-					}
-					//! END_REPLACE()
-					, function allKeys(obj) {
-						return obj && types.unique(types.getOwnPropertyNames(obj), types.allKeys(types.getPrototypeOf(obj)));
-					});
-				
 				tools.indexOf = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -1917,20 +1898,6 @@
 				// Abort functions
 				//===================================
 				
-				types.ScriptAbortedError = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'error',
-							description: "Signals that script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
-					}
-					//! END_REPLACE()
-					, types.createErrorType("ScriptAbortedError", types.Error, function _new() {
-						return types.Error.call(this, "Script aborted.");
-					}));
-				
 				tools.abortScript = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -2001,10 +1968,10 @@
 									var subval = val.slice(start, (end >= 0 ? end: undefined));
 									var subvalTrim = tools.trim(subval);
 									var subvalNumber;
-									if (identifiers && types.hasKey(identifiers, subvalTrim)) {
-										subvalNumber = parseInt(identifiers[subvalTrim]);
+									if (identifiers && types.has(identifiers, subvalTrim)) {
+										subvalNumber = __Natives__.windowParseInt(identifiers[subvalTrim]);
 									} else {
-										subvalNumber = parseInt(subvalTrim);
+										subvalNumber = __Natives__.windowParseInt(subvalTrim);
 									};
 									ar.push(subvalNumber, (trimSpaces ? subvalTrim : subval));
 									start = end;
@@ -2101,9 +2068,9 @@
 							options: null,
 							
 							_new: types.SUPER(function _new(data, /*optional*/options) {
+								this._super();
 								//if (new.target) {
 								if (this instanceof tools.Version) {
-									this._super();
 									this.data = data;
 									this.options = (options || {});
 								};
@@ -2144,14 +2111,14 @@
 										k = 0;
 									for (var i = 0; i < count; i++) {
 										var number1 = NaN;
-										while (isNaN(number1) && (j < data1Len)) {
+										while (__Natives__.windowIsNaN(number1) && (j < data1Len)) {
 											if ((j in data1) && ((j + 1) in data1)) {
 												number1 = data1[j];
 											};
 											j += 2;
 										};
 										var number2 = NaN;
-										while (isNaN(number2) && (k < data2Len)) {
+										while (__Natives__.windowIsNaN(number2) && (k < data2Len)) {
 											if ((k in data2) && ((k + 1) in data2)) {
 												number2 = data2[k];
 											};
@@ -2195,7 +2162,7 @@
 								}),
 						}
 					)));
-				
+
 				//===================================
 				// Misc functions
 				//===================================

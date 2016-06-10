@@ -75,7 +75,11 @@
 							a: 1,
 							b: 2,
 						};
-
+						global.symbol1 = types.getSymbolFor("symbol1");
+						if (global.symbol1) {
+							global.dict1[global.symbol1] = 10;
+						};
+						
 						var typeDict2 = function() {};
 						typeDict2.prototype = types.setPrototypeOf(typeDict2.prototype, global.dict1);
 						typeDict2.prototype.c = 3;
@@ -87,12 +91,16 @@
 						global.dict3 = new typeDict3();
 						global.dict3.e = 5;
 						global.dict3.f = 6;
+						global.symbol2 = types.getSymbolFor("symbol2");
+						if (global.symbol2) {
+							global.dict3[global.symbol2] = 11;
+						};
 					};
 					
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.hasKey, "Doodad.Types.hasKey");
+					var command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "undefined", "'a'");
@@ -105,6 +113,8 @@
 					command.run(false,       {eval: true},    /**/ "dict1", "'e'");
 					command.run(false,       {eval: true},    /**/ "dict1", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict1", "'toString'");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict1", "symbol1");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict1", "symbol2");
 					command.run(true,        {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']");
 					
 					command.run(false,       {eval: true},    /**/ "dict2", "'a'");
@@ -114,6 +124,8 @@
 					command.run(false,       {eval: true},    /**/ "dict2", "'e'");
 					command.run(false,       {eval: true},    /**/ "dict2", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict2", "'toString'");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict2", "symbol1");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict2", "symbol2");
 					command.run(false,       {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
 					
 					command.run(false,       {eval: true},    /**/ "dict3", "'a'");
@@ -123,12 +135,14 @@
 					command.run(true,        {eval: true},    /**/ "dict3", "'e'");
 					command.run(true,        {eval: true},    /**/ "dict3", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict3", "'toString'");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict3", "symbol1");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict3", "symbol2");
 					command.run(true,        {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']");
 					
 					command.end();
 
 					
-					var command = test.prepareCommand(types.hasKeyInherited, "Doodad.Types.hasKeyInherited");
+					var command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "undefined", "'a'");
@@ -141,7 +155,9 @@
 					command.run(false,       {eval: true},    /**/ "dict1", "'e'");
 					command.run(false,       {eval: true},    /**/ "dict1", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict1", "'toString'");
-					command.run(true,        {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict1", "symbol1");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict1", "symbol2");
+					command.run(true,        {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']");
 					
 					command.run(true,        {eval: true},    /**/ "dict2", "'a'");
 					command.run(true,        {eval: true},    /**/ "dict2", "'b'");
@@ -150,6 +166,8 @@
 					command.run(false,       {eval: true},    /**/ "dict2", "'e'");
 					command.run(false,       {eval: true},    /**/ "dict2", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict2", "'toString'");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict2", "symbol1");
+					global.symbol1 && command.run(false,       {eval: true},    /**/ "dict2", "symbol2");
 					command.run(true,        {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
 					
 					command.run(true,        {eval: true},    /**/ "dict3", "'a'");
@@ -159,7 +177,9 @@
 					command.run(true,        {eval: true},    /**/ "dict3", "'e'");
 					command.run(true,        {eval: true},    /**/ "dict3", "'f'");
 					command.run(false,       {eval: true},    /**/ "dict3", "'toString'");
-					command.run(true,        {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict3", "symbol1");
+					global.symbol1 && command.run(true,        {eval: true},    /**/ "dict3", "symbol2");
+					command.run(true,        {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']");
 					
 					command.end();
 
@@ -177,6 +197,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2");
 					
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2");
 					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "3");
@@ -185,6 +207,8 @@
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7");
 					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12");
 					
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "undefined", "true");
 					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "undefined", "true");
@@ -193,6 +217,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "true");
 					
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
 					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "3", "true");
@@ -201,6 +227,8 @@
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "true");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "true");
 					
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "undefined", "false");
 					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "undefined", "false");
@@ -209,6 +237,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "false");
 					
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "false");
 					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "3", "false");
@@ -217,6 +247,8 @@
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "false");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "false");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "false");
 					
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'b'");
@@ -225,6 +257,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2");
 					
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2");
 					command.run(3,           {eval: true},    /**/ "dict2", "'b'", "3");
@@ -233,6 +267,8 @@
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7");
 					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12");
 					
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "undefined", "true");
 					command.run(2,           {eval: true},    /**/ "dict2", "'b'", "undefined", "true");
@@ -241,6 +277,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "true");
 					
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
 					command.run(2,           {eval: true},    /**/ "dict2", "'b'", "3", "true");
@@ -249,6 +287,8 @@
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "11", "true");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "true");
 					
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'b'", "undefined", "false");
@@ -257,6 +297,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "false");
 					
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2", "false");
 					command.run(3,           {eval: true},    /**/ "dict2", "'b'", "3", "false");
@@ -265,6 +307,8 @@
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11", "false");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "false");
 					
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'b'");
@@ -273,6 +317,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2");
 					
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2");
 					command.run(3,           {eval: true},    /**/ "dict3", "'b'", "3");
@@ -281,6 +327,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7");
 					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol1", "11");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12");
 					
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "undefined", "true");
 					command.run(2,           {eval: true},    /**/ "dict3", "'b'", "undefined", "true");
@@ -289,6 +337,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "true");
 					
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
 					command.run(2,           {eval: true},    /**/ "dict3", "'b'", "3", "true");
@@ -297,6 +347,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "11", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "true");
 					
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'b'", "undefined", "false");
@@ -305,6 +357,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "false");
 					
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2", "false");
 					command.run(3,           {eval: true},    /**/ "dict3", "'b'", "3", "false");
@@ -313,6 +367,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol1", "11", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
 					
 					command.run("undefined", {eval: true}     /**/ );
 					command.run("undefined", {eval: true},    /**/ "undefined", "'a'");
@@ -330,12 +386,18 @@
 					command.run("{}",                     {eval: true},    /**/ "dict1");
 					
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']");
+					global.symbol1 && command.run("{a: 1, [symbol1]: 10}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "['a', 'c', 'e', 'toString', symbol1, symbol2]");
 					command.run("{}",                     {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
+					global.symbol1 && command.run("{}",                     {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString', symbol1, symbol2]");
 					command.run("{e: 5}",                 {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']");
+					global.symbol1 && command.run("{e: 5, [symbol2]: 11}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict3", "['a', 'c', 'e', 'toString', symbol1, symbol2]");
 
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "undefined", "true");
+					global.symbol1 && command.run("{a: 1, [symbol1]: 10}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "['a', 'c', 'e', 'toString', symbol1, symbol2]", "undefined", "true");
 					command.run("{a: 1, c: 3}",           {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "undefined", "true");
+					global.symbol1 && command.run("{a: 1, c: 3, [symbol1]: 10}", {eval: true, note: "May fail under engines not supporting variables in object declaration."}, /**/ "dict2", "['a', 'c', 'e', 'toString', symbol1, symbol2]", "undefined", "true");
 					command.run("{a: 1, c: 3, e: 5}",     {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "undefined", "true");
+					global.symbol1 && command.run("{a: 1, c: 3, [symbol1]: 10, [symbol2]: 11}", {eval: true, note: "May fail under engines not supporting variables in object declaration."}, /**/ "dict3", "['a', 'c', 'e', 'toString', symbol1, symbol2]", "undefined", "true");
 
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "undefined", "false");
 					command.run("{}",                     {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "undefined", "false");
@@ -380,6 +442,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "2");
@@ -388,6 +452,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'d'", "5");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "11");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "2");
@@ -396,6 +462,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'d'", "5");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6");
 					command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "11");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12");
 
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
@@ -404,6 +472,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
@@ -412,6 +482,8 @@
 					command.run(5,           {eval: true},    /**/ "dict2", "'d'", "5", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
@@ -420,6 +492,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'d'", "5", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol1", "11", "true");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict1", "'a'", "2", "false");
@@ -428,6 +502,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "false");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "2", "false");
@@ -436,6 +512,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'d'", "5", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "11", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "false");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "2", "false");
@@ -444,6 +522,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'d'", "5", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "11", "false");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
 					
 					command.end();
 					createDicts();
@@ -457,6 +537,11 @@
 					
 					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
 					
+					if (global.symbol1) {
+						createDicts();
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}");
+					};
+					
 					createDicts();
 					command.run("{}",                                   {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
 					
@@ -466,11 +551,26 @@
 					createDicts();
 					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
 					
+					if (global.symbol1) {
+						createDicts();
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+					};
+					
 					createDicts();
 					command.run("{a: 2, b: 3, c: 4, d: 5}",             {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
 					
+					if (global.symbol1) {
+						createDicts();
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+					};
+					
 					createDicts();
 					command.run("{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
+					
+					if (global.symbol1) {
+						createDicts();
+						command.run("{a: 2, b: 3, c: 4, d: 5, [symbol1]: 11}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+					};
 					
 					createDicts();
 					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
@@ -498,6 +598,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "true");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
@@ -507,24 +609,8 @@
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "undefined", "true");
-					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict1", "'c'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
-					command.run(2,           {eval: true},    /**/ "dict1", "'b'", "3", "true");
-					command.run(4,           {eval: true},    /**/ "dict1", "'c'", "4", "true");
-					command.run(5,           {eval: true},    /**/ "dict1", "'d'", "5", "true");
-					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "true");
-					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "true");
-					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "true");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "undefined", "false");
@@ -534,6 +620,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "false");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "false");
@@ -543,6 +631,8 @@
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "false");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "false");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "false");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "undefined", "true");
@@ -552,6 +642,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "true");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
@@ -561,24 +653,8 @@
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "undefined", "true");
-					command.run(2,           {eval: true},    /**/ "dict2", "'b'", "undefined", "true");
-					command.run(3,           {eval: true},    /**/ "dict2", "'c'", "undefined", "true");
-					command.run(4,           {eval: true},    /**/ "dict2", "'d'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
-					command.run(2,           {eval: true},    /**/ "dict2", "'b'", "3", "true");
-					command.run(3,           {eval: true},    /**/ "dict2", "'c'", "4", "true");
-					command.run(4,           {eval: true},    /**/ "dict2", "'d'", "5", "true");
-					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "true");
-					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "true");
-					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "11", "true");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "undefined", "false");
@@ -588,6 +664,8 @@
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "false");
 					
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2", "false");
@@ -597,6 +675,8 @@
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11", "false");
+					global.symbol1 && command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "false");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "undefined", "true");
@@ -606,6 +686,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "undefined", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "true");
 					
 					createDicts();
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
@@ -615,24 +697,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "true");
 					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "undefined", "true");
-					command.run(2,           {eval: true},    /**/ "dict3", "'b'", "undefined", "true");
-					command.run(3,           {eval: true},    /**/ "dict3", "'c'", "undefined", "true");
-					command.run(4,           {eval: true},    /**/ "dict3", "'d'", "undefined", "true");
-					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "true");
-					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "true");
-					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "true");
-					
-					createDicts();
-					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
-					command.run(2,           {eval: true},    /**/ "dict3", "'b'", "3", "true");
-					command.run(3,           {eval: true},    /**/ "dict3", "'c'", "4", "true");
-					command.run(4,           {eval: true},    /**/ "dict3", "'d'", "5", "true");
-					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
-					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "true");
-					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "true");
+					global.symbol1 && command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "11", "true");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "true");
 					
 					createDicts();
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "undefined", "false");
@@ -642,6 +708,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "false");
+					global.symbol1 && command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "undefined", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "false");
 					
 					createDicts();
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2", "false");
@@ -651,6 +719,8 @@
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
 					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol1", "11", "false");
+					global.symbol1 && command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
 					
 					command.run("undefined",                    {eval: true}     /**/ );
 					command.run("undefined",                    {eval: true},    /**/ "undefined", "'a'");
@@ -837,9 +907,25 @@
 					command.end();
 					
 					var command = test.prepareCommand(types.clone, "Doodad.Types.clone");
-					command.run("undefined",    {eval: true}     /**/ );
-					command.run("dict1", {eval: true, not: true, mode: 'compare'},  /**/  "dict1");
-					command.run("{a: 1, b: 2}", {eval: true},    /**/  "dict1");
+					command.run("undefined",                                {eval: true}     /**/ );
+					command.run("dict1",                                    {eval: true, not: true, mode: 'compare'},  /**/  "dict1");
+					if (global.symbol1) {
+						command.run("{a: 1, b: 2, [symbol1]: 10}",          {eval: true, inherited: true, note: "May fail under engines not supporting variables in object declaration."},  /**/  "dict1");
+					} else {
+						command.run("{a: 1, b: 2}",                         {eval: true, inherited: true},  /**/  "dict1");
+					};
+					command.run("dict2",                                    {eval: true, not: true, mode: 'compare'},  /**/  "dict2");
+					if (global.symbol1) {
+						command.run("{a: 1, b: 2, c: 3, d: 4, [symbol1]: 10}",  {eval: true, inherited: true, note: "May fail under engines not supporting variables in object declaration."},  /**/  "dict2");
+					} else {
+						command.run("{a: 1, b: 2, c: 3, d: 4}",             {eval: true, inherited: true},  /**/  "dict2");
+					};
+					command.run("dict3",                                    {eval: true, not: true, mode: 'compare'},  /**/  "dict3");
+					if (global.symbol1) {
+						command.run("{a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, [symbol1]: 10, [symbol2]: 11}",  {eval: true, inherited: true, note: "May fail under engines not supporting variables in object declaration."},  /**/  "dict3");
+					} else {
+						command.run("{a: 1, b: 2, c: 3, d: 4, e: 5, f: 6}",  {eval: true, inherited: true},  /**/  "dict3");
+					};
 					command.end();
 				},
 			},

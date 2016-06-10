@@ -57,7 +57,7 @@
 					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
 						options = this._super.apply(this, arguments);
 						options.enableDomObjectsModel = types.toBoolean(options.enableDomObjectsModel);
-						options.defaultScriptTimeout = parseInt(options.defaultScriptTimeout);
+						options.defaultScriptTimeout = types.toInteger(options.defaultScriptTimeout);
 						return options;
 					}),
 				};
@@ -122,14 +122,23 @@
 					// isEventTarget
 					windowEventTarget: (types.isNativeFunction(global.EventTarget) ? global.EventTarget : undefined),
 					
-					// callAsync
-					windowSetTimeout: global.setTimeout,
-					
 					// isEvent
-					windowEventConstructor: types.isFunction(global.Event) ? global.Event : global.Event.constructor,
+					windowEventConstructor: (types.isFunction(global.Event) ? global.Event : global.Event.constructor),
 					
 					// callAsync
 					mathMax: global.Math.max,
+					windowSetTimeout: global.setTimeout,
+					windowClearTimeout: global.clearTimeout,
+					windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate : undefined), // IE 10
+					windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate : undefined), // IE 10
+					windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame) || 
+												(types.isNativeFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame) || 
+												(types.isNativeFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame) || 
+												(types.isNativeFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame) ||
+												undefined,
+					windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame) ||
+												(types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame) ||
+												undefined,
 				};
 				
 				
@@ -228,6 +237,61 @@
 
 					);
 				
+				//===================================
+				// Promise events
+				//===================================
+
+				__Internal__.promiseUnhandledEvent = new types.Map();
+				__Internal__.promiseHandledEvent = new types.Map();
+				
+				types.addPromiseEventListener = function addPromiseEventListener(event, listener) {
+					if (event === 'unhandledrejection') {
+						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
+							var handler = function(ev) {
+								listener(new types.CustomEvent('unhandledrejection', {
+									detail: {
+										reason: ev.reason || ev.detail.reason,
+										promise: ev.promise || ev.detail.promise,
+									}
+								}));
+							};
+							global.addEventListener(event, handler);
+							__Internal__.promiseUnhandledEvent.set(listener, handler);
+						};
+					} else if (event === 'rejectionhandled') {
+						if (!__Internal__.promiseHandledEvent.has(listener)) {
+							var handler = function(ev) {
+								listener(new types.CustomEvent('rejectionhandled', {
+									detail: {
+										promise: ev.promise || ev.detail.promise,
+									}
+								}));
+							};
+							global.addEventListener(event, handler);
+							__Internal__.promiseHandledEvent.set(listener, handler);
+						};
+					} else {
+						throw new types.Error("Unknow promise event '~0~'.", [event]);
+					};
+				};
+				
+				types.removePromiseEventListener = function removePromiseEventListener(event, listener) {
+					if (event === 'unhandledrejection') {
+						if (__Internal__.promiseUnhandledEvent.has(listener)) {
+							var handler = __Internal__.promiseUnhandledEvent.get(listener);
+							global.removeEventListener(event, handler);
+							__Internal__.promiseUnhandledEvent.delete(listener);
+						};
+					} else if (event === 'rejectionhandled') {
+						if (__Internal__.promiseHandledEvent.has(listener)) {
+							var handler = __Internal__.promiseHandledEvent.get(listener);
+							global.removeEventListener(event, handler);
+							__Internal__.promiseHandledEvent.delete(listener);
+						};
+					} else {
+						throw new types.Error("Unknow promise event '~0~'.", [event]);
+					};
+				};
 				
 				//===================================
 				// Asynchronous functions
@@ -237,7 +301,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									fn: {
 										type: 'function',
@@ -259,21 +323,51 @@
 										optional: true,
 										description: "Function arguments.",
 									},
+									cancelable: {
+										type: 'bool',
+										optional: true,
+										description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+									},
 								},
-								returns: 'undefined',
+								returns: 'undefined,object',
 								description: "Asynchronously calls a function.",
 					}
 					//! END_REPLACE()
-					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args) {
+					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable) {
 						if (types.isNothing(delay)) {
-							delay = 1;
-						} else {
-							delay = __Natives__.mathMax(delay, 1);
+							delay = -1;
 						};
-						if (!types.isNothing(thisObj) || !types.isNothing(args)) {
+						if (types.isClass(types.getType(thisObj))) {
+							fn = types.bind(null, types.invoke, [thisObj, fn, args]);
+						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
 							fn = types.bind(thisObj, fn, args);
 						};
-						__Natives__.windowSetTimeout(fn, delay);
+						if ((delay <= 0) && __Natives__.windowSetImmediate) { // IE 10
+							// Raised after events queue process
+							var id = __Natives__.windowSetImmediate(fn);
+							return (cancelable && {
+								cancel: function cancel() {
+									__Natives__.windowClearImmediate(id);
+								},
+							} || undefined);
+						} else if ((delay <= 0) && __Natives__.windowRequestAnimationFrame) {
+							// Raised at page re-paint
+							var id = __Natives__.windowRequestAnimationFrame(fn);
+							return (cancelable && {
+								cancel: function cancel() {
+									__Natives__.windowCancelAnimationFrame(id);
+								},
+							} || undefined);
+						} else {
+							// Raised after X ms
+							delay = __Natives__.mathMax(delay, 0);
+							var id = __Natives__.windowSetTimeout(fn, delay);
+							return (cancelable && {
+								cancel: function cancel() {
+									__Natives__.windowClearTimeout(id);
+								},
+							} || undefined);
+						};
 					});
 				
 				//===================================
@@ -567,7 +661,7 @@
 
 							useCapture = !!useCapture;
 							
-							//var handler	= types.bind(this.obj, this),
+							//var handler	= types.bind(this[doodad.ObjectSymbol], this),
 							var self = this,
 								ignore = false;
 							
@@ -582,14 +676,14 @@
 										//if (!ev.currentTarget) {
 										//	ev.currentTarget = this;
 										//};
-										ev.getUnified = self.extender.getUnified;
+										ev.getUnified = self[doodad.ExtenderSymbol].getUnified;
 										delete ev.__unified;
-										return types.invoke(self.obj, self, [ev, context]);
+										return types.invoke(self[doodad.ObjectSymbol], self, [ev, context]);
 									};
 								};
 							};
 							
-							var eventTypes = this.extender.types,
+							var eventTypes = this[doodad.ExtenderSymbol].types,
 								eventTypesLen = eventTypes.length;
 								
 							for (var i = 0; i < eventTypesLen; i++) {
@@ -600,7 +694,7 @@
 										if (types.hasIndex(elements, j)) {
 											var element = elements[j],
 												handler = createHandler(element);
-											if (this._super(this.obj, this, null, [useCapture, element, type, handler])) {
+											if (this._super(this[doodad.ObjectSymbol], this, null, [useCapture, element, type, handler])) {
 												client.addEventListener(element, type, handler, useCapture);
 											};
 										};
@@ -615,9 +709,9 @@
 							if (types.isNothing(elements)) {
 								var evs;
 								if (types.isNothing(useCapture)) {
-									evs = this._super(this.obj, this);
+									evs = this._super(this[doodad.ObjectSymbol], this);
 								} else {
-									evs = this._super(this.obj, this, [!!useCapture]);
+									evs = this._super(this[doodad.ObjectSymbol], this, [!!useCapture]);
 								};
 								var evsLen = evs.length;
 								for (var j = 0; j < evsLen; j++) {
@@ -641,10 +735,10 @@
 								for (var i = 0; i < elementsLen; i++) {
 									var evs;
 									if (types.isNothing(useCapture)) {
-										evs = this._super(this.obj, this, [false, elements[i]]);
-										types.append(evs, this._super(this.obj, this, [true, elements[i]]));
+										evs = this._super(this[doodad.ObjectSymbol], this, [false, elements[i]]);
+										types.append(evs, this._super(this[doodad.ObjectSymbol], this, [true, elements[i]]));
 									} else {
-										evs = this._super(this.obj, this, [!!useCapture, elements[i]]);
+										evs = this._super(this[doodad.ObjectSymbol], this, [!!useCapture, elements[i]]);
 									};
 									var evsLen = evs.length;
 									for (var j = 0; j < evsLen; j++) {
@@ -663,15 +757,15 @@
 						},
 						promise: function promise(elements, /*optional*/context, /*optional*/useCapture) {
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							var canReject = this.extender.canReject;
+							var canReject = this[doodad.ExtenderSymbol].canReject;
 							var self = this;
 							var Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
 								self.attachOnce(elements, context, useCapture, function(ev) {
 									if (canReject && (ev instanceof doodad.ErrorEvent)) {
-										return reject.call(self.obj, ev);
+										return reject(ev);
 									} else {
-										return resolve.call(self.obj, ev);
+										return resolve(ev);
 									};
 								});
 							});
@@ -828,14 +922,25 @@
 				//! REPLACE_BY("null")
 				{
 							author: "Claude Petit",
-							revision: 0,
-							params: null,
+							revision: 1,
+							params: {
+								message: {
+									type: 'string',
+									optional: true,
+									description: "A message explaining that location has changed.",
+								},
+								params: {
+									type: 'arrayof(any),objectof(any)',
+									optional: true,
+									description: "Parameters of the error message",
+								},
+							},
 							returns: 'error',
 							description: "Signals that the current location has been moved to another one.",
 				}
 				//! END_REPLACE()
-				, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _new() {
-					return __Natives__.windowError.call(this, "Page moved.");
+				, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _new(message, /*optional*/params) {
+					return types.ScriptAbortedError.call(this, message || "Page moved.", params);
 				}));
 
 				tools.getCurrentLocation = root.DD_DOC(
@@ -1143,7 +1248,7 @@
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
 					
-					if (types.hasKey(__Internal__.loadedScripts, url)) {
+					if (types.has(__Internal__.loadedScripts, url)) {
 						loader = __Internal__.loadedScripts[url];
 					};
 					if (reload) {
@@ -1288,7 +1393,7 @@
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
 					
 					var loader = null;
-					if (types.hasKey(__Internal__.loadedScripts, url)) {
+					if (types.has(__Internal__.loadedScripts, url)) {
 						loader = __Internal__.loadedScripts[url];
 					};
 					if (reload) {

@@ -49,13 +49,13 @@
 
 			create: function create(root, /*optional*/_options) {
 				root.enableAsserts();
-				
-				var tools = root.Doodad.Tools;
-				tools.setOptions({
-					logLevel: tools.LogLevels.Debug,
-				});
-					
+
 				return function init(/*optional*/options) {
+					var tools = root.Doodad.Tools;
+					tools.setOptions({
+						logLevel: tools.LogLevels.Debug,
+					});
+
 					var doodad = root.Doodad;
 					if (doodad.Stack) {
 						doodad.Stack.enable();

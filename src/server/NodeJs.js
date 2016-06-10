@@ -89,6 +89,13 @@
 					// "isBuffer"
 					globalBuffer: global.Buffer,
 					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
+
+					// "callAsync"
+					globalSetTimeout: global.setTimeout,
+					globalClearTimeout: global.clearTimeout,
+					globalSetImmediate: global.setImmediate,
+					globalClearImmediate: global.clearImmediate,
+					processNextTick: process.nextTick,
 				};
 				
 				//=====================================
@@ -124,6 +131,62 @@
 				};
 
 				//===================================
+				// Promise events
+				//===================================
+
+				__Internal__.promiseUnhandledEvent = new types.Map();
+				__Internal__.promiseHandledEvent = new types.Map();
+
+				types.addPromiseEventListener = function addPromiseEventListener(event, listener) {
+					if (event === 'unhandledrejection') {
+						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
+							const handler = function(reason, promise) {
+								listener(new types.CustomEvent('unhandledrejection', {
+									detail: {
+										reason: reason,
+										promise: promise,
+									}
+								}));
+							};
+							global.process.on('unhandledRejection', handler);
+							__Internal__.promiseUnhandledEvent.set(listener, handler);
+						};
+					} else if (event === 'rejectionhandled') {
+						if (!__Internal__.promiseHandledEvent.has(listener)) {
+							const handler = function(promise) {
+								listener(new types.CustomEvent('rejectionhandled', {
+									detail: {
+										promise: promise,
+									}
+								}));
+							};
+							global.process.on('rejectionHandled', handler);
+							__Internal__.promiseHandledEvent.set(listener, handler);
+						};
+					} else {
+						throw new types.Error("Unknow promise event '~0~'.", [event]);
+					};
+				};
+				
+				types.removePromiseEventListener = function removePromiseEventListener(event, listener) {
+					if (event === 'unhandledrejection') {
+						if (__Internal__.promiseUnhandledEvent.has(listener)) {
+							const handler = __Internal__.promiseUnhandledEvent.get(listener);
+							global.process.removeListener('unhandledRejection', handler);
+							__Internal__.promiseUnhandledEvent.delete(listener);
+						};
+					} else if (event === 'rejectionhandled') {
+						if (__Internal__.promiseHandledEvent.has(listener)) {
+							const handler = __Internal__.promiseHandledEvent.get(listener);
+							global.process.removeListener('rejectionHandled', handler);
+							__Internal__.promiseHandledEvent.delete(listener);
+						};
+					} else {
+						throw new types.Error("Unknow promise event '~0~'.", [event]);
+					};
+				};
+				
+				//===================================
 				// Asynchronous functions
 				//===================================
 				
@@ -131,7 +194,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 3,
 								params: {
 									fn: {
 										type: 'function',
@@ -153,12 +216,17 @@
 										optional: true,
 										description: "Function arguments.",
 									},
+									cancelable: {
+										type: 'bool',
+										optional: true,
+										description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+									},
 								},
-								returns: 'undefined',
+								returns: 'undefined,object',
 								description: "Asynchronously calls a function.",
 					}
 					//! END_REPLACE()
-					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args) {
+					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable) {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
@@ -168,11 +236,38 @@
 							fn = types.bind(thisObj, fn, args);
 						};
 						if (delay === 0) {
-							global.setImmediate(fn);
+							// Raised after events queue process and after I/O
+							const id = __Natives__.globalSetImmediate(fn);
+							return (cancelable && {
+								cancel: function cancel() {
+									__Natives__.globalClearImmediate(id);
+								},
+							} || undefined);
 						} else if (delay < 0) {
-							process.nextTick(fn);
+							// Raised after events queue process and before I/O
+							if (cancelable) {
+								let cancelled = false;
+								__Natives__.processNextTick(function() {
+									if (!cancelled) {
+										fn();
+									};
+								});
+								return {
+									cancel: function cancel() {
+										cancelled = true;
+									},
+								};
+							} else {
+								__Natives__.processNextTick(fn);
+							};
 						} else {
-							global.setTimeout(fn, delay);
+							// Raised after X ms
+							const id = __Natives__.globalSetTimeout(fn, delay);
+							return (cancelable && {
+								cancel: function cancel() {
+									__Natives__.globalClearTimeout(id);
+								},
+							} || undefined);
 						};
 					});
 				
@@ -407,7 +502,7 @@
 						root.DD_ASSERT && root.DD_ASSERT(types.isString(file), "Invalid file.");
 						
 						let loader = null;
-						if (types.hasKey(__Internal__.loadedScripts, file)) {
+						if (types.has(__Internal__.loadedScripts, file)) {
 							loader = __Internal__.loadedScripts[file];
 						};
 						if (reload) {
@@ -1448,7 +1543,7 @@
 							});
 							
 							let fileCallbacks;
-							if (types.hasKey(__Internal__.watchedFiles, path)) {
+							if (types.has(__Internal__.watchedFiles, path)) {
 								fileCallbacks = __Internal__.watchedFiles[path];
 							} else {
 								fileCallbacks = [];
@@ -1768,11 +1863,11 @@
 							let ignore = false;
 							
 							const createHandler = function(emitter, type) {
-								const handler = new doodad.Callback(self.obj, function nodeEventHandler(/*paramarray*/) {
+								const handler = new doodad.Callback(self[doodad.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
 									if (!ignore) {
 										if (once) {
 											ignore = true;
-											self.detach(self.obj, handler);
+											self.detach(self[doodad.ObjectSymbol], handler);
 										};
 										const ctx = {
 											emitter: emitter,
@@ -1785,7 +1880,7 @@
 								return handler;
 							};
 							
-							const eventTypes = this.extender.types;
+							const eventTypes = this[doodad.ExtenderSymbol].types;
 								
 							for (let i = 0; i < eventTypes.length; i++) {
 								if (types.hasIndex(eventTypes, i)) {
@@ -1794,7 +1889,7 @@
 										if (types.hasIndex(emitters, j)) {
 											const emitter = emitters[j],
 												handler = createHandler(emitter, type);
-											if (this._super(this.obj, this, null, [emitter, type, handler])) {
+											if (this._super(this[doodad.ObjectSymbol], this, null, [emitter, type, handler])) {
 												if (once) {
 													emitter.once(type, handler);
 												} else {
@@ -1811,7 +1906,7 @@
 						},
 						detach: types.SUPER(function detach(/*optional*/emitters) {
 							if (types.isNothing(emitters)) {
-								const evs = this._super(this.obj, this);
+								const evs = this._super(this[doodad.ObjectSymbol], this);
 								for (let j = 0; j < evs.length; j++) {
 									const evData = evs[j][3],
 										emitter = evData[0],
@@ -1829,7 +1924,7 @@
 								//}), "Invalid emitters.");
 								
 								for (let i = 0; i < emitters.length; i++) {
-									const evs = this._super(this.obj, this, [emitters[i]]);
+									const evs = this._super(this[doodad.ObjectSymbol], this, [emitters[i]]);
 									for (let j = 0; j < evs.length; j++) {
 										const evData = evs[j][3],
 											emitter = evData[0],
@@ -1845,7 +1940,7 @@
 						},
 						promise: function promise(emitters, /*optional*/context) {
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							const canReject = this.extender.canReject;
+							const canReject = this[doodad.ExtenderSymbol].canReject;
 							const self = this;
 							const Promise = types.getPromise();
 							return new Promise(function(resolve, reject) {
@@ -1999,7 +2094,7 @@
 					listenerCount: doodad.PUBLIC(function listenerCount(event) {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							const stack = this[name].stack;
+							const stack = this[name][doodad.StackSymbol];
 							return stack && stack.length || 0;
 						};
 					}),
@@ -2007,7 +2102,7 @@
 					listeners: doodad.PUBLIC(function listeners(event) {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							const stack = this[name].stack;
+							const stack = this[name][doodad.StackSymbol];
 							return stack && types.map(stack, function(ev) {
 								return ev[1]; // fn
 							}) || [];
