@@ -47,22 +47,19 @@
 
 			// Unit
 			priority: null,
-				proto: {
-				run: null,
-			},
 
 			proto: {
-				run: function run(entry, /*optional*/options) {
+				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var root = entry.root,
-						doodad = root.Doodad,
+					var doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
 						test = doodad.Test,
 						unit = test.Types.Is,
-						io = doodad.IO;
+						io = doodad.IO,
+						client = doodad.Client;
 
 						
 					if (!options) {
@@ -84,7 +81,7 @@
 					global.d = types.createObject(null);
 
 					
-					global.symbol = types.getSymbolFor("symbol");
+					global.symbol = types.hasGetSymbolForEnabled() && types.getSymbolFor("symbol") || undefined;
 					
 					
 					var command = test.prepareCommand(types.isNothing, "Doodad.Types.isNothing");
@@ -920,191 +917,191 @@
 					command.run(false, {eval: true, repetitions: 100},        /**/"c");
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
-	/*				
+
 					if (global.document) {
-						var command = test.prepareCommand(types.isWindow, "Doodad.Types.isWindow");
-						command.run(false, {eval: true, repetitions: 100},        /** /"undefined");
-						command.run(false, {eval: true, repetitions: 100},        /** / "null");
-						command.run(false, {eval: true, repetitions: 100},        /** /"''");
-						command.run(false, {eval: true, repetitions: 100},        /** /"' '");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'a'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'1'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"0");
-						command.run(false, {eval: true, repetitions: 100},        /** /"1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "0.1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "NaN");
-						command.run(false, {eval: true, repetitions: 100},        /** / "Infinity");
-						command.run(false, {eval: true, repetitions: 100},        /** / "true");
-						command.run(false, {eval: true, repetitions: 100},        /** / "false");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{a: 1}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[1]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String(' ')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('a')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('1')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(1)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0.1)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(NaN)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(Infinity)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Boolean(false)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "document.forms");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Date");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Error");
-						command.run(false, {eval: true, repetitions: 100},        /** /"(function(){})");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object.prototype.toString");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object");
-						command.run(false, {eval: true, repetitions: 100},        /** /"document.body");
-						command.run(false, {eval: true, repetitions: 100},        /** /"a");
-						command.run(false, {eval: true, repetitions: 100},        /** /"b");
-						command.run(false, {eval: true, repetitions: 100},        /** /"c");
-						global.symbol && command.run(false, {eval: true, repetitions: 100},        /** / "symbol");
-						command.run(true, {eval: true, repetitions: 100},         /** / "global");
-						command.run(false, {eval: true, repetitions: 100},        /** /"document");
-						command.run(false, {eval: true, repetitions: 100},        /** /"textNode");
+						var command = test.prepareCommand(client.isWindow, "Doodad.Client.isWindow");
+						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
+						command.run(false, {eval: true, repetitions: 100},        /**/"''");
+						command.run(false, {eval: true, repetitions: 100},        /**/"' '");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'a'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'1'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"0");
+						command.run(false, {eval: true, repetitions: 100},        /**/"1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "true");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "false");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{a: 1}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[1]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String(' ')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('a')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('1')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0.1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "document.forms");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Date");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
+						command.run(false, {eval: true, repetitions: 100},        /**/"(function(){})");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object.prototype.toString");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object");
+						command.run(false, {eval: true, repetitions: 100},        /**/"document.body");
+						command.run(false, {eval: true, repetitions: 100},        /**/"a");
+						command.run(false, {eval: true, repetitions: 100},        /**/"b");
+						command.run(false, {eval: true, repetitions: 100},        /**/"c");
+						global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
+						command.run(true, {repetitions: 100},                     /**/ global);
+						command.run(false, {eval: true, repetitions: 100},        /**/"document");
+						command.run(false, {eval: true, repetitions: 100},        /**/"textNode");
 						command.end();
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(types.isDocument, "Doodad.Types.isDocument");
-						command.run(false, {eval: true, repetitions: 100},        /** /"undefined");
-						command.run(false, {eval: true, repetitions: 100},        /** / "null");
-						command.run(false, {eval: true, repetitions: 100},        /** /"''");
-						command.run(false, {eval: true, repetitions: 100},        /** /"' '");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'a'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'1'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"0");
-						command.run(false, {eval: true, repetitions: 100},        /** /"1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "0.1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "NaN");
-						command.run(false, {eval: true, repetitions: 100},        /** / "Infinity");
-						command.run(false, {eval: true, repetitions: 100},        /** / "true");
-						command.run(false, {eval: true, repetitions: 100},        /** / "false");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{a: 1}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[1]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String(' ')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('a')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('1')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(1)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0.1)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(NaN)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(Infinity)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Boolean(false)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "document.forms");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Date");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Error");
-						command.run(false, {eval: true, repetitions: 100},        /** /"(function(){})");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object.prototype.toString");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object");
-						command.run(false, {eval: true, repetitions: 100},        /** /"document.body");
-						command.run(false, {eval: true, repetitions: 100},        /** /"a");
-						command.run(false, {eval: true, repetitions: 100},        /** /"b");
-						command.run(false, {eval: true, repetitions: 100},        /** /"c");
-						global.symbol && command.run(false, {eval: true, repetitions: 100},        /** / "symbol");
-						command.run(false, {eval: true, repetitions: 100},        /** /"global");
-						command.run(true, {eval: true, repetitions: 100},         /** / "document");
-						command.run(false, {eval: true, repetitions: 100},        /** /"textNode");
+						var command = test.prepareCommand(client.isDocument, "Doodad.Client.isDocument");
+						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
+						command.run(false, {eval: true, repetitions: 100},        /**/"''");
+						command.run(false, {eval: true, repetitions: 100},        /**/"' '");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'a'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'1'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"0");
+						command.run(false, {eval: true, repetitions: 100},        /**/"1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "true");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "false");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{a: 1}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[1]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String(' ')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('a')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('1')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0.1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "document.forms");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Date");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
+						command.run(false, {eval: true, repetitions: 100},        /**/"(function(){})");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object.prototype.toString");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object");
+						command.run(false, {eval: true, repetitions: 100},        /**/"document.body");
+						command.run(false, {eval: true, repetitions: 100},        /**/"a");
+						command.run(false, {eval: true, repetitions: 100},        /**/"b");
+						command.run(false, {eval: true, repetitions: 100},        /**/"c");
+						global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
+						command.run(false, {repetitions: 100},                    /**/global);
+						command.run(true, {eval: true, repetitions: 100},         /**/ "document");
+						command.run(false, {eval: true, repetitions: 100},        /**/"textNode");
 						command.end();
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(types.isNode, "Doodad.Types.isNode");
-						command.run(false, {eval: true, repetitions: 100},        /** /"undefined");
-						command.run(false, {eval: true, repetitions: 100},        /** / "null");
-						command.run(false, {eval: true, repetitions: 100},        /** /"''");
-						command.run(false, {eval: true, repetitions: 100},        /** /"' '");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'a'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'1'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"0");
-						command.run(false, {eval: true, repetitions: 100},        /** /"1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "0.1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "NaN");
-						command.run(false, {eval: true, repetitions: 100},        /** / "Infinity");
-						command.run(false, {eval: true, repetitions: 100},        /** / "true");
-						command.run(false, {eval: true, repetitions: 100},        /** / "false");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{a: 1}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[1]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String(' ')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('a')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('1')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(1)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0.1)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(NaN)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(Infinity)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Boolean(false)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "document.forms");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Date");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Error");
-						command.run(false, {eval: true, repetitions: 100},        /** /"(function(){})");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object.prototype.toString");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object");
-						command.run(true, {eval: true, repetitions: 100},        /** / "document.body");
-						command.run(false, {eval: true, repetitions: 100},        /** /"a");
-						command.run(false, {eval: true, repetitions: 100},        /** /"b");
-						command.run(false, {eval: true, repetitions: 100},        /** /"c");
-						global.symbol && command.run(false, {eval: true, repetitions: 100},        /** / "symbol");
-						command.run(false, {eval: true, repetitions: 100},        /** /"global");
-						command.run(true, {eval: true, repetitions: 100},        /** / "document");
-						command.run(true, {eval: true, repetitions: 100},        /** / "textNode");
+						var command = test.prepareCommand(client.isNode, "Doodad.Client.isNode");
+						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
+						command.run(false, {eval: true, repetitions: 100},        /**/"''");
+						command.run(false, {eval: true, repetitions: 100},        /**/"' '");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'a'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'1'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"0");
+						command.run(false, {eval: true, repetitions: 100},        /**/"1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "true");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "false");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{a: 1}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[1]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String(' ')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('a')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('1')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0.1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "document.forms");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Date");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
+						command.run(false, {eval: true, repetitions: 100},        /**/"(function(){})");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object.prototype.toString");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object");
+						command.run(true, {eval: true, repetitions: 100},         /**/ "document.body");
+						command.run(false, {eval: true, repetitions: 100},        /**/"a");
+						command.run(false, {eval: true, repetitions: 100},        /**/"b");
+						command.run(false, {eval: true, repetitions: 100},        /**/"c");
+						global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
+						command.run(false, {repetitions: 100},                    /**/global);
+						command.run(true, {eval: true, repetitions: 100},         /**/ "document");
+						command.run(true, {eval: true, repetitions: 100},         /**/ "textNode");
 						command.end();
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(types.isElement, "Doodad.Types.isElement");
-						command.run(false, {eval: true, repetitions: 100},        /** /"undefined");
-						command.run(false, {eval: true, repetitions: 100},        /** / "null");
-						command.run(false, {eval: true, repetitions: 100},        /** /"''");
-						command.run(false, {eval: true, repetitions: 100},        /** /"' '");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'a'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"'1'");
-						command.run(false, {eval: true, repetitions: 100},        /** /"0");
-						command.run(false, {eval: true, repetitions: 100},        /** /"1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "0.1");
-						command.run(false, {eval: true, repetitions: 100},        /** / "NaN");
-						command.run(false, {eval: true, repetitions: 100},        /** / "Infinity");
-						command.run(false, {eval: true, repetitions: 100},        /** / "true");
-						command.run(false, {eval: true, repetitions: 100},        /** / "false");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"{a: 1}");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"[1]");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String(' ')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('a')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new String('1')");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(1)");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Number(0.1)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(NaN)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Number(Infinity)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Boolean(false)");
-						command.run(false, {eval: true, repetitions: 100},        /** / "document.forms");
-						command.run(false, {eval: true, repetitions: 100},        /** /"new Date");
-						command.run(false, {eval: true, repetitions: 100},        /** / "new Error");
-						command.run(false, {eval: true, repetitions: 100},        /** /"(function(){})");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object.prototype.toString");
-						command.run(false, {eval: true, repetitions: 100},        /** /"Object");
-						command.run(true, {eval: true, repetitions: 100},         /** / "document.body");
-						command.run(false, {eval: true, repetitions: 100},        /** /"a");
-						command.run(false, {eval: true, repetitions: 100},        /** /"b");
-						command.run(false, {eval: true, repetitions: 100},        /** /"c");
-						global.symbol && command.run(false, {eval: true, repetitions: 100},        /** / "symbol");
-						command.run(false, {eval: true, repetitions: 100},        /** /"global");
-						command.run(false, {eval: true, repetitions: 100},        /** /"document");
-						command.run(false, {eval: true, repetitions: 100},        /** /"textNode");
+						var command = test.prepareCommand(client.isElement, "Doodad.Client.isElement");
+						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
+						command.run(false, {eval: true, repetitions: 100},        /**/"''");
+						command.run(false, {eval: true, repetitions: 100},        /**/"' '");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'a'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"'1'");
+						command.run(false, {eval: true, repetitions: 100},        /**/"0");
+						command.run(false, {eval: true, repetitions: 100},        /**/"1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "true");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "false");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"{a: 1}");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"[1]");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String(' ')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('a')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new String('1')");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0.1)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "document.forms");
+						command.run(false, {eval: true, repetitions: 100},        /**/"new Date");
+						command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
+						command.run(false, {eval: true, repetitions: 100},        /**/"(function(){})");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object.prototype.toString");
+						command.run(false, {eval: true, repetitions: 100},        /**/"Object");
+						command.run(true,  {eval: true, repetitions: 100},        /**/ "document.body");
+						command.run(false, {eval: true, repetitions: 100},        /**/"a");
+						command.run(false, {eval: true, repetitions: 100},        /**/"b");
+						command.run(false, {eval: true, repetitions: 100},        /**/"c");
+						global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
+						command.run(false, {repetitions: 100},                    /**/global);
+						command.run(false, {eval: true, repetitions: 100},        /**/"document");
+						command.run(false, {eval: true, repetitions: 100},        /**/"textNode");
 						command.end();
 					};
-					*/
+					
 					var command = test.prepareCommand(types.isNothingOrEmpty, "Doodad.Types.isNothingOrEmpty");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "null");

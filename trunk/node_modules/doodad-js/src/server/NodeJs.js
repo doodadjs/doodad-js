@@ -46,7 +46,7 @@
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 				
 				const doodad = root.Doodad,
@@ -85,7 +85,7 @@
 				// Natives
 				//===================================
 				
-				const __Natives__ = {
+				types.complete(_shared.Natives, {
 					// "isBuffer"
 					globalBuffer: global.Buffer,
 					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
@@ -96,21 +96,20 @@
 					globalSetImmediate: global.setImmediate,
 					globalClearImmediate: global.clearImmediate,
 					processNextTick: process.nextTick,
-				};
-				
-				//=====================================
-				// Options
-				//=====================================
-				
-				//nodejs.setOptions({
-				//})
+					
+					// "catchAndExit"
+					processExit: process.exit,
+				});
 				
 				//===================================
 				// Buffers
 				//===================================
 				
-				types.isBuffer = (__Natives__.globalBufferIsBuffer || (function(buffer) {
-					return (buffer instanceof __Natives__.globalBuffer);
+				types.isBuffer = (_shared.Natives.globalBufferIsBuffer || (function(buffer) {
+					if (types.isNothing(obj)) {
+						return false;
+					};
+					return (typeof obj === 'object') && (buffer instanceof _shared.Natives.globalBuffer);
 				}));
 				
 				if (global.global.Uint8Array) {
@@ -131,13 +130,78 @@
 				};
 
 				//===================================
+				// Emitters
+				//===================================
+				
+				types.isEmitter = function isEmitter(emitter) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					return types.isFunction(emitter.prependListener) &&
+						types.isFunction(emitter.prependOnceListener) &&
+						types.isFunction(emitter.addListener) &&
+						types.isFunction(emitter.emit) &&
+						types.isFunction(emitter.getMaxListeners) &&
+						types.isFunction(emitter.listenerCount) &&
+						types.isFunction(emitter.listeners) &&
+						types.isFunction(emitter.on) &&
+						types.isFunction(emitter.once) &&
+						types.isFunction(emitter.removeAllListeners) &&
+						types.isFunction(emitter.removeListener) &&
+						types.isFunction(emitter.setMaxListeners)
+				};
+				
+				//===================================
+				// Streams
+				//===================================
+				
+				types.isReadableStream = function isReadableStream(stream) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					return types.isEmitter(stream) &&
+						types.isFunction(stream.isPaused) &&
+						types.isFunction(stream.pause) &&
+						types.isFunction(stream.pipe) &&
+						types.isFunction(stream.read) &&
+						types.isFunction(stream.resume) &&
+						types.isFunction(stream.setEncoding) &&
+						types.isFunction(stream.unpipe) &&
+						types.isFunction(stream.push) &&
+						types.isFunction(stream.unshift) &&
+						types.isFunction(stream.wrap)
+				};
+				
+				types.isWritableStream = function isWritableStream(stream) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					return types.isEmitter(stream) &&
+						//types.isFunction(stream.cork) &&
+						//types.isFunction(stream.uncork) &&
+						//types.isFunction(stream.setDefaultEncoding) &&
+						types.isFunction(stream.write) &&
+						types.isFunction(stream.end)
+				};
+				
+				types.isDuplexStream = function isDuplexStream(stream) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					return types.isReadableStream(stream) && types.isWritableStream(stream);
+				};
+				
+				types.isTransformStream = function isTransformStream(stream) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					// TODO: Find a way to know if it's really a transform stream, not a duplex stream
+					return types.isReadableStream(stream) && types.isWritableStream(stream);
+				};
+				
+				types.isStream = function isStream(stream) {
+					// <PRB> Node.Js has no object models, so we must test for functions.
+					return types.isReadableStream(stream) || types.isWritableStream(stream);
+				};
+				
+				//===================================
 				// Promise events
 				//===================================
 
 				__Internal__.promiseUnhandledEvent = new types.Map();
 				__Internal__.promiseHandledEvent = new types.Map();
 
-				types.addPromiseEventListener = function addPromiseEventListener(event, listener) {
+				types.addPromiseListener = function addPromiseEventListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
 							const handler = function(reason, promise) {
@@ -168,7 +232,7 @@
 					};
 				};
 				
-				types.removePromiseEventListener = function removePromiseEventListener(event, listener) {
+				types.removePromiseListener = function removePromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (__Internal__.promiseUnhandledEvent.has(listener)) {
 							const handler = __Internal__.promiseUnhandledEvent.get(listener);
@@ -231,23 +295,23 @@
 							delay = -1;
 						};
 						if (types.isClass(types.getType(thisObj))) {
-							fn = types.bind(null, types.invoke, [thisObj, fn, args]);
+							fn = types.bind(null, _shared.invoke, [thisObj, fn, args]);
 						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
 							fn = types.bind(thisObj, fn, args);
 						};
 						if (delay === 0) {
 							// Raised after events queue process and after I/O
-							const id = __Natives__.globalSetImmediate(fn);
+							const id = _shared.Natives.globalSetImmediate(fn);
 							return (cancelable && {
 								cancel: function cancel() {
-									__Natives__.globalClearImmediate(id);
+									_shared.Natives.globalClearImmediate(id);
 								},
 							} || undefined);
 						} else if (delay < 0) {
 							// Raised after events queue process and before I/O
 							if (cancelable) {
 								let cancelled = false;
-								__Natives__.processNextTick(function() {
+								_shared.Natives.processNextTick(function() {
 									if (!cancelled) {
 										fn();
 									};
@@ -258,18 +322,69 @@
 									},
 								};
 							} else {
-								__Natives__.processNextTick(fn);
+								_shared.Natives.processNextTick(fn);
 							};
 						} else {
 							// Raised after X ms
-							const id = __Natives__.globalSetTimeout(fn, delay);
+							const id = _shared.Natives.globalSetTimeout(fn, delay);
 							return (cancelable && {
 								cancel: function cancel() {
-									__Natives__.globalClearTimeout(id);
+									_shared.Natives.globalClearTimeout(id);
 								},
 							} || undefined);
 						};
 					});
+				
+				//=====================================
+				// Shutdown & Exit
+				//=====================================
+				
+				__Internal__.catchAndExitCalled = false;
+				
+				tools.catchAndExit = function catchAndExit(err) {
+					// NOTE: This is the last resort error handling.
+					// NOTE: types.ScriptAbortedError should bubbles here
+					
+					if (!__Internal__.catchAndExitCalled) {
+						__Internal__.catchAndExitCalled = true;
+						
+						try {
+							process.exitCode = 1;
+
+							if (!err.trapped) {
+								if (!(err instanceof types.ScriptAbortedError)) {
+									debugger;
+								};
+								try {
+									err.trapped = true;
+									if (err.stack) {
+										global.console.error(err.stack);
+									} else {
+										global.console.error(err);
+									};
+								} catch(p) {
+									debugger;
+								};
+							};
+							
+							if (err instanceof types.ScriptAbortedError) {
+								process.exitCode = err.exitCode;
+							};
+						} catch(o) {
+							debugger;
+						};
+						
+						try {
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false})); // sync
+						} catch(o) {
+							debugger;
+						};
+						
+						tools.callAsync(_shared.Natives.processExit, 0);
+					};
+					
+					throw err;
+				};
 				
 				//=====================================
 				// "Client.js" Extension
@@ -619,7 +734,7 @@
 					//! END_REPLACE()
 					, function loadFile(path, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(path)) {
-							path = files.getOptions().hooks.pathParser(path, types.get(options, 'parseOptions'));
+							path = _shared.pathParser(path, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(path, options, callbacks);
 					});
@@ -662,7 +777,7 @@
 						});
 						const async = types.get(options, 'async', false);
 						if (async) {
-							return new Promise(function(resolve, reject) {
+							return Promise.create(function rmdirPromise(resolve, reject) {
 								nodeFs.rmdir(name, function(ex) {
 									if (ex) {
 										if (ex.code === 'ENOENT') {
@@ -808,7 +923,7 @@
 										shell: 'api',
 									});
 									if (async) {
-										return new Promise(function (resolve, reject) {
+										return Promise.create(function nodeFsMkdirPromise(resolve, reject) {
 											nodeFs.mkdir(name, function (ex) {
 												if (ex) {
 													if (ex.code === 'EEXIST') {
@@ -847,7 +962,7 @@
 								shell: 'api',
 							});
 							if (async) {
-								return new Promise(function(resolve, reject) {
+								return Promise.create(function nodeFsMkdirPromise2(resolve, reject) {
 									nodeFs.mkdir(name, function(ex) {
 										if (ex) {
 											if (ex.code === 'EEXIST') {
@@ -910,7 +1025,7 @@
 						const async = types.get(options, 'async', false),
 							bufferLength = types.get(options, 'bufferLength', 4096);
 						if (async) {
-							return new Promise(function(resolve, reject) {
+							return Promise.create(function copyPromise(resolve, reject) {
 								nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
 									if (ex) {
 										reject(ex);
@@ -1198,7 +1313,7 @@
 									};
 								};
 								if (async) {
-									return new Promise(function(resolve, reject) {
+									return Promise.create(function nodeFsStatsPromise(resolve, reject) {
 										const callback = function callback(ex, stats) {
 											if (ex) {
 												reject(ex);
@@ -1223,7 +1338,7 @@
 							
 							if (async) {
 								const readdir = function readdir(name, parent, parentRel, depth) {
-									return new Promise(function(resolve, reject) {
+									return Promise.create(function nodeFsReaddirPromise(resolve, reject) {
 										const path = (name ? parent.combine(name) : parent);
 										let pathRel;
 										if (relative) {
@@ -1366,7 +1481,7 @@
 						if (!async) {
 							throw new types.NotSupported("Synchronous read is not implemented.");
 						};
-						return new Promise(function(resolve, reject) {
+						return Promise.create(function readFilePromise(resolve, reject) {
 							const state = {
 								ready: false,
 								timeoutId: null,
@@ -1660,22 +1775,24 @@
 					
 					/*base*/
 					nodeConsole, 
-					
+
 					/*constructor*/
 					function(hook, /*optional*/stdout, /*optional*/stderr) {
-						if (!types.isJsFunction(hook)) {
-							throw new types.TypeError("Invalid hook function.");
+						if (this instanceof nodejs.Console) {
+							if (!types.isJsFunction(hook)) {
+								throw new types.TypeError("Invalid hook function.");
+							};
+							this.__hook = hook;
+							this.__hasStd = !!stdout || !!stderr;
+							if (!stdout) {
+								stdout = process.stdout;
+							};
+							if (!stderr) {
+								stderr = stdout;
+							};
+							return nodeConsole.call(this, stdout, stderr);
 						};
-						this.__hook = hook;
-						this.__hasStd = !!stdout || !!stderr;
-						if (!stdout) {
-							stdout = process.stdout;
-						};
-						if (!stderr) {
-							stderr = stdout;
-						};
-						return nodeConsole.call(this, stdout, stderr);
-					}, 
+					},
 					
 					/*typeProto*/
 					{
@@ -1800,6 +1917,8 @@
 					}
 				));
 
+				nodejs.Console = types.INIT(nodejs.Console);
+
 				
 				//===================================
 				// Doodad extension
@@ -1837,94 +1956,76 @@
 					})))),
 				}))));
 				
-				doodad.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
-				{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: null,
-							description: "NodeJs event handler prototype.",
-				}
-				//! END_REPLACE()
-				, doodad.EventHandler.$inherit(
-					/*typeProto*/
+				doodad.NodeEventHandler = root.DD_DOC(
+					//! REPLACE_BY("null")
 					{
-						$TYPE_NAME: 'NodeEventHandler',
-						
-						attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
-							if (!types.isArrayLike(emitters)) {
-								emitters = [emitters];
-							};
-
-							this.detach(emitters);
-
-							const self = this;
-							let ignore = false;
+								author: "Claude Petit",
+								revision: 1,
+								params: null,
+								returns: null,
+								description: "NodeJs event handler prototype.",
+					}
+					//! END_REPLACE()
+					, doodad.EventHandler.$inherit(
+						/*typeProto*/
+						{
+							$TYPE_NAME: 'NodeEventHandler',
 							
-							const createHandler = function(emitter, type) {
-								const handler = new doodad.Callback(self[doodad.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
-									if (!ignore) {
-										if (once) {
-											ignore = true;
-											self.detach(self[doodad.ObjectSymbol], handler);
-										};
-										const ctx = {
-											emitter: emitter,
-											type: type,
-											data: context,
-										};
-										return self.apply(this, types.append([ctx], arguments));
-									};
-								});
-								return handler;
-							};
-							
-							const eventTypes = this[doodad.ExtenderSymbol].types;
+							attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
+								if (!types.isArrayLike(emitters)) {
+									emitters = [emitters];
+								};
+
+								this.detach(emitters);
+
+								const self = this;
+								let ignore = false;
 								
-							for (let i = 0; i < eventTypes.length; i++) {
-								if (types.hasIndex(eventTypes, i)) {
-									const type = eventTypes[i];
-									for (let j = 0; j < emitters.length; j++) {
-										if (types.hasIndex(emitters, j)) {
-											const emitter = emitters[j],
-												handler = createHandler(emitter, type);
-											if (this._super(this[doodad.ObjectSymbol], this, null, [emitter, type, handler])) {
-												if (once) {
-													emitter.once(type, handler);
-												} else {
-													emitter.on(type, handler);
+								const createHandler = function(emitter, type) {
+									const handler = new doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
+										if (!ignore) {
+											if (once) {
+												ignore = true;
+												self.detach(self[_shared.ObjectSymbol], handler);
+											};
+											const ctx = {
+												emitter: emitter,
+												type: type,
+												data: context,
+											};
+											return self.apply(this, types.append([ctx], arguments));
+										};
+									});
+									return handler;
+								};
+								
+								const eventTypes = this[_shared.ExtenderSymbol].types;
+									
+								for (let i = 0; i < eventTypes.length; i++) {
+									if (types.hasIndex(eventTypes, i)) {
+										const type = eventTypes[i];
+										for (let j = 0; j < emitters.length; j++) {
+											if (types.hasIndex(emitters, j)) {
+												const emitter = emitters[j],
+													handler = createHandler(emitter, type);
+												if (this._super(this[_shared.ObjectSymbol], this, null, [emitter, type, handler])) {
+													if (once) {
+														emitter.once(type, handler);
+													} else {
+														emitter.on(type, handler);
+													};
 												};
 											};
 										};
 									};
 								};
-							};
-						}),
-						attachOnce: function attachOnce(emitters, /*optional*/context) {
-							this.attach(emitters, context, true);
-						},
-						detach: types.SUPER(function detach(/*optional*/emitters) {
-							if (types.isNothing(emitters)) {
-								const evs = this._super(this[doodad.ObjectSymbol], this);
-								for (let j = 0; j < evs.length; j++) {
-									const evData = evs[j][3],
-										emitter = evData[0],
-										type = evData[1],
-										handler = evData[2];
-									emitter.removeListener(type, handler);
-								};
-							} else {
-								if (!types.isArrayLike(emitters)) {
-									emitters = [emitters];
-								};
-								
-								//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
-								//	return nodeJs.isEventEmitter(emitter);
-								//}), "Invalid emitters.");
-								
-								for (let i = 0; i < emitters.length; i++) {
-									const evs = this._super(this[doodad.ObjectSymbol], this, [emitters[i]]);
+							}),
+							attachOnce: function attachOnce(emitters, /*optional*/context) {
+								this.attach(emitters, context, true);
+							},
+							detach: types.SUPER(function detach(/*optional*/emitters) {
+								if (types.isNothing(emitters)) {
+									const evs = this._super(this[_shared.ObjectSymbol], this);
 									for (let j = 0; j < evs.length; j++) {
 										const evData = evs[j][3],
 											emitter = evData[0],
@@ -1932,35 +2033,53 @@
 											handler = evData[2];
 										emitter.removeListener(type, handler);
 									};
-								};
-							};
-						}),
-						clear: function clear() {
-							this.detach();
-						},
-						promise: function promise(emitters, /*optional*/context) {
-							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							const canReject = this[doodad.ExtenderSymbol].canReject;
-							const self = this;
-							const Promise = types.getPromise();
-							return new Promise(function(resolve, reject) {
-								if (canReject) {
-									self.attachOnce(emitters, context, function(context, err /*, paramarray*/) {
-										if (canReject && types.isError(err)) {
-											return reject(err);
-										} else {
-											return resolve(types.toArray(arguments));
-										};
-									});
 								} else {
-									self.attachOnce(emitters, context, function(/*paramarray*/) {
-										return resolve(types.toArray(arguments));
-									});
+									if (!types.isArrayLike(emitters)) {
+										emitters = [emitters];
+									};
+									
+									//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
+									//	return nodeJs.isEventEmitter(emitter);
+									//}), "Invalid emitters.");
+									
+									for (let i = 0; i < emitters.length; i++) {
+										const evs = this._super(this[_shared.ObjectSymbol], this, [emitters[i]]);
+										for (let j = 0; j < evs.length; j++) {
+											const evData = evs[j][3],
+												emitter = evData[0],
+												type = evData[1],
+												handler = evData[2];
+											emitter.removeListener(type, handler);
+										};
+									};
 								};
-							});
-						},
-					}
-				)));
+							}),
+							clear: function clear() {
+								this.detach();
+							},
+							promise: function promise(emitters, /*optional*/context) {
+								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
+								const canReject = this[_shared.ExtenderSymbol].canReject;
+								const self = this;
+								const Promise = types.getPromise();
+								return Promise.create(function eventPromise(resolve, reject) {
+									if (canReject) {
+										self.attachOnce(emitters, context, function(context, err /*, paramarray*/) {
+											if (canReject && types.isError(err)) {
+												return reject(err);
+											} else {
+												return resolve(types.toArray(arguments));
+											};
+										});
+									} else {
+										self.attachOnce(emitters, context, function(/*paramarray*/) {
+											return resolve(types.toArray(arguments));
+										});
+									};
+								});
+							},
+						}
+					));
 				
 				extenders.REGISTER(root.DD_DOC(
 				//! REPLACE_BY("null")
@@ -1975,26 +2094,30 @@
 				, extenders.Event.$inherit({
 					$TYPE_NAME: "NodeEvent",
 					
-					eventsAttr: '__NODE_EVENTS',
-					eventsImplementation: 'Doodad.MixIns.NodeEvents',
-					canReject: true,
-					types: null,
+					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
+					eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
+					canReject: types.READ_ONLY(true),
+					types: types.READ_ONLY(null),
 					
-					enableScopes: true,
+					enableScopes: types.READ_ONLY(true),
 					
-					eventProto: doodad.NodeEventHandler,
+					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
 					
-					_new: types.SUPER(function _new(/*optional*/options) {
+					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
-						this.canReject = types.get(options, 'canReject', this.canReject);
-						this.types = types.get(options, 'types', this.types);
-					}),
-					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+						if (!types.isType(this)) {
+							_shared.setAttributes(this, {
+								canReject: types.get(options, 'canReject', this.canReject),
+								types: types.freezeObject(types.get(options, 'types', this.types) || []),
+							});
+						};
+					})),
+					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
 						return this._super(options) + 
-							',' + types.get(options, 'canReject', this.canReject) +
+							',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
 							',' + types.unique(types.get(options, 'types', this.types)).sort().join('|');
-					}),
-					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+					})),
+					overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 						options = this._super(options, newOptions, replace);
 						if (replace) {
 							types.fill(['canReject', 'types'], options, this, newOptions);
@@ -2003,7 +2126,7 @@
 							options.types = types.unique([], newOptions.types, this.types);
 						};
 						return options;
-					}),
+					})),
 				})));
 
 				
@@ -2094,7 +2217,7 @@
 					listenerCount: doodad.PUBLIC(function listenerCount(event) {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							const stack = this[name][doodad.StackSymbol];
+							const stack = this[name][_shared.StackSymbol];
 							return stack && stack.length || 0;
 						};
 					}),
@@ -2102,7 +2225,7 @@
 					listeners: doodad.PUBLIC(function listeners(event) {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							const stack = this[name][doodad.StackSymbol];
+							const stack = this[name][_shared.StackSymbol];
 							return stack && types.map(stack, function(ev) {
 								return ev[1]; // fn
 							}) || [];

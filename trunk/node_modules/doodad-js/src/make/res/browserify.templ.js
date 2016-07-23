@@ -31,6 +31,23 @@
 
 module.exports = {
 	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
+		var has = function(obj, key) {
+			return obj && Object.prototype.hasOwnProperty.call(obj, key);
+		};
+		var get = function(obj, key, /*optional*/_default) {
+			return (obj && has(obj, key) ? obj[key] : _default);
+		};
+		var bool = function(val) {
+			return (val === "true") || !!(+val);
+		};
+
+		if (!options) {
+			options = {};
+		};
+		if (!has(options, 'startup')) {
+			options.startup = {};
+		};
+
 		var config = null;
 		try {
 			// Generated from 'doodad-js-make'
@@ -38,34 +55,32 @@ module.exports = {
 		} catch(ex) {
 		};
 		
-		
 		DD_MODULES = (DD_MODULES || {});
-		
+
 		if (Object.assign) {
-			options = Object.assign({}, config, options);
+			config = Object.assign({}, config, options);
 		} else {
-			var tmp = {};
-			for (var key in config) {
-				if (Object.prototype.hasOwnProperty.call(config, key)) {
-					tmp[key] = config[key];
-				};
-			};
+			var tmp = config || {};
 			for (var key in options) {
-				if (Object.prototype.hasOwnProperty.call(options, key)) {
+				if (has(options, key)) {
 					tmp[key] = options[key];
 				};
 			};
-			options = tmp;
+			config = tmp;
 		};
 
-		if (!options.startup) {
-			options.startup = {};
+		if (!has(config, 'startup')) {
+			config.startup = {};
 		};
 
-		var dev_values = options.startup.nodeEnvDevValues && options.startup.nodeEnvDevValues.split(',') || ['development'],
-			env = options.node_env;
+		if (!has(config, 'Doodad.Tools')) {
+			config['Doodad.Tools'] = {};
+		};
 
-		if ((options.startup.debug === "true") || +options.startup.debug) {
+		var dev_values = has(options.startup, 'nodeEnvDevValues') && options.startup.nodeEnvDevValues.split(',') || ['dev', 'development'],
+			env = get(options, 'node_env');
+
+		if (bool(get(options.startup, 'debug', false))) {
 			console.warn("warning: The 'startup.debug' flag is obsolete. Please set the environment variable 'NODE_ENV' to 'development' instead.");
 			env = dev_values[0];
 		};
@@ -81,9 +96,22 @@ module.exports = {
 		};
 		
 		if (dev) {
-			options.startup.fromSource = true;
-			options.startup.enableProperties = true;
-			require(/*! INJECT(TO_SOURCE(VAR("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Debug.js" : MAKE_MANIFEST("browserifyDir") + "/common/Debug.min.js")) */).add(DD_MODULES);
+			// Debug mode
+			config.startup.debug = true;
+
+			// Will load modules from source
+			config.startup.fromSource = true;
+
+			// Enable some validations on debug
+			config.startup.enableAsserts = true;
+			config.startup.enableProperties = true;
+			config.startup.enableProtection = true;
+
+			// Ease debug
+			config.startup.enableSymbols = false;
+			
+			// Enable all log levels
+			config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
 		};
 
 		//! FOR_EACH(VAR("modules"), "mod")
@@ -94,6 +122,6 @@ module.exports = {
 
 		bootstrap = require(/*! INJECT(TO_SOURCE(VAR("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : MAKE_MANIFEST("browserifyDir") + "/common/Bootstrap.min.js")) */);
 
-		return bootstrap.createRoot(DD_MODULES, options);
+		return bootstrap.createRoot(DD_MODULES, config);
 	},
 };

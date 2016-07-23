@@ -47,16 +47,12 @@
 
 			// Unit
 			priority: null,
-				proto: {
-				run: null,
-			},
 
 			proto: {
-				run: function run(entry, /*optional*/options) {
+				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var root = entry.root,
-						doodad = root.Doodad,
+					var doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -72,7 +68,7 @@
 					
 					global.Type = types.Type;
 
-					global.Test1 = types.Type.$inherit(
+					global.Test1 = types.INIT(types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Test1',
@@ -101,7 +97,7 @@
 								return 4;
 							},
 						}
-					);
+					));
 					
 					global.objTest1 = new global.Test1();
 					
@@ -124,7 +120,7 @@
 						}
 					));
 					
-					global.Test3 = global.Test1.$inherit(
+					global.Test3 = types.INIT(global.Test1.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Test3',
@@ -147,7 +143,7 @@
 								return 5;
 							},
 						}
-					);
+					));
 					
 					global.objTest3 = new global.Test3();
 

@@ -44,19 +44,7 @@
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			bootstrap: true,
 			
-			proto: function(root) {
-				var types = root.Doodad.Types;
-				return {
-					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
-						options = this._super.apply(this, arguments);
-						options.toSourceItemsCount = types.toInteger(options.toSourceItemsCount);
-						options.enableProxies = types.toBoolean(options.enableProxies);
-						return options;
-					}),
-				};
-			},
-			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -74,10 +62,6 @@
 					// "toSource"
 					supportsVerticalTabEscape: ('\v' !== 'v'),
 					supportsNullCharEscape: ('\0' !== '0'),
-					
-					symbolOriginalValue: (types.getSymbolFor('__ORIGINAL_VALUE__') || '__ORIGINAL_VALUE__'),
-					
-					symbolName: (types.getSymbolFor('__NAME__') || '__NAME__'),
 				};
 
 				//===================================
@@ -89,7 +73,7 @@
 				
 				__Internal__.arrayObj = global.Array && global.Array.prototype || []; // temporary
 				
-				var __Natives__ = {
+				types.complete(_shared.Natives, {
 					// No polyfills
 					
 					// "toArray"
@@ -110,17 +94,11 @@
 
 					objectToString: global.Object.prototype.toString,
 
-					windowObject: global.Object,
+					//windowObject: global.Object,
 					
 					// "toString"
 					windowString: global.String,
 
-					// "hasIterators", "isIterable"
-					windowSymbolIterator: undefined,
-					
-					// "hasGenerators", "getGeneratorFunction", "isGeneratorFunction", "isGenerator"
-					GeneratorFunction: undefined,
-					
 					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
 					functionIsGenerator: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator : undefined),
 
@@ -140,14 +118,16 @@
 					windowPromise: (types.isNativeFunction(global.Promise) ? global.Promise : undefined),
 					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
 					windowMap: (types.isNativeFunction(global.Map) && types.isNativeFunction(global.Map.prototype.values) && types.isNativeFunction(global.Map.prototype.keys) ? global.Map : undefined),
-					windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
 
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
 					
 					// "isArrayBuffer"
 					windowArrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
-				};
+					
+					// "hasIterators", "isIterable"
+					windowSymbolIterator: (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+				});
 				
 				delete __Internal__.arrayObj;   // free memory
 
@@ -169,14 +149,18 @@
 				};
 				
 				types.Undefined = function Undefined() {};
-				types.Undefined.prototype.valueOf = __Internal__.returnUndefined;
-				types.Undefined.prototype.toString = __Internal__.returnUndefinedString;
-				types.Undefined.prototype.toSource = __Internal__.returnUndefinedString;
+				types.extend(types.Undefined.prototype, {
+					valueOf: __Internal__.returnUndefined,
+					toString: __Internal__.returnUndefinedString,
+					toSource: __Internal__.returnUndefinedString,
+				});
 
 				types.Null = function Null() {};
-				types.Null.prototype.valueOf = __Internal__.returnNull;
-				types.Null.prototype.toString = __Internal__.returnNullString;
-				types.Null.prototype.toSource = __Internal__.returnNullString;
+				types.extend(types.Null.prototype, {
+					valueOf: __Internal__.returnNull,
+					toString: __Internal__.returnNullString,
+					toSource: __Internal__.returnNullString,
+				});
 				
 				types.toObject = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -200,7 +184,7 @@
 						} else if (val === null) {
 							return new types.Null();
 						} else {
-							return __Natives__.windowObject(val);
+							return _shared.Natives.windowObject(val);
 						};
 					});
 				
@@ -220,7 +204,7 @@
 								description: "Converts a value to an array.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.arrayFrom || function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
+					, (_shared.Natives.arrayFrom || function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
 						if (types.isNothing(obj)) {
 							throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
 						};
@@ -228,16 +212,16 @@
 						var result,
 							fill = false;
 						if (types.isString(obj)) {
-							result = __Natives__.arraySlice.call(obj);
+							result = _shared.Natives.arraySlice.call(obj);
 						} else if (types.isArrayLike(obj)) {
 							if (obj.length === 1) {
 								// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
 								result = [obj[0]];
 							} else {
-								result = __Natives__.arrayConstructor.apply(null, obj);
+								result = _shared.Natives.arrayConstructor.apply(null, obj);
 							};
 						} else {
-							result = __Natives__.arrayConstructor.call(null, obj.length >>> 0);
+							result = _shared.Natives.arrayConstructor.call(null, obj.length >>> 0);
 							fill = true;
 						};
 						var len = result.length;
@@ -257,29 +241,29 @@
 				// Options
 				//===================================
 					
-				types.setOptions({
+				var __options__ = types.extend({
 					toSourceItemsCount: 255,		// Max number of items
-					enableProxies: false,			// <FUTURE> Enables or disables ECMA 6 Proxies
 					trapUnhandledRejections: true,    // "true" will trap unhandled promise rejections, "false" will not
 					unhandledRejectionsTimeout: 1000,
 					unhandledRejectionsMaxSize: 20,
 				}, _options);
 
+				__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
+				__options__.trapUnhandledRejections = types.toBoolean(__options__.trapUnhandledRejections);
+				__options__.unhandledRejectionsTimeout = types.toInteger(__options__.unhandledRejectionsTimeout);
+				__options__.unhandledRejectionsMaxSize = types.toInteger(__options__.unhandledRejectionsMaxSize);
+
+				types.freezeObject(__options__);
+
+				types.getOptions = function() {
+					return __options__;
+				};
+
 				//===================================
-				// Public Symbols
+				// Shared Symbols
 				//===================================
 				
-				if (types.hasDefinePropertyEnabled()) {
-					types.defineProperties(types, {
-						OriginalValueSymbol: {configurable: false, enumerable: false, value: __Internal__.symbolOriginalValue, writable: false},
-						
-						NameSymbol: {configurable: false, enumerable: false, value: __Internal__.symbolName, writable: false},
-					});
-				} else {
-					types.OriginalValueSymbol = __Internal__.symbolOriginalValue;
-					
-					types.NameSymbol = __Internal__.symbolName;
-				};
+				_shared.NameSymbol = types.getSymbolFor('__NAME__');
 
 				//===================================
 				// is*
@@ -331,7 +315,7 @@
 					//! END_REPLACE()
 					, function isArrayLikeAndNotEmpty(obj) {
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (key in obj) {
@@ -362,7 +346,7 @@
 						if (types.isNothing(obj)) {
 							return true;
 						} else if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (key in obj) {
@@ -371,7 +355,7 @@
 							};
 							return true;
 						} else if (types.isObjectLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							for (var key in obj) {
 								if (types.has(obj, key)) {
 									return false;
@@ -403,7 +387,7 @@
 					//! END_REPLACE()
 					, function isEmpty(obj) {
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (key in obj) {
@@ -412,7 +396,7 @@
 							};
 							return true;
 						} else if (types.isObjectLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							for (var key in obj) {
 								if (types.has(obj, key)) {
 									return false;
@@ -523,11 +507,11 @@
 					//! END_REPLACE()
 					, function isObjectLikeAndNotEmpty(obj) {
 						if (types.isObjectLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							if (types.isArrayLike(obj)) {
 								var len = obj.length;
 								for (var key in obj) {
-									var number = __Natives__.windowNumber(key);
+									var number = _shared.Natives.windowNumber(key);
 									if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
 										return true;
 									};
@@ -595,7 +579,7 @@
 							keys = [];
 						};
 						var result = {};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						if (!types.isArray(keys)) {
 							keys = [keys];
 						};
@@ -647,11 +631,10 @@
 						if (types.isNothing(obj)) {
 							return;
 						};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						var hasKey = (inherited ? types.hasInherited : types.has);
 						if (hasKey(obj, key)) {
-							obj[key] = value;
-							return value;
+							return obj[key] = value;
 						};
 					});
 				
@@ -686,7 +669,7 @@
 						if (types.isNothing(obj)) {
 							return result;
 						};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						var keys = types.append(types.keys(values), types.symbols(values)),
 							keysLen = keys.length,
 							hasKey = (inherited ? types.hasInherited : types.has);
@@ -703,7 +686,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'object',
@@ -735,7 +718,7 @@
 							keys = [];
 						};
 						var result = {};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						if (!types.isArray(keys)) {
 							keys = [keys];
 						};
@@ -748,9 +731,8 @@
 							} else if (types.has(_defaults, key)) {
 								var val = _defaults[key];
 								if (obj) {
-									obj[key] = val;
+									result[key] = obj[key] = val;
 								};
-								result[key] = val;
 							};
 						};
 						return result;
@@ -776,7 +758,7 @@
 						if (types.isNothing(obj)) {
 							return [];
 						};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
 					});
 				
@@ -800,56 +782,8 @@
 						if (types.isNothing(obj)) {
 							return [];
 						};
-						obj = __Natives__.windowObject(obj);
+						obj = _shared.Natives.windowObject(obj);
 						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
-					});
-				
-				types.allKeysInherited = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'arrayof(string)',
-								description: "Returns an array of all inherited enumerable and not enumerable property names of an object.",
-					}
-					//! END_REPLACE()
-					, function allKeysInherited(obj) {
-						if (types.isNothing(obj)) {
-							return [];
-						};
-						obj = __Natives__.windowObject(obj);
-						return types.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
-					});
-				
-				types.allSymbolsInherited = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'arrayof(symbol)',
-								description: "Returns an array of all inherited enumerable and not enumerable symbols of an object.",
-					}
-					//! END_REPLACE()
-					, function allSymbolsInherited(obj) {
-						if (types.isNothing(obj)) {
-							return [];
-						};
-						obj = __Natives__.windowObject(obj);
-						return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 					});
 				
 				types.depthComplete = root.DD_DOC(
@@ -878,7 +812,7 @@
 						if (!types.isNothing(obj)) {
 							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							if (depth >= -1) {
-								result = __Natives__.windowObject(obj);
+								result = _shared.Natives.windowObject(obj);
 								var len = arguments.length;
 								for (var i = 2; i < len; i++) {
 									obj = arguments[i];
@@ -886,7 +820,7 @@
 										continue;
 									};
 									// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-									obj = __Natives__.windowObject(obj);
+									obj = _shared.Natives.windowObject(obj);
 									var keys = types.append(types.keys(obj), types.symbols(obj)),
 										keysLen = keys.length; // performance
 									for (var j = 0; j < keysLen; j++) {
@@ -939,13 +873,13 @@
 							} else if (!types.isArray(keys)) {
 								keys = [keys];
 							};
-							result = __Natives__.windowObject(obj);
+							result = _shared.Natives.windowObject(obj);
 							var argumentsLen = arguments.length,
 								keysLen = keys.length;
 							for (var i = 1; i < argumentsLen; i++) {
 								obj = arguments[i];
 								if (!types.isNothing(obj)) {
-									obj = __Natives__.windowObject(obj);
+									obj = _shared.Natives.windowObject(obj);
 									for (var k = 0; k < keysLen; k++) {
 										if (k in keys) {
 											var key = keys[k];
@@ -1025,7 +959,7 @@
 							
 							if (types.isClonable(obj)) {
 								if (isArray) {
-									obj = __Natives__.windowObject(obj);
+									obj = _shared.Natives.windowObject(obj);
 									if (depth >= 0) {
 										result = Array(obj.length);
 										var len = obj.length;
@@ -1035,11 +969,11 @@
 											};
 										};
 									} else {
-										result = __Natives__.arraySlice.call(obj, 0);
+										result = _shared.Natives.arraySlice.call(obj, 0);
 									};
 								} else if (types.isCustomFunction(obj)) {
 									if (cloneFunctions >= 0) {
-										//result = types.eval(__Natives__.functionToString.call(obj));
+										//result = types.eval(_shared.Natives.functionToString.call(obj));
 										result = types.eval(obj.toString());
 									} else {
 										return obj;
@@ -1064,7 +998,7 @@
 									if (key === 'length') {
 										continue;
 									};
-									var tmp = __Natives__.windowNumber(key);
+									var tmp = _shared.Natives.windowNumber(key);
 									if (!types.isNaN(tmp) && !types.isInfinite(tmp)) {
 										continue;
 									};
@@ -1108,7 +1042,7 @@
 					//! END_REPLACE()
 					, function hasIndex(obj, indexes) {
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							if (!types.isArray(indexes)) {
 								indexes = [indexes];
 							};
@@ -1119,7 +1053,7 @@
 							for (var i = 0; i < len; i++) {
 								if (i in indexes) {
 									var index = indexes[i],
-										number = __Natives__.windowNumber(index);
+										number = _shared.Natives.windowNumber(index);
 									if (types.isNaN(number) || !types.isFinite(number) || !(index in obj)) {
 										return false;
 									};
@@ -1150,7 +1084,7 @@
 					, function indexes(obj) {
 						var result = [];
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (key in obj) {
@@ -1181,7 +1115,7 @@
 						if (types.isNothing(obj)) {
 							return [];
 						} else {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var result = [];
 							if (types.isArrayLike(obj)) {
 								var len = obj.length;
@@ -1221,7 +1155,7 @@
 						if (types.isNothing(obj)) {
 							return [];
 						} else {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var result = [];
 							if (types.isArrayLike(obj)) {
 								var len = obj.length;
@@ -1260,7 +1194,7 @@
 					//! END_REPLACE()
 					, function available(obj) {
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (!(key in obj)) {
@@ -1290,7 +1224,7 @@
 					, function availables(obj) {
 						var keys = [];
 						if (types.isArrayLike(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
 								if (!(key in obj)) {
@@ -1378,11 +1312,11 @@
 					//! END_REPLACE()
 					, function popAt(obj, key) {
 						if (!types.isNothing(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							if (types.isArray(obj)) {
 								if (key in obj) {
 									var item = obj[key];
-									__Natives__.arraySplice.call(obj, key, 1);
+									_shared.Natives.arraySplice.call(obj, key, 1);
 									return item;
 								};
 							};
@@ -1427,7 +1361,7 @@
 					//! END_REPLACE()
 					, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArray(obj)) {
 									var len = obj.length;
@@ -1435,7 +1369,7 @@
 										if (key in obj) {
 											var val = obj[key];
 											if (item.call(thisObj, val, key, obj)) {
-												__Natives__.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySplice.call(obj, key, 1);
 												return val;
 											};
 										};
@@ -1458,7 +1392,7 @@
 										if (key in obj) {
 											var val = obj[key];
 											if (val === item) {
-												__Natives__.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySplice.call(obj, key, 1);
 												return val;
 											};
 										};
@@ -1512,7 +1446,7 @@
 					, function popItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
 						var result = [];
 						if (!types.isNothing(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 								
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArray(obj)) {
@@ -1520,7 +1454,7 @@
 										if (key in obj) {
 											var val = obj[key];
 											if (items.call(thisObj, val, key, obj)) {
-												__Natives__.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySplice.call(obj, key, 1);
 												result.push(val);
 											};
 										};
@@ -1545,7 +1479,7 @@
 											var val = obj[key];
 											for (var j = 0; j < valuesLen; j++) {
 												if (values[j] === val) {
-													__Natives__.arraySplice.call(obj, key, 1);
+													_shared.Natives.arraySplice.call(obj, key, 1);
 													result.push(val);
 												};
 											};
@@ -1605,109 +1539,14 @@
 							if (types.isNothing(obj)) {
 								continue;
 							};
-							obj = __Natives__.windowObject(obj);
-							__Natives__.arrayUnshift.apply(result, obj);
+							obj = _shared.Natives.windowObject(obj);
+							_shared.Natives.arrayUnshift.apply(result, obj);
 						};
 						
 						return result;
 					});
 				
 				
-				types.unique = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								comparer: {
-									type: 'function',
-									optional: true,
-									description: 
-										"A comparer function. Arguments passed to the function are : \n" +
-										"  value1 (any): The value to compare from\n" +
-										"  value2 (any): The value to compare to\n" +
-										"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
-								},
-								paramarray: {
-									type: 'arraylike',
-									optional: true,
-									description: "Arrays.",
-								},
-							},
-							returns: 'arrayof(any)',
-							description: "Compare every items of every arrays, and returns a new array with unique items.",
-					}
-					//! END_REPLACE()
-					, function unique(/*optional*/comparer, /*paramarray*/obj) {
-						var start = 1;
-						var comparerFn = comparer;
-						if (!types.isFunction(comparerFn)) {
-							comparerFn = null;
-							start = 0;
-						};
-						
-						var result = [];
-						
-						if (comparerFn) {
-							var len = arguments.length;
-							for (var i = start; i < len; i++) {
-								obj = arguments[i];
-								if (types.isNothing(obj)) {
-									continue;
-								};
-								obj = Object(obj);
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
-								var objLen = obj.length;
-								for (var key1 = 0; key1 < objLen; key1++) {
-									if (key1 in obj) {
-										var value1 = obj[key1],
-											found = false,
-											resultLen = result.length;
-										for (var key2 = 0; key2 < resultLen; key2++) {
-											var res = comparerFn(value1, result[key2]);
-											if ((res === true) || (res === 0)) {
-												found = true;
-												break;
-											};
-										};
-										if (!found) {
-											result.push(value1);
-										};
-									};
-								};
-							};
-						} else {
-							var len = arguments.length;
-							for (var i = start; i < len; i++) {
-								obj = arguments[i];
-								if (types.isNothing(obj)) {
-									continue;
-								};
-								obj = Object(obj);
-								root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
-								var objLen = obj.length;
-								for (var key1 = 0; key1 < objLen; key1++) {
-									if (key1 in obj) {
-										var value1 = obj[key1],
-											found = false,
-											resultLen = result.length;
-										for (var key2 = 0; key2 < resultLen; key2++) {
-											if (value1 === result[key2]) {
-												found = true;
-												break;
-											};
-										};
-										if (!found) {
-											result.push(value1);
-										};
-									};
-								};
-							};
-						};
-						
-						return result;
-					});
-			
 				//===================================
 				// "toSource" function
 				//===================================
@@ -1748,7 +1587,7 @@
 							return "NaN";
 						} else {
 							var primitive = types.isPrimitive(obj);
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var val = obj.valueOf();
 							if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 								return obj.toSource();
@@ -1762,10 +1601,10 @@
 									//var allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
 									//for (var i = 0; i < len; ) {
 									for (var i = 0; i < len; i++) {
-										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [__Natives__.stringCharCodeAt.call(val, i), 1]);
+										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAt.call(val, i), 1]);
 										//var size = code[1];
 										//code = code[0];
-										var code = __Natives__.stringCharCodeAt.call(val, i);
+										var code = _shared.Natives.stringCharCodeAt.call(val, i);
 										if (allowNullChar && (code === 0x0000)) { // Null
 											str += '\\0';
 										} else if (code === 0x0008) { // Backspace
@@ -1832,6 +1671,7 @@
 										return '(new Function())';
 									};
 								} else if (types.isArray(obj)) {
+									var includeFunctions = types.get(options, 'includeFunctions', true);
 									if (depth < 0) {
 										return '(new Array(' + obj.length + '))';
 									};
@@ -1839,26 +1679,30 @@
 										len = val.length,
 										continued = '';
 									depth--;
-									var max = types.getOptions().toSourceItemsCount;
+									var max = __options__.toSourceItemsCount;
 									if (len > max) {
 										len = max;
 										continued = ', ...';
 									};
 									for (var key = 0; key < len; key++) {
 										if (key in val) {
-											str += types.toSource(val[key], depth, options) + ', ';
+											var item = val[key];
+											if (includeFunctions || !types.isFunction(item)) {
+												str += types.toSource(item, depth, options) + ', ';
+											};
 										} else {
 											str += ', ';
 										};
 									};
 									return '[' + str.slice(0, -2) + continued + ']';
 								} else if (types.isObject(obj)) {
+									var includeFunctions = types.get(options, 'includeFunctions', true);
 									if (depth < 0) {
 										return '{}';
 									};
 									var str = '',
 										len = 0,
-										maxLen = types.getOptions().toSourceItemsCount;
+										maxLen = __options__.toSourceItemsCount;
 									depth--;
 									var inherited = types.get(options, 'inherited', false);
 									do {
@@ -1869,13 +1713,16 @@
 												break;
 											};
 											var key = keys[i];
-											str += types.toSource(key) + ': ' + types.toSource(obj[key], depth, options) + ', ';
+											var item = obj[key];
+											if (includeFunctions || !types.isFunction(item)) {
+												str += types.toSource(key) + ': ' + types.toSource(item, depth, options) + ', ';
+											};
 											len++;
 										};
 									} while (inherited && (obj = types.getPrototypeOf(obj)));
 									return '{' + str.slice(0, -2) + '}';
 								} else if (types.isObjectLike(obj)) {
-									return types.toSource(__Natives__.objectToString.call(obj));
+									return types.toSource(_shared.Natives.objectToString.call(obj));
 								} else {
 									return obj.toString();
 								};
@@ -1901,8 +1748,14 @@
 						throw new types.NotSupported("Type is a base type.");
 					});
 				
+				types.isCallback = function(obj) {
+					return types.isCallable(obj) && types.baseof(types.Callback, obj);
+				};
+				
 				// NOTE: Will be replaced by "Doodad.js"
-				types.makeInside = function(/*optional*/obj, fn) {
+				_shared.makeInside = function(/*optional*/obj, fn) {
+					fn = types.unbind(fn);
+					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
 				};
 				
@@ -1933,7 +1786,7 @@
 						if (!__Internal__.Promise) {
 							return false;
 						};
-						return (obj instanceof __Internal__.Promise);
+						return (typeof obj === 'object') && (obj instanceof __Internal__.Promise);
 					});
 				
 				types.getPromise = root.DD_DOC(
@@ -1953,6 +1806,178 @@
 						};
 						return Promise;
 					});
+
+				__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
+					// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
+					// Bluebird "asCallback" polyfill
+					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
+						Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
+							var promise = this.then(function(result) {
+									var retval = callback(null, result);
+									if (retval === undefined) {
+										retval = result;
+									//} else if (types.isError(retval)) {
+									//	throw retval;
+									};
+									return retval;
+								}, function(err) {
+									var retval = callback(err);
+									if (retval === undefined) {
+										throw err;
+									//} else if (types.isError(retval)) {
+									//	throw retval;
+									};
+									return retval;
+								});
+							return promise;
+						};
+					} else if (!types.isFunction(Promise.prototype.asCallback)) {
+						Promise.prototype.asCallback = Promise.prototype.nodeify;
+					} else if (!types.isFunction(Promise.prototype.nodeify)) {
+						Promise.prototype.nodeify = Promise.prototype.asCallback;
+					};
+					
+					
+					// Bluebird "finally" polyfill
+					if (!types.isFunction(Promise.prototype['finally'])) {
+						Promise.prototype['finally'] = function _finally(callback) {
+							var promise = this.then(function(result) {
+									var retval = callback();
+									return Promise.resolve(retval).then(function() {
+										return result;
+									});
+								}, function(err) {
+									var retval = callback();
+									return Promise.resolve(retval).then(function() {
+										throw err;
+									});
+								});
+							return promise;
+						};
+					};
+					
+					
+					// Bluebird "try" polyfill
+					if (!types.isFunction(Promise['try'])) {
+						Promise['try'] = function _try(callback) {
+							return new this(function(resolve, reject) {
+								try {
+									resolve(callback());
+								} catch(ex) {
+									reject(ex);
+								};
+							});
+						};
+					};
+				};
+
+				__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
+					function getPromiseName(callback) {
+						var original;
+						while (original = types.get(callback, _shared.OriginalValueSymbol)) {
+							callback = original;
+						};
+						return types.get(callback, _shared.NameSymbol) || types.getFunctionName(callback);
+					};
+
+					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = new this(callback);
+						if (callback) {
+							promise[_shared.NameSymbol] = getPromiseName(callback);
+						};
+						return promise;
+					};
+
+					var oldTry = Promise['try'];
+					Promise['try'] = function _try(/*optional*/callback, /*optional*/thisObj) {
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = oldTry.call(this, callback);
+						if (callback) {
+							callback.promise = promise;
+							promise[_shared.NameSymbol] = getPromiseName(callback);
+						};
+						return promise;
+					};
+					
+					var oldThen = Promise.prototype.then;
+					Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
+						if (!thisObj && !types.isFunction(rejectedCb)) {
+							thisObj = rejectedCb;
+							rejectedCb = null;
+						};
+						if (resolvedCb && thisObj) {
+							resolvedCb = new _shared.PromiseCallback(thisObj, resolvedCb);
+						};
+						if (rejectedCb && thisObj) {
+							rejectedCb = new _shared.PromiseCallback(thisObj, rejectedCb);
+						};
+						var promise = oldThen.call(this, resolvedCb, rejectedCb);
+						if (resolvedCb) {
+							resolvedCb.promise = promise;
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(resolvedCb);
+						} else if (rejectedCb) {
+							this.hasCatch = true;
+							rejectedCb.promise = promise;
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(rejectedCb);
+						} else {
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
+						};
+						return promise;
+					};
+					
+					var oldCatch = Promise.prototype['catch'];
+					Promise.prototype['catch'] = function _catch(/*optional*/callback, /*optional*/thisObj) {
+						this.hasCatch = true;
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = oldCatch.call(this, callback);
+						if (callback) {
+							callback.promise = promise;
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
+						} else {
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
+						};
+						return promise;
+					};
+					
+					var oldAsCallback = Promise.prototype.asCallback;
+					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
+						this.hasCatch = true;
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = oldAsCallback.call(this, callback);
+						if (callback) {
+							callback.promise = promise;
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
+						} else {
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
+						};
+						return promise;
+					};
+					
+					var oldFinally = Promise.prototype['finally'];
+					Promise.prototype['finally'] = function _finally(/*optional*/callback, /*optional*/thisObj) {
+						this.hasCatch = true;
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = oldFinally.call(this, callback);
+						if (callback) {
+							callback.promise = promise;
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
+						} else {
+							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
+						};
+						return promise;
+					};
+				};
 					
 				types.setPromise = root.DD_DOC(
 					//! REPLACE_BY("null")
@@ -1982,144 +2007,17 @@
 						) {
 							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'prototype.then' and 'prototype.catch'.");
 						};
-
 						
-						// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
-						// Bluebird "asCallback" polyfill
-						if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
-							Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
-								var promise = this.then(function(result) {
-										var retval = callback(null, result);
-										if (retval === undefined) {
-											retval = result;
-										//} else if (types.isError(retval)) {
-										//	throw retval;
-										};
-										return retval;
-									}, function(err) {
-										var retval = callback(err);
-										if (retval === undefined) {
-											throw err;
-										//} else if (types.isError(retval)) {
-										//	throw retval;
-										};
-										return retval;
-									});
-								return promise;
-							};
-						} else if (!types.isFunction(Promise.prototype.asCallback)) {
-							Promise.prototype.asCallback = Promise.prototype.nodeify;
-						} else if (!types.isFunction(Promise.prototype.nodeify)) {
-							Promise.prototype.nodeify = Promise.prototype.asCallback;
-						};
-						
-						
-						// Bluebird "finally" polyfill
-						if (!types.isFunction(Promise.prototype['finally'])) {
-							Promise.prototype['finally'] = function _finally(callback) {
-								var promise = this.then(function(result) {
-										var retval = callback();
-										return Promise.resolve(retval).then(function() {
-											return result;
-										});
-									}, function(err) {
-										var retval = callback();
-										return Promise.resolve(retval).then(function() {
-											throw err;
-										});
-									});
-								return promise;
-							};
-						};
-						
-						
-						// Bluebird "try" polyfill
-						if (!types.isFunction(Promise['try'])) {
-							Promise['try'] = function _try(callback) {
-								return new this(function(resolve, reject) {
-									try {
-										resolve(callback());
-									} catch(ex) {
-										reject(ex);
-									};
-								});
-							};
-						};
-						
-						
-/*
-						// <PRB> Promise has no id
-						
-						var getPromiseName = function(callback) {
-							var original;
-							while (original = types.get(callback, __Internal__.symbolOriginalValue)) {
-								callback = original;
-							};
-							return types.get(callback, types.NameSymbol) || types.getFunctionName(callback);
-						};
-						
-							//var newPromise = function _Promise(callback) {
-							//	var promise = Promise.call(this, callback) || this;
-							//	promise.name = getPromiseName(callback);
-							//	return promise;
-							//};
-							//types.setPrototypeOf(newPromise.prototype, Promise.prototype);
-							//newPromise = types.setPrototypeOf(newPromise, Promise);
-						var oldThen = Promise.prototype.then;
-						Promise.prototype.then = function(callback) {
-							var promise = oldThen.call(this, callback);
-							if (callback) {
-								promise.name = getPromiseName(callback);
-							};
-							return promise;
-						};
-						var oldCatch = Promise.prototype['catch'];
-						Promise.prototype['catch'] = function(callback) {
-							var promise = oldCatch.call(this, callback);
-							if (callback) {
-								promise.name = getPromiseName(callback);
-							};
-							return promise;
-						};
-						var oldNodeify = Promise.prototype.nodeify;
-						Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(callback) {
-							var promise = oldNodeify.call(this, callback);
-							if (callback) {
-								promise.name = getPromiseName(callback);
-							};
-							return promise;
-						};
-						var oldFinally = Promise.prototype['finally'];
-						Promise.prototype['finally'] = function _finally(callback) {
-							var promise = oldFinally.call(this, callback);
-							if (callback) {
-								promise.name = getPromiseName(callback);
-							};
-							return promise;
-						};
-						var oldTry = Promise['try'];
-						Promise['try'] = function(callback) {
-							var promise = oldTry.call(this, callback);
-							if (callback) {
-								promise.name = getPromiseName(callback);
-							};
-							return promise;
-						};
-*/
-						
+						__Internal__.addPromiseBluebirdPolyfills(Promise);
+						__Internal__.addPromiseDoodadExtensions(Promise);
 						__Internal__.Promise = Promise;
 					});
 				
-				//types.PromiseRejectedError = types.createErrorType("PromiseRejectedError", types.Error, function _new(reason, /*optional*/message, /*optional*/params) {
-				//	this.reason = reason;
-				//	return types.Error.call(this, message || "Promise rejected.", params);
-				//});
-
-				types.PromiseCallback = root.DD_DOC(
+				_shared.PromiseCallback = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -2136,33 +2034,51 @@
 							description: "Creates a callback handler specially for a Promise.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function(/*optional*/obj, fn) {
-						if (types.isPrototypeOf(types.Callback, fn)) {
+					, types.setPrototypeOf(function PromiseCallback(/*optional*/obj, fn) {
+						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
+						var attr;
+						if (types.isString(fn) || types.isSymbol(fn)) {
+							attr = fn;
+							fn = obj[attr];
+						};
+						if (!obj && types.isCallback(fn)) {
 							return fn;
 						};
-						var insideFn = types.makeInside(obj, fn);
+						fn = types.unbind(fn);
+						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
+						var insideFn = fn;
+						if (obj) {
+							insideFn = _shared.makeInside(obj, fn);
+						};
 						var callback = function callbackHandler(/*paramarray*/) {
 							try {
 								return insideFn.apply(obj, arguments);
 							} catch(ex) {
-								//if (ex instanceof types.PromiseRejectedError) {
-								//	throw ex.reason;
-								//} else {
-									try {
-										var tools = root.Doodad.Tools;
-										if (!(ex instanceof types.ScriptInterruptedError)) {
-											tools.log(tools.LogLevels.Debug, "A Promise has been rejected due to an unhandled error :");
-											tools.log(tools.LogLevels.Debug, ex.stack);
-											tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+								if (ex instanceof types.ScriptInterruptedError) {
+									throw ex;
+								} else {
+									if (!ex.trapped) {
+										ex.trapped = true;
+										try {
+											var tools = root.Doodad.Tools;
+											tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
+											if (ex.stack) {
+												tools.log(tools.LogLevels.Error, ex.stack);
+											} else {
+												tools.log(tools.LogLevels.Error, ex);
+											};
+											//tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+										} catch(o) {
 										};
-									} catch(o) {
 									};
 									throw ex;
-								//};
+								};
 							};
 						};
-						callback = types.setPrototypeOf(callback, types.PromiseCallback);
-						callback[__Internal__.symbolOriginalValue] = fn;
+						callback = types.setPrototypeOf(callback, _shared.PromiseCallback);
+						callback[_shared.BoundObjectSymbol] = obj;
+						callback[_shared.OriginalValueSymbol] = fn;
+						callback.promise = null; // will be provided later
 						return callback;
 					}, types.Callback));
 				
@@ -2181,9 +2097,9 @@
 						if (!__Internal__.unhandledRejections) {
 							__Internal__.unhandledRejections = new types.Map();
 							
-							var options = types.getOptions();
+							var options = __options__;
 							
-							types.addPromiseEventListener('unhandledrejection', function(ev) {
+							types.addPromiseListener('unhandledrejection', function(ev) {
 								if (!(ev.detail.reason instanceof types.ScriptInterruptedError)) {
 									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
 										 __Internal__.unhandledRejections.set(ev.detail.promise, {
@@ -2194,7 +2110,7 @@
 								};
 							});
 							
-							types.addPromiseEventListener('rejectionhandled', function(promise) {
+							types.addPromiseListener('rejectionhandled', function(promise) {
 								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
 									__Internal__.unhandledRejections['delete'](ev.detail.promise);
 								};
@@ -2213,14 +2129,14 @@
 										};
 										var promise = result.value[0],
 											val = result.value[1];
-										if (__Natives__.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
+										if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
 											var tools = root.Doodad.Tools;
-											//tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, 'name') || '<anonymous>'));
-											tools.log(tools.LogLevels.Error, "Unhandled rejected promise.");
+											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
 											if (val.reason) {
-												tools.log(tools.LogLevels.Error, val.reason);
 												if (val.reason.stack) {
 													tools.log(tools.LogLevels.Error, val.reason.stack);
+												} else {
+													tools.log(tools.LogLevels.Error, val.reason);
 												};
 											};
 											__Internal__.unhandledRejections['delete'](promise);
@@ -2246,16 +2162,6 @@
 									timer.unref();
 								};
 							//! END_IF()
-							
-							// TEST
-							//global.setTimeout(function() {
-							//	Promise.try(function Promise1() {
-							//		throw new types.Error("Test");
-							//	});
-							//	new Promise(function Promise2() {
-							//		throw new types.Error("Test");
-							//	});
-							//}, 1000);
 						};
 					});
 					
@@ -2264,8 +2170,6 @@
 				// Iterators
 				//===================================
 
-				__Natives__.windowSymbolIterator = (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined);
-				
 				types.hasIterators = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
@@ -2276,7 +2180,7 @@
 								description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.windowSymbolIterator ? function hasIterators(obj) {
+					, (_shared.Natives.windowSymbolIterator ? function hasIterators(obj) {
 						return true;
 					} : function hasIterators(obj) {
 						return false;
@@ -2299,8 +2203,11 @@
 								description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.windowSymbolIterator ? function isIterable(obj) {
-						return (__Natives__.windowSymbolIterator in __Natives__.windowObject(obj));
+					, (_shared.Natives.windowSymbolIterator ? function isIterable(obj) {
+						if (types.isNothing(obj)) {
+							return false;
+						};
+						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.windowSymbolIterator in obj));
 					} : function isIterable(obj) {
 						return false;
 					}));
@@ -2337,7 +2244,7 @@
 				// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
 				try {
-					__Natives__.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
+					_shared.Natives.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
 				} catch(ex) {
 				};
 
@@ -2351,7 +2258,7 @@
 								description: "Returns 'true' if the engine supports generators. 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.GeneratorFunction ? function hasGenerators() {
+					, (_shared.Natives.GeneratorFunction ? function hasGenerators() {
 						return true;
 					} : function hasGenerators() {
 						return false;
@@ -2368,7 +2275,7 @@
 					}
 					//! END_REPLACE()
 					, function getGeneratorFunction() {
-						return (__Natives__.GeneratorFunction || null);
+						return (_shared.Natives.GeneratorFunction || null);
 					});
 				
 				types.isGeneratorFunction = root.DD_DOC(
@@ -2387,10 +2294,10 @@
 								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.functionIsGenerator ? function isGeneratorFunction(obj) {
-						return __Natives__.functionIsGenerator.call(obj);
-					} : (__Natives__.GeneratorFunction ? function isGeneratorFunction(obj) {
-						return (__Natives__.windowObject(obj) instanceof __Natives__.GeneratorFunction);
+					, (_shared.Natives.functionIsGenerator ? function isGeneratorFunction(obj) {
+						return _shared.Natives.functionIsGenerator.call(obj);
+					} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
+						return (typeof obj === 'function') && (obj instanceof _shared.Natives.GeneratorFunction);
 					} : function isGeneratorFunction(obj) {
 						return false;
 					})));
@@ -2411,92 +2318,24 @@
 								description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.GeneratorFunction ? function isGenerator(obj) {
-						var proto = types.getPrototypeOf(Object(obj));
+					, (_shared.Natives.GeneratorFunction ? function isGenerator(obj) {
+						if (types.isNothing(obj)) {
+							return false;
+						};
+						if (typeof obj !== 'object') {
+							return false;
+						};
+						var proto = types.getPrototypeOf(obj);
 						if (proto) {
 							proto = types.getPrototypeOf(proto);
 						};
-						return (proto && proto.constructor ? (proto.constructor.constructor === __Natives__.GeneratorFunction) : false);
+						if (!proto || !proto.constructor) {
+							return false;
+						};
+						return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
 					} : function isGenerator(obj) {
 						return false;
 					}));
-				
-				//===================================
-				// ECMA 6 Proxies functions
-				//===================================
-					
-				types.hasProxiesEnabled = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'bool',
-								description: "Returns 'true' when ES6 Proxy is available.",
-					}
-					//! END_REPLACE()
-					, (__Natives__.windowProxy ? (function hasProxiesEnabled() {
-						return types.getOptions().enableProxies;
-					}) : (function hasProxiesEnabled() {
-						return false;
-					})));
-				
-		/*
-				types.isProxy = (__Natives__.windowProxy ? (function isProxy(obj) {
-					return (obj instanceof __Natives__.windowProxy);
-				}) : (function isProxy(obj) {
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					obj = __Natives__.windowObject(obj);
-					return !!obj.__isProxy__;
-				}));
-		*/
-				
-				types.createProxy = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'object',
-										optional: false,
-										description: "An object.",
-									},
-									handler: {
-										type: 'object',
-										optional: false,
-										description: "Handler.",
-									},
-								},
-								returns: 'object',
-								description: "Helper function to create a ES6 Proxy for an object. When ES6 Proxy is not available, attempts to reproduce it when possible.",
-					}
-					//! END_REPLACE()
-					, (__Natives__.windowProxy ? (function createProxy(target, handler) {
-						return new __Natives__.windowProxy(target, handler);
-					}) : (function createProxy(target, handler) {
-						if (types.has(handler, [
-								'getPrototypeOf', 'setPrototypeOf', 'isExtensible', 'preventExtensions', 
-								'getOwnPropertyDescriptor', 'defineProperty', 'has', 'get', 'set', 'deleteProperty', 
-								'enumerate', 'ownKeys', 'construct'
-						])) {
-							throw new types.TypeError("Proxies not available.");
-						};
-						
-						if (handler.apply) {
-							var _caller = function caller(/*paramarray*/) {
-								return handler.apply.call(handler, target, this, arguments);
-							};
-							//__Types.defineProperty(_caller, '__isProxy__', {value: true});
-							return _caller;
-						};
-						
-						// "Invisible proxy"
-						//return types.createObject(target, {__isProxy__: {value: true}});
-						return types.createObject(target);
-					})));
 				
 				//===================================
 				// Buffers
@@ -2518,8 +2357,8 @@
 								description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.windowArrayBuffer ? (function isArrayBuffer(obj) {
-						return (obj instanceof __Natives__.windowArrayBuffer);
+					, (_shared.Natives.windowArrayBuffer ? (function isArrayBuffer(obj) {
+						return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowArrayBuffer);
 						
 					}) : (function isArrayBuffer(obj) {
 						// ArrayBuffer is not implemented.
@@ -2533,11 +2372,11 @@
 				
 				if (global.Int8Array) {
 					try {
-						__Natives__.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
+						_shared.Natives.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
 						
-						if (__Natives__.windowTypedArray === global.Object) {
+						if (_shared.Natives.windowTypedArray === global.Object) {
 							// <PRB> NodeJs has no TypedArray constructor.
-							delete __Natives__.windowTypedArray;
+							delete _shared.Natives.windowTypedArray;
 							__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
 													global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
 													global.Float64Array];
@@ -2562,8 +2401,8 @@
 								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.windowTypedArray ? (function isTypedArray(obj) {
-						return (obj instanceof __Natives__.windowTypedArray);
+					, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {
+						return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowTypedArray);
 						
 					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
 						// <PRB> NodeJs has no TypedArray constructor.
@@ -2584,12 +2423,43 @@
 				//===================================
 				// Bind/Unbind
 				//===================================
+
+				_shared.BoundObjectSymbol = types.getSymbolFor('__BOUND_OBJECT__');
+				
+				// Test for my dream to realize !
+				__Internal__.arrowIsBindable = false;
+				(function() {
+					try {
+						__Internal__.arrowIsBindable = (types.eval("(_ => this.doodad)").bind({doodad: 1})() === 1);
+					} catch(ex) {
+					};
+				})();
+				
+				types.isBindable = root.DD_DOC(
+					//! REPLACE_BY("null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is a bindable function, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isBindable(obj) {
+						return types.isCustomFunction(obj) && (!types.has(obj, _shared.BoundObjectSymbol)) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
+					});
 				
 				types.bind = root.DD_DOC(
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'object',
@@ -2608,20 +2478,20 @@
 									},
 								},
 								returns: 'object',
-								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. The original function is preserved in the symbol 'types.OriginalValueSymbol'.",
+								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
 					}
 					//! END_REPLACE()
 					, function bind(obj, fn, /*optional*/args) {
 						fn = types.unbind(fn);
-						if (fn === null) {
+						if (!types.isBindable(fn)) {
 							return null;
 						};
 						var newFn;
-						if (__Natives__.functionBind) {
+						if (_shared.Natives.functionBind) {
 							if (args) {
-								newFn = __Natives__.functionBind.apply(fn, types.append([obj], args));
+								newFn = _shared.Natives.functionBind.apply(fn, types.append([obj], args));
 							} else {
-								newFn = __Natives__.functionBind.call(fn, obj);
+								newFn = _shared.Natives.functionBind.call(fn, obj);
 							};
 						} else {
 							if (args) {
@@ -2639,7 +2509,8 @@
 							};
 						};
 						types.extend(newFn, fn);
-						newFn[__Internal__.symbolOriginalValue] = fn;
+						newFn[_shared.BoundObjectSymbol] = obj;
+						newFn[_shared.OriginalValueSymbol] = fn;
 						return newFn;
 					});
 				
@@ -2647,7 +2518,7 @@
 					//! REPLACE_BY("null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 5,
 								params: {
 									fn: {
 										type: 'function',
@@ -2656,113 +2527,38 @@
 									},
 								},
 								returns: 'object',
-								description: "Unbinds a function and returns the resulting function. In fact, it returns the value of its 'types.OriginalValueSymbol' attribute. Owned properties are also copied.",
+								description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
 					}
 					//! END_REPLACE()
 					, function unbind(fn) {
 						if (!types.isFunction(fn)) {
 							return null;
 						};
-						var oldFn = types.get(fn, __Internal__.symbolOriginalValue);
-						if (oldFn) {
-							types.extend(oldFn, fn);
-							delete oldFn[__Internal__.symbolOriginalValue];
-							return oldFn;
-						};
-						return fn;
-					});
-
-				//===================================
-				// Box/Unbox
-				//===================================
-				
-				types.box = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									value: {
-										type: 'any',
-										optional: false,
-										description: "A value.",
-									},
-								},
-								returns: 'Doodad.Types.box',
-								description: "Box a value inside a box object.",
-					}
-					//! END_REPLACE()
-					, types.INIT(types.Type.$inherit(
-						/*typeProto*/
-						{
-							$TYPE_NAME: 'box',
-						},
-						/*instanceProto*/
-						{
-							_new: function box(value) {
-								if (value instanceof types.box) {
-									value.setAttributes(this);
-									value = value[__Internal__.symbolOriginalValue];
-								};
-								this[__Internal__.symbolOriginalValue] = value;
-							},
-							
-							setAttributes: function setAttributes(dest, /*optional*/override) {
-								var keys = types.append(types.keys(this), types.symbols(this));
-								for (var i = 0; i < keys.length; i++) {
-									var key = keys[i];
-									if ((key !== __Internal__.symbolOriginalValue) && (override || !types.has(dest, key))) {
-										dest[key] = this[key];
+						if (types.has(fn, _shared.BoundObjectSymbol)) {
+							var oldFn = types.get(fn, _shared.OriginalValueSymbol);
+							if (!types.isBindable(oldFn)) {
+								return null;
+							};
+							var keys = types.append(types.keys(fn), types.symbols(fn));
+							for (var i = 0; i < keys.length; i++) {
+								var key = keys[i];
+								if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
+									if (types.has(oldFn, key)) {
+										oldFn[key] = fn[key];
 									};
 								};
-							},
-							valueOf: function valueOf() {
-								return this[__Internal__.symbolOriginalValue];
-							},
-							setValue: function setValue(value, /*optional*/override) {
-								// NOTE: "box" is immutable
-								var type = types.getType(this);
-								var newBox = new type(value);
-								this.setAttributes(newBox, override);
-								return newBox;
-							},
-							clone: function clone() {
-								return this.setValue(this[__Internal__.symbolOriginalValue]);
-							},
-						},
-						/*constructor*/
-						function box(value) {
-							//if (new.target) {
-							if (this instanceof types.box) {
-								return (this._new(value) || this);
-							} else {
-								return new types.box(value);
 							};
-						}
-					)));
-				
-				types.unbox = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									value: {
-										type: 'Doodad.Types.box',
-										optional: false,
-										description: "A value.",
-									},
-								},
-								returns: 'object',
-								description: "Extract the value of a box object.",
-					}
-					//! END_REPLACE()
-					, function unbox(value) {
-						return ((value instanceof types.box) ? value.valueOf() : value);
+							return oldFn;
+						} else {
+							return fn;
+						};
 					});
+
+				//=========================
+				// Set / Map
+				//=========================
 					
-					
-				types.Iterator = types.Type.$inherit(
+				types.Iterator = types.INIT(types.Type.$inherit(
 					{
 						$TYPE_NAME: 'Iterator',
 					},
@@ -2774,9 +2570,9 @@
 								done: true,
 							};
 						},
-					})
+					}));
 					
-				__Internal__.SetIterator = (!__Natives__.windowSet && types.Iterator.$inherit(
+				__Internal__.SetIterator = (!_shared.Natives.windowSet && types.INIT(types.Iterator.$inherit(
 					{
 						$TYPE_NAME: 'SetIterator',
 					},
@@ -2788,9 +2584,9 @@
 							this._super();
 							this.__ar = types.clone(setObj.__ar);
 						}),
-					}))
+					})));
 					
-				__Internal__.SetValuesIterator = (!__Natives__.windowSet && __Internal__.SetIterator.$inherit(
+				__Internal__.SetValuesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
 					{
 						$TYPE_NAME: 'SetValuesIterator',
 					},
@@ -2807,9 +2603,9 @@
 								};
 							};
 						},
-					}))
+					})));
 					
-				__Internal__.SetEntriesIterator = (!__Natives__.windowSet && __Internal__.SetIterator.$inherit(
+				__Internal__.SetEntriesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
 					{
 						$TYPE_NAME: 'SetEntriesIterator',
 					},
@@ -2827,10 +2623,10 @@
 								};
 							};
 						},
-					}))
+					})));
 					
 					
-				types.Set = (__Natives__.windowSet || types.Type.$inherit(
+				types.Set = (_shared.Natives.windowSet || types.INIT(types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Set',
@@ -2905,14 +2701,10 @@
 								callbackFn.call(thisObj, value, value, this);
 							};
 						},
-					},
-					/*constructor*/
-					function _new(ar) {
-						this.__ar = ar || [];
 					}
-				));
+				)));
 				
-				__Internal__.MapIterator = (!__Natives__.windowMap && types.Iterator.$inherit(
+				__Internal__.MapIterator = (!_shared.Natives.windowMap && types.INIT(types.Iterator.$inherit(
 					{
 						$TYPE_NAME: 'MapIterator',
 					},
@@ -2926,9 +2718,9 @@
 							this.__keys = types.clone(mapObj.__keys);
 							this.__values = types.clone(mapObj.__values);
 						}),
-					}))
+					})));
 					
-				__Internal__.MapKeysIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+				__Internal__.MapKeysIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapKeysIterator',
 					},
@@ -2945,9 +2737,9 @@
 								};
 							};
 						},
-					}))
+					})));
 					
-				__Internal__.MapValuesIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+				__Internal__.MapValuesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapValuesIterator',
 					},
@@ -2964,9 +2756,9 @@
 								};
 							};
 						},
-					}))
+					})));
 					
-				__Internal__.MapEntriesIterator = (!__Natives__.windowMap && __Internal__.MapIterator.$inherit(
+				__Internal__.MapEntriesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapEntriesIterator',
 					},
@@ -2984,10 +2776,10 @@
 								};
 							};
 						},
-					}))
+					})));
 					
 					
-				types.Map = (__Natives__.windowMap || types.Type.$inherit(
+				types.Map = (_shared.Natives.windowMap || types.INIT(types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Map',
@@ -3080,38 +2872,14 @@
 							};
 						},
 					}
-				));
+				)));
 				
 				//===================================
 				// HTTP Status Codes
 				// TODO: Move elsewhere
 				//===================================
 				
-				types.HttpStatus = types.extend(types.createObject({
-					isInformative: function isInformative(status) {
-						return (status >= 100) && (status < 200);
-					},
-					
-					isSuccessful: function isSuccessful(status) {
-						return (status >= 200) && (status < 300);
-					},
-					
-					isRedirect: function isRedirect(status) {
-						return (status >= 300) && (status < 400);
-					},
-					
-					isClientError: function isClientError(status) {
-						return (status >= 400) && (status < 500);
-					},
-					
-					isServerError: function isServerError(status) {
-						return (status >= 500);
-					},
-					
-					isError: function isError(status) {
-						return (status >= 400);
-					},
-				}), {
+				types.HttpStatus = types.freezeObject({
 					// Information
 					Continue: 100,
 					SwitchingProtocol: 101,
@@ -3160,6 +2928,31 @@
 					ServiceUnavailable: 503,
 					GatewayTimeout: 504,
 					VersionNotSupported: 505,
+
+					// Utilities
+					isInformative: function isInformative(status) {
+						return (status >= 100) && (status < 200);
+					},
+					
+					isSuccessful: function isSuccessful(status) {
+						return (status >= 200) && (status < 300);
+					},
+					
+					isRedirect: function isRedirect(status) {
+						return (status >= 300) && (status < 400);
+					},
+					
+					isClientError: function isClientError(status) {
+						return (status >= 400) && (status < 500);
+					},
+					
+					isServerError: function isServerError(status) {
+						return (status >= 500);
+					},
+					
+					isError: function isError(status) {
+						return (status >= 400);
+					},
 				});
 				
 
@@ -3167,14 +2960,14 @@
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					if (__Natives__.windowPromise) {
+					if (_shared.Natives.windowPromise) {
 						try {
-							types.setPromise(__Natives__.windowPromise);
+							types.setPromise(_shared.Natives.windowPromise);
 						} catch(ex) {
 						};
 					};
 					
-					if (types.getOptions().trapUnhandledRejections) {
+					if (__options__.trapUnhandledRejections) {
 						types.trapUnhandledRejections();
 					};
 				};
