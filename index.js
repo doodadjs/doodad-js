@@ -1,5 +1,5 @@
 // dOOdad - Object-oriented programming framework
-// File: index.js - Startup file. Will get replaced on build.
+// File: index.js - Temporary startup file. Will get replaced on build.
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -23,22 +23,24 @@
 
 "use strict";
 
-exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
-	DD_MODULES = (DD_MODULES || {});
+module.exports = {
+	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
+		DD_MODULES = (DD_MODULES || {});
 
-	const sourceDir = 'doodad-js/src';
-	
-	require(sourceDir + "/common/Types.js").add(DD_MODULES);
-	require(sourceDir + "/common/Tools.js").add(DD_MODULES);
-	require(sourceDir + "/common/Tools_Files.js").add(DD_MODULES);
-	require(sourceDir + "/common/Tools_Config.js").add(DD_MODULES);
-	require(sourceDir + "/common/Tools_Scripts.js").add(DD_MODULES);
-	require(sourceDir + "/common/Namespaces.js").add(DD_MODULES);
-	require(sourceDir + "/common/Doodad.js").add(DD_MODULES);
-	require(sourceDir + "/server/Modules.js").add(DD_MODULES);
-	require(sourceDir + "/server/NodeJs.js").add(DD_MODULES);
+		const sourceDir = 'doodad-js/src';
+		
+		require(sourceDir + "/common/Types.js").add(DD_MODULES);
+		require(sourceDir + "/common/Tools.js").add(DD_MODULES);
+		require(sourceDir + "/common/Tools_Files.js").add(DD_MODULES);
+		require(sourceDir + "/common/Tools_Config.js").add(DD_MODULES);
+		require(sourceDir + "/common/Tools_Scripts.js").add(DD_MODULES);
+		require(sourceDir + "/common/Namespaces.js").add(DD_MODULES);
+		require(sourceDir + "/common/Doodad.js").add(DD_MODULES);
+		require(sourceDir + "/server/Modules.js").add(DD_MODULES);
+		require(sourceDir + "/server/NodeJs.js").add(DD_MODULES);
 
-	const bootstrap = require(sourceDir + "/common/Bootstrap.js");
+		const bootstrap = require(sourceDir + "/common/Bootstrap.js");
 
-	return bootstrap.createRoot(DD_MODULES, options);
+		return bootstrap.createRoot(DD_MODULES, options);
+	},
 };

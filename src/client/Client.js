@@ -51,19 +51,7 @@
 			],
 			bootstrap: true,
 			
-			proto: function(root) {
-				var types = root.Doodad.Types;
-				return {
-					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
-						options = this._super.apply(this, arguments);
-						options.enableDomObjectsModel = types.toBoolean(options.enableDomObjectsModel);
-						options.defaultScriptTimeout = types.toInteger(options.defaultScriptTimeout);
-						return options;
-					}),
-				};
-			},
-			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -79,22 +67,40 @@
 					extenders = doodad.Extenders,
 					mixIns = doodad.MixIns;
 
-
+				//=============================
+				// Internals
+				//=============================
+					
 				var __Internal__ = {
 					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
 					loadedScripts: {},   // <FUTURE> global to every thread
 				};
 
+				//=====================
+				// Options
+				//=====================
 				
-				client.setOptions({
+				var __options__ = types.extend({
 					enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 					defaultScriptTimeout: 3000,		// milliseconds
 				}, _options);
 
-					
-				var __Natives__ = {
-					windowObject: global.Object,
+				__options__.enableDomObjectsModel = types.toBoolean(__options__.enableDomObjectsModel);
+				__options__.defaultScriptTimeout = types.toInteger(__options__.defaultScriptTimeout);
+
+				types.freezeObject(__options__);
+
+				client.getOptions = function() {
+					return __options__;
+				};
+				
+				//========================
+				// Natives
+				//========================
+				
+				types.complete(_shared.Natives, {
+					//windowObject: global.Object,
 
 					// DOM
 					windowWindow: (types.isNativeFunction(global.Window) ? global.Window : undefined),
@@ -102,7 +108,7 @@
 					windowHtmlDocument: (types.isNativeFunction(global.HTMLDocument) ? global.HTMLDocument : undefined),
 					windowHtmlElement: (types.isNativeFunction(global.HTMLElement) ? global.HTMLElement : undefined),
 
-					windowError: global.Error,
+					//windowError: global.Error,
 					
 					// getDefaultLanguage
 					windowNavigator: global.navigator,
@@ -139,28 +145,22 @@
 					windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame) ||
 												(types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame) ||
 												undefined,
-				};
+				});
 				
 				
 				//===================================
 				// Events
 				//===================================
 				
-				tools.onscriptinit = null;
-				tools.onscriptloading = null;
-				tools.onscriptload = null;
-				tools.onscripterror = null;
-
-
 				__Internal__.hasAddEventListener = types.isNativeFunction(global.addEventListener);
 				
-				client.addEventListener = (__Internal__.hasAddEventListener ? 
-						function addEventListener(element, name, handler, /*optional*/capture) {
+				client.addListener = (__Internal__.hasAddEventListener ? 
+						function addListener(element, name, handler, /*optional*/capture) {
 							element.addEventListener(name, handler, !!capture);
 						} 
 						
 					:
-						function addEventListener(element, name, handler, /*optional*/capture) {
+						function addListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
 							var handlersName = '__DD_EVENT_HANDLERS__' + name;
 							var handlers = types.get(element, handlersName);
@@ -206,13 +206,13 @@
 						
 					);
 				
-				client.removeEventListener = (__Internal__.hasAddEventListener ? 
-						function removeEventListener(element, name, handler, /*optional*/capture) {
+				client.removeListener = (__Internal__.hasAddEventListener ? 
+						function removeListener(element, name, handler, /*optional*/capture) {
 							element.removeEventListener(name, handler, !!capture);
 						}
 						
 					: 
-						function removeEventListener(element, name, handler, /*optional*/capture) {
+						function removeListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
 							var handlersName = '__DD_EVENT_HANDLERS__' + name;
 							var handlers = types.get(element, handlersName);
@@ -244,7 +244,7 @@
 				__Internal__.promiseUnhandledEvent = new types.Map();
 				__Internal__.promiseHandledEvent = new types.Map();
 				
-				types.addPromiseEventListener = function addPromiseEventListener(event, listener) {
+				types.addPromiseListener = function addPromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
 							var handler = function(ev) {
@@ -275,7 +275,7 @@
 					};
 				};
 				
-				types.removePromiseEventListener = function removePromiseEventListener(event, listener) {
+				types.removePromiseListener = function removePromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (__Internal__.promiseUnhandledEvent.has(listener)) {
 							var handler = __Internal__.promiseUnhandledEvent.get(listener);
@@ -338,37 +338,131 @@
 							delay = -1;
 						};
 						if (types.isClass(types.getType(thisObj))) {
-							fn = types.bind(null, types.invoke, [thisObj, fn, args]);
+							fn = types.bind(null, _shared.invoke, [thisObj, fn, args]);
 						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
 							fn = types.bind(thisObj, fn, args);
 						};
-						if ((delay <= 0) && __Natives__.windowSetImmediate) { // IE 10
+						if ((delay <= 0) && _shared.Natives.windowSetImmediate) { // IE 10
 							// Raised after events queue process
-							var id = __Natives__.windowSetImmediate(fn);
+							var id = _shared.Natives.windowSetImmediate(fn);
 							return (cancelable && {
 								cancel: function cancel() {
-									__Natives__.windowClearImmediate(id);
+									_shared.Natives.windowClearImmediate(id);
 								},
 							} || undefined);
-						} else if ((delay <= 0) && __Natives__.windowRequestAnimationFrame) {
+						} else if ((delay <= 0) && _shared.Natives.windowRequestAnimationFrame) {
 							// Raised at page re-paint
-							var id = __Natives__.windowRequestAnimationFrame(fn);
+							var id = _shared.Natives.windowRequestAnimationFrame(fn);
 							return (cancelable && {
 								cancel: function cancel() {
-									__Natives__.windowCancelAnimationFrame(id);
+									_shared.Natives.windowCancelAnimationFrame(id);
 								},
 							} || undefined);
 						} else {
 							// Raised after X ms
-							delay = __Natives__.mathMax(delay, 0);
-							var id = __Natives__.windowSetTimeout(fn, delay);
+							delay = _shared.Natives.mathMax(delay, 0);
+							var id = _shared.Natives.windowSetTimeout(fn, delay);
 							return (cancelable && {
 								cancel: function cancel() {
-									__Natives__.windowClearTimeout(id);
+									_shared.Natives.windowClearTimeout(id);
 								},
 							} || undefined);
 						};
 					});
+				
+				//=====================================
+				// Shutdown & Exit
+				//=====================================
+				
+				__Internal__.catchAndExitCalled = false;
+				
+				tools.catchAndExit = function catchAndExit(err) {
+					// NOTE: This is the last resort error handling.
+					// NOTE: types.ScriptAbortedError should bubbles here
+					
+					if (!__Internal__.catchAndExitCalled) {
+						__Internal__.catchAndExitCalled = true;
+						
+						var exitCode = 1;
+
+						try {
+							if (!err.trapped) {
+								if (!(err instanceof types.ScriptAbortedError)) {
+									debugger;
+								};
+								try {
+									err.trapped = true;
+									if (err.stack) {
+										if (global.console.error) {
+											global.console.error(err.stack);
+										} else {
+											global.console.log(err.stack);
+										};
+									} else {
+										if (global.console.error) {
+											global.console.error(err);
+										} else {
+											global.console.log(err);
+										};
+									};
+								} catch(p) {
+									debugger;
+								};
+							};
+							
+							if (err instanceof types.ScriptAbortedError) {
+								exitCode = err.exitCode;
+							};
+						} catch(o) {
+							debugger;
+						};
+						
+						try {
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false})); // sync
+						} catch(o) {
+							debugger;
+						};
+						
+						try {
+							global.console.log("Page exited with code : " + types.toString(exitCode));
+						} catch(o) {
+						};
+						
+						if (!__Internal__.setCurrentLocationPending) {
+							var reload = false;
+							var url = global.window.location.href;
+							
+							try {
+								url = files.Url.parse(url);
+								
+								// TODO: Better user message, with translation
+								global.document.open('text/plain', false);
+								if (exitCode !== 0) {
+									if (types.toBoolean(url.args.get('crashReport', true))) {
+										global.document.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+									} else {
+										reload = true;
+										global.document.write("We are sorry. An unexpected error has occured. Page will now reload...");
+									};
+								};
+								global.document.close();
+							} catch(o) {
+								debugger;
+							};
+							
+							if (reload) {
+								try {
+									url = url.setArgs({crashReport: true})
+									tools.setCurrentLocation(url, true);
+								} catch(o) {
+									debugger;
+								};
+							};
+						};
+					};
+					
+					throw err;
+				};
 				
 				//===================================
 				// Client functions
@@ -391,7 +485,10 @@
 				}
 				//! END_REPLACE()
 				, function isEvent(obj) {
-					return obj instanceof __Natives__.windowEventConstructor;
+					if (types.isNothing(obj)) {
+						return false;
+					};
+					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventConstructor);
 				});
 				
 				client.isWindow = root.DD_DOC(
@@ -410,16 +507,17 @@
 							description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Natives__.windowWindow ? (function isWindow(obj) {
-					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
+				, (__options__.enableDomObjectsModel && _shared.Natives.windowWindow ? (function isWindow(obj) {
 					// NOTE: Browsers really need to review their objects model.
-					if (!obj) {
+					if (types.isNothing(obj)) {
 						return false;
 					};
 					if (obj === global) {
 						return true;
 					};
-					obj = __Natives__.windowObject(obj);
+					if (typeof obj !== 'object') {
+						return false;
+					};
 					var W = obj.Window;
 					//SLOWER return types.isNativeFunction(W) && (obj instanceof W);
 					return types.isFunction(W) && (obj instanceof W);
@@ -443,22 +541,23 @@
 							description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowHtmlDocument ? (function isDocument(obj) {
-					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
+				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowHtmlDocument ? (function isDocument(obj) {
 					// NOTE: Browsers really need to review their objects model.
-					if (!obj) {
+					if (types.isNothing(obj)) {
 						return false;
 					};
 					if (obj === global.document) {
 						return true;
 					};
-					obj = __Natives__.windowObject(obj);
+					if (typeof obj !== 'object') {
+						return false;
+					};
 					var w = obj.parentWindow;
-					if (!w) {
+					if (!types.isObjectLike(w)) {
 						return false;
 					};
 					if (w === global.window) {
-						return (obj instanceof __Natives__.windowHtmlDocument);
+						return (obj instanceof _shared.Natives.windowHtmlDocument);
 					};
 					var hd = w.HTMLDocument;
 					//SLOWER return types.isNativeFunction(hd) && (obj instanceof hd);
@@ -483,23 +582,24 @@
 							description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowNode ? (function isNode(obj) {
-					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
+				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowNode ? (function isNode(obj) {
 					// NOTE: Browsers really need to review their objects model.
-					if (!obj) {
+					if (types.isNothing(obj)) {
 						return false;
 					};
-					obj = __Natives__.windowObject(obj);
+					if (typeof obj !== 'object') {
+						return false;
+					};
 					var d = obj.ownerDocument;
-					if (!d) {
+					if (!types.isObjectLike(d)) {
 						return false;
 					};
 					var w = d.parentWindow;
-					if (!w) {
+					if (!types.isObjectLike(w)) {
 						return false;
 					};
 					if (w === global) {
-						return (obj instanceof __Natives__.windowNode);
+						return (obj instanceof _shared.Natives.windowNode);
 					};
 					var n = w.Node;
 					//SLOWER return types.isNativeFunction(n) && (obj instanceof n);
@@ -524,23 +624,24 @@
 							description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (client.getOptions().enableDomObjectsModel && __Internal__.documentHasParentWindow && __Natives__.windowHtmlElement ? (function isElement(obj) {
-					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
+				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowHtmlElement ? (function isElement(obj) {
 					// NOTE: Browsers really need to review their objects model.
-					if (!obj) {
+					if (types.isNothing(obj)) {
 						return false;
 					};
-					obj = __Natives__.windowObject(obj);
+					if (typeof obj !== 'object') {
+						return false;
+					};
 					var d = obj.ownerDocument;
-					if (!d) {
+					if (!types.isObjectLike(d)) {
 						return false;
 					};
 					var w = d.parentWindow;
-					if (!w) {
+					if (!types.isObjectLike(w)) {
 						return false;
 					};
 					if (w === global) {
-						return (obj instanceof __Natives__.windowHtmlElement);
+						return (obj instanceof _shared.Natives.windowHtmlElement);
 					};
 					var he = w.HTMLElement;
 					//SLOWER return types.isNativeFunction(he) && (obj instanceof he);
@@ -566,8 +667,11 @@
 							description: "Returns 'true' when the object is an event target. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (__Natives__.windowEventTarget ? (function isElement(obj) {
-					return (obj instanceof __Natives__.windowEventTarget);
+				, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
+					if (types.isNothing(obj)) {
+						return false;
+					};
+					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventTarget);
 				}) : (function isElement(obj) {
 					 return client.isDocument(obj) || client.isElement(obj);
 				})));
@@ -661,7 +765,7 @@
 
 							useCapture = !!useCapture;
 							
-							//var handler	= types.bind(this[doodad.ObjectSymbol], this),
+							//var handler	= types.bind(this[_shared.ObjectSymbol], this),
 							var self = this,
 								ignore = false;
 							
@@ -676,14 +780,14 @@
 										//if (!ev.currentTarget) {
 										//	ev.currentTarget = this;
 										//};
-										ev.getUnified = self[doodad.ExtenderSymbol].getUnified;
+										ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
 										delete ev.__unified;
-										return types.invoke(self[doodad.ObjectSymbol], self, [ev, context]);
+										return _shared.invoke(self[_shared.ObjectSymbol], self, [ev, context]);
 									};
 								};
 							};
 							
-							var eventTypes = this[doodad.ExtenderSymbol].types,
+							var eventTypes = this[_shared.ExtenderSymbol].types,
 								eventTypesLen = eventTypes.length;
 								
 							for (var i = 0; i < eventTypesLen; i++) {
@@ -694,8 +798,8 @@
 										if (types.hasIndex(elements, j)) {
 											var element = elements[j],
 												handler = createHandler(element);
-											if (this._super(this[doodad.ObjectSymbol], this, null, [useCapture, element, type, handler])) {
-												client.addEventListener(element, type, handler, useCapture);
+											if (this._super(this[_shared.ObjectSymbol], this, null, [useCapture, element, type, handler])) {
+												client.addListener(element, type, handler, useCapture);
 											};
 										};
 									};
@@ -709,9 +813,9 @@
 							if (types.isNothing(elements)) {
 								var evs;
 								if (types.isNothing(useCapture)) {
-									evs = this._super(this[doodad.ObjectSymbol], this);
+									evs = this._super(this[_shared.ObjectSymbol], this);
 								} else {
-									evs = this._super(this[doodad.ObjectSymbol], this, [!!useCapture]);
+									evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture]);
 								};
 								var evsLen = evs.length;
 								for (var j = 0; j < evsLen; j++) {
@@ -720,7 +824,7 @@
 										element = evData[1],
 										type = evData[2],
 										handler = evData[3];
-									client.removeEventListener(element, type, handler, capture);
+									client.removeListener(element, type, handler, capture);
 								};
 							} else {
 								if (!types.isArrayLike(elements)) {
@@ -735,10 +839,10 @@
 								for (var i = 0; i < elementsLen; i++) {
 									var evs;
 									if (types.isNothing(useCapture)) {
-										evs = this._super(this[doodad.ObjectSymbol], this, [false, elements[i]]);
-										types.append(evs, this._super(this[doodad.ObjectSymbol], this, [true, elements[i]]));
+										evs = this._super(this[_shared.ObjectSymbol], this, [false, elements[i]]);
+										types.append(evs, this._super(this[_shared.ObjectSymbol], this, [true, elements[i]]));
 									} else {
-										evs = this._super(this[doodad.ObjectSymbol], this, [!!useCapture, elements[i]]);
+										evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture, elements[i]]);
 									};
 									var evsLen = evs.length;
 									for (var j = 0; j < evsLen; j++) {
@@ -747,7 +851,7 @@
 											element = evData[1],
 											type = evData[2],
 											handler = evData[3];
-										client.removeEventListener(element, type, handler, capture);
+										client.removeListener(element, type, handler, capture);
 									};
 								};
 							};
@@ -757,10 +861,10 @@
 						},
 						promise: function promise(elements, /*optional*/context, /*optional*/useCapture) {
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							var canReject = this[doodad.ExtenderSymbol].canReject;
+							var canReject = this[_shared.ExtenderSymbol].canReject;
 							var self = this;
 							var Promise = types.getPromise();
-							return new Promise(function(resolve, reject) {
+							return Promise.create(function eventPromise(resolve, reject) {
 								self.attachOnce(elements, context, useCapture, function(ev) {
 									if (canReject && (ev instanceof doodad.ErrorEvent)) {
 										return reject(ev);
@@ -786,13 +890,13 @@
 				, extenders.Event.$inherit({
 					$TYPE_NAME: "JsEvent",
 					
-					eventsAttr: '__JS_EVENTS',
-					eventsImplementation: 'Doodad.MixIns.JsEvents',
-					types: null,
+					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
+					eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
+					types: types.READ_ONLY(null),
 					
-					enableScopes: true,
+					enableScopes: types.READ_ONLY(true),
 					
-					getUnified: function getUnified() {
+					getUnified: types.READ_ONLY(function getUnified() {
 						if (!this.__unified) {
 							var self = this;
 							this.__unified = {
@@ -801,27 +905,30 @@
 							};
 						};
 						return this.__unified;
-					},
-					
-					eventProto: doodad.JsEventHandler,
-					
-					_new: types.SUPER(function _new(/*optional*/options) {
-						this._super(options);
-						this.types = types.get(options, 'types', this.types);
-						return this;
 					}),
-					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+					
+					eventProto: types.READ_ONLY(doodad.JsEventHandler),
+					
+					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						this._super(options);
+						if (!types.isType(this)) {
+							_shared.setAttributes(this, {
+								types: types.freezeObject(types.get(options, 'types', this.types) || []),
+							});
+						};
+					})),
+					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
 						if (types.isNothing(options)) {
 							options = {};
 						};
 						return this._super(options) + 
 							',' + types.unique([], types.get(options, 'types', this.types)).sort().join('|');
-					}),
-					overrideOptions: types.SUPER(function overrideOptions(options, newOptions) {
+					})),
+					overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions) {
 						this._super(options, newOptions);
 						options.types = types.unique([], newOptions.types, this.types);
 						return options;
-					}),
+					})),
 				})));
 
 				
@@ -875,9 +982,9 @@
 					// NOTE: Macintosh older than OS/X not supported
 					var os = __Internal__.os;
 					if (!os) {
-						var type = __Natives__.windowNavigator.platform.toLowerCase().slice(0, 3);
+						var type = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3);
 						__Internal__.os = os = {
-							name: __Natives__.windowNavigator.platform,
+							name: _shared.Natives.windowNavigator.platform,
 							type: ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix')),  // 'windows', 'linux', 'unix'
 							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
 							//architecture: null, // TODO: Detect
@@ -908,7 +1015,7 @@
 				//! END_REPLACE()
 				, function getDefaultLanguage(/*optional*/alt) {
 					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
-					var navigator = __Natives__.windowNavigator;
+					var navigator = _shared.Natives.windowNavigator;
 					var tmp = ((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_').split('_', 2);
 					tmp[1] = tmp[1].toUpperCase();
 					return tmp.join('_');
@@ -966,6 +1073,9 @@
 					return files.Url.parse(_window.location.href);
 				});
 				
+				
+				__Internal__.setCurrentLocationPending = false;
+				
 				tools.setCurrentLocation = root.DD_DOC(
 				//! REPLACE_BY("null")
 				{
@@ -1003,19 +1113,23 @@
 						root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
 					};
 					
-					if (!(url instanceof files.Url)) {
-						url = files.Url.parse(url);
-					};
-					
-					if (!_window) {
-						_window = global.window;
-					};
+					if (!__Internal__.setCurrentLocationPending) {
+						if (!(url instanceof files.Url)) {
+							url = files.Url.parse(url);
+						};
+						
+						if (!_window) {
+							_window = global.window;
+						};
 
-					var result = url.compare(_window.location.href);
-					if (!noReload && (result === 0)) {
-						_window.location.reload();
-					} else {
-						_window.location.href = url.toString();
+						var result = url.compare(_window.location.href);
+						if (!noReload && (result === 0)) {
+							_window.location.reload();
+							__Internal__.setCurrentLocationPending = true;
+						} else {
+							_window.location.href = url.toString();
+							__Internal__.setCurrentLocationPending = (result !== 0);
+						};
 					};
 					
 					if (!dontAbort) {
@@ -1029,7 +1143,7 @@
 
 				// NOTE: These functions will get replaced when "NodeJs.js" is loaded.
 				
-				__Internal__.ScriptLoader = types.CustomEventTarget.$inherit(
+				__Internal__.ScriptLoader = types.INIT(types.CustomEventTarget.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ScriptLoader',
@@ -1053,7 +1167,7 @@
 						onload: null,
 						onerror: null,
 						
-						_new: types.SUPER(function _new(tag, target, /*optional*/timeout) {
+						_new: types.READ_ONLY(types.SUPER(function _new(tag, target, /*optional*/timeout) {
 							if (root.DD_ASSERT) {
 								root.DD_ASSERT(types.isStringAndNotEmpty(tag), "Invalid tag.");
 								root.DD_ASSERT(client.isElement(target), "Invalid target.");
@@ -1062,11 +1176,11 @@
 							this.tag = tag;
 							this.target = target;
 							if (types.isNothing(timeout)) {
-								this.timeout = client.getOptions().defaultScriptTimeout;
+								this.timeout = __options__.defaultScriptTimeout;
 							} else {
 								this.timeout = timeout;
 							};
-						}),
+						})),
 						
 						__handleSuccess: function __handleSuccess(ev) {
 							if ((this.loadEv !== 'readystatechange') || (this.element.readyState === 'loaded') || (this.element.readyState === 'complete')) {
@@ -1120,12 +1234,12 @@
 								var self = this;
 								
 								// NOTE: Safari: "onload" doesn't raise for the 'link' tag
-								client.addEventListener(this.element, this.loadEv, function scriptOnSuccess(ev) {
+								client.addListener(this.element, this.loadEv, function scriptOnSuccess(ev) {
 									return self.__handleSuccess(ev);
 								});
 								
 								// NOTE: IE and Safari: "onerror" doesn't raise, so we can't know if there was an error
-								client.addEventListener(this.element, 'error', function scriptOnError(ev) {
+								client.addListener(this.element, 'error', function scriptOnError(ev) {
 									return self.__handleError(ev);
 								});
 
@@ -1161,7 +1275,7 @@
 									};
 									if (url) {
 										var waitDownload = this.target.ownerDocument.createElement('img');
-										client.addEventListener(waitDownload, 'error', function handleWaitDownload(ev) {
+										client.addListener(waitDownload, 'error', function handleWaitDownload(ev) {
 											if (waitDownload.parentNode) {
 												waitDownload.parentNode.removeChild(waitDownload);
 											};
@@ -1192,7 +1306,7 @@
 							};
 						},
 					}
-				);
+				));
 				
 				
 				tools.getJsScriptFileLoader = root.DD_DOC(
@@ -1321,9 +1435,9 @@
 					loader.addEventListener('init', function() {
 						this.element.type = 'text/javascript';
 						loader.async = this.element.async = !!async;
-						if (async && __Natives__.windowBlob && __Natives__.windowURL) {
+						if (async && _shared.Natives.windowBlob && _shared.Natives.windowURL) {
 							// Firefox
-							this.element.src = __Natives__.windowURL.createObjectURL(new __Natives__.windowBlob(script));
+							this.element.src = _shared.Natives.windowURL.createObjectURL(new _shared.Natives.windowBlob(script));
 						} else {
 							if (_document.createCDATASection) {
 								this.element.appendChild(_document.createCDATASection(script));
@@ -1468,7 +1582,7 @@
 
 					var loader;
 					
-					if (async && __Natives__.windowBlob && global.URL) {
+					if (async && _shared.Natives.windowBlob && global.URL) {
 						if (!_document) {
 							_document = global.document;
 						};
@@ -1548,7 +1662,7 @@
 					//! END_REPLACE()
 					, function loadFile(url, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(url)) {
-							url = files.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = _shared.urlParser(url, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoadFile(url, options, callbacks);
 					});
@@ -1583,9 +1697,9 @@
 				//! END_REPLACE()
 				, function readFile(url, /*optional*/options) {
 					var Promise = types.getPromise();
-					return new Promise(function(resolve, reject) {
+					return Promise.create(function readFilePromise(resolve, reject) {
 						if (types.isString(url)) {
-							url = files.getOptions().hooks.urlParser(url, types.get(options, 'parseOptions'));
+							url = _shared.urlParser(url, types.get(options, 'parseOptions'));
 						};
 						root.DD_ASSERT && root.DD_ASSERT(url instanceof files.Url, "Invalid url.");
 						var async = types.get(options, 'async', false),
@@ -1597,11 +1711,11 @@
 							// Fix
 							encoding = 'utf-8';
 						};
-						if (async && __Natives__.windowFetch && __Natives__.windowHeaders && __Natives__.windowFileReader) {
+						if (async && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
 							});
-							var headers = new __Natives__.windowHeaders(types.get(options, 'headers'));
+							var headers = new _shared.Natives.windowHeaders(types.get(options, 'headers'));
 							if (!headers.has('Accept')) {
 								if (encoding) {
 									headers.set('Accept', 'text/plain');
@@ -1620,10 +1734,10 @@
 								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
 								init.credentials = 'include';
 							};
-							__Natives__.windowFetch.call(global, url, init).then(function(response) {
+							_shared.Natives.windowFetch.call(global, url, init).then(function(response) {
 								if (response.ok || types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
-										var reader = new __Natives__.windowFileReader();
+										var reader = new _shared.Natives.windowFileReader();
 										reader.onloadend = function(ev) {
 											if (reader.error) {
 												reject(reader.error);
@@ -1642,7 +1756,7 @@
 								};
 							});
 						} else {
-							var xhr = new __Natives__.windowXMLHttpRequest();
+							var xhr = new _shared.Natives.windowXMLHttpRequest();
 							if (!('response' in xhr) && !('responseBody' in xhr)) {
 								throw new types.NotSupported("Incompatible browser.");
 							};
@@ -1680,7 +1794,7 @@
 								xhr.responseType = (encoding ? 'text' : 'blob');
 							};
 							var loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
-							client.addEventListener(xhr, loadEv, function(ev) {
+							client.addListener(xhr, loadEv, function(ev) {
 								if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
 									if (state.timeoutId) {
 										clearTimeout(state.timeoutId);
@@ -1707,7 +1821,7 @@
 									reject(ex);
 								};
 							};
-							client.addEventListener(xhr, 'error', function(ev) {
+							client.addListener(xhr, 'error', function(ev) {
 								handleError(new types.HttpError(xhr.status, xhr.statusText));
 							});
 							var timeout = types.get(options, 'timeout', 0) || 5000;  // Don't allow "0" (for infinite)

@@ -69,9 +69,15 @@
 				
 
 
-				modules.setOptions({
+				var __options__ = types.extend({
 					modulesUri: './',
 				}, _options);
+
+				types.freezeObject(__options__);
+
+				modules.getOptions = function() {
+					return __options__;
+				};
 				
 
 				
@@ -112,7 +118,7 @@
 							var location = tools.getCurrentLocation()
 								.removeArgs('redirects')
 								.set({file: null})
-								.combine(types.get(options, 'modulesUri', modules.getOptions().modulesUri))
+								.combine(types.get(options, 'modulesUri', __options__.modulesUri))
 								.combine(files.Path.parse(module, {os: 'linux'}))
 								.pushFile();
 							if (path) {
@@ -144,7 +150,7 @@
 											};
 										});
 								} else {
-									return new Promise(function(resolve, reject) {
+									return Promise.create(function startScriptLoader(resolve, reject) {
 										var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 										scriptLoader.addEventListener('load', function() {
 											resolve({
@@ -157,8 +163,8 @@
 									});
 								};
 							})
-							['catch'](function() {
-								throw new types.Error("Failed to load file '~0~' from module '~1~'.", [fname, module]);
+							['catch'](function(err) {
+								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [fname, module, err]);
 							});
 					}));
 				};

@@ -48,19 +48,7 @@
 			],
 			bootstrap: true,
 			
-			proto: function(root) {
-				var types = root.Doodad.Types;
-				return {
-					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
-						options = this._super.apply(this, arguments);
-						options.caseSensitive = types.toBoolean(options.caseSensitive);
-						options.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
-						return options;
-					}),
-				};
-			},
-
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -85,53 +73,74 @@
 				// Options
 				//===================================
 					
-				files.setOptions({
+				var __options__ = types.extend({
 					caseSensitive: true,
 					caseSensitiveUnicode: true,
-					
-					hooks: {
-						urlParser: function(url, /*optional*/options) {
-							if (types.isString(url)) {
-								if (!options) {
-									options = {
-										noEscapes: true,
-									};
-								};
-								url = files.Url.parse(url, options);
-							};
-							return url;
-						},
-						
-						pathParser: function(path, /*optional*/options) {
-							if (types.isString(path)) {
-								if (!options) {
-									options = {
-										os: 'linux',
-										dirChar: '/',
-									};
-								};
-
-								path = files.Path.parse(path, options).set({
-									os: null,
-									dirChar: null,
-								});
-							};
-							return path;
-						},
-					},
 				}, _options);
-				
 
+				__options__.caseSensitive = types.toBoolean(__options__.caseSensitive);
+				__options__.caseSensitiveUnicode = types.toBoolean(__options__.caseSensitiveUnicode);
+
+				// Some options can be changed, so we don't freeze the object.
+				//types.freezeObject(__options__);
+
+				files.getOptions = function() {
+					// Because options are not frozen, we make a copy to force the use of "setOptions".
+					return types.extend({}, __options__);
+				};
+
+				files.setOptions = function(options) {
+					if (types.has(options, 'caseSensitive')) {
+						__options__.caseSensitive = types.toBoolean(options.caseSensitive);
+					};
+					if (types.has(options, 'caseSensitiveUnicode')) {
+						__options__.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
+					};
+				};
+
+				//===================================
+				// Hooks
+				//===================================
+
+				_shared.urlParser = function urlParser(url, /*optional*/options) {
+					if (types.isString(url)) {
+						if (!options) {
+							options = {
+								noEscapes: true,
+							};
+						};
+						url = files.Url.parse(url, options);
+					};
+					return url;
+				};
+				
+				_shared.pathParser = function pathParser(path, /*optional*/options) {
+					if (types.isString(path)) {
+						if (!options) {
+							options = {
+								os: 'linux',
+								dirChar: '/',
+							};
+						};
+
+						path = files.Path.parse(path, options).set({
+							os: null,
+							dirChar: null,
+						});
+					};
+					return path;
+				};
+				
 				//===================================
 				// Native functions
 				//===================================
 					
-				var __Natives__ = {
+				types.complete(_shared.Natives, {
 					windowRegExp: (global.RegExp || RegExp),
 					
 					windowEscape: (global.escape || escape),
 					windowUnescape: (global.unescape || unescape),
-				};
+				});
 				
 				//===================================
 				// Paths
@@ -307,10 +316,10 @@
 				__Internal__.windowsShellVerySpecialCharacters = ' <>|\\?\\*"/';
 				
 				// group 1 = chars to unescape, group 2 = always invalid chars, group 3 = valid chars when escaped
-				__Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx = new __Natives__.windowRegExp('\\^([^ ' + __Internal__.windowsShellVerySpecialCharacters + '])|([' + __Internal__.windowsShellSpecialCharacters + __Internal__.windowsShellVerySpecialCharacters + ']|%[^%]+%|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
+				__Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\^([^ ' + __Internal__.windowsShellVerySpecialCharacters + '])|([' + __Internal__.windowsShellSpecialCharacters + __Internal__.windowsShellVerySpecialCharacters + ']|%[^%]+%|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
 				
 				// group 1 = chars to escape
-				__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx = new __Natives__.windowRegExp('([' + __Internal__.windowsShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
+				__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.windowsShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
 				
 				__Internal__.parsePathWindowsInvalidNamesRegEx = /:|^(com[1-9]|lpt[1-9]|con|nul|prn)$/i;    // <FUTURE> thread level
 				
@@ -320,10 +329,10 @@
 				__Internal__.unixShellSpecialCharacters = ' <>|?*"\'&`#;~!\-()\\[\\]{}\\\\';
 
 				// group 1 = chars to unescape, group 2 = invalid chars
-				__Internal__.parsePathUnixUnescapeShellReservedCharsRegEx = new __Natives__.windowRegExp('\\\\(.)|([' + __Internal__.unixShellSpecialCharacters + ']|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
+				__Internal__.parsePathUnixUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\\\(.)|([' + __Internal__.unixShellSpecialCharacters + ']|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
 				
 				// group 1 = chars to escape
-				__Internal__.parsePathUnixEscapeShellReservedCharsRegEx = new __Natives__.windowRegExp('([' + __Internal__.unixShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
+				__Internal__.parsePathUnixEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.unixShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
 
 				//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
 				
@@ -1105,7 +1114,7 @@
 								//! REPLACE_BY("null")
 								{
 											author: "Claude Petit",
-											revision: 4,
+											revision: 5,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1139,12 +1148,7 @@
 										thisPath.push(this.file);
 									};
 
-									if (types.isString(dirRoot)) {
-										dirRoot = dirRoot.split(data.dirChar);
-									};
-									if (dirRoot) {
-										dirRoot = tools.trim(dirRoot, '');
-									};
+									var dirRoot;
 										
 									var dir = types.get(options, 'path', path.path);
 									if (types.isString(dir)) {
@@ -1165,7 +1169,7 @@
 												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										var dirRoot = types.get(options, 'root', path.root);
+										dirRoot = types.get(options, 'root', path.root);
 
 									} else { //if (path instanceof files.Url)
 										if (path.protocol && (path.protocol !== 'file')) {
@@ -1185,12 +1189,20 @@
 											};
 											dir.shift();
 										};
-										var dirRoot = types.get(options, 'root');
+										dirRoot = types.get(options, 'root');
 									};
 									
 									data.dontThrow = dontThrow;
 
-									if (this.isRelative) {
+									if (types.isString(dirRoot)) {
+										dirRoot = dirRoot.split(data.dirChar);
+									};
+									if (dirRoot) {
+										dirRoot = tools.trim(dirRoot, '');
+									};
+
+									var isRelative = types.get(options, 'isRelative', path.isRelative);
+									if (isRelative) {
 										data.root = null;
 										data.path = types.append([], thisRoot, thisPath, dirRoot, dir);
 									} else {
@@ -1426,13 +1438,13 @@
 												var arg = args[i].split('=', 2);
 												var name = arg[0];
 												if (!noEscapes) {
-													name = __Natives__.windowUnescape(name);
+													name = _shared.Natives.windowUnescape(name);
 												};
 												var value = null;
 												if (arg.length === 2) {
 													value = arg[1];
 													if (!noEscapes) {
-														value = __Natives__.windowUnescape(value);
+														value = _shared.Natives.windowUnescape(value);
 													};
 												};
 												args[i] = {
@@ -1447,10 +1459,10 @@
 													value = value.value;
 												};
 												if (!noEscapes) {
-													name = __Natives__.windowUnescape(name);
+													name = _shared.Natives.windowUnescape(name);
 												};
 												if (!noEscapes) {
-													value = __Natives__.windowUnescape(value);
+													value = _shared.Natives.windowUnescape(value);
 												};
 												result.push({
 													name: name,
@@ -1533,13 +1545,13 @@
 										if (!types.isNothing(name) || !types.isNothing(val)) {
 											if (!types.isNothing(name)) {
 												if (!noEscapes) {
-													name = __Natives__.windowEscape(name);
+													name = _shared.Natives.windowEscape(name);
 												};
 												result += name;
 											};
 											if (!types.isNothing(val)) {
 												if (!noEscapes) {
-													val = __Natives__.windowEscape(val);
+													val = _shared.Natives.windowEscape(val);
 												};
 												result += '=' + val;
 											};
@@ -1699,9 +1711,9 @@
 												n = n[0];
 												if (!noEscapes) {
 													if (v) {
-														v = __Natives__.windowUnescape(v);
+														v = _shared.Natives.windowUnescape(v);
 													};
-													n = __Natives__.windowUnescape(n);
+													n = _shared.Natives.windowUnescape(n);
 												};
 												v = [v];
 											};
@@ -1713,7 +1725,7 @@
 													if (v.length) {
 														var val = v.shift();
 														if (!noEscapes) {
-															val = __Natives__.windowUnescape(val);
+															val = _shared.Natives.windowUnescape(val);
 														};
 														args[i].value = types.toString(val);
 													} else {
@@ -2099,16 +2111,16 @@
 									
 									if (!noEscapes) {
 										if (domain) {
-											domain = __Natives__.windowUnescape(domain);
+											domain = _shared.Natives.windowUnescape(domain);
 										};
 										if (user) {
-											user =  __Natives__.windowUnescape(user);
+											user =  _shared.Natives.windowUnescape(user);
 										};
 										if (password) {
-											password = __Natives__.windowUnescape(password);
+											password = _shared.Natives.windowUnescape(password);
 										};
 										if (port) {
-											port = __Natives__.windowUnescape(port);
+											port = _shared.Natives.windowUnescape(port);
 										};
 									};
 									
@@ -2140,7 +2152,7 @@
 									};
 
 									if (!noEscapes && anchor) {
-										anchor = __Natives__.windowUnescape(anchor);
+										anchor = _shared.Natives.windowUnescape(anchor);
 									};
 									
 									if (urlIsArray) {
@@ -2158,7 +2170,7 @@
 										} else {
 											if (types.isString(path)) {
 												if (!noEscapes) {
-													path = __Natives__.windowUnescape(path);
+													path = _shared.Natives.windowUnescape(path);
 												};
 												if (path.length) {
 													path = path.split('/');
@@ -2167,7 +2179,7 @@
 												};
 											} else {
 												if (!noEscapes) {
-													path = tools.map(path, __Natives__.windowUnescape);
+													path = tools.map(path, _shared.Natives.windowUnescape);
 												};
 											};
 										};
@@ -2177,7 +2189,7 @@
 										} else {
 											if (types.isString(file)) {
 												if (!noEscapes) {
-													file = __Natives__.windowUnescape(file);
+													file = _shared.Natives.windowUnescape(file);
 												};
 												if (file.length) {
 													file = file.split('/');
@@ -2186,7 +2198,7 @@
 												};
 											} else {
 												if (!noEscapes) {
-													file = tools.map(file, __Natives__.windowUnescape);
+													file = tools.map(file, _shared.Natives.windowUnescape);
 												};
 											};
 										};
@@ -2462,21 +2474,21 @@
 									if (!types.isNothing(options.domain)) {
 										if (!types.isNothing(options.user) || !types.isNothing(options.password)) {
 											if (!types.isNothing(options.user)) {
-												result += (noEscapes ? options.user : __Natives__.windowEscape(options.user));
+												result += (noEscapes ? options.user : _shared.Natives.windowEscape(options.user));
 											};
 											if (!types.isNothing(options.password)) {
-												result += ':' + (noEscapes ? options.password : __Natives__.windowEscape(options.password));
+												result += ':' + (noEscapes ? options.password : _shared.Natives.windowEscape(options.password));
 											};
 											result += '@';
 										}
-										result += (noEscapes ? options.domain : __Natives__.windowEscape(options.domain));
+										result += (noEscapes ? options.domain : _shared.Natives.windowEscape(options.domain));
 										if (!types.isNothing(options.port)) {
 											result += ':' + options.port;
 										};
 									};
 									
 									if ((options.path && options.path.length) || !options.isRelative) {
-										var path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), __Natives__.windowEscape)), '').join('/');
+										var path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEscape)), '').join('/');
 										if (path.length > 1) {
 											path += '/';
 										};
@@ -2493,7 +2505,7 @@
 										if ((!options.path || !options.path.length) && options.isRelative) {
 											result += '/';
 										};
-										result += (noEscapes ? options.file : __Natives__.windowEscape(options.file));
+										result += (noEscapes ? options.file : _shared.Natives.windowEscape(options.file));
 									};
 									
 									if (options.args) {
@@ -2503,7 +2515,7 @@
 									};
 									
 									if (!types.isNothing(options.anchor)) {
-										result += '#' + (noEscapes ? options.anchor : __Natives__.windowEscape(options.anchor));
+										result += '#' + (noEscapes ? options.anchor : _shared.Natives.windowEscape(options.anchor));
 									};
 
 									return result;
@@ -2539,7 +2551,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2620,7 +2632,8 @@
 										path = tools.trim(path, '');
 									};
 									
-									if (url.isRelative) {
+									var isRelative = types.get(options, 'isRelative', url.isRelative);
+									if (isRelative) {
 										data.path = types.append([], thisPath, pathRoot, path);
 									} else {
 										data.path = types.append([], pathRoot, path);

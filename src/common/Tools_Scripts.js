@@ -49,7 +49,7 @@
 			],
 			bootstrap: true,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -71,21 +71,13 @@
 				
 				
 				//===================================
-				// Options
-				//===================================
-					
-				//tools.setOptions({
-				//}, _options);
-				
-
-				//===================================
 				// Native functions
 				//===================================
 					
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				//var __Natives__ = {
-				//};
+				//types.complete(_shared.Natives, {
+				//});
 				
 
 				//===================================
@@ -141,7 +133,7 @@
 								if (!ex) {
 									exLevel = 1;
 									try {
-										throw new __Natives__.windowError("");
+										throw new _shared.Natives.windowError("");
 									} catch(o) {
 										ex = o;
 									};

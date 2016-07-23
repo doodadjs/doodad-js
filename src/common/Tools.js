@@ -47,18 +47,7 @@
 			],
 			bootstrap: true,
 			
-			proto: function(root) {
-				var types = root.Doodad.Types;
-				return {
-					setOptions: types.SUPER(function setOptions(/*paramarray*/) {
-						options = this._super.apply(this, arguments);
-						options.logLevel = types.toInteger(options.logLevel);
-						return options;
-					}),
-				};
-			},
-
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -68,7 +57,6 @@
 				var doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					files = tools.Files,
 					config = tools.Config;
 					
 				//===================================
@@ -79,56 +67,74 @@
 				var __Internal__ = {
 				};
 				
+
+				tools.LogLevels = types.freezeObject({
+					Debug: 0,
+					Info: 1,
+					Warning: 2,
+					Error: 3,
+				});
+				
 				
 				//===================================
 				// Options
 				//===================================
 					
-				tools.setOptions({
-					logLevel: -1,
-					hooks: {
-						console: function(level, message) {
-							if (global.console) {
-								var fn;
-								if ((level === tools.LogLevels.Info) && global.console.info) {
-									//! BEGIN_REMOVE()
-										if ((typeof process === 'object') && (typeof module === 'object')) {
-											fn = 'warn'; // force stderr
-										} else {
-											fn = 'info';
-										};
-									//! END_REMOVE()
-									
-									//! IF_DEF("serverSide")
-										//! INJECT("fn = 'warn'") // force stderr
-									//! ELSE()
-										//! INJECT("fn = 'info'")
-									//! END_IF()
-								} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
-									fn = 'warn';
-								} else if ((level === tools.LogLevels.Error) && (global.console.error || global.console.exception)) {
-									fn = 'error';
-								} else {
-									//! BEGIN_REMOVE()
-										if ((typeof process === 'object') && (typeof module === 'object')) {
-											fn = 'warn'; // force stderr
-										} else {
-											fn = 'log';
-										};
-									//! END_REMOVE()
-									
-									//! IF_DEF("serverSide")
-										//! INJECT("fn = 'warn'") // force stderr
-									//! ELSE()
-										//! INJECT("fn = 'log'")
-									//! END_IF()
-								};
-								global.console[fn](message);
-							};
-						},
-					},
+				var __options__ = types.extend({
+					logLevel: tools.LogLevels.Error,
 				}, _options);
+
+				__options__.logLevel = types.toInteger(__options__.logLevel);
+
+				types.freezeObject(__options__);
+
+				tools.getOptions = function() {
+					return __options__;
+				};
+
+				//===================================
+				// Hooks
+				//===================================
 				
+				_shared.consoleHook = function consoleHook(level, message) {
+					if (global.console) {
+						var fn;
+						if ((level === tools.LogLevels.Info) && global.console.info) {
+							//! BEGIN_REMOVE()
+								if ((typeof process === 'object') && (typeof module === 'object')) {
+									fn = 'warn'; // force stderr
+								} else {
+									fn = 'info';
+								};
+							//! END_REMOVE()
+							
+							//! IF_DEF("serverSide")
+								//! INJECT("fn = 'warn'") // force stderr
+							//! ELSE()
+								//! INJECT("fn = 'info'")
+							//! END_IF()
+						} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
+							fn = 'warn';
+						} else if ((level === tools.LogLevels.Error) && (global.console.error || global.console.exception)) {
+							fn = 'error';
+						} else {
+							//! BEGIN_REMOVE()
+								if ((typeof process === 'object') && (typeof module === 'object')) {
+									fn = 'warn'; // force stderr
+								} else {
+									fn = 'log';
+								};
+							//! END_REMOVE()
+							
+							//! IF_DEF("serverSide")
+								//! INJECT("fn = 'warn'") // force stderr
+							//! ELSE()
+								//! INJECT("fn = 'log'")
+							//! END_IF()
+						};
+						global.console[fn](message);
+					};
+				};
 
 				//===================================
 				// Native functions
@@ -136,7 +142,7 @@
 					
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				var __Natives__ = {
+				types.complete(_shared.Natives, {
 					windowXMLHttpRequest: global.XMLHttpRequest,
 
 					// Prototype functions
@@ -145,9 +151,9 @@
 					stringReplace: global.String.prototype.replace,
 					stringSearch: global.String.prototype.search,
 				
-					windowError: global.Error,
+					//windowError: global.Error,
 					windowRegExp: global.RegExp,
-					windowObject: global.Object,
+					//windowObject: global.Object,
 
 					windowParseInt: global.parseInt,
 					windowIsNaN: global.isNaN,
@@ -172,7 +178,7 @@
 					
 					// ES7
 					regExpEscape: (types.isNativeFunction(global.RegExp.escape) ? global.RegExp.escape : undefined),
-				};
+				});
 				
 				//===================================
 				// Search functions
@@ -211,7 +217,7 @@
 					//! END_REPLACE()
 					, function findItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
-							obj = __Natives__.windowObject(obj);
+							obj = _shared.Natives.windowObject(obj);
 							var key;
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArrayLike(obj)) {
@@ -455,8 +461,8 @@
 							root.DD_ASSERT(types.isString(str), "Invalid string.");
 							root.DD_ASSERT(types.isInteger(n), "Invalid number.");
 						};
-						if (__Natives__.stringRepeat) {
-							return __Natives__.stringRepeat.call(str, n);
+						if (_shared.Natives.stringRepeat) {
+							return _shared.Natives.stringRepeat.call(str, n);
 						} else {
 							// Source: Stackoverflow
 							// TODO: Optimize me (join is slow)
@@ -510,13 +516,13 @@
 						};
 						if (options) {
 							var regexp = tools.escapeRegExp(from);
-							from = new __Natives__.windowRegExp(regexp, options);
+							from = new _shared.Natives.windowRegExp(regexp, options);
 						};
 						if (types.isString(text)) {
-							return __Natives__.stringReplace.call(text, from, to);
+							return _shared.Natives.stringReplace.call(text, from, to);
 						} else {
 							for (var i = 0; i < text.length; i++) {
-								text[i] = __Natives__.stringReplace.call(text[i], from, to);
+								text[i] = _shared.Natives.stringReplace.call(text[i], from, to);
 							};
 							return text;
 						};
@@ -584,7 +590,7 @@
 							posText = str.indexOf(text, start);
 						} else {
 							text.lastIndex = start;
-							//var posText = __Natives__.stringSearch.call(str, text);
+							//var posText = _shared.Natives.stringSearch.call(str, text);
 							posText = text.exec(str);
 							if (!text.global && (start > 0)) {
 								throw new types.TypeError("Regular expression must have the global flag set.");
@@ -602,7 +608,7 @@
 								posStopStr = str.indexOf(stopStr, start);
 							} else {
 								stopStr.lastIndex = start;
-								//posStopStr = __Natives__.stringSearch.call(str, stopStr);
+								//posStopStr = _shared.Natives.stringSearch.call(str, stopStr);
 								var posStopStr = stopStr.exec(str);
 								if (!stopStr.global && (start > 0)) {
 									throw new types.TypeError("Regular expression must have the global flag set.");
@@ -732,13 +738,6 @@
 				// Log functions
 				//===================================
 					
-				tools.LogLevels = {
-					Debug: 0,
-					Info: 1,
-					Warning: 2,
-					Error: 3,
-				};
-				
 				var __logLevelsName__ = [
 					'debug',
 					'info',
@@ -774,15 +773,15 @@
 					//! END_REPLACE()
 					, function log(level, message, /*optional*/params) {
 						// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
-						if (level >= tools.getOptions().logLevel) {
+						if (level >= __options__.logLevel) {
 							if (params) {
 								message = tools.format(types.toString(message), params);
 							};
 							if (types.isString(message) && types.hasIndex(__logLevelsName__, level)) {
 								message = __logLevelsName__[level] + ': ' + message;
 							};
-							var hook = tools.getOptions().hooks.console;
-							if (hook) {
+							var hook = _shared.consoleHook;
+							if (types.isFunction(hook)) {
 								hook(level, message);
 							};
 						};
@@ -896,7 +895,7 @@
 								description: "Escapes a string to a regular expression.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.regExpEscape || function escapeRegExp(text) {
+					, (_shared.Natives.regExpEscape || function escapeRegExp(text) {
 						return tools.escape(text, __Internal__.regExpReserved, __Internal__.regExpReservedSubstitutions);
 					}));
 				
@@ -1013,11 +1012,11 @@
 						if (types.isArrayLike(obj)) {
 							from = (+from || 0);
 							if (types.isString(obj)) {
-								return __Natives__.stringIndexOf.call(obj, item, from);
+								return _shared.Natives.stringIndexOf.call(obj, item, from);
 							} else {
-								if (__Natives__.arrayIndexOf) {
+								if (_shared.Natives.arrayIndexOf) {
 									// JS 1.6
-									return __Natives__.arrayIndexOf.call(obj, item, from);
+									return _shared.Natives.arrayIndexOf.call(obj, item, from);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1066,11 +1065,11 @@
 							var len = obj.length;
 							from = (+from || (len - 1));
 							if (types.isString(obj)) {
-								return __Natives__.stringLastIndexOf.call(obj, item, from);
+								return _shared.Natives.stringLastIndexOf.call(obj, item, from);
 							} else {
-								if (__Natives__.arrayLastIndexOf) {
+								if (_shared.Natives.arrayLastIndexOf) {
 									// JS 1.6
-									return __Natives__.arrayLastIndexOf.call(obj, item, from);
+									return _shared.Natives.arrayLastIndexOf.call(obj, item, from);
 								} else {
 									obj = Object(obj);
 									from = Math.min(from >= 0 ? from : len - Math.abs(from), len - 1);
@@ -1137,8 +1136,8 @@
 								});
 								return result;
 							} else if (types.isArrayLike(obj)) {
-								if (__Natives__.arrayMap) {
-									return __Natives__.arrayMap.call(obj, fn, thisObj);
+								if (_shared.Natives.arrayMap) {
+									return _shared.Natives.arrayMap.call(obj, fn, thisObj);
 								} else {
 									var len = obj.length,
 										result = Array(len);
@@ -1202,9 +1201,9 @@
 								// "Map" and "Set" have their own "forEach" method.
 								return obj.forEach.call(obj, fn, thisObj);
 							} else if (types.isArrayLike(obj)) {
-								if (__Natives__.arrayForEach) {
+								if (_shared.Natives.arrayForEach) {
 									// JS 1.6
-									return __Natives__.arrayForEach.call(obj, fn, thisObj);
+									return _shared.Natives.arrayForEach.call(obj, fn, thisObj);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1295,9 +1294,9 @@
 										};
 									});
 								} else if (types.isArrayLike(obj)) {
-									if (__Natives__.arrayFilter && !invert) {
+									if (_shared.Natives.arrayFilter && !invert) {
 										// JS 1.6
-										result = __Natives__.arrayFilter.call(obj, items, thisObj);
+										result = _shared.Natives.arrayFilter.call(obj, items, thisObj);
 									} else {
 										result = [];
 										len = obj.length;
@@ -1520,9 +1519,9 @@
 						invert = !!invert;
 						if (!includeFunctions && types.isFunction(items)) {
 							if (types.isArrayLike(obj)) {
-								if (__Natives__.arrayEvery && !invert) {
+								if (_shared.Natives.arrayEvery && !invert) {
 									// JS 1.6
-									return __Natives__.arrayEvery.call(obj, items, thisObj);
+									return _shared.Natives.arrayEvery.call(obj, items, thisObj);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1645,9 +1644,9 @@
 							invert = !!invert;
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
-									if (__Natives__.arraySome && !invert) {
+									if (_shared.Natives.arraySome && !invert) {
 										// JS 1.6
-										return __Natives__.arraySome.call(obj, items, thisObj);
+										return _shared.Natives.arraySome.call(obj, items, thisObj);
 									} else {
 										obj = Object(obj);
 										var len = obj.length;
@@ -1764,12 +1763,12 @@
 
 						if (types.isNothing(obj)) {
 							return initialValue;
-						} else if (types.isArrayLike(obj) && __Natives__.arrayReduce) {
+						} else if (types.isArrayLike(obj) && _shared.Natives.arrayReduce) {
 							// JS 1.8
 							if (arguments.length > 2) {
-								return __Natives__.arrayReduce.call(obj, fn, initialValue);
+								return _shared.Natives.arrayReduce.call(obj, fn, initialValue);
 							} else {
-								return __Natives__.arrayReduce.call(obj, fn);
+								return _shared.Natives.arrayReduce.call(obj, fn);
 							};
 						} else {
 							obj = Object(obj);
@@ -1832,12 +1831,12 @@
 						} else {
 							root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 
-							if (__Natives__.arrayReduceRight) {
+							if (_shared.Natives.arrayReduceRight) {
 								// JS 1.8
 								if (arguments.length > 2) {
-									return __Natives__.arrayReduceRight.call(obj, fn, initialValue);
+									return _shared.Natives.arrayReduceRight.call(obj, fn, initialValue);
 								} else {
-									return __Natives__.arrayReduceRight.call(obj, fn);
+									return _shared.Natives.arrayReduceRight.call(obj, fn);
 								};
 							} else {
 								obj = Object(obj);
@@ -1888,7 +1887,7 @@
 							description: "Returns '-1' for negative values. Returns '1' for positive values. Returns '0' for neutral values. Otherwise, returns 'NaN'.",
 					}
 					//! END_REPLACE()
-					, (__Natives__.mathSign || (function sign(obj) {
+					, (_shared.Natives.mathSign || (function sign(obj) {
 						obj = +obj;
 						return (obj < 0 ? -1 : (obj > 0 ? 1 : obj)); 
 					})));
@@ -1902,16 +1901,23 @@
 					//! REPLACE_BY("null")
 					{
 							author: "Claude Petit",
-							revision: 0,
-							params: null,
+							revision: 1,
+							params: {
+								exitCode: {
+									type: 'integer',
+									optional: true,
+									description: "Exit code",
+								},
+							},
 							returns: 'error',
 							description: "Emits \"script aborted\" signal.",
 					}
 					//! END_REPLACE()
-					, function abortScript() {
-						throw new types.ScriptAbortedError();
+					, function abortScript(/*optional*/exitCode) {
+						throw new types.ScriptAbortedError(exitCode);
 					});
 				
+
 				//===================================
 				// Version functions
 				//===================================
@@ -1969,9 +1975,9 @@
 									var subvalTrim = tools.trim(subval);
 									var subvalNumber;
 									if (identifiers && types.has(identifiers, subvalTrim)) {
-										subvalNumber = __Natives__.windowParseInt(identifiers[subvalTrim]);
+										subvalNumber = _shared.Natives.windowParseInt(identifiers[subvalTrim]);
 									} else {
-										subvalNumber = __Natives__.windowParseInt(subvalTrim);
+										subvalNumber = _shared.Natives.windowParseInt(subvalTrim);
 									};
 									ar.push(subvalNumber, (trimSpaces ? subvalTrim : subval));
 									start = end;
@@ -2111,14 +2117,14 @@
 										k = 0;
 									for (var i = 0; i < count; i++) {
 										var number1 = NaN;
-										while (__Natives__.windowIsNaN(number1) && (j < data1Len)) {
+										while (_shared.Natives.windowIsNaN(number1) && (j < data1Len)) {
 											if ((j in data1) && ((j + 1) in data1)) {
 												number1 = data1[j];
 											};
 											j += 2;
 										};
 										var number2 = NaN;
-										while (__Natives__.windowIsNaN(number2) && (k < data2Len)) {
+										while (_shared.Natives.windowIsNaN(number2) && (k < data2Len)) {
 											if ((k in data2) && ((k + 1) in data2)) {
 												number2 = data2[k];
 											};
@@ -2183,16 +2189,6 @@
 						for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^Math.random() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
 						return b
 					});
-
-				//===================================
-				// Init
-				//===================================
-				return function init(/*optional*/options) {
-					// For production
-					tools.setOptions({
-						logLevel: tools.LogLevels.Error,
-					});
-				};
 			},
 		};
 		

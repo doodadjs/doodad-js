@@ -29,7 +29,7 @@ $ npm install doodad-js
   -  Namespaces and a registry
   -  Compatible with most recent browsers and NodeJs (and some older browsers).
   -  Compatible with Windows, Linux and MacOS X (and Android).
-  -  Supports browserify.
+  -  Supports browserify and webpack (beta).
 
 ## Quick Start
 
@@ -101,6 +101,7 @@ If you want to load additional Doodad modules :
   - **doodad.INSTANCE**: Attribute is accessible from an instance of its Type (ie class).
   - **doodad.PERSISTENT**: Attribute is not deleted on destroy.
   - **doodad.READ_ONLY**: Attribute can't be modified.
+  - **doodad.ASYNC**: Method will allways returns a Promise.
   - **doodad.METHOD**: Explicitly defines an attribute as a method.
   - **doodad.JS_METHOD**: Defines an attribute as a "pure" Javascript function.
   - **doodad.PROPERTY**: Defines a property (with getter and setter).
@@ -186,15 +187,12 @@ If you want to load additional Doodad modules :
   
 ## Namespaces
 
-  - **namespaces.Registry**: (inherits 'types.Type') Namespaces registry.
   - **namespaces.Entries.Namespace**: (inherits 'types.Type') Namespace registry entry.
   - **namespaces.Entries.Package**: (inherits 'namespaces.Entries.Namespace') Package registry entry.
   - **namespaces.Entries.Module**: (inherits 'namespaces.Entries.Namespace') Module registry entry.
   - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
-  - **namespaces.getEntry**: Returns the entry of the specified namespace from the registry.
-  - **namespaces.getNamespace**: Returns the namespace object of the specified namespace from the registry.
+  - **namespaces.get**: Returns the namespace object of the specified namespace from the registry.
   - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow)
-  
   - **[namespace].REGISTER**: Registers a class in the namespace object.
   - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.
 
@@ -206,25 +204,25 @@ Incomming... In the meantime, you can browse the source files and look at the "D
 
 Example 1 (inheritance):
 ```js
-    const Turtle1 = doodad.Object.$extend({
+    const Turtle1 = doodad.INIT(doodad.Object.$extend({
         $TYPE_NAME: 'Turtle1',
 
         talk: doodad.PUBLIC(function() {
             return "Hi !";
         }),
-    })
+    }));
 
     let turtle = new Turtle1();
 
     turtle.talk();
 
-    const Turtle2 = Turtle1.$extend({
+    const Turtle2 = doodad.INIT(Turtle1.$extend({
         $TYPE_NAME: 'Turtle2',
 
         talk: doodad.OVERRIDE(function() {
             return this._super() + " dOOOOdad";
         }),
-    })
+    }));
 
     turtle = new Turtle2();
 
@@ -233,13 +231,13 @@ Example 1 (inheritance):
 
 Example 2 (interfaces):
 ```js
-    const Turtles = doodad.INTERFACE(doodad.Class.$extend({
+    const Turtles = doodad.INIT(doodad.INTERFACE(doodad.Class.$extend({
         $TYPE_NAME: 'Turtles',
 
         talk: doodad.PUBLIC(doodad.METHOD()),
-    }));
+    })));
 
-    const Turtle1 = doodad.Object.$extend(
+    const Turtle1 = doodad.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle1',
@@ -247,9 +245,9 @@ Example 2 (interfaces):
         talk: doodad.OVERRIDE(function() {
             return "Hi";
         }),
-    })
+    }));
 
-    const Turtle2 = doodad.Object.$extend(
+    const Turtle2 = doodad.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle2',
@@ -257,33 +255,33 @@ Example 2 (interfaces):
         talk: doodad.OVERRIDE(function() {
             return "Bonjour";
         }),
-    })
+    }));
 
     types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles);
 ```
 
 Example 3 (mix-ins) :
 ```js
-    const Turtles = doodad.MIX_IN(doodad.Class.$extend({
+    const Turtles = doodad.INIT(doodad.MIX_IN(doodad.Class.$extend({
         $TYPE_NAME: 'Turtles',
 
         talk: doodad.PUBLIC(function() {
             return "Hi";
         }),
-    }));
+    })));
 
-    const Turtle1 = doodad.Object.$extend(
+    const Turtle1 = doodad.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle1',
-    })
+    }));
     
     types._implements(Turtle1, Turtles);
 ```
 
 Example 4 (traits) :
 ```js
-    const TAnimals = doodad.TRAIT(doodad.Class.$extend({
+    const TAnimals = doodad.INIT(doodad.TRAIT(doodad.Class.$extend({
         $TYPE_NAME: 'TAnimals',
 
         talk: doodad.PUBLIC(function() {
@@ -291,9 +289,9 @@ Example 4 (traits) :
         }),
         
         getPhrase: doodad.PROTECTED(doodad.MUST_OVERRIDE()),
-    }));
+    })));
 
-    const Turtle = doodad.Object.$extend(
+    const Turtle = doodad.INIT(doodad.Object.$extend(
                 TAnimals,
     {
         $TYPE_NAME: 'Turtles',
@@ -301,6 +299,7 @@ Example 4 (traits) :
         phrase: doodad.PUBLIC(null),
         
         create: doodad.OVERRIDE(function(phrase) {
+			this._super();
             this.phrase = phrase;
         }),
         
@@ -311,7 +310,7 @@ Example 4 (traits) :
         getPhrase: doodad.OVERRIDE(function() {
             return this.phrase;
         }),
-    });
+    }));
 
     const turtle = new Turtle("Hi !");
 

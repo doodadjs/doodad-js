@@ -33,13 +33,6 @@
 			"manual": true
 		},
 		{
-			"src": "common/Debug.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"manual": true
-		},
-		{
 			"src": "common/Doodad.js",
 			"client": true,
 			"server": true,
@@ -232,6 +225,10 @@
 				{
 					"class": "Make.Task",
 					"name": "browserify"
+				},
+				{
+					"class": "Make.Task",
+					"name": "webpack"
 				}
 			]
 		},
@@ -248,6 +245,13 @@
 				{
 					"class": "Make.Generate.Package",
 					"indexTemplate": "%SOURCEDIR%/make/res/browserify.templ.js"
+				}
+			]
+		},
+		"webpack": {
+			"operations": [
+				{
+					"class": "Make.Generate.Package"
 				}
 			]
 		}

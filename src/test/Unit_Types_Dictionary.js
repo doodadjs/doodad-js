@@ -47,16 +47,12 @@
 
 			// Unit
 			priority: null,
-				proto: {
-				run: null,
-			},
 
 			proto: {
-				run: function run(entry, /*optional*/options) {
+				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var root = entry.root,
-						doodad = root.Doodad,
+					var doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -69,13 +65,14 @@
 						options = {};
 					};
 
+					global.symbol1 = types.hasGetSymbolForEnabled() && types.getSymbolFor("symbol1") || undefined;
+					global.symbol2 = types.hasGetSymbolForEnabled() && types.getSymbolFor("symbol2") || undefined;
 					
 					var createDicts = function createDicts() {
 						global.dict1 = {
 							a: 1,
 							b: 2,
 						};
-						global.symbol1 = types.getSymbolFor("symbol1");
 						if (global.symbol1) {
 							global.dict1[global.symbol1] = 10;
 						};
@@ -91,7 +88,6 @@
 						global.dict3 = new typeDict3();
 						global.dict3.e = 5;
 						global.dict3.f = 6;
-						global.symbol2 = types.getSymbolFor("symbol2");
 						if (global.symbol2) {
 							global.dict3[global.symbol2] = 11;
 						};

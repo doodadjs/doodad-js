@@ -49,9 +49,9 @@
 			],
 			bootstrap: true,
 
-			create: function(root, /*optional*/_options) {
+			create: function(root, /*optional*/_options, _shared) {
 				"use strict";
-				
+
 				//===================================
 				// Get namespaces
 				//===================================
@@ -84,24 +84,6 @@
 				};
 
 				//===================================
-				// Options
-				//===================================
-					
-				//namespaces.setOptions({
-				//	
-				//}, _options);
-				
-				//===================================
-				// Events
-				//===================================
-				
-				namespaces.oncreate = null;
-				namespaces.oninit = null;
-				namespaces.onready = null;
-				namespaces.onerror = null;
-
-				
-				//===================================
 				// Utilities
 				//===================================
 				
@@ -121,7 +103,61 @@
 					};
 				};
 				
-				namespaces.getEntry = root.DD_DOC(
+				namespaces.get = root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Full namespace.",
+									},
+									type: {
+										type: 'NamespaceEntry',
+										optional: true,
+										description: "Entry type.",
+									},
+								},
+								returns: 'Namespace',
+								description: "Returns the namespace object of the specified namespace from the registry, accroding to the specified entry type if present.",
+						}
+						//! END_REPLACE()
+				, function get(name, /*optional*/type) {
+					var entry = __Internal__.DD_REGISTRY.get(name, type);
+					if (!entry || !entry.objectInitialized) {
+						return null;
+					};
+					return entry.namespace;
+				});
+
+				namespaces.add = root.DD_DOC(
+						//! REPLACE_BY("null")
+						{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Full namespace.",
+									},
+									entry: {
+										type: 'NamespaceEntry',
+										optional: false,
+										description: "Entry type.",
+									},
+								},
+								returns: 'bool',
+								description: "Adds a namespace entry to the registry. Returns 'true' on success, otherwise returns 'false'.",
+						}
+						//! END_REPLACE()
+				, function add(name, entry) {
+					return __Internal__.DD_REGISTRY.add(name, entry);
+				});
+
+				namespaces.remove = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -133,68 +169,24 @@
 										description: "Full namespace.",
 									},
 									type: {
-										type: 'Type',
+										type: 'NamespaceEntry',
 										optional: true,
-										description: "",
+										description: "Entry type to be retrieved.",
 									},
 								},
-								returns: 'NamespaceEntry',
-								description: "Returns the entry of the specified namespace from the registry.",
+								returns: 'bool',
+								description: "Removes a namespace entry from the registry. Returns 'true' on success, otherwise returns 'false'.",
 						}
 						//! END_REPLACE()
-				, function getEntry(name, /*optional*/type) {
-					var registry = root.DD_REGISTRY;
-					if (!(registry instanceof namespaces.Registry)) {
-						return null;
-					};
-					return registry.get(name, type);
+				, function remove(name, /*optional*/type) {
+					return __Internal__.DD_REGISTRY.remove(name, type);
 				});
-				
-				//namespaces.getNamespace = function getNamespace(name, /*optional*/type) {
-				namespaces.getNamespace = root.DD_DOC(
-						//! REPLACE_BY("null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Full namespace.",
-									},
-								},
-								returns: 'Namespace',
-								description: "Returns the namespace object of the specified namespace from the registry.",
-						}
-						//! END_REPLACE()
-				, function getNamespace(name) {
-					var entry = namespaces.getEntry(name);
-					if (!entry) {
-						return null;
-					};
-					if (!entry.objectInitialized) {
-						return null;
-					};
-					//if (type) {
-					//	if (!types.isLike(type, types.Namespace)) {
-					//		return null;
-					//	};
-					//} else {
-					//	type = types.Namespace;
-					//};
-					var namespace = entry.namespace;
-					//if (!types.isLike(namespace, type)) {
-					//	return null;
-					//};
-					return namespace;
-				});
-
 
 				__Internal__.createNamespace = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
-								revision: 4,
+								revision: 5,
 								params: {
 									spec: {
 										type: 'object,string',
@@ -247,7 +239,7 @@
 										version = dep.version;
 										dep = dep.name;
 									};
-									var depEntry = namespaces.getEntry(dep);
+									var depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (version && depEntry && depEntry.version) {
 										if (tools.Version.compare(depEntry.version, tools.Version.parse(version, __Internal__.versionIdentifiers)) > 0) {
 											// Higher version expected
@@ -277,18 +269,14 @@
 							
 							var fName = fullName.slice(1);
 							
-							var namespace = types.get(parent, shortName);
+							var namespace = parent[shortName];
 							if (!namespace) {
-								parent[shortName] = namespace = new types.Namespace(parent, shortName, fName);
-							};
-							
-							var entry = namespaces.getEntry(fName);
-							if (!entry) {
 								var newSpec = {
 									name: fName,
 								};
-								entry = new entries.Namespace(root, newSpec, namespace);
-								root.DD_REGISTRY.add(fName, entry);
+								namespace = new types.Namespace(parent, shortName, fName);
+								var entry = new entries.Namespace(root, newSpec, namespace);
+								__Internal__.DD_REGISTRY.add(fName, entry);
 							};
 							
 							parent = namespace;
@@ -315,7 +303,7 @@
 							entryType = entries.Module;
 						};
 
-						var entry = namespaces.getEntry(spec.name);
+						var entry = __Internal__.DD_REGISTRY.get(spec.name);
 						if (entry) {
 							if (!types.is(entry, entries.Namespace) || (entryType === entries.Namespace)) {
 								return null;
@@ -339,19 +327,6 @@
 							namespaceType = types.Namespace;
 						};
 						
-						var shortName = shortNames[shortNames.length - 1];
-						var proto = spec.proto;
-						if (proto) {
-							// Extend namespace object
-							if (types.isFunction(proto)) {
-								proto = proto(root);
-							};
-							if (!types.isArray(proto)) {
-								proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
-							};
-							namespaceType = namespaceType.$inherit.apply(namespaceType, proto)
-						};
-
 						var namespace = spec.object;
 						if (namespace) {
 							if (!types.isLike(namespace, namespaceType)) {
@@ -359,11 +334,13 @@
 							};
 						};
 						
-						var replaceEntry = false;
-						if (entryType !== entries.Namespace) {
+						var replaceEntry = false,
+							curEntryType = types.getType(entry);
+						if (curEntryType && (entryType !== curEntryType) && (entryType !== entries.Namespace)) {
 							replaceEntry = true;
 						};
 						
+						var shortName = shortNames[shortNames.length - 1];
 						var prevNamespace = null;
 						if (types.has(parent, shortName)) {
 							prevNamespace = parent[shortName];
@@ -374,23 +351,53 @@
 						};
 						
 						if (entry && replaceEntry) {
-							root.DD_REGISTRY.remove(spec.name);
+							__Internal__.DD_REGISTRY.remove(spec.name);
 							entry = null;
 						};
 						
+						var proto;
+						if (prevNamespace && (!prevNamespace instanceof namespaceType)) {
+							var proto = {};
+							var keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
+							for (var i = 0; i < keys.length; i++) {
+								var key = keys[i];
+								var val = prevNamespace[key];
+								if (!(val instanceof types.AttributeBox)) {
+									// Sets everything to READ_ONLY by default
+									val = types.READ_ONLY(val);
+								};
+								proto[key] = val;
+							};
+							namespaceType = types.INIT(namespaceType.$inherit(
+								/*typeProto*/
+								{
+									$TYPE_NAME: types.getTypeName(namespaceType),
+								},
+								/*instanceProto*/
+								proto
+							));
+						};
+						
+						proto = spec.proto;
+						if (proto) {
+							// Extend namespace object
+							if (types.isFunction(proto)) {
+								proto = proto(root);
+							};
+							if (!types.isArray(proto)) {
+								proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
+							};
+							namespaceType = types.INIT(namespaceType.$inherit.apply(namespaceType, proto));
+						};
+
 						if (!namespace) {
 							namespace = new namespaceType(parent, shortName, spec.name);
 						};
 						
-						parent[shortName] = namespace;
-						
-						if (prevNamespace) {
-							types.complete(namespace, prevNamespace);
-						};
-						
 						if (!entry) {
-							entry = new entryType(root, spec, namespace);
-							root.DD_REGISTRY.add(spec.name, entry);
+							var protect = types.get(spec, 'protect', true);
+							entry = new entryType(root, spec, namespace, {protect: protect});
+							__Internal__.DD_REGISTRY.add(spec.name, entry);
 						};
 						
 						return entry;
@@ -434,39 +441,37 @@
 								var retval = null;
 								entry.objectCreating = true;
 								if (entry.spec.create) {
-									var retval = entry.spec.create(root, options);
+									retval = entry.spec.create(root, options, _shared);
 								};
 								if (types.isNothing(retval)) {
 									entry.objectCreating = false;
 									entry.objectCreated = true;
-								} else {
-									if (types.isPromise(retval)) {
-										__Internal__.incrementWait();
-										return retval
-											.nodeify(function(err, result) {
-												__Internal__.decrementWait();
-												if (err) {
-													throw err;
-												} else {
-													entry.objectCreating = false;
-													entry.objectCreated = true;
-													if (!types.isNothing(result)) {
-														if (types.isFunction(result)) {
-															entry.objectInit = result;
-														} else {
-															throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
-														};
+								} else if (types.isPromise(retval)) {
+									__Internal__.incrementWait();
+									return retval
+										.nodeify(function(err, result) {
+											__Internal__.decrementWait();
+											if (err) {
+												throw err;
+											} else {
+												entry.objectCreating = false;
+												entry.objectCreated = true;
+												if (!types.isNothing(result)) {
+													if (types.isFunction(result)) {
+														entry.objectInit = result;
+													} else {
+														throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 													};
-													return entry;
 												};
-											});
-									} else if (types.isFunction(retval)) {
-										entry.objectCreating = false;
-										entry.objectCreated = true;
-										entry.objectInit = retval;
-									} else {
-										throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
-									};
+												return entry;
+											};
+										});
+								} else if (types.isFunction(retval)) {
+									entry.objectCreating = false;
+									entry.objectCreated = true;
+									entry.objectInit = retval;
+								} else {
+									throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 								};
 							};
 						};
@@ -539,7 +544,7 @@
 										dep = dep.name;
 									};
 									
-									var depEntry = namespaces.getEntry(dep);
+									var depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (depEntry) {
 										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
 											if (depEntry.spec.autoInit !== false) {
@@ -581,6 +586,20 @@
 						};
 						
 						var terminate = function terminate() {
+							if (root.getOptions().enableProtection && types.hasDefinePropertyEnabled()) {
+								// Protect added properties to the namespace
+								var keys = types.append(types.keys(entry.namespace), types.symbols(entry.namespace));
+								for (var i = 0; i < keys.length; i++) {
+									var key = keys[i];
+									var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
+									if (descriptor.configurable && descriptor.writable) {
+										//descriptor.configurable = false;
+										descriptor.writable = false;
+										types.defineProperty(entry.namespace, key, descriptor);
+									};
+								};
+							};
+							
 							namespaces.dispatchEvent(new types.CustomEvent('init', 
 								{
 									detail: {
@@ -597,7 +616,8 @@
 							return entry;
 						};
 						
-						return promise.then(terminate);
+						return promise
+							.then(terminate);
 						
 					} else {
 						return Promise.resolve(entry);
@@ -638,7 +658,7 @@
 				, function load(specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow) {
 					var Promise = types.getPromise();
 					
-					try {
+					return Promise.try(function() {
 						var names = types.keys(specs);
 						
 						var terminate = function _terminate(err, result) {
@@ -659,12 +679,12 @@
 								// Create Promise for callback result
 								var cbPromise = null;
 								if (callback) {
-									cbPromise = new Promise(function(resolve, reject) {
+									cbPromise = Promise.create(function readyPromise(resolve, reject) {
 										var cbReadyHandler = function(ev) {
 											namespaces.removeEventListener('ready', cbReadyHandler);
 											namespaces.removeEventListener('error', cbErrorHandler);
 											try {
-												resolve(callback());
+												resolve(callback(root, _shared));
 											} catch(ex) {
 												reject(ex);
 											};
@@ -761,17 +781,12 @@
 							.then(loopInitModules)
 							.nodeify(terminate);
 						
-					} catch(ex) {
-						if (ex instanceof types.ScriptInterruptedError) {
-							throw ex;
-						} else {
-							return Promise.reject(ex);
-						};
-					};
+					})
+						.catch(tools.catchAndExit);
 				});
 
 				/*
-				namespaces.cloneNamespace = root.DD_DOC(
+				namespaces.clone = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -812,7 +827,7 @@
 								description: "Clones a namespace and returns the entry from the registry when successful. Returns 'null' otherwise.",
 						}
 						//! END_REPLACE()
-				, function cloneNamespace(name, / *optional* /newName, / *optional* /targetRoot, / *optional* /cloneDeps, / *optional* /dontThrow, / *optional* /options) {
+				, function clone(name, / *optional* /newName, / *optional* /targetRoot, / *optional* /cloneDeps, / *optional* /dontThrow, / *optional* /options) {
 					if (!newName) {
 						newName = name;
 					};
@@ -835,14 +850,14 @@
 
 					var fillSpecs = function fillSpecs(name, / *optional* /newName) {
 						if (!types.has(specs, name)) {
-							var entry = namespaces.getEntry(name);
+							var entry = __Internal__.DD_REGISTRY.get(name);
 							if (entry) {
 								var spec = tools.clone(entry.spec);
 								if (newName) {
 									spec.name = newName;
 								};
-								entry = targetNamespaces.getEntry(spec.name);
-								if (!entry || !entry.objectInitialized) {
+								namespace = targetNamespaces.get(spec.name);
+								if (!namespace) {
 									specs[name] = spec;
 									if (cloneDeps) {
 										var deps = (spec.dependencies || []);
@@ -859,15 +874,15 @@
 					
 					return targetNamespaces.load(specs, null, options, dontThrow)
 						.then(function() {
-							var entry = targetNamespaces.getEntry(newName);
-							if (!entry) {
+							var namespace = targetNamespaces.get(newName);
+							if (!namespace) {
 								if (dontThrow) {
 									return null;
 								} else {
 									throw new types.Error("Failed to clone namespace '~0~'.", [name]);
 								};
 							};
-							return entry;
+							return namespace;
 						});
 				});
 				*/
@@ -880,7 +895,9 @@
 				// Registry object
 				//-----------------------------------
 					
-				namespaces.Registry = root.DD_DOC(
+				__Internal__.NamespaceGetter = function() {};
+					
+				__Internal__.Registry = root.DD_DOC(
 						//! REPLACE_BY("null")
 						{
 								author: "Claude Petit",
@@ -975,7 +992,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 2,
 										params: {
 											name: {
 												type: 'string',
@@ -1007,12 +1024,18 @@
 							if (!(entry instanceof type)) {
 								return false;
 							};
+							if (entry.options.protect) {
+								return false;
+							};
 							delete this[name];
 							var namespace = entry.namespace;
 							if (namespace) {
 								var parent = namespace.DD_PARENT;
 								if (parent && namespace.DD_NAME) {
-									delete parent[namespace.DD_NAME];
+									var descriptor = types.getPropertyDescriptor(parent, namespace.DD_NAME);
+									if (descriptor && types.get(descriptor, 'configurable')) {
+										delete parent[namespace.DD_NAME];
+									};
 								};
 							};
 							return true;
@@ -1021,7 +1044,7 @@
 								//! REPLACE_BY("null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 2,
 										params: {
 											name: {
 												type: 'string',
@@ -1045,12 +1068,34 @@
 							if (!(entry instanceof entries.Namespace)) {
 								return false;
 							};
+							if (types.get(entry.spec, 'name') !== name) {
+								entry.spec = types.extend({}, entry.spec, {
+									name: name,
+								});
+							};
 							this[name] = entry;
 							var namespace = entry.namespace;
 							if (namespace) {
 								var parent = namespace.DD_PARENT;
 								if (parent && namespace.DD_NAME) {
-									parent[namespace.DD_NAME] = namespace;
+									if (entry.options.protect) {
+										_shared.setAttribute(parent, namespace.DD_NAME, namespace, {enumerable: true});
+									} else {
+										_shared.setAttribute(parent, namespace.DD_NAME, namespace);
+									};
+								};
+
+								if (entry.options.protect && types.hasDefinePropertyEnabled()) {
+									var keys = types.keys(namespace);
+									for (var i = 0; i < keys.length; i++) {
+										var key = keys[i];
+										var descriptor = types.getOwnPropertyDescriptor(namespace, key);
+										if (  descriptor.configurable && !types.has('get') && !types.has('set') && !(descriptor.value instanceof types.Namespace)  ) {
+											descriptor.configurable = false;
+											descriptor.writable = false;
+											types.defineProperty(namespace, key, descriptor);
+										};
+									};
 								};
 							};
 							return true;
@@ -1058,16 +1103,7 @@
 					}
 				)));
 				
-				if (types.hasDefinePropertyEnabled()) {
-					types.defineProperty(root, 'DD_REGISTRY', {
-						value: new namespaces.Registry(), 
-						writable: false, 
-						enumerable: true, 
-						configurable: true
-					});
-				} else {
-					root.DD_REGISTRY = new namespaces.Registry();
-				};
+				__Internal__.DD_REGISTRY = new __Internal__.Registry();
 				
 				//-----------------------------------
 				// Namespace entry object
@@ -1116,14 +1152,23 @@
 						objectInit: null,
 						objectInitialized: false,
 						objectInitializing: false,
+						options: null,
 						
-						_new: types.SUPER(function _new(root, spec, namespace) {
+						_new: types.READ_ONLY(types.SUPER(function _new(root, spec, namespace, /*optional*/options) {
 							this._super();
 							this.root = root;
-							this.spec = spec;
+							this.spec = types.extend({}, spec, {
+								type: types.getType(this),
+								namespaceType: types.getType(namespace),
+							});
 							this.namespace = namespace;
-							this.version = spec.version && tools.Version.parse(spec.version, __Internal__.versionIdentifiers);
-						}),
+							this.version = this.spec.version && tools.Version.parse(this.spec.version, __Internal__.versionIdentifiers);
+							
+							this.options = types.extend({}, options);
+							
+							var val = types.get(this.options, 'protect', true);
+							this.options.protect = types.toBoolean(val);
+						})),
 					
 						init: root.DD_DOC(
 								//! REPLACE_BY("null")

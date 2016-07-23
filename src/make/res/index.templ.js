@@ -29,60 +29,114 @@
 
 "use strict";
 
-exports.createRoot = function(/*optional*/DD_MODULES, /*optional*/options) {
-	let config = null;
-	try {
-		// Generated from 'doodad-js-make'
-		config = require('./config.json');
-	} catch(ex) {
-	};
-	
-	DD_MODULES = (DD_MODULES || {});
-
-	options = Object.assign({}, config, options);
-
-	if (!options.startup) {
-		options.startup = {};
-	};
-
-	const dev_values = (options.startup.nodeEnvDevValues && options.startup.nodeEnvDevValues.split(',') || ['development']),
-		env = (options.node_env || process.env.node_env || process.env.NODE_ENV);
-	
-	let dev = false;
-		
-	for (let i = 0; i < dev_values.length; i++) {
-		if (dev_values[i] === env) {
-			dev = true;
-			break;
+module.exports = {
+	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
+		const has = function(obj, key) {
+			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
-	};
-		
-	let bootstrap;
-
-	if (dev || (options.startup.fromSource === 'true') || +options.startup.fromSource) {
-		if (dev) {
-			options.startup.fromSource = true;
-			options.startup.enableProperties = true;
-			require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("sourceDir") + "/common/Debug.js")) */).add(DD_MODULES);
+		const get = function(obj, key, /*optional*/_default) {
+			return (obj && has(obj, key) ? obj[key] : _default);
+		};
+		const bool = function(val) {
+			return (val === "true") || !!(+val);
 		};
 
-		//! FOR_EACH(VAR("modulesSrc"), "mod")
-			//! IF(!VAR("mod.manual"))
-				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
-			//! END_IF()
-		//! END_FOR()
+		if (!options) {
+			options = {};
+		};
+		if (!has(options, 'startup')) {
+			options.startup = {};
+		};
 
-		bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js")) */);
+		let config = null;
+		try {
+			// Generated from 'doodad-js-make'
+			config = require('./config.json');
+		} catch(ex) {
+		};
+		
+		DD_MODULES = (DD_MODULES || {});
 
-	} else {
-		//! FOR_EACH(VAR("modules"), "mod")
-			//! IF(!VAR("mod.manual"))
-				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
-			//! END_IF()
-		//! END_FOR()
+		if (Object.assign) {
+			config = Object.assign({}, config, options);
+		} else {
+			const tmp = {};
+			if (config) {
+				for (let key in config) {
+					if (has(config, key)) {
+						tmp[key] = config[key];
+					};
+				};
+			};
+			for (let key in options) {
+				if (has(options, key)) {
+					tmp[key] = options[key];
+				};
+			};
+			config = tmp;
+		};
 
-		bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
-	};
+		if (!has(config, 'startup')) {
+			config.startup = {};
+		};
 
-	return bootstrap.createRoot(DD_MODULES, options);
+		if (!has(config, 'Doodad.Tools')) {
+			config['Doodad.Tools'] = {};
+		};
+
+		const dev_values = has(config.startup, 'nodeEnvDevValues') && config.startup.nodeEnvDevValues.split(',') || ['dev', 'development'],
+			env = (get(config, 'node_env') || process.env.node_env || process.env.NODE_ENV);
+		
+		let dev = false;
+			
+		for (let i = 0; i < dev_values.length; i++) {
+			if (dev_values[i] === env) {
+				dev = true;
+				break;
+			};
+		};
+			
+		let bootstrap;
+
+		const fromSource = bool(get(config.startup, 'fromSource'));
+		if (dev || fromSource) {
+			if (dev) {
+				// Debug mode
+				config.startup.debug = true;
+
+				// Will load modules from source
+				config.startup.fromSource = true;
+
+				// Enable some validations on debug
+				config.startup.enableAsserts = true;
+				config.startup.enableProperties = true;
+				config.startup.enableProtection = true;
+
+				// Ease debug
+				config.startup.enableSymbols = false;
+
+				// Enable all log levels
+				config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+			};
+
+			//! FOR_EACH(VAR("modulesSrc"), "mod")
+				//! IF(!VAR("mod.manual"))
+					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+				//! END_IF()
+			//! END_FOR()
+
+			bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js")) */);
+
+		} else {
+			//! FOR_EACH(VAR("modules"), "mod")
+				//! IF(!VAR("mod.manual"))
+					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+				//! END_IF()
+			//! END_FOR()
+
+			bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
+		};
+
+		return bootstrap.createRoot(DD_MODULES, config);
+	},
 };

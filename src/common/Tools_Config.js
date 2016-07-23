@@ -49,7 +49,7 @@
 			],
 			bootstrap: true,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -76,18 +76,26 @@
 				// Options
 				//===================================
 					
-				config.setOptions({
+				var __options__ = types.extend({
 					configPath: null,
 				}, _options);
+
+				//__options__. = types.to...(__options__.);
+
+				types.freezeObject(__options__);
+
+				config.getOptions = function() {
+					return __options__;
+				};
 				
 
 				//===================================
 				// Native functions
 				//===================================
 					
-				var __Natives__ = {
+				types.complete(_shared.Natives, {
 					windowJSON: global.JSON,
-				};
+				});
 				
 				//===================================
 				// Config
@@ -149,7 +157,7 @@
 							options = {};
 						};
 						
-						var configPath = types.get(options, 'configPath', config.getOptions().configPath);
+						var configPath = types.get(options, 'configPath', __options__.configPath);
 						if (configPath) {
 							root.DD_ASSERT && root.DD_ASSERT((configPath instanceof files.Url) || (configPath instanceof files.Path), "Invalid 'configPath' option.");
 							url = configPath.combine(url);
@@ -171,7 +179,7 @@
 									promise = Promise.resolve(def.data);
 								};
 							} else {
-								promise = new Promise(function(resolve, reject) {
+								promise = Promise.create(function readyPromise(resolve, reject) {
 									def.callbacks.push(function(err, data) {
 										if (err) {
 											reject(err);
@@ -209,7 +217,7 @@
 															data = tools.trim(data, '\uFFFE', 1);
 														};
 													};
-													data = __Natives__.windowJSON.parse(data);
+													data = _shared.Natives.windowJSON.parse(data);
 													def.data = data;
 													def.ready = true;
 													var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks,

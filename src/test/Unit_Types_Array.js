@@ -47,16 +47,12 @@
 
 			// Unit
 			priority: null,
-			proto: {
-				run: null,
-			},
 
 			proto: {
-				run: function run(entry, /*optional*/options) {
+				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var root = entry.root,
-						doodad = root.Doodad,
+					var doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -392,7 +388,6 @@
 					
 					var command = test.prepareCommand(types.unique, "Doodad.Types.unique");
 					command.run([],                                               {repetitions: 100}     /**/);
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'},  /**/ 1);
 					command.run(['a', 'b', 'c'],                                  {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"]);
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"], ["d", "e", "f", "d", "e", "f"]);
 					command.run(['a', 'b', 'c'],                                  {repetitions: 100},    /**/ "abcabc");
