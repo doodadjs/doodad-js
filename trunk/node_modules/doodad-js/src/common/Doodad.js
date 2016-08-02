@@ -4642,9 +4642,9 @@
 							if (!_isolated.has(_interface)) {
 								throw new exceptions.Error("Interface '~0~' not found.", [types.getTypeName(_interface) || __Internal__.ANONYMOUS]);
 							};
-							_isolated = _isolated.get(_interface);
-							extendedAttributes = _isolated[1];
-							destAttributes = _isolated[2];
+							var data = _isolated.get(_interface);
+							extendedAttributes = data[1];
+							destAttributes = data[2];
 						};
 						
 						var extender = null;
@@ -4915,7 +4915,7 @@
 					
 					if (sourceImplements) {
 						var isIsolated = types.isIsolated(source);
-						//NOT COMPATIBLE: for (var item of sourceImplements) { 
+						// <FUTURE> for (var item of sourceImplements)
 						sourceImplements.forEach(function(item) {
 							if ((!isIsolated || types.isIsolated(item)) && !_implements.has(item)) {
 								_implements.add(item);
@@ -4940,6 +4940,7 @@
 								var impls = _shared.getAttribute(_interface, __Internal__.symbol$Implements).values(),
 									impl;
 									
+								// <FUTURE> for (let impl of impls)
 								while (impl = impls.next()) {
 									if (impl.done) {
 										break;
@@ -4990,8 +4991,9 @@
 									destAttributes = __Internal__.getDefaultAttributes(base, newImplements, typeStorage, instanceStorage, null, null, proto, protoName);
 									
 									_implements.add(source);
+									//newImplements.add(source);
 									extendedAttributes = [];
-									var data = types.freezeObject([/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage]);
+									var data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null];
 									_isolated.set(source, data);
 									var impls = _shared.getAttribute(source, __Internal__.symbol$Implements).values(),
 										impl;
@@ -5004,6 +5006,9 @@
 											if (!_implements.has(impl)) {
 												_implements.add(impl);
 											};
+											//if (!newImplements.has(impl)) {
+											//	newImplements.add(impl);
+											//};
 											_isolated.set(impl, data);
 										};
 									};
@@ -5076,6 +5081,7 @@
 				
 				__Internal__.postExtend = function postExtend(attributes, extendedAttributes) {
 					extendedAttributes = types.unique(extendedAttributes);
+
 					for (var k = 0; k < extendedAttributes.length; k++) {
 						var attr = extendedAttributes[k];
 						var attribute = attributes[attr];
@@ -5386,18 +5392,24 @@
 							};
 
 							var data = _isolated.get(type);
-							var protoName = data[0];
-							var extendedAttributes = data[1];
-							var attributes = data[2];
-							var typeStorage = data[4];
-							var instanceStorage = data[5];
 
-							var _interface = __Internal__.createType(doodad.Interface, protoName, typeStorage, instanceStorage, attributes, extendedAttributes);
+							var _interface = data[6];
+							if (!_interface) {
+								var protoName = data[0];
+								var extendedAttributes = data[1];
+								var attributes = data[2];
+								var typeStorage = data[4];
+								var instanceStorage = data[5];
 
-							_interface = types.INIT(_interface, [cls]);
+								var _interface = __Internal__.createType(doodad.Interface, protoName, typeStorage, instanceStorage, attributes, extendedAttributes);
 
-							if (!types.baseof(doodad.Interface, _interface)) {
-								return null;
+								_interface = types.INIT(_interface, [cls]);
+
+								if (!types.baseof(doodad.Interface, _interface)) {
+									return null;
+								};
+
+								data[6] = _interface;
 							};
 
 							var obj = new _interface(this);
@@ -5732,7 +5744,7 @@
 						})),
 					};
 				
-				// FUTURE: Use syntax for variable key in object declaration
+				// <FUTURE> Use syntax for variable key in object declaration
 				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(null))));
 				
 				root.DD_DOC(
