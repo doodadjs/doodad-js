@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Client.js - Client functions
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Client'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools', 
@@ -74,7 +61,7 @@
 				var __Internal__ = {
 					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
-					loadedScripts: {},   // <FUTURE> global to every thread
+					loadedScripts: types.nullObject(),   // <FUTURE> global to every thread
 				};
 
 				//=====================
@@ -83,7 +70,7 @@
 				
 				var __options__ = types.extend({
 					enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
-					defaultScriptTimeout: 3000,		// milliseconds
+					defaultScriptTimeout: 10000,		// milliseconds
 				}, _options);
 
 				__options__.enableDomObjectsModel = types.toBoolean(__options__.enableDomObjectsModel);
@@ -162,7 +149,7 @@
 					:
 						function addListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
-							var handlersName = '__DD_EVENT_HANDLERS__' + name;
+							var handlersName = types.getSymbolFor('__DD_EVENT_HANDLERS__' + name, true);
 							var handlers = types.get(element, handlersName);
 							//if (types.isNativeFunction(element.attachEvent)) {
 							if (element.attachEvent) {
@@ -214,7 +201,7 @@
 					: 
 						function removeListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
-							var handlersName = '__DD_EVENT_HANDLERS__' + name;
+							var handlersName = types.getSymbolFor('__DD_EVENT_HANDLERS__' + name, true);
 							var handlers = types.get(element, handlersName);
 							//if (types.isNativeFunction(element.attachEvent)) {
 							if (element.attachEvent) {
@@ -298,10 +285,10 @@
 				//===================================
 				
 				tools.callAsync = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									fn: {
 										type: 'function',
@@ -328,26 +315,28 @@
 										optional: true,
 										description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
 									},
+									secret: {
+										type: 'any',
+										optional: true,
+										description: "Secret.",
+									},
 								},
 								returns: 'undefined,object',
 								description: "Asynchronously calls a function.",
 					}
 					//! END_REPLACE()
-					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable) {
+					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
-						if (types.isClass(types.getType(thisObj))) {
-							fn = types.bind(null, _shared.invoke, [thisObj, fn, args]);
-						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
-							fn = types.bind(thisObj, fn, args);
-						};
+						fn = new doodad.Callback(thisObj, fn, null, args, secret);
 						if ((delay <= 0) && _shared.Natives.windowSetImmediate) { // IE 10
 							// Raised after events queue process
 							var id = _shared.Natives.windowSetImmediate(fn);
 							return (cancelable && {
 								cancel: function cancel() {
 									_shared.Natives.windowClearImmediate(id);
+									id = null;
 								},
 							} || undefined);
 						} else if ((delay <= 0) && _shared.Natives.windowRequestAnimationFrame) {
@@ -356,6 +345,7 @@
 							return (cancelable && {
 								cancel: function cancel() {
 									_shared.Natives.windowCancelAnimationFrame(id);
+									id = null;
 								},
 							} || undefined);
 						} else {
@@ -365,6 +355,7 @@
 							return (cancelable && {
 								cancel: function cancel() {
 									_shared.Natives.windowClearTimeout(id);
+									id = null;
 								},
 							} || undefined);
 						};
@@ -469,7 +460,7 @@
 				//===================================
 				
 				client.isEvent = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -492,7 +483,7 @@
 				});
 				
 				client.isWindow = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -526,7 +517,7 @@
 				})));
 
 				client.isDocument = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -567,7 +558,7 @@
 				})));
 
 				client.isNode = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -609,7 +600,7 @@
 				})));
 
 				client.isElement = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -652,7 +643,7 @@
 				
 				
 				client.isEventTarget = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -677,7 +668,7 @@
 				})));
 				
 				client.getFirstElement = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -706,11 +697,11 @@
 
 
 				//===================================
-				// Doodad extension
+				// doodad-js extension
 				//===================================
 				
 				mixIns.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -742,7 +733,7 @@
 				}))));
 				
 				doodad.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -755,7 +746,9 @@
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'JsEventHandler',
-						
+					},
+					/*instanceProto*/
+					{
 						attach: types.SUPER(function attach(elements, /*optional*/context, /*optional*/useCapture, /*optional*/once) {
 							if (!types.isArrayLike(elements)) {
 								elements = [elements];
@@ -782,7 +775,7 @@
 										//};
 										ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
 										delete ev.__unified;
-										return _shared.invoke(self[_shared.ObjectSymbol], self, [ev, context]);
+										return _shared.invoke(self[_shared.ObjectSymbol], self, [ev, context], _shared.SECRET);
 									};
 								};
 							};
@@ -811,20 +804,22 @@
 						},
 						detach: types.SUPER(function detach(/*optional*/elements, /*optional*/useCapture) {
 							if (types.isNothing(elements)) {
-								var evs;
+								var evs = null;
 								if (types.isNothing(useCapture)) {
 									evs = this._super(this[_shared.ObjectSymbol], this);
 								} else {
 									evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture]);
 								};
-								var evsLen = evs.length;
-								for (var j = 0; j < evsLen; j++) {
-									var evData = evs[j][3],
-										capture = evData[0],
-										element = evData[1],
-										type = evData[2],
-										handler = evData[3];
-									client.removeListener(element, type, handler, capture);
+								if (evs) {
+									var evsLen = evs.length;
+									for (var j = 0; j < evsLen; j++) {
+										var evData = evs[j][3],
+											capture = evData[0],
+											element = evData[1],
+											type = evData[2],
+											handler = evData[3];
+										client.removeListener(element, type, handler, capture);
+									};
 								};
 							} else {
 								if (!types.isArrayLike(elements)) {
@@ -837,21 +832,23 @@
 								
 								var elementsLen = elements.length;
 								for (var i = 0; i < elementsLen; i++) {
-									var evs;
+									var evs = null;
 									if (types.isNothing(useCapture)) {
 										evs = this._super(this[_shared.ObjectSymbol], this, [false, elements[i]]);
 										types.append(evs, this._super(this[_shared.ObjectSymbol], this, [true, elements[i]]));
 									} else {
 										evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture, elements[i]]);
 									};
-									var evsLen = evs.length;
-									for (var j = 0; j < evsLen; j++) {
-										var evData = evs[j][3],
-											capture = evData[0],
-											element = evData[1],
-											type = evData[2],
-											handler = evData[3];
-										client.removeListener(element, type, handler, capture);
+									if (evs) {
+										var evsLen = evs.length;
+										for (var j = 0; j < evsLen; j++) {
+											var evData = evs[j][3],
+												capture = evData[0],
+												element = evData[1],
+												type = evData[2],
+												handler = evData[3];
+											client.removeListener(element, type, handler, capture);
+										};
 									};
 								};
 							};
@@ -878,7 +875,7 @@
 				)));
 				
 				extenders.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -914,7 +911,7 @@
 						if (!types.isType(this)) {
 							_shared.setAttributes(this, {
 								types: types.freezeObject(types.get(options, 'types', this.types) || []),
-							});
+							}, {all: true});
 						};
 					})),
 					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
@@ -933,7 +930,7 @@
 
 				
 				doodad.JS_EVENT = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -965,7 +962,7 @@
 				//===================================
 				
 				tools.getOS = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 1,
@@ -998,7 +995,7 @@
 				});
 
 				tools.getDefaultLanguage = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1016,7 +1013,7 @@
 				, function getDefaultLanguage(/*optional*/alt) {
 					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
 					var navigator = _shared.Natives.windowNavigator;
-					var tmp = ((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_').split('_', 2);
+					var tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
 					tmp[1] = tmp[1].toUpperCase();
 					return tmp.join('_');
 				});
@@ -1025,8 +1022,8 @@
 				// Location functions
 				//===================================
 				
-				types.PageMovedError = root.DD_DOC(
-				//! REPLACE_BY("null")
+				types.REGISTER(root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 1,
@@ -1048,10 +1045,10 @@
 				//! END_REPLACE()
 				, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _new(message, /*optional*/params) {
 					return types.ScriptAbortedError.call(this, message || "Page moved.", params);
-				}));
+				})));
 
 				tools.getCurrentLocation = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1077,7 +1074,7 @@
 				__Internal__.setCurrentLocationPending = false;
 				
 				tools.setCurrentLocation = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1207,7 +1204,7 @@
 							if (!this.ready) {
 								this.ready = true;
 								this.failed = true;
-								this.dispatchEvent(new types.CustomEvent('error'));
+								this.dispatchEvent(new types.CustomEvent('error', {detail: new types.TimeoutError()}));
 								tools.dispatchEvent(new types.CustomEvent('scripterror', {
 									detail: {
 										loader: this,
@@ -1310,7 +1307,7 @@
 				
 				
 				tools.getJsScriptFileLoader = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1362,7 +1359,7 @@
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
 					
-					if (types.has(__Internal__.loadedScripts, url)) {
+					if (url in __Internal__.loadedScripts) {
 						loader = __Internal__.loadedScripts[url];
 					};
 					if (reload) {
@@ -1390,7 +1387,7 @@
 				});
 				
 				tools.getJsScriptBlockLoader = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1451,7 +1448,7 @@
 				});
 				
 				tools.getCssScriptFileLoader = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1507,7 +1504,7 @@
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
 					
 					var loader = null;
-					if (types.has(__Internal__.loadedScripts, url)) {
+					if (url in __Internal__.loadedScripts) {
 						loader = __Internal__.loadedScripts[url];
 					};
 					if (reload) {
@@ -1539,7 +1536,7 @@
 				});
 
 				tools.getCssScriptBlockLoader = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1626,10 +1623,10 @@
 				// Config
 				//===================================
 				
-				__Internal__.oldConfigLoadFile = config.loadFile;
+				__Internal__.oldConfigLoad = config.load;
 				
-				config.loadFile = root.DD_DOC(
-					//! REPLACE_BY("null")
+				config.load = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1660,11 +1657,12 @@
 										"You can set the option 'force' to force the file to be read again.",
 					}
 					//! END_REPLACE()
-					, function loadFile(url, /*optional*/options, /*optional*/callbacks) {
+					, function load(url, /*optional*/options, /*optional*/callbacks) {
+						options = types.nullObject(options);
 						if (types.isString(url)) {
-							url = _shared.urlParser(url, types.get(options, 'parseOptions'));
+							url = _shared.urlParser(url, options.parseOptions);
 						};
-						return __Internal__.oldConfigLoadFile(url, options, callbacks);
+						return __Internal__.oldConfigLoad(url, options, callbacks);
 					});
 
 
@@ -1673,7 +1671,7 @@
 				//===================================
 				
 				files.readFile = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 5,
@@ -1697,13 +1695,14 @@
 				//! END_REPLACE()
 				, function readFile(url, /*optional*/options) {
 					var Promise = types.getPromise();
+					options = types.nullObject(options);
 					return Promise.create(function readFilePromise(resolve, reject) {
 						if (types.isString(url)) {
-							url = _shared.urlParser(url, types.get(options, 'parseOptions'));
+							url = _shared.urlParser(url, options.parseOptions);
 						};
 						root.DD_ASSERT && root.DD_ASSERT(url instanceof files.Url, "Invalid url.");
-						var async = types.get(options, 'async', false),
-							encoding = types.get(options, 'encoding', null);
+						var async = options.async,
+							encoding = options.encoding;
 						if (encoding === 'iso-8859') {
 							// Fix for some browsers
 							encoding = 'iso-8859-1';
@@ -1715,7 +1714,7 @@
 							url = url.toString({
 								noEscapes: true,
 							});
-							var headers = new _shared.Natives.windowHeaders(types.get(options, 'headers'));
+							var headers = new _shared.Natives.windowHeaders(options.headers);
 							if (!headers.has('Accept')) {
 								if (encoding) {
 									headers.set('Accept', 'text/plain');
@@ -1727,10 +1726,10 @@
 								method: 'GET',
 								headers: headers,
 							};
-							if (!types.get(options, 'enableCache', false)) {
+							if (!options.enableCache) {
 								init.cache = 'no-cache';
 							};
-							if (types.get(options, 'enableCookies', false)) {
+							if (options.enableCookies) {
 								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
 								init.credentials = 'include';
 							};
@@ -1762,7 +1761,7 @@
 							};
 							var rootUrl = tools.getCurrentLocation();
 							var args = url.args;
-							if ((rootUrl.protocol !== 'file') && !types.get(options, 'enableCache', false)) {
+							if ((rootUrl.protocol !== 'file') && !options.enableCache) {
 								args = url.args.set('XHR_DISABLE_CACHE', tools.generateUUID(), true);
 							};
 							url = url.toString({
@@ -1774,7 +1773,7 @@
 								ready: false,
 							};
 							xhr.open('GET', url, async);
-							var headers = types.get(options, 'headers');
+							var headers = options.headers;
 							if (headers) {
 								tools.forEach(headers, function(value, name) {
 									xhr.setRequestHeader(name, value);
@@ -1782,13 +1781,13 @@
 							};
 							if (encoding) {
 								if ('overrideMimeType' in xhr) { // IE 11+ and other browsers
-									xhr.overrideMimeType(types.get(options, 'contentType', 'text/plain') + '; charset=' + encoding);
+									xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
 								} else {
-									xhr.setRequestHeader('Accept', types.get(options, 'contentType', 'text/plain'));
+									xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', 'text/plain'));
 									//xhr.setRequestHeader('Accept-Charset', encoding); // <<<< Refused ?????
 								};
 							} else {
-								xhr.setRequestHeader('Accept', types.get(options, 'contentType', '*/*'));
+								xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', '*/*'));
 							};
 							if ('responseType' in xhr) { // IE 10+ and other browsera
 								xhr.responseType = (encoding ? 'text' : 'blob');
@@ -1824,7 +1823,7 @@
 							client.addListener(xhr, 'error', function(ev) {
 								handleError(new types.HttpError(xhr.status, xhr.statusText));
 							});
-							var timeout = types.get(options, 'timeout', 0) || 5000;  // Don't allow "0" (for infinite)
+							var timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
 							if ('timeout' in xhr) {
 								xhr.timeout = timeout;
 							} else {
@@ -1848,7 +1847,7 @@
 				});
 				
 				files.watch = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 1,
@@ -1895,27 +1894,7 @@
 				};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

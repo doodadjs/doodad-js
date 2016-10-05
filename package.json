@@ -1,6 +1,6 @@
 {
   "name": "doodad-js",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "stage": "r",
   "description": "Object-oriented programming framework for Javascript",
   "config": {
@@ -16,7 +16,6 @@
 	},
     "Doodad__Types": {
       "toSourceItemsCount": 255,
-	  "trapUnhandledRejections": true,
 	  "unhandledRejectionsTimeout": 1000,
 	  "unhandledRejectionsMaxSize": 20
     },
@@ -58,8 +57,13 @@
     "framework",
 	"doodad-js"
   ],
-  "devDependencies": {
-    "npm-package-config": "^0.1.6"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/doodadjs/doodad-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/doodadjs/doodad-js/issues",
+    "email": "doodadjs@gmail.com"
   },
   "tonicExampleFilename": "tonic.js"
 }

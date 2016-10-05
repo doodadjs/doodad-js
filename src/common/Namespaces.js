@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Namespace.js - Namespaces management
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Namespaces'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			namespaces: ['Entries'],
 			dependencies: [
 				'Doodad.Types', 
@@ -68,7 +55,7 @@
 				//===================================
 				// <FUTURE> Thread context
 				var __Internal__ = {
-					versionIdentifiers: {
+					versionIdentifiers: types.nullObject({
 						development: -4, dev: -4, d: -4, 
 						alpha: -3, a: -3, 
 						beta: -2, b: -2, 
@@ -76,11 +63,10 @@
 						release: 0, r: 0, 
 						production: 1, prod: 1, p: 1, 
 						established: 2, e: 2,
-					},
+					}),
 					
 					waitCounter: 0,
 					waiting: false,
-					toInit: [],
 				};
 
 				//===================================
@@ -104,7 +90,7 @@
 				};
 				
 				namespaces.get = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -133,7 +119,7 @@
 				});
 
 				namespaces.add = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -153,12 +139,12 @@
 								description: "Adds a namespace entry to the registry. Returns 'true' on success, otherwise returns 'false'.",
 						}
 						//! END_REPLACE()
-				, function add(name, entry) {
-					return __Internal__.DD_REGISTRY.add(name, entry);
+				, function add(name, entry, /*optinal*/options) {
+					return __Internal__.DD_REGISTRY.add(name, entry, options);
 				});
 
 				namespaces.remove = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -178,12 +164,12 @@
 								description: "Removes a namespace entry from the registry. Returns 'true' on success, otherwise returns 'false'.",
 						}
 						//! END_REPLACE()
-				, function remove(name, /*optional*/type) {
-					return __Internal__.DD_REGISTRY.remove(name, type);
+				, function remove(name, /*optional*/type, /*optional*/options) {
+					return __Internal__.DD_REGISTRY.remove(name, type, options);
 				});
 
 				__Internal__.createNamespace = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 5,
@@ -276,7 +262,7 @@
 								};
 								namespace = new types.Namespace(parent, shortName, fName);
 								var entry = new entries.Namespace(root, newSpec, namespace);
-								__Internal__.DD_REGISTRY.add(fName, entry);
+								__Internal__.DD_REGISTRY.add(fName, entry, {secret: _shared.SECRET});
 							};
 							
 							parent = namespace;
@@ -351,7 +337,7 @@
 						};
 						
 						if (entry && replaceEntry) {
-							__Internal__.DD_REGISTRY.remove(spec.name);
+							__Internal__.DD_REGISTRY.remove(spec.name, null, {secret: _shared.SECRET});
 							entry = null;
 						};
 						
@@ -364,7 +350,7 @@
 								var val = prevNamespace[key];
 								if (!(val instanceof types.AttributeBox)) {
 									// Sets everything to READ_ONLY by default
-									val = types.READ_ONLY(val);
+									val = types.READ_ONLY(types.ENUMERABLE(val));
 								};
 								proto[key] = val;
 							};
@@ -384,10 +370,12 @@
 							if (types.isFunction(proto)) {
 								proto = proto(root);
 							};
-							if (!types.isArray(proto)) {
-								proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
+							if (proto) {
+								if (!types.isArray(proto)) {
+									proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
+								};
+								namespaceType = types.INIT(namespaceType.$inherit.apply(namespaceType, proto));
 							};
-							namespaceType = types.INIT(namespaceType.$inherit.apply(namespaceType, proto));
 						};
 
 						if (!namespace) {
@@ -397,7 +385,7 @@
 						if (!entry) {
 							var protect = types.get(spec, 'protect', true);
 							entry = new entryType(root, spec, namespace, {protect: protect});
-							__Internal__.DD_REGISTRY.add(spec.name, entry);
+							__Internal__.DD_REGISTRY.add(spec.name, entry, {secret: _shared.SECRET});
 						};
 						
 						return entry;
@@ -436,8 +424,11 @@
 					function createObject(entry) {
 						if (entry) {
 							options = types.get(options, entry.spec.name);
-							
 							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
+								var keysBefore = null;
+								if (entry.options.protect && types.hasDefinePropertyEnabled()) {
+									keysBefore = types.keys(entry.namespace);
+								};
 								var retval = null;
 								entry.objectCreating = true;
 								if (entry.spec.create) {
@@ -472,6 +463,20 @@
 									entry.objectInit = retval;
 								} else {
 									throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
+								};
+								if (keysBefore) {
+									var keys = tools.filter(types.keys(entry.namespace), function(key) {
+										return (tools.indexOf(keysBefore, key) < 0);
+									});
+									for (var i = 0; i < keys.length; i++) {
+										var key = keys[i];
+										var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
+										if (  descriptor.configurable && !types.has('get') && !types.has('set')  ) {
+											descriptor.configurable = false;
+											descriptor.writable = false;
+											types.defineProperty(entry.namespace, key, descriptor);
+										};
+									};
 								};
 							};
 						};
@@ -508,7 +513,7 @@
 				});
 				
 				__Internal__.initNamespace = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 3,
@@ -586,19 +591,19 @@
 						};
 						
 						var terminate = function terminate() {
-							if (root.getOptions().enableProtection && types.hasDefinePropertyEnabled()) {
-								// Protect added properties to the namespace
-								var keys = types.append(types.keys(entry.namespace), types.symbols(entry.namespace));
-								for (var i = 0; i < keys.length; i++) {
-									var key = keys[i];
-									var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
-									if (descriptor.configurable && descriptor.writable) {
-										//descriptor.configurable = false;
-										descriptor.writable = false;
-										types.defineProperty(entry.namespace, key, descriptor);
-									};
-								};
-							};
+							//if (root.getOptions().enableProtection && types.hasDefinePropertyEnabled()) {
+							//	// Protect added properties to the namespace
+							//	var keys = types.append(types.keys(entry.namespace), types.symbols(entry.namespace));
+							//	for (var i = 0; i < keys.length; i++) {
+							//		var key = keys[i];
+							//		var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
+							//		if (descriptor.configurable && descriptor.writable) {
+							//			//descriptor.configurable = false;
+							//			descriptor.writable = false;
+							//			types.defineProperty(entry.namespace, key, descriptor);
+							//		};
+							//	};
+							//};
 							
 							namespaces.dispatchEvent(new types.CustomEvent('init', 
 								{
@@ -625,12 +630,12 @@
 				});
 				
 				namespaces.load = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 7,
+								revision: 9,
 								params: {
-									specs: {
+									modules: {
 										type: 'object',
 										optional: false,
 										description: "Namespaces specifications.",
@@ -645,21 +650,24 @@
 										optional: true,
 										description: "Options.",
 									},
-									dontThrow: {
-										type: 'boolean',
-										optional: true,
-										description: "'true' will not throw an error when it happens. 'false' will throw errors. Default is 'false'.",
-									},
 								},
 								returns: 'Promise(bool)',
 								description: "Returns 'true' when successful. Returns 'false' otherwise.",
 						}
 						//! END_REPLACE()
-				, function load(specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow) {
+				, function load(modules, /*optional*/callback, /*optional*/options) {
 					var Promise = types.getPromise();
+
+					options = types.nullObject(options);
+
+					if (options.secret !== _shared.SECRET) {
+						throw new types.AccessDenied("Secrets mismatch.");
+					};
+
+					var dontThrow = options.dontThrow;
 					
 					return Promise.try(function() {
-						var names = types.keys(specs);
+						var toInit = [];
 						
 						var terminate = function _terminate(err, result) {
 							if (err) {
@@ -724,6 +732,8 @@
 							};
 						};
 
+						var names = types.keys(modules);
+						
 						var loopCreateModules = function loopCreateModules(state) {
 							if (names.length) {
 								if (state.missings.length >= names.length) {
@@ -733,7 +743,7 @@
 									state.ignoreOptionals = true;
 								};
 								var name = names.shift(),
-									spec = specs[name];
+									spec = modules[name];
 								spec.name = name;
 								return __Internal__.createNamespace(spec, options, state.ignoreOptionals)
 									.then(function(entry) {
@@ -748,7 +758,7 @@
 											state.missings = [];
 											state.optionals = [];
 											if (entry && (entry.spec.autoInit !== false)) {
-												__Internal__.toInit.push(entry);
+												toInit.push(entry);
 											};
 										};
 										return loopCreateModules(state);
@@ -759,9 +769,9 @@
 						};
 
 						var loopInitModules = function loopInitModules() {
-							if (!__Internal__.waiting && __Internal__.toInit.length) {
+							if (toInit.length) {
 								var promise;
-								var entry = __Internal__.toInit.shift(); 
+								var entry = toInit.shift(); 
 								if (!entry.objectInitialized && !entry.objectInitializing) {
 									entry.objectInitializing = true;
 									promise = __Internal__.initNamespace(entry, options);
@@ -781,13 +791,13 @@
 							.then(loopInitModules)
 							.nodeify(terminate);
 						
-					})
-						.catch(tools.catchAndExit);
+					});
+						//.catch(tools.catchAndExit);
 				});
 
 				/*
 				namespaces.clone = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -872,7 +882,7 @@
 					
 					fillSpecs(name, newName);
 					
-					return targetNamespaces.load(specs, null, options, dontThrow)
+					return targetNamespaces.load(specs, null, options)
 						.then(function() {
 							var namespace = targetNamespaces.get(newName);
 							if (!namespace) {
@@ -898,7 +908,7 @@
 				__Internal__.NamespaceGetter = function() {};
 					
 				__Internal__.Registry = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -915,8 +925,15 @@
 					
 					/*instanceProto*/
 					{
+						registry: null,
+						
+						_new: types.SUPER(function _new() {
+							this._super();
+							this.registry = types.nullObject();
+						}),
+						
 						get: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -937,7 +954,7 @@
 								}
 								//! END_REPLACE()
 						, function get(name, /*optional*/type) {
-							if (!types.has(this, name)) {
+							if (!(name in this.registry)) {
 								return null;
 							};
 							if (type) {
@@ -947,14 +964,14 @@
 							} else {
 								type = entries.Namespace;
 							};
-							var entry = this[name];
+							var entry = this.registry[name];
 							if (!(entry instanceof type)) {
 								return null;
 							};
 							return entry;
 						}),
 						has: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -975,7 +992,7 @@
 								}
 								//! END_REPLACE()
 						, function has(name, /*optional*/type) {
-							if (!types.has(this, name)) {
+							if (!(name in this.registry)) {
 								return false;
 							};
 							if (type) {
@@ -985,14 +1002,14 @@
 							} else {
 								type = entries.Namespace;
 							};
-							var entry = this[name];
+							var entry = this.registry[name];
 							return (entry instanceof type);
 						}),
 						remove: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											name: {
 												type: 'string',
@@ -1004,13 +1021,22 @@
 												optional: true,
 												description: "Entry type to be retrieved.",
 											},
+											options: {
+												type: 'object',
+												optional: true,
+												description: "Options",
+											},
 										},
 										returns: 'bool',
 										description: "Removes an entry and return 'true' when successful. Returns 'false' otherwise.",
 								}
 								//! END_REPLACE()
-						, function remove(name, /*optional*/type) {
-							if (!types.has(this, name)) {
+						, function remove(name, /*optional*/type, /*optional*/options) {
+							options = types.nullObject(options);
+							if (options.secret !== _shared.SECRET) {
+								throw new types.AccessDenied("Secrets mismatch.");
+							};
+							if (!(name in this.registry)) {
 								return false;
 							};
 							if (type) {
@@ -1020,14 +1046,14 @@
 							} else {
 								type = entries.Namespace;
 							};
-							var entry = this[name];
+							var entry = this.registry[name];
 							if (!(entry instanceof type)) {
 								return false;
 							};
 							if (entry.options.protect) {
 								return false;
 							};
-							delete this[name];
+							delete this.registry[name];
 							var namespace = entry.namespace;
 							if (namespace) {
 								var parent = namespace.DD_PARENT;
@@ -1041,10 +1067,10 @@
 							return true;
 						}),
 						add: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											name: {
 												type: 'string',
@@ -1056,13 +1082,22 @@
 												optional: false,
 												description: "Namespace entry to add.",
 											},
+											options: {
+												type: 'object',
+												optional: true,
+												description: "Options",
+											},
 										},
 										returns: 'bool',
 										description: "Adds a new entry and returns 'true' when successful. Returns 'false' otherwise.",
 								}
 								//! END_REPLACE()
-						, function add(name, entry) {
-							if (types.has(this, name)) {
+						, function add(name, entry, /*optional*/options) {
+							options = types.nullObject(options);
+							if (options.secret !== _shared.SECRET) {
+								throw new types.AccessDenied("Secrets mismatch.");
+							};
+							if (name in this.registry) {
 								return false;
 							};
 							if (!(entry instanceof entries.Namespace)) {
@@ -1073,28 +1108,18 @@
 									name: name,
 								});
 							};
-							this[name] = entry;
+							types.freezeObject(entry.spec);
+							//types.freezeObject(entry);
+							this.registry[name] = entry;
 							var namespace = entry.namespace;
 							if (namespace) {
-								var parent = namespace.DD_PARENT;
-								if (parent && namespace.DD_NAME) {
+								var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);
+								var parent = type.DD_PARENT;
+								if (parent && type.DD_NAME) {
 									if (entry.options.protect) {
-										_shared.setAttribute(parent, namespace.DD_NAME, namespace, {enumerable: true});
+										_shared.setAttribute(parent, type.DD_NAME, namespace, {enumerable: true, ignoreWhenSame: true});
 									} else {
-										_shared.setAttribute(parent, namespace.DD_NAME, namespace);
-									};
-								};
-
-								if (entry.options.protect && types.hasDefinePropertyEnabled()) {
-									var keys = types.keys(namespace);
-									for (var i = 0; i < keys.length; i++) {
-										var key = keys[i];
-										var descriptor = types.getOwnPropertyDescriptor(namespace, key);
-										if (  descriptor.configurable && !types.has('get') && !types.has('set') && !(descriptor.value instanceof types.Namespace)  ) {
-											descriptor.configurable = false;
-											descriptor.writable = false;
-											types.defineProperty(namespace, key, descriptor);
-										};
+										_shared.setAttribute(parent, type.DD_NAME, namespace, {all: true, ignoreWhenSame: true});
 									};
 								};
 							};
@@ -1110,7 +1135,7 @@
 				//-----------------------------------
 
 				entries.Namespace = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -1154,7 +1179,7 @@
 						objectInitializing: false,
 						options: null,
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(root, spec, namespace, /*optional*/options) {
+						_new: types.SUPER(function _new(root, spec, namespace, /*optional*/options) {
 							this._super();
 							this.root = root;
 							this.spec = types.extend({}, spec, {
@@ -1164,14 +1189,14 @@
 							this.namespace = namespace;
 							this.version = this.spec.version && tools.Version.parse(this.spec.version, __Internal__.versionIdentifiers);
 							
-							this.options = types.extend({}, options);
+							this.options = types.nullObject(options);
 							
-							var val = types.get(this.options, 'protect', true);
+							var val = types.getIn(this.options, 'protect', true);
 							this.options.protect = types.toBoolean(val);
-						})),
+						}),
 					
 						init: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1199,7 +1224,7 @@
 				// Module entry object
 				//-----------------------------------
 				entries.Module = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -1236,7 +1261,7 @@
 				// Package entry object
 				//-----------------------------------
 				entries.Package = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -1273,7 +1298,7 @@
 				// Application entry object
 				//-----------------------------------
 				entries.Application = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -1313,27 +1338,7 @@
 				//};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

@@ -1,8 +1,7 @@
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Bootstrap.js - Bootstrap module
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -31,7 +30,7 @@
 	//! BEGIN_REMOVE()
 	if ((typeof process === 'object') && (typeof module === 'object')) {
 	//! END_REMOVE()
-		//! IF_DEF("serverSide")
+		//! IF_SET("serverSide")
 			module.exports = exports;
 		//! END_IF()
 	//! BEGIN_REMOVE()
@@ -40,7 +39,7 @@
 
 	var MODULE_NAME = 'doodad-js';
 	var MODULE_VERSION;
-	//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')))
+	//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')) + ";")
 
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
@@ -48,9 +47,6 @@
 		Error.stackTraceLimit = 50;
 	};
 	
-	var __bootstraps__ = {},
-		__recordNewBootstraps__ = true;
-
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options) {
 		"use strict";
 		
@@ -68,6 +64,7 @@
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
 			
 			tempDocs: [],
+			tempTypes: [],  // types to register into Doodad.Types
 			
 			DD_ASSERT: null,
 		};
@@ -75,6 +72,9 @@
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 		var _shared = {
+			// Secret value used to load modules, ...
+			SECRET: null,
+
 			// NOTE: Preload of immediatly needed natives.
 			Natives: {
 				// "has", "isCustomFunction", "isNativeFunction"
@@ -104,6 +104,23 @@
 		//! END_REPLACE()
 
 		//===================================
+		// Temporary REGISTER (for Doodad.Types)
+		//===================================
+		__Internal__.REGISTER = function REGISTER(type) {
+			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
+			if (types.isType && types.isType(type)) {
+				if ((type === types.Namespace) || (types.baseof && types.baseof(types.Namespace, type))) {
+					type = types.INIT(type, [null, name, 'Doodad.Types.' + name]); // TODO: DD_PARENT
+				} else {
+					type = types.INIT(type);
+				};
+			};
+			types[name] = type;
+			__Internal__.tempTypes.push(type);
+			return type;
+		};
+
+		//===================================
 		// Native functions
 		//===================================
 		// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
@@ -116,7 +133,7 @@
 		};
 		
 		types.isFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 0,
@@ -136,7 +153,7 @@
 			});
 		
 		types.isNativeFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 0,
@@ -179,7 +196,7 @@
 			});
 		
 		types.isCustomFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -220,7 +237,7 @@
 			});
 		
 		types.isArrowFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -249,7 +266,7 @@
 			});
 		
 		types.getFunctionName = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -285,7 +302,7 @@
 			});
 		
 		types.isNothing = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -308,6 +325,9 @@
 		_shared.Natives = {
 			// "everywhere"
 			windowObject: global.Object,
+
+			// "hasKeyInherited"
+			windowObjectPrototype: global.Object.prototype,
 			
 			// "has", "isCustomFunction", "isNativeFunction"
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
@@ -409,9 +429,10 @@
 			// "isSafeInteger"
 			numberIsSafeInteger: (types.isNativeFunction(global.Number.isSafeInteger) ? global.Number.isSafeInteger : undefined),
 
-			// "isSafeInteger", "toInteger"
+			// "isSafeInteger", "toInteger", "toFloat"
 			mathFloor: global.Math.floor,
 			mathAbs: global.Math.abs,
+			mathPow: global.Math.pow,
 			
 			// "sealObject"
 			objectSeal: (types.isNativeFunction(global.Object.seal) ? global.Object.seal : undefined),
@@ -469,7 +490,7 @@
 		__Internal__.evals = getEvals();
 		
 		types.eval = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -491,7 +512,7 @@
 			//! END_REPLACE()
 			, function _eval(expr, /*optional*/ctx) {
 				if (ctx) {
-////////					types.freezeObject(ctx);
+//					types.freezeObject(ctx);
 					return __Internal__.evals.evalWithCtx(ctx, expr);
 				} else {
 					return __Internal__.evals.eval(expr);
@@ -499,7 +520,7 @@
 			});
 
 		types.evalStrict = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -531,8 +552,93 @@
 		// String Tools
 		//===================================
 		
+		tools.split = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							str: {
+								type: 'string',
+								optional: false,
+								description: "String to split",
+							},
+							separator: {
+								type: 'string,RegExp',
+								optional: true,
+								description: "Separator",
+							},
+							limit: {
+								type: 'integer',
+								optional: true,
+								description: "Number of items.",
+							},
+						},
+						returns: 'arrayof(string)',
+						description: "Proper 'limit' argument for the 'String.prototype.split' function.",
+			}
+			//! END_REPLACE()
+			, function split(str, /*optional*/separator, /*optional*/limit) {
+				// TODO: Unit tests
+				if (types.isNothing(str) || (limit === 0)) {
+					return [];
+				};
+				if (types.isNothing(separator) || (limit === 1)) {
+					return [str];
+				};
+				if (types.isNothing(limit)) {
+					return str.split(separator);
+				};
+				var result;
+				if (separator === '') {
+					// Char array
+					limit--;
+					result = str.slice(0, limit).split('');
+					if (result.length < str.length) {
+						// Remaining
+						result[result.length] = str.slice(limit);
+					};
+				} else if (types.isString(separator)) {
+					var last = 0,
+						sepLen = separator.length,
+						index;
+					result = [];
+					while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
+						result[result.length] = str.slice(last, index);
+						last = index + sepLen;
+						limit--;
+					};
+					if (last === 0) {
+						// Separator not found
+						result[result.length] = str;
+					} else if ((limit <= 1) && (last <= str.length)) {
+						// Remaining
+						result[result.length] = str.slice(last);
+					};
+				} else { // RegExp
+					var last = 0,
+						matches;
+					result = [];
+					separator.lastIndex = 0;
+					while ((limit > 1) && (matches = separator.exec(str))) {
+						var index = matches.index;
+						result[result.length] = str.slice(last, index);
+						last = index + matches[0].length;
+						limit--;
+					};
+					if (last === 0) {
+						// Separator not found
+						result[result.length] = str;
+					} else if ((limit <= 1) && (last <= str.length)) {
+						// Remaining
+						result[result.length] = str.slice(last);
+					};
+				};
+				return result;
+			});
+
 		tools.trim = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -543,7 +649,7 @@
 								description: "String or array to trim",
 							},
 							chr: {
-								type: 'any',
+								type: 'string',
 								optional: true,
 								description: "Value used to trim. Default is a space.",
 							},
@@ -628,60 +734,173 @@
 				};
 			});
 
-			//==================================
-			// Conversion
-			//==================================
-			
-			types.toBoolean = __Internal__.DD_DOC(
-				//! REPLACE_BY("null")
-				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value to convert.",
-								},
-							},
-							returns: 'bool',
-							description: "Converts a value to a boolean.",
-				}
-				//! END_REPLACE()
-				, function toBoolean(obj) {
-					return (obj === 'true') || !!(+obj);
-				});
+		//===================================
+		// Array Tools
+		//===================================
+	
+		tools.map = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set',
+							optional: false,
+							description: "An object to scan.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description: 
+								"A function to call. Arguments passed to the function are : \n" +
+								"  value (any): The current value\n" +
+								"  key (integer,string): The current index or attribute name\n" +
+								"  obj (arraylike,object,Map,Set): A reference to the object"
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+					},
+					returns: 'array,object',
+					description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
+			}
+			//! END_REPLACE()
+			, function map(obj, fn, /*optional*/thisObj) {
+				if (!types.isNothing(obj)) {
+					obj = Object(obj);
+					if (obj instanceof types.Set) {
+						var len = obj.length,
+							result = new types.Set();
+						obj.forEach(function(value, key, obj) {
+							result.add(fn.call(thisObj, value, key, obj));
+						});
+						return result;
+					} else if (obj instanceof types.Map) {
+						var len = obj.length,
+							result = new types.Map();
+						obj.forEach(function(value, key, obj) {
+							result.set(key, fn.call(thisObj, value, key, obj));
+						});
+						return result;
+					} else if (types.isArrayLike(obj)) {
+						if (_shared.Natives.arrayMap) {
+							return _shared.Natives.arrayMap.call(obj, fn, thisObj);
+						} else {
+							var len = obj.length,
+								result = Array(len);
+							for (var key = 0; key < len; key++) {
+								if (key in obj) {
+									result[key] = fn.call(thisObj, obj[key], key, obj);
+								};
+							};
+							return result;
+						};
+					} else {
+						var result = types.createObject(types.getPrototypeOf(obj));
+						var keys = types.keys(obj),
+							len = keys.length, // performance
+							i, 
+							key;
+						for (i = 0; i < len; i++) {
+							key = keys[i];
+							result[key] = fn.call(thisObj, obj[key], key, obj);
+						};
+						return result;
+					};
+				};
+			});
 
-			types.toInteger = __Internal__.DD_DOC(
-				//! REPLACE_BY("null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value to convert.",
-								},
+		//==================================
+		// Conversion
+		//==================================
+		
+		types.toBoolean = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "A value to convert.",
 							},
-							returns: 'number',
-							description: "Converts the value to an integer.",
-				}
-				//! END_REPLACE()
-				, function toInteger(obj) {
-					// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-					var number = _shared.Natives.windowNumber(obj);
-					if (types.isNaN(number)) {
-						return 0;
+						},
+						returns: 'bool',
+						description: "Converts a value to a boolean.",
+			}
+			//! END_REPLACE()
+			, function toBoolean(obj) {
+				return (obj === 'true') || !!(+obj);
+			});
+
+		types.toInteger = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "A value to convert.",
+							},
+						},
+						returns: 'number',
+						description: "Converts the value to an integer.",
+			}
+			//! END_REPLACE()
+			, function toInteger(obj) {
+				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+				var number = _shared.Natives.windowNumber(obj);
+				if (types.isNaN(number)) {
+					return 0;
+				};
+				if ((number === 0) || !types.isFinite(number)) {
+					return number;
+				};
+				return (number > 0 ? 1 : -1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(number));
+			});
+		
+		types.toFloat = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "A value to convert.",
+							},
+							precision: {
+								type: 'integer',
+								optional: true,
+								description: "Float precision",
+							},
+						},
+						returns: 'number',
+						description: "Converts the value to a float.",
+			}
+			//! END_REPLACE()
+			, function toFloat(obj, /*optional*/precision) {
+				var number = _shared.Natives.windowNumber(obj);
+				if (types.isNaN(number)) {
+					return 0.0;
+				} else {
+					if (!types.isNothing(precision)) {
+						precision = _shared.Natives.mathPow(10, precision);
+						number = _shared.Natives.mathFloor(number * precision) / precision;
 					};
-					if ((number === 0) || !types.isFinite(number)) {
-						return number;
-					};
-					return (number > 0 ? 1 : -1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(number));
-				});
-			
+					return number;
+				};
+			});
+		
 		types.toString = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -705,7 +924,7 @@
 		//===================================
 		
 		tools.format = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -758,7 +977,7 @@
 		//===================================
 			
 		var __ASSERT__ = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -803,7 +1022,7 @@
 		
 		// <PRB> JS has no function to test for primitives
 		types.isPrimitive = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -828,7 +1047,7 @@
 			});
 		
 		types.isNumber = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -865,7 +1084,7 @@
 			})));
 		
 		types.isInteger = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 3,
@@ -899,7 +1118,7 @@
 			});
 		
 		types.isSafeInteger = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -930,7 +1149,7 @@
 			});
 		
 		types.getSafeIntegerLen = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -948,7 +1167,7 @@
 			});
 		
 		types.getBitwiseIntegerLen = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -966,7 +1185,7 @@
 			});
 		
 		types.isFinite = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1001,7 +1220,7 @@
 			});
 		
 		types.isInfinite = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1027,7 +1246,7 @@
 			});
 		
 		types.isFloat = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1054,7 +1273,7 @@
 		
 		// <PRB> JS has no function to test for booleans
 		types.isBoolean = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1090,7 +1309,7 @@
 		
 		// <PRB> JS has no function to test for strings
 		types.isString = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1125,7 +1344,7 @@
 		
 		// <PRB> JS has no function to test for dates
 		types.isDate = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1153,8 +1372,8 @@
 				return (_shared.Natives.objectToString.call(obj) === '[object Date]');
 			})));
 		
-		types.isArray = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.isArray = (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1169,14 +1388,14 @@
 						description: "Returns 'true' if object is an array. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.arrayIsArray || (_shared.Natives.windowArray ? (function isArray(obj) {
+			, (_shared.Natives.windowArray ? (function isArray(obj) {
 				return !types.isNothing(obj) && (typeof obj === 'object') && (obj instanceof _shared.Natives.windowArray);
 			}) : (function isArray(obj) {
 				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
 			}))));
 
 		types.isArrayLike = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -1208,7 +1427,7 @@
 		
 		// <PRB> JS has no function to test for errors
 		types.isError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1230,8 +1449,8 @@
 				return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowError);
 			});
 		
-		types.isNaN = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.isNaN = (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1246,7 +1465,7 @@
 						description: "Returns 'true' if object is 'NaN'. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.numberIsNaN || function isNaN(obj) {
+			, function isNaN(obj) {
 				//     Unbelievable : There was no official way to detect NaN before ES6 !!!!
 				// Source: http://stackoverflow.com/questions/2652319/how-do-you-check-that-a-number-is-nan-in-javascript
 				// Explanation: NaN is the only object not equal to itself.
@@ -1254,7 +1473,7 @@
 			}));
 		
 		types.isCallable = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1295,10 +1514,10 @@
 
 		// NOTE: It removes native functions from the stack
 		// <FUTURE> thread level
-		__Internal__.parseStackRegEx = /([^(@]+[(@])?(eval at [^(]+[(])?(([a-zA-Z]+[:][/][/][/]?[^/]+[/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([/][^/]+[/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
+		__Internal__.parseStackRegEx = / at ([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([\/][^\/]+[\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
 
 		tools.parseStack = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1339,7 +1558,7 @@
 					functionName, 
 					pos,
 					calls = [];
-				
+				//stack = 'Error\n    at D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:83:122\n    at D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:83:160\n    at D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1866:18\n    at Function._try (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1864:15)\n    at Function._try [as try] (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1933:28)\n    at Object.locate (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:81:28)\n    at Namespace.loadTypes (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:153:42)\n    at ModuleEntry.init [as objectInit] (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:184:18)\n    at Object.initNamespace (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:567:28)\n    at loopInitModules (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:767:33)\n    at D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:773:17'
 				__Internal__.parseStackRegEx.lastIndex = 0;
 				var call = __Internal__.parseStackRegEx.exec(stack);
 				
@@ -1408,7 +1627,7 @@
 			});
 
 		tools.getStackTrace = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -1433,169 +1652,15 @@
 			});
 		
 		//===================================
-		// Error functions
-		//===================================
-			
-		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
-		types.createErrorType = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the resulting error type.",
-							},
-							base: {
-								type: 'error',
-								optional: true,
-								description: "Error type from which to inherit. Defaults to 'Error'.",
-							},
-							constructor: {
-								type: 'function',
-								optional: true,
-								description: "A function to be called to construct a new instance. Defaults to base's constructor.",
-							},
-						},
-						returns: 'error',
-						description: "Creates a new error type, based on another error type.",
-			}
-			//! END_REPLACE()
-			, function createErrorType(name, /*optional*/base, /*optional*/constructor) {
-				if (types.isNothing(base)) {
-					base = _shared.Natives.windowError;
-				};
-				name = name.replace(/[.]/g, '_');
-				var expr = "function " + name + "(/*paramarray*/) {" +
-					(constructor ? (
-						"var error = ctx.constructor.apply(this, arguments) || this;" +
-						"this.throwLevel++;"
-					) : (
-						"var error = ctx.base.apply(this, arguments) || this;"
-					)) +
-					"if (error !== this) {" +
-						// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
-						//
-						//       Proof of concept :
-						//          var a = new Error("hello");
-						//          var b = Error.call(a, "bye");
-						//          a === b  // always returns "false"
-						//          a.constructor === b.constructor  // returns "true"
-						//          a.constructor === Error  // returns "true"
-						//          a instanceof Error  // returns "true"
-						//          b instanceof Error  // returns "true"
-						//
-						//       Moreover :
-						//          this instanceof Error  // returns "true"
-						"this.message = (error.message || error.description);" +
-						// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
-						// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
-						// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
-						"if (error.stack) {" +
-							"this.stack = error.stack;" +
-						"};" +
-					"};" +
-					"this.throwLevel++;" +
-					"this.name = ctx.name;" +
-					"this.description = this.message;" +
-					"return this;" +
-				"}";
-				
-				// NOTE: Use of "eval" to give the name to the function				
-				var type = types.eval(expr, {
-					base: base,
-					constructor: constructor,
-					name: name,
-				});
-				
-				// For "instanceof".
-				type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
-				
-				types.extend(type.prototype, {
-					name: null,
-					throwLevel: 0,
-					parsed: false,
-					parsedStack: null,
-					
-					toString: function toString(/*paramarray*/) {
-						return this.message;
-					},
-					
-					parse: function parse() {
-						// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
-						if (!this.parsed) {
-							var stack;
-							if (this.stack) {
-								stack = tools.parseStack(this.stack);
-								if (stack) {
-									stack.splice(0, this.throwLevel);
-									// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
-									if (!stack.length) {
-										stack = null;
-									};
-								};
-								this.parsedStack = stack;
-							};
-							
-							var fileName,
-								lineNumber,
-								columnNumber,
-								functionName;
-							if (this.fileName) {
-								// <FUTURE> Firefox
-								// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
-								fileName = this.fileName;
-								lineNumber = this.lineNumber;
-								functionName = "";
-							} else if (this.sourceURL) {
-								// Safari 5
-								// NOTE: "this.line" should be already set
-								fileName = this.sourceURL;
-								lineNumber = this.line;
-								columnNumber = 0;
-								functionName = "";
-							} else {
-								// Other browsers
-								// Set attributes from the stack.
-								if (stack) {
-									var trace = stack[0];
-									fileName = trace.path;
-									columnNumber = trace.columnNumber;
-									lineNumber = trace.lineNumber;
-									functionName = trace.functionName;
-								} else {
-									fileName = "";
-									columnNumber = 0;
-									lineNumber = 0;
-									functionName = "";
-								};
-							};
-							this.fileName = fileName;
-							this.sourceURL = fileName;
-							this.line = lineNumber;
-							this.lineNumber = lineNumber;
-							this.columnNumber = columnNumber;
-							this.functionName = functionName;
-							this.parsed = true;
-						};
-					},
-				});
-				
-				return type;
-			});
-		
-		//===================================
 		// Objects
 		//===================================
 		
 		// TODO: Remove "hasKeyInherited"
 		types.hasKeyInherited = types.hasInherited = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1609,36 +1674,21 @@
 							},
 						},
 						returns: 'bool',
-						description: "Returns 'true' when the object has or inherits one of the provided keys as own property. Returns 'false' otherwise.",
+						description: "Returns 'true' when the object has or inherits one of the provided keys as own property. Object's prototype is ignored. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function hasInherited(obj, keys) {
 				if (!types.isNothing(obj)) {
 					obj = _shared.Natives.windowObject(obj);
-					
-					if (!types.isArray(keys)) {
-						keys = [keys];
-					};
-					
-					var protos = [],
-						lastProto;
-						
 					do {
-						protos.push(obj);
-						if (!lastProto && types.isNativeFunction(obj.constructor)) {
-							lastProto = obj.constructor.prototype;
+						if (obj === _shared.Natives.windowObjectPrototype) {
+							break;
 						};
-						obj = types.getPrototypeOf(obj);
-					} while (obj && (obj !== lastProto));
-
-					var protosLen = protos.length;
-					
-					for (var i = 0; i < protosLen; i++) {
-						obj = protos[i];
 						if (types.has(obj, keys)) {
 							return true;
 						};
-					};
+						obj = types.getPrototypeOf(obj);
+					} while (obj);
 				};
 				
 				return false;
@@ -1646,10 +1696,10 @@
 		
 		// TODO: Remove "hasKey"
 		types.has = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1670,7 +1720,7 @@
 				if (!types.isNothing(obj)) {
 					obj = _shared.Natives.windowObject(obj);
 					if (!types.isArray(keys)) {
-						keys = [keys];
+						return _shared.Natives.objectHasOwnProperty.call(obj, keys);
 					};
 					var len = keys.length;
 					if (!len) {
@@ -1689,7 +1739,7 @@
 			});
 		
 		types.get = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -1733,7 +1783,7 @@
 			});
 		
 		types.getDefault = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -1785,7 +1835,7 @@
 		
 		
 		types.isEnumerable = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -1826,7 +1876,7 @@
 //IE8		];
 		
 		types.keys = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -1884,8 +1934,8 @@
 				return result;
 			});
 		
-		types.allKeys = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.allKeys = (_shared.Natives.objectGetOwnPropertyNames || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -1900,8 +1950,11 @@
 						description: "Returns every own property of an object.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectGetOwnPropertyNames || (function allKeys(obj) {
+			, (function allKeys(obj) {
 				// NOTE: Can't get non-enumerables from the polyfill
+				if (types.isNothing(obj)) {
+					return [];
+				};
 				obj = _shared.Natives.windowObject(obj);
 				var result = [];
 				for (var key in obj) {
@@ -1913,7 +1966,7 @@
 			})));
 
 		types.allKeysInherited = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -1937,10 +1990,10 @@
 			});
 		
 		types.symbols = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1955,6 +2008,9 @@
 			, function symbols(obj) {
 				// FUTURE: "Object.symbols" ? (like "Object.keys")
 				// FUTURE: Use "filter"
+				if (types.isNothing(obj)) {
+					return [];
+				};
 				var all = types.allSymbols(obj);
 				var symbols = [];
 				for (var i = 0; i < all.length; i++) {
@@ -1967,10 +2023,10 @@
 			});
 		
 		types.allSymbols = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1982,13 +2038,21 @@
 						description: "Returns an array of enumerable and non-enumerable own property symbols.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectGetOwnPropertySymbols || function symbols(obj) {
+			, (_shared.Natives.objectGetOwnPropertySymbols ? 
+			function symbols(obj) {
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				return _shared.Natives.objectGetOwnPropertySymbols(obj);
+			}
+			:
+			function symbols(obj) {
 				// Not supported
 				return [];
 			}));
 
 		types.allSymbolsInherited = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2011,8 +2075,8 @@
 				return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 			});
 		
-		types.extend = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.extend = (_shared.Natives.objectAssign || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -2027,7 +2091,7 @@
 						description: "Extends the first object with owned properties of the other objects.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectAssign || function extend(/*paramarray*/obj) {
+			, function extend(/*paramarray*/obj) {
 				var result;
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
@@ -2080,7 +2144,7 @@
 		})();
 
 		types.hasProperties = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2096,7 +2160,7 @@
 			})));
 		
 		types.defineProperty = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 3,
@@ -2147,8 +2211,8 @@
 				};
 			}))),
 
-		types.defineProperties = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.defineProperties = (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperties ? _shared.Natives.objectDefineProperties : __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -2168,7 +2232,7 @@
 						description: "Defines properties of the object.",
 			}
 			//! END_REPLACE()
-			, (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperties ? _shared.Natives.objectDefineProperties : (function defineProperties(obj, props) {
+			, (function defineProperties(obj, props) {
 				if (!types.isObject(props)) {
 					throw new types.TypeError("Invalid properties.");
 				};
@@ -2179,60 +2243,64 @@
 				};
 			})));
 
-		types.getOwnPropertyDescriptor = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
+		if (_shared.Natives.objectGetOwnPropertyDescriptor && !__Internal__.hasDefinePropertyBug && !__Internal__.hasGetOwnPropertyRestrictionOnCaller) {
+			types.getOwnPropertyDescriptor = _shared.Natives.objectGetOwnPropertyDescriptor;
+		} else {
+			types.getOwnPropertyDescriptor = __Internal__.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object.",
+								},
+								key: {
+									type: 'string',
+									optional: false,
+									description: "Property name.",
+								},
 							},
-							key: {
-								type: 'string',
-								optional: false,
-								description: "Property name.",
-							},
-						},
-						returns: 'object',
-						description: "Returns the descriptor of an own property of an object.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.objectGetOwnPropertyDescriptor ? (__Internal__.hasDefinePropertyBug || __Internal__.hasGetOwnPropertyRestrictionOnCaller ? function getOwnPropertyDescriptor(obj, key) {
-				var desc;
-				if (__Internal__.hasGetOwnPropertyRestrictionOnCaller && (key === 'caller')) {
-					desc = {
-						configurable: false,
-						enumerable: false,
-						value: null,
-						writable: false,
-					};
-				} else {
-					desc = _shared.Natives.objectGetOwnPropertyDescriptor(obj, key);
-					if (__Internal__.hasDefinePropertyBug) {
-						if (desc && !desc.writable && !desc.get && !desc.set) {
-							desc.configurable = false;
+							returns: 'object',
+							description: "Returns the descriptor of an own property of an object.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.objectGetOwnPropertyDescriptor ? function getOwnPropertyDescriptor(obj, key) {
+					var desc;
+					if (__Internal__.hasGetOwnPropertyRestrictionOnCaller && (key === 'caller')) {
+						desc = {
+							configurable: false,
+							enumerable: false,
+							value: null,
+							writable: false,
+						};
+					} else {
+						desc = _shared.Natives.objectGetOwnPropertyDescriptor(obj, key);
+						if (__Internal__.hasDefinePropertyBug) {
+							if (desc && !desc.writable && !desc.get && !desc.set) {
+								desc.configurable = false;
+							};
 						};
 					};
-				};
-				return desc;
-			} : _shared.Natives.objectGetOwnPropertyDescriptor) : function getOwnPropertyDescriptor(obj, key) {
-				if (types.has(obj, key)) {
-					return {
-						writable: true,
-						configurable: true,
-						enumerable: true,
-						value: obj[key],
+					return desc;
+				} : function getOwnPropertyDescriptor(obj, key) {
+					if (types.has(obj, key)) {
+						return {
+							writable: true,
+							configurable: true,
+							enumerable: true,
+							value: obj[key],
+						};
+					} else {
+						return undefined;
 					};
-				} else {
-					return undefined;
-				};
-			}));
+				}));
+		};
 		
 		types.getPropertyDescriptor = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -2264,8 +2332,8 @@
 				return descriptor;
 			});
 		
-		types.createObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.createObject = (_shared.Natives.objectCreate || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2285,7 +2353,7 @@
 						description: "Creates an object with the specified prototype. Optionally appends properties.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectCreate || (__Internal__.hasProto ? 
+			, (__Internal__.hasProto ? 
 					// Enhanced polyfill taken from Mozilla Developer Network. 
 					(function() {
 						var tmp = function Object() {};
@@ -2320,7 +2388,7 @@
 			)));
 
 		types.newInstance = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -2370,8 +2438,8 @@
 				return obj;
 			});
 		
-		types.getPrototypeOf = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.getPrototypeOf = (_shared.Natives.objectGetPrototypeOf || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2386,7 +2454,7 @@
 						description: "Returns the prototype of an object.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectGetPrototypeOf || (__Internal__.hasProto ? 
+			, (__Internal__.hasProto ? 
 					// For browsers implementing "__proto__".
 					(function getPrototypeOf(obj) {
 						return _shared.Natives.windowObject(obj).__proto__;
@@ -2414,7 +2482,7 @@
 //IE8		__Internal__.objProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf({}) : (({}).constructor.prototype));
 		
 		types.setPrototypeOf = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -2491,7 +2559,7 @@
 			});
 
 		types.isPrototypeOf = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2524,8 +2592,109 @@
 				return false;
 			})));
 		
+		types.nullObject = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'object',
+								optional: true,
+								description: "List of objects.",
+							},
+						},
+						returns: 'object',
+						description: "Returns a null object extended by the provided objects.",
+			}
+			//! END_REPLACE()
+			, function nullObject(/*paramarray*/) {
+				return types.extend.apply(types, types.append([types.createObject(null)], arguments));
+			});
+
+		types.getIn = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'nullobject',
+								optional: false,
+								description: "A null object.",
+							},
+							key: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Attribute name.",
+							},
+							_default: {
+								type: 'any',
+								optional: true,
+								description: "Default value.",
+							},
+						},
+						returns: 'any',
+						description: "Returns the value of the attribute of an object. If the attribute doesn't exist, returns the value of the '_default' parameter.",
+			}
+			//! END_REPLACE()
+			, function getIn(obj, key, /*optional*/_default) {
+				if (types.isNothing(obj)) {
+					return _default;
+				};
+				obj = _shared.Natives.windowObject(obj);
+				if (key in obj) {
+					return obj[key];
+				} else {
+					return _default;
+				};
+			});
+		
+		types.hasIn = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'nullobject',
+								optional: false,
+								description: "A null object.",
+							},
+							keys: {
+								type: 'arrayof(string,Symbol),string,Symbol',
+								optional: false,
+								description: "Key(s) to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if one of the specified keys is a property of an object.",
+			}
+			//! END_REPLACE()
+			, function hasIn(obj, keys) {
+				if (!types.isNothing(obj)) {
+					obj = _shared.Natives.windowObject(obj);
+					if (!types.isArray(keys)) {
+						return (keys in obj);
+					};
+					var len = keys.length;
+					if (!len) {
+						return false;
+					};
+					for (var i = 0; i < len; i++) {
+						if (i in keys) {
+							var key = keys[i];
+							if (key in obj) {
+								return true;
+							};
+						};
+					};
+				};
+				return false;
+			});
+		
 		types.extendProperties = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2580,7 +2749,7 @@
 			});
 			
 		types.depthExtend = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 4,
@@ -2654,7 +2823,7 @@
 			});
 				
 		types.complete = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -2695,7 +2864,7 @@
 			});
 		
 		types.completeProperties = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2755,7 +2924,7 @@
 			});
 		
 		types.append = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2798,7 +2967,7 @@
 			});
 			
 		types.unique = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 0,
@@ -2892,7 +3061,7 @@
 			
 		// <PRB> JS has no function to test for objects ( new Object() )
 		types.isObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2915,7 +3084,7 @@
 			});
 			
 		types.isObjectLike = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -2934,8 +3103,8 @@
 				return (types.isObject(obj) || (obj instanceof _shared.Natives.windowObject));
 			});
 		
-		types.isExtensible = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.isExtensible = (_shared.Natives.objectIsExtensible || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2950,13 +3119,12 @@
 						description: "Returns 'true' if an object is extensible. Otherwise, returns 'false'.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectIsExtensible || 
-				function isExtensible(obj) {
+			, function isExtensible(obj) {
 					return false;
 				}));
 		
 		types.preventExtensions = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -2982,7 +3150,7 @@
 				}));
 		
 		types.sealObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3006,8 +3174,8 @@
 					return obj;
 				}));
 		
-		types.isFrozen = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		types.isFrozen = (_shared.Natives.objectIsFrozen || __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3022,13 +3190,12 @@
 						description: "Returns 'true' if an object is frozen. Otherwise, returns 'false'.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectIsFrozen || 
-				function isFrozen(obj) {
+			, function isFrozen(obj) {
 					return false;
 				}));
 		
 		types.freezeObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3057,15 +3224,15 @@
 		//==============
 		
 		var __options__ = types.extend({
-			//! BEGIN_REMOVE()
+			//! IF(IS_SET('debug'))
 				// Starting from source code...
-				debug: true,					// When 'true', will be in 'debug mode'. TODO: Use this flag instead of 'DD_ASSERT' where appropriated
+				debug: true,					// When 'true', will be in 'debug mode'.
 				fromSource: true,				// When 'true', loads source code instead of built code
 				enableProperties: true,			// When 'true', enables "defineProperty"
 				// SLOW enableProxies: true,	// Enables or disables ES6 Proxies
 				enableProtection: true,			// When 'true', "__Internal__.protectObject" is enabled if 'enableProperties' is also 'true'.
-				enableAsserts: true,			// When 'true', enables asserts on startup.
-			//! END_REMOVE()
+				enableAsserts: true,			// When 'true', enables asserts.
+			//! END_IF()
 			
 			enableSymbols: true,				// When 'true', symbols are enabled.
 		}, types.get(_options, 'startup'));
@@ -3081,7 +3248,7 @@
 		types.freezeObject(__options__);
 		
 		types.hasDefinePropertyEnabled = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3101,7 +3268,7 @@
 		//===================================
 		
 		types.hasSymbols = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3117,7 +3284,7 @@
 			}));
 			
 		types.hasGetSymbolForEnabled = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3133,7 +3300,7 @@
 			}));
 			
 		types.isSymbol = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3164,7 +3331,7 @@
 			}));
 			
 		types.getSymbol = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3178,7 +3345,7 @@
 			});
 		
 		types.getSymbolFor = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 3,
@@ -3204,8 +3371,7 @@
 				if (isGlobal) {
 					symbol = _shared.Natives.symbolFor(key);
 				} else {
-					// NOTE: key is lost
-					symbol = _shared.Natives.windowSymbol();
+					symbol = _shared.Natives.windowSymbol(key);
 				};
 				return symbol;
 			} : function getSymbolFor(key, /*optional*/isGlobal) {
@@ -3215,7 +3381,7 @@
 			}));
 			
 		types.getSymbolKey = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3240,7 +3406,7 @@
 			}));
 			
 		types.symbolIsGlobal = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3267,6 +3433,163 @@
 		// Errors
 		//===================================
 		
+		types.isErrorType = function isErrorType(type) {
+			return types.isFunction(type) && ((_shared.Natives.windowError.prototype === type.prototype) || types.isPrototypeOf(_shared.Natives.windowError.prototype, type.prototype));
+		};
+			
+		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
+		types.createErrorType = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Name of the resulting error type.",
+							},
+							base: {
+								type: 'error',
+								optional: true,
+								description: "Error type from which to inherit. Defaults to 'Error'.",
+							},
+							constructor: {
+								type: 'function',
+								optional: true,
+								description: "A function to be called to construct a new instance. Defaults to base's constructor.",
+							},
+						},
+						returns: 'error',
+						description: "Creates a new error type, based on another error type.",
+			}
+			//! END_REPLACE()
+			, function createErrorType(name, /*optional*/base, /*optional*/constructor) {
+				if (types.isNothing(base)) {
+					base = _shared.Natives.windowError;
+				};
+				name = name.replace(/[.]/g, '_');
+				var expr = "function " + name + "(/*paramarray*/) {" +
+					(constructor ? (
+						"var error = ctx.constructor.apply(this, arguments) || this;" +
+						"this.throwLevel++;"
+					) : (
+						"var error = ctx.base.apply(this, arguments) || this;"
+					)) +
+					"if (error !== this) {" +
+						// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
+						//
+						//       Proof of concept :
+						//          var a = new Error("hello");
+						//          var b = Error.call(a, "bye");
+						//          a === b  // always returns "false"
+						//          a.constructor === b.constructor  // returns "true"
+						//          a.constructor === Error  // returns "true"
+						//          a instanceof Error  // returns "true"
+						//          b instanceof Error  // returns "true"
+						//
+						//       Moreover :
+						//          this instanceof Error  // returns "true"
+						"this.message = (error.message || error.description);" +
+						// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
+						// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
+						// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
+						"if (error.stack) {" +
+							"this.stack = error.stack;" +
+						"};" +
+					"};" +
+					"this.throwLevel++;" +
+					"this.name = ctx.name;" +
+					"this.description = this.message;" +
+					"return this;" +
+				"}";
+				
+				// NOTE: Use of "eval" to give the name to the function				
+				var type = types.eval(expr, {
+					base: base,
+					constructor: constructor,
+					name: name,
+				});
+				
+				// For "instanceof".
+				type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
+				
+				types.extend(type.prototype, {
+					name: name,
+					throwLevel: 0,
+					parsed: false,
+					parsedStack: null,
+					bubble: false,
+					critical: false,
+					trapped: false,
+					
+					toString: function toString(/*paramarray*/) {
+						return this.message;
+					},
+					
+					parse: function parse() {
+						// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
+						if (!this.parsed) {
+							var stack;
+							if (this.stack) {
+								stack = tools.parseStack(this.stack);
+								if (stack) {
+									stack.splice(0, this.throwLevel);
+									// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
+									if (!stack.length) {
+										stack = null;
+									};
+								};
+								this.parsedStack = stack;
+							};
+							
+							var fileName,
+								lineNumber,
+								columnNumber,
+								functionName;
+							if (this.fileName) {
+								// <FUTURE> Firefox
+								// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
+								fileName = this.fileName;
+								lineNumber = this.lineNumber;
+								functionName = "";
+							} else if (this.sourceURL) {
+								// Safari 5
+								// NOTE: "this.line" should be already set
+								fileName = this.sourceURL;
+								lineNumber = this.line;
+								columnNumber = 0;
+								functionName = "";
+							} else {
+								// Other browsers
+								// Set attributes from the stack.
+								if (stack) {
+									var trace = stack[0];
+									fileName = trace.path;
+									columnNumber = trace.columnNumber;
+									lineNumber = trace.lineNumber;
+									functionName = trace.functionName;
+								} else {
+									fileName = "";
+									columnNumber = 0;
+									lineNumber = 0;
+									functionName = "";
+								};
+							};
+							this.fileName = fileName;
+							this.sourceURL = fileName;
+							this.line = lineNumber;
+							this.lineNumber = lineNumber;
+							this.columnNumber = columnNumber;
+							this.functionName = functionName;
+							this.parsed = true;
+						};
+					},
+				});
+				
+				return type;
+			});
+		
 		__Internal__.createErrorConstructor = function(base) {
 			return function _new(message, /*optional*/params) {
 				message = tools.format(message, params);
@@ -3274,8 +3597,8 @@
 			};
 		};
 		
-		types.TypeError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3287,10 +3610,10 @@
 			, (_shared.Natives.windowTypeError
 				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(_shared.Natives.windowTypeError))
 				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor(_shared.Natives.windowError))
-			));
+			)));
 		
-		types.Error = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3310,10 +3633,10 @@
 						description: "Generic error with message formatting.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(_shared.Natives.windowError)));
+			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(_shared.Natives.windowError))));
 
-		types.AssertionFailed = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3339,10 +3662,10 @@
 				} else {
 					return types.Error.call(this, "Assertion failed.");
 				};
-			}));
+			})));
 
-		types.ParseError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3364,10 +3687,10 @@
 			//! END_REPLACE()
 			, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
 				return types.Error.call(this, message || "Parse error.", params);
-			}));
+			})));
 		
-		types.NotSupported = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3389,10 +3712,10 @@
 			//! END_REPLACE()
 			, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
 				return types.Error.call(this, message || "Not supported.", params);
-			}));
+			})));
 		
-		types.NotAvailable = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3414,10 +3737,10 @@
 			//! END_REPLACE()
 			, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
 				return types.Error.call(this, message || "Not available.", params);
-			}));
+			})));
 		
-		types.HttpError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3445,10 +3768,10 @@
 			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
 				this.code = code;
 				return types.Error.call(this, message, params);
-			}));
+			})));
 		
-		types.BufferOverflow = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3470,10 +3793,10 @@
 			//! END_REPLACE()
 			, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
 				return types.Error.call(this, message || "Buffer overflow.", params);
-			}));
+			})));
 		
-		types.TimeoutError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3494,11 +3817,36 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Timeout.", params);
-			}));
+				return types.Error.call(this, message || "Operation timed out.", params);
+			})));
 		
-		types.AccessDenied = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something has been canceled.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on cancel.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return types.Error.call(this, message || "Operation canceled.", params);
+			})));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3520,10 +3868,10 @@
 			//! END_REPLACE()
 			, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
 				return types.Error.call(this, message || "Access denied.", params);
-			}));
+			})));
 		
-		types.ScriptInterruptedError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 1,
@@ -3544,11 +3892,12 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
+				this.bubble = true;
 				return types.Error.call(this, message || "Script interrupted.", params);
-			}));
+			})));
 		
-		types.ScriptAbortedError = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 3,
@@ -3575,8 +3924,9 @@
 			//! END_REPLACE()
 			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
 				this.exitCode = types.toInteger(exitCode) || 0;
+				this.critical = true;
 				return types.ScriptInterruptedError.call(this, message || "Script aborted.", params);
-			}));
+			})));
 				
 		//===================================
 		// Box/Unbox
@@ -3585,7 +3935,7 @@
 		_shared.OriginalValueSymbol = types.getSymbolFor('__ORIGINAL_VALUE__');
 		
 		types.box = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3639,7 +3989,7 @@
 		});
 			
 		types.unbox = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3666,7 +4016,7 @@
 		__Internal__.symbol$IsSingleton = types.getSymbolFor('$IS_SINGLETON');
 
 		types.isType = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3686,7 +4036,7 @@
 			});
 		
 		types.isJsFunction = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3706,7 +4056,7 @@
 			});
 
 		types.isJsObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3726,7 +4076,7 @@
 			});
 
 		types.is = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3776,7 +4126,7 @@
 			});
 
 		types.isLike = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -3825,7 +4175,7 @@
 			});
 
 		types.baseof = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -3869,7 +4219,7 @@
 			});
 
 		types._instanceof = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -3916,7 +4266,7 @@
 			});
 
 		types.isSingleton = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -3944,7 +4294,7 @@
 
 		
 		types.getType = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -3974,7 +4324,7 @@
 			});
 
 		types.getTypeName = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4004,7 +4354,7 @@
 			});
 		
 		types.getBase = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4034,7 +4384,7 @@
 			});
 
 		_shared.invoke = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -4071,7 +4421,7 @@
 			});
 			
 		_shared.getAttribute = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4096,7 +4446,7 @@
 			});
 			
 		_shared.getAttributes = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4127,10 +4477,10 @@
 			});
 			
 		_shared.setAttribute = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'object',
@@ -4158,47 +4508,43 @@
 			}
 			//! END_REPLACE()
 			, function setAttribute(obj, attr, value, /*optional*/options) {
+				options = options && types.nullObject(options);
 				if (types.hasProperties()) {
-					var descriptor = types.getOwnPropertyDescriptor(obj, attr);
-					if (descriptor) {
-						var descConfigurable = types.get(descriptor, 'configurable'),
-							descWritable = types.get(descriptor, 'writable'),
-							descGet = types.get(descriptor, 'get'),
-							descSet = types.get(descriptor, 'set');
-						if (descConfigurable && !descWritable && !descGet && !descSet) {
-							descriptor.value = value;
-							types.defineProperty(obj, attr, descriptor);
-						} else if (!descConfigurable && !descSet && !descWritable) {
+					var hasOwn = types.has(obj, attr),
+						descriptor = types.getPropertyDescriptor(obj, attr),
+						descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable'),
+						descWritable = !descriptor || types.get(descriptor, 'writable'),
+						descGet = types.get(descriptor, 'get'),
+						descSet = types.get(descriptor, 'set');
+					if (hasOwn && descSet) {
+						descSet.call(obj, value);
+					} else if (hasOwn && descGet) {
+						if (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value))) {
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-						} else {
-							obj[attr] = value;
 						};
-					} else {
-						if (!types.hasDefinePropertyEnabled()) {
-							options = null;
-						};
-						descriptor = !options && types.getPropertyDescriptor(obj, attr);
-						if (!descriptor) {
-							descriptor = options || {
-								configurable: true,
-								enumerable: true,
-								writable: true,
+					} else if (hasOwn && descWritable && !options) {
+						obj[attr] = value;
+					} else if (descConfigurable) {
+						if (options) {
+							if ('all' in options) {
+								descriptor = {
+									configurable: ('configurable' in options ? options.configurable : options.all),
+									enumerable: ('enumerable' in options ? options.enumerable : options.all),
+									writable: ('writable' in options ? options.writable : options.all),
+								};
+							} else {
+								descriptor = options;
 							};
+						} else if (!descriptor) {
+							descriptor = {configurable: true, enumerable: true, writable: true};
 						};
-						var descGet = types.get(descriptor, 'get'),
-							descSet = types.get(descriptor, 'set');
-						if (descSet) {
-							types.defineProperty(obj, attr, descriptor);
-							obj[attr] = value; // execute setter
-						} else if (descGet) {
+						descriptor.value = value;
+						types.defineProperty(obj, attr, descriptor);
+					} else {
+						if (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value))) {
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-						} else {
-							delete descriptor.get; // make sure "get" and "set" don't come from inherited prototype
-							delete descriptor.set;
-							descriptor.value = value;
-							types.defineProperty(obj, attr, descriptor);
 						};
 					};
 				} else {
@@ -4208,7 +4554,7 @@
 			});
 			
 		_shared.setAttributes = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4251,7 +4597,7 @@
 		
 		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
 		__Internal__.DD_DOC = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 1,
@@ -4285,7 +4631,7 @@
 		//! END_REPLACE()
 
 		__Internal__.DD_GET_DOC = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
 					revision: 1,
@@ -4310,7 +4656,7 @@
 		//===================================
 			
 		types.hasProxies = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -4326,7 +4672,7 @@
 			})));
 
 		types.hasProxyEnabled = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -4354,7 +4700,7 @@
 */
 		
 		types.createProxy = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4404,10 +4750,14 @@
 		//===================================
 		
 		_shared.SuperEnabledSymbol = types.getSymbolFor('__SUPER_ENABLED__');
+		_shared.EnumerableSymbol = types.getSymbolFor('__ENUMERABLE__');
 		_shared.ReadOnlySymbol = types.getSymbolFor('__READ_ONLY__');
+		_shared.ConfigurableSymbol = types.getSymbolFor('__CONFIGURABLE__');
+		__Internal__.symbolGetter = types.getSymbolFor('__GETTER__');
+		__Internal__.symbolSetter = types.getSymbolFor('__SETTER__');
 		
 		types.INHERIT = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4460,7 +4810,7 @@
 			});
 
 		types.AttributeBox = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4494,7 +4844,7 @@
 		__Internal__.emptyFunction = function empty() {};
 		
 		types.SUPER = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4515,8 +4865,96 @@
 				return fn;
 			});
 		
+		types.NOT_ENUMERABLE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							val: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Flags an attribute as not enumerable. Returns an AttributeBox.",
+			}
+			//! END_REPLACE()
+			, function NOT_ENUMERABLE(val) {
+				val = types.AttributeBox(val);
+				val[_shared.EnumerableSymbol] = false;
+				return val;
+			});
+
+		types.ENUMERABLE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							val: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Flags an attribute as enumerable. Returns an AttributeBox.",
+			}
+			//! END_REPLACE()
+			, function ENUMERABLE(val) {
+				val = types.AttributeBox(val);
+				val[_shared.EnumerableSymbol] = true;
+				return val;
+			});
+
+		types.NOT_CONFIGURABLE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							val: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Flags an attribute as not configurable. Returns an AttributeBox.",
+			}
+			//! END_REPLACE()
+			, function NOT_CONFIGURABLE(val) {
+				val = types.AttributeBox(val);
+				val[_shared.ConfigurableSymbol] = false;
+				return val;
+			});
+
+		types.CONFIGURABLE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							val: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Flags an attribute as configurable. Returns an AttributeBox.",
+			}
+			//! END_REPLACE()
+			, function CONFIGURABLE(val) {
+				val = types.AttributeBox(val);
+				val[_shared.ConfigurableSymbol] = true;
+				return val;
+			});
+
 		types.READ_ONLY = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -4533,7 +4971,107 @@
 			//! END_REPLACE()
 			, function READ_ONLY(val) {
 				val = types.AttributeBox(val);
+				if (val[__Internal__.symbolGetter] || val[__Internal__.symbolSetter]) {
+					throw new types.Error("'READ_ONLY' can't be applied on a get/set attribute.");
+				};
 				val[_shared.ReadOnlySymbol] = true;
+				return val;
+			});
+
+		types.WRITABLE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							val: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Flags an attribute as writable. Returns an AttributeBox.",
+			}
+			//! END_REPLACE()
+			, function WRITABLE(val) {
+				val = types.AttributeBox(val);
+				if (val[__Internal__.symbolGetter] || val[__Internal__.symbolSetter]) {
+					throw new types.Error("'WRITABLE' can't be applied on a get/set attribute.");
+				};
+				val[_shared.ReadOnlySymbol] = false;
+				return val;
+			});
+
+		types.GET_SET = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							getter: {
+								type: 'function',
+								optional: true,
+								description: "The getter function.",
+							},
+							setter: {
+								type: 'function',
+								optional: true,
+								description: "The setter function.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Creates a get/set attribute.",
+			}
+			//! END_REPLACE()
+			, function GET_SET(getter, setter) {
+				val = types.AttributeBox();
+				val[__Internal__.symbolGetter] = getter;
+				val[__Internal__.symbolSetter] = setter;
+				return val;
+			});
+
+		types.GET = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							getter: {
+								type: 'function',
+								optional: true,
+								description: "The getter function.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Creates a get attribute.",
+			}
+			//! END_REPLACE()
+			, function GET(getter) {
+				val = types.AttributeBox();
+				val[__Internal__.symbolGetter] = getter;
+				return val;
+			});
+
+		types.SET = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							setter: {
+								type: 'function',
+								optional: true,
+								description: "The setter function.",
+							},
+						},
+						returns: 'AttributeBox',
+						description: "Creates a set attribute.",
+			}
+			//! END_REPLACE()
+			, function SET(setter) {
+				val = types.AttributeBox();
+				val[__Internal__.symbolSetter] = setter;
 				return val;
 			});
 
@@ -4548,11 +5086,11 @@
 		})();
 			
 		// TODO: Find another way
-		_shared.reservedAttributes = {
+		_shared.reservedAttributes = types.nullObject({
 			//name: null, 
-			apply: null, 
-			call: null, 
-			bind: null, 
+			//apply: null, 
+			//call: null, 
+			//bind: null, 
 			arguments: null, 
 			caller: null, 
 			length: null, 
@@ -4569,7 +5107,7 @@
 			_super: null,
 
 			$TYPE_NAME: null,
-		};
+		});
 		
 		_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
 		_shared.reservedAttributes[__Internal__.symbol$IsSingleton] = null;
@@ -4601,91 +5139,24 @@
 		})();
 		*/
 		
-		__Internal__.symbolObjectProtection = types.getSymbolFor('__OBJECT_PROTECTION__');
-
-		_shared.reservedAttributes[__Internal__.symbolObjectProtection] = null;
-		
-		__Internal__.protectObject = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.createCaller = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
-						params: {
-							obj: {
-								type: 'object,function,Type',
-								optional: false,
-								description: "An object, a constructor or a Type.",
-							}, 
-						},
-						returns: 'object',
-						description: "",
-			}
-			//! END_REPLACE()
-			, (__options__.enableProtection && types.hasDefinePropertyEnabled() ? function protectObject(obj) {
-				var type = types.getType(obj);
-				if (type || types.isJsObject(obj) || types.isFunction(obj)) {
-					if (types.get(obj, __Internal__.symbolObjectProtection) !== __Internal__.protectObject) {
-						var proto = types.getPrototypeOf(obj);
-						// First time called
-						types.defineProperty(obj, __Internal__.symbolObjectProtection, {
-							value: __Internal__.protectObject,
-						});
-						types.defineProperty(obj, '__proto__', {
-							value: proto,
-						});
-						types.defineProperty(obj, 'constructor', {
-							value: obj.constructor,
-						});
-						if (__Internal__.prototypeIsConfigurable && types.isFunction(obj)) {
-							// <FUTURE> Maybe someday 'prototype' will be 'configurable' !
-							types.defineProperty(obj, 'prototype', {
-								value: obj.prototype,
-							});
-						};
-						var keys = types.append(types.allKeys(proto), types.allSymbols(proto));
-						for (var i = 0; i < keys.length; i++) {
-							var key = keys[i];
-							if ((key !== '__proto__') && (key !== __Internal__.symbolObjectProtection) && 
-									!types.has(_shared.reservedAttributes, key) && !types.has(obj, key)) {
-								var descriptor = types.getOwnPropertyDescriptor(proto, key);
-								if (!descriptor.configurable) {
-									types.defineProperty(obj, key, descriptor);
-								};
-							};
-						};
-					};
-					return obj;
-				} else {
-					// Not an object
-					throw new types.Error("Invalid object.");
-				};
-			} : function protectObject(obj) {
-				// Not enabled/available
-				return obj;
-			}));
-		
-		__Internal__.isProtected = function isProtected(obj) {
-			return (types.get(obj, __Internal__.symbolObjectProtection) === __Internal__.protectObject);
-		};
-		
-		types.createCaller = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							attr: {
 								type: 'string,Symbol',
 								optional: false,
 								description: "The method name.",
 							},
-							proto: {
-								type: 'object',
+							fn: {
+								type: 'function',
 								optional: false,
 								description: "The new function.",
 							},
 							superFn: {
-								type: 'object',
+								type: 'function',
 								optional: true,
 								description: "The old function from base.",
 							},
@@ -4711,40 +5182,8 @@
 				return _caller;
 			});
 
-		types.createSuper = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							attr: {
-								type: 'string,Symbol',
-								optional: false,
-								description: "The method name.",
-							},
-							proto: {
-								type: 'object',
-								optional: false,
-								description: "The prototype where the new method is stored.",
-							},
-							base: {
-								type: 'object',
-								optional: true,
-								description: "The prototype where the overridden method is stored.",
-							},
-						},
-						returns: 'method',
-						description: "Returns a new method which is the result of the override.",
-			}
-			//! END_REPLACE()
-			, function createSuper(attr, proto, /*optional*/base) {
-				var fn = _shared.getAttribute(proto, attr);
-				var superFn = base && _shared.getAttribute(base, attr);
-				return types.createCaller(attr, types.unbox(fn), types.unbox(superFn));
-			});
-
 		types.SINGLETON = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4755,82 +5194,41 @@
 								optional: false,
 								description: "A Doodad type.",
 							},
-							args: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Arguments of the constructor.",
-							},
-							getType: {
-								type: 'boolean',
-								optional: true,
-								description: "If 'true', will returns the type of the singleton object.",
-							},
 						},
-						returns: ['object', 'type'],
+						returns: 'type',
 						description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
 			}
 			//! END_REPLACE()
-			, function SINGLETON(/*<<< optional[getType], optional[args], type*/) {
-				var argumentsLen = arguments.length,
-					type = arguments[argumentsLen - 1],
-					args,
-					getType = false;
-					
-				if (argumentsLen > 1) {
-					args = arguments[argumentsLen - 2];
+			, function SINGLETON(type) {
+				if (!types.isType(type)) {
+					throw new types.Error("Invalid type.");
 				};
-				
-				if (argumentsLen > 2) {
-					getType = arguments[argumentsLen - 3];
-				};
-				
-				if (!type[__Internal__.symbol$IsSingleton]) {
-					var name = types.getTypeName(type);
-					
-					var attrs = {
-						$inherit: types.createCaller('$inherit', function $inherit(/*paramarray*/) {
-							var obj = this._super.apply(this, arguments) || this;
-							if (types.baseof(types.Type, obj)) {
-								// Object is a type, so instantiate it
-								obj = types.newInstance(obj, args);
-							};
-							return obj;
-						}, type.$inherit),
-					};
-					// FUTURE: Use syntax with variables in object declaration
-					attrs[__Internal__.symbol$IsSingleton] = true;
-					_shared.setAttributes(type, attrs, { 
-						configurable: true, 
-						//enumerable: false,  'FALSE' is the default
-						//writable: false 'FALSE' is the default
-					});
 
-					_shared.setAttributes(type.prototype, {
-						$inherit: types.createCaller('$inherit', function $inherit(/*paramarray*/) {
-							var type = this._super.apply(this, arguments) || this;
-							type = types.getType(type);
-							return type.$inherit.apply(type, arguments);
-						}, type.prototype.$inherit),
-					}, { 
-						configurable: true, 
-						//enumerable: false, 'FALSE' is the default
-						//writable: false 'FALSE' is the default
-					});
-				};
-				
-				type = types.INIT(type, args);
+				if (!types.isSingleton(type)) {
+					//var val = __Internal__.createCaller('$inherit', function $inherit(/*paramarray*/) {
+					//		var obj = this._super.apply(this, arguments) || this;
+					//		var type = types.getType(obj);
+					//		return types.newInstance(type, args);
+					//	}, type.$inherit);
+					//_shared.setAttribute(type, '$inherit', val, {all: true});
 
-				if (getType) {
-					return type;
+
+					//var val = __Internal__.createCaller('$inherit', function $inherit(/*paramarray*/) {
+					//		var type = this._super.apply(this, arguments) || this;
+					//		type = types.getType(type);
+					//		return type.$inherit.apply(type, arguments);
+					//	}, type.prototype.$inherit);
+					//_shared.setAttribute(type.prototype, '$inherit', val, {all: true});
+
+
+					_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {});
 				};
 				
-				var obj = types.newInstance(type, args);
-				
-				return obj;
+				return type;
 			});
 		
 		types.INIT = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -4854,7 +5252,11 @@
 				if (types.isInitialized(type)) {
 					return type;
 				} else {
-					return type.apply(type, args) || type;
+					type = type.apply(type, args) || type;
+					if (types.isSingleton(type)) {
+						type = types.newInstance(type, args);
+					};
+					return type;
 				};
 			});
 			
@@ -4862,11 +5264,83 @@
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 		};
 		
+		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting) {
+			var forType = types.isType(target),
+				keys = types.append(types.keys(proto), types.symbols(proto));
+
+			for (var i = 0; i < keys.length; i++) {
+				var key = keys[i];
+
+				var hasValue = types.has(target, key);
+				//if (hasValue && skipExisting) {
+				//	continue;
+				//};
+
+				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
+					var attr = types.AttributeBox(proto[key]),
+						targetValue = hasValue && target[key],
+						value = types.unbox(hasValue ? targetValue : attr),
+						isFunction = types.isJsFunction(value),
+						createSuper = (!hasValue && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
+
+					if (createSuper) {
+						value = __Internal__.createCaller(key, value, base && _shared.getAttribute(base, key));
+					};
+
+					if (preApply) {
+						_shared.setAttribute(target, key, value, {all: true});
+
+					} else {
+						var enu = types.get(attr, _shared.EnumerableSymbol);
+						if (types.isNothing(enu)) {
+							enu = true;
+						};
+
+						var cf = types.get(attr, _shared.ConfigurableSymbol);
+						var g = types.get(attr, __Internal__.symbolGetter);
+						var s = types.get(attr, __Internal__.symbolSetter);
+
+						if (g || s) {
+							// TODO: SUPER
+
+							if (types.isNothing(cf)) {
+								cf = false;
+							};
+
+							types.defineProperty(target, key, {
+								configurable: !!cf,
+								get: g || undefined,
+								set: s || undefined,
+							});
+						} else {
+							var ro = types.get(attr, _shared.ReadOnlySymbol);
+							if (types.isNothing(ro)) {
+								ro = isFunction;
+							};
+
+							if (types.isNothing(cf)) {
+								cf = false;
+							};
+
+							_shared.setAttribute(target, key, value, {
+								configurable: !!cf,
+								enumerable: !!enu,
+								writable: !ro,
+								ignoreWhenReadOnly: true,
+							});
+						};
+					};
+				};
+			};
+
+			types.defineProperty(target, '_super', {value: null, writable: true});
+		};
+
 		types.createType = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							name: {
 								type: 'string',
@@ -4916,26 +5390,25 @@
 				};
 				
 				if (types.isNothing(constructor)) {
-					if (base) {
-						constructor = "return ctx.base.apply(this, arguments);";
-					} else {
-						constructor = "return this._new.apply(this, arguments);";
-					};
+					constructor = "return this._new && this._new.apply(this, arguments);";
 				};
 				
 				if (types.isString(constructor)) {
 					constructorContext = types.extend({}, constructorContext, {
 						base: base,
 					});
+					// TODO: Avoid this extra function ?
 					constructor = types.eval("function(/*paramarray*/) {" + constructor + "}", constructorContext);
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
 				var expr = "function " + name.replace(/[.]/g, "_") + "(/*paramarray*/) {" + 
-					"if (ctx.get(this, ctx.InitializedSymbol)) {" +
-						"throw new ctx.Error('Object is already initialized.');" +
-					"};" +
+					//"if (ctx.get(this, ctx.InitializedSymbol)) {" +
+					//	"throw new ctx.Error('Object is already initialized.');" +
+					//"};" +
+
 					"var forType = ctx.isFunction(this);" +
+
 					"if (forType) {" +
 						"if ((this !== ctx.type) && (!ctx.baseof(ctx.type, this))) {" +
 							"throw new ctx.Error('Wrong constructor.');" +
@@ -4948,6 +5421,7 @@
 							"throw new ctx.Error('Wrong constructor.');" +
 						"};" +
 					"};" +
+
 					(!__Internal__.prototypeIsConfigurable ?
 						// <PRB> "prototype" is not configurable, so we can't set it to read-only
 						"if (!forType) {" +
@@ -4960,26 +5434,45 @@
 					:
 						""
 					) +
-					(baseIsType ?
-						""
-					:
-						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});"
-					) +
-					"var obj = ctx.constructor.apply(this, arguments) || this;" +
-					(baseIsType ?
-						""
-					:
+
+					"var obj;" +
+					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
+						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
+						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
+					"} else {" +
+						"obj = this;" +
+					"};" +
+
+					(typeProto ?
 						"if (forType) {" +
-							"ctx.protectObject(ctx.proto);" +
-						"};" +
-						
-						"if (obj === this) {" +
-							"ctx.protectObject(this);" +
-						"} else if (!ctx.get(obj, ctx.InitializedSymbol)) {" +
+							"ctx.applyProto(obj, ctx.base, ctx.typeProto);" +
+						"};"
+					: 
+						""
+					) +
+
+					(instanceProto ?
+						"if (!forType) {" +
+							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true);" +
+						"};"
+					: 
+						""
+					) +
+
+					(baseIsType ?
+						"ctx.base.apply(obj, arguments);"
+					:
+						""
+					) +
+
+					(baseIsType ? 
+						""
+					:
+						"if ((obj !== this) && !ctx.get(obj, ctx.InitializedSymbol)) {" +
 							"ctx.setAttribute(obj, ctx.InitializedSymbol, true, {});" +
-							"ctx.protectObject(obj);" +
 						"};"
 					) +
+
 					"return obj;" +
 				"}";
 				
@@ -4995,6 +5488,10 @@
 					setAttribute: _shared.setAttribute,
 					InitializedSymbol: __Internal__.symbolInitialized,
 					getTypeName: types.getTypeName,
+					typeProto: typeProto, 
+					instanceProto: instanceProto,
+					instanceBase: (base ? base.prototype : null),
+					applyProto: __Internal__.applyProto,
 				};
 				var type = types.eval(expr, ctx);
 				
@@ -5017,74 +5514,15 @@
 			
 				proto.constructor = type;
 				
-				// Override type prototype
-				if (typeProto) {
-					var keys = types.append(types.keys(typeProto), types.symbols(typeProto));
-					for (var i = 0; i < keys.length; i++) {
-						var key = keys[i];
-						
-						if ((key !== '__proto__') && !types.has(_shared.reservedAttributes, key)) {
-							var attr = types.AttributeBox(typeProto[key]),
-								value = types.unbox(attr),
-								createSuper = (types.isFunction(value) ? attr[_shared.SuperEnabledSymbol] : false);
-
-							if (createSuper) {
-								value = types.createSuper(key, typeProto, base);
-							};
-							
-							//if (base && types.isObjectLike(value)) {
-							//	var baseValue = base[key];
-							//	if (types.isObjectLike(baseValue)) {
-							//		value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
-							//	};
-							//};
-							
-							_shared.setAttribute(type, key, value, {
-								configurable: attr[_shared.ReadOnlySymbol],
-								enumerable: true,
-								writable: !attr[_shared.ReadOnlySymbol],
-							});
-						};
-					};
-				};
-				
-				_shared.setAttribute(type, '_super', null, {configurable: false, writable: true});
 				_shared.setAttribute(type, '$TYPE_NAME', name, {});
 				
-				var baseProto = (base ? base.prototype : null);
-
-				// Override instance prototype
-				if (instanceProto) {
-					var keys = types.append(types.keys(instanceProto), types.symbols(instanceProto));
-					for (var i = 0; i < keys.length; i++) {
-						var key = keys[i];
-
-						if ((key !== '__proto__') && !types.has(_shared.reservedAttributes, key)) {
-							var attr = types.AttributeBox(instanceProto[key]),
-								value = types.unbox(attr),
-								createSuper = (types.isFunction(value) ? attr[_shared.SuperEnabledSymbol] : false);
-								
-							if (createSuper) {
-								value = types.createSuper(key, instanceProto, baseProto);
-							};
-							
-							//if (baseProto && types.isObjectLike(value)) {
-							//	var baseValue = baseProto[key];
-							//	if (types.isObjectLike(baseValue)) {
-							//		value = __Internal__.DD_DOC(__Internal__.DD_GET_DOC(baseValue), value);
-							//	};
-							//};
-
-							_shared.setAttribute(proto, key, value, {
-								configurable: attr[_shared.ReadOnlySymbol],
-								enumerable: true,
-								writable: !attr[_shared.ReadOnlySymbol],
-							});
-						};
-					};
+				if (typeProto) {
+					__Internal__.applyProto(type, base, typeProto, true);
 				};
-				
-				_shared.setAttribute(proto, '_super', null, {configurable: false, writable: true});
+
+				if (instanceProto) {
+					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto);
+				};
 				
 				// Return type
 				return type;
@@ -5092,7 +5530,7 @@
 		
 
 		__Internal__.typeInherit = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
@@ -5124,9 +5562,15 @@
 			//! END_REPLACE()
 			, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructor, /*optional*/constructorContext) {
 				// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
-				var name = (typeProto ? types.unbox(typeProto.$TYPE_NAME) : null),
-					base = ((this === global) ? undefined: this);
-					
+				var base = ((this === global) ? undefined: this);
+				
+				var name = null;
+				if (typeProto) {
+					name = types.get(typeProto, '$TYPE_NAME');
+					typeProto['$TYPE_NAME'] = types.READ_ONLY(name || null);
+					name = types.unbox(name) || null;
+				};
+	
 				var type = types.createType(
 						/*name*/
 						name,
@@ -5150,37 +5594,34 @@
 				return type;
 			});
 		
-		__Internal__.typeNew = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'undefined',
-						description: "Object or type creator.",
-			}
-			//! END_REPLACE()
-			, function _new() {
-				if (__Internal__.isProtected(this)) {
-					throw new _shared.Natives.windowError("Object is already created.");
-				};
-			});
+		//__Internal__.typeNew = __Internal__.DD_DOC(
+		//	//! REPLACE_IF(IS_UNSET('debug'), "null")
+		//	{
+		//				author: "Claude Petit",
+		//				revision: 1,
+		//				params: null,
+		//				returns: 'undefined',
+		//				description: "Object or type creator.",
+		//	}
+		//	//! END_REPLACE()
+		//	, function _new() {
+		//	});
 		
-		__Internal__.typeDelete = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'undefined',
-						description: "Object or type destructor.",
-			}
-			//! END_REPLACE()
-			, function _delete() {
-			});
+		//__Internal__.typeDelete = __Internal__.DD_DOC(
+		//	//! REPLACE_IF(IS_UNSET('debug'), "null")
+		//	{
+		//				author: "Claude Petit",
+		//				revision: 1,
+		//				params: null,
+		//				returns: 'undefined',
+		//				description: "Object or type destructor.",
+		//	}
+		//	//! END_REPLACE()
+		//	, function _delete() {
+		//	});
 		
 		__Internal__.typeToString = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -5209,7 +5650,7 @@
 			});
 		
 		__Internal__.typeToLocaleString = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -5229,31 +5670,33 @@
 			});
 
 		__Internal__.typeTypeProto = {
-			$TYPE_NAME: types.READ_ONLY('Type'),
+			$TYPE_NAME: 'Type',
 
 			_super: null,
 			
-			$inherit: types.READ_ONLY(__Internal__.typeInherit),
+			$inherit: __Internal__.typeInherit,
 			
-			_new: types.READ_ONLY(__Internal__.typeNew),
-			_delete: types.READ_ONLY(__Internal__.typeDelete),
+			_new: types.READ_ONLY(null), //__Internal__.typeNew,
+			_delete: types.READ_ONLY(null), //__Internal__.typeDelete,
 			
-			toString: types.READ_ONLY(types.SUPER(__Internal__.typeToString)),
-			toLocaleString: types.READ_ONLY(types.SUPER(__Internal__.typeToLocaleString)),
+			toString: types.SUPER(__Internal__.typeToString),
+			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 		};
 		
+		 __Internal__.typeTypeProto[__Internal__.symbol$IsSingleton] = false,
+
 		__Internal__.typeInstanceProto = {
 			_super: null,
 			
-			_new: types.READ_ONLY(__Internal__.typeNew),
-			_delete: types.READ_ONLY(__Internal__.typeDelete),
+			_new: types.READ_ONLY(null), //__Internal__.typeNew,
+			_delete: types.READ_ONLY(null), //__Internal__.typeDelete,
 			
-			toString: types.READ_ONLY(types.SUPER(__Internal__.typeToString)),
-			toLocaleString: types.READ_ONLY(types.SUPER(__Internal__.typeToLocaleString)),
+			toString: types.SUPER(__Internal__.typeToString),
+			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 		}
 		
 		types.Type = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -5270,15 +5713,15 @@
 				__Internal__.typeInstanceProto
 			));
 			
-		types.INIT(types.Type);
+		__Internal__.REGISTER(types.Type);
 
 		//===================================
 		// Event functions
 		//===================================
 			
 		// NOTE: 2015/04/16 We can't inherit from the actual implementations of Event and CustomEvent !
-		types.CustomEvent = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
@@ -5298,7 +5741,7 @@
 						description: "Custom event type for custom event targets.",
 			}
 			//! END_REPLACE()
-			, types.INIT(types.Type.$inherit(
+			, types.Type.$inherit(
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'CustomEvent',
@@ -5314,23 +5757,24 @@
 					bubbling: false,   // stopPropagation
 					stopped: false,    // stopImmediatePropagation
 					
-					_new: types.READ_ONLY(types.SUPER(function _new(type, /*optional*/init) {
+					_new: types.SUPER(function _new(type, /*optional*/init) {
 						this._super();
 						//if (new.target) {
 						if (this instanceof types.CustomEvent) {
+							init = types.nullObject(init);
 							_shared.setAttributes(this, {
 								type: type,
 								// NOTE: Event targets are responsible to bubble events to their parent when "bubbling" is true.
-								bubbles: !!types.get(init, 'bubbles'),
-								cancelable: !!types.get(init, 'cancelable'),
-								detail: types.get(init, 'detail'),
-							});
+								bubbles: !!init.bubbles,
+								cancelable: !!init.cancelable,
+								detail: init.detail,
+							}, {all: true});
 							this.bubbling = this.bubbles;
 						};
-					})),
+					}),
 					
-					preventDefault: types.READ_ONLY(__Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+					preventDefault: __Internal__.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5344,10 +5788,10 @@
 							if (this.cancelable) {
 								this.canceled = true;
 							};
-						})),
+						}),
 						
-					stopPropagation: types.READ_ONLY(__Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+					stopPropagation: __Internal__.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5359,10 +5803,10 @@
 						, function stopPropagation() {
 							// NOTE: "stopPropagation" should be "preventBubbling".
 							this.bubbling = false;
-						})),
+						}),
 						
 					stopImmediatePropagation: __Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5371,18 +5815,18 @@
 											description: "Stops propagation of the event and breaks the listeners chain.",
 								}
 								//! END_REPLACE()
-						, types.READ_ONLY(function stopImmediatePropagation() {
+						, function stopImmediatePropagation() {
 							// NOTE: "stopImmediatePropagation" should be "stopPropagation".
 							this.bubbling = false;
 							this.stopped = true;
-						})),
+						}),
 				}
 			)));
 		
 		__Internal__.symbolEventListeners = types.getSymbolFor('__EVENT_LISTENERS__');
 		
-		types.CustomEventTarget = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -5391,27 +5835,27 @@
 						description: "Custom event target.",
 			}
 			//! END_REPLACE()
-			, types.INIT(types.Type.$inherit(
+			, types.Type.$inherit(
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'CustomEventTarget',
 				},
 				/*instanceProto*/
 				{
-					_new: types.READ_ONLY(types.SUPER(function _new() {
+					_new: types.SUPER(function _new() {
 						this._super();
 						//if (new.target) {
 						if (this instanceof types.CustomEventTarget) {
-							_shared.setAttribute(this, __Internal__.symbolEventListeners, {}, {
+							_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {
 								configurable: true, 
 								//enumerable: false,  'FALSE' is the default
 								//writable: false 'FALSE' is the default
 							});
 						};
-					})),
+					}),
 					
 					addEventListener: __Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5441,7 +5885,7 @@
 											description: "Adds an event listener for the specified event name.",
 								}
 								//! END_REPLACE()
-						, types.READ_ONLY(function addEventListener(type, handler, /*optional*/useCapture, /*optional*/wantsUntrusted) {
+						, function addEventListener(type, handler, /*optional*/useCapture, /*optional*/wantsUntrusted) {
 							type = type.toLowerCase();
 							useCapture = !!useCapture;
 							wantsUntrusted = (types.isNothing(wantsUntrusted) ? true : !!wantsUntrusted);
@@ -5461,10 +5905,10 @@
 							if (!found) {
 								listeners.push([handler, useCapture, wantsUntrusted]);
 							};
-						})),
+						}),
 						
 					removeEventListener: __Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 1,
@@ -5489,10 +5933,10 @@
 											description: "Removes an event listener for the specified event name.",
 								}
 								//! END_REPLACE()
-						, types.READ_ONLY(function removeEventListener(type, /*optional*/handler, /*optional*/useCapture) {
+						, function removeEventListener(type, /*optional*/handler, /*optional*/useCapture) {
 							type = type.toLowerCase();
 							
-							if (types.has(this[__Internal__.symbolEventListeners], type)) {
+							if (type in this[__Internal__.symbolEventListeners]) {
 								var listeners = this[__Internal__.symbolEventListeners][type];
 								if (types.isArray(listeners)) {
 									if (types.isNothing(useCapture)) {
@@ -5513,10 +5957,10 @@
 									};
 								};
 							};
-						})),
+						}),
 						
 					dispatchEvent: __Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5531,7 +5975,7 @@
 											description: "Raises an event by its name.",
 								}
 								//! END_REPLACE()
-						, types.READ_ONLY(function dispatchEvent(event) {
+						, function dispatchEvent(event) {
 							// TODO: What should I do with "useCapture" ???
 							// TODO: Implement "wantsUntrusted" ?
 							var type = event.type.toLowerCase();
@@ -5540,7 +5984,7 @@
 							
 							if (!event.stopped) {
 								var	listeners;
-								if (types.has(this[__Internal__.symbolEventListeners], type)) {
+								if (type in this[__Internal__.symbolEventListeners]) {
 									listeners = this[__Internal__.symbolEventListeners][type];
 								} else {
 									this[__Internal__.symbolEventListeners][type] = listeners = [];
@@ -5590,10 +6034,10 @@
 							};
 							
 							return res;
-						})),
+						}),
 						
 					clearListeners: __Internal__.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -5602,9 +6046,9 @@
 											description: "Removes every event listeners.",
 								}
 								//! END_REPLACE()
-						, types.READ_ONLY(function clearListeners() {
+						, function clearListeners() {
 							this[__Internal__.symbolEventListeners].length = 0;
-						})),
+						}),
 				}
 			)));
 		
@@ -5613,7 +6057,7 @@
 		//===================================
 		
 		types.Namespace = __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 1,
@@ -5638,7 +6082,7 @@
 						description: "Namespace object.",
 			}
 			//! END_REPLACE()
-			, types.INIT(types.CustomEventTarget.$inherit(
+			, types.CustomEventTarget.$inherit(
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Namespace',
@@ -5646,6 +6090,16 @@
 					DD_PARENT: types.READ_ONLY(null),
 					DD_NAME: types.READ_ONLY(null),
 					DD_FULL_NAME: types.READ_ONLY(null),
+
+					_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
+						this._super();
+						
+						_shared.setAttributes(this, {
+							DD_PARENT: parent,
+							DD_NAME: name,
+							DD_FULL_NAME: fullName,
+						}, {all: true});
+					}),
 				},
 				/*instanceProto*/
 				{
@@ -5653,42 +6107,77 @@
 					DD_NAME: types.READ_ONLY(null),
 					DD_FULL_NAME: types.READ_ONLY(null),
 
-					REGISTER: types.READ_ONLY(function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
+					REGISTER: function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
 						return _shared.REGISTER && _shared.REGISTER.apply(this, arguments);
-					}),
+					},
 					
-					UNREGISTER: types.READ_ONLY(function UNREGISTER(type) {
+					UNREGISTER: function UNREGISTER(type) {
 						return _shared.UNREGISTER && _shared.UNREGISTER.apply(this, arguments);
-					}),
+					},
 					
-					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
+					_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
 						this._super();
 						
-						if (!types.isNothing(parent) || !types.isNothing(name) || !types.isNothing(fullName)) {
-							_shared.setAttributes(this, {
-								DD_PARENT: parent,
-								DD_NAME: name,
-								DD_FULL_NAME: fullName,
-							});
-						};
-					})),
+						_shared.setAttributes(this, {
+							DD_PARENT: parent,
+							DD_NAME: name,
+							DD_FULL_NAME: fullName,
+						}, {all: true});
+					}),
 				}
-			)));
+			));
+
+		__Internal__.REGISTER(types.Namespace);
 		
+		//===================================
+		// Secret
+		//===================================
+
+		_shared.SECRET = types.get(_options, 'secret');
+
+//! IF_SET("serverSide")
+		//===================================
+		// Server Modules
+		//===================================
+
+//! ELSE()
+		//===================================
+		// Client Modules
+		//===================================
+/*
+		if (typeof global.document === 'object') {
+			__Internal__.modules = types.nullObject();
+
+			_shared.setAttribute(global.document, 'getScriptModule', function getScriptModule(name) {
+				return __Internal__.modules[name];
+			}, {});
+
+			_shared.setAttribute(global.document, 'registerScriptModule', function registerScriptModule(name, module / *, secret* /) {
+				//if (secret !== _shared.SECRET) {
+				//	throw new types.AccessDenied("Secrets mismatch.");
+				//};
+				types.freezeObject(module);
+				types.freezeObject(module.exports);
+				_shared.setAttribute(__Internal__.modules, name, module, {});
+			}, {});
+		};
+*/
+//! END_IF()
+
 		//===================================
 		// Root
 		//===================================
 
-		return __Internal__.DD_DOC(
-			//! REPLACE_BY("null")
+		return types.INIT(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
 						params: {
 							modules: {
-								type: 'arrayof(object)',
+								type: 'object',
 								optional: true,
-								description: "Array of modules to load.",
+								description: "Object of modules to load.",
 							}, 
 							options: {
 								type: 'object',
@@ -5700,20 +6189,24 @@
 						description: "Namespace root.",
 			}
 			//! END_REPLACE()
-			, types.SINGLETON([modules, _options], types.Namespace.$inherit(
+			, types.SINGLETON(types.Namespace.$inherit(
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Root',
 				},
 				/*instanceProto*/
 				{
-					DD_ASSERT: null, // Prevents "DD_ASSERT" from being read-only
+					//DD_ASSERT: types.WRITABLE(null),
 					
-					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
+					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						// TODO: Set namespace members to read-only
 	
+						/////types.defineProperty(global, 'root', {get: function() {debugger;}});
+
 						this._super(null, '<Root>', '<Root>');
 
+						options = types.nullObject(options);
+						
 						var root = this;
 
 						// Prebuild "Doodad.Types" and "Doodad.Tools"
@@ -5722,11 +6215,11 @@
 						root.Doodad.Types = types;
 						root.Doodad.Tools = tools;
 
-						var nsObjs = {
+						var nsObjs = types.nullObject({
 							'Doodad': root.Doodad,
 							'Doodad.Types': types,
 							'Doodad.Tools': tools,
-						};
+						});
 
 						root.createRoot = exports.createRoot;
 						root.DD_DOC = __Internal__.DD_DOC;
@@ -5747,31 +6240,22 @@
 						
 						// Load bootstrap modules
 
-						if (__recordNewBootstraps__) {
-							__bootstraps__[MODULE_NAME] = {
-								type: 'Package',
-								version: MODULE_VERSION,
-								bootstrap: true,
-							};
-						};
-
-						modules = types.extend({}, modules, __bootstraps__);
-						
-						var names = types.keys(modules);
-						if (!names.length) {
-							throw new types.Error("Missing bootstrap modules.");
+						modules[MODULE_NAME] = {
+							type: 'Package',
+							version: MODULE_VERSION,
+							bootstrap: true,
 						};
 						
-						var loading = {},
-							inits = {},
-							toInit = [],
+						var names = types.keys(modules),
+							inits = types.nullObject(),
 							name;
 							
 						whileName: while (name = names.shift()) {
 							var mod = modules[name];
+							mod.name = name;
 							if (mod.bootstrap) {
 								var deps = (mod.dependencies || []);
-								for (var i = 0; i < deps.length; i++) {
+								forEachDep: for (var i = 0; i < deps.length; i++) {
 									if (i in deps) {
 										var dep = deps[i],
 											optional = false;
@@ -5779,32 +6263,32 @@
 											optional = dep.optional;
 											dep = dep.name;
 										};
-										var bootstrapping = types.has(loading, dep);
-										if (!types.has(modules, dep) && !bootstrapping) {
+										var loading = (dep in inits);
+										if (!types.has(modules, dep) && !loading) {
 											if (optional) {
-												bootstrapping = true;
+												loading = true;
 											} else {
 												throw new types.Error("Missing bootstrap module '~0~'.", [dep]);
 											};
 										};
-										if (!bootstrapping) {
+										if (!loading) {
 											names.push(name);
 											continue whileName;
 										};
 									};
 								};
-								var shortNames = name.split('.');
-
-								var proto = mod.proto;
- 								
-								var nsObj = null,
+								
+								var shortNames = name.split('.'),
+									proto = mod.proto,
+									nsObj = null,
 									parent = root,
 									fullName = '';
-								for (var k = 0; k < shortNames.length; k++) {
-									var shortName = shortNames[k];
+									
+								forEachShortName: for (var k = 0; k < shortNames.length; k++) {
+									var shortName = shortNames[k].split('/', 1)[0];
 									fullName += '.' + shortName;
 									var fn = fullName.slice(1);
-									//var prevNsObj = types.get(nsObjs, fn);
+									//var prevNsObj = nsObjs[fn];
 									var prevNsObj = types.get(parent, shortName);
 									if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !(prevNsObj instanceof types.Namespace)))) {
 										var nsType = types.getType(prevNsObj) || types.Namespace;
@@ -5816,7 +6300,7 @@
 												var prevNsObjVal = prevNsObj[prevNsObjKey];
 												if (!(prevNsObjVal instanceof types.AttributeBox)) {
 													// Sets everything to READ_ONLY by default
-													prevNsObjVal = types.READ_ONLY(prevNsObjVal);
+													prevNsObjVal = types.READ_ONLY(types.ENUMERABLE(prevNsObjVal));
 												};
 												nsProto[prevNsObjKey] = prevNsObjVal;
 											};
@@ -5838,7 +6322,7 @@
 												proto = [
 													/*typeProto*/
 													{
-														$TYPE_NAME: types.getTypeName(nsType)
+														$TYPE_NAME: types.getTypeName(nsType),
 													},
 													/*instanceProto*/
 													proto
@@ -5865,7 +6349,7 @@
 								nsObjs[name] = nsObj;
 								
 								var namespaces = (mod.namespaces || []);
-								for (var j = 0; j < namespaces.length; j++) {
+								forEachNamespace: for (var j = 0; j < namespaces.length; j++) {
 									if (j in namespaces) {
 										shortNames = namespaces[j].split('.');
 										var fullName = '.' + name;
@@ -5873,7 +6357,7 @@
 											var shortName = shortNames[k];
 											fullName += '.' + shortName;
 											var fn = fullName.slice(1);
-											if (!types.has(nsObjs, fn)) {
+											if (!(fn in nsObjs)) {
 												nsObjs[fn] = parent[shortName] = new types.Namespace(parent, shortName, fn);
 											};
 											parent = parent[shortName];
@@ -5882,54 +6366,52 @@
 									};
 								};
 
-								var opts = types.get(options, name);
+								var opts = options[name];
 								inits[name] = mod.create && mod.create(root, opts, _shared);
-
-								toInit.push(name);
-								
-								loading[name] = mod;
-								
-								if (__recordNewBootstraps__) {
-									__bootstraps__[name] = mod;
-								};
 							};
 						};
 
-						__recordNewBootstraps__ = false;
-						
-						var doodad = root.Doodad,
+						var names = types.keys(inits),
+							doodad = root.Doodad,
 							namespaces = doodad.Namespaces,
-							entries = namespaces.Entries;
+							entries = namespaces.Entries,
+							nsOptions = {secret: _shared.SECRET};
 
-						for (var i = 0; i < toInit.length; i++) {
-							var name = toInit[i];
-							var spec = __bootstraps__[name];
+						forEachInit: for (var i = 0; i < names.length; i++) {
+							var name = names[i];
+							var spec = modules[name];
 							var entryType = entries[spec.type || 'Module'];
 							var entry = new entryType(root, spec, nsObjs[name]);
-							var opts = types.get(options, name);
+							var opts = options[name];
 							entry.objectCreated = true;
-							entry.objectInit = types.get(inits, name);
+							entry.objectInit = inits[name];
 							entry.objectInit && entry.objectInit(opts)
 							entry.init(opts);
-							namespaces.add(name, entry);
+							namespaces.add(name, entry, nsOptions);
 							delete nsObjs[name];
 						};
 						
-						toInit = types.keys(nsObjs);
-						for (var i = 0; i < toInit.length; i++) {
-							var name = toInit[i];
+						var names = types.keys(nsObjs);
+						forEachNamespace: for (var i = 0; i < names.length; i++) {
+							var name = names[i];
 							var namespace = nsObjs[name];
 							var entry = new entries.Namespace(root, null, namespace);
-							namespaces.add(name, entry);
+							namespaces.add(name, entry, nsOptions);
 						};
 						
 						var entry = new entries.Namespace(root, null, root);
-						namespaces.add(spec.name, entry);
+						namespaces.add(spec.name, entry, nsOptions);
 						
-					})),
+						forEachType: for (var i = 0; i < __Internal__.tempTypes.length; i++) {
+							var type = __Internal__.tempTypes[i];
+							types.REGISTER(type);
+						};
+						delete __Internal__.tempTypes;
+						delete __Internal__.REGISTER;
+					}),
 					
 					enableAsserts: __Internal__.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -5938,17 +6420,17 @@
 								description: "Enables 'DD_ASSERT'.",
 						}
 						//! END_REPLACE()
-						, types.READ_ONLY(function enableAsserts() {
+						, function enableAsserts() {
 							if (types.hasDefinePropertyEnabled()) {
 								__Internal__.DD_ASSERT = __ASSERT__;
 							} else {
 								var root = this;
 								root.DD_ASSERT = __ASSERT__;
 							};
-						})),
+						}),
 					
 					disableAsserts: __Internal__.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -5957,26 +6439,26 @@
 								description: "Disables 'DD_ASSERT'.",
 						}
 						//! END_REPLACE()
-						, types.READ_ONLY(function disableAsserts() {
+						, function disableAsserts() {
 							if (types.hasDefinePropertyEnabled()) {
 								__Internal__.DD_ASSERT = null;
 							} else {
 								var root = this;
 								root.DD_ASSERT = null;
 							};
-						})),
+						}),
 						
-					getOptions: types.READ_ONLY(function() {
+					getOptions: function() {
 						return __options__;
-					}),
+					},
 				}
-			)));
+			))), [modules, _options]);
 	};
 	
 	//! BEGIN_REMOVE()
 	if ((typeof process !== 'object') || (typeof module !== 'object')) {
 	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
+		//! IF_UNSET("serverSide")
 			// <PRB> export/import are not yet supported in browsers
 			global.createRoot = exports.createRoot;
 		//! END_IF()
@@ -5987,7 +6469,7 @@
 	//! BEGIN_REMOVE()
 	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
 	//! END_REMOVE()
-	//! IF_DEF("serverSide")
+	//! IF_SET("serverSide")
 	//! 	INJECT("global")
 	//! ELSE()
 	//! 	INJECT("window")

@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: NodeJs.js - Node.js Tools
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	const global = this;
-
-	const exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.NodeJs'] = {
-			version: '2.2.0r',
+		DD_MODULES['Doodad.NodeJs/root'] = {
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			namespaces: ['MixIns', 'Interfaces'],
 			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
 			bootstrap: true,
@@ -255,10 +242,10 @@
 				//===================================
 				
 				tools.callAsync = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									fn: {
 										type: 'function',
@@ -285,20 +272,21 @@
 										optional: true,
 										description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
 									},
+									secret: {
+										type: 'any',
+										optional: true,
+										description: "Secret.",
+									},
 								},
 								returns: 'undefined,object',
 								description: "Asynchronously calls a function.",
 					}
 					//! END_REPLACE()
-					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable) {
+					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
-						if (types.isClass(types.getType(thisObj))) {
-							fn = types.bind(null, _shared.invoke, [thisObj, fn, args]);
-						} else if (!types.isNothing(thisObj) || !types.isNothing(args)) {
-							fn = types.bind(thisObj, fn, args);
-						};
+						fn = new doodad.Callback(thisObj, fn, null, args, secret);
 						if (delay === 0) {
 							// Raised after events queue process and after I/O
 							const id = _shared.Natives.globalSetImmediate(fn);
@@ -395,7 +383,7 @@
 					//===================================
 				
 					tools.getCurrentLocation = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -417,7 +405,7 @@
 					});
 					
 					tools.setCurrentLocation = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -572,7 +560,7 @@
 					);
 					
 					tools.getJsScriptFileLoader = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -640,7 +628,7 @@
 					//===================================
 					
 					tools.getOS = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -673,7 +661,7 @@
 					//=====================================
 
 					tools.getDefaultLanguage = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -698,10 +686,10 @@
 				// Config
 				//===================================
 				
-				__Internal__.oldConfigLoadFile = config.loadFile;
+				__Internal__.oldConfigLoad = config.load;
 				
-				config.loadFile = root.DD_DOC(
-					//! REPLACE_BY("null")
+				config.load = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -732,11 +720,11 @@
 										"You can set the option 'force' to force the file to be read again.",
 					}
 					//! END_REPLACE()
-					, function loadFile(path, /*optional*/options, /*optional*/callbacks) {
+					, function load(path, /*optional*/options, /*optional*/callbacks) {
 						if (types.isString(path)) {
 							path = _shared.pathParser(path, types.get(options, 'parseOptions'));
 						};
-						return __Internal__.oldConfigLoadFile(path, options, callbacks);
+						return __Internal__.oldConfigLoad(path, options, callbacks);
 					});
 
 
@@ -745,7 +733,7 @@
 					//=====================================
 					
 					files.rmdir = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -886,7 +874,7 @@
 					});
 					
 					files.mkdir = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 3,
@@ -989,7 +977,7 @@
 					});
 					
 					files.copy = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 3,
@@ -1240,7 +1228,7 @@
 					});
 					
 					files.readdir = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -1407,7 +1395,7 @@
 					});
 					
 					files.getTempFolder = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1444,7 +1432,7 @@
 					});
 					
 					files.readFile = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 5,
@@ -1614,7 +1602,7 @@
 					});
 
 					files.watch = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 3,
@@ -1682,12 +1670,7 @@
 								}));
 							};
 							
-							const cbObj = types.get(options, 'callbackObj');
-							
 							tools.forEach(callbacks, function(callback) {
-								if (!(callback instanceof types.Callback)) {
-									callback = new doodad.Callback(cbObj, callback);
-								};
 								callback.__OPTIONS__ = options;
 							});
 							
@@ -1704,7 +1687,7 @@
 				//===================================
 						
 				nodejs.forkSync = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1739,8 +1722,8 @@
 				// Console
 				//=====================================
 				
-				nodejs.Console = root.DD_DOC(
-					//! REPLACE_BY("null")
+				nodejs.REGISTER(root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1778,7 +1761,7 @@
 
 					/*constructor*/
 					function(hook, /*optional*/stdout, /*optional*/stderr) {
-						if (this instanceof nodejs.Console) {
+						if (nodejs.Console && (this instanceof nodejs.Console)) {
 							if (!types.isJsFunction(hook)) {
 								throw new types.TypeError("Invalid hook function.");
 							};
@@ -1796,10 +1779,8 @@
 					
 					/*typeProto*/
 					{
-						__oldConsole: null,
-						
 						capture: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
 									revision: 0,
@@ -1829,7 +1810,7 @@
 						}
 						//! END_REPLACE()
 						, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
-							if (!this.__oldConsole) {
+							if (!__Internal__.oldConsole) {
 								this.release();
 								const newConsole = new this(hook, stdout, stderr),
 									oldConsole = global.console;
@@ -1839,12 +1820,12 @@
 									value: newConsole,
 									writable: !types.hasDefinePropertyEnabled(),
 								});
-								this.__oldConsole = oldConsole;
+								__Internal__.oldConsole = oldConsole;
 							};
 						}),
 						
 						release: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
 									revision: 0,
@@ -1854,14 +1835,14 @@
 						}
 						//! END_REPLACE()
 						, function release() {
-							if (this.__oldConsole) {
+							if (__Internal__.oldConsole) {
 								types.defineProperty(global, 'console', {
 									configurable: true,
 									enumerable: true,
-									value: this.__oldConsole,
+									value: __Internal__.oldConsole,
 									writable: !types.hasDefinePropertyEnabled(),
 								});
-								this.__oldConsole = null;
+								__Internal__.oldConsole = null;
 							};
 						}),
 					},
@@ -1871,7 +1852,7 @@
 						__hook: null,
 						__hasStd: false,
 						
-						log: types.SUPER(function(/*paramarray*/) {
+						log: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
 							const message = this.__hook('log', types.toArray(arguments));
 							if (this.__hasStd) {
 								if (message) {
@@ -1880,9 +1861,9 @@
 									this._super.apply(this, arguments);
 								};
 							};
-						}),
+						})),
 						
-						info: types.SUPER(function(/*paramarray*/) {
+						info: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
 							const message = this.__hook('info', types.toArray(arguments));
 							if (this.__hasStd) {
 								if (message) {
@@ -1891,9 +1872,9 @@
 									this._super.apply(this, arguments);
 								};
 							};
-						}),
+						})),
 						
-						error: types.SUPER(function(/*paramarray*/) {
+						error: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
 							const message = this.__hook('error', types.toArray(arguments));
 							if (this.__hasStd) {
 								if (message) {
@@ -1902,9 +1883,9 @@
 									this._super.apply(this, arguments);
 								};
 							};
-						}),
+						})),
 						
-						warn: types.SUPER(function(/*paramarray*/) {
+						warn: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
 							const message = this.__hook('warn', types.toArray(arguments));
 							if (this.__hasStd) {
 								if (message) {
@@ -1913,19 +1894,17 @@
 									this._super.apply(this, arguments);
 								};
 							};
-						}),
+						})),
 					}
-				));
-
-				nodejs.Console = types.INIT(nodejs.Console);
+				)));
 
 				
 				//===================================
-				// Doodad extension
+				// doodad-js extension
 				//===================================
 				
 				mixIns.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -1956,8 +1935,8 @@
 					})))),
 				}))));
 				
-				doodad.NodeEventHandler = root.DD_DOC(
-					//! REPLACE_BY("null")
+				doodad.REGISTER(root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1970,7 +1949,9 @@
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'NodeEventHandler',
-							
+						},
+						/*instanceProto*/
+						{
 							attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
 								if (!types.isArrayLike(emitters)) {
 									emitters = [emitters];
@@ -2026,12 +2007,14 @@
 							detach: types.SUPER(function detach(/*optional*/emitters) {
 								if (types.isNothing(emitters)) {
 									const evs = this._super(this[_shared.ObjectSymbol], this);
-									for (let j = 0; j < evs.length; j++) {
-										const evData = evs[j][3],
-											emitter = evData[0],
-											type = evData[1],
-											handler = evData[2];
-										emitter.removeListener(type, handler);
+									if (evs) {
+										for (let j = 0; j < evs.length; j++) {
+											const evData = evs[j][3],
+												emitter = evData[0],
+												type = evData[1],
+												handler = evData[2];
+											emitter.removeListener(type, handler);
+										};
 									};
 								} else {
 									if (!types.isArrayLike(emitters)) {
@@ -2044,12 +2027,14 @@
 									
 									for (let i = 0; i < emitters.length; i++) {
 										const evs = this._super(this[_shared.ObjectSymbol], this, [emitters[i]]);
-										for (let j = 0; j < evs.length; j++) {
-											const evData = evs[j][3],
-												emitter = evData[0],
-												type = evData[1],
-												handler = evData[2];
-											emitter.removeListener(type, handler);
+										if (evs) {
+											for (let j = 0; j < evs.length; j++) {
+												const evData = evs[j][3],
+													emitter = evData[0],
+													type = evData[1],
+													handler = evData[2];
+												emitter.removeListener(type, handler);
+											};
 										};
 									};
 								};
@@ -2079,10 +2064,10 @@
 								});
 							},
 						}
-					));
+					)));
 				
 				extenders.REGISTER(root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 1,
@@ -2109,7 +2094,7 @@
 							_shared.setAttributes(this, {
 								canReject: types.get(options, 'canReject', this.canReject),
 								types: types.freezeObject(types.get(options, 'types', this.types) || []),
-							});
+							}, {all: true});
 						};
 					})),
 					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
@@ -2131,7 +2116,7 @@
 
 				
 				doodad.NODE_EVENT = root.DD_DOC(
-				//! REPLACE_BY("null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
 							revision: 0,
@@ -2350,27 +2335,7 @@
 				};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

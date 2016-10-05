@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Tools.js - Useful tools
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-	
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Types',
 			],
@@ -68,19 +55,19 @@
 				};
 				
 
-				tools.LogLevels = types.freezeObject({
+				tools.LogLevels = types.freezeObject(types.nullObject({
 					Debug: 0,
 					Info: 1,
 					Warning: 2,
 					Error: 3,
-				});
+				}));
 				
 				
 				//===================================
 				// Options
 				//===================================
 					
-				var __options__ = types.extend({
+				var __options__ = types.nullObject({
 					logLevel: tools.LogLevels.Error,
 				}, _options);
 
@@ -108,7 +95,7 @@
 								};
 							//! END_REMOVE()
 							
-							//! IF_DEF("serverSide")
+							//! IF_SET("serverSide")
 								//! INJECT("fn = 'warn'") // force stderr
 							//! ELSE()
 								//! INJECT("fn = 'info'")
@@ -126,7 +113,7 @@
 								};
 							//! END_REMOVE()
 							
-							//! IF_DEF("serverSide")
+							//! IF_SET("serverSide")
 								//! INJECT("fn = 'warn'") // force stderr
 							//! ELSE()
 								//! INJECT("fn = 'log'")
@@ -185,7 +172,7 @@
 				//===================================
 					
 				tools.findItem = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -267,7 +254,7 @@
 					});
 				
 				tools.findLastItem = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -345,7 +332,7 @@
 					});
 				
 				tools.findItems = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -430,13 +417,94 @@
 						return result;
 					});
 				
+				tools.getItem = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "Object to scan",
+									},
+									item: {
+										type: 'any',
+										optional: false,
+										description: "Value to find. If item is a function, call this function to find item.",
+									},
+									thisObj: {
+										type: 'any',
+										optional: true,
+										description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+									},
+									includeFunctions: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+									},
+								},
+								returns: 'any',
+								description: "Returns the found item. Returns 'null' when item is not found.",
+					}
+					//! END_REPLACE()
+					, function getItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (!includeFunctions && types.isFunction(item)) {
+								if (types.isArrayLike(obj)) {
+									var len = obj.length;
+									for (var key = 0; key < len; key++) {
+										if (key in obj) {
+											var val = obj[key];
+											if (item.call(thisObj, val, key, obj)) {
+												return val;
+											};
+										};
+									};
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i],
+											val = obj[key];
+										if (item.call(thisObj, val, key, obj)) {
+											return val;
+										};
+									};
+								};
+							} else {
+								if (types.isArrayLike(obj)) {
+									var len = obj.length;
+									for (var key = 0; key < len; key++) {
+										if (key in obj) {
+											if (obj[key] === item) {
+												return item;
+											};
+										};
+									};
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										key = keys[i];
+										if (obj[key] === item) {
+											return item;
+										};
+									};
+								};
+							};
+						};
+						return null;
+					});
+				
 				
 				//===================================
 				// String functions
 				//===================================
 
 				tools.repeat = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -477,7 +545,7 @@
 					});
 
 				tools.replace = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -529,7 +597,7 @@
 					});
 				
 				tools.search = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -650,7 +718,7 @@
 					});
 
 				tools.join = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -691,7 +759,7 @@
 					});
 					
 				tools.title = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -746,7 +814,7 @@
 				];
 					
 				tools.log = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -793,7 +861,7 @@
 				//===================================
 					
 				tools.escape = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -857,7 +925,7 @@
 				__Internal__.htmlReservedSubstitutions = ['&lt;', '&gt;', '&quot;', '&#39;', '&amp;'];
 
 				tools.escapeHtml = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -880,7 +948,7 @@
 				__Internal__.regExpReservedSubstitutions = ['\\\\', '\\^', '\\$', '\\*', '\\+', '\\?', '\\(', '\\)', '\\|', '\\{', '\\}', '\\[', '\\]', '\\.'];
 					
 				tools.escapeRegExp = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -904,7 +972,7 @@
 				//===================================
 					
 				tools.compareNumbers = root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -940,7 +1008,7 @@
 					});
 				
 				tools.compareNumbersInverted = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -983,7 +1051,7 @@
 				//===================================
 					
 				tools.indexOf = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1035,7 +1103,7 @@
 					});
 				
 				tools.lastIndexOf = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1086,91 +1154,14 @@
 						return -1;
 					});
 				
-				tools.map = root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike,object,Map,Set',
-									optional: false,
-									description: "An object to scan.",
-								},
-								fn: {
-									type: 'function',
-									optional: false,
-									description: 
-										"A function to call. Arguments passed to the function are : \n" +
-										"  value (any): The current value\n" +
-										"  key (integer,string): The current index or attribute name\n" +
-										"  obj (arraylike,object,Map,Set): A reference to the object"
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "Value of 'this' when calling the function. Default is 'undefined'.",
-								},
-							},
-							returns: 'array,object',
-							description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
-					}
-					//! END_REPLACE()
-					, function map(obj, fn, /*optional*/thisObj) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
-
-						if (!types.isNothing(obj)) {
-							obj = Object(obj);
-							if (obj instanceof types.Set) {
-								var len = obj.length,
-									result = new types.Set();
-								obj.forEach(function(value, key, obj) {
-									result.add(fn.call(thisObj, value, key, obj));
-								});
-								return result;
-							} else if (obj instanceof types.Map) {
-								var len = obj.length,
-									result = new types.Map();
-								obj.forEach(function(value, key, obj) {
-									result.set(key, fn.call(thisObj, value, key, obj));
-								});
-								return result;
-							} else if (types.isArrayLike(obj)) {
-								if (_shared.Natives.arrayMap) {
-									return _shared.Natives.arrayMap.call(obj, fn, thisObj);
-								} else {
-									var len = obj.length,
-										result = Array(len);
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											result[key] = fn.call(thisObj, obj[key], key, obj);
-										};
-									};
-									return result;
-								};
-							} else {
-								var result = types.createObject(types.getPrototypeOf(obj));
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i, 
-									key;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
-									result[key] = fn.call(thisObj, obj[key], key, obj);
-								};
-								return result;
-							};
-						};
-					});
-				
 				tools.forEach = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
-									type: 'arraylike,object,Map,Set',
+									type: 'arraylike,object,Map,Set,Iterable',
 									optional: false,
 									description: "An object to browse.",
 								},
@@ -1213,6 +1204,12 @@
 										};
 									};
 								};
+							} else if (types.isIterable(obj)) {
+								var key = 0,
+									item;
+								while ((item = obj.next()) && !item.done) {
+									fn.call(thisObj, item.value, key++, obj);
+								};
 							} else {
 								// "Object.assign" Polyfill from Mozilla Developer Network.
 								obj = Object(obj);
@@ -1229,13 +1226,13 @@
 					});
 				
 				tools.filter = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
-									type: 'arraylike,object,Map,Set',
+									type: 'arraylike,object,Map,Set,Iterable',
 									optional: false,
 									description: "An object to filter.",
 								},
@@ -1309,6 +1306,14 @@
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									result = [];
+									var item;
+									while ((item = obj.next()) && !item.done) {
+										if (invert === !items.call(thisObj, item.value, undefined, obj)) {
+											result.push(item.value);
+										};
+									};
 								} else {
 									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
@@ -1348,6 +1353,14 @@
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									result = [];
+									var item;
+									while ((item = obj.next()) && !item.done) {
+										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
+											result.push(item.value);
+										};
+									};
 								} else {
 									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
@@ -1367,7 +1380,7 @@
 					});
 				
 				tools.filterKeys = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1472,7 +1485,7 @@
 					});
 				
 				tools.every = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -1599,7 +1612,7 @@
 					});
 				
 				tools.some = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -1728,7 +1741,7 @@
 					});
 				
 				tools.reduce = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -1793,7 +1806,7 @@
 					});
 				
 				tools.reduceRight = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1871,8 +1884,8 @@
 				// Math functions
 				//===================================
 
-				tools.sign = root.DD_DOC(
-					//! REPLACE_BY("null")
+				tools.sign = (_shared.Natives.mathSign || root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1887,10 +1900,10 @@
 							description: "Returns '-1' for negative values. Returns '1' for positive values. Returns '0' for neutral values. Otherwise, returns 'NaN'.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.mathSign || (function sign(obj) {
+					, function sign(obj) {
 						obj = +obj;
 						return (obj < 0 ? -1 : (obj > 0 ? 1 : obj)); 
-					})));
+					}));
 				
 				
 				//===================================
@@ -1898,7 +1911,7 @@
 				//===================================
 				
 				tools.abortScript = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -1923,7 +1936,7 @@
 				//===================================
 
 				tools.Version = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1987,7 +2000,7 @@
 							},
 							
 							parse: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2036,7 +2049,7 @@
 								}),
 							
 							compare: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2083,7 +2096,7 @@
 							}),
 							
 							compare: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2142,7 +2155,7 @@
 								}),
 							
 							toString: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2174,7 +2187,7 @@
 				//===================================
 				
 				tools.generateUUID = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -2191,27 +2204,7 @@
 					});
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

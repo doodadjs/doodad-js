@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Tools_Files.js - Files Tools
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,28 +24,15 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-	
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Files'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools',
+				'Doodad',
 			],
 			bootstrap: true,
 			
@@ -73,7 +61,7 @@
 				// Options
 				//===================================
 					
-				var __options__ = types.extend({
+				var __options__ = types.nullObject({
 					caseSensitive: true,
 					caseSensitiveUnicode: true,
 				}, _options);
@@ -146,8 +134,8 @@
 				// Paths
 				//===================================
 				
-				files.PathError = root.DD_DOC(
-					//! REPLACE_BY("null")
+				files.REGISTER(root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -168,10 +156,10 @@
 					}
 					//! END_REPLACE()
 					, types.createErrorType("PathError", types.Error)
-					);
+					));
 					
 				__Internal__.relativeToAbsolute = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -353,7 +341,7 @@
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 				
 				files.Path = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -374,7 +362,7 @@
 							$TYPE_NAME: 'Path',
 
 							parse: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 4,
@@ -994,7 +982,7 @@
 							}),
 							
 							set: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 2,
@@ -1017,7 +1005,7 @@
 								}),
 							
 							toString: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 1,
@@ -1111,7 +1099,7 @@
 								}),
 							
 							combine: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 5,
@@ -1219,7 +1207,7 @@
 								}),
 							
 							moveUp: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 1,
@@ -1265,7 +1253,7 @@
 								}),
 							
 							pushFile: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 2,
@@ -1283,7 +1271,7 @@
 								}),
 							
 							toArray: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -1373,10 +1361,10 @@
 				// URLs
 				//===================================
 				
-				//files.UrlError = types.createErrorType("UrlError", types.Error);
+				//files.REGISTER(types.createErrorType("UrlError", types.Error));
 
 				files.UrlArguments = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1402,7 +1390,7 @@
 							$TYPE_NAME: 'UrlArguments',
 
 							parse: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1435,7 +1423,7 @@
 										if (types.isString(args)) {
 											args = args.split('&');
 											for (var i = args.length - 1; i >= 0; i--) {
-												var arg = args[i].split('=', 2);
+												var arg = tools.split(args[i], '=', 2);
 												var name = arg[0];
 												if (!noEscapes) {
 													name = _shared.Natives.windowUnescape(name);
@@ -1512,7 +1500,7 @@
 							}),
 							
 							toString: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1562,7 +1550,7 @@
 								}),
 							
 							has: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1593,7 +1581,7 @@
 									return false;
 								}),
 							get: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1645,7 +1633,7 @@
 								}),
 							
 							set: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 1,
@@ -1702,7 +1690,7 @@
 											n = v;
 											v = value;
 											if (types.isNothing(v)) {
-												n = n.split('=', 2);
+												n = tools.split(n, '=', 2);
 												if (n.length < 2) {
 													v = null;
 												} else {
@@ -1750,7 +1738,7 @@
 								}),
 							
 							remove: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 2,
@@ -1796,7 +1784,7 @@
 								}),
 							
 							combine: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1884,7 +1872,7 @@
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
 				files.Url = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1905,10 +1893,10 @@
 							$TYPE_NAME: 'Url',
 
 							parse: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 4,
+										revision: 5,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2126,6 +2114,13 @@
 									
 									if (domain) {
 										domain = domain.toLowerCase();
+									} else {
+										if ((protocol !== 'file') || (!path && !file)) {
+											protocol = null;
+										};
+										user = null;
+										password = null;
+										port = null;
 									};
 									
 									if (!types.isNothing(port)) {
@@ -2344,7 +2339,7 @@
 							}),
 							
 							set: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 2,
@@ -2367,7 +2362,7 @@
 								}),
 							
 							setArgs: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 1,
@@ -2394,14 +2389,14 @@
 								}),
 							
 							removeArgs: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
 										params: {
 											name: {
 												type: 'string,arrayof(string)',
-												optional: false,
+												optional: true,
 												description: "Name of the argument.",
 											},
 										},
@@ -2409,14 +2404,20 @@
 										description: "Removes URL arguments and returns a new Url object.",
 								}
 								//! END_REPLACE()
-								, function removeArgs(name) {
-									return this.set({
-										args: this.args.remove(name),
-									});
+								, function removeArgs(/*optional*/name) {
+									if (name) {
+										return this.set({
+											args: this.args.remove(name),
+										});
+									} else {
+										return this.set({
+											args: files.UrlArguments.parse(),
+										});
+									};
 								}),
 							
 							toString: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2522,7 +2523,7 @@
 								}),
 							
 							compare: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -2548,7 +2549,7 @@
 								}),
 							
 							combine: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 3,
@@ -2647,7 +2648,7 @@
 								}),
 								
 							moveUp: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -2693,7 +2694,7 @@
 								}),
 							
 							pushFile: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 1,
@@ -2711,7 +2712,7 @@
 								}),
 								
 							toArray: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
 											revision: 0,
@@ -2744,27 +2745,7 @@
 				//};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

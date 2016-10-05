@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Modules.js - Doodad Modules management (client-side)
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Modules'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Tools', 
 				'Doodad.Tools.Config', 
@@ -52,7 +39,7 @@
 			],
 			bootstrap: true,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				//===================================
@@ -87,7 +74,7 @@
 				
 					
 				modules.locate = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -116,7 +103,7 @@
 						var Promise = types.getPromise();
 						return Promise['try'](function() {
 							var location = tools.getCurrentLocation()
-								.removeArgs('redirects')
+								.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
 								.set({file: null})
 								.combine(types.get(options, 'modulesUri', __options__.modulesUri))
 								.combine(files.Path.parse(module, {os: 'linux'}))
@@ -135,55 +122,73 @@
 				
 				modules.loadFiles = function loadFiles(module, files, /*optional*/options) {
 					var Promise = types.getPromise();
-					if (!types.isArray(files)) {
-						files = [files];
-					};
-					return Promise.all(tools.map(files, function(fname) {
-						return modules.locate(module, fname, options)
+
+					// Convert to array of objects for Promise.map
+					files = tools.reduce(files, function(files, fileOptions, name) {
+						files.push({
+							module: module,
+							name: name,
+							options: types.complete(fileOptions, {optional: false, isConfig: false, configOptions: null}),
+						});
+						return files;
+					}, []);
+
+					return Promise.map(files, function(file) {
+						return modules.locate(file.module, file.name, options)
 							.then(function(location) {
-								if (/([.]json)$/.test(fname)) {
-									return config.loadFile(location, {async: true, encoding: 'utf-8'})
-										.then(function(conf) {
-											return {
-												name: fname,
-												content: conf,
+								if (file.options.isConfig) {
+									return config.load(location, {async: true, encoding: 'utf-8'})
+										.nodeify(function(err, conf) {
+											if (err) {
+												if (!file.options.optional) {
+													throw err;
+												};
+											} else {
+												types.depthExtend(2, file.configOptions, conf, file.configOptions);
 											};
+											return file;
 										});
 								} else {
 									return Promise.create(function startScriptLoader(resolve, reject) {
 										var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 										scriptLoader.addEventListener('load', function() {
-											resolve({
-												name: fname,
-												content: null, // unable to get reference to the loaded module
-											});
+											file.exports = null; // <PRB> unable to get a reference to the loaded script and its exports
+											resolve(file);
 										});
-										scriptLoader.addEventListener('error', reject);
+										scriptLoader.addEventListener('error', function(ev) {
+											reject(ev.detail ? ev.detail : new types.Error("Unspecified error."));
+										});
 										scriptLoader.start();
-									});
+									})
+										.nodeify(function(err, result) {
+											if (err) {
+												if (!file.options.optional) {
+													throw err;
+												} else {
+													return null;
+												};
+											} else {
+												return result;
+											};
+										});
 								};
 							})
 							['catch'](function(err) {
-								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [fname, module, err]);
+								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
 							});
-					}));
+					}, options);
 				};
 				
 				modules.load = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 3,
 								params: {
-									module: {
-										type: 'string',
+									modules: {
+										type: 'object',
 										optional: false,
-										description: "Module name",
-									},
-									files: {
-										type: 'string,Path,Url,arrayof(string,Path,Url)',
-										optional: true,
-										description: "Module file",
+										description: "Module names with their files",
 									},
 									options: {
 										type: 'object',
@@ -195,28 +200,37 @@
 								description: "Loads a module.",
 					}
 					//! END_REPLACE()
-					, function load(module, /*optional*/files, /*optional*/options) {
-						var opts = {};
+					, function load(_modules, /*optional*/options) {
+						var Promise = types.getPromise();
 						var fromSource = root.getOptions().fromSource;
 						global.DD_MODULES = {};
-						return modules.loadFiles(module, 'config.json', options)
-							.nodeify(function(err, _files) {
-								if (!err) {
-									types.depthExtend(2, opts, _files[0].content, options);
+
+						options = types.depthExtend(2, {}, options);
+
+						// Convert to array of objects for Promise.map
+						_modules = tools.reduce(_modules, function(_modules, files, name) {
+							if (!files || types.isEmpty(files)) {
+								files = {
+									'config.json': {optional: true, isConfig: true, configOptions: options},
 								};
-								return modules.loadFiles(module, files || (fromSource ? 'index.js' : 'bundle.js'), options);
+								if (fromSource) {
+									files[name + '_debug.js'] = {optional: false};
+								} else {
+									files[name + '.js'] = {optional: false};
+								};
+							};
+							_modules.push({
+								name: name,
+								files: files,
+							});
+							return _modules;
+						}, []);
+
+						return Promise.map(_modules, function(module) {
+								return modules.loadFiles(module.name, module.files, options);
 							})
-							.then(function(_files) {
-								// <FUTURE>
-								//var DD_MODULES = {};
-								//tools.forEach(_files, function(file) {
-								//	var mod = file.exports;
-								//	mod.add(DD_MODULES);
-								//	return mod;
-								//});
-								//return namespaces.load(DD_MODULES, null, opts, false);
-								// </FUTURE>
-								var retval = namespaces.load(global.DD_MODULES, null, opts, false);
+							.then(function(_modules) {
+								var retval = namespaces.load(global.DD_MODULES, null, options);
 								delete global.DD_MODULES;
 								return retval;
 							});
@@ -231,27 +245,7 @@
 				//};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

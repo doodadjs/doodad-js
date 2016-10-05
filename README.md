@@ -63,11 +63,11 @@ You can create a shortcut to the namespaces this way :
 If you want to load additional Doodad modules :
 ```js
     const modules = {};
-    require('doodad-js-locale').add(modules);
-    require('doodad-js-dates').add(modules);
-    // ...
+	require('doodad-js-locale').add(modules);
+	require('doodad-js-dates').add(modules);
+	// ...
     
-    function startup() {
+    function startup(root, _shared) {
         // your code here...
     };
     
@@ -170,9 +170,11 @@ If you want to load additional Doodad modules :
   - **types.AssertionFailed**: (inherits 'types.Error') Raised when an assertion fail.
   - **types.ParseError**: (inherits 'types.Error') Raised on parse error.
   - **types.NotSupported**: (inherits 'types.Error') Raised when something is not supported.
+  - **types.NotAvailable**: (inherits 'types.Error') Raised when something is not available.
   - **types.HttpError**: (inherits 'types.Error') Raised on HTTP error.
   - **types.BufferOverflow**: (inherits 'types.Error') Raised on buffer overflow.
   - **types.TimeoutError**: (inherits 'types.Error') Raised on timeout.
+  - **types.CanceledError**: (inherits 'types.Error') Raised when an operation has been canceled.
   - **types.AccessDenied**: (inherits 'types.Error') Raised on access denied or not allowed operation.
   
 ## Pre-built Classes
@@ -182,7 +184,6 @@ If you want to load additional Doodad modules :
 
 ## Pre-built Exceptions
   
-  - **doodad.Error**: (alias to 'types.Error') General error.
   - **doodad.Application**: (inherits 'doodad.Error') Application error. An error with a title to be displayed to the end user. Exemple: "This customer is not allowed to buy this product."
   
 ## Namespaces
@@ -192,7 +193,7 @@ If you want to load additional Doodad modules :
   - **namespaces.Entries.Module**: (inherits 'namespaces.Entries.Namespace') Module registry entry.
   - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
   - **namespaces.get**: Returns the namespace object of the specified namespace from the registry.
-  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/specs, /*optional*/callback, /*optional*/options, /*optional*/dontThrow)
+  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/specs, /*optional*/callback, /*optional*/options)
   - **[namespace].REGISTER**: Registers a class in the namespace object.
   - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.
 
@@ -320,23 +321,27 @@ Example 4 (traits) :
 
 ## Other available packages
 
+  - **doodad-js**: Object-oriented programming framework (release)
   - **doodad-js-cluster**: Cluster manager (alpha)
   - **doodad-js-dates**: Dates formatting (release)
   - **doodad-js-http**: Http server (alpha)
   - **doodad-js-http_jsonrpc**: JSON-RPC over http server (alpha)
   - **doodad-js-io**: I/O module (alpha)
   - **doodad-js-ipc**: IPC/RPC server (alpha)
+  - **doodad-js-json**: JSON parser (alpha)
   - **doodad-js-loader**: Scripts loader (beta)
   - **doodad-js-locale**: Locales (release)
   - **doodad-js-make**: Make tools for doodad (alpha)
   - **doodad-js-mime**: Mime types (beta)
   - **doodad-js-minifiers**: Javascript minifier used by doodad (alpha)
+  - **doodad-js-safeeval**: SafeEval (beta)
   - **doodad-js-server**: Servers base module (alpha)
   - **doodad-js-templates**: HTML page templates (alpha)
   - **doodad-js-terminal**: Terminal (alpha)
   - **doodad-js-test**: Test application
+  - **doodad-js-unicode**: Unicode Tools (alpha)
   - **doodad-js-widgets**: Widgets base module (alpha)
-  - **doodad-js-xml**: DOM XML parser (release)
+  - **doodad-js-xml**: XML Parser (release)
   
 ## License
 

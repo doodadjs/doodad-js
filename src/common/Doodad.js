@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Doodad.js - Main file
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -33,32 +34,18 @@
 //     Read-only (or don't touch warning) Attributes, and Special Functions : All upper case and words separated with an underscore (_). ex: READ_ONLY_ATTRIBUTE
 //     Non-instance (static) Type Attributes : Preceded by a dollar sign ("$").
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
 				'Doodad.Types',
 				'Doodad.Namespaces',
 				{
-					name: 'Doodad.Debug',
+					name: 'Doodad.NodeJs',
 					optional: true,
 				},
 			],
@@ -79,32 +66,34 @@
 					extenders = doodad.Extenders,
 					interfaces = doodad.Interfaces,
 					mixIns = doodad.MixIns,
-					exceptions = doodad.Exceptions;
+					exceptions = doodad.Exceptions,
+					nodejs = doodad.NodeJs; // optional
 
-					
+
 				// <FUTURE> Thread context
 				var __Internal__ = {
 					invokedClass: null,	// <FUTURE> thread level
 					inTrapException: false, // <FUTURE> thread level
+					inEventHandler: false, // <FUTURE> thread level
 					
 					arrayObj: (global.Array && global.Array.prototype || []), // temporary, will get deleted
 					
 					// Class
-					symbol$Attributes: types.getSymbolFor('$__ATTRIBUTES'),
-					symbol$Prototype: types.getSymbolFor('$PROTOTYPE'),
-					symbol$TypeModifiers: types.getSymbolFor('$TYPE_MODIFIERS'),
-					symbol$Implements: types.getSymbolFor('$IMPLEMENTS'),
-					symbol$MustOverride: types.getSymbolFor('$MUST_OVERRIDE'),
-					symbol$Base: types.getSymbolFor('$BASE'),
-					symbol$Isolated: types.getSymbolFor('$ISOLATED'),
+					symbolAttributes: types.getSymbolFor('__ATTRIBUTES'),
+					symbolImplements: types.getSymbolFor('IMPLEMENTS'),
+					symbolMustOverride: types.getSymbolFor('MUST_OVERRIDE'),
+					symbolBase: types.getSymbolFor('BASE'),
+					symbolIsolated: types.getSymbolFor('ISOLATED'),
 					symbolIsolatedCache: types.getSymbolFor('__ISOLATED_CACHE'),
-					symbol$AttributesStorage: types.getSymbolFor('$__ATTRIBUTES_STORAGE'),
 					symbolAttributesStorage: types.getSymbolFor('__ATTRIBUTES_STORAGE'),
 					symbolCurrentDispatch: types.getSymbolFor('__CURRENT_DISPATCH'),
 					symbolCurrentCallerIndex: types.getSymbolFor('__CURRENT_CALLER_INDEX'),
 					
-					// Methods, Callers, AttributeBox
+					// Class, Methods, Callers, AttributeBox
+					symbolPrototype: types.getSymbolFor('PROTOTYPE'),
 					symbolModifiers: types.getSymbolFor('__MODIFIERS__'),
+
+					// Methods, Callers, AttributeBox
 					symbolCallers: types.getSymbolFor('__CALLERS__'),
 
 					// Interface
@@ -132,12 +121,17 @@
 					symbolRenamedTo: types.getSymbolFor('__RENAMED_TO__'),
 					symbolOverrideWith: types.getSymbolFor('__OVERRIDE_WITH__'),
 					
+					// Creatable
+					symbolDestroyed: types.getSymbolFor('__destroyed'),
+
 					ANONYMOUS: '<anonymous>',
 				};
 
 				types.complete(_shared.Natives, {
+					arraySlice: __Internal__.arrayObj.slice,
 					arraySplice: __Internal__.arrayObj.splice,
 					arrayUnshift: __Internal__.arrayObj.unshift,
+					functionPrototype: global.Function.prototype,
 				});
 				
 				delete __Internal__.arrayObj;  // free memory
@@ -157,7 +151,7 @@
 				// Options
 				//=====================
 				
-				var __options__ = types.extend({
+				var __options__ = types.nullObject({
 					enforceScopes: false,    // for performance, set it to "false"
 					enforcePolicies: false,  // for performance, set it to "false"
 					publicOnDebug: false,    // to be able to read core attributes in debug mode, set it to "true"
@@ -179,7 +173,7 @@
 				//=======================
 				
 				_shared.popupExceptionHook = function popupExceptionHook(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
-					root.DD_ASSERT && root.DD_ASSERT(types._instanceof(ex, exceptions.Exception));
+					root.DD_ASSERT && root.DD_ASSERT(types.isError(ex));
 					global.alert && global.alert(ex.message);
 				};
 				
@@ -192,7 +186,7 @@
 					} else {
 						tools.log(tools.LogLevels.Error, "[~0~] in '~1~.~2~' at '~3~:~4~:~5~'.", [
 							/*0*/ ex.toString(), 
-							/*1*/ (caller && types.unbox(caller[__Internal__.symbol$Prototype].$TYPE_NAME)) || types.getTypeName(obj) || '<unknown>',
+							/*1*/ (caller && types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME)) || types.getTypeName(obj) || '<unknown>',
 							/*2*/ attr || ex.functionName || '<unknown>',
 							/*3*/ ex.fileName || '<unknown>', 
 							/*4*/ types.isNothing(ex.lineNumber) ? -1 : ex.lineNumber, 
@@ -210,7 +204,7 @@
 				//=======================
 
 				entries.Type = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -238,7 +232,7 @@
 					, types.INIT(entries.Namespace.$inherit(
 						/*typeProto*/
 						{
-							$TYPE_NAME: 'TypeEntry'
+							$TYPE_NAME: 'TypeEntry',
 						}
 					)));
 
@@ -246,10 +240,8 @@
 				// Exceptions
 				//==================================
 				
-				exceptions.Error = types.Error;
-				
-				exceptions.Application = root.DD_DOC(
-					//! REPLACE_BY("null")
+				exceptions.REGISTER(root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -274,15 +266,15 @@
 								description: "Application error with title and message formatting.",
 					}
 					//! END_REPLACE()
-					, types.createErrorType('Application', exceptions.Error, function _new(title, message, /*optional*/params) {
+					, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
-						var error = exceptions.Error.call(this, message, params);
+						var error = types.Error.call(this, message, params);
 						error.title = title;
 						return error;
-					}));
+					})));
 
 				doodad.trapException = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -317,8 +309,8 @@
 							__Internal__.inTrapException = true;
 							ex = Object(ex);
 							try {
-								if (!(ex instanceof types.ScriptInterruptedError)) {
-									if (!ex.trapped) {
+								if (!ex.trapped) {
+									if (!ex.bubble) {
 										if (types._instanceof(ex, exceptions.Application)) {
 											_shared.popupExceptionHook(ex, obj, attr, caller);
 										} else {
@@ -327,9 +319,9 @@
 									};
 								};
 							} catch(o) {
-								if (o instanceof types.ScriptAbortedError) {
+								if (o.critical) {
 									throw o;
-								} else if (!(o instanceof types.ScriptInterruptedError)) {
+								} else if (!o.bubble) {
 									try {
 										tools.log(tools.LogLevels.Error, o.toString());
 									} catch(p) {
@@ -358,7 +350,7 @@
 				doodad.INIT = types.INIT; // alias
 				
 				types.isClass = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -378,7 +370,7 @@
 					});
 				
 				types.isBase = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -394,11 +386,11 @@
 					}
 					//! END_REPLACE()
 					, function isBase(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbol$TypeModifiers] || 0) & doodad.ClassModifiers.Base);
+						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Base);
 					});
 				
 				types.isMixIn = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -414,11 +406,11 @@
 					}
 					//! END_REPLACE()
 					, function isMixIn(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbol$TypeModifiers] || 0) & doodad.ClassModifiers.MixIn);
+						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.MixIn);
 					});
 
 				types.isInterface = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -434,11 +426,11 @@
 					}
 					//! END_REPLACE()
 					, function isInterface(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbol$TypeModifiers] || 0) & doodad.ClassModifiers.Interface);
+						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Interface);
 					});
 
 				types.isIsolated = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -454,11 +446,11 @@
 					}
 					//! END_REPLACE()
 					, function isIsolated(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbol$TypeModifiers] || 0) & doodad.ClassModifiers.Isolated);
+						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Isolated);
 					});
 
 				types.isNewable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -474,11 +466,11 @@
 					}
 					//! END_REPLACE()
 					, function isNewable(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbol$TypeModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
+						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 					});
 				
 				types.isSealed = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -506,11 +498,11 @@
 						if ((obj !== doodad.Class) && !types.baseof(doodad.Class, obj)) {
 							return false;
 						};
-						return !!((obj[__Internal__.symbol$TypeModifiers] || 0) & doodad.ClassModifiers.Sealed);
+						return !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Sealed);
 					});
 				
 				types.isSerializable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -530,7 +522,7 @@
 					});
 				
 				types._implements = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -558,7 +550,7 @@
 					});
 
 				types.getImplements = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -574,24 +566,18 @@
 					}
 					//! END_REPLACE()
 					, function getImplements(obj) {
-						if (types.isNothing(obj)) {
+						var cls = types.getType(obj);
+						if (!cls) {
 							return null;
 						};
-						//obj = types.getType(obj);
-						if (types.isObject(obj)) {
-							obj = types.getType(obj);
-						};
-						if (!obj) {
+						if ((cls !== doodad.Class) && !types.baseof(doodad.Class, cls)) {
 							return null;
 						};
-						if ((obj !== doodad.Class) && !types.baseof(doodad.Class, obj)) {
-							return null;
-						};
-						return types.toArray(_shared.getAttribute(obj, __Internal__.symbol$Implements));
+						return types.toArray(_shared.getAttribute(obj, __Internal__.symbolImplements));
 					});
 				
 				types.isMethod = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -612,18 +598,28 @@
 					}
 					//! END_REPLACE()
 					, function isMethod(obj, name) {
-						if (!types.isLike(obj, doodad.Class)) {
+						var isType = types.isType(obj),
+							type = types.getType(obj);
+						if (!type) {
 							return false;
 						};
-						var method = obj[name];
-						if (!types.isJsFunction(method)) {
+						var attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+						if (!(name in attrs)) {
 							return false;
 						};
-						return (method[_shared.NameSymbol] === name);
+						var attr = attrs[name],
+							extender = attr[__Internal__.symbolExtender];
+						if (!types.isLike(extender, extenders.Method)) {
+							return false;
+						};
+						if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
+							return false;
+						};
+						return true;
 					});
 
 				types.isImplemented = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -650,18 +646,42 @@
 						return obj.isImplemented(name);
 					});
 				
-				__Internal__.makeInside = function makeInside(fn) {
+				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
+					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
 					fn = types.unbind(fn);
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-					var _dispatch = function dispatch(/*paramarray*/) {
-						var oldInvokedClass = __Internal__.invokedClass;
-						__Internal__.invokedClass = types.getType(this);
-						try {
-							return fn.apply(this, arguments);
-						} catch(ex) {
-							throw ex;
-						} finally {
-							__Internal__.invokedClass = oldInvokedClass;
+					var _dispatch = null;
+					if (types.isNothing(obj)) {
+						_dispatch = function dispatch(/*paramarray*/) {
+							var type = types.getType(this);
+							if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+								throw new types.Error("Invalid secret.");
+							};
+							var oldInvokedClass = __Internal__.invokedClass;
+							__Internal__.invokedClass = type;
+							try {
+								return fn.apply(this, arguments);
+							} catch(ex) {
+								throw ex;
+							} finally {
+								__Internal__.invokedClass = oldInvokedClass;
+							};
+						};
+					} else {
+						var type = types.getType(obj);
+						if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+							throw new types.Error("Invalid secret.");
+						};
+						_dispatch = function dispatch(/*paramarray*/) {
+							var oldInvokedClass = __Internal__.invokedClass;
+							__Internal__.invokedClass = type;
+							try {
+								return fn.apply(obj, arguments);
+							} catch(ex) {
+								throw ex;
+							} finally {
+								__Internal__.invokedClass = oldInvokedClass;
+							};
 						};
 					};
 					_dispatch[_shared.OriginalValueSymbol] = fn;
@@ -673,7 +693,7 @@
 						"var oldInvokedClass = ctx.internal.invokedClass;" +
 						"ctx.internal.invokedClass = ctx.getType(this);" +
 						"try {" +
-							"return ctx.base.apply(this, arguments) || this;" +
+							"return this._new.apply(this, arguments) || this;" +
 						"} catch(ex) {" +
 							"throw ex;" +
 						"} finally {" +
@@ -685,7 +705,7 @@
 				__Internal__.oldMakeInside = _shared.makeInside;
 				
 				_shared.makeInside = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -700,17 +720,27 @@
 									optional: false,
 									description: "Function.",
 								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Confirms the secret.",
+								},
 							},
 							returns: 'function',
 							description: "Makes a function like called from inside an object.",
 					}
 					//! END_REPLACE()
-					, function(/*optional*/obj, fn) {
-						if (obj instanceof doodad.Class) {
-							fn = __Internal__.makeInside(fn);
+					, function(/*optional*/obj, fn, /*optional*/secret) {
+						if (types.isCallback(fn)) {
+							throw new types.Error("Invalid function.");
 						};
-						fn = __Internal__.oldMakeInside(obj, fn);
-						return fn;
+						if (types.isNothing(obj)) {
+							return fn;
+						} else if (types.isClass(types.getType(obj))) {
+							return __Internal__.makeInside(obj, fn, secret);
+						} else {
+							return __Internal__.oldMakeInside(obj, fn);
+						};
 					});
 				
 				__Internal__.oldInvoke = _shared.invoke;
@@ -721,30 +751,41 @@
 				
 				_shared.invoke = root.DD_DOC(
 								root.DD_GET_DOC(__Internal__.oldInvoke), 
-					function invoke(obj, fn, /*optional*/args) {
-						//var type = types.getType(obj);
-						//if (types.isClass(type)) {
-							var oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = types.getType(obj);
-							try {
-								if (types.isString(fn) || types.isSymbol(fn)) {
-									fn = obj[fn];
-								};
-								if (args) {
-									return fn.apply(obj, args);
-								} else {
-									return fn.call(obj);
-								};
-							} catch(ex) {
-								throw ex;
-							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+					function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
+						if (types.isCallback(fn)) {
+							if (args) {
+								return fn.apply(obj, args);
+							} else {
+								return fn.call(obj);
 							};
-						//} else {
-						//	return __Internal__.oldInvoke(obj, fn, args);
-						//};
+						} else {
+							if (secret !== _shared.SECRET) {
+								throw new types.Error("Invalid secret.");
+							};
+							//var type = types.getType(obj);
+							//if (types.isClass(type)) {
+								var oldInvokedClass = __Internal__.invokedClass;
+								__Internal__.invokedClass = types.getType(obj);
+								try {
+									if (types.isString(fn) || types.isSymbol(fn)) {
+										fn = obj[fn];
+									};
+									if (args) {
+										return fn.apply(obj, args);
+									} else {
+										return fn.call(obj);
+									};
+								} catch(ex) {
+									throw ex;
+								} finally {
+									__Internal__.invokedClass = oldInvokedClass;
+								};
+							//} else {
+							//	return __Internal__.oldInvoke(obj, fn, args);
+							//};
+						};
 					});
-		
+
 				_shared.getAttribute = root.DD_DOC(
 								root.DD_GET_DOC(__Internal__.oldGetAttribute), 
 					function getAttribute(obj, attr) {
@@ -753,8 +794,8 @@
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								var storage = (types.isType(obj) ? types.get(obj, __Internal__.symbol$AttributesStorage) : types.get(obj, __Internal__.symbolAttributesStorage));
-								if (types.has(storage, attr)) {
+								var storage = types.get(obj, __Internal__.symbolAttributesStorage);
+								if (types.hasIn(storage, attr)) {
 									return storage[attr];
 								} else {
 									return __Internal__.oldGetAttribute(obj, attr);
@@ -777,12 +818,12 @@
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								var storage = (types.isType(obj) ? obj[__Internal__.symbol$AttributesStorage] : obj[__Internal__.symbolAttributesStorage]);
+								var storage = obj[__Internal__.symbolAttributesStorage];
 								var attrsLen = attrs.length,
 									result = {};
 								for (var i = 0; i < attrsLen; i++) {
 									var attr = attrs[i];
-									if (types.has(storage, attr)) {
+									if (types.hasIn(storage, attr)) {
 										result[attr] = storage[attr];
 									} else {
 										result[attr] = __Internal__.oldGetAttribute(obj, attr);
@@ -807,8 +848,8 @@
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								var storage = (types.isType(obj) ? types.get(obj, __Internal__.symbol$AttributesStorage) : types.get(obj, __Internal__.symbolAttributesStorage));
-								if (types.has(storage, attr)) {
+								var storage = types.get(obj, __Internal__.symbolAttributesStorage);
+								if (types.hasIn(storage, attr)) {
 									storage[attr] = value;
 									return value;
 								} else {
@@ -832,12 +873,12 @@
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								var storage = (types.isType(obj) ? obj[__Internal__.symbol$AttributesStorage] : obj[__Internal__.symbolAttributesStorage]);
+								var storage = obj[__Internal__.symbolAttributesStorage];
 								var keys = types.append(types.keys(values), types.symbols(values)),
 									keysLen = keys.length;
 								for (var i = 0; i < keysLen; i++) {
 									var key = keys[i];
-									if (types.has(storage, key)) {
+									if (types.hasIn(storage, key)) {
 										storage[key] = values[key];
 									} else {
 										__Internal__.oldSetAttribute(obj, key, values[key], options);
@@ -856,7 +897,7 @@
 
 				__Internal__.oldTypesIsClonable = types.isClonable;
 				types.isClonable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -882,10 +923,10 @@
 
 				__Internal__.oldTypesClone = types.clone;
 				types.clone = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -902,21 +943,26 @@
 									optional: true,
 									description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
 								},
+								keepUnlocked: {
+									type: 'bool',
+									optional: true,
+									description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
+								},
 							},
 							returns: 'any',
 							description: "Clone a value.",
 					}
 					//! END_REPLACE()
-					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions) {
+					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
 						if (types._implements(obj, mixIns.Clonable)) {
 							return obj.clone();
 						} else {
-							return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions);
+							return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked);
 						};
 					});
 				
 				_shared.getAttributeDescriptor = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 4,
@@ -941,8 +987,8 @@
 						if (!types.isClass(type)) {
 							return undefined;
 						};
-						var attrs = _shared.getAttribute(type, __Internal__.symbol$Attributes);
-						var attr = types.get(attrs, name);
+						var attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+						var attr = attrs[name];
 						return attr;
 					});
 					
@@ -951,7 +997,7 @@
 				//==================================
 
 				_shared.REGISTER = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 6,
@@ -989,34 +1035,42 @@
 							args = undefined;
 						};
 						
-						root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type), "Invalid type.");
+						//root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
 						
-						var name = (types.getTypeName(type) || ''),
+						var isSingleton = types.isSingleton(type),
+							isNamespace = (type === types.Namespace) || types.baseof(types.Namespace, type),
+							name = (types.getTypeName(type) || types.getFunctionName(type)),
 							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : ''),
 							isPrivate = (!name || (name.slice(0, 2) === '__'));
 						
-						_shared.setAttributes(type, {
-								DD_FULL_NAME: fullName,
-								DD_NAME: name,
-								DD_PARENT: this,
-							}, {configurable: false, enumerable: false, writable: false});
-						
-						if (!types.isInitialized(type)) {
-							if (!types.isSingleton(type) && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-								if ((root.getOptions().debug || __options__.enforcePolicies)) {
-									var mustOverride = type[__Internal__.symbol$MustOverride];
-									if (mustOverride) {
-										throw new exceptions.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
+						if (isNamespace) {
+							if (!types.isInitialized(type)) {
+								if (types.isType(type) && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+									if ((root.getOptions().debug || __options__.enforcePolicies)) {
+										var mustOverride = type[__Internal__.symbolMustOverride];
+										if (mustOverride) {
+											throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
+										};
 									};
 								};
+								
+								type = types.INIT(type, types.append([this, name, fullName], args));
 							};
-							
-							type = types.INIT(type, args);
+						} else {
+							_shared.setAttributes(type, {
+								DD_PARENT: this,
+								DD_NAME: name,
+								DD_FULL_NAME: fullName,
+							}, {});
+
+							if (!types.isErrorType(type)) {
+								type = types.INIT(type, args);
+							};
 						};
 						
 						if (!isPrivate) {
 							// Public type
-							var regNamespace = namespaces.get(fullName, entries.Type);
+							var regNamespace = namespaces.get(fullName);
 							if (regNamespace) {
 								var result = this.UNREGISTER(regNamespace);
 								if (!result) {
@@ -1026,14 +1080,15 @@
 							
 							var entry = new entries.Type(root, null, type, {protect: protect});
 							entry.init();
-							namespaces.add(fullName, entry);
+							namespaces.add(fullName, entry, {secret: _shared.SECRET});
 						};
 						
 						return type;
 					});
 				
+				// TODO: Review and test
 				_shared.UNREGISTER = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 4,
@@ -1049,39 +1104,40 @@
 					}
 					//! END_REPLACE()
 					, function UNREGISTER(type) {
-						root.DD_ASSERT && root.DD_ASSERT((type === types.Type) || types.baseof(types.Type, type) || types.isSingleton(type), "Invalid type or type name.");
+						root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type) || types.isErrorType(type), "Invalid type.");
 						
 						var name = (type.DD_NAME || ''),
-							isPrivate = (!name || (name.slice(0, 2) === '__'));
+							isPrivate = (!name || (name.slice(0, 2) === '__')),
+							isSingleton = types.isSingleton(type);
 						
 						if (!isPrivate) {
-							var fullName = type.DD_FULL_NAME;
-							var regNamespace = namespaces.get(fullName, entries.Type);
+							var fullName = (isSingleton ? types.getType(type) : type).DD_FULL_NAME;
+							var regNamespace = namespaces.get(fullName);
 							if (regNamespace) {
 								if (regNamespace.DD_PARENT !== this) {
 									return false;
 								};
-								var result = namespaces.remove(fullName, entries.Type);
+								var result = namespaces.remove(fullName, null, {secret: _shared.SECRET});
 								if (!result) {
 									return false;
 								};
 							};
 						};
 						
-						if (types.isSingleton(type)) {
+						if (isSingleton) {
 							if (types._implements(type, mixIns.Creatable)) {
 								type.destroy();
 							} else {
-								_shared.invoke(type, '_delete');
+								_shared.invoke(type, '_delete', null, _shared.SECRET);
 							};
 							type = types.getType(type);
 						};
 						
-						if (!isPrivate && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+						if (!isPrivate && !types.isErrorType(type) && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
 							if (types._implements(type, mixIns.Creatable)) {
 								type.$destroy();
 							} else if (types.isInitialized(type)) {
-								_shared.invoke(type, '_delete');
+								_shared.invoke(type, '_delete', null, _shared.SECRET);
 							};
 						};
 						
@@ -1090,7 +1146,7 @@
 				
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1119,18 +1175,6 @@
 						//typeProto
 						{
 							$TYPE_NAME: 'TypeNamespace',
-							
-							/* Remove READ_ONLY for REGISTER */
-							DD_PARENT: null,
-							DD_NAME: null,
-							DD_FULL_NAME: null,
-						},
-						/*instanceProto*/
-						{
-							/* Remove READ_ONLY for REGISTER */
-							DD_PARENT: null,
-							DD_NAME: null,
-							DD_FULL_NAME: null,
 						}
 					)));
 				
@@ -1139,7 +1183,7 @@
 				//==================================
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1154,15 +1198,15 @@
 							description: "Base of every attribute extenders. Not to be used directly.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(types.SINGLETON(true, [], doodad.TypeNamespace.$inherit(
+					, extenders.REGISTER(types.SINGLETON(doodad.TypeNamespace.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: "Extender",
 							
-							$cache: types.READ_ONLY(null),
+							$cache: types.READ_ONLY(null),  // TODO: Protect from the outside
 							
 							$inherit: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1180,7 +1224,7 @@
 								, types.SUPER(function $inherit(proto) {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT(types.isJsObject(proto), "Invalid extender prototype.");
-										root.DD_ASSERT(types.isStringAndNotEmpty(proto.$TYPE_NAME), "Extender prototype has no name.");
+										root.DD_ASSERT(types.isStringAndNotEmpty(types.unbox(proto.$TYPE_NAME)), "Extender prototype has no name.");
 									};
 									var name = proto.$TYPE_NAME;
 									delete proto.$TYPE_NAME;
@@ -1192,10 +1236,15 @@
 										/*instanceProto*/
 										proto
 									);
-									_shared.setAttribute(type, '$cache', {});
-									type = types.INIT(type);
-									return new type();
+									return type;
 								})),
+
+							_new: types.SUPER(function(parent, name, fullName) {
+									this._super(parent, name, fullName);
+									_shared.setAttributes(this, {
+										$cache: types.nullObject(),
+									}, {all: true});
+								}),
 						},
 						/*instanceProto*/
 						{
@@ -1206,22 +1255,40 @@
 							isPersistent: types.READ_ONLY(false),
 							isPreserved: types.READ_ONLY(false),
 
-							_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+							$inherit: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											proto: {
+												type: 'object',
+												optional: false,
+												description: "Instance prototype, including '$TYPE_NAME'.",
+											},
+										},
+										returns: 'Extender',
+										description: "Extends an extender with the specified prototype and returns a new extender.",
+								}
+								//! END_REPLACE()
+								, function $inherit(proto) {
+									return types.getType(this).$inherit(proto);
+								}),
+
+							_new: types.SUPER(function _new(/*optional*/options) {
 									this._super();
-									if (!types.isType(this)) {
-										_shared.setAttributes(this, {
-											notInherited: types.get(options, 'notInherited', this.notInherited),
-											preExtend: types.get(options, 'preExtend', this.preExtend),
-											isType: types.get(options, 'isType', this.isType),
-											isInstance: types.get(options, 'isInstance', this.isInstance),
-											isPersistent: types.get(options, 'isPersistent', this.isPersistent),
-											isPreserved: types.get(options, 'isPreserved', this.isPreserved),
-										});
-									};
-								})),
+									_shared.setAttributes(this, {
+										notInherited: types.get(options, 'notInherited', this.notInherited),
+										preExtend: types.get(options, 'preExtend', this.preExtend),
+										isType: types.get(options, 'isType', this.isType),
+										isInstance: types.get(options, 'isInstance', this.isInstance),
+										isPersistent: types.get(options, 'isPersistent', this.isPersistent),
+										isPreserved: types.get(options, 'isPreserved', this.isPreserved),
+									}, {all: true});
+								}),
 							
 							getCacheName: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1236,16 +1303,16 @@
 										description: "Builds a cache key from the extender's options so the extender object can be re-used. You can optionally override options with specified ones to retrieve or create a similar extender object.",
 								}
 								//! END_REPLACE()
-								, types.READ_ONLY(function getCacheName(/*optional*/options) {
+								, function getCacheName(/*optional*/options) {
 									return (types.get(options, 'notInherited', this.notInherited) ? '1' : '0') +
 										',' + (types.get(options, 'preExtend', this.preExtend) ? '1' : '0') + 
 										',' + (types.get(options, 'isType', this.isType) ? '1' : '0') + 
 										',' + (types.get(options, 'isInstance', this.isInstance) ? '1' : '0') +
 										',' + (types.get(options, 'isPersistent', this.isPersistent) ? '1' : '0') + 
 										',' + (types.get(options, 'isPreserved', this.isPreserved) ? '1' : '0');
-								})),
+								}),
 							get: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1260,21 +1327,21 @@
 										description: "Retrieves a similar extender object from the cache having the specified options. If none exists, creates a new one. If no options is specified, should returns itself.",
 								}
 								//! END_REPLACE()
-								, types.READ_ONLY(function get(/*optional*/options) {
+								, function get(/*optional*/options) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(options) || types.isObject(options), "Invalid options.");
 									var type = types.getType(this),
 										name = this.getCacheName(options),
 										extender;
-									if (types.has(type.$cache, name)) {
+									if (name in type.$cache) {
 										extender = type.$cache[name];
 									} else {
 										extender = new type(options);
 										_shared.setAttribute(type.$cache, name, extender, {});
 									};
 									return extender;
-								})),
+								}),
 							overrideOptions: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 1,
@@ -1299,7 +1366,7 @@
 										description: "Overrides the current options by the specified ones. Returns the 'options' parameter value, where result has been stored.",
 								}
 								//! END_REPLACE()
-								, types.READ_ONLY(function overrideOptions(options, newOptions, /*optional*/replace) {
+								, function overrideOptions(options, newOptions, /*optional*/replace) {
 									if (replace) {
 										types.fill(['notInherited', 'preExtend', 'isType', 'isInstance', 'isPersistent', 'isPreserved'], options, this, newOptions);
 									} else {
@@ -1311,9 +1378,9 @@
 										options.isPreserved = !!newOptions.isPreserved || this.isPreserved;
 									};
 									return options;
-								})),
+								}),
 							override: root.DD_DOC(
-								//! REPLACE_BY("null")
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
 										revision: 0,
@@ -1328,7 +1395,7 @@
 										description: "Overrides the current extender object by another extender object and returns the resulting extender object.",
 								}
 								//! END_REPLACE()
-								, types.READ_ONLY(function override(extender) {
+								, function override(extender) {
 									if (types._instanceof(extender, types.getType(this))) {
 										// Override
 										var options = {};
@@ -1337,17 +1404,20 @@
 									} else {
 										return this;
 									};
-								})),
+								}),
 							getValue: types.READ_ONLY(null), // function getValue(attr, attribute, forType)
-							extend: types.READ_ONLY(null),   // function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName)
+							extend: types.READ_ONLY(null),   // function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName)
 							postExtend: types.READ_ONLY(null), // function postExtend(attr, destAttributes, destAttribute)
 							init: types.READ_ONLY(null), // function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value)
 							remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 						}
 					))));
 				
+				doodad.AttributeGetter = function() {};
+				doodad.AttributeSetter = function() {};
+
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1370,7 +1440,7 @@
 						enableScopes: types.READ_ONLY(true),
 						
 						getterTemplate: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 2,
@@ -1400,13 +1470,13 @@
 									description: "Creates a getter function for an attribute.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function getterTemplate(attr, boxed, forType, /*optional*/storage) {
+							, function getterTemplate(attr, boxed, forType, /*optional*/storage) {
 								var extender = this;
 								var cache = {
 									obj: null,
 									storage: null,
 								};
-								return function getter() {
+								return types.setPrototypeOf(function getter() {
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
@@ -1415,12 +1485,12 @@
 												var dispatch = result[__Internal__.symbolCurrentDispatch],
 													caller = result[__Internal__.symbolCurrentCallerIndex];
 												if (boxed[__Internal__.symbolScope] === doodad.Scopes.Private) {
-													if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbol$Prototype] !== boxed[__Internal__.symbol$Prototype])) {
-														throw new exceptions.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+													if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbolPrototype] !== boxed[__Internal__.symbolPrototype])) {
+														throw new types.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 													};
 												} else if (boxed[__Internal__.symbolScope] === doodad.Scopes.Protected) {
 													if (!dispatch) {
-														throw new exceptions.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+														throw new types.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 													};
 												};
 											};
@@ -1431,14 +1501,14 @@
 									} else {
 										if (cache.obj !== this) {
 											cache.obj = this;
-											cache.storage = _shared.invoke(this, function() {return (forType ? this[__Internal__.symbol$AttributesStorage] : this[__Internal__.symbolAttributesStorage])});
+											cache.storage = _shared.invoke(this, function() {return this[__Internal__.symbolAttributesStorage]}, null, _shared.SECRET);
 										};
 										return cache.storage[attr];
 									};
-								};
-							})),
+								}, doodad.AttributeGetter);
+							}),
 						setterTemplate: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 2,
@@ -1468,13 +1538,13 @@
 									description: "Creates a setter function for an attribute.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function setterTemplate(attr, boxed, forType, /*optional*/storage) {
+							, function setterTemplate(attr, boxed, forType, /*optional*/storage) {
 								var extender = this;
 								var cache = {
 									obj: null,
 									storage: null,
 								};
-								return function setter(value) {
+								return types.setPrototypeOf(function setter(value) {
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
@@ -1483,51 +1553,49 @@
 												var dispatch = result[__Internal__.symbolCurrentDispatch],
 													caller = result[__Internal__.symbolCurrentCallerIndex];
 												if (boxed[__Internal__.symbolScope] === doodad.Scopes.Private) {
-													if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbol$Prototype] !== boxed[__Internal__.symbol$Prototype])) {
-														throw new exceptions.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+													if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbolPrototype] !== boxed[__Internal__.symbolPrototype])) {
+														throw new types.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 													};
 												} else if (boxed[__Internal__.symbolScope] === doodad.Scopes.Protected) {
 													if (!dispatch) {
-														throw new exceptions.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+														throw new types.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 													};
 												};
 											};
 										};
 									};
 									if ((root.getOptions().debug || __options__.enforcePolicies) && extender.isReadOnly) {
-										throw new exceptions.Error("Attribute '~0~' of '~1~' is read-only.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+										throw new types.Error("Attribute '~0~' of '~1~' is read-only.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									} else {
 										if (storage) {
 											storage[attr] = value;
 										} else {
 											if (cache.obj !== this) {
 												cache.obj = this;
-												cache.storage = _shared.invoke(this, function() {return (forType ? this[__Internal__.symbol$AttributesStorage] : this[__Internal__.symbolAttributesStorage])});
+												cache.storage = _shared.invoke(this, function() {return this[__Internal__.symbolAttributesStorage]}, null, _shared.SECRET);
 											};
 											cache.storage[attr] = value;
 										};
 									};
 									return value;
-								};
-							})),
+								}, doodad.AttributeSetter);
+							}),
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						_new: types.SUPER(function _new(/*optional*/options) {
 								this._super(options);
-								if (!types.isType(this)) {
-									_shared.setAttributes(this, {
-										isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
-										isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
-										enableScopes: types.get(options, 'enableScopes', this.enableScopes),
-									});
-								};
-							})),
-						getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+								_shared.setAttributes(this, {
+									isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
+									isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
+									enableScopes: types.get(options, 'enableScopes', this.enableScopes),
+								}, {all: true});
+							}),
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'isReadOnly', this.isReadOnly) ? '1' : '0') +
 									',' + (types.get(options, 'isEnumerable', this.isEnumerable) ? '1' : '0') +
 									',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0');
-							})),
-						overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+							}),
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
 									types.fill(['isReadOnly', 'isEnumerable', 'enableScopes'], options, this, newOptions);
@@ -1537,10 +1605,10 @@
 									options.enableScopes = !!newOptions.enableScopes || this.enableScopes;
 								};
 								return options;
-							})),
+							}),
 						
 						extend: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -1590,17 +1658,22 @@
 									description: "Extends an attributes, taking the base value into account.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+							, function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								if (root.getOptions().debug || __options__.enforcePolicies) {
 									if (sourceIsProto) {
 										if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private)) {
-											throw new exceptions.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.unbox(destAttribute[__Internal__.symbol$Prototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
+											throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.unbox(destAttribute[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
 										};
 									};
 								};
+								if (sourceIsProto) {
+									destAttribute[__Internal__.symbolPrototype] = sourceProto;
+								} else {
+									destAttribute[__Internal__.symbolPrototype] = proto;
+								};
 								return sourceAttribute;
-							})),
-						__isFromStorage: types.READ_ONLY(function __isFromStorage(destAttribute) {
+							}),
+						__isFromStorage: function __isFromStorage(destAttribute) {
 								return (
 										types.hasDefinePropertyEnabled()
 										&&
@@ -1618,30 +1691,40 @@
 											)
 										) 
 								);
-						}),
-						__createProperty: types.READ_ONLY(function __createProperty(attr, proto, typeStorage, instanceStorage, forType, destAttribute, value) {
+						},
+						__createProperty: function __createProperty(attr, proto, typeStorage, instanceStorage, forType, destAttribute, value) {
 								var storage = (forType ? typeStorage : instanceStorage);
 
 								storage[attr] = value;
 									
-								if ((attr !== __Internal__.symbol$AttributesStorage) && (attr !== __Internal__.symbolAttributesStorage)) {
+								if (attr !== __Internal__.symbolAttributesStorage) {
 									storage = null;
 								};
-									
-								var descriptor = {
-									configurable: false,
-									enumerable: this.isEnumerable,
-									get: this.getterTemplate(attr, destAttribute, forType, storage),
-								};
+								
+								var descriptor = types.getOwnPropertyDescriptor(proto, attr);
 
-								if (!this.isReadOnly) {
-									descriptor.set = this.setterTemplate(attr, destAttribute, forType, storage);
-								};
+								if (
+									storage ||
+									!descriptor ||
+									descriptor.configurable ||
+									!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
+									(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
+								) {
+									var descriptor = {
+										configurable: false,
+										enumerable: this.isEnumerable,
+										get: this.getterTemplate(attr, destAttribute, forType, storage),
+									};
 
-								types.defineProperty(proto, attr, descriptor);
-							}),
+									if (!this.isReadOnly) {
+										descriptor.set = this.setterTemplate(attr, destAttribute, forType, storage);
+									};
+
+									types.defineProperty(proto, attr, descriptor);
+								};
+							},
 						init: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 2,
@@ -1691,11 +1774,9 @@
 									description: "Initializes an attribute for a new object instance.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
-								if (attr === __Internal__.symbol$AttributesStorage) {
-									value = typeStorage;
-								} else if (attr === __Internal__.symbolAttributesStorage) {
-									value = instanceStorage;
+							, function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+								if (attr === __Internal__.symbolAttributesStorage) {
+									value = (forType ? typeStorage : instanceStorage);
 								};
 
 								if (this.__isFromStorage(attribute)) {
@@ -1703,8 +1784,8 @@
 								} else {
 									_shared.setAttribute(obj, attr, value, {configurable: this.isReadOnly, enumerable: this.isEnumerable, writable: !this.isReadOnly});
 								};
-							})),
-						remove: types.READ_ONLY(types.SUPER(function remove(attr, obj, storage, forType, attribute) {
+							}),
+						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
 									delete storage[attr];
 									//	var descriptor = types.getOwnPropertyDescriptor(obj, attr);
@@ -1712,11 +1793,11 @@
 									//		delete obj[attr];
 									//	};
 								};
-							})),
+							}),
 					})));
 
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1735,13 +1816,14 @@
 						$TYPE_NAME: "Null",
 						
 						extend: types.READ_ONLY(null),
-						init: types.READ_ONLY(types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, null);
-							})),
+							}),
 					})));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1760,52 +1842,54 @@
 						$TYPE_NAME: "ClonedAttribute",
 						
 						maxDepth: types.READ_ONLY(0),
+						keepUnlocked: types.READ_ONLY(false),
 						cloneOnInit: types.READ_ONLY(false),
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						_new: types.SUPER(function _new(/*optional*/options) {
 								this._super(options);
-								if (!types.isType(this)) {
-									_shared.setAttributes(this, {
-										maxDepth: types.get(options, 'maxDepth', this.maxDepth),
-										cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
-									});
-								};
-							})),
-						getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+								_shared.setAttributes(this, {
+									maxDepth: types.get(options, 'maxDepth', this.maxDepth),
+									keepUnlocked: types.get(options, 'keepUnlocked', this.keepUnlocked),
+									cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
+								}, {all: true});
+							}),
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + types.get(options, 'maxDepth', this.maxDepth) +
+									',' + (types.get(options, 'keepUnlocked', this.keepUnlocked) ? '1' : '0') +
 									',' + (types.get(options, 'cloneOnInit', this.cloneOnInit) ? '1' : '0');
-							})),
-						overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+							}),
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['maxDepth', 'cloneOnInit'], options, this, newOptions);
+									types.fill(['maxDepth', 'keepUnlocked', 'cloneOnInit'], options, this, newOptions);
 								} else {
 									options.maxDepth = Math.max(newOptions.maxDepth | 0, this.maxDepth);
+									options.keepUnlocked = !!newOptions.keepUnlocked || this.keepUnlocked;
 									options.cloneOnInit = !!newOptions.cloneOnInit || this.cloneOnInit;
 								};
 								return options;
-							})),
+							}),
 						
-						getValue: types.READ_ONLY(types.SUPER(function getValue(attr, attribute, forType) {
+						getValue: types.SUPER(function getValue(attr, attribute, forType) {
 								var val = types.unbox(attribute);
 								if (types.isClonable(val)) {
-									val = types.clone(val, this.maxDepth);
+									val = types.clone(val, this.maxDepth, false, this.keepUnlocked);
 									attribute = attribute.setValue(val);
 								};
 								return attribute;
-							})),
-						init: types.READ_ONLY(types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+							}),
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
 								if (this.cloneOnInit) {
-									value = types.clone(value, this.maxDepth);
+									value = types.clone(value, this.maxDepth, false, this.keepUnlocked);
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
-							})),
+							}),
 					})));
 
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1823,7 +1907,7 @@
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "ExtendObject",
 						
-						extend: types.READ_ONLY(types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 								
 								var dest = types.unbox(destAttribute);
@@ -1839,11 +1923,11 @@
 								sourceAttribute = sourceAttribute.setValue(dest);  // keep attribute flags of "sourceAttribute"
 								
 								return sourceAttribute;
-							})),
+							}),
 					})));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1861,7 +1945,7 @@
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "UniqueArray",
 						
-						extend: types.READ_ONLY(types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 								
 								var dest = types.unbox(destAttribute);
@@ -1877,18 +1961,18 @@
 								sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
 								
 								return sourceAttribute;
-							})),
-						init: types.READ_ONLY(types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+							}),
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
 								if (!types.isNothing(value)) {
 									value = types.unique(value);
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
-							})),
+							}),
 					})));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1906,6 +1990,8 @@
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "Method",
 						
+						keepUnlocked: types.READ_ONLY(true),
+
 						bindMethod: types.READ_ONLY(false),
 						notReentrant: types.READ_ONLY(false),
 						isReadOnly: types.READ_ONLY(true),
@@ -1913,7 +1999,7 @@
 						isExternal: types.READ_ONLY(false),
 						
 						callerTemplate: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 3,
@@ -1938,7 +2024,7 @@
 									description: "Template function to create a caller.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function callerTemplate(attr, sourceAttribute, /*optional*/destAttribute) {
+							, function callerTemplate(attr, sourceAttribute, /*optional*/destAttribute) {
 								var extender = this;
 								var fn = types.unbox(sourceAttribute);
 								var _caller = function caller(/*paramarray*/) {
@@ -1968,7 +2054,7 @@
 										_shared.setAttribute(this, '_super', _super);
 										_shared.setAttribute(this, __Internal__.symbolCurrentCallerIndex, currentCaller);
 										
-										fn = (extender.byReference ? fn : types.unbox(_caller[__Internal__.symbol$Prototype][attr]));
+										fn = (extender.byReference ? fn : types.unbox(_caller[__Internal__.symbolPrototype][attr]));
 										
 										var retVal = fn.apply(this, arguments);
 
@@ -1983,7 +2069,7 @@
 										
 										if (root.getOptions().debug || __options__.enforcePolicies) {
 											if ((_caller[__Internal__.symbolModifiers] & doodad.MethodModifiers.Override) && !_super[__Internal__.symbolCalled]) {
-												throw new exceptions.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+												throw new types.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 											};
 										};
 
@@ -1991,17 +2077,26 @@
 										
 									} catch(ex) {
 										if (attr === 'toString') {
-											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+											// <PRB> Javascript debugger calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 											try {
 												return "Error: " + ex.toString();
 											} catch(o) {
 												return "Internal error";
 											};
-										} else if (modifiers & doodad.MethodModifiers.Async) {
-											var Promise = types.getPromise();
-											return Promise.reject(ex);
+										} else if (ex.trapped || ex.bubble) {
+											if (modifiers & doodad.MethodModifiers.Async) {
+												var Promise = types.getPromise();
+												return Promise.reject(ex);
+											} else {
+												throw ex;
+											};
 										} else {
-											throw doodad.trapException(ex, this, attr, _caller);
+											if (modifiers & doodad.MethodModifiers.Async) {
+												var Promise = types.getPromise();
+												return Promise.reject(doodad.trapException(ex, this, attr, _caller));
+											} else {
+												throw doodad.trapException(ex, this, attr, _caller);
+											};
 										};
 										
 									} finally {
@@ -2017,9 +2112,9 @@
 									};
 								};
 								return _caller;
-							})),
+							}),
 						dispatchTemplate: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 3,
@@ -2044,10 +2139,11 @@
 									description: "Template function to create a dispatch.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function(attr, attribute, callers) {
+							, function(attr, attribute, callers) {
 								var extender = this;
 								var _dispatch = function dispatch(/*paramarray*/) {
 									var type = types.getType(this),
+										forType = types.isType(this),
 										result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]), 
 										oldDispatch = result[__Internal__.symbolCurrentDispatch], 
 										oldCaller = result[__Internal__.symbolCurrentCallerIndex],
@@ -2056,7 +2152,7 @@
 									// External methods (can't be called internally)
 									if (root.getOptions().debug || __options__.enforcePolicies) {
 										if (extender.isExternal && (type === oldInvokedClass)) {
-											throw new exceptions.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											throw new types.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 									};
 									
@@ -2064,7 +2160,7 @@
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
 											if ((attribute[__Internal__.symbolScope] !== doodad.Scopes.Public) && !oldDispatch) {
-												throw new exceptions.Error("Method '~0~' of '~1~' is not public.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+												throw new types.Error("Method '~0~' of '~1~' is not public.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 											};
 										};
 									};
@@ -2074,7 +2170,7 @@
 										if (attr === 'toString') {
 											return "Error: 'toString' is not reentrant.";
 										} else {
-											throw new exceptions.Error("'~0~' is not reentrant.", [attr]);
+											throw new types.Error("'~0~' is not reentrant.", [attr]);
 										};
 									};
 									
@@ -2082,7 +2178,7 @@
 
 									// Not implemented methods
 									if (modifiers & doodad.MethodModifiers.NotImplemented) {
-										throw new exceptions.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										throw new types.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 									};
 									
 									// Obsolete methods
@@ -2094,12 +2190,18 @@
 									if (root.getOptions().debug || __options__.enforcePolicies) {
 										// Must override methods
 										if (modifiers & doodad.MethodModifiers.MustOverride) {
-											throw new exceptions.Error("You must override the method '~0~' in '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											throw new types.Error("You must override the method '~0~' in '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 										
 										// Destroyed objects
-										if (this._implements(mixIns.Creatable) && _shared.getAttribute(this, '__destroyed') && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-											throw new exceptions.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										if (this._implements(mixIns.Creatable)) {
+											var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+											if ((destroyed === null) && !forType && (attr !== 'create')) {
+												throw new types.Error("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
+											if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
+												throw new types.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
 										};
 									};
 
@@ -2114,8 +2216,8 @@
 									// Private methods
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
-											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbol$Prototype] !== caller[__Internal__.symbol$Prototype])) {
-												throw new exceptions.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbol$Prototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
+											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
+												throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
 											};
 										};
 									};
@@ -2163,7 +2265,7 @@
 												if (attr === 'toString') {
 													return tools.format("Invalid returned value from method '~0~'.", [attr]);
 												} else {
-													throw new exceptions.Error("Invalid returned value from method '~0~'.", [attr]);
+													throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 												};
 											};
 										};
@@ -2204,9 +2306,9 @@
 									};
 								};
 								return _dispatch;
-							})),
+							}),
 						createCaller: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -2231,7 +2333,7 @@
 									description: "Creates a caller from the template.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function createCaller(attr, sourceAttribute, /*optional*/destAttribute) {
+							, function createCaller(attr, sourceAttribute, /*optional*/destAttribute) {
 								var fn = types.unbox(sourceAttribute);
 								
 								if (root.DD_ASSERT) {
@@ -2239,15 +2341,18 @@
 								};
 
 								var caller = this.callerTemplate(attr, sourceAttribute, destAttribute);
-								caller[__Internal__.symbol$Prototype] = sourceAttribute[__Internal__.symbol$Prototype];
-								caller[__Internal__.symbolModifiers] = (sourceAttribute[__Internal__.symbolModifiers] || 0);
-								caller[__Internal__.symbolPosition] = sourceAttribute[__Internal__.symbolPosition];
-								caller[__Internal__.symbolUsageMessage] = sourceAttribute[__Internal__.symbolUsageMessage];
+
+								var values = {};
+								values[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
+								values[__Internal__.symbolModifiers] = (sourceAttribute[__Internal__.symbolModifiers] || 0);
+								values[__Internal__.symbolPosition] = sourceAttribute[__Internal__.symbolPosition];
+								values[__Internal__.symbolUsageMessage] = sourceAttribute[__Internal__.symbolUsageMessage];
+								_shared.setAttributes(caller, values, {});
 								
 								return caller;
-							})),
+							}),
 						createDispatch: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 2,
@@ -2277,7 +2382,7 @@
 									description: "Creates a dispatch from the template.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function createDispatch(attr, obj, attribute, callers) {
+							, function createDispatch(attr, obj, attribute, callers) {
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isArray(callers), "Invalid callers array.");
 								};
@@ -2301,27 +2406,25 @@
 								_shared.setAttribute(dispatch, __Internal__.symbolModifiers, modifiers, {});
 
 								return dispatch;
-							})),
+							}),
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						_new: types.SUPER(function _new(/*optional*/options) {
 								this._super(options);
-								if (!types.isType(this)) {
-									_shared.setAttributes(this, {
-										bindMethod: types.get(options, 'bindMethod', this.bindMethod),
-										notReentrant: types.get(options, 'notReentrant', this.notReentrant),
-										byReference: types.get(options, 'byReference', this.byReference),
-										isExternal: types.get(options, 'isExternal', this.isExternal),
-									});
-								};
-							})),
-						getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+								_shared.setAttributes(this, {
+									bindMethod: types.get(options, 'bindMethod', this.bindMethod),
+									notReentrant: types.get(options, 'notReentrant', this.notReentrant),
+									byReference: types.get(options, 'byReference', this.byReference),
+									isExternal: types.get(options, 'isExternal', this.isExternal),
+								}, {all: true});
+							}),
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'bindMethod', this.bindMethod) ? '1' : '0') +
 									',' + (types.get(options, 'notReentrant', this.notReentrant) ? '1' : '0') +
 									',' + (types.get(options, 'byReference', this.byReference) ? '1' : '0') +
 									',' + (types.get(options, 'isExternal', this.isExternal) ? '1' : '0');
-							})),
-						overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+							}),
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
 									types.fill(['bindMethod', 'notReentrant', 'byReference', 'isExternal'], options, this, newOptions);
@@ -2332,9 +2435,9 @@
 									options.isExternal = !!newOptions.isExternal || this.isExternal;
 								};
 								return options;
-							})),
+							}),
 						
-						extend: types.READ_ONLY(types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 								
 								var srcIsInterface = types.isInterface(source),
@@ -2365,7 +2468,7 @@
 										if (sourceIsProto) {
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
-													throw new exceptions.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
+													throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
 											};
 											callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
@@ -2389,22 +2492,22 @@
 										if (root.getOptions().debug || __options__.enforcePolicies) {
 											if (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)) {
 												if (!hasDestCallers && !(modifiers & doodad.MethodModifiers.ForceCreate)) {
-													throw new exceptions.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, protoName || __Internal__.ANONYMOUS]);
+													throw new types.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
 											} else {
 												if (hasDestCallers) {
-													throw new exceptions.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
+													throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
 											};
 										};
 									} else if (srcIsInterface) {
-										if (callersOrFn && (sourceAttribute[__Internal__.symbol$Prototype] === sourceProto)) {
+										if (callersOrFn && (sourceAttribute[__Internal__.symbolPrototype] === sourceProto)) {
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												if (hasDestCallers) {
-													throw new exceptions.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
+													throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
 												if (callersOrFn.length) {
-													throw new exceptions.Error("Interface '~0~' must not have a body for method '~1~'. You should create a mix-in instead.", [types.getTypeName(source) || __Internal__.ANONYMOUS, attr]);
+													throw new types.Error("Interface '~0~' must not have a body for method '~1~'. You should create a mix-in instead.", [types.getTypeName(source) || __Internal__.ANONYMOUS, attr]);
 												};
 											};
 											// Create method with an empty body and the MustOverride flag.
@@ -2433,9 +2536,9 @@
 								};
 								
 								return destAttribute;
-							})),
+							}),
 						postExtend: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -2460,7 +2563,7 @@
 									description: "Finalizes the extension of an attribute.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
+							, types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
 								destAttribute = this._super(attr, destAttributes, destAttribute) || destAttribute;
 								
 								var callers = types.unbox(destAttribute);
@@ -2477,10 +2580,10 @@
 										destAttribute[__Internal__.symbolCallFirstLength] = i;
 										break;
 									};
-									proto = caller[__Internal__.symbol$Prototype];
+									proto = caller[__Internal__.symbolPrototype];
 									j = i + 1;
 									while (j < callers.length) {
-										if (callers[j][__Internal__.symbol$Prototype] === proto) {
+										if (callers[j][__Internal__.symbolPrototype] === proto) {
 											callers.splice(j, 1);
 										} else {
 											j++;
@@ -2490,10 +2593,10 @@
 								};
 								i = callers.length - 1;
 								while (i >= destAttribute[__Internal__.symbolCallFirstLength]) {
-									proto = callers[i][__Internal__.symbol$Prototype];
+									proto = callers[i][__Internal__.symbolPrototype];
 									j = i - 1;
 									while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
-										if (callers[j][__Internal__.symbol$Prototype] === proto) {
+										if (callers[j][__Internal__.symbolPrototype] === proto) {
 											_shared.Natives.arraySplice.call(callers, j, 1);
 											i--;
 										};
@@ -2509,10 +2612,10 @@
 										position = callerI[__Internal__.symbolPosition],
 										found = false;
 									if (position && !position.ok) {
-										var proto = _shared.getAttribute(position.cls, __Internal__.symbol$Prototype);
+										var proto = _shared.getAttribute(position.cls, __Internal__.symbolPrototype);
 										for (var j = 0; j < callers.length; j++) {
 											var callerJ = callers[j];
-											if ((i !== j) && callerJ[__Internal__.symbol$Prototype] === proto) {
+											if ((i !== j) && callerJ[__Internal__.symbolPrototype] === proto) {
 												var pos = j;
 												if (position.position > 0) {
 													pos++;
@@ -2538,7 +2641,7 @@
 											};
 										};
 										//if (!found && !sourceIsProto) {
-										//	throw new exceptions.Error("Position for method '~0~' of '~1~' not found.", [attr, protoName || __Internal__.ANONYMOUS]);
+										//	throw new types.Error("Position for method '~0~' of '~1~' not found.", [attr, protoName || __Internal__.ANONYMOUS]);
 										//};
 									};
 									if (!found) {
@@ -2556,13 +2659,14 @@
 								types.freezeObject(callers);
 								
 								return destAttribute;
-							}))),
-						init: types.READ_ONLY(types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+							})),
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
 								value = this.createDispatch(attr, obj, attribute, value);
 
 								if (root.getOptions().debug || __options__.enforcePolicies) {
-									if (!typeStorage[__Internal__.symbol$MustOverride] && (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride)) {
-										typeStorage[__Internal__.symbol$MustOverride] = attr;
+									var storage = (forType ? typeStorage : instanceStorage);
+									if (!storage[__Internal__.symbolMustOverride] && (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride)) {
+										storage[__Internal__.symbolMustOverride] = attr;
 									};
 								};
 
@@ -2571,12 +2675,12 @@
 								};
 
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
-							})),
+							}),
 						remove: types.READ_ONLY(null),
 					})));
 
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -2596,19 +2700,17 @@
 						
 						dontSetSuper: types.READ_ONLY(false),
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						_new: types.SUPER(function _new(/*optional*/options) {
 								this._super(options);
-								if (!types.isType(this)) {
-									_shared.setAttributes(this, {
-										dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
-									});
-								};
-							})),
-						getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+								_shared.setAttributes(this, {
+									dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
+								}, {all: true});
+							}),
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'dontSetSuper', this.dontSetSuper) ? '1' : '0');
-							})),
-						overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+							}),
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
 									types.fill(['dontSetSuper'], options, this, newOptions);
@@ -2616,18 +2718,18 @@
 									options.dontSetSuper = !!newOptions.dontSetSuper || this.dontSetSuper;
 								};
 								return options;
-							})),
+							}),
 						
-						callerTemplate: types.READ_ONLY(function callerTemplate(attr, sourceAttribute, destAttribute) {
+						callerTemplate: function callerTemplate(attr, sourceAttribute, destAttribute) {
 								var fn = types.unbox(sourceAttribute);
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 								};
 								//return [/*0*/ sourceAttribute];
 								return {};
-							}),
+							},
 						jsCallerTemplate: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -2652,13 +2754,13 @@
 									description: "Template to create a caller for a JS method.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function jsCallerTemplate(attr, /*optional*/fn, /*optional*/_super) {
+							, function jsCallerTemplate(attr, /*optional*/fn, /*optional*/_super) {
 								var _caller;
 								if (this.dontSetSuper) {
 									_caller = function caller(/*paramarray*/) {
 										var oldSuper = _shared.getAttribute(this, '_super');
 										try {
-											var target = (fn || types.unbox(_caller[__Internal__.symbol$Prototype][attr]));
+											var target = (fn || types.unbox(_caller[__Internal__.symbolPrototype][attr]));
 											return target.apply(this, arguments);
 										} catch(ex) {
 											throw ex;
@@ -2672,7 +2774,7 @@
 										var oldSuper = _shared.getAttribute(this, '_super');
 										_shared.setAttribute(this, '_super', _super);
 										try {
-											var target = (fn || types.unbox(_caller[__Internal__.symbol$Prototype][attr]));
+											var target = (fn || types.unbox(_caller[__Internal__.symbolPrototype][attr]));
 											return target.apply(this, arguments);
 										} catch(ex) {
 											throw ex;
@@ -2682,19 +2784,19 @@
 									};
 								};
 								return _caller;
-							})),
-						dispatchTemplate: types.READ_ONLY(function dispatchTemplate(attr, attribute, callers) {
+							}),
+						dispatchTemplate: function dispatchTemplate(attr, attribute, callers) {
 								var callersLen = callers.length,
 									_super = null;
 								for (var i = callersLen - 1; i >= 0; i--) {
 									var caller = callers[i];
 									_super = this.jsCallerTemplate(attr, caller.FUNCTION, _super);
-									_super[__Internal__.symbol$Prototype] = caller[__Internal__.symbol$Prototype];
+									_super[__Internal__.symbolPrototype] = caller[__Internal__.symbolPrototype];
 								};
-								return __Internal__.makeInside(_super);
-							}),
+								return __Internal__.makeInside(null, _super, _shared.SECRET);
+							},
 						
-						extend: types.READ_ONLY(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 								
 								var destCallers = types.unbox(destAttribute);
@@ -2717,7 +2819,7 @@
 								if (sourceIsProto) {
 									if (root.getOptions().debug || __options__.enforcePolicies) {
 										if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
-											throw new exceptions.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
+											throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 										};
 									};
 									callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
@@ -2726,10 +2828,10 @@
 								_shared.Natives.arrayUnshift.apply(destCallers, callersOrFn);
 								
 								return destAttribute;
-							}),
+							},
 							
 						postExtend: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -2754,7 +2856,7 @@
 									description: "Finalizes the extension of an attribute.",
 							}
 							//! END_REPLACE()
-							, types.READ_ONLY(function postExtend(attr, destAttributes, destAttribute) {
+							, function postExtend(attr, destAttributes, destAttribute) {
 								//destAttribute = extenders.ClonedAttribute.postExtend.call(this, attr, destAttributes, destAttribute) || destAttribute;
 								
 								var callers = types.unbox(destAttribute);
@@ -2764,10 +2866,10 @@
 								while (i >= 0) {
 									var callerI = callers[i];
 									
-									var proto = callerI[__Internal__.symbol$Prototype];
+									var proto = callerI[__Internal__.symbolPrototype];
 									var j = i - 1;
 									while (j >= 0) {
-										if (callers[j][__Internal__.symbol$Prototype] === proto) {
+										if (callers[j][__Internal__.symbolPrototype] === proto) {
 											_shared.Natives.arraySplice.call(callers, j, 1);
 											i--;
 										};
@@ -2779,11 +2881,11 @@
 								types.freezeObject(callers);
 								
 								return destAttribute;
-							})),
+							}),
 					})));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -2801,10 +2903,10 @@
 					, extenders.REGISTER(extenders.Method.$inherit({
 						$TYPE_NAME: "Property",
 						
-						isReadOnly: false,
-						bindMethod: true,
+						isReadOnly: types.READ_ONLY(false),
+						bindMethod: types.READ_ONLY(true),
 						
-						extend: types.READ_ONLY(types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 
 								var srcDesc = types.unbox(sourceAttribute);
@@ -2840,6 +2942,8 @@
 										};
 									};
 									
+									srcDesc = types.extend({}, srcDesc);
+
 									if (srcGet) {
 										srcDesc.get = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcGet), types.AttributeBox(destGet), sourceIsProto);
 									};
@@ -2850,8 +2954,8 @@
 								};
 								
 								return sourceAttribute.setValue(srcDesc);  // copy attribute flags of "sourceAttribute"
-							})),
-						init: types.READ_ONLY(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, value) {
+							}),
+						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, value) {
 								if (value) {
 									var attribute = attributes[attr];
 									
@@ -2886,19 +2990,31 @@
 									
 									types.defineProperty(obj, attr, descriptor);
 								};
-							}),
-						remove: types.READ_ONLY(types.SUPER(function remove(attr, obj, storage, forType, attribute) {
+							},
+						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
-						})),
+						}),
 					})));
 				
-				__Internal__.eventHandlerTypeProto = {
-						$TYPE_NAME: 'EventHandler',
+				__Internal__.eventHandlerInstanceProto = {
+						//stackSize: types.READ_ONLY(10),
+						stackSize: types.WRITABLE(10), // TODO: Make a function to set it and protect this field from the external with a getter/setter
 						
-						stackSize: 10,
-						
+						_new: types.SUPER(function _new(obj, extender) {
+							this._super();
+							var values = {};
+							values[__Internal__.symbolStack] = [];
+							values[__Internal__.symbolObject] = obj;
+							values[__Internal__.symbolExtender] = extender;
+							_shared.setAttributes(this, values, {all: true});
+						}),
+
+						apply: _shared.Natives.functionPrototype.apply,
+						call: _shared.Natives.functionPrototype.call,
+						bind: _shared.Natives.functionPrototype.bind,
+
 						attach: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -2926,7 +3042,7 @@
 										count: {
 											type: 'integer',
 											optional: true,
-											description: "Number of times the callback function will be called before been detached. Default is infinite.",
+											description: "Number of times the callback function will be called before been detached. Default is Infinity.",
 										},
 									},
 									returns: 'undefined',
@@ -2946,18 +3062,21 @@
 									root.DD_ASSERT(types.isNothing(count) || types.isInteger(count), "Invalid count.");
 								};
 								
+								var cb = fn;
+								if (obj) {
+									cb = new doodad.Callback(obj, fn);
+								};
+
 								datas = datas || [];
 
 								var indexes = [];
-								if (this[__Internal__.symbolStack]) {
+								if (this[__Internal__.symbolStack].length) {
 									indexes = tools.findItems(this[__Internal__.symbolStack], function(ev) {
 										var evData = ev[3];
 										return (ev[0] === obj) && (ev[1] === fn) && tools.every(datas, function(data, key) {
 											return types.hasIndex(evData, key) && (evData[key] === data);
 										});
 									});
-								} else {
-									this[__Internal__.symbolStack] = [];
 								};
 								
 								var indexesLen = indexes.length;
@@ -2971,7 +3090,7 @@
 									};
 									return false;
 								} else if (this[__Internal__.symbolStack].length < this.stackSize) {
-									this[__Internal__.symbolStack].push([obj, fn, priority, datas, count]);
+									this[__Internal__.symbolStack].push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 									this[__Internal__.symbolSorted] = false;
 									return true;
 								} else {
@@ -2979,10 +3098,10 @@
 								};
 							}),
 						detach: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										obj: {
 											type: 'object',
@@ -2991,7 +3110,7 @@
 										},
 										fn: {
 											type: 'function',
-											optional: false,
+											optional: true,
 											description: "Callback function.",
 										},
 										datas: {
@@ -3007,29 +3126,28 @@
 							, function detach(obj, fn, /*optional*/datas) {
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
-									root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
+									root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
 									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
 								};
 
 								datas = datas || [];
 
-								var evs = [];
+								var evs = null;
 								if (this[__Internal__.symbolStack]) {
-									evs = types.popItems(this[__Internal__.symbolStack], function(ev) {
-										var evData = ev[3];
-										return (ev[0] === obj) && (ev[1] === fn) && tools.every(datas, function(value, key) {
-											return types.hasIndex(evData, key) && (evData[key] === value);
+									if (this[__Internal__.symbolStack].length) {
+										evs = types.popItems(this[__Internal__.symbolStack], function(ev) {
+											var evData = ev[3];
+											return (ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+												return types.hasIndex(evData, key) && (evData[key] === value);
+											});
 										});
-									});
-									if (!this[__Internal__.symbolStack].length) {
-										this[__Internal__.symbolStack] = null;
 									};
 								};
 
 								return evs;
 							}),
 						clear: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -3039,10 +3157,10 @@
 							}
 							//! END_REPLACE()
 							, function clear() {
-								this[__Internal__.symbolStack] = null;
+								this[__Internal__.symbolStack].length = 0;
 							}),
 						attachOnce: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -3076,7 +3194,7 @@
 								return this.attach(obj, fn, priority, datas, 1);
 							}),
 						promise: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -3087,24 +3205,35 @@
 							//! END_REPLACE()
 							, function promise() {
 								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-								var self = this;
 								var Promise = types.getPromise();
 								return Promise.create(function eventPromise(resolve, reject) {
-									self.attachOnce(null, function(ev) {
-										return resolve(ev);
-									});
-								});
+										var self = this,
+											obj = this[__Internal__.symbolObject],
+											fn = null,
+											errorFn = null;
+										this.attachOnce(null, fn = function(ev) {
+											obj.onError.detach(null, errorFn);
+											resolve(ev);
+										});
+										if (obj.onError) {
+											obj.onError.attachOnce(null, errorFn = function(ev) {
+												self.detach(null, fn);
+												reject(ev.error);
+											});
+										};
+									}, this);
 							}),
 					};
 
 				// FUTURE: Syntax for variable keys in object declaration
-				__Internal__.eventHandlerTypeProto[__Internal__.symbolObject] = null;
-				__Internal__.eventHandlerTypeProto[__Internal__.symbolExtender] = null;
-				__Internal__.eventHandlerTypeProto[__Internal__.symbolStack] = null;
-				__Internal__.eventHandlerTypeProto[__Internal__.symbolSorted] = true;
+				// TODO: Protect these variables from the outside
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.READ_ONLY(null);
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.READ_ONLY(null);
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.READ_ONLY(null);
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.WRITABLE(true);
 					
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -3113,13 +3242,17 @@
 							description: "Event handler prototype.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(types.Type.$inherit(
+					, doodad.REGISTER(doodad.TypeNamespace.$inherit(
 						/*typeProto*/
-						__Internal__.eventHandlerTypeProto
+						{
+							$TYPE_NAME: 'EventHandler',
+						},
+						/*instanceProto*/
+						__Internal__.eventHandlerInstanceProto
 					)));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3144,10 +3277,10 @@
 						
 						eventProto: types.READ_ONLY(doodad.EventHandler),
 						
-						extend: types.READ_ONLY(types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName) {
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								if (root.getOptions().debug) {
 									if (!types.has(destAttributes, this.eventsAttr)) {
-										throw new exceptions.Error("You must implement '~0~'.", [this.eventsImplementation]);
+										throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
 									};
 								};
 								
@@ -3156,25 +3289,22 @@
 								events.push(attr);
 								
 								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
-							})),
-						createDispatch: types.READ_ONLY(types.SUPER(function createDispatch(attr, obj, attribute, callers) {
+							}),
+						createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
 								var dispatch = this._super(attr, obj, attribute, callers);
-								dispatch = types.setPrototypeOf(dispatch, this.eventProto);
-								_shared.setAttribute(dispatch, __Internal__.symbolObject, obj, {});
-								_shared.setAttribute(dispatch, __Internal__.symbolExtender, this, {});
-								return dispatch;
-							})),
-						remove: types.READ_ONLY(function remove(attr, obj, storage, forType, attribute) {
+								return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
+							}),
+						remove: function remove(attr, obj, storage, forType, attribute) {
 								var handler = obj[attr];
 								if (types.baseof(doodad.EventHandler, handler)) {
 									handler.clear();
 								};
-	//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
-							}),
+		//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
+							},
 					})));
 
 				doodad.ATTRIBUTE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3211,7 +3341,7 @@
 						};
 
 						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types._instanceof(extender, extenders.Extender), "Invalid extender.");
+							root.DD_ASSERT(types._instanceof(extender, types.getType(extenders.Extender)), "Invalid extender.");
 						};
 						
 						if (options) {
@@ -3224,7 +3354,7 @@
 					});
 
 				doodad.OPTIONS = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3248,7 +3378,7 @@
 						root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(options), "Invalid options.");
 						
 						var extender,
-							valueIsExtender = types._instanceof(value, extenders.Extender);
+							valueIsExtender = types._instanceof(value, types.getType(extenders.Extender));
 						
 						if (valueIsExtender) {
 							extender = value;
@@ -3266,7 +3396,7 @@
 							};
 						};
 						
-						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(extender, extenders.Extender), "Invalid extender.");
+						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(extender, types.getType(extenders.Extender)), "Invalid extender.");
 						
 						options = extender.overrideOptions({}, options, true);
 						extender = extender.get(options);
@@ -3280,7 +3410,7 @@
 					});
 				
 				doodad.NOT_INHERITED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3302,7 +3432,7 @@
 					});
 
 				doodad.PRE_EXTEND = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3324,7 +3454,7 @@
 					});
 
 				doodad.TYPE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3346,7 +3476,7 @@
 					});
 
 				doodad.INSTANCE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3368,7 +3498,7 @@
 					});
 
 				doodad.PERSISTENT = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3390,7 +3520,7 @@
 					});
 
 				doodad.BIND = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3412,7 +3542,7 @@
 					});
 
 				doodad.NOT_REENTRANT = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3434,7 +3564,7 @@
 					});
 				
 				doodad.EXTERNAL = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3456,7 +3586,7 @@
 					});
 				
 				doodad.READ_ONLY = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3477,8 +3607,30 @@
 						}, value);
 					});
 
+				doodad.WRITABLE = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								value: {
+									type: 'AttributeBox,Extender,any',
+									optional: false,
+									description: "Attribute or extender or value.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Specifies that an attribute is writable.",
+					}
+					//! END_REPLACE()
+					, function WRITABLE(value) {
+						return doodad.OPTIONS({
+							isReadOnly: false,
+						}, value);
+					});
+
 				doodad.METHOD = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3502,7 +3654,7 @@
 					});
 
 				doodad.JS_METHOD = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3524,7 +3676,7 @@
 					});
 				
 				doodad.SUPER = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3548,7 +3700,7 @@
 					});
 
 				doodad.PROPERTY = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3578,12 +3730,16 @@
 					return doodad.PROTECTED(function handleEvent(/*optional*/ev) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || (ev instanceof doodad.Event), "Invalid event object.");
 						
+						if (types.isNothing(ev)) {
+							ev = new doodad.Event();
+						};
+
 						var cancelled = false,
 							type = types.getType(this),
 							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
 							stack = dispatch[__Internal__.symbolStack];
 						
-						if (!cancelled && stack) {
+						if (stack) {
 							if (!dispatch[__Internal__.symbolSorted]) {
 								stack.sort(function(value1, value2) {
 									return tools.compareNumbers(value1[2], value2[2]);
@@ -3591,17 +3747,17 @@
 								dispatch[__Internal__.symbolSorted] = true;
 							};
 							
-							ev && _shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
 							var i = 0;
 							while (i < stack.length) {
 								var data = stack[i],
 									obj = data[0],
-									fn = data[1];
+									cb = data[5];
 									
-								ev && _shared.setAttribute(ev, 'handlerData', data[3]);
+								_shared.setAttribute(ev, 'handlerData', data[3]);
 
-								var retval = _shared.invoke(obj, fn, [ev]);
+								var retval = cb.call(obj, ev);
 								
 								data[4]--;
 								if (data[4] === 0) {
@@ -3615,7 +3771,7 @@
 										event: ev,
 									});
 									_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
-									this.onEventCancelled.call(obj, ev);
+									this.onEventCancelled(ev);
 									cancelled = true;
 									break;
 								};
@@ -3646,7 +3802,7 @@
 									obj = data[0],
 									fn = data[1];
 									
-								_shared.invoke(obj, fn, arguments);
+								_shared.invoke(obj, fn, arguments, _shared.SECRET);
 								
 								data[4]--;
 								if (data[4] === 0) {
@@ -3666,7 +3822,7 @@
 				};
 				
 				doodad.EVENT = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3693,7 +3849,7 @@
 					});
 
 				doodad.ERROR_EVENT = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3713,7 +3869,7 @@
 					});
 
 				doodad.RAW_EVENT = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3732,14 +3888,14 @@
 				// Scopes
 				//==================================
 				
-				doodad.Scopes = types.freezeObject({
+				doodad.Scopes = types.freezeObject(types.nullObject({
 					Public: 1,
 					Protected: 2,
 					Private: 3,
-				});
+				}));
 				
 				doodad.PUBLIC = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3756,7 +3912,7 @@
 					//! END_REPLACE()
 					, function PUBLIC(value) {
 						var extender;
-						if (types._instanceof(value, extenders.Extender)) {
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
 							extender = value;
 							value = undefined;
 						};
@@ -3769,7 +3925,7 @@
 					});
 				
 				doodad.PROTECTED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3786,7 +3942,7 @@
 					//! END_REPLACE()
 					, function PROTECTED(value) {
 						var extender;
-						if (types._instanceof(value, extenders.Extender)) {
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
 							extender = value;
 							value = undefined;
 						};
@@ -3799,7 +3955,7 @@
 					});
 
 				doodad.PRIVATE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -3816,7 +3972,7 @@
 					//! END_REPLACE()
 					, function PRIVATE(value) {
 						var extender;
-						if (types._instanceof(value, extenders.Extender)) {
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
 							extender = value;
 							value = undefined;
 						};
@@ -3828,15 +3984,15 @@
 						return value;
 					});
 				
-				doodad.PROTECTED_DEBUG = (root.getOptions().debug && __options__.publicOnDebug ? doodad.PUBLIC : doodad.PROTECTED);
-				doodad.PRIVATE_DEBUG = (root.getOptions().debug && __options__.publicOnDebug ? doodad.PUBLIC : doodad.PRIVATE);
+				doodad.PROTECTED_DEBUG = (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED);
+				doodad.PRIVATE_DEBUG = (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE);
 				
 				//==================================
 				// Class Modifiers
 				//==================================
 				
 				// Can be combined
-				doodad.ClassModifiers = types.freezeObject({
+				doodad.ClassModifiers = types.freezeObject(types.nullObject({
 					Base: 1,
 					MixIn: 2,
 					Interface: 4,
@@ -3844,11 +4000,12 @@
 					Static: 16,
 					Singleton: 32,
 					Isolated: 64,
-				});
+					Expandable: 128,
+				}));
 				doodad.preservedClassModifiers = doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface | doodad.ClassModifiers.Sealed | doodad.ClassModifiers.Static;
 
 				doodad.BASE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3866,15 +4023,15 @@
 					, function BASE(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, (cls[__Internal__.symbol$TypeModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
 						return cls;
 					});
 				
 				// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
 				doodad.TRAIT = doodad.MIX_IN = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3894,18 +4051,18 @@
 						if (root.getOptions().debug || __options__.enforcePolicies) {
 							var base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
-								throw new exceptions.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
+								throw new types.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
 							};
 						};
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, ((cls[__Internal__.symbol$TypeModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
 						return cls;
 					});
 				
 				doodad.INTERFACE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3925,18 +4082,18 @@
 						if (root.getOptions().debug || __options__.enforcePolicies) {
 							var base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
-								throw new exceptions.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
+								throw new types.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
 							};
 						};
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, ((cls[__Internal__.symbol$TypeModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
 						return cls;
 					});
 				
 				doodad.SEALED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3954,14 +4111,14 @@
 					, function SEALED(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, (cls[__Internal__.symbol$TypeModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
 						return cls;
 					});
 				
 				doodad.STATIC = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -3979,14 +4136,14 @@
 					, function STATIC(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, (cls[__Internal__.symbol$TypeModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
 						return cls;
 					});
 				
 				doodad.ISOLATED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -4005,13 +4162,43 @@
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 						if (root.getOptions().debug || __options__.enforcePolicies) {
 							if (!types.isInterface(cls) && !types.isMixIn(cls)) {
-								throw new exceptions.Error("Isolation can only be applied on interfaces and mix-ins.");
+								throw new types.Error("Isolation can only be applied on interfaces and mix-ins.");
 							};
 						};
 						if (types.isInitialized(cls)) {
-							throw new exceptions.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 						};
-						_shared.setAttribute(cls, __Internal__.symbol$TypeModifiers, (cls[__Internal__.symbol$TypeModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
+						return cls;
+					});
+				
+				doodad.EXPANDABLE = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Makes expandable objects.",
+					}
+					//! END_REPLACE()
+					, function EXPANDABLE(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (root.getOptions().debug || __options__.enforcePolicies) {
+							if (types.isInterface(cls) || types.isMixIn(cls)) {
+								throw new types.Error("Expandable can't be applied on interfaces and mix-ins.");
+							};
+						};
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
 						return cls;
 					});
 				
@@ -4020,7 +4207,7 @@
 				//==================================
 
 				doodad.POSITION = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4056,7 +4243,7 @@
 					});
 
 				doodad.AFTER = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4081,7 +4268,7 @@
 					});
 
 				doodad.BEFORE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4110,7 +4297,7 @@
 				//==================================
 				
 				// Can be combined
-				doodad.MethodModifiers = types.freezeObject({
+				doodad.MethodModifiers = types.freezeObject(types.nullObject({
 					Replace: 1,
 					Override: 2,
 					MustOverride: 4,
@@ -4120,11 +4307,11 @@
 					NotImplemented: 64,
 					ForceCreate: 128,
 					Async: 256,
-				});
+				}));
 				doodad.preservedMethodModifiers = doodad.MethodModifiers.Obsolete | doodad.MethodModifiers.CanBeDestroyed | doodad.MethodModifiers.Async;
 				
 				doodad.REPLACE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4166,7 +4353,7 @@
 					});
 				
 				doodad.OVERRIDE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4208,7 +4395,7 @@
 					});
 				
 				doodad.CREATE_REPLACE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4236,7 +4423,7 @@
 					});
 				
 				doodad.CREATE_OVERRIDE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4264,7 +4451,7 @@
 					});
 				
 				doodad.MUST_OVERRIDE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4293,7 +4480,7 @@
 					});
 				
 				doodad.OBSOLETE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4332,7 +4519,7 @@
 					});
 
 				doodad.CALL_FIRST = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4361,7 +4548,7 @@
 					});
 				
 				doodad.CAN_BE_DESTROYED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4390,7 +4577,7 @@
 					});
 				
 				doodad.ABSTRACT = doodad.NOT_IMPLEMENTED = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4407,7 +4594,7 @@
 					});
 				
 				doodad.RETURNS = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4442,7 +4629,7 @@
 					});
 
 				doodad.ASYNC = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -4465,7 +4652,7 @@
 					});
 				
 				doodad.RENAME_OVERRIDE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -4512,7 +4699,7 @@
 					});
 				
 				doodad.RENAME_REPLACE = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -4563,24 +4750,19 @@
 				// Class
 				//==================================
 				
-				__Internal__.getDefaultAttributes = function setDefaultAttributes(base, _implements, typeStorage, instanceStorage, modifiers, _isolated, proto, protoName) {
-					var attributes = {
-						// From "Doodad.Types.Type"
-						//$TYPE_NAME: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(protoName, extenders.Attribute))))))),
-						//_super: doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null))))))),
-					};
+				__Internal__.getDefaultAttributes = function getDefaultAttributes() {
+					var attributes = types.nullObject();
 
 					// From "Doodad.Class"
-					attributes[__Internal__.symbol$Attributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(attributes, extenders.Attribute)))))));
-					attributes[__Internal__.symbol$Prototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(proto, extenders.Attribute)))))));
-					attributes[__Internal__.symbol$TypeModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(modifiers, extenders.Attribute)))))));
-					attributes[__Internal__.symbol$Implements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(_implements, extenders.Attribute)))))));
-					attributes[__Internal__.symbol$MustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(extenders.Null)))));
-					attributes[__Internal__.symbol$Base] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(base, extenders.Attribute))))));
-					attributes[__Internal__.symbol$Isolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(_isolated, extenders.Attribute))))));
+					attributes[__Internal__.symbolAttributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(attributes, extenders.Attribute))))))));
+					attributes[__Internal__.symbolPrototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
+					attributes[__Internal__.symbolModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute)))))));
+					attributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
+					attributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null))))));
+					attributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
+					attributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
 					attributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))));
-					attributes[__Internal__.symbol$AttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(typeStorage, extenders.Attribute)))))));
-					attributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(instanceStorage, extenders.Attribute)))))));
+					attributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
 					attributes[__Internal__.symbolCurrentDispatch] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 					attributes[__Internal__.symbolCurrentCallerIndex] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 
@@ -4590,13 +4772,13 @@
 					
 					tools.forEach(keys, function(key) {
 						var attribute = attributes[key] = doodad.OPTIONS({isEnumerable: false}, attributes[key]);
-						attribute[__Internal__.symbol$Prototype] = __Internal__.classProto;
+						attribute[__Internal__.symbolPrototype] = __Internal__.classProto;
 					});
 					
-					if (!types.has(_shared.reservedAttributes, __Internal__.symbol$Attributes)) {
+					if (!(__Internal__.symbolAttributes in _shared.reservedAttributes)) {
 						// First time "getDefaultAttributes" is called...
 						tools.forEach(keys, function(key) {
-							if (!types.has(_shared.reservedAttributes, key)) {
+							if (!(key in _shared.reservedAttributes)) {
 								_shared.reservedAttributes[key] = null;
 							};
 						});
@@ -4605,7 +4787,7 @@
 					return attributes;
 				};
 				
-				__Internal__.extendRenamed = function extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, protoName) {
+				__Internal__.extendRenamed = function extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, proto, protoName) {
 					// NOTE: The contract must be fullfilled (source: Sorella in freenode) : `compose({ a(){ return 1 }, b(){ return a() + 1 }, {a renamed to _a(){ return 3 } }).b()` should returns 2
 
 					var sourceAttribute = types.AttributeBox(destAttribute);
@@ -4625,22 +4807,22 @@
 					};
 
 					if (extender.extend) {
-						var result = extender.extend(newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, protoName);
+						var result = extender.extend(newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
 						destAttribute = destAttribute.setValue(result);
 					};
 
 					return destAttribute;
 				};
 				
-				__Internal__.preExtendAttribute = function preExtendAttribute(attr, baseProto, source, sourceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, forType, _isolated, extendedAttributes, protoName) {
+				__Internal__.preExtendAttribute = function preExtendAttribute(attr, base, baseProto, source, sourceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, forType, _isolated, extendedAttributes, proto, protoName) {
 					var attrs = (sourceAttributes ? sourceAttributes : sourceProto);
-					if ((attr !== '__proto__') && !types.has(_shared.reservedAttributes, attr) && types.has(attrs, attr)) {
+					if ((attr !== '__proto__') && !(attr in _shared.reservedAttributes) && types.has(attrs, attr)) {
 						var sourceAttribute = types.AttributeBox(attrs[attr]);
 							
 						var _interface = types.get(sourceAttribute, __Internal__.symbolInterface);
 						if (_interface) {
 							if (!_isolated.has(_interface)) {
-								throw new exceptions.Error("Interface '~0~' not found.", [types.getTypeName(_interface) || __Internal__.ANONYMOUS]);
+								throw new types.Error("Interface '~0~' not found.", [types.getTypeName(_interface) || __Internal__.ANONYMOUS]);
 							};
 							var data = _isolated.get(_interface);
 							extendedAttributes = data[1];
@@ -4691,11 +4873,11 @@
 								if (!!extender.isType !== !!extender.isInstance) {
 									if (attr[0] === '$') {
 										if (!extender.isType) {
-											throw new exceptions.Error("Instance attributes must not begin with '$'.");
+											throw new types.Error("Instance attributes must not begin with '$'.");
 										};
 									} else {
 										if (!extender.isInstance) {
-											throw new exceptions.Error("Type attributes must begin with '$'.");
+											throw new types.Error("Type attributes must begin with '$'.");
 										};
 									};
 								};
@@ -4710,8 +4892,9 @@
 							sourceAttribute[__Internal__.symbolExtender] = extender;
 						};
 
-						if (!types.get(sourceAttribute, __Internal__.symbol$Prototype)) {
-							sourceAttribute[__Internal__.symbol$Prototype] = sourceProto;
+						if (!types.get(sourceAttribute, __Internal__.symbolPrototype)) {
+							sourceAttribute[__Internal__.symbolPrototype] = sourceProto;
+							sourceProto[attr] = sourceAttribute;
 						};
 						
 						if (extender.extend) {
@@ -4720,7 +4903,7 @@
 									destAttribute = extender.getValue(attr, destAttribute, forType);
 								};
 
-								if ((types.unbox(destAttribute) === undefined) || extender.notInherited) {
+								if (baseProto && ((types.unbox(destAttribute) === undefined) || extender.notInherited)) {
 									var result = types.AttributeBox(baseProto[attr]);
 									if (extender.getValue) {
 										result = extender.getValue(attr, result, forType);
@@ -4730,12 +4913,12 @@
 									} else {
 										destAttribute = result;
 									};
-									if (!destAttribute[__Internal__.symbol$Prototype]) {
-										destAttribute[__Internal__.symbol$Prototype] = baseProto;
+									if (!destAttribute[__Internal__.symbolPrototype]) {
+										destAttribute[__Internal__.symbolPrototype] = baseProto;
 									};
 								};
 								
-								if ((destAttribute[__Internal__.symbol$Prototype] !== sourceAttribute[__Internal__.symbol$Prototype]) || extender.notInherited) {
+								if ((source === base) || (destAttribute[__Internal__.symbolPrototype] !== sourceAttribute[__Internal__.symbolPrototype]) || extender.notInherited) {
 									destAttribute[__Internal__.symbolExtender] = extender;
 									
 									if (types.isNothing(destAttribute[__Internal__.symbolScope])) {
@@ -4751,9 +4934,7 @@
 										};
 									};
 									
-									if (extender.postExtend) {
-										extendedAttributes.push(attr);
-									};
+									extendedAttributes.push(attr);
 									
 									if (extender.preExtend) {
 										var result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
@@ -4764,11 +4945,9 @@
 										};
 										var newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
 										if (newAttr) {
-											destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, protoName);
+											destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, proto, protoName);
 											attr = newAttr;
 										};
-										//destAttribute[__Internal__.symbol$Prototype] = sourceAttribute[__Internal__.symbol$Prototype];
-										destAttribute[__Internal__.symbol$Prototype] = sourceProto;
 										var overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 										if (overrideWith) {
 											overrideWith = doodad.OVERRIDE(overrideWith);
@@ -4795,16 +4974,16 @@
 					};
 				};
 				
-				__Internal__.extendSource = function extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, protoName) {
+				__Internal__.extendSource = function extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, proto, protoName) {
 					var baseIsProto = false,
 						baseTypeProto,
 						baseInstanceProto;
-					if (types.isFunction(base)) {
+					if (types.isFunction(base) || baseType) {
 						if (baseIsClass) {
-							// Doodad Class
-							baseTypeProto = baseInstanceProto = types.unbox(baseAttributes[__Internal__.symbol$Prototype]);
+							// doodad-js Class / Class Object
+							baseTypeProto = baseInstanceProto = _shared.getAttribute(base, __Internal__.symbolPrototype);
 						} else {
-							// Doodad Type / JS Class
+							// doodad-js Type / JS Class
 							baseTypeProto = base;
 							baseInstanceProto = base.prototype;
 						};
@@ -4818,13 +4997,13 @@
 						sourceTypeProto,
 						sourceInstanceProto,
 						sourceAttrs;
-					if (sourceIsType) {
+					if (sourceIsClass || sourceIsType) {
 						sourceAttrs = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
 						if (sourceIsClass) {
-							// Doodad Class
-							sourceTypeProto = sourceInstanceProto = types.unbox(sourceAttributes[__Internal__.symbol$Prototype]);
+							// doodad-js Class
+							sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
 						} else {
-							// Doodad Type
+							// doodad-js Type
 							sourceTypeProto = source;
 							sourceInstanceProto = source.prototype;
 						};
@@ -4847,12 +5026,15 @@
 					for (var k = 0; k < attrs.length; k++) {
 						var attr = attrs[k];
 						var params;
-						params = __Internal__.preExtendAttribute(attr, baseTypeProto, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, protoName);
-						if (params) {
-							toExtend.push(params);
+
+						if (baseIsType) {
+							params = __Internal__.preExtendAttribute(attr, base, baseTypeProto, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, proto, protoName);
+							if (params) {
+								toExtend.push(params);
+							};
 						};
 						
-						params = __Internal__.preExtendAttribute(attr, baseInstanceProto, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, protoName);
+						params = __Internal__.preExtendAttribute(attr, base, baseInstanceProto, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, proto, protoName);
 						if (params) {
 							toExtend.push(params);
 						};
@@ -4882,11 +5064,9 @@
 						};
 						var newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
 						if (newAttr) {
-							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, protoName);
+							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, extender, proto, protoName);
 							attr = newAttr;
 						};
-						//destAttribute[__Internal__.symbol$Prototype] = sourceAttribute[__Internal__.symbol$Prototype];
-						destAttribute[__Internal__.symbol$Prototype] = sourceProto;
 						var overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 						if (overrideWith) {
 							overrideWith = doodad.OVERRIDE(overrideWith);
@@ -4903,7 +5083,7 @@
 					};
 				};
 				
-				__Internal__.addImplements = function addImplements(_implements, attributes, _isolated, source, sourceBase, sourceImplements, sourceAttributes, sourceIsolated) {
+				__Internal__.addImplements = function addImplements(_implements, attributes, _isolated, source, sourceBase, sourceImplements, sourceAttributes, sourceIsolated, baseIsType, extendedAttributes) {
 					// Add new implement
 					_implements.add(source);
 					
@@ -4923,21 +5103,22 @@
 						});
 					};
 					
-					if (sourceAttributes) {
-						var keys = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
-						tools.forEach(keys, function(key) {
-							if (!types.has(attributes, key)) {
-								attributes[key] = sourceAttributes[key].clone();
-							};
-						});
-					};
+					//if (sourceAttributes) {
+					//	var keys = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
+					//	tools.forEach(keys, function(key) {
+					//		if (!types.has(attributes, key)) {
+					//			attributes[key] = sourceAttributes[key].clone();
+					//			extendedAttributes.push(key);
+					//		};
+					//	});
+					//};
 					
 					if (sourceIsolated) {
 						sourceIsolated.forEach(function(data, _interface) {
 							if (!_isolated.has(_interface)) {
 								_isolated.set(_interface, data);
 
-								var impls = _shared.getAttribute(_interface, __Internal__.symbol$Implements).values(),
+								var impls = _shared.getAttribute(_interface, __Internal__.symbolImplements).values(),
 									impl;
 									
 								// <FUTURE> for (let impl of impls)
@@ -4955,25 +5136,26 @@
 					};
 				};
 				
-				__Internal__.implementSource = function implementSource(base, baseAttributes, source, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, protoName) {
-					var sourceIsType = types.isType(source),
-						sourceIsClass = sourceIsType && types.isClass(source),
-						sourceName = (sourceIsType ? types.getTypeName(source) : types.unbox(source.$TYPE_NAME));
-
+				__Internal__.implementSource = function implementSource(base, baseAttributes, source, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, protoName) {
+					var sourceType = types.getType(source),
+						sourceIsType = sourceType && types.isType(source),
+						sourceIsClass = sourceType && types.isClass(sourceType),
+						sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME));
+						base; doodad
 					if (!sourceIsClass || !_implements.has(source)) {
-						if (!types.baseof(source, base)) { // prevents cyclic extend
+						if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
 							if (root.getOptions().debug || __options__.enforcePolicies) {
 								if (source !== base) {
 									//if (!baseIsBase && types.isBase(source)) {
-									//	throw new exceptions.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName || __Internal__.ANONYMOUS, types.getTypeName(base) || __Internal__.ANONYMOUS]);
+									//	throw new types.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName || __Internal__.ANONYMOUS, types.getTypeName(base) || __Internal__.ANONYMOUS]);
 									//};
 									if (baseIsMixIn) {
 										if (sourceIsClass && !types.isMixIn(source) && !types.isInterface(source)) {
-											throw new exceptions.Error("Can't implement non-mix-in or non-interface type '~0~' in a mix-in.", [sourceName || __Internal__.ANONYMOUS]);
+											throw new types.Error("Can't implement non-mix-in or non-interface type '~0~' in a mix-in.", [sourceName || __Internal__.ANONYMOUS]);
 										};
 									} else if (baseIsInterface) {
 										if (sourceIsClass && !types.isInterface(source)) {
-											throw new exceptions.Error("Can't implement non-interface type '~0~' in an interface.", [sourceName || __Internal__.ANONYMOUS]);
+											throw new types.Error("Can't implement non-interface type '~0~' in an interface.", [sourceName || __Internal__.ANONYMOUS]);
 										};
 									};
 								};
@@ -4981,21 +5163,26 @@
 							
 							if (types.isIsolated(source) && !types.isIsolated(base)) {
 								if (!_implements.has(source)) {
+									var destImplements = _implements;
+
+									destImplements.add(source);
+
 									var protoName = (sourceName ? sourceName + '_Interface' : null);
 									base = doodad.Interface;
+									baseType = base;
 									baseIsType = true;
 									baseIsClass = true;
-									var newImplements = new types.Set();
-									typeStorage = {};
-									instanceStorage = {};
-									destAttributes = __Internal__.getDefaultAttributes(base, newImplements, typeStorage, instanceStorage, null, null, proto, protoName);
+									_implements = new types.Set();
+									typeStorage = types.nullObject();
+									instanceStorage = types.nullObject();
+									destAttributes = __Internal__.getDefaultAttributes();
 									
-									_implements.add(source);
 									//newImplements.add(source);
 									extendedAttributes = [];
-									var data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null];
+									var data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10*/ proto, /*11 modifiers*/ 0];
+
 									_isolated.set(source, data);
-									var impls = _shared.getAttribute(source, __Internal__.symbol$Implements).values(),
+									var impls = _shared.getAttribute(source, __Internal__.symbolImplements).values(),
 										impl;
 									while (impl = impls.next()) {
 										if (impl.done) {
@@ -5003,39 +5190,36 @@
 										};
 										impl = impl.value;
 										if (types.isIsolated(impl)) {
-											if (!_implements.has(impl)) {
-												_implements.add(impl);
+											if (!destImplements.has(impl)) {
+												destImplements.add(impl);
 											};
-											//if (!newImplements.has(impl)) {
-											//	newImplements.add(impl);
-											//};
 											_isolated.set(impl, data);
 										};
 									};
 									
-									_implements = newImplements;
-									
-									var sourceData = _shared.getAttributes(base, [__Internal__.symbol$Base, __Internal__.symbol$Implements, __Internal__.symbol$Attributes, __Internal__.symbol$Isolated]);
-									baseAttributes = sourceData[__Internal__.symbol$Attributes];
-									__Internal__.addImplements(_implements, destAttributes, _isolated, base, sourceData[__Internal__.symbol$Base], sourceData[__Internal__.symbol$Implements], baseAttributes, sourceData[__Internal__.symbol$Isolated]);
+									var sourceData = _shared.getAttributes(base, [__Internal__.symbolBase, __Internal__.symbolImplements, __Internal__.symbolAttributes, __Internal__.symbolIsolated]);
+									baseAttributes = sourceData[__Internal__.symbolAttributes];
+									__Internal__.addImplements(_implements, destAttributes, _isolated, base, sourceData[__Internal__.symbolBase], sourceData[__Internal__.symbolImplements], baseAttributes, sourceData[__Internal__.symbolIsolated], baseIsType, extendedAttributes);
+
+									__Internal__.extendSource(base, baseAttributes, base, baseAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, proto, protoName);
 								};
 							};
 							
 							var sourceAttributes = undefined;
 							if (sourceIsClass) {
-								var sourceData = _shared.getAttributes(source, [__Internal__.symbol$Base, __Internal__.symbol$Implements, __Internal__.symbol$Attributes, __Internal__.symbol$Isolated]);
-								sourceAttributes = sourceData[__Internal__.symbol$Attributes];
-								__Internal__.addImplements(_implements, destAttributes, _isolated, source, sourceData[__Internal__.symbol$Base], sourceData[__Internal__.symbol$Implements], sourceAttributes, sourceData[__Internal__.symbol$Isolated]);
+								var sourceData = _shared.getAttributes(source, [__Internal__.symbolBase, __Internal__.symbolImplements, __Internal__.symbolAttributes, __Internal__.symbolIsolated]);
+								sourceAttributes = sourceData[__Internal__.symbolAttributes];
+								__Internal__.addImplements(_implements, destAttributes, _isolated, source, sourceData[__Internal__.symbolBase], sourceData[__Internal__.symbolImplements], sourceAttributes, sourceData[__Internal__.symbolIsolated], baseIsType, extendedAttributes);
 							};
 							
-							__Internal__.extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, protoName);
+							__Internal__.extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, proto, protoName);
 						};
 					};
 				};
 
-				__Internal__.initializeAttributes = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType, /*optional*/values) {
+				__Internal__.initializeAttributes = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType, /*optional*/values, /*optional*/extendedAttributes) {
 					var storage = (forType ? typeStorage : instanceStorage);
-					var attrs = types.append(types.keys(attributes), types.symbols(attributes));
+					var attrs = (extendedAttributes ? types.unique(extendedAttributes) : types.append(types.keys(attributes), types.symbols(attributes)))
 					for (var i = attrs.length - 1; i >= 0; i--) {
 						var attr = attrs[i],
 							attribute = attributes[attr],
@@ -5087,179 +5271,271 @@
 						var attribute = attributes[attr];
 						
 						var extender = attribute[__Internal__.symbolExtender];
-						var newAttribute = extender.postExtend(attr, attributes, attribute) || attribute;
+						var newAttribute = extender.postExtend && extender.postExtend(attr, attributes, attribute) || attribute;
 						if (newAttribute !== attribute) {
 							attributes[attr] = attribute = newAttribute;
 						};
 						
 						types.freezeObject(attribute);
 					};
-					
-					types.freezeObject(attributes);
 				};
 				
-				__Internal__.createType = function createType(base, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, /*optional*/_new, /*optional*/_delete) {
+				__Internal__.createType = function createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, /*optional*/_new, /*optional*/_delete) {
 					// Post-Extend
 					__Internal__.postExtend(destAttributes, extendedAttributes);
 					
-					// Return new type
-					var typeProto = {},
-						instanceProto = {};
+					if (baseIsType) {
+						var typeProto = {},
+							instanceProto = {};
 						
-					typeProto.$TYPE_NAME = protoName;
+						typeProto.$TYPE_NAME = types.READ_ONLY(protoName);
 
-					if (_new) {
-						instanceProto._new = typeProto._new = types.READ_ONLY(_new);
-					};
+						if (_new) {
+							instanceProto._new = typeProto._new = _new;
+						};
 
-					if (_delete) {
-						instanceProto._delete = typeProto._delete = types.READ_ONLY(_delete);
-					};
+						if (_delete) {
+							instanceProto._delete = typeProto._delete = _delete;
+						};
 					
-					var type = base.$inherit(
-						/*typeProto*/
-						typeProto,
+						var type = base.$inherit(
+							/*typeProto*/
+							typeProto,
 						
-						/*instanceProto*/
-						instanceProto,
+							/*instanceProto*/
+							instanceProto,
 						
-						/*constructor*/
-						__Internal__.makeInsideForNew(),
+							/*constructor*/
+							__Internal__.makeInsideForNew(),
 						
-						/*constructorContext*/
-						{internal: __Internal__, getType: types.getType}
-					);
+							/*constructorContext*/
+							{internal: __Internal__, getType: types.getType}
+						);
 					
-					//_shared.setAttribute(type, __Internal__.symbol$Attributes, destAttributes, {});
+						//_shared.setAttribute(type, __Internal__.symbolAttributes, destAttributes, {});
 
-					if (__Internal__.creatingClass) {
-						doodad.Class = type;
-						__Internal__.creatingClass = false;
+						if (__Internal__.creatingClass) {
+							doodad.Class = type;
+							__Internal__.creatingClass = false;
+						};
+					
+						root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
+					
+						// Set values (NOTE: will be initialized in "_new")
+						_shared.setAttribute(type, __Internal__.symbolAttributesStorage, typeStorage, {configurable: true});
+						var values = {};
+						values[__Internal__.symbolAttributes] = destAttributes;
+						values[__Internal__.symbolBase] = base;
+						values[__Internal__.symbolIsolated] = _isolated;
+						values[__Internal__.symbolImplements] = _implements;
+						values[__Internal__.symbolPrototype] = proto;
+						values[__Internal__.symbolModifiers] = modifiers;
+						_shared.setAttributes(type, values, {configurable: true});
+
+						_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true});
+						var values = {};
+						values[__Internal__.symbolAttributes] = types.clone(destAttributes);
+						values[__Internal__.symbolBase] = base;
+						values[__Internal__.symbolIsolated] = types.clone(_isolated);
+						values[__Internal__.symbolImplements] = types.clone(_implements);
+						values[__Internal__.symbolPrototype] = proto;
+						_shared.setAttributes(type.prototype, values, {configurable: true});
+
+						return type;
+
+					} else {
+						__Internal__.initializeAttributes(base, destAttributes, typeStorage, instanceStorage, false, null, extendedAttributes);
+
+						if (base._implements(mixIns.Creatable)) {
+							_shared.setAttribute(base, __Internal__.symbolDestroyed, null);
+						};
+
+						return base;
 					};
-					
-					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
-					
-					// Initialize values
-					_shared.setAttribute(type, __Internal__.symbol$Attributes, destAttributes, {configurable: true});
-					_shared.setAttribute(type, __Internal__.symbol$AttributesStorage, typeStorage, {configurable: true});
-					_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true});
-					
-					return type;
 				};
 				
 				__Internal__.$extend = function $extend(/*paramarray*/) {
 					var base = ((this === global) ? undefined : this);
 				
-					root.DD_ASSERT && root.DD_ASSERT(!base || types.baseof(types.Type, base), "Base must be a type.");
+					root.DD_ASSERT && root.DD_ASSERT(!base || types.baseof(types.Type, types.getType(base)), "Base must be a type.");
 
 					if (!base) {
-						base = types.Type;
+						base = types.TypeNamespace;
 					};
 					
-					var index = tools.findLastItem(arguments, types.isJsObject);
-					if (index === null) {
-						throw new exceptions.Error("You must define a prototype.");
+					var index = tools.findLastItem(arguments, types.isJsObject),
+						proto = (index !== null) && arguments[index] || {},
+						protoName = proto && types.unbox(proto.$TYPE_NAME) || '',
+						_new = types.get(proto, '_new'),
+						_delete = types.get(proto, '_delete');
+					
+					if (proto) {	
+						delete proto._new;
+						delete proto._delete;
 					};
-
-					var proto = arguments[index],
-						protoName = types.unbox(proto.$TYPE_NAME),
-						_new = proto._new,
-						_delete = proto._delete;
-						
-					delete proto._new;
-					delete proto._delete;
 
 					//if (!types.isStringAndNotEmpty(protoName)) {
-					//	throw new exceptions.Error("Prototype has no name. You must define the '$TYPE_NAME' attribute.");
+					//	throw new types.Error("Prototype has no name. You must define the '$TYPE_NAME' attribute.");
 					//};
 
-					var modifiers = (types.unbox(proto[__Internal__.symbol$TypeModifiers]) || 0) | (base[__Internal__.symbol$TypeModifiers] & doodad.preservedClassModifiers);
-					
-					var baseIsType = types.isType(base),
-						baseIsClass = baseIsType && types.isClass(base),
-						baseIsBase = baseIsClass && types.isBase(base),
-						baseIsMixIn = baseIsClass && types.isMixIn(base),
-						baseIsInterface = baseIsClass && types.isInterface(base);
+					var baseType = types.getType(base),
+						baseIsType = baseType && types.isType(base),
+						baseIsClass = baseType && types.isClass(baseType),
+						baseIsBase = baseIsClass && types.isBase(baseType),
+						baseIsMixIn = baseIsClass && types.isMixIn(baseType),
+						baseIsInterface = baseIsClass && types.isInterface(baseType);
 						
-					var _implements = new types.Set();
-					var _isolated = new types.Map();
-					var typeStorage = {};
-					var instanceStorage = {};
-					var destAttributes = __Internal__.getDefaultAttributes(base, _implements, typeStorage, instanceStorage, modifiers, _isolated, proto, protoName);
-						
-					// Implement base
-					var baseAttributes;
-					if (baseIsClass) {
-						var baseData = _shared.getAttributes(base, [__Internal__.symbol$Attributes, __Internal__.symbol$Base, __Internal__.symbol$Implements, __Internal__.symbol$Isolated]);
-						baseAttributes = baseData[__Internal__.symbol$Attributes];
-						__Internal__.addImplements(_implements, destAttributes, _isolated, base, baseData[__Internal__.symbol$Base], baseData[__Internal__.symbol$Implements], baseAttributes, baseData[__Internal__.symbol$Isolated]);
-					} else if (baseIsType) {
-						baseAttributes = base[__Internal__.symbol$Attributes];
-					};
+					var baseTypeAttributes = null,
+						baseTypeBase = null,
+						baseTypeImplements = null,
+						baseTypeIsolated = null,
+						baseTypeStorage = null,
+						baseModifiers = 0;
 
-					var argsLen = arguments.length;
-					var extendedAttributes = [];
-					for (var i = 0; i < argsLen; i++) {
-						if (i in arguments) {
-							__Internal__.implementSource(base, baseAttributes, arguments[i], destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, protoName);
+					if (baseIsClass) { // Doodad Class / Doodad Class Object
+						baseModifiers = baseType[__Internal__.symbolModifiers];
+
+						if (!baseIsType && !(baseModifiers & doodad.ClassModifiers.Expandable)) {
+							throw new types.Error("Object is not expandable.");
+						};
+
+						var baseData = _shared.getAttributes(baseType, [__Internal__.symbolAttributes, __Internal__.symbolBase, __Internal__.symbolImplements, __Internal__.symbolIsolated, __Internal__.symbolAttributesStorage]);
+						baseTypeAttributes = baseData[__Internal__.symbolAttributes];
+						baseTypeBase = baseData[__Internal__.symbolBase];
+						baseTypeImplements = baseData[__Internal__.symbolImplements];
+						baseTypeIsolated = baseData[__Internal__.symbolIsolated];
+						baseTypeStorage = baseData[__Internal__.symbolAttributesStorage];
+					};
+					
+					var _implements = null,
+						_isolated = null,
+						destAttributes = null,
+						typeStorage = types.nullObject(),
+						instanceStorage = types.nullObject(),
+						modifiers = 0,
+						additionalProtos = [];
+
+					var sources = types.toArray(arguments);
+
+					if (baseIsType) { // Doodad Class / Doodad Type
+						_implements = new types.Set();
+						_isolated = new types.Map();
+						destAttributes = __Internal__.getDefaultAttributes();
+						typeStorage = types.nullObject();
+						instanceStorage = types.nullObject();
+						modifiers = (proto && types.unbox(proto[__Internal__.symbolModifiers]) || 0) | (baseModifiers & doodad.preservedClassModifiers);
+					} else if (baseIsClass) { // Doodad Class Object
+						var baseData = _shared.getAttributes(base, [__Internal__.symbolAttributes, __Internal__.symbolImplements, __Internal__.symbolIsolated, __Internal__.symbolAttributesStorage]);
+						destAttributes = baseData[__Internal__.symbolAttributes];
+						_implements = baseData[__Internal__.symbolImplements];
+						_isolated = baseData[__Internal__.symbolIsolated];
+						instanceStorage = baseData[__Internal__.symbolAttributesStorage];
+
+						typeStorage = baseTypeStorage;
+						baseTypeAttributes = destAttributes;
+
+						if (base._implements(mixIns.Creatable)) {
+							var injected = {
+								create: doodad.REPLACE(__Internal__.creatablePrototype.create),
+							};
+							injected.create[__Internal__.symbolPrototype] = __Internal__.creatablePrototype;
+							sources.unshift(injected);
 						};
 					};
 
-					var type = __Internal__.createType(base, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, _new, _delete);
-					
+					var extendedAttributes = [];
+
+					// Implement base
+					if (baseIsClass && baseIsType) { // Doodad Class
+						__Internal__.implementSource(base, baseTypeAttributes, base, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, protoName);
+					};
+
+					// Implement sources
+					var sourcesLen = sources.length;
+					for (var i = 0; i < sourcesLen; i++) {
+						var source = sources[i];
+						root.DD_ASSERT && root.DD_ASSERT(types.getType(source) || types.isJsObject(source));
+						__Internal__.implementSource(base, baseTypeAttributes, source, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, protoName);
+					};
+
+					// Create and return extended version of "base"
+					var type = __Internal__.createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, _new, _delete);
+
 					return type;
 				};
 				
 				__Internal__.classProto = {
 					$TYPE_NAME: "Class",
 					
-					_new: types.READ_ONLY(types.SUPER(
-						function _new(/*paramarray*/) {
-							this._super();
-							
+					_new: types.SUPER(
+						function _new(parent, name, fullName /*paramarray*/) {
 							var cls = types.getType(this),
 								forType = types.isType(this);
 
-							// Validate type
-							if (!cls) {
-								throw new exceptions.Error("Invalid class.");
+							if (forType) {
+								this._super(parent, name, fullName);
+							} else {
+								this._super();
 							};
 
-							var modifiers = (types.get(cls, __Internal__.symbol$TypeModifiers) || 0);
+							// Validate type
+							if (!cls) {
+								throw new types.Error("Invalid class.");
+							};
+
+							var modifiers = (types.get(cls, __Internal__.symbolModifiers) || 0);
 							
 							// Must not be a base class
 							var isBase = (modifiers & (doodad.ClassModifiers.Base | doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface));
 							if (isBase) {
 								if (!forType) {
-									throw new exceptions.Error("Bases, mix-ins and interfaces must be inherited first.");
+									throw new types.Error("Bases, mix-ins and interfaces must be inherited first.");
 								};
 							};
 							
 							// Static types can't be instantiated
 							if (modifiers & doodad.ClassModifiers.Static) {
 								if (!forType) {
-									throw new exceptions.Error("Static types can't be instantiated.");
+									throw new types.Error("Static types can't be instantiated.");
 								};
 							};
 							
 							// Initialize attributes
-							var attributes = types.get(cls, __Internal__.symbol$Attributes);
-							var typeStorage = types.get(cls, __Internal__.symbol$AttributesStorage);
-							var instanceStorage = types.get(cls.prototype, __Internal__.symbolAttributesStorage);
-							if (forType) {
-								var values = {};
-								values[__Internal__.symbol$TypeModifiers] = modifiers;
-								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, values);
-								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false);
-							} else {
-								__Internal__.initializeAttributes(this, attributes, typeStorage, types.extend({}, instanceStorage), false);
-							};
+							var typeStorage = cls[__Internal__.symbolAttributesStorage];
+							var instanceStorage = cls.prototype[__Internal__.symbolAttributesStorage];
 
+							if (forType) {
+								var values = types.nullObject();
+								var attributes = values[__Internal__.symbolAttributes] = this[__Internal__.symbolAttributes];
+								values[__Internal__.symbolModifiers] = modifiers;
+								values[__Internal__.symbolImplements] = this[__Internal__.symbolImplements];
+								values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated];
+								values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
+								values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
+								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, values);
+
+								var values = types.nullObject();
+								var attributes = values[__Internal__.symbolAttributes] = this.prototype[__Internal__.symbolAttributes]; // NOTE: already cloned
+								values[__Internal__.symbolImplements] = this.prototype[__Internal__.symbolImplements]; // NOTE: already cloned
+								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: already cloned
+								values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
+								values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
+								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false, values);
+							} else {
+								var values = types.nullObject();
+								var attributes = values[__Internal__.symbolAttributes] = types.clone(cls.prototype[__Internal__.symbolAttributes]);
+								values[__Internal__.symbolImplements] = types.clone(cls.prototype[__Internal__.symbolImplements]);
+								values[__Internal__.symbolIsolated] = types.clone(cls.prototype[__Internal__.symbolIsolated]);
+								values[__Internal__.symbolPrototype] = cls.prototype[__Internal__.symbolPrototype];
+								values[__Internal__.symbolBase] = cls.prototype[__Internal__.symbolBase];
+								__Internal__.initializeAttributes(this, attributes, typeStorage, types.clone(instanceStorage), false, values);
+							};
+	
 							// Call constructor
 							if (!isBase) {
 								if (this._implements(mixIns.Creatable)) {
 									if (forType) {
-										this.$create.apply(this, arguments);
+										this.$create.apply(this, _shared.Natives.arraySlice.call(arguments, 3));
 									} else {
 										this.create.apply(this, arguments);
 									};
@@ -5268,16 +5544,16 @@
 							
 							// Seal object if it is of a sealed class
 							return this; // TODO: //(types.isSealed(cls) ? types.sealObject(this) : this);
-						})),
+						}),
 					
-					_delete: types.READ_ONLY(types.SUPER(
+					_delete: types.SUPER(
 						function _delete() {
 							this._super();
 							
 							var forType = types.isType(this);
 							var cls = types.getType(this);
-							var attributes = cls[__Internal__.symbol$Attributes];
-							var storage = (forType ? this[__Internal__.symbol$AttributesStorage] : this[__Internal__.symbolAttributesStorage]);
+							var attributes = this[__Internal__.symbolAttributes];
+							var storage = this[__Internal__.symbolAttributesStorage];
 							var attrs = types.append(types.keys(attributes), types.symbols(attributes));
 							var sealed = types.isSealed(this);
 								
@@ -5311,10 +5587,10 @@
 								};
 							};
 							
-						})),
+						}),
 					
 					toString: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 2,
@@ -5335,7 +5611,7 @@
 
 
 					$extend: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -5352,8 +5628,26 @@
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
 					
+					extend: root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									paramarray: {
+										type: 'arrayof(object,Class)',
+										optional: false,
+										description: "Prototypes and classes to extend with.",
+									},
+								},
+								returns: 'Object',
+								description: "Extends an object and returns that same object.",
+						}
+						//! END_REPLACE()
+						, doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.JS_METHOD( __Internal__.$extend ))))),
+					
 					getInterface: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 2,
@@ -5379,14 +5673,14 @@
 							};
 
 							var cache = this[__Internal__.symbolIsolatedCache];
-                            if (!cache) {
-                                cache = _shared.setAttribute(this, __Internal__.symbolIsolatedCache, new types.Map());
-                            }
+							if (!cache) {
+								cache = _shared.setAttribute(this, __Internal__.symbolIsolatedCache, new types.Map());
+							}
 							if (cache.has(type)) {
 								return cache.get(type);
 							};
 
-							var _isolated = cls[__Internal__.symbol$Isolated];
+							var _isolated = this[__Internal__.symbolIsolated];
 							if (!_isolated.has(type)) {
 								return null;
 							};
@@ -5400,8 +5694,14 @@
 								var attributes = data[2];
 								var typeStorage = data[4];
 								var instanceStorage = data[5];
+								var base = data[7];
+								var baseIsType = types.isType(base);
+								var _isolated = data[8];
+								var _implements = data[9];
+								var proto = data[10];
+								var modifiers = data[11];
 
-								var _interface = __Internal__.createType(doodad.Interface, protoName, typeStorage, instanceStorage, attributes, extendedAttributes);
+								var _interface = __Internal__.createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, attributes, extendedAttributes, _isolated, _implements, modifiers);
 
 								_interface = types.INIT(_interface, [cls]);
 
@@ -5414,7 +5714,7 @@
 
 							var obj = new _interface(this);
 
-							var _implements = _shared.getAttribute(_interface, __Internal__.symbol$Implements);
+							var _implements = _shared.getAttribute(_interface, __Internal__.symbolImplements);
 							_implements.forEach(function(impl) {
 								if (types.isIsolated(impl) && !cache.has(impl)) {
 									cache.set(impl, obj);
@@ -5425,7 +5725,7 @@
 						})))),
 					
 					getPreserved: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -5443,8 +5743,7 @@
 						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function getPreserved(attr) {
 							if (!types.isSymbol(attr)) {
-								var cls = types.getType(this),
-									attributes = cls[__Internal__.symbol$Attributes],
+								var attributes = this[__Internal__.symbolAttributes],
 									attribute = attributes[attr],
 									extender = attribute[__Internal__.symbolExtender];
 								if (extender && extender.isPreserved) {
@@ -5455,7 +5754,7 @@
 						}))))),
 					
 					restorePreserved: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 2,
@@ -5473,8 +5772,7 @@
 						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function restorePreserved(attr) {
 							if (!types.isSymbol(attr)) {
-								var cls = types.getType(this),
-									attributes = cls[__Internal__.symbol$Attributes],
+								var attributes = this[__Internal__.symbolAttributes],
 									attribute = attributes[attr],
 									extender = attribute[__Internal__.symbolExtender];
 								if (extender && extender.isPreserved) {
@@ -5487,7 +5785,7 @@
 						}))))),
 
 					overrideSuper: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 1,
@@ -5504,7 +5802,7 @@
 						})))))),
 				
 					superAsync: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
 								revision: 0,
@@ -5518,6 +5816,7 @@
 							if (this._super) {
 								var obj = this,
 									type = types.getType(obj),
+									forType = types.isType(obj),
 									_super = this._super;
 
 								_super[__Internal__.symbolCalled] = true;
@@ -5527,8 +5826,15 @@
 									modifiers = dispatch[__Internal__.symbolModifiers];
 								
 								return function superAsync(/*paramarray*/) {
-									if (obj._implements(mixIns.Creatable) && _shared.getAttribute(obj, '__destroyed') && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-										throw new exceptions.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+									if (this._implements(mixIns.Creatable)) {
+										var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+										var attr = dispatch[_shared.NameSymbol];
+										if ((destroyed === null) && !forType && (attr !== 'create')) {
+											throw new types.Error("Method '~0~' of '~1~' is unavailable because object has not been created.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										};
+										if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
+											throw new types.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										};
 									};
 									
 									var oldSuper = _shared.getAttribute(obj, '_super');
@@ -5554,7 +5860,7 @@
 						})))))),
 				
 					_implements: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
 									revision: 3,
@@ -5575,12 +5881,10 @@
 								cls = [cls];
 							};
 							var clsLen = cls.length;
-							var impls = types.getType(this)[__Internal__.symbol$Implements];
+							var impls = this[__Internal__.symbolImplements];
 							for (var i = 0; i < clsLen; i++) {
 								var cl = cls[i];
-								if (types.isObject(cl)) {
-									cl = types.getType(cl);
-								};
+								cl = types.getType(cl);
 								if (!cl) {
 									continue;
 								};
@@ -5595,7 +5899,7 @@
 						}))))),
 						
 					isImplemented: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
 									revision: 2,
@@ -5617,8 +5921,8 @@
 							if (!type) {
 								return false;
 							};
-							var attrs = type[__Internal__.symbol$Attributes];
-							if (!types.has(attrs, name)) {
+							var attrs = this[__Internal__.symbolAttributes];
+							if (!(name in attrs)) {
 								return false;
 							};
 							var attr = attrs[name],
@@ -5628,13 +5932,13 @@
 							};
 							if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
 								return false;
-							}
+							};
 							var method = _shared.getAttribute(this, name);
 							return !((method[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.NotImplemented);
 						}))))),
 
 					_superFrom: root.DD_DOC(
-						//! REPLACE_BY("null")
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
 									revision: 1,
@@ -5681,31 +5985,32 @@
 						})))))))),
 				};
 				
-				// For "require('util').inspect"
 				//! BEGIN_REMOVE()
-				if ((typeof process === 'object') && (typeof module === 'object')) {
+				if (nodejs) {
 				//! END_REMOVE()
-					//! IF_DEF("serverSide")
-						__Internal__.classProto.inspect = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
-							var type = types.getType(this),
-								isType = types.isType(this),
-								attrs = type[__Internal__.symbol$Attributes],
-								keys = types.append(types.keys(attrs), types.symbols(attrs)),
-								result = {};
-							for (var i = 0; i < keys.length; i++) {
-								var key = keys[i];
-								if (key !== 'inspect') {
-									var attr = attrs[key];
-									var extender = attr[__Internal__.symbolExtender];
-									if (extender) {
-										if ((attr[__Internal__.symbolScope] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
-											result[key] = _shared.getAttribute(this, key);
+					//! IF_SET("serverSide")
+						var customSymbol = nodejs.getCustomInspectSymbol();
+						if (customSymbol) {
+							__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
+								var isType = types.isType(this),
+									attrs = this[__Internal__.symbolAttributes],
+									keys = types.append(types.keys(attrs), types.symbols(attrs)),
+									result = {};
+								for (var i = 0; i < keys.length; i++) {
+									var key = keys[i];
+									if (key !== customSymbol) {
+										var attr = attrs[key];
+										var extender = attr[__Internal__.symbolExtender];
+										if (extender) {
+											if ((attr[__Internal__.symbolScope] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
+												result[key] = _shared.getAttribute(this, key);
+											};
 										};
 									};
 								};
-							};
-							return result;
-						})))));
+								return result;
+							})))));
+						};
 					//!END_IF()
 				//! BEGIN_REMOVE()
 				};
@@ -5713,7 +6018,7 @@
 				
 				__Internal__.creatingClass = true;
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -5731,24 +6036,25 @@
 				__Internal__.interfaceProto = {
 						$TYPE_NAME: "Interface",
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(host) {
-							var retval = this._super();
-							
-							if (!types.isType(this)) {
-								root.DD_ASSERT && root.DD_ASSERT((types.isClass(retval) && types.isClass(host)) || (types.isObject(retval) && types._instanceof(host, doodad.Class)), "Invalid host.");
+						_new: types.SUPER(function _new(host) {
+							if (types.isType(this)) {
+								this._super.apply(this, arguments);
+
+							} else {
+								this._super();
+
+								root.DD_ASSERT && root.DD_ASSERT((types.isClass(this) && types.isClass(host)) || (types.isObject(this) && types._instanceof(host, doodad.Class)), "Invalid host.");
 								
-								_shared.setAttribute(retval, __Internal__.symbolHost, host);
+								_shared.setAttribute(this, __Internal__.symbolHost, host);
 							};
-							
-							return retval;
-						})),
+						}),
 					};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
 				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(null))));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -5770,7 +6076,7 @@
 				//==================================
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -5783,7 +6089,7 @@
 						$TYPE_NAME: 'Clonable',
 
 						clone: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -5792,11 +6098,11 @@
 									description: "Returns a clone of the object.",
 							}
 							//! END_REPLACE()
-							, doodad.PUBLIC(doodad.RETURNS(function clone(val) {return types.is(val, this);}))),  // function()
+							, doodad.PUBLIC(doodad.RETURNS(function clone(val) {return (val !== this) && types.is(val, this);}))),  // function()
 					}))));
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -5809,7 +6115,7 @@
 						$TYPE_NAME: 'Serializable',
 					
 						serialize: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -5821,7 +6127,7 @@
 							, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
 								
 						$unserialize: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -5844,7 +6150,7 @@
 				//==================================
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -5861,10 +6167,10 @@
 						onEventCancelled: doodad.EVENT(false), // function onEventCancelled(ev)
 							
 						detachEvents: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: {
 										obj: {
 											type: 'object',
@@ -5873,7 +6179,7 @@
 										},
 										fn: {
 											type: 'function',
-											optional: false,
+											optional: true,
 											description: "Callback function.",
 										},
 										datas: {
@@ -5886,7 +6192,7 @@
 									description: "Detaches the callback function from every events.",
 							}
 							//! END_REPLACE()
-							, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachEvents(obj, fn, /*optional*/datas) {
+							, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachEvents(obj, fn, /*optional*/datas) {
 								var events = this.__EVENTS,
 									eventsLen = events.length;
 								for (var i = 0; i < eventsLen; i++) {
@@ -5895,46 +6201,54 @@
 							}))))),
 						
 						clearEvents: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
-									params: null,
+									revision: 2,
+									params: {
+										objs: {
+											type: 'object,arrayof(object)',
+											optional: true,
+											description: "List of objects to detach from every events.",
+										},
+									},
 									returns: 'undefined',
 									description: "Detaches every callback functions from every events.",
 							}
 							//! END_REPLACE()
-							, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearEvents() {
+							, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearEvents(/*optional*/objs) {
 								var events = this.__EVENTS,
 									eventsLen = events.length;
-								for (var i = 0; i < eventsLen; i++) {
-									this[events[i]].clear();
+								if (types.isNothing(objs)) {
+									for (var i = 0; i < eventsLen; i++) {
+										this[events[i]].clear();
+									};
+								} else if (types.isArray(objs)) {
+									var objsLen = objs.length;
+									if (objsLen) {
+										for (var i = 0; i < eventsLen; i++) {
+											for (var j = 0; j < objsLen; j++) {
+												this[events[i]].detach(objs[j]);
+											};
+										};
+									};
+								} else {
+									this[events[i]].detach(objs);
 								};
 							}))))),
 					}))));
 				
-				root.DD_DOC(
-					//! REPLACE_BY("null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'Class',
-							description: "Implements a creatable object.",
-					}
-					//! END_REPLACE()
-					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
+
+				__Internal__.creatablePrototype = {
 						$TYPE_NAME: 'Creatable',
 
-						__destroyed: doodad.PROTECTED(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))),
-						
 						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function() {
-							return this.__destroyed;
+							return this[__Internal__.symbolDestroyed];
 						}))))),
 
 						
 						$create: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -5950,14 +6264,14 @@
 							}
 							//! END_REPLACE()
 							, doodad.PUBLIC(function $create(/*paramarray*/) {
-								if (this.__destroyed !== null) {
+								if (this[__Internal__.symbolDestroyed] !== null) {
 									throw new types.Error("Object already created.");
 								};
-								_shared.setAttribute(this, '__destroyed', false);
+								_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
 							})),
 						
 						$destroy: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -5968,18 +6282,18 @@
 							//! END_REPLACE()
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function $destroy() {
-								if (this.__destroyed === false) {
+								if (this[__Internal__.symbolDestroyed] === false) {
 									this._super();
 
 									this._delete();
 							
-									_shared.setAttribute(this, '__destroyed', true);
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 								};
 							})))),
 
 						
 						$createInstance: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6001,7 +6315,7 @@
 
 
 						create: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6017,14 +6331,14 @@
 							}
 							//! END_REPLACE()
 							, doodad.PUBLIC(function create(/*paramarray*/) {
-								if (this.__destroyed !== null) {
+								if (this[__Internal__.symbolDestroyed] !== null) {
 									throw new types.Error("Object already created.");
 								};
-								_shared.setAttribute(this, '__destroyed', false);
+								_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
 							})),
 						
 						fastDestroy: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -6035,15 +6349,15 @@
 							//! END_REPLACE()
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function fastDestroy() {
-								if (this.__destroyed === false) {
+								if (this[__Internal__.symbolDestroyed] === false) {
 									this._super();
 							
-									_shared.setAttribute(this, '__destroyed', true);
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 								};
 							})))),
 						
 						destroy: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 1,
@@ -6054,19 +6368,36 @@
 							//! END_REPLACE()
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function destroy() {
-								if (this.__destroyed === false) {
+								if (this[__Internal__.symbolDestroyed] === false) {
 									this._super();
 
 									this._delete();
 							
-									_shared.setAttribute(this, '__destroyed', true);
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 								};
 							})))),
 
-					}))));
-				
+					};
+
+				// <FUTURE> Use syntax for variable key in object declaration
+				__Internal__.creatablePrototype[__Internal__.symbolDestroyed] = doodad.PROTECTED(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null)))));
+
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'Class',
+							description: "Implements a creatable object.",
+					}
+					//! END_REPLACE()
+					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend(__Internal__.creatablePrototype))));
+				
+
+
+				root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -6078,10 +6409,10 @@
 					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 						$TYPE_NAME: 'Translatable',
 					
-						$__translations: doodad.PROTECTED(doodad.ATTRIBUTE({}, extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
+						$__translations: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
 						$getTranslation: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6111,7 +6442,7 @@
 									
 								for (var i = 0; translations && (i < namesLen); i++) {
 									n = names[i];
-									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && (n in translations), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									translations = translations[n];
 								};
 								
@@ -6119,7 +6450,7 @@
 							})),
 							
 						$setTranslation: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6143,7 +6474,7 @@
 							function $setTranslation(value, /*optional*/name) {
 								if (types.isNothing(name)) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
-									types.depthExtend(this[__Internal__.symbol$Attributes].$__translations[__Internal__.symbolExtender].maxDepth, this.$__translations, value);
+									types.depthExtend(this[__Internal__.symbolAttributes].$__translations[__Internal__.symbolExtender].maxDepth, this.$__translations, value);
 									
 								} else if (types.isStringAndNotEmpty(name)) {
 									var translations = this.$__translations,
@@ -6153,7 +6484,7 @@
 										
 									for (var i = 0; translations && (i < namesLen - 1); i++) {
 										n = names[i];
-										root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+										root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && (n in translations), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 										translations = translations[n];
 									};
 									
@@ -6169,7 +6500,7 @@
 					}))));
 
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -6181,10 +6512,10 @@
 					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 						$TYPE_NAME: 'Configurable',
 					
-						$__config: doodad.PROTECTED(doodad.ATTRIBUTE({}, extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
+						$__config: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
 						$getConfig: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6214,7 +6545,7 @@
 									
 								for (var i = 0; config && (i < namesLen); i++) {
 									n = names[i];
-									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && (n in config), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									config = config[n];
 								};
 								
@@ -6222,7 +6553,7 @@
 							})),
 							
 						$setConfig: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6245,7 +6576,7 @@
 							, doodad.PUBLIC(function $setConfig(value, /*optional*/name) {
 								if (types.isNothing(name)) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid configuration value.");
-									types.depthExtend(this[__Internal__.symbol$Attributes].$__config[__Internal__.symbolExtender].maxDepth, this.$__config, value);
+									types.depthExtend(this[__Internal__.symbolAttributes].$__config[__Internal__.symbolExtender].maxDepth, this.$__config, value);
 									
 								} else if (types.isStringAndNotEmpty(name)) {
 									var config = this.$__config,
@@ -6255,7 +6586,7 @@
 									
 									for (var i = 0; config && (i < namesLen - 1); i++) {
 										n = names[i];
-										root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+										root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && (n in config), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 										config = config[n];
 									};
 									
@@ -6276,7 +6607,7 @@
 				//==================================
 				
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -6285,18 +6616,18 @@
 							description: "Main class of every Doodad objects.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(doodad.Class.$extend(
+					, doodad.REGISTER(doodad.EXPANDABLE(doodad.Class.$extend(
 							mixIns.Creatable,
 					{
 						$TYPE_NAME: "Object",
-					})));
+					}))));
 				
 				//==================================
 				// Events classes
 				//==================================
 				
 				doodad.Event = types.INIT(root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -6311,14 +6642,14 @@
 							description: "Event object.",
 					}
 					//! END_REPLACE()
-					, types.Type.$inherit(
+					, doodad.TypeNamespace.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: "Event",
 					},
 					/*instanceProto*/
 					{
-						data: null,
+						data: types.READ_ONLY(null),
 						
 						// dynamic
 						obj: null,
@@ -6327,18 +6658,18 @@
 
 						prevent: false,
 						
-						_new: types.READ_ONLY(types.SUPER(function(/*optional*/data) {
+						_new: types.SUPER(function(/*optional*/data) {
 							//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
 
 							this._super();
 							
 							if (!types.isType(this)) {
-								this.data = data || {};
+								_shared.setAttribute(this, 'data', data || {}, {all: true});
 							};
-						})),
+						}),
 						
 						preventDefault: root.DD_DOC(
-							//! REPLACE_BY("null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
 									revision: 0,
@@ -6353,7 +6684,7 @@
 					})));
 
 				doodad.CancelEvent = types.INIT(root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -6375,7 +6706,7 @@
 					})));
 
 				doodad.ErrorEvent = types.INIT(root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
@@ -6402,17 +6733,17 @@
 					},
 					/*instanceProto*/
 					{
-						error: doodad.PUBLIC(doodad.READ_ONLY(null)),
+						error: types.READ_ONLY(null),
 						
-						_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/error, /*optional*/data) {
+						_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
 							this._super(data);
 
 							if (!types.isType(this)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
 								
-								_shared.setAttribute(this, 'error', error);
+								_shared.setAttribute(this, 'error', error, {all: true});
 							};
-						})),
+						}),
 					})));
 
 				//==================================
@@ -6420,10 +6751,10 @@
 				//==================================
 
 				doodad.Callback = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -6435,12 +6766,27 @@
 									optional: false,
 									description: "Callback function.",
 								},
+								bubbleError: {
+									type: 'bool,function',
+									optional: true,
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed.",
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Callback arguments.",
+								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Secret.",
+								},
 							},
 							returns: 'function',
 							description: "Creates a callback handler.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+					, types.setPrototypeOf(function(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						var attr;
 						if (types.isString(fn) || types.isSymbol(fn)) {
@@ -6452,24 +6798,29 @@
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
-						var insideFn = fn;
-						if (obj) {
-							insideFn = _shared.makeInside(obj, fn);
-						};
+						var insideFn = _shared.makeInside(obj, fn, secret);
 						var isCreatable = types._implements(obj, mixIns.Creatable);
 						var callback = function callbackHandler(/*paramarray*/) {
+							callback.lastError = null;
 							try {
 								if (!obj || !isCreatable || !obj.isDestroyed()) {
-									return insideFn.apply(obj, arguments);
+									if (args) {
+										return insideFn.apply(obj, types.append([], args, arguments));
+									} else {
+										return insideFn.apply(obj, arguments);
+									};
 								};
 							} catch(ex) {
-								if (ex instanceof types.ScriptAbortedError) {
-									throw ex;
-								} else if (ex instanceof types.ScriptInterruptedError) {
-									// Do nothing
+								if (bubbleError || ex.bubble) {
+									callback.lastError = ex;
+									if (types.isFunction(bubbleError)) {
+										return bubbleError(ex); // call error handler
+									} else {
+										throw ex; // bubble the error
+									};
 								} else {
 									try {
-										doodad.trapException(ex, obj, attr);
+										callback.lastError = doodad.trapException(ex, obj, attr);
 									} catch(o) {
 										debugger;
 									};
@@ -6479,14 +6830,15 @@
 						callback = types.setPrototypeOf(callback, doodad.Callback);
 						callback[_shared.BoundObjectSymbol] = obj;
 						callback[_shared.OriginalValueSymbol] = fn;
+						callback.lastError = null;
 						return callback;
 					}, types.Callback));
 				
 				doodad.AsyncCallback = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -6498,13 +6850,29 @@
 									optional: false,
 									description: "Callback function.",
 								},
+								bubbleError: {
+									type: 'bool,function',
+									optional: true,
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed.",
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Callback arguments.",
+								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Secret.",
+								},
 							},
 							returns: 'function',
 							description: "Creates an asynchronous callback handler.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function(/*optional*/obj, fn) {
+					, types.setPrototypeOf(function(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
+						var Promise = types.getPromise();
 						var attr;
 						if (types.isString(fn) || types.isSymbol(fn)) {
 							attr = fn;
@@ -6515,35 +6883,63 @@
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
-						var isCreatable = types._implements(obj, mixIns.Creatable);
+						var type = types.getType(obj),
+							isClass = types.isClass(type),
+							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret),
+							isCreatable = isClass && types._implements(obj, mixIns.Creatable);
 						var callback = function callbackHandler(/*paramarray*/) {
-							tools.callAsync(function async(/*paramarray*/) {
-								try {
-									if (obj) {
-										if (!isCreatable || !obj.isDestroyed()) {
-											return _shared.invoke(obj, fn, arguments);
+							var args = types.toArray(arguments);
+							return Promise.create(function(resolve, reject) {
+								tools.callAsync(function async(/*paramarray*/) {
+									callback.lastError = null;
+									try {
+										if (isClass) {
+											if (!isCreatable || !obj.isDestroyed()) {
+												if (args) {
+													resolve(_shared.invoke(obj, fn, types.append([], args, arguments), secret));
+												} else {
+													resolve(_shared.invoke(obj, fn, arguments, secret));
+												};
+											};
+										} else {
+											if (args) {
+												resolve(fn.apply(obj, types.append([], args, arguments)));
+											} else {
+												resolve(fn.apply(obj, arguments));
+											};
 										};
-									} else {
-										return fn.apply(null, arguments);
-									};
-								} catch(ex) {
-									if (ex instanceof types.ScriptAbortedError) {
-										throw ex;
-									} else if (ex instanceof types.ScriptInterruptedError) {
-										// Do nothing
-									} else {
-										try {
-											doodad.trapException(ex, obj, attr);
-										} catch(o) {
-											debugger;
+									} catch(ex) {
+										if (bubbleError || ex.bubble) {
+											callback.lastError = ex;
+											if (types.isFunction(bubbleError)) {
+												try {
+													resolve(bubbleError(ex)); // call error handler
+												} catch(o) {
+													reject(o); // error handler failed
+												};
+											} else {
+												reject(ex); // must reject
+												if (ex.critical) {
+													throw ex; // bubble error, the application should halt because there is no other try...catch outside
+												};
+											};
+										} else {
+											try {
+												callback.lastError = doodad.trapException(ex, obj, attr);
+												reject(callback.lastError);
+											} catch(o) {
+												debugger;
+												reject(ex);
+											};
 										};
 									};
-								};
-							}, 0, null, arguments);
+								}, 0, null, args);
+							});
 						};
 						callback = types.setPrototypeOf(callback, doodad.AsyncCallback);
 						callback[_shared.BoundObjectSymbol] = obj;
 						callback[_shared.OriginalValueSymbol] = fn;
+						callback.lastError = null;
 						return callback;
 					}, types.Callback));
 				
@@ -6552,7 +6948,7 @@
 				//==================================
 
 				root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 3,
@@ -6577,20 +6973,10 @@
 					{
 						$TYPE_NAME: "PackedValue",
 						
-						$ERROR_IGNORED_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE({
-							throwLevel: undefined, 
-							fileName: undefined, 
-							sourceURL: undefined, 
-							line: undefined, 
-							lineNumber: undefined, 
-							columnNumber: undefined, 
-							functionName: undefined, 
-							stack: undefined, 
-							parsedStack: undefined, 
-							parsed: undefined, 
-							trapped: undefined, 
-							description: undefined,
-						})),
+						$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
+							'name',
+							'message',
+						], extenders.UniqueArray))),
 						
 						__value: doodad.PROTECTED(doodad.READ_ONLY(null)),
 						
@@ -6638,20 +7024,19 @@
 								};
 							} else if (types.isError(value)) {
 								types.Error.prototype.parse.call(value);
+								var type = value.constructor;
 								var tmp = {
-										name: this.$pack(value.name),
-										message: this.$pack(value.message || value.description),
-									},
-									self = this;
-								value = tools.forEach(value, function(value, key) {
-									if (!types.has(self.$ERROR_IGNORED_ATTRIBUTES, key)) {
-										tmp[key] = self.$pack(value);
+									type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : ''),
+								};
+								var self = this;
+								tools.forEach(self.$ERROR_ATTRIBUTES, function(key) {
+									if (types.hasKeyInherited(value, key)) {
+										tmp[key] = self.$pack(value[key]);
 									};
 								});
-								value = tmp;
 								data = {
 									type: 'error',
-									value: value,
+									value: tmp,
 								};
 							} else if (types.isArray(value)) {
 								value = tools.map(value, this.$pack, this);
@@ -6693,11 +7078,21 @@
 								} else if (type === 'nan') {
 									value = NaN;
 								} else if (type === 'error') {
-									var tmp = new types.Error(value.message),
+									var cls;
+									if (value.type) {
+										var clsName = value.type.slice(1, -1);
+										cls = namespaces.get(clsName);
+										if (!types.isErrorType(cls)) {
+											throw new types.TypeError("Error of type '~0~' can't be deserialized.", [clsName]);
+										};
+									} else {
+										cls = _shared.Natives.windowError;
+									};
+									var tmp = new cls(),
 										self = this;
-									value = tools.forEach(value, function(value, key) {
-										if (!types.has(self.$ERROR_IGNORED_ATTRIBUTES, key)) {
-											tmp[key] = self.$unpack(value);
+									tools.forEach(self.$ERROR_ATTRIBUTES, function(key) {
+										if (types.has(value, key)) {
+											tmp[key] = self.$unpack(value[key]);
 										};
 									});
 									value = tmp;
@@ -6735,29 +7130,8 @@
 						},
 					})));
 			},
-			
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

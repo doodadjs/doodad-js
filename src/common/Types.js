@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Types.js - Types management
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			bootstrap: true,
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -51,8 +38,9 @@
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
-					types = doodad.Types;
+				var doodad = root.Doodad,  // pre-defined from Bootstrap.js
+					types = doodad.Types,  // pre-defined from Bootstrap.js
+					tools = doodad.Tools;  // pre-defined from Bootstrap.js
 				
 				//===================================
 				// Internal
@@ -75,7 +63,7 @@
 				
 				types.complete(_shared.Natives, {
 					// No polyfills
-					
+
 					// "toArray"
 					arrayConstructor: __Internal__.arrayObj.constructor,
 					
@@ -108,6 +96,8 @@
 					// "isObjectLikeAndNotEmpty", "hasIndex"
 					windowNumber: global.Number,
 
+					// "keysInherited", "symbolsInherited"
+					windowObjectPrototype: global.Object.prototype,
 					
 					// Polyfills
 					
@@ -163,7 +153,7 @@
 				});
 				
 				types.toObject = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -188,23 +178,33 @@
 						};
 					});
 				
-				types.toArray = root.DD_DOC(
-					//! REPLACE_BY("null")
+				types.toArray = (_shared.Natives.arrayFrom || root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
-										type: 'any',
+										type: 'string,array,arraylike',
 										optional: false,
 										description: "A value to convert.",
+									},
+									mapFn: {
+										type: 'function',
+										optional: true,
+										description: "A transform function.",
+									},
+									thisObj: {
+										type: 'any',
+										optional: true,
+										description: "When 'mapFn' is specified, specifies 'this'. Default is 'undefined'.",
 									},
 								},
 								returns: 'array',
 								description: "Converts a value to an array.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.arrayFrom || function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
+					, function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
 						if (types.isNothing(obj)) {
 							throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
 						};
@@ -213,25 +213,18 @@
 							fill = false;
 						if (types.isString(obj)) {
 							result = _shared.Natives.arraySlice.call(obj);
-						} else if (types.isArrayLike(obj)) {
+						} else { //if (types.isArrayLike(obj)) {
 							if (obj.length === 1) {
 								// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
 								result = [obj[0]];
 							} else {
 								result = _shared.Natives.arrayConstructor.apply(null, obj);
 							};
-						} else {
-							result = _shared.Natives.arrayConstructor.call(null, obj.length >>> 0);
-							fill = true;
 						};
 						var len = result.length;
 						if (mapFn) {
 							for (var key = 0; key < len; key++) {
 								result[key] = mapFn.call(thisObj, result[key], key);
-							};
-						} else if (fill) {
-							for (var key = 0; key < len; key++) {
-								result[key] = undefined;
 							};
 						};
 						return result;
@@ -241,15 +234,13 @@
 				// Options
 				//===================================
 					
-				var __options__ = types.extend({
+				var __options__ = types.nullObject({
 					toSourceItemsCount: 255,		// Max number of items
-					trapUnhandledRejections: true,    // "true" will trap unhandled promise rejections, "false" will not
 					unhandledRejectionsTimeout: 1000,
 					unhandledRejectionsMaxSize: 20,
 				}, _options);
 
 				__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
-				__options__.trapUnhandledRejections = types.toBoolean(__options__.trapUnhandledRejections);
 				__options__.unhandledRejectionsTimeout = types.toInteger(__options__.unhandledRejectionsTimeout);
 				__options__.unhandledRejectionsMaxSize = types.toInteger(__options__.unhandledRejectionsMaxSize);
 
@@ -270,7 +261,7 @@
 				//===================================
 
 				types.isArrayAndNotEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -298,7 +289,7 @@
 					});
 				
 				types.isArrayLikeAndNotEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -327,7 +318,7 @@
 					});
 				
 				types.isNothingOrEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -370,7 +361,7 @@
 					});
 				
 				types.isEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -411,7 +402,7 @@
 					});
 				
 				types.isStringAndNotEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -431,7 +422,7 @@
 					});
 				
 				types.isStringAndNotEmptyTrim = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -451,7 +442,7 @@
 					});
 				
 				types.isObjectAndNotEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -490,7 +481,7 @@
 					});
 				
 				types.isObjectLikeAndNotEmpty = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -544,7 +535,7 @@
 				//=======================================================
 					
 				types.gets = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -597,7 +588,7 @@
 					});
 				
 				types.set = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -639,7 +630,7 @@
 					});
 				
 				types.sets = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -683,7 +674,7 @@
 					});
 				
 				types.getsDefault = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -739,10 +730,10 @@
 					});
 				
 				types.keysInherited = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'any',
@@ -759,14 +750,17 @@
 							return [];
 						};
 						obj = _shared.Natives.windowObject(obj);
+						if (obj === _shared.Natives.windowObjectPrototype) {
+							return [];
+						};
 						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
 					});
 				
 				types.symbolsInherited = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -783,11 +777,14 @@
 							return [];
 						};
 						obj = _shared.Natives.windowObject(obj);
+						if (obj === _shared.Natives.windowObjectPrototype) {
+							return [];
+						};
 						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
 					});
 				
 				types.depthComplete = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -845,7 +842,7 @@
 					});
 				
 				types.fill = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -895,10 +892,10 @@
 					});
 				
 				types.isClonable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -917,19 +914,19 @@
 					//! END_REPLACE()
 					, function isClonable(obj, /*optional*/cloneFunctions) {
 						// NOTE: This function will get replaced when "Doodad.js" is loaded.
-						return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(val)));
+						return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || (obj instanceof types.Map) || (obj instanceof types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
 					});
 				
 				types.clone = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 5,
 								params: {
 									obj: {
 										type: 'any',
 										optional: false,
-										description: "A value.",
+										description: "A clonable value.",
 									},
 									depth: {
 										type: 'integer',
@@ -941,12 +938,17 @@
 										optional: true,
 										description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
 									},
+									keepUnlocked: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
+									},
 								},
 								returns: 'any',
 								description: "Clones a value.",
 					}
 					//! END_REPLACE()
-					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions) {
+					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
 						// NOTE: This function will get replaced when "Doodad.js" is loaded.
 						var result;
 
@@ -986,7 +988,7 @@
 									result = types.createObject(types.getPrototypeOf(obj));
 								};
 							} else {
-								return obj;
+								throw new types.Error("Object is not clonable.");
 							};
 
 							// Copy properties
@@ -1010,6 +1012,14 @@
 								props[key] = prop;
 							};
 							types.defineProperties(result, props);
+
+							if (!keepUnlocked) {
+								if (types.isFrozen(obj)) {
+									types.freezeObject(result);
+								} else if (!types.isExtensible(obj)) {
+									types.preventExtensions(result);
+								};
+							};
 						};
 						
 						return result;
@@ -1021,7 +1031,7 @@
 				//========================================
 				
 				types.hasIndex = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1066,7 +1076,7 @@
 					});
 				
 				types.indexes = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1096,7 +1106,7 @@
 					});
 				
 				types.values = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1136,7 +1146,7 @@
 					});
 				
 				types.items = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1177,7 +1187,7 @@
 					});
 				
 				types.available = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1206,7 +1216,7 @@
 					});
 				
 				types.availables =  root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1236,7 +1246,7 @@
 					});
 				
 				types.getFirstIndex =  root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1263,7 +1273,7 @@
 					});
 				
 				types.getFirstValue = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1290,7 +1300,7 @@
 					});
 				
 				types.popAt = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1329,7 +1339,7 @@
 					});
 				
 				types.popItem = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1413,7 +1423,7 @@
 					});
 				
 				types.popItems = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -1504,7 +1514,7 @@
 					});
 				
 				types.prepend = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -1552,7 +1562,7 @@
 				//===================================
 				
 				types.toSource = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 4,
@@ -1735,7 +1745,7 @@
 				//===================================
 				
 				types.Callback = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1767,7 +1777,7 @@
 				__Internal__.Promise = null;
 				
 				types.isPromise = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1790,7 +1800,7 @@
 					});
 				
 				types.getPromise = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -1869,6 +1879,39 @@
 							});
 						};
 					};
+
+					// Bluebird "map" polyfill
+					if (!types.isFunction(Promise.map)) {
+						Promise.map = function _map(ar, fn, /*optional*/options) {
+							options = types.extend({
+								concurrency: Infinity,
+							}, options);
+							
+							if (options.concurrency >= ar.length) {
+								return Promise.all(tools.map(ar, fn));
+							} else {
+								var result = Array(ar.length);
+								var createMaps = function createMaps(index, concurrency) {
+									return Promise.try(function tryCreateMapsPromise() {
+										if (index < ar.length) {
+											var promises = tools.map(ar.slice(index, index + concurrency), fn);
+											return Promise.all(tools.map(promises, function(promise, i) {
+												return promise
+													.then(function(res) {
+														result[index + i] = res;
+														return createMaps(index + promises.length + i, 1);
+													});
+											}));
+										};
+									});
+								};
+								return createMaps(0, options.concurrency)
+									.then(function() {
+										return result;
+									});
+							};
+						};
+					};
 				};
 
 				__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
@@ -1921,7 +1964,6 @@
 							resolvedCb.promise = promise;
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(resolvedCb);
 						} else if (rejectedCb) {
-							this.hasCatch = true;
 							rejectedCb.promise = promise;
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(rejectedCb);
 						} else {
@@ -1931,12 +1973,56 @@
 					};
 					
 					var oldCatch = Promise.prototype['catch'];
-					Promise.prototype['catch'] = function _catch(/*optional*/callback, /*optional*/thisObj) {
-						this.hasCatch = true;
+					Promise.prototype['catch'] = function _catch(/*optional*/filters, /*<<< optional*/callback, /*optional*/thisObj) {
+						if (types.isErrorType(filters)) {
+							filters = [filters];
+						};
+						if (!types.isArray(filters)) {
+							thisObj = callback;
+							callback = filters;
+							filters = null;
+						};
 						if (callback && thisObj) {
 							callback = new _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldCatch.call(this, callback);
+						var promise;
+						if (filters) {
+							// NOTE: Similar to Bluebird, but inside an array
+							// Usage: .catch([IOError, NetworkError, ...], function(){...}, this)
+							// Usage: .catch([{code: 'ENOENTITY'}, ...], function(){...}, this)
+							promise = oldCatch.call(this, function filterCatch(ex) {
+								var ok = false;
+								forEachType: for (var i = 0; i < filters.length; i++) {
+									var type = filters[i];
+									if (types.isFunction(type)) {
+										if (ex instanceof type) {
+											ok = true;
+											break forEachType;
+										};
+									} else {
+										ok = true;
+										var keys = types.keys(type);
+										forEachKey: for (var j = 0; j < keys.length; j++) {
+											var key = keys[j];
+											if (ex[key] !== type[key]) {
+												ok = false;
+												break forEachKey;
+											};
+										};
+										if (ok) {
+											break forEachType;
+										};
+									};
+								};
+								if (ok) {
+									return callback(ex);
+								} else {
+									throw ex;
+								};
+							});
+						} else {
+							promise = oldCatch.call(this, callback);
+						};
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
@@ -1948,7 +2034,6 @@
 					
 					var oldAsCallback = Promise.prototype.asCallback;
 					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
-						this.hasCatch = true;
 						if (callback && thisObj) {
 							callback = new _shared.PromiseCallback(thisObj, callback);
 						};
@@ -1964,7 +2049,6 @@
 					
 					var oldFinally = Promise.prototype['finally'];
 					Promise.prototype['finally'] = function _finally(/*optional*/callback, /*optional*/thisObj) {
-						this.hasCatch = true;
 						if (callback && thisObj) {
 							callback = new _shared.PromiseCallback(thisObj, callback);
 						};
@@ -1977,10 +2061,18 @@
 						};
 						return promise;
 					};
+
+					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
+						return this.then(function(result) {
+							return Promise.create(function(resolve, reject) {
+								return callback.call(thisObj, result, resolve, reject);
+							}, thisObj);
+						}, null, thisObj);
+					};
 				};
 					
 				types.setPromise = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 2,
@@ -2002,6 +2094,7 @@
 								!types.isFunction(Promise.resolve) || 
 								!types.isFunction(Promise.reject) || 
 								!types.isFunction(Promise.all) ||
+								!types.isFunction(Promise.race) ||
 								!types.isFunction(Promise.prototype.then) ||
 								!types.isFunction(Promise.prototype['catch'])
 						) {
@@ -2014,7 +2107,7 @@
 					});
 				
 				_shared.PromiseCallback = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 4,
@@ -2029,12 +2122,17 @@
 									optional: false,
 									description: "Callback function.",
 								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Secret.",
+								},
 							},
 							returns: 'function',
 							description: "Creates a callback handler specially for a Promise.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function PromiseCallback(/*optional*/obj, fn) {
+					, types.setPrototypeOf(function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						var attr;
 						if (types.isString(fn) || types.isSymbol(fn)) {
@@ -2046,10 +2144,7 @@
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-						var insideFn = fn;
-						if (obj) {
-							insideFn = _shared.makeInside(obj, fn);
-						};
+						var insideFn = _shared.makeInside(obj, fn, secret);
 						var callback = function callbackHandler(/*paramarray*/) {
 							try {
 								return insideFn.apply(obj, arguments);
@@ -2084,7 +2179,7 @@
 				
 					
 				types.trapUnhandledRejections = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 0,
@@ -2122,7 +2217,7 @@
 										iter = __Internal__.unhandledRejections.entries(),
 										result;
 										
-									// TODO: for ... of
+									// <FUTURE> for ... of
 									while (result = iter.next()) {
 										if (result.done) {
 											break;
@@ -2147,16 +2242,16 @@
 								};
 								
 								var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
-								//! IF_DEF("serverSide")
+								//! IF_SET("serverSide")
 									if (types.isObject(timer) && types.isFunction(timer.unref)) {
 										// Node.Js: Allows the process to exit
 										timer.unref();
 									};
 								//! END_IF()
-							}
+							};
 							
 							var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
-							//! IF_DEF("serverSide")
+							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
 									// Node.Js: Allows the process to exit
 									timer.unref();
@@ -2171,7 +2266,7 @@
 				//===================================
 
 				types.hasIterators = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2188,7 +2283,7 @@
 				
 				
 				types.isIterable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2215,7 +2310,7 @@
 				
 				// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
 				types.isIteratorLike = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 2,
@@ -2249,7 +2344,7 @@
 				};
 
 				types.hasGenerators = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2265,7 +2360,7 @@
 					}));
 				
 				types.getGeneratorFunction = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2279,7 +2374,7 @@
 					});
 				
 				types.isGeneratorFunction = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -2303,7 +2398,7 @@
 					})));
 				
 				types.isGenerator = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2342,7 +2437,7 @@
 				//===================================
 
 				types.isArrayBuffer = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2386,7 +2481,7 @@
 				};
 					
 				types.isTypedArray = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 0,
@@ -2436,7 +2531,7 @@
 				})();
 				
 				types.isBindable = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 1,
@@ -2456,7 +2551,7 @@
 					});
 				
 				types.bind = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 3,
@@ -2515,7 +2610,7 @@
 					});
 				
 				types.unbind = root.DD_DOC(
-					//! REPLACE_BY("null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
 								revision: 5,
@@ -2879,7 +2974,7 @@
 				// TODO: Move elsewhere
 				//===================================
 				
-				types.HttpStatus = types.freezeObject({
+				types.HttpStatus = types.freezeObject(types.nullObject({
 					// Information
 					Continue: 100,
 					SwitchingProtocol: 101,
@@ -2953,7 +3048,7 @@
 					isError: function isError(status) {
 						return (status >= 400);
 					},
-				});
+				}));
 				
 
 				//===================================
@@ -2966,34 +3061,10 @@
 						} catch(ex) {
 						};
 					};
-					
-					if (__options__.trapUnhandledRejections) {
-						types.trapUnhandledRejections();
-					};
 				};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

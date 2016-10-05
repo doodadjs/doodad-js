@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: Tools_Config.js - Configuration Tools
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	var global = this;
-	
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Tools.Config'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools', 
@@ -76,7 +63,7 @@
 				// Options
 				//===================================
 					
-				var __options__ = types.extend({
+				var __options__ = types.nullObject({
 					configPath: null,
 				}, _options);
 
@@ -101,8 +88,8 @@
 				// Config
 				//===================================
 				
-				config.loadFile = root.DD_DOC(
-					//! REPLACE_BY("null")
+				config.load = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 3,
@@ -133,11 +120,13 @@
 										"You can set the option 'force' to force the file to be read again.",
 					}
 					//! END_REPLACE()
-					, function loadFile(url, /*optional*/options, /*optional*/callbacks) {
+					, function load(url, /*optional*/options, /*optional*/callbacks) {
 						root.DD_ASSERT && root.DD_ASSERT((url instanceof files.Url) || (url instanceof files.Path), "Invalid 'url' argument.");
 						
 						var Promise = types.getPromise();
-							
+						
+						options = types.nullObject(options);
+
 						if (callbacks) {
 							if (types.isArray(callbacks)) {
 								// Remove empty slots.
@@ -151,13 +140,7 @@
 							callbacks = [];
 						};
 						
-						if (options) {
-							options = types.clone(options);
-						} else {
-							options = {};
-						};
-						
-						var configPath = types.get(options, 'configPath', __options__.configPath);
+						var configPath = types.getIn(options, 'configPath', __options__.configPath);
 						if (configPath) {
 							root.DD_ASSERT && root.DD_ASSERT((configPath instanceof files.Url) || (configPath instanceof files.Path), "Invalid 'configPath' option.");
 							url = configPath.combine(url);
@@ -170,7 +153,7 @@
 						if (__Internal__.loadedConfigFiles.has(key)) {
 							var def = __Internal__.loadedConfigFiles.get(key);
 							def.callbacks = types.unique(def.callbacks, callbacks);
-							if (types.get(options, 'force')) {
+							if (options.force) {
 								promise = def.read();
 							} else if (def.ready) {
 								if (types.isError(def.data)) {
@@ -208,7 +191,7 @@
 												promise = Promise.reject(err);
 											} else {
 												try {
-													var encoding = types.get(options, 'encoding', null);
+													var encoding = options.encoding;
 													if (encoding) {
 														// <PRB> "JSON.parse" doesn't like the BOM
 														if (encoding.slice(0, 3).toLowerCase() === 'utf') {
@@ -238,7 +221,7 @@
 							
 							promise = def.read();
 							
-							if (types.get(options, 'watch', false)) {
+							if (options.watch) {
 								files.watch(url, function(eventName, fileName) {
 									if (eventName === 'change') {
 										options.async = true;
@@ -258,27 +241,7 @@
 				//};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

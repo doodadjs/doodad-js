@@ -1,8 +1,7 @@
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: index.js - Module startup file
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -22,10 +21,6 @@
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
 //! END_REPLACE()
-
-//! IF_UNDEF("debug")
-	//! DEFINE("debug", false)
-//! END_IF()
 
 "use strict";
 
