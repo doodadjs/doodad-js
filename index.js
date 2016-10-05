@@ -1,7 +1,6 @@
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: index.js - Temporary startup file. Will get replaced on build.
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -28,7 +27,7 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 
 		const sourceDir = 'doodad-js/src';
-		
+
 		require(sourceDir + "/common/Types.js").add(DD_MODULES);
 		require(sourceDir + "/common/Tools.js").add(DD_MODULES);
 		require(sourceDir + "/common/Tools_Files.js").add(DD_MODULES);
@@ -37,6 +36,7 @@ module.exports = {
 		require(sourceDir + "/common/Namespaces.js").add(DD_MODULES);
 		require(sourceDir + "/common/Doodad.js").add(DD_MODULES);
 		require(sourceDir + "/server/Modules.js").add(DD_MODULES);
+		require(sourceDir + "/server/NodeJs_Base.js").add(DD_MODULES);
 		require(sourceDir + "/server/NodeJs.js").add(DD_MODULES);
 
 		const bootstrap = require(sourceDir + "/common/Bootstrap.js");
