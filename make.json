@@ -1,10 +1,9 @@
 {
 	"//": "Encoding: utf8",
 	"//": "",
-	"//": "    dOOdad - Object-oriented programming framework",
+	"//": "    doodad-js  -  Object-oriented programming framework",
 	"//": "    File: make.json - Make data file",
-	"//": "    Project home: https://sourceforge.net/projects/doodad-js/",
-	"//": "    Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code",
+	"//": "    Project home: https://github.com/doodadjs/",
 	"//": "    Author: Claude Petit, Quebec city",
 	"//": "    Contact: doodadjs [at] gmail.com",
 	"//": "    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !",
@@ -24,192 +23,198 @@
 	"//": "    See the License for the specific language governing permissions and",
 	"//": "    limitations under the License.",
 	"//": "",
-	"modules": [
-		{
-			"src": "common/Bootstrap.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"manual": true
-		},
-		{
-			"src": "common/Doodad.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Namespaces.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Tools.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Tools_Files.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Tools_Config.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Tools_Scripts.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "common/Types.js",
-			"client": true,
-			"server": true,
-			"browserify": true
-		},
-		{
-			"src": "client/Browserify.js",
-			"client": false,
-			"server": false,
-			"browserify": true
-		},
-		{
-			"src": "client/Client.js",
-			"client": true,
-			"server": false,
-			"browserify": true
-		},
-		{
-			"src": "client/Modules.js",
-			"client": true,
-			"server": false,
-			"browserify": true
-		},
-		{
-			"src": "server/Modules.js",
-			"client": false,
-			"server": true,
-			"browserify": false
-		},
-		{
-			"src": "server/NodeJs.js",
-			"client": false,
-			"server": true,
-			"browserify": false
-		},
-		{
-			"src": "test/Unit_Tools.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Array.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Dictionary.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Files.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Files_Path.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Files_Urls.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_Misc.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Tools_String.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_Array.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_Conversion.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_Dictionary.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_Is.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_ToSource.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		},
-		{
-			"src": "test/Unit_Types_Type.js",
-			"client": true,
-			"server": true,
-			"browserify": true,
-			"test": true
-		}
-	],
+  "modules": [
+    {
+      "src": "common/Bootstrap.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "manual": true
+    },
+    {
+      "src": "common/Doodad.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Namespaces.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools_Files.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools_Config.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools_Scripts.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Types.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "client/Browserify.js",
+      "client": false,
+      "server": false,
+      "browserify": true
+    },
+    {
+      "src": "client/Client.js",
+      "client": true,
+      "server": false,
+      "browserify": true
+    },
+    {
+      "src": "client/Modules.js",
+      "client": true,
+      "server": false,
+      "browserify": true
+    },
+    {
+      "src": "server/Modules.js",
+      "client": false,
+      "server": true,
+      "browserify": false
+    },
+    {
+      "src": "server/NodeJs_Base.js",
+      "client": false,
+      "server": true,
+      "browserify": false
+    },
+    {
+      "src": "server/NodeJs.js",
+      "client": false,
+      "server": true,
+      "browserify": false
+    },
+    {
+      "src": "test/Unit_Tools.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Array.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Dictionary.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Files.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Files_Path.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Files_Urls.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_Misc.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Tools_String.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_Array.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_Conversion.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_Dictionary.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_Is.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_ToSource.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
+      "src": "test/Unit_Types_Type.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    }
+  ],
 	"tasks": {
 		"make": {
 			"operations": [
