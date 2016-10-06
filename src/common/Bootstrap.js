@@ -556,7 +556,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							str: {
 								type: 'string',
@@ -608,30 +608,24 @@
 						last = index + sepLen;
 						limit--;
 					};
-					if (last === 0) {
-						// Separator not found
-						result[result.length] = str;
-					} else if ((limit <= 1) && (last <= str.length)) {
+					if ((limit > 0) && (last <= str.length)) {
 						// Remaining
 						result[result.length] = str.slice(last);
 					};
 				} else { // RegExp
-					var last = 0,
-						matches;
+					var matches,
+						strLen = str.length;
 					result = [];
 					separator.lastIndex = 0;
 					while ((limit > 1) && (matches = separator.exec(str))) {
 						var index = matches.index;
-						result[result.length] = str.slice(last, index);
-						last = index + matches[0].length;
+						result[result.length] = str.slice(0, index);
+						str = str.slice(index + matches[0].length);
 						limit--;
 					};
-					if (last === 0) {
-						// Separator not found
-						result[result.length] = str;
-					} else if ((limit <= 1) && (last <= str.length)) {
+					if ((limit > 0) && (str.length <= strLen)) {
 						// Remaining
-						result[result.length] = str.slice(last);
+						result[result.length] = str;
 					};
 				};
 				return result;
