@@ -423,7 +423,7 @@ module.exports = {
 
 					function createObject(entry) {
 						if (entry) {
-							options = types.get(options, entry.spec.name);
+							options = ((entry instanceof entries.Package) ? options : types.get(options, entry.spec.name));
 							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
 								var keysBefore = null;
 								if (entry.options.protect && types.hasDefinePropertyEnabled()) {
