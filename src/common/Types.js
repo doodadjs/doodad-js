@@ -2149,7 +2149,7 @@ module.exports = {
 							try {
 								return insideFn.apply(obj, arguments);
 							} catch(ex) {
-								if (ex instanceof types.ScriptInterruptedError) {
+								if (ex.bubble) {
 									throw ex;
 								} else {
 									if (!ex.trapped) {
