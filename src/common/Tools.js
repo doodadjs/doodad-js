@@ -1488,10 +1488,10 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
-									type: 'arraylike,object,Map,Set',
+									type: 'arraylike,object,Map,Set,Iterable',
 									optional: false,
 									description: "An object to analyze.",
 								},
@@ -1558,6 +1558,14 @@ module.exports = {
 										return false;
 									};
 								};
+							} else if (types.isIterable(obj)) {
+								var key = 0,
+									item;
+								while ((item = obj.next()) && !item.done) {
+									if (invert === !!items.call(thisObj, item.value, key++, obj)) {
+										return false;
+									};
+								};
 							} else {
 								// "Object.assign" Polyfill from Mozilla Developer Network.
 								var keys = types.keys(obj),
@@ -1593,7 +1601,14 @@ module.exports = {
 										return false;
 									};
 								};
-								
+							} else if (types.isIterable(obj)) {
+								var key = 0,
+									item;
+								while ((item = obj.next()) && !item.done) {
+									if (invert === (tools.findItem(items, item.value, undefined, true) !== null)) {
+										return false;
+									};
+								};
 							} else {
 								// "Object.assign" Polyfill from Mozilla Developer Network.
 								var keys = types.keys(obj),
@@ -1615,10 +1630,10 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
-									type: 'arraylike,object,Map,Set',
+									type: 'arraylike,object,Map,Set,Iterable',
 									optional: false,
 									description: "An object to analyze.",
 								},
@@ -1683,6 +1698,14 @@ module.exports = {
 											return true;
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									var key = 0,
+										item;
+									while ((item = obj.next()) && !item.done) {
+										if (invert === !items.call(thisObj, item.value, key++, obj)) {
+											return true;
+										};
+									};
 								} else {
 									// "Object.assign" Polyfill from Mozilla Developer Network.
 									var keys = types.keys(obj),
@@ -1717,6 +1740,14 @@ module.exports = {
 											break;
 										};
 										if (invert === (tools.findItem(items, entry.value[1], undefined, true) === null)) {
+											return true;
+										};
+									};
+								} else if (types.isIterable(obj)) {
+									var key = 0,
+										item;
+									while ((item = obj.next()) && !item.done) {
+										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
 											return true;
 										};
 									};
