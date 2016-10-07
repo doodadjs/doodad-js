@@ -622,6 +622,7 @@
 						result[result.length] = str.slice(0, index);
 						str = str.slice(index + matches[0].length);
 						limit--;
+						separator.lastIndex = 0;
 					};
 					if ((limit > 0) && (str.length <= strLen)) {
 						// Remaining
