@@ -55,16 +55,6 @@ module.exports = {
 				//===================================
 				// <FUTURE> Thread context
 				var __Internal__ = {
-					versionIdentifiers: types.nullObject({
-						development: -4, dev: -4, d: -4, 
-						alpha: -3, a: -3, 
-						beta: -2, b: -2, 
-						stable: -1, s: -1, 
-						release: 0, r: 0, 
-						production: 1, prod: 1, p: 1, 
-						established: 2, e: 2,
-					}),
-					
 					waitCounter: 0,
 					waiting: false,
 				};
@@ -88,6 +78,16 @@ module.exports = {
 						__Internal__.waitCounter = 0;
 					};
 				};
+
+				namespaces.VersionIdentifiers = types.freezeObject(types.nullObject({
+					development: -4, dev: -4, d: -4, 
+					alpha: -3, a: -3, 
+					beta: -2, b: -2, 
+					stable: -1, s: -1, 
+					release: 0, r: 0, 
+					production: 1, prod: 1, p: 1, 
+					established: 2, e: 2,
+				}));
 				
 				namespaces.get = root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -227,7 +227,7 @@ module.exports = {
 									};
 									var depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (version && depEntry && depEntry.version) {
-										if (tools.Version.compare(depEntry.version, tools.Version.parse(version, __Internal__.versionIdentifiers)) > 0) {
+										if (tools.Version.compare(depEntry.version, tools.Version.parse(version, namespaces.VersionIdentifiers)) > 0) {
 											// Higher version expected
 											depEntry = null;
 										};
@@ -1187,7 +1187,7 @@ module.exports = {
 								namespaceType: types.getType(namespace),
 							});
 							this.namespace = namespace;
-							this.version = this.spec.version && tools.Version.parse(this.spec.version, __Internal__.versionIdentifiers);
+							this.version = this.spec.version && tools.Version.parse(this.spec.version, namespaces.VersionIdentifiers);
 							
 							this.options = types.nullObject(options);
 							
