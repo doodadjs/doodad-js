@@ -2034,7 +2034,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											str: {
 												type: 'string',
@@ -2058,9 +2058,7 @@ module.exports = {
 									
 									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(options) || types.isObject(options), "Invalid options.");
 									
-									if (!options) {
-										options = {};
-									};
+									options = types.nullObject(options);
 									
 									//var dontThrow = types.getDefault(options, 'dontThrow', false);
 
@@ -2114,23 +2112,22 @@ module.exports = {
 						},
 						/*instanceProto*/
 						{
-							data: null,
-							options: null,
+							data: types.READ_ONLY(null),
+							options: types.READ_ONLY(null),
 							
 							_new: types.SUPER(function _new(data, /*optional*/options) {
 								this._super();
-								//if (new.target) {
-								if (this instanceof tools.Version) {
-									this.data = data;
-									this.options = (options || {});
-								};
+								_shared.setAttributes(this, {
+									data: data,
+									options: types.nullObject(options),
+								});
 							}),
 							
 							compare: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											version: {
 												type: 'string,Version',
@@ -2148,7 +2145,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function compare(version, /*optional*/options) {
-									options = types.extend({}, this.options, options);
+									options = types.nullObject(this.options, options);
 									if (!(version instanceof tools.Version)) {
 										version = types.getType(this).parse(version, options);
 									};
@@ -2156,7 +2153,7 @@ module.exports = {
 										data1Len = data1.length,
 										data2 = version.data,
 										data2Len = data2.length,
-										count = types.get(options, 'count', (Math.max(data1Len, data2Len) / 2)),
+										count = types.getIn(options, 'count', (Math.max(data1Len, data2Len) / 2)),
 										j = 0,
 										k = 0;
 									for (var i = 0; i < count; i++) {
@@ -2189,17 +2186,15 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: null,
 										returns: 'string',
 										description: "Converts to string.",
 								}
 								//! END_REPLACE()
 								, function toString(/*optional*/options) {
-									if (!options) {
-										options = {};
-									};
-									var identifiers = types.get(options, 'identifiers', this.options.identifiers);
+									//options = types.nullObject(options);
+									//var identifiers = types.getIn(options, 'identifiers', this.options.identifiers);
 									var result = '';
 									var data = this.data,
 										dataLen = data.length;
