@@ -4521,7 +4521,7 @@
 					} else if (hasOwn && descWritable && !options) {
 						obj[attr] = value;
 					} else if (descConfigurable) {
-						if (options) {
+						if (options && types.hasDefinePropertyEnabled()) {
 							if ('all' in options) {
 								descriptor = {
 									configurable: ('configurable' in options ? options.configurable : options.all),
