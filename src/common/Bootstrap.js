@@ -3225,7 +3225,6 @@
 				fromSource: true,				// When 'true', loads source code instead of built code
 				enableProperties: true,			// When 'true', enables "defineProperty"
 				// SLOW enableProxies: true,	// Enables or disables ES6 Proxies
-				enableProtection: true,			// When 'true', "__Internal__.protectObject" is enabled if 'enableProperties' is also 'true'.
 				enableAsserts: true,			// When 'true', enables asserts.
 			//! END_IF()
 			
@@ -3237,7 +3236,6 @@
 		__options__.enableProperties = types.toBoolean(__options__.enableProperties);
 		__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
 		__options__.enableProxies = types.toBoolean(__options__.enableProxies);
-		__options__.enableProtection = types.toBoolean(__options__.enableProtection);
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
 		types.freezeObject(__options__);
