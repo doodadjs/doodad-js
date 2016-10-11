@@ -109,11 +109,7 @@
 		__Internal__.REGISTER = function REGISTER(type) {
 			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
 			if (types.isType && types.isType(type)) {
-				if ((type === types.Namespace) || (types.baseof && types.baseof(types.Namespace, type))) {
-					type = types.INIT(type, [null, name, 'Doodad.Types.' + name]); // TODO: DD_PARENT
-				} else {
-					type = types.INIT(type);
-				};
+				type = types.INIT(type);
 			};
 			types[name] = type;
 			__Internal__.tempTypes.push(type);
@@ -6120,8 +6116,8 @@
 				}
 			));
 
-		__Internal__.REGISTER(types.Namespace);
-		
+		_shared.setAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
+
 		//===================================
 		// Secret
 		//===================================
@@ -6399,6 +6395,9 @@
 						var entry = new entries.Namespace(root, null, root);
 						namespaces.add(spec.name, entry, nsOptions);
 						
+						delete types.Namespace[__Internal__.symbolInitialized];
+						types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
+
 						forEachType: for (var i = 0; i < __Internal__.tempTypes.length; i++) {
 							var type = __Internal__.tempTypes[i];
 							types.REGISTER(type);
