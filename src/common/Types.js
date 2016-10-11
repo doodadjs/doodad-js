@@ -67,9 +67,8 @@ module.exports = {
 					// "toArray"
 					arrayConstructor: __Internal__.arrayObj.constructor,
 					
-					// "clone", "toArray"
+					// "clone", "toArray", "setPromise"
 					arraySlice: __Internal__.arrayObj.slice,
-					//functionToString: Function.prototype.toString,
 					
 					// "popAt", "popItem", "popItems"
 					arraySplice: __Internal__.arrayObj.splice,
@@ -1818,7 +1817,9 @@ module.exports = {
 					});
 
 				__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
-					// <PRB> Doing ".then(fn).catch(fn)" or ".then(fn, fn)" is very annoying.
+					// NOTE: grrr "Promise" of ES6 is not inheritable. So we have to apply changes directly on Promise !!!!!
+
+					// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
 					// Bluebird "asCallback" polyfill
 					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 						Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
@@ -1915,6 +1916,8 @@ module.exports = {
 				};
 
 				__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
+					// NOTE: grrr "Promise" of ES6 is not inheritable. So we have to apply changes directly on Promise !!!!!
+
 					function getPromiseName(callback) {
 						var original;
 						while (original = types.get(callback, _shared.OriginalValueSymbol)) {
@@ -1923,6 +1926,8 @@ module.exports = {
 						return types.get(callback, _shared.NameSymbol) || types.getFunctionName(callback);
 					};
 
+					// Add "thisObj" argument
+					// Add promise name
 					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
 							callback = new _shared.PromiseCallback(thisObj, callback);
@@ -1934,6 +1939,8 @@ module.exports = {
 						return promise;
 					};
 
+					// Add "thisObj" argument
+					// Add promise name
 					var oldTry = Promise['try'];
 					Promise['try'] = function _try(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
@@ -1947,6 +1954,8 @@ module.exports = {
 						return promise;
 					};
 					
+					// Add "thisObj" argument
+					// Add promise name
 					var oldThen = Promise.prototype.then;
 					Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 						if (!thisObj && !types.isFunction(rejectedCb)) {
@@ -1972,34 +1981,43 @@ module.exports = {
 						return promise;
 					};
 					
+					// Add "thisObj" argument
+					// Add promise name
+					// Add Bluebird polyfill for catch (must be done here).
+					// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
+					// NOTE: Bluebird's filters will get replaced by Doodad's one (no way to add Doodad's extensions otherwise)
 					var oldCatch = Promise.prototype['catch'];
-					Promise.prototype['catch'] = function _catch(/*optional*/filters, /*<<< optional*/callback, /*optional*/thisObj) {
-						if (types.isErrorType(filters)) {
-							filters = [filters];
+					Promise.prototype['catch'] = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/) {
+						var filters = null;
+						var i = 0;
+						forEachArgument: for (; i < arguments.length; i++) {
+							var filter = arguments[i];
+							if (!types.isErrorType(filter) && !types.isJsObject(filter)) {
+								if (i > 0) {
+									filters = _shared.Natives.arraySlice.call(arguments, 0, i);
+								};
+								break forEachArgument;
+							};
 						};
-						if (!types.isArray(filters)) {
-							thisObj = callback;
-							callback = filters;
-							filters = null;
-						};
+						var callback = arguments[i++];
+						var thisObj = arguments[i++];
 						if (callback && thisObj) {
 							callback = new _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise;
 						if (filters) {
-							// NOTE: Similar to Bluebird, but inside an array
-							// Usage: .catch([IOError, NetworkError, ...], function(){...}, this)
-							// Usage: .catch([{code: 'ENOENTITY'}, ...], function(){...}, this)
+							// Usage: .catch(IOError, NetworkError, ..., function(err){...}, this)
+							// Usage: .catch({code: 'ENOENTITY'}, ..., function(err){...}, this)
 							promise = oldCatch.call(this, function filterCatch(ex) {
 								var ok = false;
 								forEachType: for (var i = 0; i < filters.length; i++) {
 									var type = filters[i];
-									if (types.isFunction(type)) {
+									if (types.isFunction(type)) { // isErrorType
 										if (ex instanceof type) {
 											ok = true;
 											break forEachType;
 										};
-									} else {
+									} else { // isJsObject
 										ok = true;
 										var keys = types.keys(type);
 										forEachKey: for (var j = 0; j < keys.length; j++) {
