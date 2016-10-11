@@ -6233,6 +6233,10 @@
 						
 						// Load bootstrap modules
 
+						if (!modules) {
+							modules = {};
+						};
+
 						modules[MODULE_NAME] = {
 							type: 'Package',
 							version: MODULE_VERSION,
