@@ -469,7 +469,7 @@ module.exports = {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 					});
 				
-				types.isSealed = root.DD_DOC(
+				doodad.isSealed = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -5543,7 +5543,7 @@ module.exports = {
 							};
 							
 							// Seal object if it is of a sealed class
-							return this; // TODO: //(types.isSealed(cls) ? types.sealObject(this) : this);
+							return (!forType && doodad.isSealed(cls) ? types.sealObject(this) : this);
 						}),
 					
 					_delete: types.SUPER(
@@ -5555,7 +5555,7 @@ module.exports = {
 							var attributes = this[__Internal__.symbolAttributes];
 							var storage = this[__Internal__.symbolAttributesStorage];
 							var attrs = types.append(types.keys(attributes), types.symbols(attributes));
-							var sealed = types.isSealed(this);
+							var sealed = doodad.isSealed(this);
 								
 							for (var i = attrs.length - 1; i >= 0; i--) {
 								var attr = attrs[i],
