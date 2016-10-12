@@ -18,6 +18,7 @@ $ npm install doodad-js
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
   -  Base classes and interfaces
+  -  Expandable objects (can be extended like a Class)
   -  Custom events management
   -  DOM events management
   -  NodeJs events management
@@ -91,6 +92,7 @@ If you want to load additional Doodad modules :
   - **doodad.SEALED**: Objects instantiated from this class are sealed. https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal
   - **doodad.STATIC**: The class does not allow instantiating.
   - **doodad.ISOLATED**: The class defines an isolated interface. This kind of interface makes the methods separated from the methods of its host class. To get access to them, you must call "getInterface".
+  - **doodad.EXPANDABLE**: Instances of the class can be extended with ".extend". NOTE: You need to call ".create" after to apply the new construction.
 
 ## Attribute Modifiers :
   
