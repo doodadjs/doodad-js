@@ -125,9 +125,10 @@ module.exports = {
 					
 				types.complete(_shared.Natives, {
 					windowRegExp: (global.RegExp || RegExp),
-					
-					windowEscape: (global.escape || escape),
-					windowUnescape: (global.unescape || unescape),
+
+					windowUnescape: (global.unescape || unescape),					
+					windowEncodeURIComponent: global.encodeURIComponent,
+					windowDecodeURIComponent: global.decodeURIComponent,
 				});
 				
 				//===================================
@@ -1363,6 +1364,17 @@ module.exports = {
 				
 				//files.REGISTER(types.createErrorType("UrlError", types.Error));
 
+				__Internal__.decodeURIComponent = function(uri) {
+					// <PRB> decodeURIComponent doesn't unescape "+"
+					uri = tools.replace(uri || '', /\+/g,  " ");
+					try {
+						return _shared.Natives.windowDecodeURIComponent(uri);
+					} catch(ex) {
+						// <PRB> decodeURIComponent throws on invalid hex values and on invalid UTF8 sequences.
+						return _shared.Natives.windowUnescape(uri);
+					};
+				};
+
 				files.UrlArguments = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -1426,13 +1438,13 @@ module.exports = {
 												var arg = tools.split(args[i], '=', 2);
 												var name = arg[0];
 												if (!noEscapes) {
-													name = _shared.Natives.windowUnescape(name);
+													name = __Internal__.decodeURIComponent(name);
 												};
 												var value = null;
 												if (arg.length === 2) {
 													value = arg[1];
 													if (!noEscapes) {
-														value = _shared.Natives.windowUnescape(value);
+														value = __Internal__.decodeURIComponent(value);
 													};
 												};
 												args[i] = {
@@ -1446,11 +1458,12 @@ module.exports = {
 													name = value.name;
 													value = value.value;
 												};
+												value = types.toString(value);
 												if (!noEscapes) {
-													name = _shared.Natives.windowUnescape(name);
+													name = __Internal__.decodeURIComponent(name);
 												};
 												if (!noEscapes) {
-													value = _shared.Natives.windowUnescape(value);
+													value = __Internal__.decodeURIComponent(value);
 												};
 												result.push({
 													name: name,
@@ -1533,13 +1546,13 @@ module.exports = {
 										if (!types.isNothing(name) || !types.isNothing(val)) {
 											if (!types.isNothing(name)) {
 												if (!noEscapes) {
-													name = _shared.Natives.windowEscape(name);
+													name = _shared.Natives.windowEncodeURIComponent(name);
 												};
 												result += name;
 											};
 											if (!types.isNothing(val)) {
 												if (!noEscapes) {
-													val = _shared.Natives.windowEscape(val);
+													val = _shared.Natives.windowEncodeURIComponent(val);
 												};
 												result += '=' + val;
 											};
@@ -1699,9 +1712,9 @@ module.exports = {
 												n = n[0];
 												if (!noEscapes) {
 													if (v) {
-														v = _shared.Natives.windowUnescape(v);
+														v = __Internal__.decodeURIComponent(v);
 													};
-													n = _shared.Natives.windowUnescape(n);
+													n = __Internal__.decodeURIComponent(n);
 												};
 												v = [v];
 											};
@@ -1713,7 +1726,7 @@ module.exports = {
 													if (v.length) {
 														var val = v.shift();
 														if (!noEscapes) {
-															val = _shared.Natives.windowUnescape(val);
+															val = __Internal__.decodeURIComponent(val);
 														};
 														args[i].value = types.toString(val);
 													} else {
@@ -2099,16 +2112,16 @@ module.exports = {
 									
 									if (!noEscapes) {
 										if (domain) {
-											domain = _shared.Natives.windowUnescape(domain);
+											domain = __Internal__.decodeURIComponent(domain);
 										};
 										if (user) {
-											user =  _shared.Natives.windowUnescape(user);
+											user =  __Internal__.decodeURIComponent(user);
 										};
 										if (password) {
-											password = _shared.Natives.windowUnescape(password);
+											password = __Internal__.decodeURIComponent(password);
 										};
-										if (port) {
-											port = _shared.Natives.windowUnescape(port);
+										if (types.isString(port)) {
+											port = __Internal__.decodeURIComponent(port) || null;
 										};
 									};
 									
@@ -2147,7 +2160,7 @@ module.exports = {
 									};
 
 									if (!noEscapes && anchor) {
-										anchor = _shared.Natives.windowUnescape(anchor);
+										anchor = __Internal__.decodeURIComponent(anchor);
 									};
 									
 									if (urlIsArray) {
@@ -2165,7 +2178,7 @@ module.exports = {
 										} else {
 											if (types.isString(path)) {
 												if (!noEscapes) {
-													path = _shared.Natives.windowUnescape(path);
+													path = __Internal__.decodeURIComponent(path);
 												};
 												if (path.length) {
 													path = path.split('/');
@@ -2174,7 +2187,7 @@ module.exports = {
 												};
 											} else {
 												if (!noEscapes) {
-													path = tools.map(path, _shared.Natives.windowUnescape);
+													path = tools.map(path, __Internal__.decodeURIComponent);
 												};
 											};
 										};
@@ -2184,7 +2197,7 @@ module.exports = {
 										} else {
 											if (types.isString(file)) {
 												if (!noEscapes) {
-													file = _shared.Natives.windowUnescape(file);
+													file = __Internal__.decodeURIComponent(file);
 												};
 												if (file.length) {
 													file = file.split('/');
@@ -2193,7 +2206,7 @@ module.exports = {
 												};
 											} else {
 												if (!noEscapes) {
-													file = tools.map(file, _shared.Natives.windowUnescape);
+													file = tools.map(file, __Internal__.decodeURIComponent);
 												};
 											};
 										};
@@ -2475,21 +2488,21 @@ module.exports = {
 									if (!types.isNothing(options.domain)) {
 										if (!types.isNothing(options.user) || !types.isNothing(options.password)) {
 											if (!types.isNothing(options.user)) {
-												result += (noEscapes ? options.user : _shared.Natives.windowEscape(options.user));
+												result += (noEscapes ? options.user : _shared.Natives.windowEncodeURIComponent(options.user));
 											};
 											if (!types.isNothing(options.password)) {
-												result += ':' + (noEscapes ? options.password : _shared.Natives.windowEscape(options.password));
+												result += ':' + (noEscapes ? options.password : _shared.Natives.windowEncodeURIComponent(options.password));
 											};
 											result += '@';
 										}
-										result += (noEscapes ? options.domain : _shared.Natives.windowEscape(options.domain));
+										result += (noEscapes ? options.domain : _shared.Natives.windowEncodeURIComponent(options.domain));
 										if (!types.isNothing(options.port)) {
 											result += ':' + options.port;
 										};
 									};
 									
 									if ((options.path && options.path.length) || !options.isRelative) {
-										var path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEscape)), '').join('/');
+										var path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
 										if (path.length > 1) {
 											path += '/';
 										};
@@ -2506,7 +2519,7 @@ module.exports = {
 										if ((!options.path || !options.path.length) && options.isRelative) {
 											result += '/';
 										};
-										result += (noEscapes ? options.file : _shared.Natives.windowEscape(options.file));
+										result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
 									};
 									
 									if (options.args) {
@@ -2516,7 +2529,7 @@ module.exports = {
 									};
 									
 									if (!types.isNothing(options.anchor)) {
-										result += '#' + (noEscapes ? options.anchor : _shared.Natives.windowEscape(options.anchor));
+										result += '#' + (noEscapes ? options.anchor : _shared.Natives.windowEncodeURIComponent(options.anchor));
 									};
 
 									return result;
