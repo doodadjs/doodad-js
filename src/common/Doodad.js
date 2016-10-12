@@ -469,7 +469,7 @@ module.exports = {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 					});
 				
-				doodad.isSealed = root.DD_DOC(
+				types.isSealedClass = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -485,7 +485,7 @@ module.exports = {
 								description: "Returns 'true' when object is a sealed class. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, function isSealed(obj) {
+					, function isSealedClass(obj) {
 						if (types.isNothing(obj)) {
 							return null;
 						};
@@ -5322,7 +5322,7 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
 					
 						// Set values (NOTE: will be initialized in "_new")
-						_shared.setAttribute(type, __Internal__.symbolAttributesStorage, typeStorage, {configurable: true});
+						_shared.setAttribute(type, __Internal__.symbolAttributesStorage, typeStorage, {configurable: true, writable: true});
 						var values = {};
 						values[__Internal__.symbolAttributes] = destAttributes;
 						values[__Internal__.symbolBase] = base;
@@ -5330,16 +5330,16 @@ module.exports = {
 						values[__Internal__.symbolImplements] = _implements;
 						values[__Internal__.symbolPrototype] = proto;
 						values[__Internal__.symbolModifiers] = modifiers;
-						_shared.setAttributes(type, values, {configurable: true});
+						_shared.setAttributes(type, values, {configurable: true, writable: true});
 
-						_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true});
+						_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true, writable: true});
 						var values = {};
 						values[__Internal__.symbolAttributes] = types.clone(destAttributes);
 						values[__Internal__.symbolBase] = base;
 						values[__Internal__.symbolIsolated] = types.clone(_isolated);
 						values[__Internal__.symbolImplements] = types.clone(_implements);
 						values[__Internal__.symbolPrototype] = proto;
-						_shared.setAttributes(type.prototype, values, {configurable: true});
+						_shared.setAttributes(type.prototype, values, {configurable: true, writable: true});
 
 						return type;
 
@@ -5543,7 +5543,7 @@ module.exports = {
 							};
 							
 							// Seal object if it is of a sealed class
-							return (!forType && doodad.isSealed(cls) ? types.sealObject(this) : this);
+							return (!forType && types.isSealedClass(cls) ? types.sealObject(this) : this);
 						}),
 					
 					_delete: types.SUPER(
@@ -5555,7 +5555,7 @@ module.exports = {
 							var attributes = this[__Internal__.symbolAttributes];
 							var storage = this[__Internal__.symbolAttributesStorage];
 							var attrs = types.append(types.keys(attributes), types.symbols(attributes));
-							var sealed = doodad.isSealed(this);
+							var sealed = types.isSealedClass(this);
 								
 							for (var i = attrs.length - 1; i >= 0; i--) {
 								var attr = attrs[i],

@@ -4469,7 +4469,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							obj: {
 								type: 'object',
@@ -4505,10 +4505,10 @@
 						descWritable = !descriptor || types.get(descriptor, 'writable'),
 						descGet = types.get(descriptor, 'get'),
 						descSet = types.get(descriptor, 'set');
-					if (hasOwn && descSet) {
+					if (descSet && (!options || !options.writable)) {
 						descSet.call(obj, value);
-					} else if (hasOwn && descGet) {
-						if (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value))) {
+					} else if (descGet && (!options || !options.writable)) {
+						if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 						};
