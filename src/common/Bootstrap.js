@@ -4505,9 +4505,9 @@
 						descWritable = !descriptor || types.get(descriptor, 'writable'),
 						descGet = types.get(descriptor, 'get'),
 						descSet = types.get(descriptor, 'set');
-					if (descSet && (!options || !options.writable)) {
+					if (descSet && !options) {
 						descSet.call(obj, value);
-					} else if (descGet && (!options || !options.writable)) {
+					} else if (descGet && !options) {
 						if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));

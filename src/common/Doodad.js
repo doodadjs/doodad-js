@@ -5322,7 +5322,7 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
 					
 						// Set values (NOTE: will be initialized in "_new")
-						_shared.setAttribute(type, __Internal__.symbolAttributesStorage, typeStorage, {configurable: true, writable: true});
+						_shared.setAttribute(type, __Internal__.symbolAttributesStorage, typeStorage, {configurable: true});
 						var values = {};
 						values[__Internal__.symbolAttributes] = destAttributes;
 						values[__Internal__.symbolBase] = base;
@@ -5330,16 +5330,16 @@ module.exports = {
 						values[__Internal__.symbolImplements] = _implements;
 						values[__Internal__.symbolPrototype] = proto;
 						values[__Internal__.symbolModifiers] = modifiers;
-						_shared.setAttributes(type, values, {configurable: true, writable: true});
+						_shared.setAttributes(type, values, {configurable: true});
 
-						_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true, writable: true});
+						_shared.setAttribute(type.prototype, __Internal__.symbolAttributesStorage, instanceStorage, {configurable: true});
 						var values = {};
 						values[__Internal__.symbolAttributes] = types.clone(destAttributes);
 						values[__Internal__.symbolBase] = base;
 						values[__Internal__.symbolIsolated] = types.clone(_isolated);
 						values[__Internal__.symbolImplements] = types.clone(_implements);
 						values[__Internal__.symbolPrototype] = proto;
-						_shared.setAttributes(type.prototype, values, {configurable: true, writable: true});
+						_shared.setAttributes(type.prototype, values, {configurable: true});
 
 						return type;
 
