@@ -321,6 +321,34 @@ Example 4 (traits) :
     console.log(turtle.slowTalk());
 ```
 
+Example 5 (expandable objects) :
+```js
+    const IAnimal = doodad.INIT(doodad.INTERFACE(doodad.Class.$extend({
+        $TYPE_NAME: 'IAnimal',
+
+        makeNoise: doodad.MUST_OVERRIDE(),
+    })));
+
+	const perrot = new doodad.Object();
+	
+	perrot.extend(
+				IAnimal,
+			{
+				phrase: null,
+				create: doodad.OVERRIDE(function(phrase) {
+					this._super();
+					this.phrase = phrase;
+				}),
+				makeNoise: doodad.OVERRIDE(function() {
+					return this.phrase;
+				}),
+			}
+		)
+		.create("Hello world !");
+
+	console.log(perrot.makeNoise());
+```
+
 ## Other available packages
 
   - **doodad-js**: Object-oriented programming framework (release)
