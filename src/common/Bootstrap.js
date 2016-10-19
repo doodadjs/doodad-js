@@ -1041,7 +1041,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1053,32 +1053,21 @@
 						description: "Returns 'true' if object is a number (integer or float). Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowNumber ? (function isNumber(obj) {
-				if (types.isNothing(obj)) {
-					return false;
+			, function isNumber(obj) {
+				if ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Number]')) {
+					obj = obj.valueOf();
 				};
 				if (typeof obj === 'number') {
-					return (obj === obj); // means "not NaN"
-				} else if ((typeof obj === 'object') && (obj instanceof _shared.Natives.windowNumber)) {
-					obj = obj.valueOf();
-					return (obj === obj); // means "not NaN"
-				} else {
-					return false;
+					return (obj === obj); // Not NaN
 				};
-			}) : (function isNumber(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				obj = _shared.Natives.windowObject(obj).valueOf();
-				// Source: Jeremie Patonnier, MDN Documentation 
-				return (+obj === obj);
-			})));
+				return false;
+			});
 		
 		types.isInteger = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1112,7 +1101,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1179,7 +1168,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1214,7 +1203,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1240,7 +1229,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1267,7 +1256,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1279,31 +1268,16 @@
 						description: "Returns 'true' if object is a boolean. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowBoolean ? (function isBoolean(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj === 'boolean') {
-					return true;
-				} else if ((typeof obj === 'object') && (obj instanceof _shared.Natives.windowBoolean)) {
-					return true;
-				} else {
-					return false;
-				};
-			}) : (function isBoolean(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				obj = _shared.Natives.windowObject(obj).valueOf();
-				return ((obj === false) || (obj === true));
-			})));
+			, function isBoolean(obj) {
+				return (typeof obj === 'boolean') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Boolean]'));
+			});
 		
 		// <PRB> JS has no function to test for strings
 		types.isString = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1315,30 +1289,16 @@
 						description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowString ? (function isString(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj === 'string') {
-					return true;
-				} else if ((typeof obj === 'object') && (obj instanceof _shared.Natives.windowString)) {
-					return true;
-				} else {
-					return false;
-				};
-			}) : (function isString(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				return (typeof _shared.Natives.windowObject(obj).valueOf() === 'string');
-			})));
+			, function isString(obj) {
+				return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object String]'));
+			});
 		
 		// <PRB> JS has no function to test for dates
 		types.isDate = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1350,24 +1310,15 @@
 						description: "Returns 'true' if object is a date. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowDate ? (function isDate(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if ((typeof obj === 'object') && (obj instanceof _shared.Natives.windowDate)) {
-					return true;
-				} else {
-					return false;
-				};
-			}) : (function isDate(obj) {
-				return (_shared.Natives.objectToString.call(obj) === '[object Date]');
-			})));
+			, function isDate(obj) {
+				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Date]');
+			});
 		
 		types.isArray = (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1379,11 +1330,9 @@
 						description: "Returns 'true' if object is an array. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowArray ? (function isArray(obj) {
-				return !types.isNothing(obj) && (typeof obj === 'object') && (obj instanceof _shared.Natives.windowArray);
-			}) : (function isArray(obj) {
-				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
-			}))));
+			, function isArray(obj) {
+				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Array]');
+			}));
 
 		types.isArrayLike = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1421,7 +1370,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1434,17 +1383,15 @@
 			}
 			//! END_REPLACE()
 			, function isError(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowError);
+				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
+				return (typeof obj === 'object') && ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof _shared.Natives.windowError));
 			});
 		
 		types.isNaN = (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1460,6 +1407,9 @@
 				//     Unbelievable : There was no official way to detect NaN before ES6 !!!!
 				// Source: http://stackoverflow.com/questions/2652319/how-do-you-check-that-a-number-is-nan-in-javascript
 				// Explanation: NaN is the only object not equal to itself.
+				if ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Number]')) {
+					obj = obj.valueOf();
+				};
 				return (obj !== obj);
 			}));
 		
@@ -1467,7 +1417,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1484,7 +1434,7 @@
 					return false;
 				};
 				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-				return (typeof obj === 'function') || (_shared.Natives.objectToString.call(obj) === '[object Function]');
+				return (typeof obj === 'function') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Function]'));
 			});
 			
 		
@@ -3386,7 +3336,9 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function getSymbolKey(symbol) {
-				symbol = _shared.Natives.windowObject(symbol).valueOf();
+				if ((typeof obj === 'object') && (typeof obj.valueOf === 'function')) {
+					obj = obj.valueOf();
+				};
 				var key = _shared.Natives.symbolKeyFor(symbol);
 				return key;
 			} : function getSymbolKey(symbol) {
@@ -3411,7 +3363,9 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function symbolIsGlobal(symbol) {
-				symbol = _shared.Natives.windowObject(symbol).valueOf();
+				if ((typeof obj === 'object') && (typeof obj.valueOf === 'function')) {
+					obj = obj.valueOf();
+				};
 				return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
 			} : function symbolIsGlobal(symbol) {
 				// Not supported
@@ -4092,7 +4046,7 @@
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
-				if (!(type instanceof Array)) {
+				if (!types.isArray(type)) {
 					type = [type];
 				};
 				if (!types.isFunction(obj)) {
@@ -4144,7 +4098,7 @@
 				if (!types.isFunction(obj)) {
 					obj = obj.constructor;
 				};
-				if (!(type instanceof Array)) {
+				if (!types.isArray(type)) {
 					type = [type];
 				};
 				for (var i = 0; i < type.length; i++) {
@@ -4191,7 +4145,7 @@
 					// Use "isLike"
 					return false;
 				};
-				if (!(base instanceof Array)) {
+				if (!types.isArray(base)) {
 					base = [base];
 				};
 				for (var i = 0; i < base.length; i++) {
@@ -4237,7 +4191,7 @@
 					// Please use "types.baseof"
 					return false;
 				};
-				if (!(type instanceof Array)) {
+				if (!types.isArray(type)) {
 					type = [type];
 				};
 				for (var i = 0; i < type.length; i++) {
