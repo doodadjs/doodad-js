@@ -1,8 +1,7 @@
 {
   "name": "doodad-js",
-  "version": "6.0.0",
-  "stage": "b",
   "description": "Object-oriented programming framework for Javascript",
+  "version": "0.0.0",
   "config": {
     "startup": {
 		"debug": false,
