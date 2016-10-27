@@ -148,11 +148,40 @@
 				return (typeof obj === 'function');
 			});
 		
+		types.isJsClassFunction = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is a Javascript class function, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isJsClassFunction(obj) {
+				if (types.isFunction(obj)) {
+					var str;
+					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
+						str = obj.toString();
+					} else {
+						str = _shared.Natives.functionToString.call(obj);
+					};
+					return /^class[ ]/.test(str);
+				};
+				return false;
+			});
+		
 		types.isNativeFunction = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
-					revision: 0,
+					revision: 1,
 					params: {
 						obj: {
 							type: 'any',
@@ -165,7 +194,9 @@
 			}
 			//! END_REPLACE()
 			, function isNativeFunction(obj) {
-				if (types.isFunction(obj)) {
+				if (types.isJsClassFunction(obj)) {
+					return true;
+				} else if (types.isFunction(obj)) {
 					var str;
 					if (__Internal__.hasIncompatibleFunctionToStringBug && _shared.Natives.objectHasOwnProperty.call(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
@@ -195,7 +226,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -208,7 +239,9 @@
 			}
 			//! END_REPLACE()
 			, function isCustomFunction(obj) {
-				if (types.isFunction(obj)) {
+				if (types.isJsClassFunction(obj)) {
+					return false;
+				} else if (types.isFunction(obj)) {
 					var str;
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
@@ -1370,7 +1403,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1384,7 +1417,7 @@
 			//! END_REPLACE()
 			, function isError(obj) {
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
-				return (typeof obj === 'object') && ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof _shared.Natives.windowError));
+				return (typeof obj === 'object') && ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof types.Error) || (obj instanceof types.TypeError));
 			});
 		
 		types.isNaN = (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
@@ -3982,7 +4015,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'object',
@@ -3991,11 +4024,11 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if object is a function, and not a Doodad type. Returns 'false' otherwise.",
+						description: "Returns 'true' if object is a function, and not a JS class and not a Doodad type. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
+				return types.isFunction(obj) && !types.isJsClassFunction(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
 			});
 
 		types.isJsObject = __Internal__.DD_DOC(
