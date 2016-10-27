@@ -962,7 +962,7 @@ module.exports = {
 								if (isArray) {
 									obj = _shared.Natives.windowObject(obj);
 									if (depth >= 0) {
-										result = Array(obj.length);
+										result = new _shared.Natives.arrayConstructor(obj.length);
 										var len = obj.length;
 										for (var key = 0; key < len; key++) {
 											if (key in obj) {
@@ -1341,7 +1341,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1383,15 +1383,16 @@ module.exports = {
 											};
 										};
 									};
-								};
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									var val = obj[key];
-									if (item.call(thisObj, val, key, obj)) {
-										delete obj[key];
-										return val;
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i];
+										var val = obj[key];
+										if (item.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											return val;
+										};
 									};
 								};
 							} else {
@@ -1406,15 +1407,16 @@ module.exports = {
 											};
 										};
 									};
-								};
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									var val = obj[key];
-									if (val === item) {
-										delete obj[key];
-										return val;
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i];
+										var val = obj[key];
+										if (val === item) {
+											delete obj[key];
+											return val;
+										};
 									};
 								};
 							};
@@ -1425,7 +1427,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1468,15 +1470,16 @@ module.exports = {
 											};
 										};
 									};
-								};
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									var val = obj[key];
-									if (items.call(thisObj, val, key, obj)) {
-										delete obj[key];
-										result.push(val);
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i];
+										var val = obj[key];
+										if (items.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											result.push(val);
+										};
 									};
 								};
 							} else {
@@ -1494,16 +1497,17 @@ module.exports = {
 											};
 										};
 									};
-								};
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									var val = obj[key];
-									for (var j = 0; j < valuesLen; j++) {
-										if (values[j] === val) {
-											delete obj[key];
-											result.push(val);
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i];
+										var val = obj[key];
+										for (var j = 0; j < valuesLen; j++) {
+											if (values[j] === val) {
+												delete obj[key];
+												result.push(val);
+											};
 										};
 									};
 								};
@@ -1817,8 +1821,6 @@ module.exports = {
 					});
 
 				__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
-					// NOTE: grrr "Promise" of ES6 is not inheritable. So we have to apply changes directly on Promise !!!!!
-
 					// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
 					// Bluebird "asCallback" polyfill
 					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
@@ -1884,14 +1886,14 @@ module.exports = {
 					// Bluebird "map" polyfill
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
-							options = types.extend({
+							options = types.nullObject({
 								concurrency: Infinity,
 							}, options);
 							
 							if (options.concurrency >= ar.length) {
 								return Promise.all(tools.map(ar, fn));
 							} else {
-								var result = Array(ar.length);
+								var result = new _shared.Natives.arrayConstructor(ar.length);
 								var createMaps = function createMaps(index, concurrency) {
 									return Promise.try(function tryCreateMapsPromise() {
 										if (index < ar.length) {
@@ -1916,8 +1918,6 @@ module.exports = {
 				};
 
 				__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
-					// NOTE: grrr "Promise" of ES6 is not inheritable. So we have to apply changes directly on Promise !!!!!
-
 					function getPromiseName(callback) {
 						var original;
 						while (original = types.get(callback, _shared.OriginalValueSymbol)) {
@@ -1983,9 +1983,9 @@ module.exports = {
 					
 					// Add "thisObj" argument
 					// Add promise name
-					// Add Bluebird polyfill for catch (must be done here).
+					// Add Bluebird polyfill for catch (must be done there).
 					// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
-					// NOTE: Bluebird's filters will get replaced by Doodad's one (no way to add Doodad's extensions otherwise)
+					// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
 					var oldCatch = Promise.prototype['catch'];
 					Promise.prototype['catch'] = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/) {
 						var filters = null;
@@ -2006,8 +2006,7 @@ module.exports = {
 						};
 						var promise;
 						if (filters) {
-							// Usage: .catch(IOError, NetworkError, ..., function(err){...}, this)
-							// Usage: .catch({code: 'ENOENTITY'}, ..., function(err){...}, this)
+							// Usage: .catch(IOError, NetworkError, {code: 'ENOENTITY'}, ..., function(err){...}, this)
 							promise = oldCatch.call(this, function filterCatch(ex) {
 								var ok = false;
 								forEachType: for (var i = 0; i < filters.length; i++) {
@@ -2093,7 +2092,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								Promise: {
 									type: 'Promise',
@@ -2106,6 +2105,11 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function setPromise(Promise) {
+						if (Promise && (Promise === __Internal__.Promise)) {
+							// Already set
+							return;
+						};
+
 						// Make some tests...
 						if (
 								!types.isFunction(Promise) || 
@@ -2116,12 +2120,37 @@ module.exports = {
 								!types.isFunction(Promise.prototype.then) ||
 								!types.isFunction(Promise.prototype['catch'])
 						) {
-							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'prototype.then' and 'prototype.catch'.");
+							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'race', 'prototype.then' and 'prototype.catch'.");
 						};
 						
-						__Internal__.addPromiseBluebirdPolyfills(Promise);
-						__Internal__.addPromiseDoodadExtensions(Promise);
-						__Internal__.Promise = Promise;
+						var DDPromise = null;
+						if (types.isNativeFunction(Promise)) {
+							try {
+								// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
+								DDPromise = types.eval("class DDPromise extends ctx.Promise {}", {Promise: Promise});
+							} catch(ex) {
+								DDPromise = Promise;
+							};
+						} else {
+							var DDPromise = function() {};
+							DDPromise = types.setPrototypeOf(DDPromise, Promise);
+							DDPromise.prototype = types.createObject(Promise.prototype);
+						};
+
+						var isStillDDPromise = false;
+						try {
+							isStillDDPromise = (DDPromise.resolve(0).then(function() {})['catch'](function() {}) instanceof DDPromise);
+						} catch(ex) {
+						};
+
+						if (!isStillDDPromise) {
+							// Inheriting Promise is not supported !!!
+							DDPromise = Promise;
+						};
+
+						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
+						__Internal__.addPromiseDoodadExtensions(DDPromise);
+						__Internal__.Promise = DDPromise;
 					});
 				
 				_shared.PromiseCallback = root.DD_DOC(
@@ -2759,7 +2788,7 @@ module.exports = {
 							} else if (ar instanceof types.Map) {
 								var mapAr = ar.__keys,
 									mapVals = ar.__values,
-									newAr = new Array(mapAr.length);
+									newAr = new _shared.Natives.arrayConstructor(mapAr.length);
 								for (var i = 0; i < mapAr.length; i++) {
 									newAr[i] = [mapAr[i], mapVals[i]];
 								};
