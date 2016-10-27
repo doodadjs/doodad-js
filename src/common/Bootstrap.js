@@ -117,6 +117,31 @@
 		};
 
 		//===================================
+		// ES6 Classes support
+		//===================================
+
+		__Internal__.hasClasses = false;
+		try {
+			eval("class A {}");
+			__Internal__.hasClasses = true;
+		} catch(ex) {
+		};
+
+		types.supportsES6Classes = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'bool',
+					description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function supportsES6Classes() {
+				return __Internal__.hasClasses;
+			});
+
+		//===================================
 		// Native functions
 		//===================================
 		// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
@@ -148,11 +173,11 @@
 				return (typeof obj === 'function');
 			});
 		
-		types.isJsClassFunction = __Internal__.DD_DOC(
+		types.isJsClass = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -164,7 +189,7 @@
 						description: "Returns 'true' if object is a Javascript class function, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function isJsClassFunction(obj) {
+			, __Internal__.hasClasses ? function isJsClass(obj) {
 				if (types.isFunction(obj)) {
 					var str;
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
@@ -174,6 +199,8 @@
 					};
 					return /^class[ ]/.test(str);
 				};
+				return false;
+			} : function isJsClass(obj) {
 				return false;
 			});
 		
@@ -194,7 +221,7 @@
 			}
 			//! END_REPLACE()
 			, function isNativeFunction(obj) {
-				if (types.isJsClassFunction(obj)) {
+				if (types.isJsClass(obj)) {
 					return true;
 				} else if (types.isFunction(obj)) {
 					var str;
@@ -239,7 +266,7 @@
 			}
 			//! END_REPLACE()
 			, function isCustomFunction(obj) {
-				if (types.isJsClassFunction(obj)) {
+				if (types.isJsClass(obj)) {
 					return false;
 				} else if (types.isFunction(obj)) {
 					var str;
@@ -4028,14 +4055,14 @@
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !types.isJsClassFunction(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
+				return types.isFunction(obj) && !types.isJsClass(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
 			});
 
 		types.isJsObject = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'object',
@@ -4048,7 +4075,7 @@
 			}
 			//! END_REPLACE()
 			, function isJsObject(obj) {
-				return ((_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type));
+				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
 			});
 
 		types.is = __Internal__.DD_DOC(
