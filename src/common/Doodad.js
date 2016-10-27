@@ -107,6 +107,9 @@ module.exports = {
 					symbolStack: types.getSymbolFor('__STACK__'),
 					symbolSorted: types.getSymbolFor('__SORTED__'),
 					
+					// Callers
+					symbolOk: types.getSymbolFor('__OK__'),
+
 					// Callers & AttributeBox
 					symbolCalled: types.getSymbolFor('__CALLED__'),
 					symbolPosition: types.getSymbolFor('__POSITION__'),
@@ -120,6 +123,7 @@ module.exports = {
 					symbolRenamedFrom: types.getSymbolFor('__RENAMED_FROM__'),
 					symbolRenamedTo: types.getSymbolFor('__RENAMED_TO__'),
 					symbolOverrideWith: types.getSymbolFor('__OVERRIDE_WITH__'),
+					symbolReplacedCallers: types.getSymbolFor('__REPLACED_CALLERS__'),
 					
 					// Creatable
 					symbolDestroyed: types.getSymbolFor('__destroyed'),
@@ -2255,9 +2259,24 @@ module.exports = {
 										};
 									};
 
+									var validateReturnedValue = function validateReturnedValue(retval) {
+										if (root.getOptions().debug || __options__.enforcePolicies) {
+											var validator = attribute[__Internal__.symbolReturns];
+											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+											if (validator && !validator.call(this, retVal)) {
+												if (attr === 'toString') {
+													return tools.format("Invalid returned value from method '~0~'.", [attr]);
+												} else {
+													throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+												};
+											};
+										};
+									};
+
 									var caller = _dispatch[__Internal__.symbolCallers][0];
 									if (!caller) {
 										// No caller
+										validateReturnedValue(undefined);
 										return;
 									};
 									
@@ -2306,17 +2325,7 @@ module.exports = {
 											};
 										};
 										
-										if (root.getOptions().debug || __options__.enforcePolicies) {
-											var validator = attribute[__Internal__.symbolReturns];
-											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-											if (validator && !validator.call(this, retVal)) {
-												if (attr === 'toString') {
-													return tools.format("Invalid returned value from method '~0~'.", [attr]);
-												} else {
-													throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
-												};
-											};
-										};
+										validateReturnedValue(retVal);
 										
 										return retVal;
 										
@@ -2507,6 +2516,11 @@ module.exports = {
 									destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
 								};
 								
+								var replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
+								if (sourceAttribute && sourceAttribute[__Internal__.symbolReplacedCallers]) {
+									destAttribute[__Internal__.symbolReplacedCallers] = replacedCallers = types.unique(replacedCallers, sourceAttribute[__Internal__.symbolReplacedCallers]);
+								};
+
 								var modifiers = ((destAttribute[__Internal__.symbolModifiers] || 0) & doodad.preservedMethodModifiers) | (sourceAttribute[__Internal__.symbolModifiers] || 0);
 								
 								if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
@@ -2519,21 +2533,31 @@ module.exports = {
 													throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
 											};
-											callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
+											var caller = this.createCaller(attr, sourceAttribute, destAttribute);
+											callersOrFn = [caller];
 										};
 										var toRemove = 0;
-										if ((start > 0) && callersOrFn.length && ((callersOrFn[0][__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.Replace)) {
+										var caller = callersOrFn[start - 1];
+										var callerModifiers = caller && caller[__Internal__.symbolModifiers] || 0;
+										if ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) {
 											// Replace "call firsts"
-											toRemove = start;
+											if (sourceIsProto) {
+												toRemove = start;
+											};
 											start = 0;
 										};
-										if (callersOrFn.length && ((callersOrFn[callersOrFn.length - 1][__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.Replace)) {
+										caller = callersOrFn[callersOrFn.length - 1];
+										callerModifiers = caller && caller[__Internal__.symbolModifiers] || 0;
+										if (sourceIsProto && ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === doodad.MethodModifiers.Replace)) {
 											// Replace non "call firsts"
 											toRemove = destCallers.length - start;
 										};
-										_shared.Natives.arraySplice.apply(destCallers, types.append([start, toRemove], callersOrFn));
+										var removed = _shared.Natives.arraySplice.apply(destCallers, types.append([start, toRemove], callersOrFn));
+										destAttribute[__Internal__.symbolReplacedCallers] = types.append(replacedCallers, removed);
+										if (sourceAttribute) {
+											destAttribute[__Internal__.symbolCallFirstLength] = start + sourceAttribute[__Internal__.symbolCallFirstLength];
+										};
 									};
-									destAttribute[__Internal__.symbolCallFirstLength] = start + (sourceAttribute ? sourceAttribute[__Internal__.symbolCallFirstLength] : 0);
 								} else {
 									// Create
 									if (sourceIsProto) {
@@ -2616,6 +2640,8 @@ module.exports = {
 								
 								var callers = types.unbox(destAttribute);
 
+								var replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
+
 								// Remove duplicated callers and update "call first" length
 								destAttribute[__Internal__.symbolCallFirstLength] = callers.length;
 								var caller,
@@ -2629,26 +2655,46 @@ module.exports = {
 										break;
 									};
 									proto = caller[__Internal__.symbolPrototype];
-									j = i + 1;
-									while (j < callers.length) {
-										if (callers[j][__Internal__.symbolPrototype] === proto) {
-											callers.splice(j, 1);
-										} else {
-											j++;
+									var deleted = false;
+									for (var j = 0; j < replacedCallers.length; j++) {
+										if (replacedCallers[j][__Internal__.symbolPrototype] === proto) {
+											callers.splice(i, 1);
+											deleted = true;
+											break;
 										};
 									};
-									i++;
+									if (!deleted) {
+										j = i + 1;
+										while (j < callers.length) {
+											if (callers[j][__Internal__.symbolPrototype] === proto) {
+												callers.splice(j, 1);
+											} else {
+												j++;
+											};
+										};
+										i++;
+									};
 								};
 								i = callers.length - 1;
 								while (i >= destAttribute[__Internal__.symbolCallFirstLength]) {
 									proto = callers[i][__Internal__.symbolPrototype];
-									j = i - 1;
-									while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
-										if (callers[j][__Internal__.symbolPrototype] === proto) {
-											_shared.Natives.arraySplice.call(callers, j, 1);
-											i--;
+									var deleted = false;
+									for (var j = 0; j < replacedCallers.length; j++) {
+										if (replacedCallers[j][__Internal__.symbolPrototype] === proto) {
+											callers.splice(i, 1);
+											deleted = true;
+											break;
 										};
-										j--;
+									};
+									if (!deleted) {
+										j = i - 1;
+										while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
+											if (callers[j][__Internal__.symbolPrototype] === proto) {
+												_shared.Natives.arraySplice.call(callers, j, 1);
+												i--;
+											};
+											j--;
+										};
 									};
 									i--;
 								};
@@ -2659,7 +2705,7 @@ module.exports = {
 									var callerI = callers[i],
 										position = callerI[__Internal__.symbolPosition],
 										found = false;
-									if (position && !position.ok) {
+									if (position && !position[__Internal__.symbolOk]) {
 										var proto = _shared.getAttribute(position.cls, __Internal__.symbolPrototype);
 										for (var j = 0; j < callers.length; j++) {
 											var callerJ = callers[j];
@@ -2683,7 +2729,7 @@ module.exports = {
 												if (pos < destAttribute[__Internal__.symbolCallFirstLength]) {
 													destAttribute[__Internal__.symbolCallFirstLength]++;
 												};
-												position.ok = true;
+												position[__Internal__.symbolOk] = true;
 												found = true;
 												break;
 											};
@@ -2700,7 +2746,7 @@ module.exports = {
 									var callerI = callers[i],
 										position = callerI[__Internal__.symbolPosition];
 									if (position) {
-										delete position.ok;
+										delete position[__Internal__.symbolOk];
 									};
 								};
 
