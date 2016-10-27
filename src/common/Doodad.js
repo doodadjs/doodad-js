@@ -2294,8 +2294,6 @@ module.exports = {
 									__Internal__.invokedClass = type;
 									
 									try {
-										
-										
 										caller[__Internal__.symbolCalled] = false;
 										
 										var retVal = caller.apply(this, arguments);
@@ -3253,20 +3251,31 @@ module.exports = {
 									description: "Creates a promise for an event.",
 							}
 							//! END_REPLACE()
-							, function promise() {
+							, function promise(/*optional*/callback, /*optional*/thisObj) {
 								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 								var Promise = types.getPromise();
+								if (callback) {
+									callback = new _shared.PromiseCallback(thisObj, callback);
+								};
 								return Promise.create(function eventPromise(resolve, reject) {
 										var self = this,
 											obj = this[__Internal__.symbolObject],
 											fn = null,
 											errorFn = null;
-										this.attachOnce(null, fn = function(ev) {
+										this.attachOnce(null, fn = function onSuccess(ev) {
 											obj.onError.detach(null, errorFn);
-											resolve(ev);
+											if (callback) {
+												try {
+													resolve(callback(ev));
+												} catch(ex) {
+													reject(ex);
+												};
+											} else {
+												resolve(ev);
+											};
 										});
 										if (obj.onError) {
-											obj.onError.attachOnce(null, errorFn = function(ev) {
+											obj.onError.attachOnce(null, errorFn = function onError(ev) {
 												self.detach(null, fn);
 												reject(ev.error);
 											});
@@ -3799,23 +3808,23 @@ module.exports = {
 							
 							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
-							var i = 0;
-							while (i < stack.length) {
-								var data = stack[i],
-									obj = data[0],
-									cb = data[5];
-									
-								_shared.setAttribute(ev, 'handlerData', data[3]);
+							var stackClone = types.clone(stack);
 
-								var retval = cb.call(obj, ev);
-								
-								data[4]--;
-								if (data[4] === 0) {
-									stack.splice(i, 1);
-								} else {
-									i++;
+							for (var i = 0; i < stackClone.length; i++) {
+								var data = stackClone[i];
+									
+								var retval;
+								var count = data[4];
+								if (types.isNothing(count) || (count > 0)) {
+									if (count > 0) {
+										data[4]--;
+									};
+
+									_shared.setAttribute(ev, 'handlerData', data[3]);
+
+									retval = data[5].call(data[0], ev);
 								};
-								
+
 								if ((retval === false) && cancellable) {
 									ev = new doodad.CancelEvent({
 										event: ev,
@@ -3826,6 +3835,10 @@ module.exports = {
 									break;
 								};
 							};
+
+							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
+								return (data[4] <= 0);
+							});
 						};
 						
 						return cancelled;
