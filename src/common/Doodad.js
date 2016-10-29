@@ -3738,7 +3738,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								fn: {
 									type: 'AttributeBox,function',
@@ -3751,11 +3751,15 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function METHOD(/*optional*/fn) {
+						var val = types.unbox(fn);
 						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
 							root.DD_ASSERT(types.isNothing(val) || (types.isJsFunction(val) && types.isBindable(val)), "Invalid function.");
 						};
-						return doodad.ATTRIBUTE(fn, extenders.Method);
+						if (types.isAsyncFunction(val)) {
+							return doodad.ASYNC(fn);
+						} else {
+							return doodad.ATTRIBUTE(fn, extenders.Method);
+						};
 					});
 
 				doodad.JS_METHOD = root.DD_DOC(
@@ -4423,7 +4427,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							paramsDirection: 'rightToLeft',
 							params: {
 								fn: {
@@ -4450,15 +4454,10 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 						};
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
 						fn[__Internal__.symbolInterface] = _interface;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.OVERRIDE = root.DD_DOC(
@@ -4492,15 +4491,10 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 						};
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
 						fn[__Internal__.symbolInterface] = _interface;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.CREATE_REPLACE = root.DD_DOC(
@@ -4577,15 +4571,8 @@ module.exports = {
 					//! END_REPLACE()
 					, function MUST_OVERRIDE(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.MustOverride;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.OBSOLETE = root.DD_DOC(
@@ -4615,16 +4602,9 @@ module.exports = {
 						var fn = arguments[argsLen - 1];
 						var message = arguments[argsLen - 2];
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Obsolete;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
 						fn[__Internal__.symbolUsageMessage] = message;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 
 				doodad.CALL_FIRST = root.DD_DOC(
@@ -4645,15 +4625,8 @@ module.exports = {
 					//! END_REPLACE()
 					, function CALL_FIRST(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CallFirst;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.CAN_BE_DESTROYED = root.DD_DOC(
@@ -4674,15 +4647,8 @@ module.exports = {
 					//! END_REPLACE()
 					, function CAN_BE_DESTROYED(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CanBeDestroyed;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.ABSTRACT = doodad.NOT_IMPLEMENTED = root.DD_DOC(
@@ -4698,8 +4664,7 @@ module.exports = {
 					, function NOT_IMPLEMENTED() {
 						var fn = types.AttributeBox();
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.NotImplemented;
-						fn[__Internal__.symbolExtender] = extenders.Method;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.RETURNS = root.DD_DOC(
@@ -4726,22 +4691,15 @@ module.exports = {
 					, function RETURNS(validator, /*optional*/fn) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(validator), "Invalid validator.");
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolReturns] = validator;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
-						return fn;
+						return doodad.METHOD(fn);
 					});
 
 				doodad.ASYNC = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: 'AttributeBox',
 							description: "Specifies that this method is async and always returns a Promise.",
@@ -4749,15 +4707,8 @@ module.exports = {
 					//! END_REPLACE()
 					, function ASYNC(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						if (root.DD_ASSERT) {
-							var val = types.unbox(fn);
-							root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-						};
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
-						return doodad.RETURNS(types.isPromise, fn);
+						return doodad.RETURNS(types.isPromise, doodad.METHOD(fn));
 					});
 				
 				doodad.RENAME_OVERRIDE = root.DD_DOC(
@@ -4790,9 +4741,6 @@ module.exports = {
 						};
 						fn = types.AttributeBox(fn);
 						var val = types.unbox(fn);
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isBindable(val), "Invalid function.");
-						};
 						if (!name) {
 							name = types.getFunctionName(val);
 							if (!name) {
@@ -4800,11 +4748,8 @@ module.exports = {
 							};
 						};
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
 						fn[__Internal__.symbolRenamedTo] = name;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 				doodad.RENAME_REPLACE = root.DD_DOC(
@@ -4837,9 +4782,6 @@ module.exports = {
 						};
 						fn = types.AttributeBox(fn);
 						var val = types.unbox(fn);
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isBindable(val), "Invalid function.");
-						};
 						if (!name) {
 							name = types.getFunctionName(val);
 							if (!name) {
@@ -4847,11 +4789,8 @@ module.exports = {
 							};
 						};
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
-						if (!fn[__Internal__.symbolExtender]) {
-							fn[__Internal__.symbolExtender] = extenders.Method;
-						};
 						fn[__Internal__.symbolRenamedTo] = name;
-						return fn;
+						return doodad.METHOD(fn);
 					});
 				
 

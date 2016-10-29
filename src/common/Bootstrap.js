@@ -51,6 +51,8 @@
 		"use strict";
 		
 		var __Internal__ = {
+			evals: getEvals(),
+
 			// "isNativeFunction", "isCustomFunction"
 			hasIncompatibleFunctionToStringBug: false,
 			
@@ -122,7 +124,7 @@
 
 		__Internal__.hasClasses = false;
 		try {
-			eval("class A {}");
+			__Internal__.evals.eval("class A {}");
 			__Internal__.hasClasses = true;
 		} catch(ex) {
 		};
@@ -139,6 +141,56 @@
 			//! END_REPLACE()
 			, function supportsES6Classes() {
 				return __Internal__.hasClasses;
+			});
+
+		//===================================
+		// ES6 Arrow functions support
+		//===================================
+
+		__Internal__.hasArrows = false;
+		try {
+			__Internal__.evals.eval("a => a");
+			__Internal__.hasArrows = true;
+		} catch(ex) {
+		};
+
+		types.supportsArrowFunctions = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'bool',
+					description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function supportsArrowFunctions() {
+				return __Internal__.hasArrows;
+			});
+
+		//===================================
+		// ES7 async/await
+		//===================================
+			
+		__Internal__.hasAsyncAwait = false;
+		try {
+			__Internal__.evals.eval("async function test() {}");
+			__Internal__.hasAsyncAwait = true;
+		} catch(ex) {
+		};
+
+		types.supportsAsyncAwait = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'bool',
+					description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function supportsAsyncAwait() {
+				return __Internal__.hasAsyncAwait;
 			});
 
 		//===================================
@@ -296,7 +348,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -308,7 +360,7 @@
 						description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function isArrowFunction(obj) {
+			, __Internal__.hasArrows ? function isArrowFunction(obj) {
 				if (types.isFunction(obj)) {
 					var str;
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
@@ -316,8 +368,41 @@
 					} else {
 						str = _shared.Natives.functionToString.call(obj);
 					};
-					return !/^[(]?function(\s+([^(\s]*)[^(]*)?\(/.test(str);
+					return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
 				};
+				return false;
+			} : function isArrowFunction(obj) {
+				return false;
+			});
+		
+		types.isAsyncFunction = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is an async function, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
+				if (types.isFunction(obj)) {
+					var str;
+					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
+						str = obj.toString();
+					} else {
+						str = _shared.Natives.functionToString.call(obj);
+					};
+					return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
+				};
+				return false;
+			} : function isAsyncFunction(obj) {
 				return false;
 			});
 		
@@ -543,7 +628,6 @@
 		//===================================
 		
 		// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
-		__Internal__.evals = getEvals();
 		
 		types.eval = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
