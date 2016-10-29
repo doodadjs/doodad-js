@@ -241,10 +241,10 @@
 		},
 		"install": {
 			"operations": [
-				{
-					"class": "Make.Generate.Package",
-					"noIndex": true
-				}
+        {
+          "class": "Make.Generate.Package",
+          "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js"
+        }
 			]
 		},
 		"browserify": {

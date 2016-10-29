@@ -1,6 +1,6 @@
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: index.js - Module startup file
+// File: index.js - Module startup file (server-side)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -25,7 +25,7 @@
 "use strict";
 
 module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
+	createRoot: function(/*optional*/DD_MODULES, /*optional*/options, /*optional*/startup) {
 		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
@@ -132,6 +132,6 @@ module.exports = {
 			bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
 		};
 
-		return bootstrap.createRoot(DD_MODULES, config);
+		return bootstrap.createRoot(DD_MODULES, config, startup);
 	},
 };

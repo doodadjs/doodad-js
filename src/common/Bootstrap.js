@@ -47,7 +47,7 @@
 		Error.stackTraceLimit = 50;
 	};
 	
-	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options) {
+	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 		"use strict";
 		
 		var __Internal__ = {
@@ -3224,7 +3224,11 @@
 		// Options
 		//==============
 		
-		var __options__ = types.extend({
+		if (types.isArray(_options)) {
+			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , (typeof DD_MODULES === 'object' ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
+		};
+
+		var __options__ = types.depthExtend(15, {
 			//! IF(IS_SET('debug'))
 				// Starting from source code...
 				debug: true,					// When 'true', will be in 'debug mode'.
@@ -3244,6 +3248,9 @@
 		__options__.enableProxies = types.toBoolean(__options__.enableProxies);
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
+		_shared.SECRET = types.get(__options__, 'secret');
+		delete __options__.secret;
+
 		types.freezeObject(__options__);
 		
 		types.hasDefinePropertyEnabled = __Internal__.DD_DOC(
@@ -6133,45 +6140,16 @@
 		_shared.setAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
 
 		//===================================
-		// Secret
-		//===================================
-
-		_shared.SECRET = types.get(_options, 'secret');
-
-//! IF_SET("serverSide")
-		//===================================
-		// Server Modules
-		//===================================
-
-//! ELSE()
-		//===================================
-		// Client Modules
-		//===================================
-/*
-		if (typeof global.document === 'object') {
-			__Internal__.modules = types.nullObject();
-
-			_shared.setAttribute(global.document, 'getScriptModule', function getScriptModule(name) {
-				return __Internal__.modules[name];
-			}, {});
-
-			_shared.setAttribute(global.document, 'registerScriptModule', function registerScriptModule(name, module / *, secret* /) {
-				//if (secret !== _shared.SECRET) {
-				//	throw new types.AccessDenied("Secrets mismatch.");
-				//};
-				types.freezeObject(module);
-				types.freezeObject(module.exports);
-				_shared.setAttribute(__Internal__.modules, name, module, {});
-			}, {});
-		};
-*/
-//! END_IF()
-
-		//===================================
 		// Root
 		//===================================
 
-		return types.INIT(__Internal__.DD_DOC(
+		//! IF_UNSET("serverSide")
+			if (typeof DD_MODULES === 'object') {
+				modules = types.extend({}, DD_MODULES, modules);
+			};
+		//! END_IF()
+
+		var root = types.INIT(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -6463,6 +6441,8 @@
 					},
 				}
 			))), [modules, _options]);
+
+		return root.Doodad.Namespaces.load(modules, _options, startup);
 	};
 	
 	//! BEGIN_REMOVE()

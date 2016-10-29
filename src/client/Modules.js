@@ -128,7 +128,7 @@ module.exports = {
 						files.push({
 							module: module,
 							name: name,
-							options: types.complete(fileOptions, {optional: false, isConfig: false, configOptions: null}),
+							options: types.extend({optional: false, isConfig: false, configOptions: null}, fileOptions),
 						});
 						return files;
 					}, []);
@@ -183,7 +183,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									modules: {
 										type: 'object',
@@ -191,7 +191,7 @@ module.exports = {
 										description: "Module names with their files",
 									},
 									options: {
-										type: 'object',
+										type: 'arrayof(object),object',
 										optional: true,
 										description: "Options",
 									},
@@ -205,14 +205,17 @@ module.exports = {
 						var fromSource = root.getOptions().fromSource;
 						global.DD_MODULES = {};
 
-						options = types.depthExtend(2, {}, options);
+						if (types.isArray(options)) {
+							options = types.depthExtend.apply(null, types.append([15, {}], options));
+						};
 
 						// Convert to array of objects for Promise.map
 						_modules = tools.reduce(_modules, function(_modules, files, name) {
-							if (!files || types.isEmpty(files)) {
-								files = {
-									'config.json': {optional: true, isConfig: true, configOptions: options},
-								};
+							name = name.split('/', 2)[0];
+							if (!files) {
+								files = {};
+							};
+							if (types.isEmpty(files)) {
 								if (fromSource) {
 									files[name + '_debug.js'] = {optional: false};
 								} else {
@@ -230,7 +233,7 @@ module.exports = {
 								return modules.loadFiles(module.name, module.files, options);
 							})
 							.then(function(_modules) {
-								var retval = namespaces.load(global.DD_MODULES, null, options);
+								var retval = namespaces.load(global.DD_MODULES, options);
 								delete global.DD_MODULES;
 								return retval;
 							});

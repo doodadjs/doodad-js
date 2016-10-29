@@ -25,7 +25,7 @@
 "use strict";
 
 module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/options) {
+	createRoot: function(/*optional*/DD_MODULES, /*optional*/options, /*optional*/startup) {
 		var has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
@@ -117,6 +117,6 @@ module.exports = {
 
 		bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : MAKE_MANIFEST("browserifyDir") + "/common/Bootstrap.min.js")) */);
 
-		return bootstrap.createRoot(DD_MODULES, config);
+		return bootstrap.createRoot(DD_MODULES, config, startup);
 	},
 };

@@ -633,38 +633,40 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 9,
+								revision: 10,
 								params: {
 									modules: {
 										type: 'object',
 										optional: false,
 										description: "Namespaces specifications.",
 									},
+									options: {
+										type: 'arrayof(object),object',
+										optional: true,
+										description: "Options.",
+									},
 									callback: {
 										type: 'function',
 										optional: true,
 										description: "Callback function.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
 									},
 								},
 								returns: 'Promise(bool)',
 								description: "Returns 'true' when successful. Returns 'false' otherwise.",
 						}
 						//! END_REPLACE()
-				, function load(modules, /*optional*/callback, /*optional*/options) {
+				, function load(modules, /*optional*/options, /*optional*/callback) {
 					var Promise = types.getPromise();
 
-					options = types.nullObject(options);
+					if (types.isArray(options)) {
+						options = types.depthExtend.apply(null, types.append([15, {}], options));
+					};
 
-					if (options.secret !== _shared.SECRET) {
+					if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
 						throw new types.AccessDenied("Secrets mismatch.");
 					};
 
-					var dontThrow = options.dontThrow;
+					var dontThrow = types.get(options, 'dontThrow');
 					
 					return Promise.try(function() {
 						var toInit = [];
@@ -678,7 +680,7 @@ module.exports = {
 								};
 
 								if (dontThrow) {
-									return Promise.resolve(false);
+									return Promise.resolve(root);
 								} else {
 									return Promise.reject(err);
 								};
@@ -706,11 +708,11 @@ module.exports = {
 										namespaces.addEventListener('error', cbErrorHandler);
 									})
 										.then(function() {
-											return true;
+											return root;
 										})
 										['catch'](function(ex) {
 											if (dontThrow) {
-												return false;
+												return root;
 											} else {
 												throw ex;
 											};
@@ -727,7 +729,7 @@ module.exports = {
 									// NOTE: Returns the result of "cbPromise". This allows to catch callback errors.
 									return cbPromise;
 								} else {
-									return Promise.resolve(true);
+									return Promise.resolve(root);
 								};
 							};
 						};
@@ -882,7 +884,7 @@ module.exports = {
 					
 					fillSpecs(name, newName);
 					
-					return targetNamespaces.load(specs, null, options)
+					return targetNamespaces.load(specs, options)
 						.then(function() {
 							var namespace = targetNamespaces.get(newName);
 							if (!namespace) {

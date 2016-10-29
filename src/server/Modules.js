@@ -113,7 +113,7 @@ module.exports = {
 						files.push({
 							module: module,
 							name: name,
-							options: types.complete(fileOptions, {optional: false, isConfig: false, configOptions: null}),
+							options: types.extend({optional: false, isConfig: false, configOptions: null}, fileOptions),
 						});
 						return files;
 					}, []);
@@ -145,14 +145,14 @@ module.exports = {
 							['catch'](function(err) {
 								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
 							});
-					}, options);
+					});
 				};
 				
 				modules.load = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									modules: {
 										type: 'object',
@@ -160,7 +160,7 @@ module.exports = {
 										description: "Module names with their files",
 									},
 									options: {
-										type: 'object',
+										type: 'arrayof(object),object',
 										optional: true,
 										description: "Options",
 									},
@@ -171,17 +171,20 @@ module.exports = {
 					//! END_REPLACE()
 					, function load(_modules, /*optional*/options) {
 						const Promise = types.getPromise();
-						const fromSource = root.getOptions().fromSource;
+						//const fromSource = root.getOptions().fromSource;
 
-						options = types.depthExtend(2, {}, options);
+						if (types.isArray(options)) {
+							options = types.depthExtend.apply(null, types.append([15, {}], options));
+						};
 
 						// Convert to array of objects for Promise.map
 						_modules = tools.reduce(_modules, function(_modules, files, name) {
+							name = name.split('/', 2)[0];
 							if (!files) {
 								files = {};
 							};
-							if (!types.has(files, 'config.json')) {
-								files['config.json'] = {optional: true, isConfig: true, configOptions: options};
+							if (types.isEmpty(files)) {
+								files['index.js'] = {optional: false};
 							};
 							_modules.push({
 								name: name,
@@ -197,75 +200,70 @@ module.exports = {
 								const DD_MODULES = {};
 								tools.forEach(_modules, function(_files) {
 									tools.forEach(_files, function(file) {
-										if (!file.options.isConfig) {
+										if (!file.options.isConfig && file.exports.add) {
 											file.exports.add(DD_MODULES);
 										};
 									});
 								});
-								return namespaces.load(DD_MODULES, null, options);
+								return namespaces.load(DD_MODULES, options);
 							});
 					});
 				
 				
-				modules.loadManifest = function loadManifest(manifest, /*optional*/options) {
+				modules.loadManifest = function loadManifest(pkg, /*optional*/options) {
 					const Promise = types.getPromise();
-					let promise;
-					if (types.isString(manifest)) {
-						promise = modules.loadFiles(manifest, {'package.json': {}, 'make.json': {}}, options)
-							.then(function(contents) {
-								return {
-									manifest: contents[0].exports,
-									makeManifest: contents[1].exports,
-								};
-							});
-					} else {
-						promise = Promise.resolve(manifest);
-					};
-					return promise.then(function(manifests) {
-						const manifest = manifests.manifest,
-							makeManifest = manifests.makeManifest;
-						
-						return {
-							add: function(DD_MODULES) {
-								DD_MODULES = DD_MODULES || {};
-								DD_MODULES[manifest.name] = {
-									type: makeManifest.type,
-									version: manifest.version + (manifest.stage || 'd'),
-									dependencies: tools.filter(makeManifest.dependencies, function(dep) {
-										return dep.server && !dep.manual && !dep.test;
-									}),
-									
-									create: function create(root, /*optional*/_options, _shared) {
-										"use strict";
+					return modules.loadFiles(pkg, {'package.json': {}, 'make.json': {}}, options)
+						.then(function(contents) {
+							return {
+								manifest: contents[0].exports,
+								makeManifest: contents[1].exports,
+							};
+						})
+						.then(function(manifests) {
+							const manifest = manifests.manifest,
+								makeManifest = manifests.makeManifest;
+							
+							return {
+								add: function(DD_MODULES) {
+									DD_MODULES = DD_MODULES || {};
+									DD_MODULES[manifest.name] = {
+										type: makeManifest.type,
+										version: manifest.version + (manifest.stage || 'd'),
+										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
+											return dep.server && !dep.manual && !dep.test;
+										}),
 										
-										const doodad = root.Doodad,
-											modules = doodad.Modules,
-											fromSource = root.getOptions().fromSource;
-										
-										let files = tools.filter(makeManifest.modules, function(mod) {
-											return mod.server && !mod.manual && !mod.test;
-										});
-
-										files = tools.reduce(files, function(files, mod) {
-											const file = (fromSource ?
-													(makeManifest.sourceDir || './src') + '/' + mod.src
-												:
-													(makeManifest.buildDir || './build') + '/' + mod.src.replace(/([.]js)$/, ".min.js")
-												);
-											files[file] = {optional: types.get(mod, 'optional', false)};
-											return files;
-										}, {});
-										
-										return modules.load({[manifest.name]: files}, types.extend({}, _options, {secret: _shared.SECRET}))
-											.then(function() {
-												// Returns nothing
+										create: function create(root, /*optional*/_options, _shared) {
+											"use strict";
+											
+											const doodad = root.Doodad,
+												modules = doodad.Modules,
+												fromSource = root.getOptions().fromSource;
+											
+											let files = tools.filter(makeManifest.modules, function(mod) {
+												return mod.server && !mod.manual && !mod.test;
 											});
-									},
-								};
-								return DD_MODULES;
-							},
-						};
-					});
+
+											files = tools.reduce(files, function(files, mod) {
+												const file = (fromSource ?
+														(makeManifest.sourceDir || './src') + '/' + mod.src
+													:
+														(makeManifest.buildDir || './build') + '/' + mod.src.replace(/([.]js)$/, ".min.js")
+													);
+												files[file] = {optional: types.get(mod, 'optional', false)};
+												return files;
+											}, {});
+											
+											return modules.load({[manifest.name]: files}, types.extend({}, _options, {secret: _shared.SECRET}))
+												.then(function() {
+													// Returns nothing.
+												});
+										},
+									};
+									return DD_MODULES;
+								},
+							};
+						});
 				};
 				
 				
