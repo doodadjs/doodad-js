@@ -2207,27 +2207,6 @@ module.exports = {
 								}),
 						}
 					)));
-
-				//===================================
-				// Misc functions
-				//===================================
-				
-				tools.generateUUID = root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'string',
-							description: "Generates and returns a UUID.",
-					}
-					//! END_REPLACE()
-					, function generateUUID() {
-						// Source: https://gist.github.com/LeverOne
-						var a, b;
-						for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^Math.random() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
-						return b
-					});
 			},
 		};
 		return DD_MODULES;

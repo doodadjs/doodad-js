@@ -132,6 +132,18 @@ module.exports = {
 					windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame) ||
 												(types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame) ||
 												undefined,
+
+					// generateUUID
+					mathRandom: global.Math.random,
+					nodeUUID: (
+							types.isFunction(global.uuid) && 
+							types.isFunction(global.uuid.v1) && 
+							types.isFunction(global.uuid.v4) && 
+							types.isFunction(global.uuid.parse) && 
+							types.isFunction(global.uuid.unparse) 
+									? (types.isFunction(global.uuid.noConflict) ? global.uuid.noConflict() : global.uuid) 
+									: undefined
+							),
 				});
 				
 				
@@ -1876,7 +1888,28 @@ module.exports = {
 					// Do nothing
 				});
 
-				
+				//===================================
+				// Misc functions
+				//===================================
+
+				tools.generateUUID = (_shared.Natives.nodeUUID ? _shared.Natives.nodeUUID : root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'string',
+							description: "Generates and returns a UUID.",
+					}
+					//! END_REPLACE()
+					, function generateUUID() {
+						// Source: https://gist.github.com/LeverOne
+						var a, b;
+						for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
+						return b
+					})
+				);
+
 				//===================================
 				// Init
 				//===================================
