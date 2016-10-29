@@ -46,7 +46,11 @@ Linux :
 ```
 Now create the root namespace :
 ```js
-    const root = require('doodad-js').createRoot();
+    require('doodad-js').createRoot()
+		.then(root => ...)
+        .catch(err => {
+            console.error(err);
+        });
 ```
 
 You can create a shortcut to the namespaces this way :
@@ -195,7 +199,7 @@ If you want to load additional Doodad modules :
   - **namespaces.Entries.Module**: (inherits 'namespaces.Entries.Namespace') Module registry entry.
   - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
   - **namespaces.get**: Returns the namespace object of the specified namespace from the registry.
-  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/specs, /*optional*/callback, /*optional*/options)
+  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/modules, /*optional*/options, /*optional*/callback)
   - **[namespace].REGISTER**: Registers a class in the namespace object.
   - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.
 
