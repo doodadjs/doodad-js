@@ -1103,7 +1103,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 5,
+											revision: 6,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1133,9 +1133,7 @@ module.exports = {
 									var thisRoot = tools.trim(this.root || [], '');
 									
 									var thisPath = tools.trim(this.path || [], '');
-									if (this.file) {
-										thisPath.push(this.file);
-									};
+									var thisFile = this.file;
 
 									var dirRoot;
 										
@@ -1190,6 +1188,11 @@ module.exports = {
 										dirRoot = tools.trim(dirRoot, '');
 									};
 
+									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || path.file)) {
+										thisPath.push(thisFile);
+										thisFile = null;
+									};
+
 									var isRelative = types.get(options, 'isRelative', path.isRelative);
 									if (isRelative) {
 										data.root = null;
@@ -1199,7 +1202,7 @@ module.exports = {
 										data.path = types.append([], dirRoot, dir);
 									};
 									
-									data.file = types.get(options, 'file', path.file);
+									data.file = types.get(options, 'file', path.file || thisFile);
 									data.extension = types.get(options, 'extension', path.extension);
 
 									path = files.Path.parse(null, data);
