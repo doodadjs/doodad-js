@@ -4707,8 +4707,12 @@ module.exports = {
 					//! END_REPLACE()
 					, function ASYNC(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
-						return doodad.RETURNS(types.isPromise, doodad.METHOD(fn));
+						if (fn[__Internal__.symbolModifiers] & doodad.MethodModifiers.Async) {
+							return fn;
+						} else {
+							fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
+							return doodad.RETURNS(types.isPromise, doodad.METHOD(fn));
+						};
 					});
 				
 				doodad.RENAME_OVERRIDE = root.DD_DOC(
