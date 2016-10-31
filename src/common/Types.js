@@ -1956,6 +1956,22 @@ module.exports = {
 					
 					// Add "thisObj" argument
 					// Add promise name
+					var oldMap = Promise.map;
+					Promise.map = function _map(ar, callback, /*optional*/options) {
+						var thisObj = types.get(options, 'thisObj');
+						if (callback && thisObj) {
+							callback = new _shared.PromiseCallback(thisObj, callback);
+						};
+						var promise = oldMap.call(this, ar, callback, options);
+						if (callback) {
+							callback.promise = promise;
+							promise[_shared.NameSymbol] = getPromiseName(callback);
+						};
+						return promise;
+					};
+
+					// Add "thisObj" argument
+					// Add promise name
 					var oldThen = Promise.prototype.then;
 					Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 						if (!thisObj && !types.isFunction(rejectedCb)) {
