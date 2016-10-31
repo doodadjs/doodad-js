@@ -1958,7 +1958,7 @@ module.exports = {
 									emitters = [emitters];
 								};
 
-								this.detach(emitters);
+								//this.detach(emitters);
 
 								const self = this;
 								let ignore = false;
