@@ -287,7 +287,7 @@ module.exports = {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
-						fn = new doodad.Callback(thisObj, fn, null, args, secret);
+						fn = doodad.Callback(thisObj, fn, null, args, secret);
 						if (delay === 0) {
 							// Raised after events queue process and after I/O
 							const id = _shared.Natives.globalSetImmediate(fn);
@@ -1651,7 +1651,7 @@ module.exports = {
 								fileCallbacks = __Internal__.watchedFiles[path];
 							} else {
 								fileCallbacks = [];
-								nodeFs.watch(path, {persistent: false}, new doodad.Callback(this, function(event, filename) {
+								nodeFs.watch(path, {persistent: false}, doodad.Callback(this, function(event, filename) {
 									const callbacks = __Internal__.watchedFiles[path];
 									for (let i = callbacks.length - 1; i >= 0; i--) {
 										let callback = callbacks[i];
@@ -1954,7 +1954,7 @@ module.exports = {
 						/*instanceProto*/
 						{
 							attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
-								if (!types.isArrayLike(emitters)) {
+								if (!types.isArray(emitters)) {
 									emitters = [emitters];
 								};
 
@@ -1964,11 +1964,11 @@ module.exports = {
 								let ignore = false;
 								
 								const createHandler = function(emitter, type) {
-									const handler = new doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
+									const handler = doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
 										if (!ignore) {
 											if (once) {
 												ignore = true;
-												self.detach(self[_shared.ObjectSymbol], handler);
+												self.detach(emitters);
 											};
 											const ctx = {
 												emitter: emitter,
@@ -2018,7 +2018,7 @@ module.exports = {
 										};
 									};
 								} else {
-									if (!types.isArrayLike(emitters)) {
+									if (!types.isArray(emitters)) {
 										emitters = [emitters];
 									};
 									

@@ -3158,7 +3158,7 @@ module.exports = {
 								
 								var cb = fn;
 								if (obj) {
-									cb = new doodad.Callback(obj, fn);
+									cb = doodad.Callback(obj, fn);
 								};
 
 								datas = datas || [];
@@ -3437,24 +3437,23 @@ module.exports = {
 					, function ATTRIBUTE(value, /*optional*/extender, /*optional*/options) {
 						value = types.AttributeBox(value);
 
-						if (!extender) {
-							extender = value[__Internal__.symbolExtender];
+						var oldExtender = value[__Internal__.symbolExtender];
+						if (!oldExtender) {
+							oldExtender = extenders.ClonedAttribute;
 						};
 
-						if (!extender) {
-							extender = extenders.ClonedAttribute;
+						if (extender) {
+							oldExtender = oldExtender.override(extender);
 						};
 
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types._instanceof(extender, types.getType(extenders.Extender)), "Invalid extender.");
-						};
-						
+						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(extender, types.getType(extenders.Extender)), "Invalid extender.");
+
 						if (options) {
 							root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(options), "Invalid options.");
-							extender = extender.get(options);
+							oldExtender = oldExtender.get(options);
 						};
 						
-						value[__Internal__.symbolExtender] = extender;
+						value[__Internal__.symbolExtender] = oldExtender;
 						return value;
 					});
 

@@ -341,7 +341,7 @@ module.exports = {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
-						fn = new doodad.Callback(thisObj, fn, null, args, secret);
+						fn = doodad.Callback(thisObj, fn, null, args, secret);
 						if ((delay <= 0) && _shared.Natives.windowSetImmediate) { // IE 10
 							// Raised after events queue process
 							var id = _shared.Natives.windowSetImmediate(fn);
