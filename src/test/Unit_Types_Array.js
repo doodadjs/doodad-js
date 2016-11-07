@@ -330,8 +330,6 @@ module.exports = {
 					createArrays();
 					command.run(2,          {eval: true},    /**/  "ar1", 2);
 					createArrays();
-					command.run(3,          {eval: true},    /**/  "ar1", 3);
-					createArrays();
 					command.run(1,          {eval: true, contains: true}, /**/  "ar1", "function(val, key, obj){return val === 1}");
 					command.end();
 					createArrays();
