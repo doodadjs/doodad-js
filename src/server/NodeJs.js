@@ -1908,7 +1908,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: null,
 							description: "Class mix-in to implement for NodeJs events.",
@@ -1918,7 +1918,9 @@ module.exports = {
 					$TYPE_NAME: "NodeEvents",
 					
 					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
-						
+					// TODO: Do we need that ?
+					//__NODE_ERROR_EVENT: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
+
 					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters, /*optional*/useCapture) {
 						const events = this.__NODE_EVENTS,
 							eventsLen = events.length;
@@ -2071,7 +2073,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: null,
 							returns: null,
 							description: "Node.Js event extender.",
@@ -2081,13 +2083,15 @@ module.exports = {
 					$TYPE_NAME: "NodeEvent",
 					
 					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
+					// TODO: Do we need that ?
+					//errorEventAttr: types.READ_ONLY('__NODE_ERROR_EVENT'),
+					errorEventAttr: types.READ_ONLY(null),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
+					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
+
+					enableScopes: types.READ_ONLY(true),
 					canReject: types.READ_ONLY(true),
 					types: types.READ_ONLY(null),
-					
-					enableScopes: types.READ_ONLY(true),
-					
-					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
 					
 					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
@@ -2120,18 +2124,29 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: null,
+							revision: 1,
+							params: {
+								eventTypes: {
+									type: 'arrayof(string),string',
+									optional: false,
+									description: "List of event names.",
+								},
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
 							description: "NodeJs event attribute modifier.",
 				}
 				//! END_REPLACE()
 				, function NODE_EVENT(eventTypes, /*optional*/fn) {
 					if (types.isStringAndNotEmpty(eventTypes)) {
-						eventTypes = eventTypes.split(' ');
+						eventTypes = eventTypes.split(',');
 					};
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isNothing(eventTypes) || types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
+						root.DD_ASSERT(types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
 						if (eventTypes) {
 							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
 						};
@@ -2143,7 +2158,32 @@ module.exports = {
 					}));
 				});
 				
-				
+/* TODO: Do we need that ?				
+				doodad.NODE_ERROR_EVENT = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								eventTypes: {
+									type: 'arrayof(string),string',
+									optional: false,
+									description: "List of event names.",
+								},
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates a node error event ('onerror').",
+					}
+					//! END_REPLACE()
+					, function NODE_ERROR_EVENT(eventTypes, /*optional* /fn) {
+						return doodad.OPTIONS({errorEvent: true}, doodad.NODE_EVENT(eventTypes, fn));
+					});
+*/
 				//*********************************************
 				// Emitter
 				//*********************************************

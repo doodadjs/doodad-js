@@ -701,9 +701,9 @@ module.exports = {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
 					fn = types.unbind(fn);
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-					var _dispatch = null;
+					var _insider = null;
 					if (types.isNothing(obj)) {
-						_dispatch = function dispatch(/*paramarray*/) {
+						_insider = function insider(/*paramarray*/) {
 							var type = types.getType(this);
 							if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
 								throw new types.Error("Invalid secret.");
@@ -723,7 +723,7 @@ module.exports = {
 						if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
 							throw new types.Error("Invalid secret.");
 						};
-						_dispatch = function dispatch(/*paramarray*/) {
+						_insider = function insider(/*paramarray*/) {
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
@@ -735,8 +735,8 @@ module.exports = {
 							};
 						};
 					};
-					_dispatch[_shared.OriginalValueSymbol] = fn;
-					return _dispatch;
+					_insider[_shared.OriginalValueSymbol] = fn;
+					return _insider;
 				};
 				
 				__Internal__.makeInsideForNew = function makeInsideForNew() {
@@ -2137,19 +2137,36 @@ module.exports = {
 											} catch(o) {
 												return "Internal error";
 											};
-										} else if (ex.trapped || ex.bubble) {
-											if (modifiers & doodad.MethodModifiers.Async) {
-												var Promise = types.getPromise();
-												return Promise.reject(ex);
-											} else {
-												throw ex;
-											};
 										} else {
-											if (modifiers & doodad.MethodModifiers.Async) {
-												var Promise = types.getPromise();
-												return Promise.reject(doodad.trapException(ex, this, attr, _caller));
+											try {
+												if (types.isClass(type) && this._implements(mixIns.Events)) {
+													var errorEvent = this['__ERROR_EVENT'];
+													if (errorEvent && (attr !== errorEvent)) {
+														var ev = new doodad.ErrorEvent(ex);
+														this[errorEvent](ev);
+														if (ev.prevent) {
+															ex.trapped = true;
+														};
+													};
+												};
+											} catch(o) {
+												debugger;
+											};
+
+											if (ex.trapped || ex.bubble) {
+												if (modifiers & doodad.MethodModifiers.Async) {
+													var Promise = types.getPromise();
+													return Promise.reject(ex);
+												} else {
+													throw ex;
+												};
 											} else {
-												throw doodad.trapException(ex, this, attr, _caller);
+												if (modifiers & doodad.MethodModifiers.Async) {
+													var Promise = types.getPromise();
+													return Promise.reject(doodad.trapException(ex, this, attr, _caller));
+												} else {
+													throw doodad.trapException(ex, this, attr, _caller);
+												};
 											};
 										};
 										
@@ -3360,7 +3377,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								options: {
 									type: 'object',
@@ -3376,12 +3393,35 @@ module.exports = {
 						$TYPE_NAME: "Event",
 
 						eventsAttr: types.READ_ONLY('__EVENTS'),
+						errorEventAttr: types.READ_ONLY('__ERROR_EVENT'),
 						eventsImplementation: types.READ_ONLY('Doodad.MixIns.Events'),
-						
-						enableScopes: types.READ_ONLY(false),
-						
 						eventProto: types.READ_ONLY(doodad.EventHandler),
+
+						enableScopes: types.READ_ONLY(false),
+						errorEvent: types.READ_ONLY(false),
 						
+						_new: types.SUPER(function _new(/*optional*/options) {
+								this._super(options);
+								_shared.setAttributes(this, {
+									errorEvent: types.get(options, 'errorEvent', this.errorEvent),
+								}, {all: true});
+							}),
+
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+								return this._super(options) + 
+									',' + (types.get(options, 'errorEvent', this.errorEvent) ? '1' : '0');
+							}),
+
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+								options = this._super(options, newOptions, replace);
+								if (replace) {
+									types.fill(['errorEvent'], options, this, newOptions);
+								} else {
+									options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
+								};
+								return options;
+							}),
+
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								if (root.getOptions().debug) {
 									if (!types.has(destAttributes, this.eventsAttr)) {
@@ -3393,12 +3433,18 @@ module.exports = {
 								events = types.unbox(events);
 								events.push(attr);
 								
+								if (this.errorEvent && this.errorEventAttr) {
+									destAttributes[this.errorEventAttr] = destAttributes[this.errorEventAttr].setValue(attr);
+								};
+
 								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
 							}),
+
 						createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
 								var dispatch = this._super(attr, obj, attribute, callers);
 								return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
 							}),
+
 						remove: function remove(attr, obj, storage, forType, attribute) {
 								var handler = obj[attr];
 								if (types.baseof(doodad.EventHandler, handler)) {
@@ -3833,13 +3879,18 @@ module.exports = {
 						return doodad.ATTRIBUTE(descriptor, extenders.Property, {isEnumerable: enumerable});
 					});
 				
-				__Internal__.EVENT = function EVENT(/*optional*/cancellable) {
-					cancellable = (types.isNothing(cancellable) ? true : cancellable);
+				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/errorEvent) {
+					if (errorEvent) {
+						cancellable = false;
+					} else {
+						cancellable = (types.isNothing(cancellable) ? true : cancellable);
+					};
+					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
 					return doodad.PROTECTED(function handleEvent(/*optional*/ev) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || (ev instanceof doodad.Event), "Invalid event object.");
+						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || (ev instanceof eventType), "Invalid event object.");
 						
 						if (types.isNothing(ev)) {
-							ev = new doodad.Event();
+							ev = new eventType();
 						};
 
 						var cancelled = false,
@@ -3937,7 +3988,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								cancellable: {
 									type: 'bool',
@@ -3947,7 +3998,7 @@ module.exports = {
 								fn: {
 									type: 'function',
 									optional: true,
-									description: "Function.",
+									description: "Event handler.",
 								},
 							},
 							returns: 'AttributeBox,Extender',
@@ -3955,7 +4006,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function EVENT(/*optional*/cancellable, /*optional*/fn) {
-						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(cancellable, fn), extenders.Event, {enableScopes: false}));
+						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(cancellable), extenders.Event, {enableScopes: false}));
 						boxed[__Internal__.symbolOverrideWith] = fn;
 						return boxed;
 					});
@@ -3969,7 +4020,7 @@ module.exports = {
 								fn: {
 									type: 'function',
 									optional: true,
-									description: "Function.",
+									description: "Event handler.",
 								},
 							},
 							returns: 'AttributeBox,Extender',
@@ -3977,7 +4028,9 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function ERROR_EVENT(/*optional*/fn) {
-						return doodad.EVENT(false, fn);
+						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(false, true), extenders.Event, {enableScopes: false}));
+						boxed[__Internal__.symbolOverrideWith] = fn;
+						return doodad.OPTIONS({errorEvent: true}, boxed);
 					});
 
 				doodad.RAW_EVENT = root.DD_DOC(
@@ -6306,6 +6359,7 @@ module.exports = {
 						$TYPE_NAME: "Events",
 					
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
+						__ERROR_EVENT: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
 						onEventCancelled: doodad.EVENT(false), // function onEventCancelled(ev)
 							

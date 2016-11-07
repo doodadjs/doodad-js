@@ -716,7 +716,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: null,
 							description: "Class mix-in to implement for JS events.",
@@ -726,6 +726,8 @@ module.exports = {
 					$TYPE_NAME: "JsEvents",
 					
 					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
+					// TODO: Do we need that ?
+					//__JS_ERROR_EVENT: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 						var events = this.__JS_EVENTS,
@@ -890,7 +892,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: null,
 							description: "JS event extender.",
@@ -900,10 +902,13 @@ module.exports = {
 					$TYPE_NAME: "JsEvent",
 					
 					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
+					// TODO: Do we need that ?
+					//errorEventAttr: types.READ_ONLY('__JS_ERROR_EVENT'),
+					errorEventAttr: types.READ_ONLY(null),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
-					types: types.READ_ONLY(null),
 					
 					enableScopes: types.READ_ONLY(true),
+					types: types.READ_ONLY(null),
 					
 					getUnified: types.READ_ONLY(function getUnified() {
 						if (!this.__unified) {
@@ -945,18 +950,27 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: null,
+							revision: 1,
+							eventTypes: {
+								type: 'arrayof(string),string',
+								optional: false,
+								description: "List of event names.",
+							},
+							fn: {
+								type: 'function',
+								optional: true,
+								description: "Event handler.",
+							},
+							returns: 'AttributeBox,Extender',
 							description: "JS event attribute modifier.",
 				}
 				//! END_REPLACE()
 				, function JS_EVENT(eventTypes, /*optional*/fn) {
 					if (types.isStringAndNotEmpty(eventTypes)) {
-						eventTypes = eventTypes.split(' ');
+						eventTypes = eventTypes.split(',');
 					};
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isNothing(eventTypes) || types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
+						root.DD_ASSERT(types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
 						if (eventTypes) {
 							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
 						};
@@ -968,6 +982,32 @@ module.exports = {
 					}));
 				});
 				
+/* TODO: Do we need that ?				
+				doodad.JS_ERROR_EVENT = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								eventTypes: {
+									type: 'arrayof(string),string',
+									optional: false,
+									description: "List of event names.",
+								},
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates a node error event ('onerror').",
+					}
+					//! END_REPLACE()
+					, function JS_ERROR_EVENT(eventTypes, /*optional* /fn) {
+						return doodad.OPTIONS({errorEvent: true}, doodad.JS_EVENT(eventTypes, fn));
+					});
+*/
 
 				//===================================
 				// System functions
