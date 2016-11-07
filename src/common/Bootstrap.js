@@ -3501,7 +3501,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3514,8 +3514,8 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function symbolIsGlobal(symbol) {
-				if ((typeof obj === 'object') && (typeof obj.valueOf === 'function')) {
-					obj = obj.valueOf();
+				if ((typeof symbol === 'object') && (typeof symbol.valueOf === 'function')) {
+					symbol = symbol.valueOf();
 				};
 				return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
 			} : function symbolIsGlobal(symbol) {
