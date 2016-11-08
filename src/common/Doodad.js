@@ -1665,7 +1665,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -1707,6 +1707,16 @@ module.exports = {
 											optional: false,
 											description: "When 'true', the source is a prototype. When 'false', the source is a Class.",
 										},
+										proto: {
+											type: 'object',
+											optional: false,
+											description: "The prototype.",
+										},
+										protoName: {
+											type: 'string',
+											optional: false,
+											description: "Name of the prototype.",
+										},
 									},
 									returns: 'AttributeBox',
 									description: "Extends an attributes, taking the base value into account.",
@@ -1720,11 +1730,9 @@ module.exports = {
 										};
 									};
 								};
-								if (sourceIsProto) {
-									destAttribute[__Internal__.symbolPrototype] = sourceProto;
-								} else {
-									destAttribute[__Internal__.symbolPrototype] = proto;
-								};
+
+								destAttribute[__Internal__.symbolPrototype] = sourceProto;
+
 								return sourceAttribute;
 							}),
 						__isFromStorage: function __isFromStorage(destAttribute) {
@@ -1962,7 +1970,7 @@ module.exports = {
 						$TYPE_NAME: "ExtendObject",
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								
 								var dest = types.unbox(destAttribute);
 								if (!dest) {
@@ -2000,7 +2008,7 @@ module.exports = {
 						$TYPE_NAME: "UniqueArray",
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								
 								var dest = types.unbox(destAttribute);
 								if (!dest) {
@@ -2512,7 +2520,7 @@ module.exports = {
 							}),
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								
 								var srcIsInterface = types.isInterface(source),
 									callersOrFn = types.unbox(sourceAttribute);
@@ -2908,7 +2916,7 @@ module.exports = {
 							},
 						
 						extend: function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								
 								var destCallers = types.unbox(destAttribute);
 								
@@ -3018,7 +3026,7 @@ module.exports = {
 						bindMethod: types.READ_ONLY(true),
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
 								var srcDesc = types.unbox(sourceAttribute);
 									
@@ -3437,7 +3445,7 @@ module.exports = {
 									destAttributes[this.errorEventAttr] = destAttributes[this.errorEventAttr].setValue(attr);
 								};
 
-								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 							}),
 
 						createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
@@ -4937,7 +4945,7 @@ module.exports = {
 
 						var destAttribute;
 						if (types.has(destAttributes, attr)) {
-							destAttribute = destAttributes[attr];
+							destAttribute = destAttributes[attr].clone();
 							extender = destAttribute[__Internal__.symbolExtender];
 						} else {
 							destAttribute = types.AttributeBox(undefined);
@@ -5041,7 +5049,7 @@ module.exports = {
 									extendedAttributes.push(attr);
 									
 									if (extender.preExtend) {
-										var result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+										var result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 										if (destAttribute) {
 											destAttribute = destAttribute.setValue(result);
 										} else {
@@ -5055,7 +5063,7 @@ module.exports = {
 										var overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 										if (overrideWith) {
 											overrideWith = doodad.OVERRIDE(overrideWith);
-											result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, protoName);
+											result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, proto, protoName);
 											destAttribute = destAttribute.setValue(result);
 										};
 										destAttributes[attr] = destAttribute;
@@ -5069,7 +5077,7 @@ module.exports = {
 									} else {
 										return [
 											/* 0 : data   */ [/*0*/ extender], 
-											/* 1 : params */ [/*0*/ attr, /*1*/ source, /*2*/ sourceProto, /*3*/ destAttributes, /*4*/ forType, /*5*/ sourceAttribute, /*6*/ destAttribute, /*7*/ sourceIsProto, /*8*/ protoName]
+											/* 1 : params */ [/*0*/ attr, /*1*/ source, /*2*/ sourceProto, /*3*/ destAttributes, /*4*/ forType, /*5*/ sourceAttribute, /*6*/ destAttribute, /*7*/ sourceIsProto, /*8*/proto, /*9*/ protoName]
 										];
 									};
 								};
@@ -5159,8 +5167,9 @@ module.exports = {
 							sourceAttribute = params[5],
 							destAttribute = params[6],
 							sourceIsProto = params[7],
-							protoName = params[8];
-						var result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, protoName);
+							proto = params[8],
+							protoName = params[9];
+						var result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 						if (destAttribute) {
 							destAttribute = destAttribute.setValue(result);
 						} else {
@@ -5174,7 +5183,7 @@ module.exports = {
 						var overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 						if (overrideWith) {
 							overrideWith = doodad.OVERRIDE(overrideWith);
-							result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, protoName);
+							result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, proto, protoName);
 							destAttribute = destAttribute.setValue(result);
 						};
 						destAttributes[attr] = destAttribute;
