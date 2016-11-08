@@ -2124,11 +2124,11 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								eventTypes: {
 									type: 'arrayof(string),string',
-									optional: false,
+									optional: true,
 									description: "List of event names.",
 								},
 								fn: {
@@ -2146,7 +2146,7 @@ module.exports = {
 						eventTypes = eventTypes.split(',');
 					};
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
+						root.DD_ASSERT(types.isNothing(eventTypes) || types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
 						if (eventTypes) {
 							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
 						};
