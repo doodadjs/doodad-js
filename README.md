@@ -28,7 +28,7 @@ $ npm install doodad-js
   -  Static classes
   -  Useful utility functions
   -  Namespaces and a registry
-  -  Compatible with most recent browsers and NodeJs (and some older browsers).
+  -  Compatible with most recent browsers and NodeJs (and maybe some older browsers, but lesser and lesser).
   -  Compatible with Windows, Linux and MacOS X (and Android).
   -  Supports browserify and webpack (beta).
 
