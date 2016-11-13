@@ -727,7 +727,7 @@ module.exports = {
 					
 					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
 					// TODO: Do we need that ?
-					//__JS_ERROR_EVENT: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
+					//__JS_ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 						var events = this.__JS_EVENTS,
@@ -916,6 +916,7 @@ module.exports = {
 							this.__unified = {
 								// TODO: Unify event properties between browsers
 								which: (types.isNothing(self.which) ? self.keyCode : ((self.which != 0) && (self.charCode != 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
+								//preventDefault: (types.isNothing(self.preventDefault) ? function() {ev.returnValue = false; ev.keyCode = 0;} : self.preventDefault),
 							};
 						};
 						return this.__unified;

@@ -104,7 +104,7 @@ module.exports = {
 					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
 					
 					// ES6
-					windowPromise: (types.isNativeFunction(global.Promise) ? global.Promise : undefined),
+					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
 					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
 					windowMap: (types.isNativeFunction(global.Map) && types.isNativeFunction(global.Map.prototype.values) && types.isNativeFunction(global.Map.prototype.keys) ? global.Map : undefined),
 
@@ -1004,11 +1004,14 @@ module.exports = {
 										continue;
 									};
 								};
-								var prop = types.getOwnPropertyDescriptor(obj, key);
-								if (types.has(prop, 'value') && (depth >= 0)) {
-									prop.value = types.clone(prop.value, depth, cloneFunctions);
+								var prop = types.getOwnPropertyDescriptor(result, key);
+								if (!prop || prop.configurable) {
+									prop = types.getOwnPropertyDescriptor(obj, key);
+									if (types.has(prop, 'value') && (depth >= 0)) {
+										prop.value = types.clone(prop.value, depth, cloneFunctions);
+									};
+									props[key] = prop;
 								};
-								props[key] = prop;
 							};
 							types.defineProperties(result, props);
 
@@ -2268,7 +2271,7 @@ module.exports = {
 								};
 							});
 							
-							types.addPromiseListener('rejectionhandled', function(promise) {
+							types.addPromiseListener('rejectionhandled', function(ev) {
 								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
 									__Internal__.unhandledRejections['delete'](ev.detail.promise);
 								};

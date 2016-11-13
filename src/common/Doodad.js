@@ -3332,21 +3332,27 @@ module.exports = {
 										var self = this,
 											obj = this[__Internal__.symbolObject],
 											fn = null,
-											errorFn = null;
-										this.attachOnce(null, fn = function onSuccess(ev) {
-											obj.onError.detach(null, errorFn);
+											errorFn = null,
+											errorEventAttr = this[__Internal__.symbolExtender].errorEventAttr,
+											errorEvent = errorEventAttr && obj[errorEventAttr];
+										this.attach(null, fn = function onSuccess(ev) {
+											var retval = undefined;
 											if (callback) {
 												try {
-													resolve(callback(ev));
+													retval = callback(ev);
 												} catch(ex) {
 													reject(ex);
+													retval = false;
 												};
-											} else {
-												resolve(ev);
+											};
+											if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
+												self.detach(null, fn);
+												errorEvent && obj[errorEvent].detach(null, errorFn);
+												resolve(retval);
 											};
 										});
-										if (obj.onError) {
-											obj.onError.attachOnce(null, errorFn = function onError(ev) {
+										if (errorEvent) {
+											obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
 												self.detach(null, fn);
 												reject(ev.error);
 											});
@@ -4872,19 +4878,23 @@ module.exports = {
 					attributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
 					attributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null))))));
 					attributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
-					attributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
-					attributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))));
 					attributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
 					attributes[__Internal__.symbolCurrentDispatch] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 					attributes[__Internal__.symbolCurrentCallerIndex] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 
+					//if (__Internal__.creatingClass) {
+						attributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
+						attributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))));
+					//};
+
 					root.DD_ASSERT && root.DD_ASSERT(types.isObject(__Internal__.classProto));
 					
 					var keys = types.append(types.keys(attributes), types.symbols(attributes));
-					
+
+					var proto = (__Internal__.creatingClass ? __Internal__.classProto : __Internal__.interfaceProto);
 					tools.forEach(keys, function(key) {
 						var attribute = attributes[key] = doodad.OPTIONS({isEnumerable: false}, attributes[key]);
-						attribute[__Internal__.symbolPrototype] = __Internal__.classProto;
+						attribute[__Internal__.symbolPrototype] = proto;
 					});
 					
 					if (!(__Internal__.symbolAttributes in _shared.reservedAttributes)) {
@@ -5584,6 +5594,13 @@ module.exports = {
 						function _delete() {
 							this._super();
 							
+							var cache = this[__Internal__.symbolIsolatedCache];
+							if (cache) {
+								cache.forEach(function(_interface) {
+									_shared.invoke(_interface, _interface._delete, null, _shared.SECRET);
+								});
+							};
+
 							var forType = types.isType(this);
 							var cls = types.getType(this);
 							var attributes = this[__Internal__.symbolAttributes];
@@ -6368,7 +6385,7 @@ module.exports = {
 						$TYPE_NAME: "Events",
 					
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
-						__ERROR_EVENT: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
+						__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
 						onEventCancelled: doodad.EVENT(false), // function onEventCancelled(ev)
 							
