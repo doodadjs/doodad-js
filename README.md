@@ -211,7 +211,7 @@ Incomming... In the meantime, you can browse the source files and look at the "D
 
 Example 1 (inheritance):
 ```js
-    const Turtle1 = doodad.INIT(doodad.Object.$extend({
+    const Turtle1 = types.INIT(doodad.Object.$extend({
         $TYPE_NAME: 'Turtle1',
 
         talk: doodad.PUBLIC(function() {
@@ -223,7 +223,7 @@ Example 1 (inheritance):
 
     turtle.talk();
 
-    const Turtle2 = doodad.INIT(Turtle1.$extend({
+    const Turtle2 = types.INIT(Turtle1.$extend({
         $TYPE_NAME: 'Turtle2',
 
         talk: doodad.OVERRIDE(function() {
@@ -238,13 +238,13 @@ Example 1 (inheritance):
 
 Example 2 (interfaces):
 ```js
-    const Turtles = doodad.INIT(doodad.INTERFACE(doodad.Class.$extend({
+    const Turtles = types.INIT(doodad.INTERFACE(doodad.Class.$extend({
         $TYPE_NAME: 'Turtles',
 
         talk: doodad.PUBLIC(doodad.METHOD()),
     })));
 
-    const Turtle1 = doodad.INIT(doodad.Object.$extend(
+    const Turtle1 = types.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle1',
@@ -254,7 +254,7 @@ Example 2 (interfaces):
         }),
     }));
 
-    const Turtle2 = doodad.INIT(doodad.Object.$extend(
+    const Turtle2 = types.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle2',
@@ -269,7 +269,7 @@ Example 2 (interfaces):
 
 Example 3 (mix-ins) :
 ```js
-    const Turtles = doodad.INIT(doodad.MIX_IN(doodad.Class.$extend({
+    const Turtles = types.INIT(doodad.MIX_IN(doodad.Class.$extend({
         $TYPE_NAME: 'Turtles',
 
         talk: doodad.PUBLIC(function() {
@@ -277,7 +277,7 @@ Example 3 (mix-ins) :
         }),
     })));
 
-    const Turtle1 = doodad.INIT(doodad.Object.$extend(
+    const Turtle1 = types.INIT(doodad.Object.$extend(
                 Turtles,
     {
         $TYPE_NAME: 'Turtle1',
@@ -288,7 +288,7 @@ Example 3 (mix-ins) :
 
 Example 4 (traits) :
 ```js
-    const TAnimals = doodad.INIT(doodad.TRAIT(doodad.Class.$extend({
+    const TAnimals = types.INIT(doodad.TRAIT(doodad.Class.$extend({
         $TYPE_NAME: 'TAnimals',
 
         talk: doodad.PUBLIC(function() {
@@ -298,7 +298,7 @@ Example 4 (traits) :
         getPhrase: doodad.PROTECTED(doodad.MUST_OVERRIDE()),
     })));
 
-    const Turtle = doodad.INIT(doodad.Object.$extend(
+    const Turtle = types.INIT(doodad.Object.$extend(
                 TAnimals,
     {
         $TYPE_NAME: 'Turtles',
@@ -327,7 +327,7 @@ Example 4 (traits) :
 
 Example 5 (expandable objects) :
 ```js
-    const IAnimal = doodad.INIT(doodad.INTERFACE(doodad.Class.$extend({
+    const IAnimal = types.INIT(doodad.INTERFACE(doodad.Class.$extend({
         $TYPE_NAME: 'IAnimal',
 
         makeNoise: doodad.MUST_OVERRIDE(),

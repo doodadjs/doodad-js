@@ -6,14 +6,14 @@ require('doodad-js').createRoot()
 			mixins = doodad.MixIns,
 			types = doodad.Types;
 
-		const Animal = doodad.INIT(doodad.BASE(doodad.Object.$extend(
+		const Animal = types.INIT(doodad.BASE(doodad.Object.$extend(
 		{
 			$TYPE_NAME: 'Animal',
 			
 			makeNoise: doodad.PUBLIC(doodad.MUST_OVERRIDE()),
 		})));
 
-		const Perrot = doodad.INIT(Animal.$extend(
+		const Perrot = types.INIT(Animal.$extend(
 		{
 			$TYPE_NAME: 'Perrot',
 			
