@@ -1136,7 +1136,7 @@ module.exports = {
 				// Namespace entry object
 				//-----------------------------------
 
-				entries.Namespace = root.DD_DOC(
+				entries.ADD('Namespace', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -1162,7 +1162,7 @@ module.exports = {
 								description: "Namespace registry entry.",
 						}
 						//! END_REPLACE()
-				, types.INIT(types.Type.$inherit(
+				, types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'NamespaceEntry'
@@ -1220,12 +1220,12 @@ module.exports = {
 					}
 				)));
 
-				entries.NamespaceObject = types.Namespace;
+				entries.ADD('NamespaceObject', types.Namespace);
 				
 				//-----------------------------------
 				// Module entry object
 				//-----------------------------------
-				entries.Module = root.DD_DOC(
+				entries.ADD('Module', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -1251,7 +1251,7 @@ module.exports = {
 								description: "Module registry entry.",
 						}
 						//! END_REPLACE()
-				, types.INIT(entries.Namespace.$inherit(
+				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ModuleEntry'
@@ -1262,7 +1262,7 @@ module.exports = {
 				//-----------------------------------
 				// Package entry object
 				//-----------------------------------
-				entries.Package = root.DD_DOC(
+				entries.ADD('Package', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -1288,7 +1288,7 @@ module.exports = {
 								description: "Package registry entry.",
 						}
 						//! END_REPLACE()
-				, types.INIT(entries.Namespace.$inherit(
+				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'PackageEntry'
@@ -1299,7 +1299,7 @@ module.exports = {
 				//-----------------------------------
 				// Application entry object
 				//-----------------------------------
-				entries.Application = root.DD_DOC(
+				entries.ADD('Application', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -1325,7 +1325,7 @@ module.exports = {
 								description: "Application registry entry.",
 						}
 						//! END_REPLACE()
-				, types.INIT(entries.Namespace.$inherit(
+				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ApplicationEntry'

@@ -243,7 +243,7 @@ module.exports = {
 				__Internal__.promiseUnhandledEvent = new types.Map();
 				__Internal__.promiseHandledEvent = new types.Map();
 				
-				types.addPromiseListener = function addPromiseListener(event, listener) {
+				types.ADD('addPromiseListener', function addPromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
 							var handler = function(ev) {
@@ -272,9 +272,9 @@ module.exports = {
 					} else {
 						throw new types.Error("Unknow promise event '~0~'.", [event]);
 					};
-				};
+				});
 				
-				types.removePromiseListener = function removePromiseListener(event, listener) {
+				types.ADD('removePromiseListener', function removePromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (__Internal__.promiseUnhandledEvent.has(listener)) {
 							var handler = __Internal__.promiseUnhandledEvent.get(listener);
@@ -290,13 +290,13 @@ module.exports = {
 					} else {
 						throw new types.Error("Unknow promise event '~0~'.", [event]);
 					};
-				};
+				});
 				
 				//===================================
 				// Asynchronous functions
 				//===================================
 				
-				tools.callAsync = root.DD_DOC(
+				tools.ADD('callAsync', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -371,7 +371,7 @@ module.exports = {
 								},
 							} || undefined);
 						};
-					});
+					}));
 				
 				//=====================================
 				// Shutdown & Exit
@@ -379,7 +379,7 @@ module.exports = {
 				
 				__Internal__.catchAndExitCalled = false;
 				
-				tools.catchAndExit = function catchAndExit(err) {
+				tools.ADD('catchAndExit', function catchAndExit(err) {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
@@ -465,13 +465,13 @@ module.exports = {
 					};
 					
 					throw err;
-				};
+				});
 				
 				//===================================
 				// Client functions
 				//===================================
 				
-				client.isEvent = root.DD_DOC(
+				client.ADD('isEvent', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -492,9 +492,9 @@ module.exports = {
 						return false;
 					};
 					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventConstructor);
-				});
+				}));
 				
-				client.isWindow = root.DD_DOC(
+				client.ADD('isWindow', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -526,7 +526,7 @@ module.exports = {
 					return types.isFunction(W) && (obj instanceof W);
 				}) : (function isWindow(obj) {
 					 return !!obj && (typeof obj === "object") && types.isNativeFunction(obj.setTimeout) && types.isNativeFunction(obj.focus);
-				})));
+				}))));
 
 				client.isDocument = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -947,7 +947,7 @@ module.exports = {
 				})));
 
 				
-				doodad.JS_EVENT = root.DD_DOC(
+				doodad.ADD('JS_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -981,10 +981,10 @@ module.exports = {
 					return doodad.PROTECTED(doodad.ATTRIBUTE(fn, extenders.JsEvent, {
 						types: eventTypes,
 					}));
-				});
+				}));
 				
 /* TODO: Do we need that ?				
-				doodad.JS_ERROR_EVENT = root.DD_DOC(
+				doodad.ADD('JS_ERROR_EVENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1007,14 +1007,14 @@ module.exports = {
 					//! END_REPLACE()
 					, function JS_ERROR_EVENT(eventTypes, /*optional* /fn) {
 						return doodad.OPTIONS({errorEvent: true}, doodad.JS_EVENT(eventTypes, fn));
-					});
+					}));
 */
 
 				//===================================
 				// System functions
 				//===================================
 				
-				tools.getOS = root.DD_DOC(
+				tools.ADD('getOS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1045,9 +1045,9 @@ module.exports = {
 					var filesOptions = files.getOptions();
 					os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
 					return os;
-				});
+				}));
 
-				tools.getDefaultLanguage = root.DD_DOC(
+				tools.ADD('getDefaultLanguage', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1069,7 +1069,7 @@ module.exports = {
 					var tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
 					tmp[1] = tmp[1].toUpperCase();
 					return tmp.join('_');
-				});
+				}));
 				
 				//===================================
 				// Location functions
@@ -1100,7 +1100,7 @@ module.exports = {
 					return types.ScriptAbortedError.call(this, message || "Page moved.", params);
 				})));
 
-				tools.getCurrentLocation = root.DD_DOC(
+				tools.ADD('getCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1121,12 +1121,12 @@ module.exports = {
 						_window = global.window;
 					};
 					return files.Url.parse(_window.location.href);
-				});
+				}));
 				
 				
 				__Internal__.setCurrentLocationPending = false;
 				
-				tools.setCurrentLocation = root.DD_DOC(
+				tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1185,7 +1185,7 @@ module.exports = {
 					if (!dontAbort) {
 						throw new types.PageMovedError();
 					};
-				});
+				}));
 				
 				//===================================
 				// Script loader functions
@@ -1359,7 +1359,7 @@ module.exports = {
 				));
 				
 				
-				tools.getJsScriptFileLoader = root.DD_DOC(
+				tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1437,9 +1437,9 @@ module.exports = {
 					};
 					
 					return loader;
-				});
+				}));
 				
-				tools.getJsScriptBlockLoader = root.DD_DOC(
+				tools.ADD('getJsScriptBlockLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1498,9 +1498,9 @@ module.exports = {
 					});
 					
 					return loader;
-				});
+				}));
 				
-				tools.getCssScriptFileLoader = root.DD_DOC(
+				tools.ADD('getCssScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1586,9 +1586,9 @@ module.exports = {
 					};
 					
 					return loader;
-				});
+				}));
 
-				tools.getCssScriptBlockLoader = root.DD_DOC(
+				tools.ADD('getCssScriptBlockLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1670,7 +1670,7 @@ module.exports = {
 					};
 					
 					return loader;
-				});
+				}));
 
 				//===================================
 				// Config
@@ -1678,7 +1678,7 @@ module.exports = {
 				
 				__Internal__.oldConfigLoad = config.load;
 				
-				config.load = root.DD_DOC(
+				config.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1716,14 +1716,14 @@ module.exports = {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
 						return __Internal__.oldConfigLoad(url, options, callbacks);
-					});
+					}));
 
 
 				//===================================
 				// File functions
 				//===================================
 				
-				files.readFile = root.DD_DOC(
+				files.ADD('readFile', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1897,9 +1897,9 @@ module.exports = {
 							};
 						};
 					});
-				});
+				}));
 				
-				files.watch = root.DD_DOC(
+				files.ADD('watch', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1927,13 +1927,13 @@ module.exports = {
 				//! END_REPLACE()
 				, function watch(url, eventCallback, /*optional*/options) {
 					// Do nothing
-				});
+				}));
 
 				//===================================
 				// Misc functions
 				//===================================
 
-				tools.generateUUID = (_shared.Natives.nodeUUID ? _shared.Natives.nodeUUID : root.DD_DOC(
+				tools.ADD('generateUUID', (_shared.Natives.nodeUUID ? _shared.Natives.nodeUUID : root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1949,7 +1949,7 @@ module.exports = {
 						for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
 						return b
 					})
-				);
+				));
 
 				//===================================
 				// Init

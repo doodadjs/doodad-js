@@ -6150,6 +6150,76 @@
 		// Namespace
 		//===================================
 		
+		_shared.ADD = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Name of the object.",
+							}, 
+							obj: {
+								type: 'object,Type',
+								optional: false,
+								description: "Object to add.",
+							}, 
+							protect: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will protect the object. 'false' will not. Default is 'true'."
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Arguments of the constructor.",
+							}, 
+						},
+						returns: 'object',
+						description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
+			}
+			//! END_REPLACE()
+			, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
+				if (types.isNothing(protect)) {
+					protect = true;
+				};
+
+				if (types.isType(obj) && !types.isInitialized(obj)) {
+					obj = types.INIT(obj, args);
+				};
+
+				_shared.setAttribute(this, name, obj, {
+					configurable: !protect,
+					enumerable: true,
+					writable: !protect,
+				});
+						
+				return obj;
+			});
+				
+		_shared.REMOVE = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Name of the object.",
+							}, 
+						},
+						returns: 'undefined',
+						description: "Removes the object from the current namespace object.",
+			}
+			//! END_REPLACE()
+			, function REMOVE(name) {
+				delete this[name];
+			});
+				
+				
 		types.Namespace = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -6201,12 +6271,20 @@
 					DD_NAME: types.READ_ONLY(null),
 					DD_FULL_NAME: types.READ_ONLY(null),
 
+					ADD: function ADD(name, obj, /*optional*/protect) {
+						return _shared.ADD.apply(this, arguments);
+					},
+					
+					REMOVE: function REMOVE(name) {
+						return _shared.REMOVE.apply(this, arguments);
+					},
+					
 					REGISTER: function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
-						return _shared.REGISTER && _shared.REGISTER.apply(this, arguments);
+						return _shared.REGISTER.apply(this, arguments);
 					},
 					
 					UNREGISTER: function UNREGISTER(type) {
-						return _shared.UNREGISTER && _shared.UNREGISTER.apply(this, arguments);
+						return _shared.UNREGISTER.apply(this, arguments);
 					},
 					
 					_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {

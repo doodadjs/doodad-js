@@ -93,35 +93,35 @@ module.exports = {
 				// Buffers
 				//===================================
 				
-				types.isBuffer = (_shared.Natives.globalBufferIsBuffer || (function(buffer) {
+				types.ADD('isBuffer', (_shared.Natives.globalBufferIsBuffer || (function(buffer) {
 					if (types.isNothing(obj)) {
 						return false;
 					};
 					return (typeof obj === 'object') && (buffer instanceof _shared.Natives.globalBuffer);
-				}));
+				})));
 				
-				if (global.global.Uint8Array) {
-					// Source: http://stackoverflow.com/questions/23822724/nodejs-javascript-typedarray-to-buffer-to-string-and-back-again
-					// TODO: Test and Check if there is not a faster way
-					types.typedArrayToBuffer = function typedArrayToBuffer(ab) {
-						const buffer = new global.Buffer(ab.byteLength);
-						const view = new global.Uint8Array(ab);
-						for (let i = 0; i < buffer.length; i++) {
-							buffer[i] = view[i];
-						}
-						return buffer;
-					};
-				} else {
-					types.typedArrayToBuffer = function typedArrayToBuffer(ab) {
-						throw new types.NotSupported("'typedArrayToBuffer' is not supported.");
-					};
-				};
+				//if (global.global.Uint8Array) {
+				//	// Source: http://stackoverflow.com/questions/23822724/nodejs-javascript-typedarray-to-buffer-to-string-and-back-again
+				//	// TODO: Test and Check if there is a faster way
+				//	types.ADD('typedArrayToBuffer', function typedArrayToBuffer(ab) {
+				//		const buffer = new global.Buffer(ab.byteLength);
+				//		const view = new global.Uint8Array(ab);
+				//		for (let i = 0; i < buffer.length; i++) {
+				//			buffer[i] = view[i];
+				//		}
+				//		return buffer;
+				//	});
+				//} else {
+				//	types.ADD('typedArrayToBuffer', function typedArrayToBuffer(ab) {
+				//		throw new types.NotSupported("'typedArrayToBuffer' is not supported.");
+				//	});
+				//};
 
 				//===================================
 				// Emitters
 				//===================================
 				
-				types.isEmitter = function isEmitter(emitter) {
+				types.ADD('isEmitter', function isEmitter(emitter) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					return types.isFunction(emitter.prependListener) &&
 						types.isFunction(emitter.prependOnceListener) &&
@@ -135,13 +135,13 @@ module.exports = {
 						types.isFunction(emitter.removeAllListeners) &&
 						types.isFunction(emitter.removeListener) &&
 						types.isFunction(emitter.setMaxListeners)
-				};
+				});
 				
 				//===================================
 				// Streams
 				//===================================
 				
-				types.isReadableStream = function isReadableStream(stream) {
+				types.ADD('isReadableStream', function isReadableStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					return types.isEmitter(stream) &&
 						types.isFunction(stream.isPaused) &&
@@ -154,9 +154,9 @@ module.exports = {
 						types.isFunction(stream.push) &&
 						types.isFunction(stream.unshift) &&
 						types.isFunction(stream.wrap)
-				};
+				});
 				
-				types.isWritableStream = function isWritableStream(stream) {
+				types.ADD('isWritableStream', function isWritableStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					return types.isEmitter(stream) &&
 						//types.isFunction(stream.cork) &&
@@ -164,23 +164,23 @@ module.exports = {
 						//types.isFunction(stream.setDefaultEncoding) &&
 						types.isFunction(stream.write) &&
 						types.isFunction(stream.end)
-				};
+				});
 				
-				types.isDuplexStream = function isDuplexStream(stream) {
+				types.ADD('isDuplexStream', function isDuplexStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					return types.isReadableStream(stream) && types.isWritableStream(stream);
-				};
+				});
 				
-				types.isTransformStream = function isTransformStream(stream) {
+				types.ADD('isTransformStream', function isTransformStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					// TODO: Find a way to know if it's really a transform stream, not a duplex stream
 					return types.isReadableStream(stream) && types.isWritableStream(stream);
-				};
+				});
 				
-				types.isStream = function isStream(stream) {
+				types.ADD('isStream', function isStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
 					return types.isReadableStream(stream) || types.isWritableStream(stream);
-				};
+				});
 				
 				//===================================
 				// Promise events
@@ -189,7 +189,7 @@ module.exports = {
 				__Internal__.promiseUnhandledEvent = new types.Map();
 				__Internal__.promiseHandledEvent = new types.Map();
 
-				types.addPromiseListener = function addPromiseEventListener(event, listener) {
+				types.ADD('addPromiseListener', function addPromiseEventListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
 							const handler = function(reason, promise) {
@@ -218,9 +218,9 @@ module.exports = {
 					} else {
 						throw new types.Error("Unknow promise event '~0~'.", [event]);
 					};
-				};
+				});
 				
-				types.removePromiseListener = function removePromiseListener(event, listener) {
+				types.ADD('removePromiseListener', function removePromiseListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (__Internal__.promiseUnhandledEvent.has(listener)) {
 							const handler = __Internal__.promiseUnhandledEvent.get(listener);
@@ -236,13 +236,13 @@ module.exports = {
 					} else {
 						throw new types.Error("Unknow promise event '~0~'.", [event]);
 					};
-				};
+				});
 				
 				//===================================
 				// Asynchronous functions
 				//===================================
 				
-				tools.callAsync = root.DD_DOC(
+				tools.ADD('callAsync', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -322,7 +322,7 @@ module.exports = {
 								},
 							} || undefined);
 						};
-					});
+					}));
 				
 				//=====================================
 				// Shutdown & Exit
@@ -330,7 +330,7 @@ module.exports = {
 				
 				__Internal__.catchAndExitCalled = false;
 				
-				tools.catchAndExit = function catchAndExit(err) {
+				tools.ADD('catchAndExit', function catchAndExit(err) {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
@@ -373,7 +373,7 @@ module.exports = {
 					};
 					
 					throw err;
-				};
+				});
 				
 				//=====================================
 				// "Client.js" Extension
@@ -383,7 +383,7 @@ module.exports = {
 					// Location functions
 					//===================================
 				
-					tools.getCurrentLocation = root.DD_DOC(
+					tools.ADD('getCurrentLocation', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -403,9 +403,9 @@ module.exports = {
 						return url.set({
 							args: url.args.set(args),
 						});
-					});
+					}));
 					
-					tools.setCurrentLocation = root.DD_DOC(
+					tools.ADD('setCurrentLocation', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -467,7 +467,7 @@ module.exports = {
 						if (!dontAbort) {
 							throw new types.ScriptAbortedError();
 						};
-					});
+					}));
 					
 					//===================================
 					// Script loader functions
@@ -560,7 +560,7 @@ module.exports = {
 						}
 					);
 					
-					tools.getJsScriptFileLoader = root.DD_DOC(
+					tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -617,7 +617,7 @@ module.exports = {
 						};
 						
 						return loader;
-					});
+					}));
 					
 				
 				//=====================================
@@ -628,7 +628,7 @@ module.exports = {
 					// System functions
 					//===================================
 					
-					tools.getOS = root.DD_DOC(
+					tools.ADD('getOS', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -655,13 +655,13 @@ module.exports = {
 						const filesOptions = files.getOptions();
 						os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
 						return os;
-					});
+					}));
 							
 					//=====================================
 					// Misc functions
 					//=====================================
 
-					tools.getDefaultLanguage = root.DD_DOC(
+					tools.ADD('getDefaultLanguage', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -681,7 +681,7 @@ module.exports = {
 						// TODO: Windows
 						const lang = process.env.LANG || '';
 						return lang.split('.')[0] || 'en_US';
-					});
+					}));
 					
 				//===================================
 				// Config
@@ -689,7 +689,7 @@ module.exports = {
 				
 				__Internal__.oldConfigLoad = config.load;
 				
-				config.load = root.DD_DOC(
+				config.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -726,14 +726,14 @@ module.exports = {
 							path = _shared.pathParser(path, types.get(options, 'parseOptions'));
 						};
 						return __Internal__.oldConfigLoad(path, options, callbacks);
-					});
+					}));
 
 
 					//=====================================
 					// Files functions
 					//=====================================
 					
-					files.rmdir = root.DD_DOC(
+					files.ADD('rmdir', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -872,9 +872,9 @@ module.exports = {
 							};
 							return true;
 						};
-					});
+					}));
 					
-					files.mkdir = root.DD_DOC(
+					files.ADD('mkdir', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -975,9 +975,9 @@ module.exports = {
 								return true;
 							};
 						};
-					});
+					}));
 					
-					files.copy = root.DD_DOC(
+					files.ADD('copy', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1226,9 +1226,9 @@ module.exports = {
 								return false;
 							};
 						};
-					});
+					}));
 					
-					files.readdir = root.DD_DOC(
+					files.ADD('readdir', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1393,9 +1393,9 @@ module.exports = {
 								return result;
 							};
 						};
-					});
+					}));
 					
-					files.getTempFolder = root.DD_DOC(
+					files.ADD('getTempFolder', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1430,9 +1430,9 @@ module.exports = {
 						};
 						__Internal__.tmpdir = folder;
 						return folder;
-					});
+					}));
 					
-					files.readFile = root.DD_DOC(
+					files.ADD('readFile', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1600,9 +1600,9 @@ module.exports = {
 								};
 							};
 						});
-					});
+					}));
 
-					files.watch = root.DD_DOC(
+					files.ADD('watch', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1680,7 +1680,7 @@ module.exports = {
 						} else {
 							throw new types.NotSupported("Remote files are not supported.");
 						};
-					});
+					}));
 					
 					
 				//===================================
@@ -2120,7 +2120,7 @@ module.exports = {
 				})));
 
 				
-				doodad.NODE_EVENT = root.DD_DOC(
+				doodad.ADD('NODE_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -2156,10 +2156,10 @@ module.exports = {
 					return doodad.PROTECTED(doodad.ATTRIBUTE(fn, extenders.NodeEvent, {
 						types: eventTypes,
 					}));
-				});
+				}));
 				
 /* TODO: Do we need that ?				
-				doodad.NODE_ERROR_EVENT = root.DD_DOC(
+				doodad.ADD('NODE_ERROR_EVENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -2182,7 +2182,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function NODE_ERROR_EVENT(eventTypes, /*optional* /fn) {
 						return doodad.OPTIONS({errorEvent: true}, doodad.NODE_EVENT(eventTypes, fn));
-					});
+					}));
 */
 				//*********************************************
 				// Emitter
@@ -2309,7 +2309,7 @@ module.exports = {
 				// Misc functions
 				//===================================
 				
-				tools.generateUUID = root.DD_DOC(
+				tools.ADD('generateUUID', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -2320,8 +2320,9 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function generateUUID() {
+						// TODO: Maybe use some options of the 'uuid' package ?
 						return nodeUUID();
-					});
+					}));
 
 
 

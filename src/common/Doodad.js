@@ -202,12 +202,11 @@ module.exports = {
 					};
 				};
 				
-				
 				//=======================
 				// Namespace entries
 				//=======================
 
-				entries.Type = root.DD_DOC(
+				entries.ADD('Type', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -233,127 +232,18 @@ module.exports = {
 							description: "Type registry entry.",
 					}
 					//! END_REPLACE()
-					, types.INIT(entries.Namespace.$inherit(
+					, entries.Namespace.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'TypeEntry',
 						}
 					)));
 
-				//==================================
-				// Exceptions
-				//==================================
-				
-				exceptions.REGISTER(root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									title: {
-										type: 'string',
-										optional: false,
-										description: "Message title",
-									},
-									message: {
-										type: 'string',
-										optional: false,
-										description: "Error message",
-									},
-									params: {
-										type: 'arrayof(any),objectof(any)',
-										optional: true,
-										description: "Parameters of the error message",
-									},
-								},
-								returns: 'undefined',
-								description: "Application error with title and message formatting.",
-					}
-					//! END_REPLACE()
-					, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
-						var error = types.Error.call(this, message, params);
-						error.title = title;
-						return error;
-					})));
-
-				doodad.trapException = root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									ex: {
-										type: 'error',
-										optional: false,
-										description: "Trapped error object.",
-									},
-									obj: {
-										type: 'object',
-										optional: true,
-										description: "Object.",
-									},
-									attr: {
-										type: 'string,symbol',
-										optional: true,
-										description: "Attribute name.",
-									},
-									caller: {
-										type: 'function',
-										optional: true,
-										description: "Caller function.",
-									},
-								},
-								returns: 'error',
-								description: "Errors manager.",
-					}
-					//! END_REPLACE()
-					, function trapException(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
-						if (!__Internal__.inTrapException) {
-							__Internal__.inTrapException = true;
-							ex = Object(ex);
-							try {
-								if (!ex.trapped) {
-									if (!ex.bubble) {
-										if (types._instanceof(ex, exceptions.Application)) {
-											_shared.popupExceptionHook(ex, obj, attr, caller);
-										} else {
-											_shared.catchExceptionHook(ex, obj, attr, caller);
-										};
-									};
-								};
-							} catch(o) {
-								if (o.critical) {
-									throw o;
-								} else if (!o.bubble) {
-									try {
-										tools.log(tools.LogLevels.Error, o.toString());
-									} catch(p) {
-									};
-									if (root.getOptions().debug) {
-										debugger;
-									};
-								};
-							} finally {
-								__Internal__.inTrapException = false;
-								if (!ex.trapped) {
-									ex.trapped = true;
-									if (types.isNothing(ex.throwLevel)) {
-										ex.throwLevel = 0;
-									};
-								};
-							};
-						};
-						return ex;
-					});
-
 				//============================
 				// Extend "Types.js"
 				//============================
 
-				doodad.INIT = types.INIT; // alias
-				
-				types.isClass = root.DD_DOC(
+				types.ADD('isClass', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -371,9 +261,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isClass(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj));
-					});
+					}));
 				
-				types.isInterfaceClass = root.DD_DOC(
+				types.ADD('isInterfaceClass', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -391,9 +281,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isInterfaceClass(obj) {
 						return !!obj && ((obj === doodad.Interface) || types.baseof(doodad.Interface, obj));
-					});
+					}));
 				
-				types.isBase = root.DD_DOC(
+				types.ADD('isBase', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -411,9 +301,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isBase(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Base);
-					});
+					}));
 				
-				types.isMixIn = root.DD_DOC(
+				types.ADD('isMixIn', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -431,9 +321,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isMixIn(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.MixIn);
-					});
+					}));
 
-				types.isInterface = root.DD_DOC(
+				types.ADD('isInterface', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -451,9 +341,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isInterface(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Interface);
-					});
+					}));
 
-				types.isIsolated = root.DD_DOC(
+				types.ADD('isIsolated', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -471,9 +361,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isIsolated(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Isolated);
-					});
+					}));
 
-				types.isNewable = root.DD_DOC(
+				types.ADD('isNewable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -491,9 +381,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isNewable(obj) {
 						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
-					});
+					}));
 				
-				types.isSealedClass = root.DD_DOC(
+				types.ADD('isSealedClass', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -523,9 +413,9 @@ module.exports = {
 							return false;
 						};
 						return !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Sealed);
-					});
+					}));
 				
-				types.isSerializable = root.DD_DOC(
+				types.ADD('isSerializable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -543,9 +433,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isSerializable(obj) {
 						return types.isNothing(obj) || (types.isPrimitive(obj) && !types.isSymbol(obj)) || types.isArray(obj) || types.isJsObject(obj) || types.isError(obj) || types._implements(obj, interfaces.Serializable);
-					});
+					}));
 				
-				types._implements = root.DD_DOC(
+				types.ADD('_implements', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -589,9 +479,9 @@ module.exports = {
 							};
 						};
 						return false;
-					});
+					}));
 
-				types.getImplements = root.DD_DOC(
+				types.ADD('getImplements', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -612,9 +502,9 @@ module.exports = {
 							return null;
 						};
 						return types.toArray(_shared.getAttribute(obj, __Internal__.symbolImplements));
-					});
+					}));
 				
-				types.isMethod = root.DD_DOC(
+				types.ADD('isMethod', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -653,9 +543,9 @@ module.exports = {
 							return false;
 						};
 						return true;
-					});
+					}));
 
-				types.isImplemented = root.DD_DOC(
+				types.ADD('isImplemented', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -695,7 +585,7 @@ module.exports = {
 						};
 						var method = _shared.getAttribute(obj, name);
 						return !((method[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.NotImplemented);
-					});
+					}));
 				
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
@@ -950,7 +840,7 @@ module.exports = {
 					});
 
 				__Internal__.oldTypesIsClonable = types.isClonable;
-				types.isClonable = root.DD_DOC(
+				types.ADD('isClonable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -973,10 +863,10 @@ module.exports = {
 					//! END_REPLACE()
 					, function isClonable(obj, /*optional*/cloneFunctions) {
 						return types._implements(obj, mixIns.Clonable) || __Internal__.oldTypesIsClonable.call(this, obj, cloneFunctions);
-					});
+					}));
 
 				__Internal__.oldTypesClone = types.clone;
-				types.clone = root.DD_DOC(
+				types.ADD('clone', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1013,7 +903,7 @@ module.exports = {
 						} else {
 							return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked);
 						};
-					});
+					}));
 				
 				_shared.getAttributeDescriptor = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1232,6 +1122,113 @@ module.exports = {
 						}
 					)));
 				
+				//==================================
+				// Exceptions
+				//==================================
+				
+				exceptions.REGISTER(root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									title: {
+										type: 'string',
+										optional: false,
+										description: "Message title",
+									},
+									message: {
+										type: 'string',
+										optional: false,
+										description: "Error message",
+									},
+									params: {
+										type: 'arrayof(any),objectof(any)',
+										optional: true,
+										description: "Parameters of the error message",
+									},
+								},
+								returns: 'undefined',
+								description: "Application error with title and message formatting.",
+					}
+					//! END_REPLACE()
+					, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
+						root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
+						var error = types.Error.call(this, message, params);
+						error.title = title;
+						return error;
+					})));
+
+				doodad.ADD('trapException', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									ex: {
+										type: 'error',
+										optional: false,
+										description: "Trapped error object.",
+									},
+									obj: {
+										type: 'object',
+										optional: true,
+										description: "Object.",
+									},
+									attr: {
+										type: 'string,symbol',
+										optional: true,
+										description: "Attribute name.",
+									},
+									caller: {
+										type: 'function',
+										optional: true,
+										description: "Caller function.",
+									},
+								},
+								returns: 'error',
+								description: "Errors manager.",
+					}
+					//! END_REPLACE()
+					, function trapException(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
+						if (!__Internal__.inTrapException) {
+							__Internal__.inTrapException = true;
+							ex = Object(ex);
+							try {
+								if (!ex.trapped) {
+									if (!ex.bubble) {
+										if (types._instanceof(ex, exceptions.Application)) {
+											_shared.popupExceptionHook(ex, obj, attr, caller);
+										} else {
+											_shared.catchExceptionHook(ex, obj, attr, caller);
+										};
+									};
+								};
+							} catch(o) {
+								if (o.critical) {
+									throw o;
+								} else if (!o.bubble) {
+									try {
+										tools.log(tools.LogLevels.Error, o.toString());
+									} catch(p) {
+									};
+									if (root.getOptions().debug) {
+										debugger;
+									};
+								};
+							} finally {
+								__Internal__.inTrapException = false;
+								if (!ex.trapped) {
+									ex.trapped = true;
+									if (types.isNothing(ex.throwLevel)) {
+										ex.throwLevel = 0;
+									};
+								};
+							};
+						};
+						return ex;
+					}));
+
 				//==================================
 				// Attribute extenders
 				//==================================

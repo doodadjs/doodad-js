@@ -71,7 +71,7 @@ module.exports = {
 				// Script functions
 				//===================================
 				
-				tools.getCurrentScript = root.DD_DOC(
+				tools.ADD('getCurrentScript', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -138,7 +138,7 @@ module.exports = {
 						};
 						
 						return url;
-					});
+					}));
 					
 					
 				//===================================
