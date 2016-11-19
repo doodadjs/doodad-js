@@ -425,10 +425,6 @@ module.exports = {
 						if (entry) {
 							options = ((entry instanceof entries.Package) ? options : types.get(options, entry.spec.name));
 							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
-								var keysBefore = null;
-								if (entry.options.protect && types.hasDefinePropertyEnabled()) {
-									keysBefore = types.keys(entry.namespace);
-								};
 								var retval = null;
 								entry.objectCreating = true;
 								if (entry.spec.create) {
@@ -464,17 +460,17 @@ module.exports = {
 								} else {
 									throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 								};
-								if (keysBefore) {
-									var keys = tools.filter(types.keys(entry.namespace), function(key) {
-										return (tools.indexOf(keysBefore, key) < 0);
-									});
-									for (var i = 0; i < keys.length; i++) {
-										var key = keys[i];
-										var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
-										if (  descriptor.configurable && !types.has('get') && !types.has('set')  ) {
-											descriptor.configurable = false;
-											descriptor.writable = false;
-											types.defineProperty(entry.namespace, key, descriptor);
+								if (entry.options.protect) {
+									var namespaces = types.append([entry.namespace], tools.map(entry.spec.namespaces, function(name) {return entry.namespace[name]}));
+									for (var j = 0; j < namespaces.length; j++) {
+										var namespace = namespaces[j];
+										var keys = types.keys(namespace);
+										for (var i = 0; i < keys.length; i++) {
+											var key = keys[i];
+											var descriptor = types.getOwnPropertyDescriptor(namespace, key);
+											if (  descriptor.configurable && !types.has('get') && !types.has('set')  ) {
+												namespace.ADD(key, namespace[key], true);
+											};
 										};
 									};
 								};
