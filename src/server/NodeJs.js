@@ -54,7 +54,7 @@ module.exports = {
 					nodeFs = require('fs'),
 					nodeHttp = require('http'),
 					nodeConsole = require('console').Console,
-					nodeUUID = require('node-uuid');
+					nodeUUID = require('uuid');
 
 				
 				//===================================
