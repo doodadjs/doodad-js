@@ -1957,10 +1957,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function generateUUID() {
-						// Source: https://gist.github.com/LeverOne
-						var a, b;
-						for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
-						return b
+						if (__Internal__.nodeUUID) {
+							return __Internal__.nodeUUID();
+						} else {
+							// Source: https://gist.github.com/LeverOne
+							var a, b;
+							for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
+							return b
+						};
 					})
 				));
 
@@ -1968,6 +1972,12 @@ module.exports = {
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
+					// <PRB> The "uuid" npm module is specificaly designed for browserify.
+					try {
+						__Internal__.nodeUUID = global.require('uuid');
+					} catch(o) {
+					};
+
 					try {
 						types.getPromise();
 					} catch(ex) {

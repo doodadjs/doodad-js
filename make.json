@@ -240,12 +240,25 @@
 			]
 		},
 		"install": {
-			"operations": [
+      "operations": [
         {
           "class": "Make.Generate.Package",
           "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js"
+        },
+        {
+          "class": "Make.Browserify.Bundle",
+          "source": "uuid",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/uuid.js",
+          "fromOutside": true
+        },
+        {
+          "class": "Make.Browserify.Bundle",
+          "source": "uuid",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/uuid.min.js",
+          "fromOutside": true,
+          "minify": true
         }
-			]
+      ]
 		},
 		"browserify": {
 			"operations": [
