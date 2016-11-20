@@ -13,12 +13,12 @@
 		"enableAsserts": false
 	},
     "Doodad__Types": {
-      "toSourceItemsCount": 255,
-	  "unhandledRejectionsTimeout": 1000,
-	  "unhandledRejectionsMaxSize": 20
+      "toSourceItemsCount": 255
     },
     "Doodad__Tools": {
-      "logLevel": 3
+      "logLevel": 3,
+	  "unhandledRejectionsTimeout": 1000,
+	  "unhandledRejectionsMaxSize": 20
     },
     "Doodad__Tools__Config": {
       "configPath": ""

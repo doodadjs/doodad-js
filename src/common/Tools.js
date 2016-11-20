@@ -69,9 +69,13 @@ module.exports = {
 					
 				var __options__ = types.nullObject({
 					logLevel: tools.LogLevels.Error,
+					unhandledRejectionsTimeout: 1000,
+					unhandledRejectionsMaxSize: 20,
 				}, _options);
 
 				__options__.logLevel = types.toInteger(__options__.logLevel);
+				__options__.unhandledRejectionsTimeout = types.toInteger(__options__.unhandledRejectionsTimeout);
+				__options__.unhandledRejectionsMaxSize = types.toInteger(__options__.unhandledRejectionsMaxSize);
 
 				types.freezeObject(__options__);
 
@@ -144,6 +148,9 @@ module.exports = {
 
 					windowParseInt: global.parseInt,
 					windowIsNaN: global.isNaN,
+
+					// "trapUnhandledErrors"
+					mathAbs: global.Math.abs,
 
 					// Polyfills
 
@@ -2207,6 +2214,107 @@ module.exports = {
 								}),
 						}
 					)));
+
+				//====================================
+				// Unhandled errors
+				//====================================
+
+				tools.trapUnhandledErrors = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: null,
+							returns: 'undefined',
+							description: "Trap unhandled errors and unhandled Promise rejections.",
+					}
+					//! END_REPLACE()
+					, function trapUnhandledErrors() {
+						if (!__Internal__.unhandledRejections) {
+							__Internal__.unhandledRejections = new types.Map();
+							
+							var options = __options__;
+
+							types.addAppEventListener('unhandlederror', function(ev) {
+								//if (ev.detail.error.name === 'ScriptAbortedError') {
+								//	_shared.Natives.processExit(ev.detail.error.exitCode || 0);
+								//} else {
+								//	console.error(ev.detail.error.stack || ev.detail.error.message);
+								//	_shared.Natives.processExit(1);
+								//};
+								try {
+									tools.catchAndExit(ev.detail.error);
+								} catch(o) {
+								};
+							});
+							
+							types.addAppEventListener('unhandledrejection', function(ev) {
+								if (!(ev.detail.reason instanceof types.ScriptInterruptedError)) {
+									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
+										 __Internal__.unhandledRejections.set(ev.detail.promise, {
+											reason: ev.detail.reason,
+											time: (new Date()).valueOf(),
+										 });
+									};
+								};
+							});
+							
+							types.addAppEventListener('rejectionhandled', function(ev) {
+								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
+									__Internal__.unhandledRejections['delete'](ev.detail.promise);
+								};
+							});
+							
+							var dumpRejections = function() {
+								try {
+									var curTime = (new Date()).valueOf(),
+										iter = __Internal__.unhandledRejections.entries(),
+										result;
+										
+									// <FUTURE> for ... of
+									while (result = iter.next()) {
+										if (result.done) {
+											break;
+										};
+										var promise = result.value[0],
+											val = result.value[1];
+										if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
+											var tools = root.Doodad.Tools;
+											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
+											if (val.reason) {
+												if (val.reason.stack) {
+													tools.log(tools.LogLevels.Error, val.reason.stack);
+												} else {
+													tools.log(tools.LogLevels.Error, val.reason);
+												};
+											};
+											__Internal__.unhandledRejections['delete'](promise);
+										};
+									};
+								} catch(o) {
+									__Internal__.unhandledRejections.clear();
+								};
+								
+								var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								//! IF_SET("serverSide")
+									if (types.isObject(timer) && types.isFunction(timer.unref)) {
+										// Node.Js: Allows the process to exit
+										timer.unref();
+									};
+								//! END_IF()
+							};
+							
+							var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							//! IF_SET("serverSide")
+								if (types.isObject(timer) && types.isFunction(timer.unref)) {
+									// Node.Js: Allows the process to exit
+									timer.unref();
+								};
+							//! END_IF()
+						};
+					});
+					
+					
 			},
 		};
 		return DD_MODULES;

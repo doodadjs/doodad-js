@@ -83,10 +83,14 @@ module.exports = {
 					globalClearTimeout: global.clearTimeout,
 					globalSetImmediate: global.setImmediate,
 					globalClearImmediate: global.clearImmediate,
-					processNextTick: process.nextTick,
+					processNextTick: global.process.nextTick,
 					
 					// "catchAndExit"
-					processExit: process.exit,
+					processExit: global.process.exit,
+
+					// "addAppListener", "removeAppListener"
+					processOn: types.bind(global.process, global.process.on),
+					processRemoveListener: types.bind(global.process, global.process.removeListener),
 				});
 				
 				//===================================
@@ -183,15 +187,32 @@ module.exports = {
 				});
 				
 				//===================================
+				// Application events
+				//===================================
+
+				//===================================
 				// Promise events
 				//===================================
 
-				__Internal__.promiseUnhandledEvent = new types.Map();
-				__Internal__.promiseHandledEvent = new types.Map();
+				__Internal__.unhandledErrorEvent = new types.Map();
+				__Internal__.unhandledRejectionEvent = new types.Map();
+				__Internal__.handledRejectionEvent = new types.Map();
 
-				types.ADD('addPromiseListener', function addPromiseEventListener(event, listener) {
-					if (event === 'unhandledrejection') {
-						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
+				types.ADD('addAppEventListener', function addAppEventListener(event, listener) {
+					if (event === 'unhandlederror') {
+						if (!__Internal__.unhandledErrorEvent.has(listener)) {
+							const handler = function(err) {
+								listener(new types.CustomEvent('unhandlederror', {
+									detail: {
+										error: err,
+									}
+								}));
+							};
+							_shared.Natives.processOn('uncaughtException', handler);
+							__Internal__.unhandledErrorEvent.set(listener, handler);
+						};
+					} else if (event === 'unhandledrejection') {
+						if (!__Internal__.unhandledRejectionEvent.has(listener)) {
 							const handler = function(reason, promise) {
 								listener(new types.CustomEvent('unhandledrejection', {
 									detail: {
@@ -200,11 +221,11 @@ module.exports = {
 									}
 								}));
 							};
-							global.process.on('unhandledRejection', handler);
-							__Internal__.promiseUnhandledEvent.set(listener, handler);
+							_shared.Natives.processOn('unhandledRejection', handler);
+							__Internal__.unhandledRejectionEvent.set(listener, handler);
 						};
 					} else if (event === 'rejectionhandled') {
-						if (!__Internal__.promiseHandledEvent.has(listener)) {
+						if (!__Internal__.handledRejectionEvent.has(listener)) {
 							const handler = function(promise) {
 								listener(new types.CustomEvent('rejectionhandled', {
 									detail: {
@@ -212,29 +233,35 @@ module.exports = {
 									}
 								}));
 							};
-							global.process.on('rejectionHandled', handler);
-							__Internal__.promiseHandledEvent.set(listener, handler);
+							_shared.Natives.processOn('rejectionHandled', handler);
+							__Internal__.handledRejectionEvent.set(listener, handler);
 						};
 					} else {
-						throw new types.Error("Unknow promise event '~0~'.", [event]);
+						throw new types.Error("Unknow application event '~0~'.", [event]);
 					};
 				});
 				
-				types.ADD('removePromiseListener', function removePromiseListener(event, listener) {
-					if (event === 'unhandledrejection') {
-						if (__Internal__.promiseUnhandledEvent.has(listener)) {
-							const handler = __Internal__.promiseUnhandledEvent.get(listener);
-							global.process.removeListener('unhandledRejection', handler);
-							__Internal__.promiseUnhandledEvent.delete(listener);
+				types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
+					if (event === 'unhandlederror') {
+						if (__Internal__.unhandledErrorEvent.has(listener)) {
+							const handler = __Internal__.unhandledErrorEvent.get(listener);
+							_shared.Natives.processRemoveListener('uncaughtException', handler);
+							__Internal__.unhandledErrorEvent.delete(listener);
+						};
+					} else if (event === 'unhandledrejection') {
+						if (__Internal__.unhandledRejectionEvent.has(listener)) {
+							const handler = __Internal__.unhandledRejectionEvent.get(listener);
+							_shared.Natives.processRemoveListener('unhandledRejection', handler);
+							__Internal__.unhandledRejectionEvent.delete(listener);
 						};
 					} else if (event === 'rejectionhandled') {
-						if (__Internal__.promiseHandledEvent.has(listener)) {
-							const handler = __Internal__.promiseHandledEvent.get(listener);
-							global.process.removeListener('rejectionHandled', handler);
-							__Internal__.promiseHandledEvent.delete(listener);
+						if (__Internal__.handledRejectionEvent.has(listener)) {
+							const handler = __Internal__.handledRejectionEvent.get(listener);
+							_shared.Natives.processRemoveListener('rejectionHandled', handler);
+							__Internal__.handledRejectionEvent.delete(listener);
 						};
 					} else {
-						throw new types.Error("Unknow promise event '~0~'.", [event]);
+						throw new types.Error("Unknow application event '~0~'.", [event]);
 					};
 				});
 				
@@ -338,33 +365,27 @@ module.exports = {
 						__Internal__.catchAndExitCalled = true;
 						
 						try {
-							process.exitCode = 1;
+							global.process.exitCode = 1; // 1 = General error
 
-							if (!err.trapped) {
-								if (!(err instanceof types.ScriptAbortedError)) {
-									debugger;
-								};
-								try {
-									err.trapped = true;
-									if (err.stack) {
-										global.console.error(err.stack);
-									} else {
-										global.console.error(err);
-									};
-								} catch(p) {
-									debugger;
-								};
-							};
-							
 							if (err instanceof types.ScriptAbortedError) {
-								process.exitCode = err.exitCode;
+								global.process.exitCode = err.exitCode;
+							} else {
+								debugger;
+								if (!err.trapped) {
+									try {
+										err.trapped = true;
+										global.console.error(err.stack || err.message);
+									} catch(p) {
+										debugger;
+									};
+								};
 							};
 						} catch(o) {
 							debugger;
 						};
 						
 						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false})); // sync
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: global.process.exitCode}})); // sync
 						} catch(o) {
 							debugger;
 						};

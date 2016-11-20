@@ -240,12 +240,35 @@ module.exports = {
 				// Promise events
 				//===================================
 
-				__Internal__.promiseUnhandledEvent = new types.Map();
-				__Internal__.promiseHandledEvent = new types.Map();
+				__Internal__.unhandledErrorEvent = new types.Map();
+				__Internal__.unhandledRejectionEvent = new types.Map();
+				__Internal__.handledRejectionEvent = new types.Map();
 				
-				types.ADD('addPromiseListener', function addPromiseListener(event, listener) {
-					if (event === 'unhandledrejection') {
-						if (!__Internal__.promiseUnhandledEvent.has(listener)) {
+				types.ADD('addAppEventListener', function addAppEventListener(event, listener) {
+					if (event === 'unhandlederror') {
+						if (!__Internal__.unhandledErrorEvent.has(listener)) {
+							var handler = function(msg, url, lineNo, columnNo, error) {
+								if (!error) {
+									// <PRB> Not every browsers supports the "error" argument
+									error = new types.Error(msg);
+									error.stack = "";
+									error.fileName = error.sourceURL = url;
+									error.line = error.lineNumber = lineNo;
+									error.columnNumber = columnNo;
+									error.functionName = "";
+									error.parsed = true;
+								};
+								listener(new types.CustomEvent('unhandlederror', {
+									detail: {
+										error: error,
+									}
+								}));
+							};
+							global.addEventListener('error', handler);
+							__Internal__.unhandledErrorEvent.set(listener, handler);
+						};
+					} else if (event === 'unhandledrejection') {
+						if (!__Internal__.unhandledRejectionEvent.has(listener)) {
 							var handler = function(ev) {
 								listener(new types.CustomEvent('unhandledrejection', {
 									detail: {
@@ -255,10 +278,10 @@ module.exports = {
 								}));
 							};
 							global.addEventListener(event, handler);
-							__Internal__.promiseUnhandledEvent.set(listener, handler);
+							__Internal__.unhandledRejectionEvent.set(listener, handler);
 						};
 					} else if (event === 'rejectionhandled') {
-						if (!__Internal__.promiseHandledEvent.has(listener)) {
+						if (!__Internal__.handledRejectionEvent.has(listener)) {
 							var handler = function(ev) {
 								listener(new types.CustomEvent('rejectionhandled', {
 									detail: {
@@ -267,28 +290,28 @@ module.exports = {
 								}));
 							};
 							global.addEventListener(event, handler);
-							__Internal__.promiseHandledEvent.set(listener, handler);
+							__Internal__.handledRejectionEvent.set(listener, handler);
 						};
 					} else {
-						throw new types.Error("Unknow promise event '~0~'.", [event]);
+						throw new types.Error("Unknow application event '~0~'.", [event]);
 					};
 				});
 				
-				types.ADD('removePromiseListener', function removePromiseListener(event, listener) {
+				types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
 					if (event === 'unhandledrejection') {
-						if (__Internal__.promiseUnhandledEvent.has(listener)) {
-							var handler = __Internal__.promiseUnhandledEvent.get(listener);
+						if (__Internal__.unhandledRejectionEvent.has(listener)) {
+							var handler = __Internal__.unhandledRejectionEvent.get(listener);
 							global.removeEventListener(event, handler);
-							__Internal__.promiseUnhandledEvent.delete(listener);
+							__Internal__.unhandledRejectionEvent.delete(listener);
 						};
 					} else if (event === 'rejectionhandled') {
-						if (__Internal__.promiseHandledEvent.has(listener)) {
-							var handler = __Internal__.promiseHandledEvent.get(listener);
+						if (__Internal__.handledRejectionEvent.has(listener)) {
+							var handler = __Internal__.handledRejectionEvent.get(listener);
 							global.removeEventListener(event, handler);
-							__Internal__.promiseHandledEvent.delete(listener);
+							__Internal__.handledRejectionEvent.delete(listener);
 						};
 					} else {
-						throw new types.Error("Unknow promise event '~0~'.", [event]);
+						throw new types.Error("Unknow application event '~0~'.", [event]);
 					};
 				});
 				
@@ -386,42 +409,32 @@ module.exports = {
 					if (!__Internal__.catchAndExitCalled) {
 						__Internal__.catchAndExitCalled = true;
 						
-						var exitCode = 1;
+						var exitCode = 1; // 1 = General error
 
 						try {
-							if (!err.trapped) {
-								if (!(err instanceof types.ScriptAbortedError)) {
-									debugger;
-								};
-								try {
-									err.trapped = true;
-									if (err.stack) {
-										if (global.console.error) {
-											global.console.error(err.stack);
-										} else {
-											global.console.log(err.stack);
-										};
-									} else {
-										if (global.console.error) {
-											global.console.error(err);
-										} else {
-											global.console.log(err);
-										};
-									};
-								} catch(p) {
-									debugger;
-								};
-							};
-							
 							if (err instanceof types.ScriptAbortedError) {
 								exitCode = err.exitCode;
+							} else {
+								debugger;
+								if (!err.trapped) {
+									try {
+										err.trapped = true;
+										if (global.console.error) {
+											global.console.error(err.stack || err.message || err.description);
+										} else {
+											global.console.log(err.stack || err.message || err.description);
+										};
+									} catch(p) {
+										debugger;
+									};
+								};
 							};
 						} catch(o) {
 							debugger;
 						};
 						
 						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false})); // sync
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: exitCode}})); // sync
 						} catch(o) {
 							debugger;
 						};
