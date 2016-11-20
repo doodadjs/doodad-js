@@ -2273,7 +2273,7 @@ module.exports = {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
 							const stack = this[name][_shared.StackSymbol];
-							return stack && types.map(stack, function(ev) {
+							return stack && tools.map(stack, function(ev) {
 								return ev[1]; // fn
 							}) || [];
 						};
