@@ -1818,24 +1818,17 @@ module.exports = {
 
 				__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
 					// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
-					// Bluebird "asCallback" polyfill
+					// Bluebird "asCallback" polyfill. NOTE: "spread" option has not been implemented.
 					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 						Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
 							var promise = this.then(function(result) {
 									var retval = callback(null, result);
 									if (retval === undefined) {
 										retval = result;
-									//} else if (types.isError(retval)) {
-									//	throw retval;
 									};
 									return retval;
 								}, function(err) {
 									var retval = callback(err);
-									if (retval === undefined) {
-										throw err;
-									//} else if (types.isError(retval)) {
-									//	throw retval;
-									};
 									return retval;
 								});
 							return promise;
