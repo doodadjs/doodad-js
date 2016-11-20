@@ -151,6 +151,7 @@ module.exports = {
 
 					// "trapUnhandledErrors"
 					mathAbs: global.Math.abs,
+					globalSetTimeout: global.setTimeout,
 
 					// Polyfills
 
@@ -2282,11 +2283,7 @@ module.exports = {
 											var tools = root.Doodad.Tools;
 											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
 											if (val.reason) {
-												if (val.reason.stack) {
-													tools.log(tools.LogLevels.Error, val.reason.stack);
-												} else {
-													tools.log(tools.LogLevels.Error, val.reason);
-												};
+												tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
 											};
 											__Internal__.unhandledRejections['delete'](promise);
 										};
@@ -2295,7 +2292,7 @@ module.exports = {
 									__Internal__.unhandledRejections.clear();
 								};
 								
-								var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								var timer = _shared.Natives.globalSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 								//! IF_SET("serverSide")
 									if (types.isObject(timer) && types.isFunction(timer.unref)) {
 										// Node.Js: Allows the process to exit
@@ -2304,7 +2301,7 @@ module.exports = {
 								//! END_IF()
 							};
 							
-							var timer = global.setTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							var timer = _shared.Natives.globalSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
 									// Node.Js: Allows the process to exit
