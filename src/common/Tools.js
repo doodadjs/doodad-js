@@ -151,7 +151,7 @@ module.exports = {
 
 					// "trapUnhandledErrors"
 					mathAbs: global.Math.abs,
-					globalSetTimeout: global.setTimeout,
+					windowSetTimeout: global.setTimeout.bind(global),
 
 					// Polyfills
 
@@ -2292,7 +2292,7 @@ module.exports = {
 									__Internal__.unhandledRejections.clear();
 								};
 								
-								var timer = _shared.Natives.globalSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 								//! IF_SET("serverSide")
 									if (types.isObject(timer) && types.isFunction(timer.unref)) {
 										// Node.Js: Allows the process to exit
@@ -2301,7 +2301,7 @@ module.exports = {
 								//! END_IF()
 							};
 							
-							var timer = _shared.Natives.globalSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
 									// Node.Js: Allows the process to exit

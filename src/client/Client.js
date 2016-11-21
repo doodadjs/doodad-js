@@ -120,8 +120,8 @@ module.exports = {
 					
 					// callAsync
 					mathMax: global.Math.max,
-					windowSetTimeout: global.setTimeout,
-					windowClearTimeout: global.clearTimeout,
+					windowSetTimeout: global.setTimeout.bind(global),
+					windowClearTimeout: global.clearTimeout.bind(global),
 					windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate : undefined), // IE 10
 					windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate : undefined), // IE 10
 					windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame) || 
