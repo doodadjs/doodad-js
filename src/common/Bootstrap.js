@@ -534,7 +534,7 @@
 			// "setPrototypeOf"
 			objectSetPrototypeOf: (types.isNativeFunction(global.Object.setPrototypeOf) ? global.Object.setPrototypeOf : undefined),
 			
-			// "isNumber", "isDate", "isArray", "isObject", "isJsObject", "isCallable"
+			// "isArray", "isObject", "isJsObject", "isCallable"
 			objectToString: global.Object.prototype.toString,
 			
 			// "isArray"
@@ -572,6 +572,13 @@
 			// "getSymbolFor", "getSymbolKey"
 			//windowWeakMap: (types.isNativeFunction(global.WeakMap) ? global.WeakMap : undefined),
 			
+			// "is*"
+			symbolToStringTag: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
+			numberValueOf: global.Number.prototype.valueOf,
+			booleanValueOf: global.Boolean.prototype.valueOf,
+			stringValueOf: global.String.prototype.valueOf,
+			dateValueOf: global.Date.prototype.valueOf,
+
 			// "isNaN"
 			numberIsNaN: (global.Number && types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
 
@@ -1208,7 +1215,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1221,20 +1228,33 @@
 			}
 			//! END_REPLACE()
 			, function isNumber(obj) {
-				if ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Number]')) {
-					obj = obj.valueOf();
+				if (types.isNothing(obj)) {
+					return false;
 				};
-				if (typeof obj === 'number') {
-					return (obj === obj); // Not NaN
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
 				};
-				return false;
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				return (obj === obj); // Not NaN
 			}));
 		
 		__Internal__.ADD('isInteger', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'any',
@@ -1247,14 +1267,31 @@
 			}
 			//! END_REPLACE()
 			, function isInteger(obj) {
-				// <PRB> "Number.isInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
-				if (!types.isNumber(obj)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				if (typeof obj === 'object') {
-					obj = obj.valueOf();
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
+				};
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				if (obj !== obj) {
+					// NaN
+					return false;
 				};
 				if (_shared.Natives.numberIsInteger) {
+					// <PRB> "Number.isInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
 					return _shared.Natives.numberIsInteger(obj);
 				} else {
 					if (!types.isFinite(obj)) {
@@ -1281,14 +1318,31 @@
 			}
 			//! END_REPLACE()
 			, function isSafeInteger(obj) {
-				// <PRB> "Number.isSafeInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
-				if  (!types.isInteger(obj)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				if (typeof obj === 'object') {
-					obj = obj.valueOf();
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
+				};
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				if (obj !== obj) {
+					// NaN
+					return false;
 				};
 				if (_shared.Natives.numberIsSafeInteger) {
+					// <PRB> "Number.isSafeInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
 					return _shared.Natives.numberIsSafeInteger(obj);
 				} else {
 					return (obj >= _shared.Natives.numberMinSafeInteger) && (obj <= _shared.Natives.numberMaxSafeInteger);
@@ -1335,7 +1389,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1348,11 +1402,28 @@
 			}
 			//! END_REPLACE()
 			, function isFinite(obj) {
-				if (!types.isNumber(obj)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				if (typeof obj === 'object') {
-					obj = obj.valueOf();
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
+				};
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				if (obj !== obj) {
+					// NaN
+					return false;
 				};
 				if (_shared.Natives.numberIsFinite) {
 					// <PRB> "Number.isFinite(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
@@ -1370,7 +1441,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1383,11 +1454,21 @@
 			}
 			//! END_REPLACE()
 			, function isInfinite(obj) {
-				if (!types.isNumber(obj)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				if (typeof obj === 'object') {
-					obj = obj.valueOf();
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
 				};
 				return (obj === Infinity) || (obj === -Infinity);
 			}));
@@ -1396,7 +1477,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1409,11 +1490,31 @@
 			}
 			//! END_REPLACE()
 			, function isFloat(obj) {
-				if (!types.isFinite(obj)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				if (typeof obj === 'object') {
-					obj = obj.valueOf();
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
+				};
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				if (obj !== obj) {
+					// NaN
+					return false;
+				};
+				if (!types.isFinite(obj)) {
+					return false;
 				};
 				return (obj !== (obj | 0));
 			})),
@@ -1423,7 +1524,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1436,7 +1537,23 @@
 			}
 			//! END_REPLACE()
 			, function isBoolean(obj) {
-				return (typeof obj === 'boolean') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Boolean]'));
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.booleanValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Boolean]') {
+						return false;
+					} else {
+						obj = _shared.Natives.booleanValueOf.call(obj);
+					};
+				};
+				return (typeof obj === 'boolean');
 			}));
 		
 		// <PRB> JS has no function to test for strings
@@ -1444,7 +1561,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1457,7 +1574,23 @@
 			}
 			//! END_REPLACE()
 			, function isString(obj) {
-				return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object String]'));
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.stringValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object String]') {
+						return false;
+					} else {
+						obj = _shared.Natives.stringValueOf.call(obj);
+					};
+				};
+				return (typeof obj === 'string');
 			}));
 		
 		// <PRB> JS has no function to test for dates
@@ -1465,7 +1598,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1478,14 +1611,28 @@
 			}
 			//! END_REPLACE()
 			, function isDate(obj) {
-				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Date]');
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					try {
+						_shared.Natives.dateValueOf.call(obj);
+					} catch(o) {
+						return false;
+					};
+				} else {
+					return (_shared.Natives.objectToString.call(obj) === '[object Date]');
+				};
 			}));
 		
 		__Internal__.ADD('isArray', (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1498,14 +1645,23 @@
 			}
 			//! END_REPLACE()
 			, function isArray(obj) {
-				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Array]');
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//	????
+				//};
+				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
 			})));
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1525,7 +1681,7 @@
 				if (typeof obj === 'object') {
 					var len = obj.length;
 					return (typeof len === 'number') && ((len >>> 0) === len);
-				} else if (typeof obj === 'string') {
+				} else if (types.isString(obj)) {
 					return true;
 				} else {
 					return false;
@@ -1537,7 +1693,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1550,15 +1706,24 @@
 			}
 			//! END_REPLACE()
 			, function isError(obj) {
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//	????
+				//};
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
-				return (typeof obj === 'object') && ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof types.Error) || (obj instanceof types.TypeError));
+				return ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof types.Error) || (obj instanceof types.TypeError));
 			}));
 		
 		__Internal__.ADD('isNaN', (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1572,19 +1737,34 @@
 			//! END_REPLACE()
 			, function isNaN(obj) {
 				//     Unbelievable : There was no official way to detect NaN before ES6 !!!!
-				// Source: http://stackoverflow.com/questions/2652319/how-do-you-check-that-a-number-is-nan-in-javascript
-				// Explanation: NaN is the only object not equal to itself.
-				if ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Number]')) {
-					obj = obj.valueOf();
+				if (types.isNothing(obj)) {
+					return false;
 				};
-				return (obj !== obj);
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.numberValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+						return false;
+					} else {
+						obj = _shared.Natives.numberValueOf.call(obj);
+					};
+				};
+				if (typeof obj !== 'number') {
+					return false;
+				};
+				// Explanation: NaN is the only object not equal to itself.
+				return (obj !== obj); // NaN
 			})));
 		
 		__Internal__.ADD('isCallable', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -1600,8 +1780,21 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-				return (typeof obj === 'function') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Function]'));
+				if (typeof obj === 'function') {
+					return true;
+				};
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					try {
+						_shared.Natives.functionToString.call(obj);
+					} catch(o) {
+						return false;
+					};
+				} else {
+					return (_shared.Natives.objectToString.call(obj) === '[object Function]');
+				};
 			}));
 			
 		
@@ -3186,7 +3379,13 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Object]');
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//	????
+				//};
+				return (_shared.Natives.objectToString.call(obj) === '[object Object]');
 			}));
 			
 		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
@@ -4231,7 +4430,16 @@
 			}
 			//! END_REPLACE()
 			, function isJsObject(obj) {
-				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					throw new types.NotSupported("Unable to evaluate because object has 'Symbol.toStringTag'.");
+				};
+				return (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
 			}));
 
 		__Internal__.ADD('is', __Internal__.DD_DOC(
