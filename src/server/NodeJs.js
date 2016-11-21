@@ -708,46 +708,14 @@ module.exports = {
 				// Config
 				//===================================
 				
-				__Internal__.oldConfigLoad = config.load;
+				__Internal__.oldLoadConfig = _shared.loadConfig;
 				
-				config.ADD('load', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								path: {
-									type: 'string,Path,Url',
-									optional: false,
-									description: "File location.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options.",
-								},
-								callbacks: {
-									type: 'arrayof(function),function',
-									optional: false,
-									description: 
-										"Callback functions. Arguments are :\n" +
-										"  ex (error): Exception object, when an error has occurred\n" +
-										"  data (any): Parsed file content, when successful\n",
-								},
-							},
-							returns: 'Promise',
-							description: "Loads a configuration file written with JSON and pass its content to the callback functions, then resolve a Promise with the final value.\n" +
-										"When the option 'watch' is set to 'true', the file is read again and callbacks called again when the file is modified.\n" +
-										"If 'loadFile' is called more than once with the same file, callbacks are chained.\n" +
-										"You can set the option 'force' to force the file to be read again.",
-					}
-					//! END_REPLACE()
-					, function load(path, /*optional*/options, /*optional*/callbacks) {
-						if (types.isString(path)) {
-							path = _shared.pathParser(path, types.get(options, 'parseOptions'));
-						};
-						return __Internal__.oldConfigLoad(path, options, callbacks);
-					}));
+				_shared.loadConfig = function loadConfig(path, /*optional*/options, /*optional*/callbacks) {
+					if (types.isString(path)) {
+						path = _shared.pathParser(path, types.get(options, 'parseOptions'));
+					};
+					return __Internal__.oldLoadConfig(path, options, callbacks);
+				};
 
 
 					//=====================================
@@ -1708,7 +1676,7 @@ module.exports = {
 				// Child process extension
 				//===================================
 						
-				nodejs.forkSync = root.DD_DOC(
+				nodejs.ADD('forkSync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1738,7 +1706,7 @@ module.exports = {
 					args = types.append([], process.execArgv, [modulePath], args);
 					options = types.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
 					return nodeChildProcess.spawnSync(process.execPath, args, options);
-				});
+				}));
 						
 				//=====================================
 				// Console

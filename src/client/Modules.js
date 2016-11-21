@@ -62,9 +62,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				modules.getOptions = function() {
+				modules.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 				
 
 				
@@ -73,7 +73,7 @@ module.exports = {
 			
 				
 					
-				modules.locate = root.DD_DOC(
+				modules.ADD('locate', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -118,9 +118,9 @@ module.exports = {
 							};
 							return location;
 						});
-					});
+					}));
 				
-				modules.loadFiles = function loadFiles(module, files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(module, files, /*optional*/options) {
 					var Promise = types.getPromise();
 
 					// Convert to array of objects for Promise.map
@@ -177,9 +177,9 @@ module.exports = {
 								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
 							});
 					}, options);
-				};
+				});
 				
-				modules.load = root.DD_DOC(
+				modules.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -237,7 +237,7 @@ module.exports = {
 								delete global.DD_MODULES;
 								return retval;
 							});
-					});
+					}));
 				
 				
 				

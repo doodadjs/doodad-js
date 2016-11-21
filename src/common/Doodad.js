@@ -141,7 +141,7 @@ module.exports = {
 				delete __Internal__.arrayObj;  // free memory
 				
 				// Interface
-				doodad.HostSymbol = __Internal__.symbolHost;
+				doodad.ADD('HostSymbol', __Internal__.symbolHost);
 				
 				// AttributeBox
 				_shared.ExtenderSymbol = __Internal__.symbolExtender;
@@ -167,9 +167,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				doodad.getOptions = function() {
+				doodad.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 
 
 				//=======================
@@ -839,71 +839,19 @@ module.exports = {
 						};
 					});
 
-				__Internal__.oldTypesIsClonable = types.isClonable;
-				types.ADD('isClonable', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to test for.",
-								},
-								cloneFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the function will returns 'true' for custom functions. Default is 'false'.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the value is clonable.",
-					}
-					//! END_REPLACE()
-					, function isClonable(obj, /*optional*/cloneFunctions) {
-						return types._implements(obj, mixIns.Clonable) || __Internal__.oldTypesIsClonable.call(this, obj, cloneFunctions);
-					}));
+				__Internal__.oldTypesIsClonable = _shared.isClonable;
+				_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
+					return types._implements(obj, mixIns.Clonable) || __Internal__.oldTypesIsClonable.call(this, obj, cloneFunctions);
+				};
 
-				__Internal__.oldTypesClone = types.clone;
-				types.ADD('clone', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value.",
-								},
-								depth: {
-									type: 'integer',
-									optional: true,
-									description: "Depth.",
-								},
-								cloneFunctions: {
-									type: 'bool,integer',
-									optional: true,
-									description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
-								},
-								keepUnlocked: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
-								},
-							},
-							returns: 'any',
-							description: "Clone a value.",
-					}
-					//! END_REPLACE()
-					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
-						if (types._implements(obj, mixIns.Clonable)) {
-							return obj.clone();
-						} else {
-							return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked);
-						};
-					}));
+				__Internal__.oldTypesClone = _shared.clone;
+				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
+					if (types._implements(obj, mixIns.Clonable)) {
+						return obj.clone();
+					} else {
+						return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked);
+					};
+				};
 				
 				_shared.getAttributeDescriptor = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1464,8 +1412,8 @@ module.exports = {
 						}
 					))));
 				
-				doodad.AttributeGetter = function() {};
-				doodad.AttributeSetter = function() {};
+				doodad.ADD('AttributeGetter', function() {});
+				doodad.ADD('AttributeSetter', function() {});
 
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3465,7 +3413,7 @@ module.exports = {
 							},
 					})));
 
-				doodad.ATTRIBUTE = root.DD_DOC(
+				doodad.ADD('ATTRIBUTE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3512,9 +3460,9 @@ module.exports = {
 						
 						value[__Internal__.symbolExtender] = oldExtender;
 						return value;
-					});
+					}));
 
-				doodad.OPTIONS = root.DD_DOC(
+				doodad.ADD('OPTIONS', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3568,9 +3516,9 @@ module.exports = {
 							value[__Internal__.symbolExtender] = extender;
 							return value;
 						};
-					});
+					}));
 				
-				doodad.NOT_INHERITED = root.DD_DOC(
+				doodad.ADD('NOT_INHERITED', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3590,9 +3538,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							notInherited: true,
 						}, value);
-					});
+					}));
 
-				doodad.PRE_EXTEND = root.DD_DOC(
+				doodad.ADD('PRE_EXTEND', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3612,9 +3560,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							preExtend: true,
 						}, value);
-					});
+					}));
 
-				doodad.TYPE = root.DD_DOC(
+				doodad.ADD('TYPE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3634,9 +3582,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isType: true,
 						}, value);
-					});
+					}));
 
-				doodad.INSTANCE = root.DD_DOC(
+				doodad.ADD('INSTANCE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3656,9 +3604,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isInstance: true,
 						}, value);
-					});
+					}));
 
-				doodad.PERSISTENT = root.DD_DOC(
+				doodad.ADD('PERSISTENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3678,9 +3626,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isPersistent: true,
 						}, value);
-					});
+					}));
 
-				doodad.BIND = root.DD_DOC(
+				doodad.ADD('BIND', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3700,9 +3648,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							bindMethod: true,
 						}, value);
-					});
+					}));
 
-				doodad.NOT_REENTRANT = root.DD_DOC(
+				doodad.ADD('NOT_REENTRANT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3722,9 +3670,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							notReentrant: true,
 						}, value);
-					});
+					}));
 				
-				doodad.EXTERNAL = root.DD_DOC(
+				doodad.ADD('EXTERNAL', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3744,9 +3692,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isExternal: true,
 						}, value);
-					});
+					}));
 				
-				doodad.READ_ONLY = root.DD_DOC(
+				doodad.ADD('READ_ONLY', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3766,9 +3714,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isReadOnly: true,
 						}, value);
-					});
+					}));
 
-				doodad.WRITABLE = root.DD_DOC(
+				doodad.ADD('WRITABLE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3788,9 +3736,9 @@ module.exports = {
 						return doodad.OPTIONS({
 							isReadOnly: false,
 						}, value);
-					});
+					}));
 
-				doodad.METHOD = root.DD_DOC(
+				doodad.ADD('METHOD', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3816,9 +3764,9 @@ module.exports = {
 						} else {
 							return doodad.ATTRIBUTE(fn, extenders.Method);
 						};
-					});
+					}));
 
-				doodad.JS_METHOD = root.DD_DOC(
+				doodad.ADD('JS_METHOD', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3838,9 +3786,9 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(fn) && types.isBindable(fn), "Invalid function.");
 						
 						return doodad.ATTRIBUTE(fn, extenders.JsMethod);
-					});
+					}));
 				
-				doodad.SUPER = root.DD_DOC(
+				doodad.ADD('SUPER', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3862,9 +3810,9 @@ module.exports = {
 						fn = doodad.ATTRIBUTE(fn, extenders.JsMethod);
 						fn[_shared.SuperEnabledSymbol] = true;
 						return fn;
-					});
+					}));
 
-				doodad.PROPERTY = root.DD_DOC(
+				doodad.ADD('PROPERTY', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3888,7 +3836,7 @@ module.exports = {
 							enumerable = true;
 						};
 						return doodad.ATTRIBUTE(descriptor, extenders.Property, {isEnumerable: enumerable});
-					});
+					}));
 				
 				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/errorEvent) {
 					if (errorEvent) {
@@ -3995,7 +3943,7 @@ module.exports = {
 					});
 				};
 				
-				doodad.EVENT = root.DD_DOC(
+				doodad.ADD('EVENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4020,9 +3968,9 @@ module.exports = {
 						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(cancellable), extenders.Event, {enableScopes: false}));
 						boxed[__Internal__.symbolOverrideWith] = fn;
 						return boxed;
-					});
+					}));
 
-				doodad.ERROR_EVENT = root.DD_DOC(
+				doodad.ADD('ERROR_EVENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4042,9 +3990,9 @@ module.exports = {
 						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(false, true), extenders.Event, {enableScopes: false}));
 						boxed[__Internal__.symbolOverrideWith] = fn;
 						return doodad.OPTIONS({errorEvent: true}, boxed);
-					});
+					}));
 
-				doodad.RAW_EVENT = root.DD_DOC(
+				doodad.ADD('RAW_EVENT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4058,19 +4006,19 @@ module.exports = {
 						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.RAW_EVENT(), extenders.Event, {enableScopes: false}));
 						boxed[__Internal__.symbolOverrideWith] = fn;
 						return boxed;
-					});
+					}));
 
 				//==================================
 				// Scopes
 				//==================================
 				
-				doodad.Scopes = types.freezeObject(types.nullObject({
+				doodad.ADD('Scopes', types.freezeObject(types.nullObject({
 					Public: 1,
 					Protected: 2,
 					Private: 3,
-				}));
+				})));
 				
-				doodad.PUBLIC = root.DD_DOC(
+				doodad.ADD('PUBLIC', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4098,9 +4046,9 @@ module.exports = {
 							value[__Internal__.symbolExtender] = extender;
 						};
 						return value;
-					});
+					}));
 				
-				doodad.PROTECTED = root.DD_DOC(
+				doodad.ADD('PROTECTED', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4128,9 +4076,9 @@ module.exports = {
 							value[__Internal__.symbolExtender] = extender;
 						};
 						return value;
-					});
+					}));
 
-				doodad.PRIVATE = root.DD_DOC(
+				doodad.ADD('PRIVATE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4158,17 +4106,17 @@ module.exports = {
 							value[__Internal__.symbolExtender] = extender;
 						};
 						return value;
-					});
+					}));
 				
-				doodad.PROTECTED_DEBUG = (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED);
-				doodad.PRIVATE_DEBUG = (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE);
+				doodad.ADD('PROTECTED_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED));
+				doodad.ADD('PRIVATE_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE));
 				
 				//==================================
 				// Class Modifiers
 				//==================================
 				
 				// Can be combined
-				doodad.ClassModifiers = types.freezeObject(types.nullObject({
+				doodad.ADD('ClassModifiers', types.freezeObject(types.nullObject({
 					Base: 1,
 					MixIn: 2,
 					Interface: 4,
@@ -4177,10 +4125,10 @@ module.exports = {
 					Singleton: 32,
 					Isolated: 64,
 					Expandable: 128,
-				}));
-				doodad.preservedClassModifiers = doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface | doodad.ClassModifiers.Sealed | doodad.ClassModifiers.Static;
+				})));
+				doodad.ADD('preservedClassModifiers', doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface | doodad.ClassModifiers.Sealed | doodad.ClassModifiers.Static);
 
-				doodad.BASE = root.DD_DOC(
+				doodad.ADD('BASE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4203,10 +4151,10 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
 						return cls;
-					});
+					}));
 				
 				// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
-				doodad.TRAIT = doodad.MIX_IN = root.DD_DOC(
+				doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4235,9 +4183,9 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
 						return cls;
-					});
+					})));
 				
-				doodad.INTERFACE = root.DD_DOC(
+				doodad.ADD('INTERFACE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4266,9 +4214,9 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
 						return cls;
-					});
+					}));
 				
-				doodad.SEALED = root.DD_DOC(
+				doodad.ADD('SEALED', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4291,9 +4239,9 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
 						return cls;
-					});
+					}));
 				
-				doodad.STATIC = root.DD_DOC(
+				doodad.ADD('STATIC', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4316,9 +4264,9 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
 						return cls;
-					});
+					}));
 				
-				doodad.ISOLATED = root.DD_DOC(
+				doodad.ADD('ISOLATED', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4346,9 +4294,9 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
 						return cls;
-					});
+					}));
 				
-				doodad.EXPANDABLE = root.DD_DOC(
+				doodad.ADD('EXPANDABLE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4376,13 +4324,13 @@ module.exports = {
 						};
 						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
 						return cls;
-					});
+					}));
 				
 				//==================================
 				// Method Positioning
 				//==================================
 
-				doodad.POSITION = root.DD_DOC(
+				doodad.ADD('POSITION', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4416,9 +4364,9 @@ module.exports = {
 							cls: cls,
 						};
 						return value;
-					});
+					}));
 
-				doodad.AFTER = root.DD_DOC(
+				doodad.ADD('AFTER', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4441,9 +4389,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function AFTER(cls, value) {
 						return doodad.POSITION(1, cls, value);
-					});
+					}));
 
-				doodad.BEFORE = root.DD_DOC(
+				doodad.ADD('BEFORE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4466,14 +4414,14 @@ module.exports = {
 					//! END_REPLACE()
 					, function BEFORE(cls, value) {
 						return doodad.POSITION(-1, cls, value);
-					});
+					}));
 
 				//==================================
 				// Method Modifiers
 				//==================================
 				
 				// Can be combined
-				doodad.MethodModifiers = types.freezeObject(types.nullObject({
+				doodad.ADD('MethodModifiers', types.freezeObject(types.nullObject({
 					Replace: 1,
 					Override: 2,
 					MustOverride: 4,
@@ -4483,10 +4431,10 @@ module.exports = {
 					NotImplemented: 64,
 					ForceCreate: 128,
 					Async: 256,
-				}));
-				doodad.preservedMethodModifiers = doodad.MethodModifiers.Obsolete | doodad.MethodModifiers.CanBeDestroyed | doodad.MethodModifiers.Async;
+				})));
+				doodad.ADD('preservedMethodModifiers', doodad.MethodModifiers.Obsolete | doodad.MethodModifiers.CanBeDestroyed | doodad.MethodModifiers.Async);
 				
-				doodad.REPLACE = root.DD_DOC(
+				doodad.ADD('REPLACE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4521,9 +4469,9 @@ module.exports = {
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
 						fn[__Internal__.symbolInterface] = _interface;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.OVERRIDE = root.DD_DOC(
+				doodad.ADD('OVERRIDE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4558,9 +4506,9 @@ module.exports = {
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
 						fn[__Internal__.symbolInterface] = _interface;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.CREATE_REPLACE = root.DD_DOC(
+				doodad.ADD('CREATE_REPLACE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4586,9 +4534,9 @@ module.exports = {
 						fn = doodad.REPLACE.apply(this, arguments);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.ForceCreate;
 						return fn;
-					});
+					}));
 				
-				doodad.CREATE_OVERRIDE = root.DD_DOC(
+				doodad.ADD('CREATE_OVERRIDE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4614,9 +4562,9 @@ module.exports = {
 						fn = doodad.OVERRIDE.apply(this, arguments);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.ForceCreate;
 						return fn;
-					});
+					}));
 				
-				doodad.MUST_OVERRIDE = root.DD_DOC(
+				doodad.ADD('MUST_OVERRIDE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4636,9 +4584,9 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.MustOverride;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.OBSOLETE = root.DD_DOC(
+				doodad.ADD('OBSOLETE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4668,9 +4616,9 @@ module.exports = {
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Obsolete;
 						fn[__Internal__.symbolUsageMessage] = message;
 						return doodad.METHOD(fn);
-					});
+					}));
 
-				doodad.CALL_FIRST = root.DD_DOC(
+				doodad.ADD('CALL_FIRST', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4690,9 +4638,9 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CallFirst;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.CAN_BE_DESTROYED = root.DD_DOC(
+				doodad.ADD('CAN_BE_DESTROYED', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4712,9 +4660,9 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CanBeDestroyed;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.ABSTRACT = doodad.NOT_IMPLEMENTED = root.DD_DOC(
+				doodad.ADD('ABSTRACT', doodad.NOT_IMPLEMENTED = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4728,9 +4676,9 @@ module.exports = {
 						var fn = types.AttributeBox();
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.NotImplemented;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.RETURNS = root.DD_DOC(
+				doodad.ADD('RETURNS', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4756,9 +4704,9 @@ module.exports = {
 						fn = types.AttributeBox(fn);
 						fn[__Internal__.symbolReturns] = validator;
 						return doodad.METHOD(fn);
-					});
+					}));
 
-				doodad.ASYNC = root.DD_DOC(
+				doodad.ADD('ASYNC', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4776,9 +4724,9 @@ module.exports = {
 							fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
 							return doodad.RETURNS(types.isPromise, doodad.METHOD(fn));
 						};
-					});
+					}));
 				
-				doodad.RENAME_OVERRIDE = root.DD_DOC(
+				doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4817,9 +4765,9 @@ module.exports = {
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
 						fn[__Internal__.symbolRenamedTo] = name;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
-				doodad.RENAME_REPLACE = root.DD_DOC(
+				doodad.ADD('RENAME_REPLACE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -4858,7 +4806,7 @@ module.exports = {
 						fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
 						fn[__Internal__.symbolRenamedTo] = name;
 						return doodad.METHOD(fn);
-					});
+					}));
 				
 
 				//==================================
@@ -6846,7 +6794,7 @@ module.exports = {
 				// Events classes
 				//==================================
 				
-				doodad.Event = types.INIT(root.DD_DOC(
+				doodad.ADD('Event', types.INIT(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6901,9 +6849,9 @@ module.exports = {
 							, function() {
 								this.prevent = true;
 							}),
-					})));
+					}))));
 
-				doodad.CancelEvent = types.INIT(root.DD_DOC(
+				doodad.ADD('CancelEvent', types.INIT(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6923,9 +6871,9 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'CancelEvent',
-					})));
+					}))));
 
-				doodad.ErrorEvent = types.INIT(root.DD_DOC(
+				doodad.ADD('ErrorEvent', types.INIT(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6964,13 +6912,13 @@ module.exports = {
 								_shared.setAttribute(this, 'error', error, {all: true});
 							};
 						}),
-					})));
+					}))));
 
 				//==================================
 				// Callbacks objects
 				//==================================
 
-				doodad.Callback = root.DD_DOC(
+				doodad.ADD('Callback', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -7052,9 +7000,9 @@ module.exports = {
 						callback[_shared.OriginalValueSymbol] = fn;
 						callback.lastError = null;
 						return callback;
-					}, types.Callback));
+					}, types.Callback)));
 				
-				doodad.AsyncCallback = root.DD_DOC(
+				doodad.ADD('AsyncCallback', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -7161,7 +7109,7 @@ module.exports = {
 						callback[_shared.OriginalValueSymbol] = fn;
 						callback.lastError = null;
 						return callback;
-					}, types.Callback));
+					}, types.Callback)));
 				
 				//==================================
 				// Serializable objects

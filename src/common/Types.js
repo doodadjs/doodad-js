@@ -134,21 +134,21 @@ module.exports = {
 					return 'null';
 				};
 				
-				types.Undefined = function Undefined() {};
+				types.ADD('Undefined', function Undefined() {});
 				types.extend(types.Undefined.prototype, {
 					valueOf: __Internal__.returnUndefined,
 					toString: __Internal__.returnUndefinedString,
 					toSource: __Internal__.returnUndefinedString,
 				});
 
-				types.Null = function Null() {};
+				types.ADD('Null', function Null() {});
 				types.extend(types.Null.prototype, {
 					valueOf: __Internal__.returnNull,
 					toString: __Internal__.returnNullString,
 					toSource: __Internal__.returnNullString,
 				});
 				
-				types.toObject = root.DD_DOC(
+				types.ADD('toObject', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -172,9 +172,9 @@ module.exports = {
 						} else {
 							return _shared.Natives.windowObject(val);
 						};
-					});
+					}));
 				
-				types.toArray = (_shared.Natives.arrayFrom || root.DD_DOC(
+				types.ADD('toArray', (_shared.Natives.arrayFrom || root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -224,7 +224,7 @@ module.exports = {
 							};
 						};
 						return result;
-					}));
+					})));
 				
 				//===================================
 				// Options
@@ -238,9 +238,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				types.getOptions = function() {
+				types.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 
 				//===================================
 				// Shared Symbols
@@ -252,7 +252,7 @@ module.exports = {
 				// is*
 				//===================================
 
-				types.isArrayAndNotEmpty = root.DD_DOC(
+				types.ADD('isArrayAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -278,9 +278,9 @@ module.exports = {
 							};
 						};
 						return false;
-					});
+					}));
 				
-				types.isArrayLikeAndNotEmpty = root.DD_DOC(
+				types.ADD('isArrayLikeAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -307,9 +307,9 @@ module.exports = {
 							};
 						};
 						return false;
-					});
+					}));
 				
-				types.isNothingOrEmpty = root.DD_DOC(
+				types.ADD('isNothingOrEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -350,9 +350,9 @@ module.exports = {
 							return true;
 						};
 						return false;
-					});
+					}));
 				
-				types.isEmpty = root.DD_DOC(
+				types.ADD('isEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -391,9 +391,9 @@ module.exports = {
 							return true;
 						};
 						return false;
-					});
+					}));
 				
-				types.isStringAndNotEmpty = root.DD_DOC(
+				types.ADD('isStringAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -411,9 +411,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isStringAndNotEmpty(obj) {
 						return types.isString(obj) && !!obj.length;
-					});
+					}));
 				
-				types.isStringAndNotEmptyTrim = root.DD_DOC(
+				types.ADD('isStringAndNotEmptyTrim', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -431,9 +431,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isStringAndNotEmptyTrim(obj) {
 						return types.isString(obj) && !!root.Doodad.Tools.trim(obj).length;
-					});
+					}));
 				
-				types.isObjectAndNotEmpty = root.DD_DOC(
+				types.ADD('isObjectAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -470,9 +470,9 @@ module.exports = {
 							};
 						};
 						return false;
-					});
+					}));
 				
-				types.isObjectLikeAndNotEmpty = root.DD_DOC(
+				types.ADD('isObjectLikeAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -520,13 +520,13 @@ module.exports = {
 							//IE8 };
 						};
 						return false;
-					});
+					}));
 
 				//=======================================================
 				// Objects
 				//=======================================================
 					
-				types.gets = root.DD_DOC(
+				types.ADD('gets', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -577,9 +577,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.set = root.DD_DOC(
+				types.ADD('set', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -619,9 +619,9 @@ module.exports = {
 						if (hasKey(obj, key)) {
 							return obj[key] = value;
 						};
-					});
+					}));
 				
-				types.sets = root.DD_DOC(
+				types.ADD('sets', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -663,9 +663,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.getsDefault = root.DD_DOC(
+				types.ADD('getsDefault', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -719,9 +719,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.keysInherited = root.DD_DOC(
+				types.ADD('keysInherited', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -746,9 +746,9 @@ module.exports = {
 							return [];
 						};
 						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
-					});
+					}));
 				
-				types.symbolsInherited = root.DD_DOC(
+				types.ADD('symbolsInherited', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -773,9 +773,9 @@ module.exports = {
 							return [];
 						};
 						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
-					});
+					}));
 				
-				types.depthComplete = root.DD_DOC(
+				types.ADD('depthComplete', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -831,9 +831,9 @@ module.exports = {
 						};
 
 						return result;
-					});
+					}));
 				
-				types.fill = root.DD_DOC(
+				types.ADD('fill', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -881,9 +881,94 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.isClonable = root.DD_DOC(
+				// NOTE: These functions will get replaced when "Doodad.js" is loaded.
+				_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
+					return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || (obj instanceof types.Map) || (obj instanceof types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
+				};
+
+				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
+					// NOTE: This function will get replaced when "Doodad.js" is loaded.
+					var result;
+
+					if (types.isNothing(obj)) {
+						result = obj;
+					} else {
+						var isArray = types.isArrayLike(obj);
+						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+						cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+							
+						if (types.isClonable(obj)) {
+							if (isArray) {
+								obj = _shared.Natives.windowObject(obj);
+								if (depth >= 0) {
+									result = new _shared.Natives.arrayConstructor(obj.length);
+									var len = obj.length;
+									for (var key = 0; key < len; key++) {
+										if (key in obj) {
+											result[key] = types.clone(obj[key], depth, cloneFunctions);
+										};
+									};
+								} else {
+									result = _shared.Natives.arraySlice.call(obj, 0);
+								};
+							} else if (types.isCustomFunction(obj)) {
+								if (cloneFunctions >= 0) {
+									//result = types.eval(_shared.Natives.functionToString.call(obj));
+									result = types.eval(obj.toString());
+								} else {
+									return obj;
+								};
+							} else if (obj instanceof types.Map) {
+								result = new types.Map(obj);
+							} else if (obj instanceof types.Set) {
+								result = new types.Set(obj);
+							} else {  // if (types.isObject(obj))
+								result = types.createObject(types.getPrototypeOf(obj));
+							};
+						} else {
+							throw new types.Error("Object is not clonable.");
+						};
+
+						// Copy properties
+						var keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
+							props = {};
+						for (var i = 0; i < keys.length; i++) {
+							var key = keys[i];
+							if (isArray) {
+								if (key === 'length') {
+									continue;
+								};
+								var tmp = _shared.Natives.windowNumber(key);
+								if (!types.isNaN(tmp) && !types.isInfinite(tmp)) {
+									continue;
+								};
+							};
+							var prop = types.getOwnPropertyDescriptor(result, key);
+							if (!prop || prop.configurable) {
+								prop = types.getOwnPropertyDescriptor(obj, key);
+								if (types.has(prop, 'value') && (depth >= 0)) {
+									prop.value = types.clone(prop.value, depth, cloneFunctions);
+								};
+								props[key] = prop;
+							};
+						};
+						types.defineProperties(result, props);
+
+						if (!keepUnlocked) {
+							if (types.isFrozen(obj)) {
+								types.freezeObject(result);
+							} else if (!types.isExtensible(obj)) {
+								types.preventExtensions(result);
+							};
+						};
+					};
+						
+					return result;
+				};
+
+				types.ADD('isClonable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -905,11 +990,10 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isClonable(obj, /*optional*/cloneFunctions) {
-						// NOTE: This function will get replaced when "Doodad.js" is loaded.
-						return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || (obj instanceof types.Map) || (obj instanceof types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
-					});
+						return _shared.isClonable(obj, cloneFunctions);
+					}));
 				
-				types.clone = root.DD_DOC(
+				types.ADD('clone', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -941,91 +1025,15 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
-						// NOTE: This function will get replaced when "Doodad.js" is loaded.
-						var result;
-
-						if (types.isNothing(obj)) {
-							result = obj;
-						} else {
-							var isArray = types.isArrayLike(obj);
-							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-							cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-							
-							if (types.isClonable(obj)) {
-								if (isArray) {
-									obj = _shared.Natives.windowObject(obj);
-									if (depth >= 0) {
-										result = new _shared.Natives.arrayConstructor(obj.length);
-										var len = obj.length;
-										for (var key = 0; key < len; key++) {
-											if (key in obj) {
-												result[key] = types.clone(obj[key], depth, cloneFunctions);
-											};
-										};
-									} else {
-										result = _shared.Natives.arraySlice.call(obj, 0);
-									};
-								} else if (types.isCustomFunction(obj)) {
-									if (cloneFunctions >= 0) {
-										//result = types.eval(_shared.Natives.functionToString.call(obj));
-										result = types.eval(obj.toString());
-									} else {
-										return obj;
-									};
-								} else if (obj instanceof types.Map) {
-									result = new types.Map(obj);
-								} else if (obj instanceof types.Set) {
-									result = new types.Set(obj);
-								} else {  // if (types.isObject(obj))
-									result = types.createObject(types.getPrototypeOf(obj));
-								};
-							} else {
-								throw new types.Error("Object is not clonable.");
-							};
-
-							// Copy properties
-							var keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
-								props = {};
-							for (var i = 0; i < keys.length; i++) {
-								var key = keys[i];
-								if (isArray) {
-									if (key === 'length') {
-										continue;
-									};
-									var tmp = _shared.Natives.windowNumber(key);
-									if (!types.isNaN(tmp) && !types.isInfinite(tmp)) {
-										continue;
-									};
-								};
-								var prop = types.getOwnPropertyDescriptor(result, key);
-								if (!prop || prop.configurable) {
-									prop = types.getOwnPropertyDescriptor(obj, key);
-									if (types.has(prop, 'value') && (depth >= 0)) {
-										prop.value = types.clone(prop.value, depth, cloneFunctions);
-									};
-									props[key] = prop;
-								};
-							};
-							types.defineProperties(result, props);
-
-							if (!keepUnlocked) {
-								if (types.isFrozen(obj)) {
-									types.freezeObject(result);
-								} else if (!types.isExtensible(obj)) {
-									types.preventExtensions(result);
-								};
-							};
-						};
-						
-						return result;
-					});
+						return _shared.clone(obj, depth, cloneFunctions, keepUnlocked);
+					}));
 				
 
 				//========================================
 				// Arrays
 				//========================================
 				
-				types.hasIndex = root.DD_DOC(
+				types.ADD('hasIndex', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1068,9 +1076,9 @@ module.exports = {
 						} else {
 							return false;
 						};
-					});
+					}));
 				
-				types.indexes = root.DD_DOC(
+				types.ADD('indexes', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1098,9 +1106,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.values = root.DD_DOC(
+				types.ADD('values', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1138,9 +1146,9 @@ module.exports = {
 							};
 							return result;
 						};
-					});
+					}));
 				
-				types.items = root.DD_DOC(
+				types.ADD('items', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1179,9 +1187,9 @@ module.exports = {
 							};
 							return result;
 						};
-					});
+					}));
 				
-				types.available = root.DD_DOC(
+				types.ADD('available', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1208,9 +1216,9 @@ module.exports = {
 							};
 						};
 						return -1;
-					});
+					}));
 				
-				types.availables =  root.DD_DOC(
+				types.ADD('availables', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1238,9 +1246,9 @@ module.exports = {
 							};
 						};
 						return keys;
-					});
+					}));
 				
-				types.getFirstIndex =  root.DD_DOC(
+				types.ADD('getFirstIndex', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1265,9 +1273,9 @@ module.exports = {
 								};
 							};
 						};
-					});
+					}));
 				
-				types.getFirstValue = root.DD_DOC(
+				types.ADD('getFirstValue', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1292,9 +1300,9 @@ module.exports = {
 								};
 							};
 						};
-					});
+					}));
 				
-				types.popAt = root.DD_DOC(
+				types.ADD('popAt', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1331,9 +1339,9 @@ module.exports = {
 								return item;
 							};
 						};
-					});
+					}));
 				
-				types.popItem = root.DD_DOC(
+				types.ADD('popItem', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1417,9 +1425,9 @@ module.exports = {
 								};
 							};
 						};
-					});
+					}));
 				
-				types.popItems = root.DD_DOC(
+				types.ADD('popItems', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1510,9 +1518,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				types.prepend = root.DD_DOC(
+				types.ADD('prepend', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1553,14 +1561,14 @@ module.exports = {
 						};
 						
 						return result;
-					});
+					}));
 				
 				
 				//===================================
 				// "toSource" function
 				//===================================
 				
-				types.toSource = root.DD_DOC(
+				types.ADD('toSource', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1737,13 +1745,13 @@ module.exports = {
 								};
 							};
 						};
-					});
+					}));
 				
 				//===================================
 				// Callback base type
 				//===================================
 				
-				types.Callback = root.DD_DOC(
+				types.ADD('Callback', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1755,11 +1763,11 @@ module.exports = {
 					//! END_REPLACE()
 					, function(/*optional*/obj, fn) {
 						throw new types.NotSupported("Type is a base type.");
-					});
+					}));
 				
-				types.isCallback = function(obj) {
+				types.ADD('isCallback', function(obj) {
 					return types.isCallable(obj) && types.baseof(types.Callback, obj);
-				};
+				});
 				
 				// NOTE: Will be replaced by "Doodad.js"
 				_shared.makeInside = function(/*optional*/obj, fn) {
@@ -1775,7 +1783,7 @@ module.exports = {
 
 				__Internal__.Promise = null;
 				
-				types.isPromise = root.DD_DOC(
+				types.ADD('isPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1796,9 +1804,9 @@ module.exports = {
 							return false;
 						};
 						return (typeof obj === 'object') && (obj instanceof __Internal__.Promise);
-					});
+					}));
 				
-				types.getPromise = root.DD_DOC(
+				types.ADD('getPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1814,7 +1822,7 @@ module.exports = {
 							throw new types.NotSupported("ES6 Promises are not supported. You must include the polyfill 'es6-promise' or 'rsvp' in your project. You can also use another polyfill (see 'types.setPromise').");
 						};
 						return Promise;
-					});
+					}));
 
 				__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
 					// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
@@ -2093,7 +2101,7 @@ module.exports = {
 					};
 				};
 					
-				types.setPromise = root.DD_DOC(
+				types.ADD('setPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -2156,7 +2164,7 @@ module.exports = {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 						__Internal__.Promise = DDPromise;
-					});
+					}));
 				
 				_shared.PromiseCallback = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2234,7 +2242,7 @@ module.exports = {
 				// Iterators
 				//===================================
 
-				types.hasIterators = root.DD_DOC(
+				types.ADD('hasIterators', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2248,10 +2256,10 @@ module.exports = {
 						return true;
 					} : function hasIterators(obj) {
 						return false;
-					}));
+					})));
 				
 				
-				types.isIterable = root.DD_DOC(
+				types.ADD('isIterable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2274,11 +2282,11 @@ module.exports = {
 						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.windowSymbolIterator in obj));
 					} : function isIterable(obj) {
 						return false;
-					}));
+					})));
 				
 				
 				// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
-				types.isIteratorLike = root.DD_DOC(
+				types.ADD('isIteratorLike', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2296,7 +2304,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function isIteratorLike(obj) {
 						return types.isObjectLike(obj) && types.isFunction(obj.next);
-					});
+					}));
 				
 				
 				//===================================
@@ -2312,7 +2320,7 @@ module.exports = {
 				} catch(ex) {
 				};
 
-				types.hasGenerators = root.DD_DOC(
+				types.ADD('hasGenerators', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2326,9 +2334,9 @@ module.exports = {
 						return true;
 					} : function hasGenerators() {
 						return false;
-					}));
+					})));
 				
-				types.getGeneratorFunction = root.DD_DOC(
+				types.ADD('getGeneratorFunction', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2340,9 +2348,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function getGeneratorFunction() {
 						return (_shared.Natives.GeneratorFunction || null);
-					});
+					}));
 				
-				types.isGeneratorFunction = root.DD_DOC(
+				types.ADD('isGeneratorFunction', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2364,9 +2372,9 @@ module.exports = {
 						return (typeof obj === 'function') && (obj instanceof _shared.Natives.GeneratorFunction);
 					} : function isGeneratorFunction(obj) {
 						return false;
-					})));
+					}))));
 				
-				types.isGenerator = root.DD_DOC(
+				types.ADD('isGenerator', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2399,13 +2407,13 @@ module.exports = {
 						return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
 					} : function isGenerator(obj) {
 						return false;
-					}));
+					})));
 				
 				//===================================
 				// Buffers
 				//===================================
 
-				types.isArrayBuffer = root.DD_DOC(
+				types.ADD('isArrayBuffer', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2428,7 +2436,7 @@ module.exports = {
 						// ArrayBuffer is not implemented.
 						return false;
 						
-					})));
+					}))));
 				
 				//===================================
 				// Typed Arrays
@@ -2449,7 +2457,7 @@ module.exports = {
 					};
 				};
 					
-				types.isTypedArray = root.DD_DOC(
+				types.ADD('isTypedArray', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2482,7 +2490,7 @@ module.exports = {
 						// Typed arrays are not implemented.
 						return false;
 						
-					}))));
+					})))));
 
 				//===================================
 				// Bind/Unbind
@@ -2499,7 +2507,7 @@ module.exports = {
 					};
 				})();
 				
-				types.isBindable = root.DD_DOC(
+				types.ADD('isBindable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2517,9 +2525,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isBindable(obj) {
 						return types.isCustomFunction(obj) && (!types.has(obj, _shared.BoundObjectSymbol)) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
-					});
+					}));
 				
-				types.bind = root.DD_DOC(
+				types.ADD('bind', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2576,9 +2584,9 @@ module.exports = {
 						newFn[_shared.BoundObjectSymbol] = obj;
 						newFn[_shared.OriginalValueSymbol] = fn;
 						return newFn;
-					});
+					}));
 				
-				types.unbind = root.DD_DOC(
+				types.ADD('unbind', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2616,13 +2624,13 @@ module.exports = {
 						} else {
 							return fn;
 						};
-					});
+					}));
 
 				//=========================
 				// Set / Map
 				//=========================
 					
-				types.Iterator = types.INIT(types.Type.$inherit(
+				types.ADD('Iterator', types.Type.$inherit(
 					{
 						$TYPE_NAME: 'Iterator',
 					},
@@ -2690,7 +2698,7 @@ module.exports = {
 					})));
 					
 					
-				types.Set = (_shared.Natives.windowSet || types.INIT(types.Type.$inherit(
+				types.ADD('Set', (_shared.Natives.windowSet || types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Set',
@@ -2843,7 +2851,7 @@ module.exports = {
 					})));
 					
 					
-				types.Map = (_shared.Natives.windowMap || types.INIT(types.Type.$inherit(
+				types.ADD('Map', (_shared.Natives.windowMap || types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Map',
@@ -2943,7 +2951,7 @@ module.exports = {
 				// TODO: Move elsewhere
 				//===================================
 				
-				types.HttpStatus = types.freezeObject(types.nullObject({
+				types.ADD('HttpStatus', types.freezeObject(types.nullObject({
 					// Information
 					Continue: 100,
 					SwitchingProtocol: 101,
@@ -3017,7 +3025,7 @@ module.exports = {
 					isError: function isError(status) {
 						return (status >= 400);
 					},
-				}));
+				})));
 				
 
 				//===================================

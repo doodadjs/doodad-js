@@ -79,7 +79,7 @@ module.exports = {
 					};
 				};
 
-				namespaces.VersionIdentifiers = types.freezeObject(types.nullObject({
+				namespaces.ADD('VersionIdentifiers', types.freezeObject(types.nullObject({
 					development: -4, dev: -4, d: -4, 
 					alpha: -3, a: -3, 
 					beta: -2, b: -2, 
@@ -87,9 +87,9 @@ module.exports = {
 					release: 0, r: 0, 
 					production: 1, prod: 1, p: 1, 
 					established: 2, e: 2,
-				}));
+				})));
 				
-				namespaces.get = root.DD_DOC(
+				namespaces.ADD('get', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -116,9 +116,9 @@ module.exports = {
 						return null;
 					};
 					return entry.namespace;
-				});
+				}));
 
-				namespaces.add = root.DD_DOC(
+				namespaces.ADD('add', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -141,9 +141,9 @@ module.exports = {
 						//! END_REPLACE()
 				, function add(name, entry, /*optinal*/options) {
 					return __Internal__.DD_REGISTRY.add(name, entry, options);
-				});
+				}));
 
-				namespaces.remove = root.DD_DOC(
+				namespaces.ADD('remove', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -166,7 +166,7 @@ module.exports = {
 						//! END_REPLACE()
 				, function remove(name, /*optional*/type, /*optional*/options) {
 					return __Internal__.DD_REGISTRY.remove(name, type, options);
-				});
+				}));
 
 				__Internal__.createNamespace = root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -460,20 +460,6 @@ module.exports = {
 								} else {
 									throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 								};
-								if (entry.options.protect) {
-									var namespaces = types.append([entry.namespace], tools.map(entry.spec.namespaces, function(name) {return entry.namespace[name]}));
-									for (var j = 0; j < namespaces.length; j++) {
-										var namespace = namespaces[j];
-										var keys = types.keys(namespace);
-										for (var i = 0; i < keys.length; i++) {
-											var key = keys[i];
-											var descriptor = types.getOwnPropertyDescriptor(namespace, key);
-											if (  descriptor.configurable && !types.has('get') && !types.has('set')  ) {
-												namespace.ADD(key, namespace[key], true);
-											};
-										};
-									};
-								};
 							};
 						};
 						return entry;
@@ -625,7 +611,7 @@ module.exports = {
 					};
 				});
 				
-				namespaces.load = root.DD_DOC(
+				namespaces.ADD('load', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -791,10 +777,10 @@ module.exports = {
 						
 					});
 						//.catch(tools.catchAndExit);
-				});
+				}));
 
 				/*
-				namespaces.clone = root.DD_DOC(
+				namespaces.ADD('clone', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -892,7 +878,7 @@ module.exports = {
 							};
 							return namespace;
 						});
-				});
+				}));
 				*/
 				
 				//===================================

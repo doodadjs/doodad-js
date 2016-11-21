@@ -78,9 +78,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				client.getOptions = function() {
+				client.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 				
 				//========================
 				// Natives
@@ -153,7 +153,7 @@ module.exports = {
 				
 				__Internal__.hasAddEventListener = types.isNativeFunction(global.addEventListener);
 				
-				client.addListener = (__Internal__.hasAddEventListener ? 
+				client.ADD('addListener', (__Internal__.hasAddEventListener ? 
 						function addListener(element, name, handler, /*optional*/capture) {
 							element.addEventListener(name, handler, !!capture);
 						} 
@@ -203,9 +203,9 @@ module.exports = {
 							};
 						}
 						
-					);
+					));
 				
-				client.removeListener = (__Internal__.hasAddEventListener ? 
+				client.ADD('removeListener', (__Internal__.hasAddEventListener ? 
 						function removeListener(element, name, handler, /*optional*/capture) {
 							element.removeEventListener(name, handler, !!capture);
 						}
@@ -234,7 +234,7 @@ module.exports = {
 							};
 						}
 
-					);
+					));
 				
 				//===================================
 				// Promise events
@@ -541,7 +541,7 @@ module.exports = {
 					 return !!obj && (typeof obj === "object") && types.isNativeFunction(obj.setTimeout) && types.isNativeFunction(obj.focus);
 				}))));
 
-				client.isDocument = root.DD_DOC(
+				client.ADD('isDocument', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -580,9 +580,9 @@ module.exports = {
 					return types.isFunction(hd) && (obj instanceof hd);
 				}) : (function isDocument(obj) {
 					 return !!obj && (typeof obj === "object") && (obj.nodeType === 9) && (typeof obj.nodeName === "string");
-				})));
+				}))));
 
-				client.isNode = root.DD_DOC(
+				client.ADD('isNode', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -622,9 +622,9 @@ module.exports = {
 					return types.isFunction(n) && (obj instanceof n);
 				}) : (function isNode(obj) {
 					return !!obj && (typeof obj === "object") && (+obj.nodeType === obj.nodeType) && (typeof obj.nodeName === "string");
-				})));
+				}))));
 
-				client.isElement = root.DD_DOC(
+				client.ADD('isElement', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -664,10 +664,10 @@ module.exports = {
 					return types.isFunction(he) && (obj instanceof he);
 				}) : (function isElement(obj) {
 					 return !!obj && (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.nodeName === "string");
-				})));
+				}))));
 				
 				
-				client.isEventTarget = root.DD_DOC(
+				client.ADD('isEventTarget', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -690,9 +690,9 @@ module.exports = {
 					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventTarget);
 				}) : (function isElement(obj) {
 					 return client.isDocument(obj) || client.isElement(obj);
-				})));
+				}))));
 				
-				client.getFirstElement = root.DD_DOC(
+				client.ADD('getFirstElement', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -718,7 +718,7 @@ module.exports = {
 						parent = parent.nextSibling;
 					}
 					return parent;
-				});
+				}));
 
 
 				//===================================
@@ -1689,47 +1689,15 @@ module.exports = {
 				// Config
 				//===================================
 				
-				__Internal__.oldConfigLoad = config.load;
+				__Internal__.oldLoadConfig = _shared.loadConfig;
 				
-				config.ADD('load', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								url: {
-									type: 'string,Url,Path',
-									optional: false,
-									description: "File location.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options.",
-								},
-								callbacks: {
-									type: 'arrayof(function),function',
-									optional: false,
-									description: 
-										"Callback functions. Arguments are :\n" +
-										"  ex (error): Exception object, when an error has occurred\n" +
-										"  data (any): Parsed file content, when successful\n",
-								},
-							},
-							returns: 'Promise',
-							description: "Loads a configuration file written with JSON and pass its content to the callback functions, then resolve a Promise with the final value.\n" +
-										"When the option 'watch' is set to 'true', the file is read again and callbacks called again when the file is modified.\n" +
-										"If 'loadFile' is called more than once with the same file, callbacks are chained.\n" +
-										"You can set the option 'force' to force the file to be read again.",
-					}
-					//! END_REPLACE()
-					, function load(url, /*optional*/options, /*optional*/callbacks) {
+				_shared.loadConfig = function loadConfig(url, /*optional*/options, /*optional*/callbacks) {
 						options = types.nullObject(options);
 						if (types.isString(url)) {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
-						return __Internal__.oldConfigLoad(url, options, callbacks);
-					}));
+						return __Internal__.oldLoadConfig(url, options, callbacks);
+					};
 
 
 				//===================================

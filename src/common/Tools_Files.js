@@ -72,19 +72,19 @@ module.exports = {
 				// Some options can be changed, so we don't freeze the object.
 				//types.freezeObject(__options__);
 
-				files.getOptions = function() {
+				files.ADD('getOptions', function() {
 					// Because options are not frozen, we make a copy to force the use of "setOptions".
 					return types.extend({}, __options__);
-				};
+				});
 
-				files.setOptions = function(options) {
+				files.ADD('setOptions', function(options) {
 					if (types.has(options, 'caseSensitive')) {
 						__options__.caseSensitive = types.toBoolean(options.caseSensitive);
 					};
 					if (types.has(options, 'caseSensitiveUnicode')) {
 						__options__.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
 					};
-				};
+				});
 
 				//===================================
 				// Hooks
@@ -341,7 +341,7 @@ module.exports = {
 					};
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 				
-				files.Path = root.DD_DOC(
+				files.ADD('Path', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1359,7 +1359,7 @@ module.exports = {
 								return files.Path.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
 							},
 						}, __Internal__.pathOptions)
-					)));
+					))));
 				
 				//===================================
 				// URLs
@@ -1378,7 +1378,7 @@ module.exports = {
 					};
 				};
 
-				files.UrlArguments = root.DD_DOC(
+				files.ADD('UrlArguments', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -1868,7 +1868,7 @@ module.exports = {
 									return new files.UrlArguments(args, options);						
 								}),
 						}
-					)));
+					))));
 					
 				__Internal__.urlOptions = {
 					protocol: null,
@@ -1887,7 +1887,7 @@ module.exports = {
 				};
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
-				files.Url = root.DD_DOC(
+				files.ADD('Url', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -2751,7 +2751,7 @@ module.exports = {
 								}),
 								
 						}, __Internal__.urlOptions)
-					)));
+					))));
 
 
 				//===================================

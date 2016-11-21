@@ -71,9 +71,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				config.getOptions = function() {
+				config.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 				
 
 				//===================================
@@ -88,7 +88,122 @@ module.exports = {
 				// Config
 				//===================================
 				
-				config.load = root.DD_DOC(
+				// NOTE: This function will get replaced by "Client.js" or "NodeJs.js".
+				_shared.loadConfig = function load(url, /*optional*/options, /*optional*/callbacks) {
+					root.DD_ASSERT && root.DD_ASSERT((url instanceof files.Url) || (url instanceof files.Path), "Invalid 'url' argument.");
+						
+					var Promise = types.getPromise();
+						
+					options = types.nullObject(options);
+
+					if (callbacks) {
+						if (types.isArray(callbacks)) {
+							// Remove empty slots.
+							callbacks = tools.filter(callbacks, function(callback) {
+								return !!callback;
+							});
+						} else {
+							callbacks = [callbacks];
+						};
+					} else {
+						callbacks = [];
+					};
+						
+					var configPath = types.getIn(options, 'configPath', __options__.configPath);
+					if (configPath) {
+						root.DD_ASSERT && root.DD_ASSERT((configPath instanceof files.Url) || (configPath instanceof files.Path), "Invalid 'configPath' option.");
+						url = configPath.combine(url);
+					};
+						
+					var key = url.toString();
+						
+					var promise;
+						
+					if (__Internal__.loadedConfigFiles.has(key)) {
+						var def = __Internal__.loadedConfigFiles.get(key);
+						def.callbacks = types.unique(def.callbacks, callbacks);
+						if (options.force) {
+							promise = def.read();
+						} else if (def.ready) {
+							if (types.isError(def.data)) {
+								promise = Promise.reject(def.data);
+							} else {
+								promise = Promise.resolve(def.data);
+							};
+						} else {
+							promise = Promise.create(function readyPromise(resolve, reject) {
+								def.callbacks.push(function(err, data) {
+									if (err) {
+										reject(err);
+									} else {
+										resolve(data);
+									};
+								});
+							});
+						};
+					} else {
+						if (!options.headers) {
+							options.headers = {};
+						};
+						options.headers['Accept'] = 'application/json';
+						var def = {
+							callbacks: callbacks,
+							data: null,
+							ready: false,
+							read: function read() {
+								return files.readFile(url, options)
+									.nodeify(function proceed(err, data) {
+										var promise;
+										if (err) {
+											def.data = err;
+											def.ready = true;
+											promise = Promise.reject(err);
+										} else {
+											try {
+												var encoding = options.encoding;
+												if (encoding) {
+													// <PRB> "JSON.parse" doesn't like the BOM
+													if (encoding.slice(0, 3).toLowerCase() === 'utf') {
+														// Remove the BOM
+														data = tools.trim(data, '\uFEFF', 1);
+														data = tools.trim(data, '\uFFFE', 1);
+													};
+												};
+												data = _shared.Natives.windowJSON.parse(data);
+												def.data = data;
+												def.ready = true;
+												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks,
+													promise = Promise.resolve(data);
+												tools.forEach(callbacks, function(callback) {
+													promise = promise.nodeify(callback);
+												});
+											} catch(ex) {
+												promise = Promise.reject(ex);
+											};
+										};
+										return promise;
+									});
+							}
+						};
+							
+						__Internal__.loadedConfigFiles.set(key, def);
+							
+						promise = def.read();
+							
+						if (options.watch) {
+							files.watch(url, function(eventName, fileName) {
+								if (eventName === 'change') {
+									options.async = true;
+									__Internal__.loadedConfigFiles.get(key).read();
+								};
+							});
+						};
+					};
+						
+					return promise;
+				};
+
+				config.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -121,118 +236,8 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function load(url, /*optional*/options, /*optional*/callbacks) {
-						root.DD_ASSERT && root.DD_ASSERT((url instanceof files.Url) || (url instanceof files.Path), "Invalid 'url' argument.");
-						
-						var Promise = types.getPromise();
-						
-						options = types.nullObject(options);
-
-						if (callbacks) {
-							if (types.isArray(callbacks)) {
-								// Remove empty slots.
-								callbacks = tools.filter(callbacks, function(callback) {
-									return !!callback;
-								});
-							} else {
-								callbacks = [callbacks];
-							};
-						} else {
-							callbacks = [];
-						};
-						
-						var configPath = types.getIn(options, 'configPath', __options__.configPath);
-						if (configPath) {
-							root.DD_ASSERT && root.DD_ASSERT((configPath instanceof files.Url) || (configPath instanceof files.Path), "Invalid 'configPath' option.");
-							url = configPath.combine(url);
-						};
-						
-						var key = url.toString();
-						
-						var promise;
-						
-						if (__Internal__.loadedConfigFiles.has(key)) {
-							var def = __Internal__.loadedConfigFiles.get(key);
-							def.callbacks = types.unique(def.callbacks, callbacks);
-							if (options.force) {
-								promise = def.read();
-							} else if (def.ready) {
-								if (types.isError(def.data)) {
-									promise = Promise.reject(def.data);
-								} else {
-									promise = Promise.resolve(def.data);
-								};
-							} else {
-								promise = Promise.create(function readyPromise(resolve, reject) {
-									def.callbacks.push(function(err, data) {
-										if (err) {
-											reject(err);
-										} else {
-											resolve(data);
-										};
-									});
-								});
-							};
-						} else {
-							if (!options.headers) {
-								options.headers = {};
-							};
-							options.headers['Accept'] = 'application/json';
-							var def = {
-								callbacks: callbacks,
-								data: null,
-								ready: false,
-								read: function read() {
-									return files.readFile(url, options)
-										.nodeify(function proceed(err, data) {
-											var promise;
-											if (err) {
-												def.data = err;
-												def.ready = true;
-												promise = Promise.reject(err);
-											} else {
-												try {
-													var encoding = options.encoding;
-													if (encoding) {
-														// <PRB> "JSON.parse" doesn't like the BOM
-														if (encoding.slice(0, 3).toLowerCase() === 'utf') {
-															// Remove the BOM
-															data = tools.trim(data, '\uFEFF', 1);
-															data = tools.trim(data, '\uFFFE', 1);
-														};
-													};
-													data = _shared.Natives.windowJSON.parse(data);
-													def.data = data;
-													def.ready = true;
-													var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks,
-														promise = Promise.resolve(data);
-													tools.forEach(callbacks, function(callback) {
-														promise = promise.nodeify(callback);
-													});
-												} catch(ex) {
-													promise = Promise.reject(ex);
-												};
-											};
-											return promise;
-										});
-								}
-							};
-							
-							__Internal__.loadedConfigFiles.set(key, def);
-							
-							promise = def.read();
-							
-							if (options.watch) {
-								files.watch(url, function(eventName, fileName) {
-									if (eventName === 'change') {
-										options.async = true;
-										__Internal__.loadedConfigFiles.get(key).read();
-									};
-								});
-							};
-						};
-						
-						return promise;
-					});
+						return _shared.loadConfig(url, options, callbacks);
+					}));
 
 				//===================================
 				// Init

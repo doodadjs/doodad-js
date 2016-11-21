@@ -55,12 +55,12 @@ module.exports = {
 				};
 				
 
-				tools.LogLevels = types.freezeObject(types.nullObject({
+				tools.ADD('LogLevels', types.freezeObject(types.nullObject({
 					Debug: 0,
 					Info: 1,
 					Warning: 2,
 					Error: 3,
-				}));
+				})));
 				
 				
 				//===================================
@@ -79,9 +79,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				tools.getOptions = function() {
+				tools.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 
 				//===================================
 				// Hooks
@@ -179,7 +179,7 @@ module.exports = {
 				// Search functions
 				//===================================
 					
-				tools.findItem = root.DD_DOC(
+				tools.ADD('findItem', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -259,9 +259,9 @@ module.exports = {
 							};
 						};
 						return null;
-					});
+					}));
 				
-				tools.findLastItem = root.DD_DOC(
+				tools.ADD('findLastItem', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -337,9 +337,9 @@ module.exports = {
 							};
 						};
 						return null;
-					});
+					}));
 				
-				tools.findItems = root.DD_DOC(
+				tools.ADD('findItems', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -423,9 +423,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				tools.getItem = root.DD_DOC(
+				tools.ADD('getItem', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -504,14 +504,14 @@ module.exports = {
 							};
 						};
 						return null;
-					});
+					}));
 				
 				
 				//===================================
 				// String functions
 				//===================================
 
-				tools.repeat = root.DD_DOC(
+				tools.ADD('repeat', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -550,9 +550,9 @@ module.exports = {
 								return Array(n + 1).join(str);
 							};
 						};
-					});
+					}));
 
-				tools.replace = root.DD_DOC(
+				tools.ADD('replace', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -602,9 +602,9 @@ module.exports = {
 							};
 							return text;
 						};
-					});
+					}));
 				
-				tools.search = root.DD_DOC(
+				tools.ADD('search', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -723,9 +723,9 @@ module.exports = {
 								return posText;
 							};
 						};
-					});
+					}));
 
-				tools.join = root.DD_DOC(
+				tools.ADD('join', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -764,9 +764,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 					
-				tools.title = root.DD_DOC(
+				tools.ADD('title', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -808,7 +808,7 @@ module.exports = {
 							};
 						};
 						return retval;
-					});
+					}));
 				
 				//===================================
 				// Log functions
@@ -821,7 +821,7 @@ module.exports = {
 					'error',
 				];
 					
-				tools.log = root.DD_DOC(
+				tools.ADD('log', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -861,14 +861,14 @@ module.exports = {
 								hook(level, message);
 							};
 						};
-					});
+					}));
 
 				
 				//===================================
 				// Escape functions
 				//===================================
 					
-				tools.escape = root.DD_DOC(
+				tools.ADD('escape', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -926,13 +926,13 @@ module.exports = {
 							result += text.slice(lastPos);
 						};
 						return result;
-					});
+					}));
 				
 				// See "http://stackoverflow.com/questions/2083754/why-shouldnt-apos-be-used-to-escape-single-quotes"
 				__Internal__.htmlReserved = "<>\"'&",
 				__Internal__.htmlReservedSubstitutions = ['&lt;', '&gt;', '&quot;', '&#39;', '&amp;'];
 
-				tools.escapeHtml = root.DD_DOC(
+				tools.ADD('escapeHtml', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -950,12 +950,12 @@ module.exports = {
 					//! END_REPLACE()
 					, function escapeHtml(text) {
 						return tools.escape(text, __Internal__.htmlReserved, __Internal__.htmlReservedSubstitutions);
-					});
+					}));
 				
 				__Internal__.regExpReserved = "\\^$*+?()|{}[].",
 				__Internal__.regExpReservedSubstitutions = ['\\\\', '\\^', '\\$', '\\*', '\\+', '\\?', '\\(', '\\)', '\\|', '\\{', '\\}', '\\[', '\\]', '\\.'];
 					
-				tools.escapeRegExp = root.DD_DOC(
+				tools.ADD('escapeRegExp', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -973,13 +973,13 @@ module.exports = {
 					//! END_REPLACE()
 					, (_shared.Natives.regExpEscape || function escapeRegExp(text) {
 						return tools.escape(text, __Internal__.regExpReserved, __Internal__.regExpReservedSubstitutions);
-					}));
+					})));
 				
 				//===================================
 				// Compare functions
 				//===================================
 					
-				tools.compareNumbers = root.DD_DOC(
+				tools.ADD('compareNumbers', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -1013,9 +1013,9 @@ module.exports = {
 						} else {
 							return 0;
 						};
-					});
+					}));
 				
-				tools.compareNumbersInverted = root.DD_DOC(
+				tools.ADD('compareNumbersInverted', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1050,7 +1050,7 @@ module.exports = {
 						} else {
 							return 0;
 						};
-					});
+					}));
 
 				
 
@@ -1058,7 +1058,7 @@ module.exports = {
 				// Object functions
 				//===================================
 					
-				tools.indexOf = root.DD_DOC(
+				tools.ADD('indexOf', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1108,9 +1108,9 @@ module.exports = {
 							};
 						};
 						return -1;
-					});
+					}));
 				
-				tools.lastIndexOf = root.DD_DOC(
+				tools.ADD('lastIndexOf', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1160,9 +1160,9 @@ module.exports = {
 							};
 						};
 						return -1;
-					});
+					}));
 				
-				tools.forEach = root.DD_DOC(
+				tools.ADD('forEach', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1231,9 +1231,9 @@ module.exports = {
 								};
 							};
 						};
-					});
+					}));
 				
-				tools.filter = root.DD_DOC(
+				tools.ADD('filter', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1385,9 +1385,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				tools.filterKeys = root.DD_DOC(
+				tools.ADD('filterKeys', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1490,9 +1490,9 @@ module.exports = {
 							};
 						};
 						return result;
-					});
+					}));
 				
-				tools.every = root.DD_DOC(
+				tools.ADD('every', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1632,9 +1632,9 @@ module.exports = {
 							};
 						};
 						return true;
-					});
+					}));
 				
-				tools.some = root.DD_DOC(
+				tools.ADD('some', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1777,9 +1777,9 @@ module.exports = {
 							};
 						};
 						return false;
-					});
+					}));
 				
-				tools.reduce = root.DD_DOC(
+				tools.ADD('reduce', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1842,9 +1842,9 @@ module.exports = {
 							};
 							return result;
 						};
-					});
+					}));
 				
-				tools.reduceRight = root.DD_DOC(
+				tools.ADD('reduceRight', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1917,13 +1917,13 @@ module.exports = {
 								return value;
 							};
 						};
-					});
+					}));
 				
 				//===================================
 				// Math functions
 				//===================================
 
-				tools.sign = (_shared.Natives.mathSign || root.DD_DOC(
+				tools.ADD('sign', (_shared.Natives.mathSign || root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1942,14 +1942,14 @@ module.exports = {
 					, function sign(obj) {
 						obj = +obj;
 						return (obj < 0 ? -1 : (obj > 0 ? 1 : obj)); 
-					}));
+					})));
 				
 				
 				//===================================
 				// Abort functions
 				//===================================
 				
-				tools.abortScript = root.DD_DOC(
+				tools.ADD('abortScript', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1967,14 +1967,14 @@ module.exports = {
 					//! END_REPLACE()
 					, function abortScript(/*optional*/exitCode) {
 						throw new types.ScriptAbortedError(exitCode);
-					});
+					}));
 				
 
 				//===================================
 				// Version functions
 				//===================================
 
-				tools.Version = root.DD_DOC(
+				tools.ADD('Version', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -2214,13 +2214,13 @@ module.exports = {
 									return result;
 								}),
 						}
-					)));
+					))));
 
 				//====================================
 				// Unhandled errors
 				//====================================
 
-				tools.trapUnhandledErrors = root.DD_DOC(
+				tools.ADD('trapUnhandledErrors', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -2309,7 +2309,7 @@ module.exports = {
 								};
 							//! END_IF()
 						};
-					});
+					}));
 					
 					
 			},

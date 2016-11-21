@@ -53,17 +53,17 @@ module.exports = {
 		//		types.complete(_shared.Natives, {
 		//		});
 				
-				nodejs.isServer = function() {
+				nodejs.ADD('isServer', function() {
 					return true;
-				};
+				});
 				
 				//===================================
 				// Util Extension
 				//===================================
 
-				nodejs.getCustomInspectSymbol = function getCustomInspectSymbol() {
+				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
 					return nodeUtil.inspect.custom || 'inspect';
-				};
+				});
 
 
 				//return function init(/*optional*/options) {

@@ -66,7 +66,9 @@
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
 			
 			tempDocs: [],
-			tempTypes: [],  // types to register into Doodad.Types
+			tempTypesAdded: [],  // types to ADD into Doodad.Types
+			tempTypesRegistered: [],  // types to REGISTER into Doodad.Types
+			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 			
 			DD_ASSERT: null,
 		};
@@ -106,6 +108,18 @@
 		//! END_REPLACE()
 
 		//===================================
+		// Temporary ADD (for Doodad.Types)
+		//===================================
+		__Internal__.ADD = function ADD(name, obj) {
+			if (types.isType && types.isType(obj)) {
+				obj = types.INIT(obj);
+			};
+			types[name] = obj;
+			__Internal__.tempTypesAdded.push([name, obj]);
+			return obj;
+		};
+
+		//===================================
 		// Temporary REGISTER (for Doodad.Types)
 		//===================================
 		__Internal__.REGISTER = function REGISTER(type) {
@@ -114,8 +128,17 @@
 				type = types.INIT(type);
 			};
 			types[name] = type;
-			__Internal__.tempTypes.push(type);
+			__Internal__.tempTypesRegistered.push(type);
 			return type;
+		};
+
+		//===================================
+		// Temporary ADD (for Doodad.Tools)
+		//===================================
+		__Internal__.ADD_TOOL = function ADD_TOOL(name, obj) {
+			tools[name] = obj;
+			__Internal__.tempToolsAdded.push([name, obj]);
+			return obj;
 		};
 
 		//===================================
@@ -129,7 +152,7 @@
 		} catch(ex) {
 		};
 
-		types.supportsES6Classes = __Internal__.DD_DOC(
+		__Internal__.ADD('supportsES6Classes', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -141,7 +164,7 @@
 			//! END_REPLACE()
 			, function supportsES6Classes() {
 				return __Internal__.hasClasses;
-			});
+			}));
 
 		//===================================
 		// ES6 Arrow functions support
@@ -154,7 +177,7 @@
 		} catch(ex) {
 		};
 
-		types.supportsArrowFunctions = __Internal__.DD_DOC(
+		__Internal__.ADD('supportsArrowFunctions', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -166,7 +189,7 @@
 			//! END_REPLACE()
 			, function supportsArrowFunctions() {
 				return __Internal__.hasArrows;
-			});
+			}));
 
 		//===================================
 		// ES7 async/await
@@ -179,7 +202,7 @@
 		} catch(ex) {
 		};
 
-		types.supportsAsyncAwait = __Internal__.DD_DOC(
+		__Internal__.ADD('supportsAsyncAwait', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -191,7 +214,7 @@
 			//! END_REPLACE()
 			, function supportsAsyncAwait() {
 				return __Internal__.hasAsyncAwait;
-			});
+			}));
 
 		//===================================
 		// Native functions
@@ -205,7 +228,7 @@
 			__Internal__.hasIncompatibleFunctionToStringBug = true;
 		};
 		
-		types.isFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -223,9 +246,9 @@
 			//! END_REPLACE()
 			, function isFunction(obj) {
 				return (typeof obj === 'function');
-			});
+			}));
 		
-		types.isJsClass = __Internal__.DD_DOC(
+		__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -254,9 +277,9 @@
 				return false;
 			} : function isJsClass(obj) {
 				return false;
-			});
+			}));
 		
-		types.isNativeFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isNativeFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -299,9 +322,9 @@
 				} else {
 					return false;
 				};
-			});
+			}));
 		
-		types.isCustomFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -342,9 +365,9 @@
 					};
 				};
 				return false;
-			});
+			}));
 		
-		types.isArrowFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isArrowFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -373,9 +396,9 @@
 				return false;
 			} : function isArrowFunction(obj) {
 				return false;
-			});
+			}));
 		
-		types.isAsyncFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isAsyncFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -404,9 +427,9 @@
 				return false;
 			} : function isAsyncFunction(obj) {
 				return false;
-			});
+			}));
 		
-		types.getFunctionName = __Internal__.DD_DOC(
+		__Internal__.ADD('getFunctionName', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -440,9 +463,9 @@
 				} else {
 					return null;
 				};
-			});
+			}));
 		
-		types.isNothing = __Internal__.DD_DOC(
+		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -460,7 +483,7 @@
 			//! END_REPLACE()
 			, function isNothing(obj) {
 				return (obj == null);
-			});
+			}));
 		
 		// FUTURE: "types.extend(_shared.Natives, {...})" when "Object.assign" will be accessible on every engine
 		_shared.Natives = {
@@ -627,9 +650,9 @@
 		// Eval
 		//===================================
 		
-		// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
+		// WARNING: NOT to be used with arbitrary expressions.
 		
-		types.eval = __Internal__.DD_DOC(
+		__Internal__.ADD('eval', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -657,9 +680,9 @@
 				} else {
 					return __Internal__.evals.eval(expr);
 				};
-			});
+			}));
 
-		types.evalStrict = __Internal__.DD_DOC(
+		__Internal__.ADD('evalStrict', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -686,13 +709,13 @@
 				} else {
 					return __Internal__.evals.evalStrict(expr);
 				};
-			});
+			}));
 
 		//===================================
 		// String Tools
 		//===================================
 		
-		tools.split = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('split', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -770,9 +793,9 @@
 					};
 				};
 				return result;
-			});
+			}));
 
-		tools.trim = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('trim', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -867,13 +890,13 @@
 					};
 					return str.slice(i, j + chrLen);
 				};
-			});
+			}));
 
 		//===================================
 		// Array Tools
 		//===================================
 	
-		tools.map = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('map', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -946,13 +969,13 @@
 						return result;
 					};
 				};
-			});
+			}));
 
 		//==================================
 		// Conversion
 		//==================================
 		
-		types.toBoolean = __Internal__.DD_DOC(
+		__Internal__.ADD('toBoolean', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -970,9 +993,9 @@
 			//! END_REPLACE()
 			, function toBoolean(obj) {
 				return (obj === 'true') || !!(+obj);
-			});
+			}));
 
-		types.toInteger = __Internal__.DD_DOC(
+		__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -998,9 +1021,9 @@
 					return number;
 				};
 				return (number > 0 ? 1 : -1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(number));
-			});
+			}));
 		
-		types.toFloat = __Internal__.DD_DOC(
+		__Internal__.ADD('toFloat', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1032,9 +1055,9 @@
 					};
 					return number;
 				};
-			});
+			}));
 		
-		types.toString = __Internal__.DD_DOC(
+		__Internal__.ADD('toString', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1052,13 +1075,13 @@
 			//! END_REPLACE()
 			, function toString(obj) {
 				return _shared.Natives.windowString(obj);
-			});
+			}));
 			
 		//===================================
 		// Format functions
 		//===================================
 		
-		tools.format = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('format', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1105,7 +1128,7 @@
 					lastPos = pos + 1;
 				};
 				return isKey ? result : result + message.slice(lastPos);
-			});
+			}));
 		
 		//===================================
 		// ASSERTS functions
@@ -1156,7 +1179,7 @@
 		//==================
 		
 		// <PRB> JS has no function to test for primitives
-		types.isPrimitive = __Internal__.DD_DOC(
+		__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1179,9 +1202,9 @@
 				// Source: http://cwestblog.com/2011/08/02/javascript-isprimitive-function/
 				var type = (typeof obj);
 				return (type !== "object") && (type !== "function");
-			});
+			}));
 		
-		types.isNumber = __Internal__.DD_DOC(
+		__Internal__.ADD('isNumber', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1205,9 +1228,9 @@
 					return (obj === obj); // Not NaN
 				};
 				return false;
-			});
+			}));
 		
-		types.isInteger = __Internal__.DD_DOC(
+		__Internal__.ADD('isInteger', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1239,9 +1262,9 @@
 					};
 					return (obj === _shared.Natives.mathFloor(obj));
 				};
-			});
+			}));
 		
-		types.isSafeInteger = __Internal__.DD_DOC(
+		__Internal__.ADD('isSafeInteger', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1270,9 +1293,9 @@
 				} else {
 					return (obj >= _shared.Natives.numberMinSafeInteger) && (obj <= _shared.Natives.numberMaxSafeInteger);
 				};
-			});
+			}));
 		
-		types.getSafeIntegerLen = __Internal__.DD_DOC(
+		__Internal__.ADD('getSafeIntegerLen', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1288,9 +1311,9 @@
 					min: _shared.Natives.numberMinSafeInteger, 
 					max: _shared.Natives.numberMaxSafeInteger,
 				};
-			});
+			}));
 		
-		types.getBitwiseIntegerLen = __Internal__.DD_DOC(
+		__Internal__.ADD('getBitwiseIntegerLen', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1306,9 +1329,9 @@
 					min: __Internal__.MIN_BITWISE_INTEGER, 
 					max: __Internal__.MAX_BITWISE_INTEGER,
 				};
-			});
+			}));
 		
-		types.isFinite = __Internal__.DD_DOC(
+		__Internal__.ADD('isFinite', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1341,9 +1364,9 @@
 					// Source: http://es6-features.org/#NumberTypeChecking
 					return (obj === obj) && (obj !== Infinity) && (obj !== -Infinity);
 				};
-			});
+			}));
 		
-		types.isInfinite = __Internal__.DD_DOC(
+		__Internal__.ADD('isInfinite', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1367,9 +1390,9 @@
 					obj = obj.valueOf();
 				};
 				return (obj === Infinity) || (obj === -Infinity);
-			});
+			}));
 		
-		types.isFloat = __Internal__.DD_DOC(
+		__Internal__.ADD('isFloat', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1393,10 +1416,10 @@
 					obj = obj.valueOf();
 				};
 				return (obj !== (obj | 0));
-			}),
+			})),
 		
 		// <PRB> JS has no function to test for booleans
-		types.isBoolean = __Internal__.DD_DOC(
+		__Internal__.ADD('isBoolean', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1414,10 +1437,10 @@
 			//! END_REPLACE()
 			, function isBoolean(obj) {
 				return (typeof obj === 'boolean') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Boolean]'));
-			});
+			}));
 		
 		// <PRB> JS has no function to test for strings
-		types.isString = __Internal__.DD_DOC(
+		__Internal__.ADD('isString', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1435,10 +1458,10 @@
 			//! END_REPLACE()
 			, function isString(obj) {
 				return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object String]'));
-			});
+			}));
 		
 		// <PRB> JS has no function to test for dates
-		types.isDate = __Internal__.DD_DOC(
+		__Internal__.ADD('isDate', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1456,9 +1479,9 @@
 			//! END_REPLACE()
 			, function isDate(obj) {
 				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Date]');
-			});
+			}));
 		
-		types.isArray = (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
+		__Internal__.ADD('isArray', (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1476,9 +1499,9 @@
 			//! END_REPLACE()
 			, function isArray(obj) {
 				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Array]');
-			}));
+			})));
 
-		types.isArrayLike = __Internal__.DD_DOC(
+		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1507,10 +1530,10 @@
 				} else {
 					return false;
 				};
-			});
+			}));
 		
 		// <PRB> JS has no function to test for errors
-		types.isError = __Internal__.DD_DOC(
+		__Internal__.ADD('isError', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1529,9 +1552,9 @@
 			, function isError(obj) {
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
 				return (typeof obj === 'object') && ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof types.Error) || (obj instanceof types.TypeError));
-			});
+			}));
 		
-		types.isNaN = (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
+		__Internal__.ADD('isNaN', (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1555,9 +1578,9 @@
 					obj = obj.valueOf();
 				};
 				return (obj !== obj);
-			}));
+			})));
 		
-		types.isCallable = __Internal__.DD_DOC(
+		__Internal__.ADD('isCallable', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1579,7 +1602,7 @@
 				};
 				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
 				return (typeof obj === 'function') || ((typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Function]'));
-			});
+			}));
 			
 		
 		//===================================
@@ -1601,7 +1624,7 @@
 		// <FUTURE> thread level
 		__Internal__.parseStackRegEx = / at ([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([\/][^\/]+[\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
 
-		tools.parseStack = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('parseStack', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1709,9 +1732,9 @@
 				calls.toString = __Internal__.stackToString;
 				
 				return calls;
-			});
+			}));
 
-		tools.getStackTrace = __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('getStackTrace', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1734,14 +1757,13 @@
 					};
 					return stack;
 				};
-			});
+			}));
 		
 		//===================================
 		// Objects
 		//===================================
 		
-		// TODO: Remove "hasKeyInherited"
-		types.hasKeyInherited = types.hasInherited = __Internal__.DD_DOC(
+		__Internal__.ADD('hasInherited', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1777,10 +1799,9 @@
 				};
 				
 				return false;
-			});
+			}));
 		
-		// TODO: Remove "hasKey"
-		types.has = __Internal__.DD_DOC(
+		__Internal__.ADD('has', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1821,9 +1842,9 @@
 					};
 				};
 				return false;
-			});
+			}));
 		
-		types.get = __Internal__.DD_DOC(
+		__Internal__.ADD('get', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1865,9 +1886,9 @@
 				} else {
 					return _default;
 				};
-			});
+			}));
 		
-		types.getDefault = __Internal__.DD_DOC(
+		__Internal__.ADD('getDefault', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1916,10 +1937,10 @@
 					};
 					return _default;
 				};
-			});
+			}));
 		
 		
-		types.isEnumerable = __Internal__.DD_DOC(
+		__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1944,7 +1965,7 @@
 				return _shared.Natives.objectPropertyIsEnumerable.call(obj, key);
 			} : function isEnumerable(obj, key) {
 				return true;
-			}));
+			})));
 		
 //IE8		// "Object.keys" Polyfill from Mozilla Developer Network.
 //IE8		// NOTE: "hasDontEnumBug" is "true" when a property in "defaultNonEnumerables" is still non-enumerable with "for (... in ...)" while being changed to an own property.
@@ -1960,7 +1981,7 @@
 //IE8		  'length',
 //IE8		];
 		
-		types.keys = __Internal__.DD_DOC(
+		__Internal__.ADD('keys', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2017,9 +2038,9 @@
 //IE8				};
 
 				return result;
-			});
+			}));
 		
-		types.allKeys = (_shared.Natives.objectGetOwnPropertyNames || __Internal__.DD_DOC(
+		__Internal__.ADD('allKeys', (_shared.Natives.objectGetOwnPropertyNames || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2048,9 +2069,9 @@
 					};
 				};
 				return result;
-			})));
+			}))));
 
-		types.allKeysInherited = __Internal__.DD_DOC(
+		__Internal__.ADD('allKeysInherited', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2072,9 +2093,9 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				return types.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
-			});
+			}));
 		
-		types.symbols = __Internal__.DD_DOC(
+		__Internal__.ADD('symbols', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2105,9 +2126,9 @@
 					};
 				};
 				return symbols;
-			});
+			}));
 		
-		types.allSymbols = __Internal__.DD_DOC(
+		__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2134,9 +2155,9 @@
 			function symbols(obj) {
 				// Not supported
 				return [];
-			}));
+			})));
 
-		types.allSymbolsInherited = __Internal__.DD_DOC(
+		__Internal__.ADD('allSymbolsInherited', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2158,9 +2179,9 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
-			});
+			}));
 		
-		types.extend = (_shared.Natives.objectAssign || __Internal__.DD_DOC(
+		__Internal__.ADD('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2196,7 +2217,7 @@
 					};
 				};
 				return result;
-			}));
+			})));
 			
 		__Internal__.hasDefinePropertyBug = (function() {
 			// Safari 5
@@ -2228,7 +2249,7 @@
 			};
 		})();
 
-		types.hasProperties = __Internal__.DD_DOC(
+		__Internal__.ADD('hasProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2242,9 +2263,9 @@
 				return true;
 			}) : (function hasProperties() {
 				return false;
-			})));
+			}))));
 		
-		types.defineProperty = __Internal__.DD_DOC(
+		__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2294,9 +2315,9 @@
 					};
 					obj[name] = descriptor.value;
 				};
-			}))),
+			})))),
 
-		types.defineProperties = (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperties ? _shared.Natives.objectDefineProperties : __Internal__.DD_DOC(
+		__Internal__.ADD('defineProperties', (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperties ? _shared.Natives.objectDefineProperties : __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2326,12 +2347,12 @@
 					var key = keys[i];
 					types.defineProperty(obj, key, props[key]);
 				};
-			})));
+			}))));
 
 		if (_shared.Natives.objectGetOwnPropertyDescriptor && !__Internal__.hasDefinePropertyBug && !__Internal__.hasGetOwnPropertyRestrictionOnCaller) {
-			types.getOwnPropertyDescriptor = _shared.Natives.objectGetOwnPropertyDescriptor;
+			__Internal__.ADD('getOwnPropertyDescriptor', _shared.Natives.objectGetOwnPropertyDescriptor);
 		} else {
-			types.getOwnPropertyDescriptor = __Internal__.DD_DOC(
+			__Internal__.ADD('getOwnPropertyDescriptor', __Internal__.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -2381,10 +2402,10 @@
 					} else {
 						return undefined;
 					};
-				}));
+				})));
 		};
 		
-		types.getPropertyDescriptor = __Internal__.DD_DOC(
+		__Internal__.ADD('getPropertyDescriptor', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2415,9 +2436,9 @@
 					} while (!descriptor && (proto = types.getPrototypeOf(proto)));
 				};
 				return descriptor;
-			});
+			}));
 		
-		types.createObject = (_shared.Natives.objectCreate || __Internal__.DD_DOC(
+		__Internal__.ADD('createObject', (_shared.Natives.objectCreate || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2470,9 +2491,9 @@
 						
 						return obj;
 					})
-			)));
+			))));
 
-		types.newInstance = __Internal__.DD_DOC(
+		__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2521,9 +2542,9 @@
 					obj = new type();
 				};
 				return obj;
-			});
+			}));
 		
-		types.getPrototypeOf = (_shared.Natives.objectGetPrototypeOf || __Internal__.DD_DOC(
+		__Internal__.ADD('getPrototypeOf', (_shared.Natives.objectGetPrototypeOf || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2561,12 +2582,12 @@
 //IE8							return types.get(obj, '__dd_proto__') || (obj.constructor && obj.constructor.prototype) || __Internal__.objProto;
 //IE8						};
 //IE8					})
-			)));
+			))));
 		
 		__Internal__.fnProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf(function(){}) : (function(){}).constructor.prototype);
 //IE8		__Internal__.objProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf({}) : (({}).constructor.prototype));
 		
-		types.setPrototypeOf = __Internal__.DD_DOC(
+		__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2641,9 +2662,9 @@
 					
 					return tmp;
 				};
-			});
+			}));
 
-		types.isPrototypeOf = __Internal__.DD_DOC(
+		__Internal__.ADD('isPrototypeOf', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2675,9 +2696,9 @@
 					};
 				};
 				return false;
-			})));
+			}))));
 		
-		types.nullObject = __Internal__.DD_DOC(
+		__Internal__.ADD('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2695,9 +2716,9 @@
 			//! END_REPLACE()
 			, function nullObject(/*paramarray*/) {
 				return types.extend.apply(types, types.append([types.createObject(null)], arguments));
-			});
+			}));
 
-		types.getIn = __Internal__.DD_DOC(
+		__Internal__.ADD('getIn', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2733,9 +2754,9 @@
 				} else {
 					return _default;
 				};
-			});
+			}));
 		
-		types.hasIn = __Internal__.DD_DOC(
+		__Internal__.ADD('hasIn', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2776,9 +2797,9 @@
 					};
 				};
 				return false;
-			});
+			}));
 		
-		types.extendProperties = __Internal__.DD_DOC(
+		__Internal__.ADD('extendProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2831,9 +2852,9 @@
 					};
 				};
 				return result;
-			});
+			}));
 			
-		types.depthExtend = __Internal__.DD_DOC(
+		__Internal__.ADD('depthExtend', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2905,9 +2926,9 @@
 					};
 				};
 				return result;
-			});
+			}));
 				
-		types.complete = __Internal__.DD_DOC(
+		__Internal__.ADD('complete', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2946,9 +2967,9 @@
 				};
 				
 				return result;
-			});
+			}));
 		
-		types.completeProperties = __Internal__.DD_DOC(
+		__Internal__.ADD('completeProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3006,9 +3027,9 @@
 				};
 				
 				return result;
-			});
+			}));
 		
-		types.append = __Internal__.DD_DOC(
+		__Internal__.ADD('append', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3049,9 +3070,9 @@
 				};
 				
 				return result;
-			});
+			}));
 			
-		types.unique = __Internal__.DD_DOC(
+		__Internal__.ADD('unique', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -3142,10 +3163,10 @@
 				};
 				
 				return result;
-			});
+			}));
 			
 		// <PRB> JS has no function to test for objects ( new Object() )
-		types.isObject = __Internal__.DD_DOC(
+		__Internal__.ADD('isObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3166,9 +3187,9 @@
 					return false;
 				};
 				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Object]');
-			});
+			}));
 			
-		types.isObjectLike = __Internal__.DD_DOC(
+		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3186,9 +3207,9 @@
 			//! END_REPLACE()
 			, function isObjectLike(obj) {
 				return (types.isObject(obj) || (obj instanceof _shared.Natives.windowObject));
-			});
+			}));
 		
-		types.isExtensible = (_shared.Natives.objectIsExtensible || __Internal__.DD_DOC(
+		__Internal__.ADD('isExtensible', (_shared.Natives.objectIsExtensible || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3206,9 +3227,9 @@
 			//! END_REPLACE()
 			, function isExtensible(obj) {
 					return false;
-				}));
+				})));
 		
-		types.preventExtensions = __Internal__.DD_DOC(
+		__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3232,9 +3253,9 @@
 				} : function preventExtensions(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
-				}));
+				})));
 		
-		types.sealObject = __Internal__.DD_DOC(
+		__Internal__.ADD('sealObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3257,9 +3278,9 @@
 				} : function sealObject(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
-				}));
+				})));
 		
-		types.isFrozen = (_shared.Natives.objectIsFrozen || __Internal__.DD_DOC(
+		__Internal__.ADD('isFrozen', (_shared.Natives.objectIsFrozen || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3277,9 +3298,9 @@
 			//! END_REPLACE()
 			, function isFrozen(obj) {
 					return false;
-				}));
+				})));
 		
-		types.freezeObject = __Internal__.DD_DOC(
+		__Internal__.ADD('freezeObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3302,7 +3323,7 @@
 				} : function freezeObject(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
-				}));
+				})));
 		
 		//==============
 		// Options
@@ -3337,7 +3358,7 @@
 
 		types.freezeObject(__options__);
 		
-		types.hasDefinePropertyEnabled = __Internal__.DD_DOC(
+		__Internal__.ADD('hasDefinePropertyEnabled', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3351,13 +3372,13 @@
 				return true;
 			} : function hasDefinePropertyEnabled() {
 				return false;
-			}));
+			})));
 		
 		//===================================
 		// Symbols
 		//===================================
 		
-		types.hasSymbols = __Internal__.DD_DOC(
+		__Internal__.ADD('hasSymbols', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3371,9 +3392,9 @@
 				return true;
 			} : function hasSymbols() {
 				return false;
-			}));
+			})));
 			
-		types.hasGetSymbolForEnabled = __Internal__.DD_DOC(
+		__Internal__.ADD('hasGetSymbolForEnabled', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3387,9 +3408,9 @@
 				return true;
 			} : function hasGetSymbolForEnabled() {
 				return false;
-			}));
+			})));
 			
-		types.isSymbol = __Internal__.DD_DOC(
+		__Internal__.ADD('isSymbol', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3418,9 +3439,9 @@
 				};
 			} : function isSymbol(obj) {
 				return false;
-			}));
+			})));
 			
-		types.getSymbol = __Internal__.DD_DOC(
+		__Internal__.ADD('getSymbol', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3432,9 +3453,9 @@
 			//! END_REPLACE()
 			, function getSymbol() {
 				return _shared.Natives.windowSymbol;
-			});
+			}));
 		
-		types.getSymbolFor = __Internal__.DD_DOC(
+		__Internal__.ADD('getSymbolFor', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3468,9 +3489,9 @@
 				// Not supported
 				key = _shared.Natives.windowString(key);
 				return key;
-			}));
+			})));
 			
-		types.getSymbolKey = __Internal__.DD_DOC(
+		__Internal__.ADD('getSymbolKey', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3495,9 +3516,9 @@
 			} : function getSymbolKey(symbol) {
 				// Not supported
 				return undefined;
-			}));
+			})));
 			
-		types.symbolIsGlobal = __Internal__.DD_DOC(
+		__Internal__.ADD('symbolIsGlobal', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3521,18 +3542,18 @@
 			} : function symbolIsGlobal(symbol) {
 				// Not supported
 				return false;
-			}));
+			})));
 			
 		//===================================
 		// Errors
 		//===================================
 		
-		types.isErrorType = function isErrorType(type) {
+		__Internal__.ADD('isErrorType', function isErrorType(type) {
 			return types.isFunction(type) && ((_shared.Natives.windowError.prototype === type.prototype) || types.isPrototypeOf(_shared.Natives.windowError.prototype, type.prototype));
-		};
+		});
 			
 		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
-		types.createErrorType = __Internal__.DD_DOC(
+		__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -3682,7 +3703,7 @@
 				});
 				
 				return type;
-			});
+			}));
 		
 		__Internal__.createErrorConstructor = function(base) {
 			return function _new(message, /*optional*/params) {
@@ -4028,7 +4049,7 @@
 		
 		_shared.OriginalValueSymbol = types.getSymbolFor('__ORIGINAL_VALUE__');
 		
-		types.box = __Internal__.DD_DOC(
+		__Internal__.ADD('box', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4056,7 +4077,7 @@
 				} else {
 					return new types.box(value);
 				};
-			});
+			}));
 		types.extend(types.box.prototype, {
 			setAttributes: function setAttributes(dest, /*optional*/override) {
 				var keys = types.append(types.keys(this), types.symbols(this));
@@ -4082,7 +4103,7 @@
 			},
 		});
 			
-		types.unbox = __Internal__.DD_DOC(
+		__Internal__.ADD('unbox', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4100,7 +4121,7 @@
 			//! END_REPLACE()
 			, function unbox(value) {
 				return ((value instanceof types.box) ? value.valueOf() : value);
-			});
+			}));
 					
 		//===================================
 		// Type functions
@@ -4109,7 +4130,51 @@
 		__Internal__.symbolInitialized = types.getSymbolFor('INITIALIZED');
 		__Internal__.symbol$IsSingleton = types.getSymbolFor('$IS_SINGLETON');
 
-		types.isType = __Internal__.DD_DOC(
+		__Internal__.ADD('baseof', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							base: {
+								type: 'type',
+								optional: false,
+								description: "A Doodad type.",
+							},
+							type: {
+								type: 'type',
+								optional: false,
+								description: "A Doodad type.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' if a type is the derivative base of another type. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function baseof(base, type) {
+				// "obj" is a type that inherits "type".
+
+				if (!types.isFunction(type)) {
+					// Use "isLike"
+					return false;
+				};
+				if (!types.isArray(base)) {
+					base = [base];
+				};
+				for (var i = 0; i < base.length; i++) {
+					if (i in base) {
+						var b = base[i];
+						if (types.isFunction(b)) {
+							if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
+								return true;
+							};
+						};
+					};
+				};
+				return false;
+			}));
+
+		__Internal__.ADD('isType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4127,9 +4192,9 @@
 			//! END_REPLACE()
 			, function isType(obj) {
 				return (!types.isNothing(obj)) && ((obj === types.Type) || types.baseof(types.Type, obj));
-			});
+			}));
 		
-		types.isJsFunction = __Internal__.DD_DOC(
+		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4147,9 +4212,9 @@
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
 				return types.isFunction(obj) && !types.isJsClass(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
-			});
+			}));
 
-		types.isJsObject = __Internal__.DD_DOC(
+		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4167,9 +4232,9 @@
 			//! END_REPLACE()
 			, function isJsObject(obj) {
 				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
-			});
+			}));
 
-		types.is = __Internal__.DD_DOC(
+		__Internal__.ADD('is', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4217,9 +4282,9 @@
 					};
 				};
 				return false;
-			});
+			}));
 
-		types.isLike = __Internal__.DD_DOC(
+		__Internal__.ADD('isLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4266,53 +4331,9 @@
 					};
 				};
 				return false;
-			});
+			}));
 
-		types.baseof = __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							base: {
-								type: 'type',
-								optional: false,
-								description: "A Doodad type.",
-							},
-							type: {
-								type: 'type',
-								optional: false,
-								description: "A Doodad type.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if a type is the derivative base of another type. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function baseof(base, type) {
-				// "obj" is a type that inherits "type".
-
-				if (!types.isFunction(type)) {
-					// Use "isLike"
-					return false;
-				};
-				if (!types.isArray(base)) {
-					base = [base];
-				};
-				for (var i = 0; i < base.length; i++) {
-					if (i in base) {
-						var b = base[i];
-						if (types.isFunction(b)) {
-							if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
-								return true;
-							};
-						};
-					};
-				};
-				return false;
-			});
-
-		types._instanceof = __Internal__.DD_DOC(
+		__Internal__.ADD('_instanceof', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4357,9 +4378,9 @@
 				};
 				
 				return false;
-			});
+			}));
 
-		types.isSingleton = __Internal__.DD_DOC(
+		__Internal__.ADD('isSingleton', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4384,10 +4405,10 @@
 					return false;
 				};
 				return !!obj[__Internal__.symbol$IsSingleton];
-			});
+			}));
 
 		
-		types.getType = __Internal__.DD_DOC(
+		__Internal__.ADD('getType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4415,9 +4436,9 @@
 					return null;
 				};
 				return obj;
-			});
+			}));
 
-		types.getTypeName = __Internal__.DD_DOC(
+		__Internal__.ADD('getTypeName', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4445,9 +4466,9 @@
 					return null;
 				};
 				return obj.$TYPE_NAME || types.getFunctionName(obj);
-			});
+			}));
 		
-		types.getBase = __Internal__.DD_DOC(
+		__Internal__.ADD('getBase', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4475,7 +4496,7 @@
 					return null;
 				};
 				return types.getPrototypeOf(obj);
-			});
+			}));
 
 		_shared.invoke = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4574,7 +4595,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 7,
+						revision: 8,
 						params: {
 							obj: {
 								type: 'object',
@@ -4606,8 +4627,9 @@
 				if (types.hasProperties()) {
 					var hasOwn = types.has(obj, attr),
 						descriptor = types.getPropertyDescriptor(obj, attr),
-						descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable'),
-						descWritable = !descriptor || types.get(descriptor, 'writable'),
+						descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
+						descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
+						descWritable = !descriptor || types.get(descriptor, 'writable', false),
 						descGet = types.get(descriptor, 'get'),
 						descSet = types.get(descriptor, 'set');
 					if (descSet && !options) {
@@ -4617,7 +4639,7 @@
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 						};
-					} else if (hasOwn && descWritable && !options) {
+					} else if (hasOwn && descWritable && (!options || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
 						obj[attr] = value;
 					} else if (descConfigurable) {
 						if (options && types.hasDefinePropertyEnabled()) {
@@ -4749,7 +4771,7 @@
 		// ES6 Proxy
 		//===================================
 			
-		types.hasProxies = __Internal__.DD_DOC(
+		__Internal__.ADD('hasProxies', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4763,9 +4785,9 @@
 				return true;
 			}) : (function hasProxies() {
 				return false;
-			})));
+			}))));
 
-		types.hasProxyEnabled = __Internal__.DD_DOC(
+		__Internal__.ADD('hasProxyEnabled', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4779,10 +4801,10 @@
 				return true;
 			}) : (function hasProxyEnabled() {
 				return false;
-			})));
+			}))));
 
 /* AS USUAL, NO DETECTION AVAILABLE !!! AND WORSE, THIS TIME THERE IS NO WAY AT ALL TO IMPLEMENT ONE
-		types.isProxy = (_shared.Natives.windowProxy ? (function isProxy(obj) {
+		__Internal__.ADD('isProxy', (_shared.Natives.windowProxy ? (function isProxy(obj) {
 			return (obj instanceof _shared.Natives.windowProxy);
 		}) : (function isProxy(obj) {
 			if (types.isNothing(obj)) {
@@ -4790,10 +4812,10 @@
 			};
 			obj = _shared.Natives.windowObject(obj);
 			return !!obj.__isProxy__;
-		}));
+		})));
 */
 		
-		types.createProxy = __Internal__.DD_DOC(
+		__Internal__.ADD('createProxy', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4837,7 +4859,7 @@
 					//return types.createObject(target, {__isProxy__: {value: true}});
 					return types.createObject(target);
 				};
-			})));
+			}))));
 
 		//===================================
 		// Type
@@ -4850,7 +4872,7 @@
 		__Internal__.symbolGetter = types.getSymbolFor('__GETTER__');
 		__Internal__.symbolSetter = types.getSymbolFor('__SETTER__');
 		
-		types.INHERIT = __Internal__.DD_DOC(
+		__Internal__.ADD('INHERIT', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4901,9 +4923,9 @@
 				});
 
 				return type;
-			});
+			}));
 
-		types.AttributeBox = __Internal__.DD_DOC(
+		__Internal__.ADD('AttributeBox', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4931,13 +4953,13 @@
 				} else {
 					return new types.AttributeBox(value);
 				};
-			}));
+			})));
 			//types.extend(types.AttributeBox.prototype, {
 			//});
 			
 		__Internal__.emptyFunction = function empty() {};
 		
-		types.SUPER = __Internal__.DD_DOC(
+		__Internal__.ADD('SUPER', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4957,9 +4979,9 @@
 				fn = types.AttributeBox(fn);
 				fn[_shared.SuperEnabledSymbol] = true;
 				return fn;
-			});
+			}));
 		
-		types.NOT_ENUMERABLE = __Internal__.DD_DOC(
+		__Internal__.ADD('NOT_ENUMERABLE', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4979,9 +5001,9 @@
 				val = types.AttributeBox(val);
 				val[_shared.EnumerableSymbol] = false;
 				return val;
-			});
+			}));
 
-		types.ENUMERABLE = __Internal__.DD_DOC(
+		__Internal__.ADD('ENUMERABLE', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5001,9 +5023,9 @@
 				val = types.AttributeBox(val);
 				val[_shared.EnumerableSymbol] = true;
 				return val;
-			});
+			}));
 
-		types.NOT_CONFIGURABLE = __Internal__.DD_DOC(
+		__Internal__.ADD('NOT_CONFIGURABLE', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5023,9 +5045,9 @@
 				val = types.AttributeBox(val);
 				val[_shared.ConfigurableSymbol] = false;
 				return val;
-			});
+			}));
 
-		types.CONFIGURABLE = __Internal__.DD_DOC(
+		__Internal__.ADD('CONFIGURABLE', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5045,9 +5067,9 @@
 				val = types.AttributeBox(val);
 				val[_shared.ConfigurableSymbol] = true;
 				return val;
-			});
+			}));
 
-		types.READ_ONLY = __Internal__.DD_DOC(
+		__Internal__.ADD('READ_ONLY', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5070,9 +5092,9 @@
 				};
 				val[_shared.ReadOnlySymbol] = true;
 				return val;
-			});
+			}));
 
-		types.WRITABLE = __Internal__.DD_DOC(
+		__Internal__.ADD('WRITABLE', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5095,9 +5117,9 @@
 				};
 				val[_shared.ReadOnlySymbol] = false;
 				return val;
-			});
+			}));
 
-		types.GET_SET = __Internal__.DD_DOC(
+		__Internal__.ADD('GET_SET', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5123,9 +5145,9 @@
 				val[__Internal__.symbolGetter] = getter;
 				val[__Internal__.symbolSetter] = setter;
 				return val;
-			});
+			}));
 
-		types.GET = __Internal__.DD_DOC(
+		__Internal__.ADD('GET', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5145,9 +5167,9 @@
 				val = types.AttributeBox();
 				val[__Internal__.symbolGetter] = getter;
 				return val;
-			});
+			}));
 
-		types.SET = __Internal__.DD_DOC(
+		__Internal__.ADD('SET', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5167,7 +5189,7 @@
 				val = types.AttributeBox();
 				val[__Internal__.symbolSetter] = setter;
 				return val;
-			});
+			}));
 
 		// <PRB> If "prototype" is not configurable, we can't set it to read-only
 		__Internal__.prototypeIsConfigurable = false;
@@ -5276,7 +5298,7 @@
 				return _caller;
 			});
 
-		types.SINGLETON = __Internal__.DD_DOC(
+		__Internal__.ADD('SINGLETON', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5319,9 +5341,9 @@
 				};
 				
 				return type;
-			});
+			}));
 		
-		types.INIT = __Internal__.DD_DOC(
+		__Internal__.ADD('INIT', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5352,11 +5374,11 @@
 					};
 					return type;
 				};
-			});
+			}));
 			
-		types.isInitialized = function isInitialized(obj) {
+		__Internal__.ADD('isInitialized', function isInitialized(obj) {
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
-		};
+		});
 		
 		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting) {
 			var forType = types.isType(target),
@@ -5430,7 +5452,7 @@
 			types.defineProperty(target, '_super', {value: null, writable: true});
 		};
 
-		types.createType = __Internal__.DD_DOC(
+		__Internal__.ADD('createType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -5620,7 +5642,7 @@
 				
 				// Return type
 				return type;
-			});
+			}));
 		
 
 		__Internal__.typeInherit = __Internal__.DD_DOC(
@@ -6194,6 +6216,7 @@
 					configurable: !protect,
 					enumerable: true,
 					writable: !protect,
+					ignoreWhenSame: true,
 				});
 						
 				return obj;
@@ -6552,11 +6575,25 @@
 						delete types.Namespace[__Internal__.symbolInitialized];
 						types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
 
-						forEachType: for (var i = 0; i < __Internal__.tempTypes.length; i++) {
-							var type = __Internal__.tempTypes[i];
+						forEachType: for (var i = 0; i < __Internal__.tempTypesAdded.length; i++) {
+							var type = __Internal__.tempTypesAdded[i],
+								name = type[0],
+								obj = type[1];
+							types.ADD(name, obj);
+						};
+						forEachType: for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
+							var type = __Internal__.tempTypesRegistered[i];
 							types.REGISTER(type);
 						};
-						delete __Internal__.tempTypes;
+						forEachTool: for (var i = 0; i < __Internal__.tempToolsAdded.length; i++) {
+							var tool = __Internal__.tempToolsAdded[i],
+								name = tool[0],
+								obj = tool[1];
+							tools.ADD(name, obj);
+						};
+						delete __Internal__.tempTypesAdded;
+						delete __Internal__.tempTypesRegistered;
+						delete __Internal__.ADD;
 						delete __Internal__.REGISTER;
 					}),
 					

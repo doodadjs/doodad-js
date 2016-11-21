@@ -50,18 +50,18 @@ module.exports = {
 		//		types.complete(_shared.Natives, {
 		//		});
 					
-				nodejs.isServer = function() {
+				nodejs.ADD('isServer', function() {
 					return false;
-				};
+				});
 
 				//===================================
 				// Util Extension
 				//===================================
 
-				nodejs.getCustomInspectSymbol = function getCustomInspectSymbol() {
+				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
 					// Not supported
 					return null;
-				};
+				});
 
 				//===================================
 				// Init

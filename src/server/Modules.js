@@ -66,7 +66,7 @@ module.exports = {
 				
 				
 				
-				modules.locate = root.DD_DOC(
+				modules.ADD('locate', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -103,9 +103,9 @@ module.exports = {
 								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
 							return location;
 						});
-					});
+					}));
 				
-				modules.loadFiles = function loadFiles(module, files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(module, files, /*optional*/options) {
 					const Promise = types.getPromise();
 
 					// Convert to array of objects for Promise.map
@@ -146,9 +146,9 @@ module.exports = {
 								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
 							});
 					});
-				};
+				});
 				
-				modules.load = root.DD_DOC(
+				modules.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
@@ -207,10 +207,10 @@ module.exports = {
 								});
 								return namespaces.load(DD_MODULES, options);
 							});
-					});
+					}));
 				
 				
-				modules.loadManifest = function loadManifest(pkg, /*optional*/options) {
+				modules.ADD('loadManifest', function loadManifest(pkg, /*optional*/options) {
 					const Promise = types.getPromise();
 					return modules.loadFiles(pkg, {'package.json': {}, 'make.json': {}}, options)
 						.then(function(contents) {
@@ -264,7 +264,7 @@ module.exports = {
 								},
 							};
 						});
-				};
+				});
 				
 				
 				//===================================
