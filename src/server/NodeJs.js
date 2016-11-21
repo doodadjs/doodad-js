@@ -79,10 +79,10 @@ module.exports = {
 					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
 
 					// "callAsync"
-					globalSetTimeout: global.setTimeout,
-					globalClearTimeout: global.clearTimeout,
-					globalSetImmediate: global.setImmediate,
-					globalClearImmediate: global.clearImmediate,
+					windowSetTimeout: global.setTimeout,
+					windowClearTimeout: global.clearTimeout,
+					windowSetImmediate: global.setImmediate,
+					windowClearImmediate: global.clearImmediate,
 					processNextTick: global.process.nextTick,
 					
 					// "catchAndExit"
@@ -317,10 +317,10 @@ module.exports = {
 						fn = doodad.Callback(thisObj, fn, null, args, secret);
 						if (delay === 0) {
 							// Raised after events queue process and after I/O
-							const id = _shared.Natives.globalSetImmediate(fn);
+							const id = _shared.Natives.windowSetImmediate(fn);
 							return (cancelable && {
 								cancel: function cancel() {
-									_shared.Natives.globalClearImmediate(id);
+									_shared.Natives.windowClearImmediate(id);
 								},
 							} || undefined);
 						} else if (delay < 0) {
@@ -342,10 +342,10 @@ module.exports = {
 							};
 						} else {
 							// Raised after X ms
-							const id = _shared.Natives.globalSetTimeout(fn, delay);
+							const id = _shared.Natives.windowSetTimeout(fn, delay);
 							return (cancelable && {
 								cancel: function cancel() {
-									_shared.Natives.globalClearTimeout(id);
+									_shared.Natives.windowClearTimeout(id);
 								},
 							} || undefined);
 						};
