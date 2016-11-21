@@ -10,6 +10,20 @@ Object-oriented programming framework for Javascript.
 $ npm install doodad-js
 ```
 
+## From source code
+
+Code must be built with "doodad-js-make" before being able to run it. To install "doodad-js-make" and its dependencies, simply run the following command from "doodad-js" source code's root folder :
+
+```bash
+$ npm install
+```
+
+Then, to build "doodad-js", run the following command :
+
+```bash
+$ node -r "doodad-js-make/make" . make
+```
+
 ## Features
 
   -  Classes
@@ -18,7 +32,7 @@ $ npm install doodad-js
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
   -  Base classes and interfaces
-  -  Expandable objects (can be extended like a Class)
+  -  Expandable objects (these objects can be extended like a Class)
   -  Custom events management
   -  DOM events management
   -  NodeJs events management
