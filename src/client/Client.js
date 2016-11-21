@@ -135,15 +135,6 @@ module.exports = {
 
 					// generateUUID
 					mathRandom: global.Math.random,
-					nodeUUID: (
-							types.isFunction(global.uuid) && 
-							types.isFunction(global.uuid.v1) && 
-							types.isFunction(global.uuid.v4) && 
-							types.isFunction(global.uuid.parse) && 
-							types.isFunction(global.uuid.unparse) 
-									? (types.isFunction(global.uuid.noConflict) ? global.uuid.noConflict() : global.uuid) 
-									: undefined
-							),
 				});
 				
 				
@@ -1914,7 +1905,7 @@ module.exports = {
 				// Misc functions
 				//===================================
 
-				tools.ADD('generateUUID', (_shared.Natives.nodeUUID ? _shared.Natives.nodeUUID : root.DD_DOC(
+				tools.ADD('generateUUID', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1934,7 +1925,7 @@ module.exports = {
 							return b
 						};
 					})
-				));
+				);
 
 				//===================================
 				// Init
