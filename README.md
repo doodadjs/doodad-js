@@ -6,13 +6,14 @@ Object-oriented programming framework for Javascript.
 
 ## Installation
 
+### From NPM
 ```bash
 $ npm install doodad-js
 ```
 
-## From source code
+### From source code
 
-Code must be built with "doodad-js-make" before being able to run it. To install "doodad-js-make" and its dependencies, simply run the following command from "doodad-js" source code's root folder :
+Code must be built with "doodad-js-make" before being able to use it. To install "doodad-js-make" and its dependencies, simply run the following command from "doodad-js" source code's root folder :
 
 ```bash
 $ npm install
