@@ -47,22 +47,10 @@ module.exports = {
 					namespaces = doodad.Namespaces,
 					modules = doodad.Modules;
 				
-				const Module = module.constructor;
+				const Module = require('module').Module;
 				
-				const __Internal__ = {
-					rootModule: null,
-					getRootModule: function getRootModule() {
-						if (__Internal__.rootModule) {
-							return __Internal__.rootModule;
-						};
-						let mod;
-						do {
-							__Internal__.rootModule = mod;
-							mod = module.parent;
-						} while (mod && (mod !== __Internal__.rootModule))
-						return __Internal__.rootModule;
-					},
-				};
+				//const __Internal__ = {
+				//};
 				
 				
 				
@@ -92,12 +80,12 @@ module.exports = {
 								description: "Locates a module and returns its path.",
 					}
 					//! END_REPLACE()
-					, function locate(module, /*optional*/file, /*optional*/options) {
+					, function locate(_module, /*optional*/file, /*optional*/options) {
 						const Promise = types.getPromise();
 						return Promise.try(function() {
-							let location = files.Path.parse(module, {file: 'package.json'})
+							let location = files.Path.parse(_module, {file: 'package.json'})
 								.toString({isRelative: true});
-							location = Module._resolveFilename(location, __Internal__.getRootModule());
+							location = Module._resolveFilename(location, require.main);
 							location = files.Path.parse(location)
 								.set({file: ''})
 								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
@@ -105,13 +93,13 @@ module.exports = {
 						});
 					}));
 				
-				modules.ADD('loadFiles', function loadFiles(module, files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(_module, files, /*optional*/options) {
 					const Promise = types.getPromise();
 
 					// Convert to array of objects for Promise.map
 					files = tools.reduce(files, function(files, fileOptions, name) {
 						files.push({
-							module: module,
+							module: _module,
 							name: name,
 							options: types.extend({optional: false, isConfig: false, configOptions: null}, fileOptions),
 						});
@@ -123,7 +111,7 @@ module.exports = {
 							.then(function(location) {
 								if (file.options.isConfig) {
 									try {
-										const conf = Module._load(location.toString(), __Internal__.getRootModule());
+										const conf = Module._load(location.toString(), require.main);
 										types.depthExtend(2, file.configOptions, conf, file.configOptions);
 									} catch(err) {
 										if (!file.options.optional) {
@@ -132,7 +120,7 @@ module.exports = {
 									};
 								} else {
 									try {
-										file.exports = Module._load(location.toString(), __Internal__.getRootModule());
+										file.exports = Module._load(location.toString(), require.main);
 									} catch(err) {
 										file.exports = null;
 										if (!file.options.optional) {
