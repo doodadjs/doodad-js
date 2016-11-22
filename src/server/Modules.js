@@ -85,7 +85,7 @@ module.exports = {
 						return Promise.try(function() {
 							let location = files.Path.parse(_module, {file: 'package.json'})
 								.toString({isRelative: true});
-							location = Module._resolveFilename(location, require.main);
+							location = Module._resolveFilename(location, require.main || module.parent);
 							location = files.Path.parse(location)
 								.set({file: ''})
 								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
@@ -111,7 +111,7 @@ module.exports = {
 							.then(function(location) {
 								if (file.options.isConfig) {
 									try {
-										const conf = Module._load(location.toString(), require.main);
+										const conf = Module._load(location.toString(), require.main || module.parent);
 										types.depthExtend(2, file.configOptions, conf, file.configOptions);
 									} catch(err) {
 										if (!file.options.optional) {
@@ -120,7 +120,7 @@ module.exports = {
 									};
 								} else {
 									try {
-										file.exports = Module._load(location.toString(), require.main);
+										file.exports = Module._load(location.toString(), require.main || module.parent);
 									} catch(err) {
 										file.exports = null;
 										if (!file.options.optional) {
