@@ -3363,7 +3363,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -4417,7 +4417,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'object',
@@ -4436,9 +4436,9 @@
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
-					throw new types.NotSupported("Unable to evaluate because object has 'Symbol.toStringTag'.");
-				};
+				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//	// ???
+				//};
 				return (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
 			}));
 
