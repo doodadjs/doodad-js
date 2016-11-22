@@ -1102,9 +1102,8 @@ module.exports = {
 					//! END_REPLACE()
 					, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
-						var error = types.Error.call(this, message, params);
-						error.title = title;
-						return error;
+						this._this.title = title;
+						this._super.call(this._this, message, params);
 					})));
 
 				doodad.ADD('trapException', root.DD_DOC(

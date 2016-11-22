@@ -1632,7 +1632,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1648,13 +1648,7 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				if (typeof obj !== 'object') {
-					return false;
-				};
-				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
-				//	????
-				//};
-				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
+				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Array]');
 			})));
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
@@ -3751,12 +3745,16 @@
 			return types.isFunction(type) && ((_shared.Natives.windowError.prototype === type.prototype) || types.isPrototypeOf(_shared.Natives.windowError.prototype, type.prototype));
 		});
 			
+		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbolFor("__ERROR_CONSTRUCTOR__");
+		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbolFor("__ERROR_CONSTRUCTOR_CALLED__");
+
 		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
+		// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
 		__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							name: {
 								type: 'string',
@@ -3783,50 +3781,87 @@
 					base = _shared.Natives.windowError;
 				};
 				name = name.replace(/[.]/g, '_');
-				var expr = "function " + name + "(/*paramarray*/) {" +
-					(constructor ? (
-						"var error = ctx.constructor.apply(this, arguments) || this;" +
-						"this.throwLevel++;"
-					) : (
-						"var error = ctx.base.apply(this, arguments) || this;"
-					)) +
-					"if (error !== this) {" +
-						// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
-						//
-						//       Proof of concept :
-						//          var a = new Error("hello");
-						//          var b = Error.call(a, "bye");
-						//          a === b  // always returns "false"
-						//          a.constructor === b.constructor  // returns "true"
-						//          a.constructor === Error  // returns "true"
-						//          a instanceof Error  // returns "true"
-						//          b instanceof Error  // returns "true"
-						//
-						//       Moreover :
-						//          this instanceof Error  // returns "true"
-						"this.message = (error.message || error.description);" +
-						// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
-						// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
-						// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
-						"if (error.stack) {" +
-							"this.stack = error.stack;" +
+				if (__Internal__.hasClasses) {
+					// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
+					var expr = "class " + name + " extends ctx.base {" +
+						(constructor ? (
+							"constructor(/*paramarray*/...args) {" +
+								"super(...args);" +
+								"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
+							"}" +
+							"[ctx.errorConstructor](/*paramarray*/) {" +
+								"this[ctx.errorConstructorCalled] = true;" +
+								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);" +
+								"this.name = ctx.name;" +
+								"this.description = this.message;" +
+							"}"
+						) : (
+							"constructor(/*paramarray*/) {" +
+								"super.apply(null, arguments);" +
+								"this[ctx.errorConstructor]();" +
+							"}" +
+							"[ctx.errorConstructor](/*paramarray*/) {" +
+								"this.name = ctx.name;" +
+								"this.description = this.message;" +
+							"}"
+						)) +
+					"}";
+
+					// NOTE: Use of "eval" to give the name to the class
+					var type = types.eval(expr, {
+						base: base,
+						constructor: constructor,
+						name: name,
+						errorConstructor: __Internal__.symbolErrorConstructor,
+						errorConstructorCalled: __Internal__.symbolErrorConstructorCalled,
+					});
+
+				} else {
+					var expr = "function " + name + "(/*paramarray*/) {" +
+						(constructor ? (
+							"var error = ctx.constructor.apply({_this: this, _super: ctx.base}, arguments) || this;" +
+							"this.throwLevel++;"
+						) : (
+							"var error = ctx.base.apply(this, arguments) || this;"
+						)) +
+						"if (error !== this) {" +
+							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
+							//
+							//       Proof of concept :
+							//          var a = new Error("hello");
+							//          var b = Error.call(a, "bye");
+							//          a === b  // always returns "false"
+							//          a.constructor === b.constructor  // returns "true"
+							//          a.constructor === Error  // returns "true"
+							//          a instanceof Error  // returns "true"
+							//          b instanceof Error  // returns "true"
+							//
+							//       Moreover :
+							//          this instanceof Error  // returns "true"
+							"this.message = (error.message || error.description);" +
+							// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
+							// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
+							// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
+							"if (error.stack) {" +
+								"this.stack = error.stack;" +
+							"};" +
 						"};" +
-					"};" +
-					"this.throwLevel++;" +
-					"this.name = ctx.name;" +
-					"this.description = this.message;" +
-					"return this;" +
-				"}";
+						"this.throwLevel++;" +
+						"this.name = ctx.name;" +
+						"this.description = this.message;" +
+						"return this;" +
+					"}";
 				
-				// NOTE: Use of "eval" to give the name to the function				
-				var type = types.eval(expr, {
-					base: base,
-					constructor: constructor,
-					name: name,
-				});
+					// NOTE: Use of "eval" to give the name to the function				
+					var type = types.eval(expr, {
+						base: base,
+						constructor: constructor,
+						name: name,
+					});
 				
-				// For "instanceof".
-				type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
+					// For "instanceof".
+					type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
+				};
 				
 				types.extend(type.prototype, {
 					name: name,
@@ -3904,10 +3939,10 @@
 				return type;
 			}));
 		
-		__Internal__.createErrorConstructor = function(base) {
+		__Internal__.createErrorConstructor = function() {
 			return function _new(message, /*optional*/params) {
 				message = tools.format(message, params);
-				return base.call(this, message);
+				return this._super.call(this._this, message);
 			};
 		};
 		
@@ -3922,8 +3957,8 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowTypeError
-				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(_shared.Natives.windowTypeError))
-				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor(_shared.Natives.windowError))
+				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor())
+				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor())
 			)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -3947,7 +3982,7 @@
 						description: "Generic error with message formatting.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(_shared.Natives.windowError))));
+			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor())));
 
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3972,9 +4007,9 @@
 			//! END_REPLACE()
 			, types.createErrorType("AssertionFailed", types.Error, function _new(message, /*optional*/params) {
 				if (message) {
-					return types.Error.call(this, "Assertion failed: " + message, params);
+					return this._super.call(this._this, "Assertion failed: " + message, params);
 				} else {
-					return types.Error.call(this, "Assertion failed.");
+					return this._super.call(this._this, "Assertion failed.");
 				};
 			})));
 
@@ -4000,7 +4035,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Parse error.", params);
+				return this._super.call(this._this, message || "Parse error.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4025,7 +4060,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Not supported.", params);
+				return this._super.call(this._this, message || "Not supported.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4050,7 +4085,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Not available.", params);
+				return this._super.call(this._this, message || "Not available.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4080,8 +4115,8 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
-				this.code = code;
-				return types.Error.call(this, message, params);
+				this._this.code = code;
+				return this._super.call(this._this, message, params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4106,7 +4141,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Buffer overflow.", params);
+				return this._super.call(this._this, message || "Buffer overflow.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4131,7 +4166,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Operation timed out.", params);
+				return this._super.call(this._this, message || "Operation timed out.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4156,7 +4191,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Operation canceled.", params);
+				return this._super.call(this._this, message || "Operation canceled.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4181,7 +4216,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return types.Error.call(this, message || "Access denied.", params);
+				return this._super.call(this._this, message || "Access denied.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4206,8 +4241,8 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				this.bubble = true;
-				return types.Error.call(this, message || "Script interrupted.", params);
+				this._this.bubble = true;
+				return this._super.call(this._this, message || "Script interrupted.", params);
 			})));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4237,9 +4272,9 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-				this.exitCode = types.toInteger(exitCode) || 0;
-				this.critical = true;
-				return types.ScriptInterruptedError.call(this, message || "Script aborted.", params);
+				this._this.exitCode = types.toInteger(exitCode) || 0;
+				this._this.critical = true;
+				return this._super.call(this._this, message || "Script aborted.", params);
 			})));
 				
 		//===================================

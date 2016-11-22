@@ -1101,7 +1101,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _new(message, /*optional*/params) {
-					return types.ScriptAbortedError.call(this, message || "Page moved.", params);
+					return this._super.call(this._this, message || "Page moved.", params);
 				})));
 
 				tools.ADD('getCurrentLocation', root.DD_DOC(
