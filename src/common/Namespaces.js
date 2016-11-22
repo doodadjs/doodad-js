@@ -573,20 +573,6 @@ module.exports = {
 						};
 						
 						var terminate = function terminate() {
-							//if (root.getOptions().enableProtection && types.hasDefinePropertyEnabled()) {
-							//	// Protect added properties to the namespace
-							//	var keys = types.append(types.keys(entry.namespace), types.symbols(entry.namespace));
-							//	for (var i = 0; i < keys.length; i++) {
-							//		var key = keys[i];
-							//		var descriptor = types.getOwnPropertyDescriptor(entry.namespace, key);
-							//		if (descriptor.configurable && descriptor.writable) {
-							//			//descriptor.configurable = false;
-							//			descriptor.writable = false;
-							//			types.defineProperty(entry.namespace, key, descriptor);
-							//		};
-							//	};
-							//};
-							
 							namespaces.dispatchEvent(new types.CustomEvent('init', 
 								{
 									detail: {
@@ -1100,11 +1086,7 @@ module.exports = {
 								var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);
 								var parent = type.DD_PARENT;
 								if (parent && type.DD_NAME) {
-									if (entry.options.protect) {
-										_shared.setAttribute(parent, type.DD_NAME, namespace, {enumerable: true, ignoreWhenSame: true});
-									} else {
-										_shared.setAttribute(parent, type.DD_NAME, namespace, {all: true, ignoreWhenSame: true});
-									};
+									parent.ADD(type.DD_NAME, namespace, entry.options.protect);
 								};
 							};
 							return true;
