@@ -3784,27 +3784,20 @@
 				if (__Internal__.hasClasses) {
 					// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
 					var expr = "class " + name + " extends ctx.base {" +
-						(constructor ? (
-							"constructor(/*paramarray*/...args) {" +
-								"super(...args);" +
-								"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
-							"}" +
-							"[ctx.errorConstructor](/*paramarray*/) {" +
-								"this[ctx.errorConstructorCalled] = true;" +
-								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);" +
-								"this.name = ctx.name;" +
-								"this.description = this.message;" +
-							"}"
-						) : (
-							"constructor(/*paramarray*/) {" +
-								"super.apply(null, arguments);" +
-								"this[ctx.errorConstructor]();" +
-							"}" +
-							"[ctx.errorConstructor](/*paramarray*/) {" +
-								"this.name = ctx.name;" +
-								"this.description = this.message;" +
-							"}"
-						)) +
+						"constructor(/*paramarray*/...args) {" +
+							"super(...args);" +
+							"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
+						"}" +
+						"[ctx.errorConstructor](/*paramarray*/) {" +
+							"this[ctx.errorConstructorCalled] = true;" +
+							(constructor ? (
+								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);"
+							) : (
+								""
+							)) +
+							"this.name = ctx.name;" +
+							"this.description = this.message;" +
+						"}" +
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
