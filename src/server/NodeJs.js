@@ -467,25 +467,44 @@ module.exports = {
 							args = url.args.toString(args, {
 								noEscapes: false,
 							});
-							args = args.split('&');
+							args = args && args.split('&');
 						};
 						
 						url = files.Path.parse(url).toString({
 							os: null,
 							dirChar: null,
-							quote: '"',
 						});
 
-						args = types.append([], process.execArgv, [url], args);
+						const os = tools.getOS();
 
-						const child = nodeChildProcess.spawn(process.execPath, args, {
-							env: process.env,
-							stdio: [0, 1, 2],
-							detached: true,
+						// Remove unwanted "node" args
+						const execArgs = tools.filter(process.execArgv, function(arg) {
+							return (arg.split('=')[0] !== '--debug-brk');
 						});
-						child.unref();
+
+						if (os.type === 'windows') {
+							// <PRB> Pipes with the option "detached" at "true" doesn't behave correctly under Windows. Must spawn "cmd.exe" to fix.
+							args = types.append(['/C', process.execPath], process.execArgv, [url], args);
+
+							const child = nodeChildProcess.spawn('cmd.exe', args, {
+								env: process.env,
+								stdio: [0, 1, 2],
+								detached: true,
+							});
+							child.unref();
+						} else {
+							args = types.append([], process.execArgv, [url], args);
+
+							const child = nodeChildProcess.spawn(process.execPath, args, {
+								env: process.env,
+								stdio: [0, 1, 2],
+								detached: true,
+							});
+							child.unref();
+						};
 						
 						if (!dontAbort) {
+							// Exit parent process. Spawned child should stay alive.
 							throw new types.ScriptAbortedError();
 						};
 					}));
