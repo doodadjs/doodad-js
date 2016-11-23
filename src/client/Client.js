@@ -1933,7 +1933,7 @@ module.exports = {
 				return function init(/*optional*/options) {
 					// <PRB> The "uuid" npm module is specificaly designed for browserify.
 					try {
-						__Internal__.nodeUUID = global.require('uuid');
+						__Internal__.nodeUUID = require('uuid');
 					} catch(o) {
 					};
 
