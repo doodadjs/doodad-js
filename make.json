@@ -246,17 +246,35 @@
           "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js"
         },
         {
+          "class": "Make.Folder.Create",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib"
+        },
+        {
+          "class": "Make.Folder.Create",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid"
+        },
+        {
           "class": "Make.Browserify.Bundle",
           "source": "uuid",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/uuid.js",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.js",
           "fromOutside": true
         },
         {
           "class": "Make.Browserify.Bundle",
           "source": "uuid",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/uuid.min.js",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.min.js",
           "fromOutside": true,
           "minify": true
+        },
+        {
+          "class": "Make.File.Copy",
+          "source": "~uuid/LICENSE.md",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/LICENSE.md"
+        },
+        {
+          "class": "Make.File.Copy",
+          "source": "~uuid/README.md",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/README.md"
         }
       ]
 		},
