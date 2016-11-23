@@ -50,10 +50,6 @@ module.exports = {
 		//		types.complete(_shared.Natives, {
 		//		});
 					
-				nodejs.ADD('isServer', function() {
-					return false;
-				});
-
 				//===================================
 				// Util Extension
 				//===================================

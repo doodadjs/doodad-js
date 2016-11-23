@@ -6833,6 +6833,15 @@
 						delete __Internal__.REGISTER;
 					}),
 					
+					//! BEGIN_REMOVE()
+						serverSide: types.READ_ONLY((typeof process === 'object') && !process.browser && (typeof module === 'object')),
+					//! END_REMOVE()
+					//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
+					//!		INJECT("serverSide: types.READ_ONLY(true),")
+					//! ELSE()
+					//!		INJECT("serverSide: types.READ_ONLY(false),")
+					//! END_IF()
+
 					enableAsserts: __Internal__.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
