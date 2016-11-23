@@ -46,7 +46,7 @@ module.exports = {
 		var config = null;
 		try {
 			// Generated from 'doodad-js-make'
-			config = require('./config.json');
+			config = require('../config.json');
 		} catch(ex) {
 		};
 		
@@ -115,7 +115,7 @@ module.exports = {
 			//! END_IF()
 		//! END_FOR()
 
-		bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : MAKE_MANIFEST("browserifyDir") + "/common/Bootstrap.min.js")) */);
+		bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
 
 		return bootstrap.createRoot(DD_MODULES, config, startup);
 	},
