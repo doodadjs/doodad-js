@@ -2,10 +2,8 @@
 browserify
 build
 dist
-browserify.js
-browserify_debug.js
+test
 config.json
-tests.js
 webpack.config.js
 
 # Logs
