@@ -152,7 +152,7 @@ module.exports = {
 					:
 						function addListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
-							var handlersName = types.getSymbolFor('__DD_EVENT_HANDLERS__' + name, true);
+							var handlersName = types.getSymbol('__DD_EVENT_HANDLERS__' + name, true);
 							var handlers = types.get(element, handlersName);
 							//if (types.isNativeFunction(element.attachEvent)) {
 							if (element.attachEvent) {
@@ -204,7 +204,7 @@ module.exports = {
 					: 
 						function removeListener(element, name, handler, /*optional*/capture) {
 							name = 'on' + name;
-							var handlersName = types.getSymbolFor('__DD_EVENT_HANDLERS__' + name, true);
+							var handlersName = types.getSymbol('__DD_EVENT_HANDLERS__' + name, true);
 							var handlers = types.get(element, handlersName);
 							//if (types.isNativeFunction(element.attachEvent)) {
 							if (element.attachEvent) {

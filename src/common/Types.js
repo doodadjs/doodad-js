@@ -246,7 +246,7 @@ module.exports = {
 				// Shared Symbols
 				//===================================
 				
-				_shared.NameSymbol = types.getSymbolFor('__NAME__');
+				_shared.NameSymbol = types.getSymbol('__NAME__');
 
 				//===================================
 				// is*
@@ -2496,7 +2496,7 @@ module.exports = {
 				// Bind/Unbind
 				//===================================
 
-				_shared.BoundObjectSymbol = types.getSymbolFor('__BOUND_OBJECT__');
+				_shared.BoundObjectSymbol = types.getSymbol('__BOUND_OBJECT__');
 				
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;

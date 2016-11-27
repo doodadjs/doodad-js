@@ -3638,21 +3638,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'Symbol',
-						description: "Returns the Symbol constructor.",
-			}
-			//! END_REPLACE()
-			, function getSymbol() {
-				return _shared.Natives.windowSymbol;
-			}));
-		
-		__Internal__.ADD('getSymbolFor', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							key: {
 								type: 'string',
@@ -3745,8 +3731,8 @@
 			return types.isFunction(type) && ((_shared.Natives.windowError.prototype === type.prototype) || types.isPrototypeOf(_shared.Natives.windowError.prototype, type.prototype));
 		});
 			
-		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbolFor("__ERROR_CONSTRUCTOR__");
-		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbolFor("__ERROR_CONSTRUCTOR_CALLED__");
+		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbol("__ERROR_CONSTRUCTOR__");
+		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbol("__ERROR_CONSTRUCTOR_CALLED__");
 
 		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
 		// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
@@ -4274,7 +4260,7 @@
 		// Box/Unbox
 		//===================================
 		
-		_shared.OriginalValueSymbol = types.getSymbolFor('__ORIGINAL_VALUE__');
+		_shared.OriginalValueSymbol = types.getSymbol('__ORIGINAL_VALUE__');
 		
 		__Internal__.ADD('box', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4354,8 +4340,8 @@
 		// Type functions
 		//===================================
 		
-		__Internal__.symbolInitialized = types.getSymbolFor('INITIALIZED');
-		__Internal__.symbol$IsSingleton = types.getSymbolFor('$IS_SINGLETON');
+		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
+		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
 
 		__Internal__.ADD('baseof', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4945,7 +4931,7 @@
 		// DD_DOC
 		//===================================
 		
-		__Internal__.symbolDD_DOC = types.getSymbolFor('__DD_DOC__');
+		__Internal__.symbolDD_DOC = types.getSymbol('__DD_DOC__');
 		
 		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
 		__Internal__.DD_DOC = __Internal__.DD_DOC(
@@ -5101,12 +5087,12 @@
 		// Type
 		//===================================
 		
-		_shared.SuperEnabledSymbol = types.getSymbolFor('__SUPER_ENABLED__');
-		_shared.EnumerableSymbol = types.getSymbolFor('__ENUMERABLE__');
-		_shared.ReadOnlySymbol = types.getSymbolFor('__READ_ONLY__');
-		_shared.ConfigurableSymbol = types.getSymbolFor('__CONFIGURABLE__');
-		__Internal__.symbolGetter = types.getSymbolFor('__GETTER__');
-		__Internal__.symbolSetter = types.getSymbolFor('__SETTER__');
+		_shared.SuperEnabledSymbol = types.getSymbol('__SUPER_ENABLED__');
+		_shared.EnumerableSymbol = types.getSymbol('__ENUMERABLE__');
+		_shared.ReadOnlySymbol = types.getSymbol('__READ_ONLY__');
+		_shared.ConfigurableSymbol = types.getSymbol('__CONFIGURABLE__');
+		__Internal__.symbolGetter = types.getSymbol('__GETTER__');
+		__Internal__.symbolSetter = types.getSymbol('__SETTER__');
 		
 		__Internal__.ADD('INHERIT', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6175,7 +6161,7 @@
 				}
 			)));
 		
-		__Internal__.symbolEventListeners = types.getSymbolFor('__EVENT_LISTENERS__');
+		__Internal__.symbolEventListeners = types.getSymbol('__EVENT_LISTENERS__');
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")

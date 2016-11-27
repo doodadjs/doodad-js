@@ -68,7 +68,7 @@ module.exports = {
 					global.d = types.createObject(null);
 
 					
-					global.symbol = types.hasGetSymbolForEnabled() && types.getSymbolFor("symbol") || undefined;
+					global.symbol = types.hasGetSymbolEnabled() && types.getSymbol("symbol") || undefined;
 					
 					
 					var command = test.prepareCommand(types.isNothing, "Doodad.Types.isNothing");

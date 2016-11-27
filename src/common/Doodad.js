@@ -79,54 +79,54 @@ module.exports = {
 					arrayObj: (global.Array && global.Array.prototype || []), // temporary, will get deleted
 					
 					// Class
-					symbolAttributes: types.getSymbolFor('__ATTRIBUTES'),
-					symbolImplements: types.getSymbolFor('IMPLEMENTS'),
-					symbolMustOverride: types.getSymbolFor('MUST_OVERRIDE'),
-					symbolBase: types.getSymbolFor('BASE'),
-					symbolIsolated: types.getSymbolFor('ISOLATED'),
-					symbolIsolatedCache: types.getSymbolFor('__ISOLATED_CACHE'),
-					symbolAttributesStorage: types.getSymbolFor('__ATTRIBUTES_STORAGE'),
-					symbolCurrentDispatch: types.getSymbolFor('__CURRENT_DISPATCH'),
-					symbolCurrentCallerIndex: types.getSymbolFor('__CURRENT_CALLER_INDEX'),
+					symbolAttributes: types.getSymbol('__ATTRIBUTES'),
+					symbolImplements: types.getSymbol('IMPLEMENTS'),
+					symbolMustOverride: types.getSymbol('MUST_OVERRIDE'),
+					symbolBase: types.getSymbol('BASE'),
+					symbolIsolated: types.getSymbol('ISOLATED'),
+					symbolIsolatedCache: types.getSymbol('__ISOLATED_CACHE'),
+					symbolAttributesStorage: types.getSymbol('__ATTRIBUTES_STORAGE'),
+					symbolCurrentDispatch: types.getSymbol('__CURRENT_DISPATCH'),
+					symbolCurrentCallerIndex: types.getSymbol('__CURRENT_CALLER_INDEX'),
 					
 					// Class, Methods, Callers, AttributeBox
-					symbolPrototype: types.getSymbolFor('PROTOTYPE'),
-					symbolModifiers: types.getSymbolFor('__MODIFIERS__'),
+					symbolPrototype: types.getSymbol('PROTOTYPE'),
+					symbolModifiers: types.getSymbol('__MODIFIERS__'),
 
 					// Methods, Callers, AttributeBox
-					symbolCallers: types.getSymbolFor('__CALLERS__'),
+					symbolCallers: types.getSymbol('__CALLERS__'),
 
 					// Interface
-					symbolHost: types.getSymbolFor('__HOST__'),
+					symbolHost: types.getSymbol('__HOST__'),
 					
 					// EventHandler, AttributeBox
-					symbolExtender: types.getSymbolFor('__EXTENDER__'),
+					symbolExtender: types.getSymbol('__EXTENDER__'),
 
 					// EventHandler
-					symbolObject: types.getSymbolFor('__OBJECT__'),
-					symbolStack: types.getSymbolFor('__STACK__'),
-					symbolSorted: types.getSymbolFor('__SORTED__'),
+					symbolObject: types.getSymbol('__OBJECT__'),
+					symbolStack: types.getSymbol('__STACK__'),
+					symbolSorted: types.getSymbol('__SORTED__'),
 					
 					// Callers
-					symbolOk: types.getSymbolFor('__OK__'),
+					symbolOk: types.getSymbol('__OK__'),
 
 					// Callers & AttributeBox
-					symbolCalled: types.getSymbolFor('__CALLED__'),
-					symbolPosition: types.getSymbolFor('__POSITION__'),
-					symbolUsageMessage: types.getSymbolFor('__USAGE_MESSAGE__'),
+					symbolCalled: types.getSymbol('__CALLED__'),
+					symbolPosition: types.getSymbol('__POSITION__'),
+					symbolUsageMessage: types.getSymbol('__USAGE_MESSAGE__'),
 					
 					// AttributeBox
-					symbolScope: types.getSymbolFor('__SCOPE__'),
-					symbolReturns: types.getSymbolFor('__RETURNS__'),
-					symbolInterface: types.getSymbolFor('__INTERFACE__'),
-					symbolCallFirstLength: types.getSymbolFor('__CALL_FIRST_LENGTH__'),
-					symbolRenamedFrom: types.getSymbolFor('__RENAMED_FROM__'),
-					symbolRenamedTo: types.getSymbolFor('__RENAMED_TO__'),
-					symbolOverrideWith: types.getSymbolFor('__OVERRIDE_WITH__'),
-					symbolReplacedCallers: types.getSymbolFor('__REPLACED_CALLERS__'),
+					symbolScope: types.getSymbol('__SCOPE__'),
+					symbolReturns: types.getSymbol('__RETURNS__'),
+					symbolInterface: types.getSymbol('__INTERFACE__'),
+					symbolCallFirstLength: types.getSymbol('__CALL_FIRST_LENGTH__'),
+					symbolRenamedFrom: types.getSymbol('__RENAMED_FROM__'),
+					symbolRenamedTo: types.getSymbol('__RENAMED_TO__'),
+					symbolOverrideWith: types.getSymbol('__OVERRIDE_WITH__'),
+					symbolReplacedCallers: types.getSymbol('__REPLACED_CALLERS__'),
 					
 					// Creatable
-					symbolDestroyed: types.getSymbolFor('__destroyed'),
+					symbolDestroyed: types.getSymbol('__destroyed'),
 
 					ANONYMOUS: '<anonymous>',
 				};
