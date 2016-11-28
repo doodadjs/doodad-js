@@ -3587,7 +3587,7 @@
 				return false;
 			})));
 			
-		__Internal__.ADD('hasGetSymbolForEnabled', __Internal__.DD_DOC(
+		__Internal__.ADD('hasGetSymbolEnabled', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
