@@ -36,53 +36,22 @@ module.exports = {
 			return (val === "true") || !!(+val);
 		};
 
-		if (!options) {
-			options = {};
-		};
-		if (!has(options, 'startup')) {
-			options.startup = {};
-		};
-
 		var config = null;
 		try {
 			// Generated from 'doodad-js-make'
 			config = require('../config.json');
 		} catch(ex) {
 		};
+		if (!config) {
+			config = {};
+		};
 		
 		DD_MODULES = (DD_MODULES || {});
 
-		if (Object.assign) {
-			config = Object.assign({}, config, options);
-		} else {
-			var tmp = config || {};
-			for (var key in options) {
-				if (has(options, key)) {
-					tmp[key] = options[key];
-				};
-			};
-			config = tmp;
-		};
+		var dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 
-		if (!has(config, 'startup')) {
-			config.startup = {};
-		};
-
-		if (!has(config, 'Doodad.Tools')) {
-			config['Doodad.Tools'] = {};
-		};
-
-		var dev_values = has(options.startup, 'nodeEnvDevValues') && options.startup.nodeEnvDevValues.split(',') || ['dev', 'development'],
-			env = get(options, 'node_env');
-
-		if (bool(get(options.startup, 'debug', false))) {
-			console.warn("warning: The 'startup.debug' flag is obsolete. Please set the environment variable 'NODE_ENV' to 'development' instead.");
-			env = dev_values[0];
-		};
-
-		var dev = false,
-			bootstrap;
-			
+		var dev = false;
 		for (var i = 0; i < dev_values.length; i++) {
 			if (dev_values[i] === env) {
 				dev = true;
@@ -91,6 +60,13 @@ module.exports = {
 		};
 		
 		if (dev) {
+			if (!has(config, 'startup')) {
+				config.startup = {};
+			};
+			if (!has(config, 'Doodad.Tools')) {
+				config['Doodad.Tools'] = {};
+			};
+
 			// Debug mode
 			config.startup.debug = true;
 
@@ -115,8 +91,8 @@ module.exports = {
 			//! END_IF()
 		//! END_FOR()
 
-		bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
+		var bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
 
-		return bootstrap.createRoot(DD_MODULES, config, startup);
+		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
 	},
 };

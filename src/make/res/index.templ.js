@@ -36,51 +36,20 @@ module.exports = {
 			return (val === "true") || !!(+val);
 		};
 
-		if (!options) {
-			options = {};
-		};
-		if (!has(options, 'startup')) {
-			options.startup = {};
-		};
-
 		let config = null;
 		try {
 			// Generated from 'doodad-js-make'
 			config = require('./config.json');
 		} catch(ex) {
 		};
-		
+		if (!config) {
+			config = {};
+		};
+
 		DD_MODULES = (DD_MODULES || {});
 
-		if (Object.assign) {
-			config = Object.assign({}, config, options);
-		} else {
-			const tmp = {};
-			if (config) {
-				for (let key in config) {
-					if (has(config, key)) {
-						tmp[key] = config[key];
-					};
-				};
-			};
-			for (let key in options) {
-				if (has(options, key)) {
-					tmp[key] = options[key];
-				};
-			};
-			config = tmp;
-		};
-
-		if (!has(config, 'startup')) {
-			config.startup = {};
-		};
-
-		if (!has(config, 'Doodad.Tools')) {
-			config['Doodad.Tools'] = {};
-		};
-
-		const dev_values = has(config.startup, 'nodeEnvDevValues') && config.startup.nodeEnvDevValues.split(',') || ['dev', 'development'],
-			env = (get(config, 'node_env') || process.env.node_env || process.env.NODE_ENV);
+		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 		
 		let dev = false;
 			
@@ -93,9 +62,16 @@ module.exports = {
 			
 		let bootstrap;
 
-		const fromSource = bool(get(config.startup, 'fromSource'));
+		const fromSource = bool(get(options, 'fromSource', get(config.startup, 'fromSource')));
 		if (dev || fromSource) {
 			if (dev) {
+				if (!has(config, 'startup')) {
+					config.startup = {};
+				};
+				if (!has(config, 'Doodad.Tools')) {
+					config['Doodad.Tools'] = {};
+				};
+
 				// Debug mode
 				config.startup.debug = true;
 
@@ -132,6 +108,6 @@ module.exports = {
 			bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
 		};
 
-		return bootstrap.createRoot(DD_MODULES, config, startup);
+		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
 	},
 };
