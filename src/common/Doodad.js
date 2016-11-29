@@ -694,7 +694,7 @@ module.exports = {
 				__Internal__.oldSetAttributes = _shared.setAttributes;
 				
 				_shared.invoke = root.DD_DOC(
-								root.DD_GET_DOC(__Internal__.oldInvoke), 
+								root.GET_DD_DOC(__Internal__.oldInvoke), 
 					function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
 						if (types.isCallback(fn)) {
 							if (args) {
@@ -731,7 +731,7 @@ module.exports = {
 					});
 
 				_shared.getAttribute = root.DD_DOC(
-								root.DD_GET_DOC(__Internal__.oldGetAttribute), 
+								root.GET_DD_DOC(__Internal__.oldGetAttribute), 
 					function getAttribute(obj, attr) {
 						var type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
@@ -755,7 +755,7 @@ module.exports = {
 					});
 				
 				_shared.getAttributes = root.DD_DOC(
-								root.DD_GET_DOC(__Internal__.oldGetAttributes), 
+								root.GET_DD_DOC(__Internal__.oldGetAttributes), 
 					function getAttributes(obj, attrs) {
 						var type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
@@ -785,7 +785,7 @@ module.exports = {
 					});
 				
 				_shared.setAttribute = root.DD_DOC(
-								root.DD_GET_DOC(__Internal__.oldSetAttribute), 
+								root.GET_DD_DOC(__Internal__.oldSetAttribute), 
 					function setAttribute(obj, attr, value, /*optional*/options) {
 						var type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
@@ -810,7 +810,7 @@ module.exports = {
 					});
 				
 				_shared.setAttributes = root.DD_DOC(
-								root.DD_GET_DOC(__Internal__.oldSetAttributes), 
+								root.GET_DD_DOC(__Internal__.oldSetAttributes), 
 					function setAttributes(obj, values, /*optional*/options) {
 						var type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {

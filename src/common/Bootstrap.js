@@ -4974,7 +4974,7 @@
 			});
 		//! END_REPLACE()
 
-		__Internal__.DD_GET_DOC = __Internal__.DD_DOC(
+		__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -4984,7 +4984,7 @@
 					description: "Gets the document applied to an object.",
 			}
 			//! END_REPLACE()
-			, function DD_GET_DOC(value) {
+			, function GET_DD_DOC(value) {
 				return value[__Internal__.symbolDD_DOC];
 			});
 		
@@ -6591,7 +6591,11 @@
 				},
 				/*instanceProto*/
 				{
-					//DD_ASSERT: types.WRITABLE(null),
+					Namespace: types.NOT_CONFIGURABLE(types.READ_ONLY(  types.Namespace  )),
+
+					createRoot: exports.createRoot,
+					DD_DOC: __Internal__.DD_DOC,
+					GET_DD_DOC: __Internal__.GET_DD_DOC,
 					
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						// TODO: Set namespace members to read-only
@@ -6650,11 +6654,6 @@
 						types = root.Doodad.Types;
 						tools = root.Doodad.Tools;
 
-						root.createRoot = exports.createRoot;
-						root.DD_DOC = __Internal__.DD_DOC;
-						root.DD_GET_DOC = __Internal__.DD_GET_DOC;
-						root.Namespace = types.Namespace;
-						
 						if (types.hasDefinePropertyEnabled()) {
 							types.defineProperty(root, 'DD_ASSERT', {
 								get: function() {
