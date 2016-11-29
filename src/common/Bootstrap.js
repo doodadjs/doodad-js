@@ -50,6 +50,24 @@
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 		"use strict";
 		
+		var _shared = {
+			// Secret value used to load modules, ...
+			SECRET: null,
+
+			// NOTE: Preload of immediatly needed natives.
+			Natives: {
+				// General
+				stringReplace: global.String.prototype.replace,
+				numberToString: global.Number.prototype.toString,
+
+				// "has", "isCustomFunction", "isNativeFunction"
+				objectHasOwnProperty: global.Object.prototype.hasOwnProperty,
+				
+				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
+				functionToString: global.Function.prototype.toString,
+			},
+		};
+		
 		var __Internal__ = {
 			evals: getEvals(),
 
@@ -60,7 +78,7 @@
 			hasProto: !!({}.__proto__),
 
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
-			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? global.Number.MAX_VALUE.toString(2).replace(/[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
+			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplace.call(_shared.Natives.numberToString.call(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
 
 			MIN_BITWISE_INTEGER: 0,
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
@@ -75,20 +93,6 @@
 
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
-		var _shared = {
-			// Secret value used to load modules, ...
-			SECRET: null,
-
-			// NOTE: Preload of immediatly needed natives.
-			Natives: {
-				// "has", "isCustomFunction", "isNativeFunction"
-				objectHasOwnProperty: global.Object.prototype.hasOwnProperty,
-				
-				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
-				functionToString: global.Function.prototype.toString,
-			},
-		};
-		
 		// Temporary. Will get replaced.
 		var types = {
 			},
@@ -487,8 +491,10 @@
 		
 		// FUTURE: "types.extend(_shared.Natives, {...})" when "Object.assign" will be accessible on every engine
 		_shared.Natives = {
-			// "everywhere"
+			// General
 			windowObject: global.Object,
+			stringReplace: global.String.prototype.replace,
+			//numberToString: global.Number.prototype.toString,
 
 			// "hasKeyInherited"
 			windowObjectPrototype: global.Object.prototype,
@@ -1083,7 +1089,7 @@
 			, function toString(obj) {
 				return _shared.Natives.windowString(obj);
 			}));
-			
+
 		//===================================
 		// Format functions
 		//===================================
@@ -3766,7 +3772,7 @@
 				if (types.isNothing(base)) {
 					base = _shared.Natives.windowError;
 				};
-				name = name.replace(/[.]/g, '_');
+				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
 				if (__Internal__.hasClasses) {
 					// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
 					var expr = "class " + name + " extends ctx.base {" +
@@ -5610,9 +5616,9 @@
 				var key = keys[i];
 
 				var hasValue = types.has(target, key);
-				//if (hasValue && skipExisting) {
-				//	continue;
-				//};
+				if (hasValue && skipExisting) {
+					continue;
+				};
 
 				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
 					var attr = types.AttributeBox(proto[key]),
@@ -5740,7 +5746,7 @@
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-				var expr = "function " + name.replace(/[.]/g, "_") + "(/*paramarray*/) {" + 
+				var expr = "function " + _shared.Natives.stringReplace.call(name, /[.]/g, "_") + "(/*paramarray*/) {" + 
 					//"if (ctx.get(this, ctx.InitializedSymbol)) {" +
 					//	"throw new ctx.Error('Object is already initialized.');" +
 					//"};" +
@@ -5783,7 +5789,7 @@
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.applyProto(obj, ctx.base, ctx.typeProto);" +
+							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true);" +
 						"};"
 					: 
 						""
@@ -6545,6 +6551,7 @@
 			));
 
 		_shared.setAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
+		__Internal__.ADD('Namespace', types.Namespace);
 
 		//===================================
 		// Root
@@ -6597,17 +6604,51 @@
 						
 						var root = this;
 
-						// Prebuild "Doodad.Types" and "Doodad.Tools"
+						// Prebuild "Doodad", "Doodad.Types" and "Doodad.Tools"
 						// NOTE: 'Doodad' is the parent of 'Types', 'Tools' and 'Namespaces', but it depends on them. I should have put these namespaces at Root, but it's too late now.
 						root.Doodad = new types.Namespace(root, 'Doodad', 'Doodad');
-						root.Doodad.Types = types;
-						root.Doodad.Tools = tools;
+						root.Doodad.Tools = new types.Namespace(root.Doodad, 'Tools', 'Doodad.Tools');
+
+						// NOTE: "types" replaces "toString". It's too late to rename it.
+						var __typesTmp = types.INIT(types.Namespace.$inherit({
+								$TYPE_NAME: '__TypesNamespace',
+							},
+							{
+								toString: types.CONFIGURABLE(null),  // Will get set next
+							}));
+						root.Doodad.Types = new __typesTmp(root.Doodad, 'Types', 'Doodad.Types');
+
+						for (var i = 0; i < __Internal__.tempTypesAdded.length; i++) {
+							var type = __Internal__.tempTypesAdded[i],
+								name = type[0],
+								obj = type[1];
+							root.Doodad.Types.ADD(name, obj);
+						};
+						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
+							var type = __Internal__.tempTypesRegistered[i];
+							// Temporary... will get registered later.
+							root.Doodad.Types.ADD(types.getTypeName(type) || types.getFunctionName(type), type, false);
+						};
+						for (var i = 0; i < __Internal__.tempToolsAdded.length; i++) {
+							var tool = __Internal__.tempToolsAdded[i],
+								name = tool[0],
+								obj = tool[1];
+							root.Doodad.Tools.ADD(name, obj);
+						};
+						delete __Internal__.tempTypesAdded;
+						delete __Internal__.tempToolsAdded;
+						delete __Internal__.ADD;
+						delete __Internal__.REGISTER;
+						delete __Internal__.ADD_TOOL;
 
 						var nsObjs = types.nullObject({
 							'Doodad': root.Doodad,
-							'Doodad.Types': types,
-							'Doodad.Tools': tools,
+							'Doodad.Types': root.Doodad.Types,
+							'Doodad.Tools': root.Doodad.Tools,
 						});
+
+						types = root.Doodad.Types;
+						tools = root.Doodad.Tools;
 
 						root.createRoot = exports.createRoot;
 						root.DD_DOC = __Internal__.DD_DOC;
@@ -6646,8 +6687,8 @@
 							var mod = modules[name];
 							mod.name = name;
 							if (mod.bootstrap) {
-								var deps = (mod.dependencies || []);
-								forEachDep: for (var i = 0; i < deps.length; i++) {
+								var deps = (types.get(mod, 'dependencies') || []);
+								for (var i = 0; i < deps.length; i++) {
 									if (i in deps) {
 										var dep = deps[i],
 											optional = false;
@@ -6671,12 +6712,12 @@
 								};
 								
 								var shortNames = name.split('.'),
-									proto = mod.proto,
+									proto = types.get(mod, 'proto'),
 									nsObj = null,
 									parent = root,
 									fullName = '';
 									
-								forEachShortName: for (var k = 0; k < shortNames.length; k++) {
+								for (var k = 0; k < shortNames.length; k++) {
 									var shortName = shortNames[k].split('/', 1)[0];
 									fullName += '.' + shortName;
 									var fn = fullName.slice(1);
@@ -6684,27 +6725,6 @@
 									var prevNsObj = types.get(parent, shortName);
 									if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !(prevNsObj instanceof types.Namespace)))) {
 										var nsType = types.getType(prevNsObj) || types.Namespace;
-										if (prevNsObj && !(prevNsObj instanceof types.Namespace)) {
-											var nsProto = {};
-											var prevNsObjKeys = types.append(types.keys(prevNsObj), types.symbols(prevNsObj));
-											for (var i = 0; i < prevNsObjKeys.length; i++) {
-												var prevNsObjKey = prevNsObjKeys[i];
-												var prevNsObjVal = prevNsObj[prevNsObjKey];
-												if (!(prevNsObjVal instanceof types.AttributeBox)) {
-													// Sets everything to READ_ONLY by default
-													prevNsObjVal = types.READ_ONLY(types.ENUMERABLE(prevNsObjVal));
-												};
-												nsProto[prevNsObjKey] = prevNsObjVal;
-											};
-											nsType = types.INIT(nsType.$inherit(
-												/*typeProto*/
-												{
-													$TYPE_NAME: types.getTypeName(nsType),
-												},
-												/*instanceProto*/
-												nsProto
-											));
-										};
 										if (proto) {
 											// Extend namespace object
 											if (types.isFunction(proto)) {
@@ -6723,12 +6743,6 @@
 											nsType = types.INIT(nsType.$inherit.apply(nsType, proto));
 										};
 										nsObj = new nsType(parent, shortName, fn);
-										// Update module variables
-										if (prevNsObj === types) {
-											types = nsObj;
-										} else if (prevNsObj === tools) {
-											tools = nsObj;
-										};
 									} else if (!prevNsObj) {
 										nsObj = new types.Namespace(parent, shortName, fn);
 									} else {
@@ -6740,8 +6754,8 @@
 								
 								nsObjs[name] = nsObj;
 								
-								var namespaces = (mod.namespaces || []);
-								forEachNamespace: for (var j = 0; j < namespaces.length; j++) {
+								var namespaces = (types.get(mod, 'namespaces') || []);
+								for (var j = 0; j < namespaces.length; j++) {
 									if (j in namespaces) {
 										shortNames = namespaces[j].split('.');
 										var fullName = '.' + name;
@@ -6759,7 +6773,8 @@
 								};
 
 								var opts = options[name];
-								inits[name] = mod.create && mod.create(root, opts, _shared);
+								var create = types.get(mod, 'create');
+								inits[name] = create && create(root, opts, _shared);
 							};
 						};
 
@@ -6769,7 +6784,7 @@
 							entries = namespaces.Entries,
 							nsOptions = {secret: _shared.SECRET};
 
-						forEachInit: for (var i = 0; i < names.length; i++) {
+						for (var i = 0; i < names.length; i++) {
 							var name = names[i];
 							var spec = modules[name];
 							var entryType = entries[spec.type || 'Module'];
@@ -6784,7 +6799,7 @@
 						};
 						
 						var names = types.keys(nsObjs);
-						forEachNamespace: for (var i = 0; i < names.length; i++) {
+						for (var i = 0; i < names.length; i++) {
 							var name = names[i];
 							var namespace = nsObjs[name];
 							var entry = new entries.Namespace(root, null, namespace);
@@ -6797,26 +6812,11 @@
 						delete types.Namespace[__Internal__.symbolInitialized];
 						types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
 
-						forEachType: for (var i = 0; i < __Internal__.tempTypesAdded.length; i++) {
-							var type = __Internal__.tempTypesAdded[i],
-								name = type[0],
-								obj = type[1];
-							types.ADD(name, obj);
-						};
-						forEachType: for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
+						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];
 							types.REGISTER(type);
 						};
-						forEachTool: for (var i = 0; i < __Internal__.tempToolsAdded.length; i++) {
-							var tool = __Internal__.tempToolsAdded[i],
-								name = tool[0],
-								obj = tool[1];
-							tools.ADD(name, obj);
-						};
-						delete __Internal__.tempTypesAdded;
 						delete __Internal__.tempTypesRegistered;
-						delete __Internal__.ADD;
-						delete __Internal__.REGISTER;
 					}),
 					
 					//! BEGIN_REMOVE()
