@@ -12,13 +12,13 @@ $ npm install doodad-js
 
 ## Features
 
-  -  Classes
+  -  Real classes (not ES6's ones)
   -  Inheritance (and Multiple Inheritance)
   -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
   -  Base classes and interfaces
-  -  Expandable objects (these objects can be extended like a Class)
+  -  Expandable objects (these objects can be extended like a class)
   -  Custom events management
   -  DOM events management
   -  NodeJs events management
