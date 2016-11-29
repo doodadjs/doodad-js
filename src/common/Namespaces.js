@@ -392,7 +392,8 @@ module.exports = {
 					};
 					
 					function create(spec, parentName, parent) {
-						var shortNames = spec.name.split('.');
+						var baseName = spec.name.split('/', 2)[0];
+						var shortNames = baseName.split('.');
 						var parent = createParents(shortNames, parentName, parent);
 						var entry = createMain(shortNames, spec, parent);
 						return Promise.resolve(entry);
@@ -423,12 +424,13 @@ module.exports = {
 
 					function createObject(entry) {
 						if (entry) {
-							options = ((entry instanceof entries.Package) ? options : types.get(options, entry.spec.name));
+							var baseName = entry.spec.name.split('/', 2)[0];
+							var opts = ((entry instanceof entries.Package) ? options : types.get(options, baseName));
 							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
 								var retval = null;
 								entry.objectCreating = true;
 								if (entry.spec.create) {
-									retval = entry.spec.create(root, options, _shared);
+									retval = entry.spec.create(root, opts, _shared);
 								};
 								if (types.isNothing(retval)) {
 									entry.objectCreating = false;
@@ -547,7 +549,8 @@ module.exports = {
 							};
 						};
 						
-						options = types.get(options, entry.spec.name);
+						var baseName = entry.spec.name.split('/', 2)[0];
+						options = types.get(options, baseName);
 						
 						if (entry.objectInit) {
 							if (types.isFunction(entry.objectInit)) {

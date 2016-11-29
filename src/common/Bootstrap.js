@@ -6710,14 +6710,15 @@
 									};
 								};
 								
-								var shortNames = name.split('.'),
+								var baseName = name.split('/', 2)[0],
+									shortNames = baseName.split('.'),
 									proto = types.get(mod, 'proto'),
 									nsObj = null,
 									parent = root,
 									fullName = '';
 									
 								for (var k = 0; k < shortNames.length; k++) {
-									var shortName = shortNames[k].split('/', 1)[0];
+									var shortName = shortNames[k];
 									fullName += '.' + shortName;
 									var fn = fullName.slice(1);
 									//var prevNsObj = nsObjs[fn];
@@ -6757,7 +6758,7 @@
 								for (var j = 0; j < namespaces.length; j++) {
 									if (j in namespaces) {
 										shortNames = namespaces[j].split('.');
-										var fullName = '.' + name;
+										var fullName = '.' + baseName;
 										for (var k = 0; k < shortNames.length; k++) {
 											var shortName = shortNames[k];
 											fullName += '.' + shortName;
@@ -6786,9 +6787,10 @@
 						for (var i = 0; i < names.length; i++) {
 							var name = names[i];
 							var spec = modules[name];
+							var baseName = name.split('/', 2)[0];
 							var entryType = entries[spec.type || 'Module'];
 							var entry = new entryType(root, spec, nsObjs[name]);
-							var opts = options[name];
+							var opts = options[baseName];
 							entry.objectCreated = true;
 							entry.objectInit = inits[name];
 							entry.objectInit && entry.objectInit(opts)
@@ -6801,7 +6803,10 @@
 						for (var i = 0; i < names.length; i++) {
 							var name = names[i];
 							var namespace = nsObjs[name];
+							var baseName = name.split('/', 2)[0];
 							var entry = new entries.Namespace(root, null, namespace);
+							var opts = options[baseName];
+							entry.init(opts);
 							namespaces.add(name, entry, nsOptions);
 						};
 						
