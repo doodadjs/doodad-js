@@ -88,6 +88,7 @@ module.exports = {
 				
 				types.complete(_shared.Natives, {
 					//windowObject: global.Object,
+					windowDocument: global.document,
 
 					// DOM
 					windowWindow: (types.isNativeFunction(global.Window) ? global.Window : undefined),
@@ -135,6 +136,9 @@ module.exports = {
 
 					// generateUUID
 					mathRandom: global.Math.random,
+
+					// setCurrentLocation
+					//historyPushState: (global.history && types.isNativeFunction(global.history.pushState) ? global.history.pushState.bind(global.history) : undefined),
 				});
 				
 				
@@ -443,16 +447,16 @@ module.exports = {
 								url = files.Url.parse(url);
 								
 								// TODO: Better user message, with translation
-								global.document.open('text/plain', false);
+								_shared.Natives.windowDocument.open('text/plain', false);
 								if (exitCode !== 0) {
 									if (types.toBoolean(url.args.get('crashReport', true))) {
-										global.document.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+										_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
 									} else {
 										reload = true;
-										global.document.write("We are sorry. An unexpected error has occured. Page will now reload...");
+										_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
 									};
 								};
-								global.document.close();
+								_shared.Natives.windowDocument.close();
 							} catch(o) {
 								debugger;
 							};
@@ -553,7 +557,7 @@ module.exports = {
 					if (types.isNothing(obj)) {
 						return false;
 					};
-					if (obj === global.document) {
+					if (obj === _shared.Natives.windowDocument) {
 						return true;
 					};
 					if (typeof obj !== 'object') {
@@ -1181,11 +1185,29 @@ module.exports = {
 							_window.location.reload();
 							__Internal__.setCurrentLocationPending = true;
 						} else {
+							//if (types.isNativeFunction(_window.history.replaceState)) {
+								//_window.history.replaceState(null, null, url.toString());
+							//} else {
+							if ('onpageshow' in _window) {
+								client.addListener(_window, 'pageshow', function(ev) {
+									if (ev.persisted) {
+										_window.location.reload() 
+									};
+								});
+							} else if ('onunload' in _window) {
+								var __unloadHandler = function() {
+									//client.removeListener(_window, 'unload', __unloadHandler);
+								};
+								client.addListener(_window, 'unload', __unloadHandler);
+							} else {
+								_shared.Natives.windowDocument.open('text/plain', false);
+								_shared.Natives.windowDocument.close();
+							};
 							_window.location.href = url.toString();
 							__Internal__.setCurrentLocationPending = (result !== 0);
 						};
 					};
-					
+
 					if (!dontAbort) {
 						throw new types.PageMovedError();
 					};
@@ -1428,7 +1450,7 @@ module.exports = {
 					};
 					if (!loader) {
 						if (!_document) {
-							_document = global.document;
+							_document = _shared.Natives.windowDocument;
 						};
 						
 						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
@@ -1481,7 +1503,7 @@ module.exports = {
 					};
 
 					if (!_document) {
-						_document = global.document;
+						_document = _shared.Natives.windowDocument;
 					};
 					
 					var loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
@@ -1573,7 +1595,7 @@ module.exports = {
 					};
 					if (!loader) {
 						if (!_document) {
-							_document = global.document;
+							_document = _shared.Natives.windowDocument;
 						};
 						
 						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
@@ -1638,7 +1660,7 @@ module.exports = {
 					
 					if (async && _shared.Natives.windowBlob && global.URL) {
 						if (!_document) {
-							_document = global.document;
+							_document = _shared.Natives.windowDocument;
 						};
 						
 						// Firefox
@@ -1655,7 +1677,7 @@ module.exports = {
 						});
 					} else {
 						if (!_document) {
-							_document = global.document;
+							_document = _shared.Natives.windowDocument;
 						};
 						
 						loader = new __Internal__.ScriptLoader(/*tag*/'style', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
