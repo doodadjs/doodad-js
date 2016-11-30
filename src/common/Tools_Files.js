@@ -63,11 +63,11 @@ module.exports = {
 					
 				var __options__ = types.nullObject({
 					caseSensitive: true,
-					caseSensitiveUnicode: true,
+					//caseSensitiveUnicode: true,
 				}, _options);
 
 				__options__.caseSensitive = types.toBoolean(__options__.caseSensitive);
-				__options__.caseSensitiveUnicode = types.toBoolean(__options__.caseSensitiveUnicode);
+				//__options__.caseSensitiveUnicode = types.toBoolean(__options__.caseSensitiveUnicode);
 
 				// Some options can be changed, so we don't freeze the object.
 				//types.freezeObject(__options__);
@@ -81,9 +81,9 @@ module.exports = {
 					if (types.has(options, 'caseSensitive')) {
 						__options__.caseSensitive = types.toBoolean(options.caseSensitive);
 					};
-					if (types.has(options, 'caseSensitiveUnicode')) {
-						__options__.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
-					};
+					//if (types.has(options, 'caseSensitiveUnicode')) {
+					//	__options__.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
+					//};
 				});
 
 				//===================================

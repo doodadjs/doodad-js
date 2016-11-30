@@ -677,7 +677,7 @@ module.exports = {
 							};
 						};
 						const filesOptions = files.getOptions();
-						os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
+						os.caseSensitive = filesOptions.caseSensitive; // || filesOptions.caseSensitiveUnicode;
 						return os;
 					}));
 							
@@ -870,7 +870,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									path: {
 										type: 'string,Path',
@@ -893,6 +893,7 @@ module.exports = {
 							path = files.Path.parse(path);
 						};
 						const async = types.get(options, 'async', false);
+						const ignoreExists = types.get(options, 'ignoreExists', true);
 						if (types.get(options, 'makeParents', false)) {
 							const create = function(dir, index) {
 								if (index < dir.length) {
@@ -907,7 +908,7 @@ module.exports = {
 										return Promise.create(function nodeFsMkdirPromise(resolve, reject) {
 											nodeFs.mkdir(name, function (ex) {
 												if (ex) {
-													if (ex.code === 'EEXIST') {
+													if ((ignoreExists || (index < dir.length - 1)) && (ex.code === 'EEXIST')) {
 														resolve(create(dir, ++index));
 													} else {
 														reject(ex);
@@ -921,7 +922,7 @@ module.exports = {
 										try {
 											nodeFs.mkdirSync(name);
 										} catch(ex) {
-											if (ex.code !== 'EEXIST') {
+											if ((!ignoreExists && (index === dir.length - 1)) || (ex.code !== 'EEXIST')) {
 												throw ex;
 											};
 										};
@@ -946,7 +947,7 @@ module.exports = {
 								return Promise.create(function nodeFsMkdirPromise2(resolve, reject) {
 									nodeFs.mkdir(name, function(ex) {
 										if (ex) {
-											if (ex.code === 'EEXIST') {
+											if (ignoreExists && (ex.code === 'EEXIST')) {
 												resolve(true);
 											} else {
 												reject(ex);
@@ -960,7 +961,7 @@ module.exports = {
 								try {
 									nodeFs.mkdirSync(name);
 								} catch(ex) {
-									if (ex.code !== 'EEXIST') {
+									if (!ignoreExists || (ex.code !== 'EEXIST')) {
 										throw ex;
 									};
 								};
@@ -2045,7 +2046,7 @@ module.exports = {
 								return Promise.create(function eventPromise(resolve, reject) {
 									if (canReject) {
 										self.attachOnce(emitters, context, function(context, err /*, paramarray*/) {
-											if (canReject && types.isError(err)) {
+											if (types.isError(err)) {
 												return reject(err);
 											} else {
 												return resolve(types.toArray(arguments));
@@ -2331,9 +2332,9 @@ module.exports = {
 					} catch(ex) {
 					};
 					try {
-						files.mkdir(temp + 'DoOdAd');
+						files.mkdir(temp + 'DoOdAd', {ignoreExists: false});
 						try {
-							files.mkdir(temp + 'dOoDaD');
+							files.mkdir(temp + 'dOoDaD', {ignoreExists: false});
 							files.setOptions({
 								caseSensitive: true,
 							});
@@ -2354,7 +2355,7 @@ module.exports = {
 					} catch(ex) {
 					};
 
-					
+/*					
 					// Detect Unicode case-sensitive OS
 					try {
 						files.rmdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
@@ -2365,9 +2366,9 @@ module.exports = {
 					} catch(ex) {
 					};
 					try {
-						files.mkdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
+						files.mkdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4", {ignoreExists: false}); // DoOdAd greek
 						try {
-							files.mkdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
+							files.mkdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394", {ignoreExists: false}); // dOoDaD greek
 							files.setOptions({
 								caseSensitiveUnicode: true,
 							});
@@ -2387,6 +2388,7 @@ module.exports = {
 						files.rmdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
 					} catch(ex) {
 					};
+*/
 				};
 			},
 		};

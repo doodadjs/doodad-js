@@ -1047,7 +1047,7 @@ module.exports = {
 						};
 					};
 					var filesOptions = files.getOptions();
-					os.caseSensitive = filesOptions.caseSensitive || filesOptions.caseSensitiveUnicode;
+					os.caseSensitive = filesOptions.caseSensitive; // || filesOptions.caseSensitiveUnicode;
 					return os;
 				}));
 
