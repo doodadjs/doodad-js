@@ -86,6 +86,7 @@
 			tempDocs: [],
 			tempTypesAdded: [],  // types to ADD into Doodad.Types
 			tempTypesRegistered: [],  // types to REGISTER into Doodad.Types
+			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 			
 			DD_ASSERT: null,
@@ -6470,7 +6471,26 @@
 				delete this[name];
 			});
 				
-				
+		// Temporary
+		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
+			var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
+				fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
+			if (!types.isInitialized(type)) {
+				if (type instanceof types.Namespace) {
+					type = types.INIT(type, types.append([this, name, fullName], args));
+				} else {
+					_shared.setAttributes(type, {
+						DD_PARENT: this,
+						DD_NAME: name,
+						DD_FULL_NAME: fullName,
+					}, {});
+					type = types.INIT(type, args);
+				};
+			};
+			this[name] = type;
+			__Internal__.tempRegisteredOthers.push([this, [args, protect, type]]);
+		};
+	
 		types.Namespace = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -6531,7 +6551,17 @@
 					},
 					
 					REGISTER: function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
-						return _shared.REGISTER.apply(this, arguments);
+						var args;
+						if (arguments.length <= 1) {
+							type = args;
+							protect = true;
+							args = undefined;
+						} else if (arguments.length <= 2) {
+							type = protect;
+							protect = args;
+							args = undefined;
+						};
+						return _shared.REGISTER.call(this, args, protect, type);
 					},
 					
 					UNREGISTER: function UNREGISTER(type) {
@@ -6588,6 +6618,10 @@
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Root',
+
+					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
+						this._super(null, 'Root', 'Root');
+					}),
 				},
 				/*instanceProto*/
 				{
@@ -6598,11 +6632,7 @@
 					GET_DD_DOC: __Internal__.GET_DD_DOC,
 					
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
-						// TODO: Set namespace members to read-only
-	
-						/////types.defineProperty(global, 'root', {get: function() {debugger;}});
-
-						this._super(null, '<Root>', '<Root>');
+						this._super(null, 'Root', 'Root');
 
 						options = types.nullObject(options);
 						
@@ -6680,13 +6710,15 @@
 						
 						var names = types.keys(modules),
 							inits = types.nullObject(),
+							namespaces = null,
+							entries = null,
 							name;
 							
 						whileName: while (name = names.shift()) {
-							var mod = modules[name];
-							mod.name = name;
-							if (mod.bootstrap) {
-								var deps = (types.get(mod, 'dependencies') || []);
+							var spec = modules[name];
+							spec.name = name;
+							if (spec.bootstrap) {
+								var deps = (types.get(spec, 'dependencies') || []);
 								for (var i = 0; i < deps.length; i++) {
 									if (i in deps) {
 										var dep = deps[i],
@@ -6712,7 +6744,7 @@
 								
 								var baseName = name.split('/', 2)[0],
 									shortNames = baseName.split('.'),
-									proto = types.get(mod, 'proto'),
+									proto = types.get(spec, 'proto'),
 									nsObj = null,
 									parent = root,
 									fullName = '';
@@ -6748,16 +6780,19 @@
 									} else {
 										nsObj = prevNsObj;
 									};
-									nsObjs[fn] = parent[shortName] = nsObj;
+									nsObjs[fn] = nsObj;
+									if ((parent !== root) || (!entries && (spec.type !== 'Package')) || (entries && !(entries[spec.type || 'Module'] instanceof entries.Package))) {
+										parent[shortName] = nsObj;
+									};
 									parent = nsObj;
 								};
 								
 								nsObjs[name] = nsObj;
-								
-								var namespaces = (types.get(mod, 'namespaces') || []);
-								for (var j = 0; j < namespaces.length; j++) {
-									if (j in namespaces) {
-										shortNames = namespaces[j].split('.');
+
+								var nsList = (types.get(spec, 'namespaces') || []);
+								for (var j = 0; j < nsList.length; j++) {
+									if (j in nsList) {
+										shortNames = nsList[j].split('.');
 										var fullName = '.' + baseName;
 										for (var k = 0; k < shortNames.length; k++) {
 											var shortName = shortNames[k];
@@ -6773,15 +6808,17 @@
 								};
 
 								var opts = options[name];
-								var create = types.get(mod, 'create');
+								var create = types.get(spec, 'create');
 								inits[name] = create && create(root, opts, _shared);
+
+								if (!namespaces && (name === 'Doodad.Namespaces')) {
+									namespaces = nsObj;
+									entries = namespaces.Entries;
+								};
 							};
 						};
 
 						var names = types.keys(inits),
-							doodad = root.Doodad,
-							namespaces = doodad.Namespaces,
-							entries = namespaces.Entries,
 							nsOptions = {secret: _shared.SECRET};
 
 						for (var i = 0; i < names.length; i++) {
@@ -6810,8 +6847,10 @@
 							namespaces.add(name, entry, nsOptions);
 						};
 						
+						var opts = options[root.DD_FULL_NAME];
 						var entry = new entries.Namespace(root, null, root);
-						namespaces.add(spec.name, entry, nsOptions);
+						entry.init(opts);
+						namespaces.add(root.DD_FULL_NAME, entry, nsOptions);
 						
 						delete types.Namespace[__Internal__.symbolInitialized];
 						types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
@@ -6821,6 +6860,20 @@
 							types.REGISTER(type);
 						};
 						delete __Internal__.tempTypesRegistered;
+
+						if (_shared.REGISTER !== __Internal__.registerOthers) { 
+							for (var i = 0; i < __Internal__.tempRegisteredOthers.length; i++) {
+								var type = __Internal__.tempRegisteredOthers[i],
+									namespace = type[0],
+									args = type[1];
+								_shared.REGISTER.apply(namespace, args);
+							};
+						} else {
+							// "_shared.REGISTER" should have been replaced by "Doodad.js" !!!
+							debugger;
+						};
+						delete __Internal__.registerOthers;
+						delete __Internal__.tempRegisteredOthers;
 					}),
 					
 					//! BEGIN_REMOVE()

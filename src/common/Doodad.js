@@ -206,11 +206,11 @@ module.exports = {
 				// Namespace entries
 				//=======================
 
-				entries.ADD('Type', root.DD_DOC(
+				entries.REGISTER(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								root: {
 									type: 'Root',
@@ -228,14 +228,14 @@ module.exports = {
 									description: "Namespace object",
 								},
 							},
-							returns: 'TypeEntry',
+							returns: 'Type',
 							description: "Type registry entry.",
 					}
 					//! END_REPLACE()
 					, entries.Namespace.$inherit(
 						/*typeProto*/
 						{
-							$TYPE_NAME: 'TypeEntry',
+							$TYPE_NAME: 'Type',
 						}
 					)));
 
@@ -915,28 +915,17 @@ module.exports = {
 								description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
 					}
 					//! END_REPLACE()
-					, function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
-						var args;
-						if (arguments.length <= 1) {
-							type = args;
-							protect = true;
-							args = undefined;
-						} else if (arguments.length <= 2) {
-							type = protect;
-							protect = args;
-							args = undefined;
-						};
-						
+					, function REGISTER(args, protect, type) {
 						//root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
 						
 						var isSingleton = types.isSingleton(type),
 							isNamespace = (type === types.Namespace) || types.baseof(types.Namespace, type),
-							name = (types.getTypeName(type) || types.getFunctionName(type)),
-							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : ''),
+							name = (types.getTypeName(type) || types.getFunctionName(type) || null),
+							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : null),
 							isPrivate = (!name || (name.slice(0, 2) === '__'));
 						
-						if (isNamespace) {
-							if (!types.isInitialized(type)) {
+						if (!types.isInitialized(type)) {
+							if (isNamespace) {
 								if (types.isType(type) && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
 									if ((root.getOptions().debug || __options__.enforcePolicies)) {
 										var mustOverride = type[__Internal__.symbolMustOverride];
@@ -947,16 +936,16 @@ module.exports = {
 								};
 								
 								type = types.INIT(type, types.append([this, name, fullName], args));
-							};
-						} else {
-							_shared.setAttributes(type, {
-								DD_PARENT: this,
-								DD_NAME: name,
-								DD_FULL_NAME: fullName,
-							}, {});
+							} else {
+								_shared.setAttributes(type, {
+									DD_PARENT: this,
+									DD_NAME: name,
+									DD_FULL_NAME: fullName,
+								}, {});
 
-							if (!types.isErrorType(type)) {
-								type = types.INIT(type, args);
+								if (!types.isErrorType(type)) {
+									type = types.INIT(type, args);
+								};
 							};
 						};
 						

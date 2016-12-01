@@ -1084,12 +1084,14 @@ module.exports = {
 							types.freezeObject(entry.spec);
 							//types.freezeObject(entry);
 							this.registry[name] = entry;
-							var namespace = entry.namespace;
-							if (namespace) {
-								var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);
-								var parent = type.DD_PARENT;
-								if (parent && type.DD_NAME) {
-									parent.ADD(type.DD_NAME, namespace, entry.options.protect);
+							if (!(entry instanceof entries.Package)) {
+								var namespace = entry.namespace;
+								if (namespace) {
+									var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);
+									var parent = type.DD_PARENT;
+									if (parent && type.DD_NAME) {
+										parent.ADD(type.DD_NAME, namespace, entry.options.protect);
+									};
 								};
 							};
 							return true;
@@ -1103,11 +1105,11 @@ module.exports = {
 				// Namespace entry object
 				//-----------------------------------
 
-				entries.ADD('Namespace', root.DD_DOC(
+				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									root: {
 										type: 'Root',
@@ -1125,14 +1127,14 @@ module.exports = {
 										description: "Namespace object",
 									},
 								},
-								returns: 'NamespaceEntry',
+								returns: 'Type',
 								description: "Namespace registry entry.",
 						}
 						//! END_REPLACE()
 				, types.Type.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'NamespaceEntry'
+						$TYPE_NAME: 'Namespace'
 					},
 					
 					/*instanceProto*/
@@ -1192,11 +1194,11 @@ module.exports = {
 				//-----------------------------------
 				// Module entry object
 				//-----------------------------------
-				entries.ADD('Module', root.DD_DOC(
+				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									root: {
 										type: 'Root',
@@ -1214,14 +1216,14 @@ module.exports = {
 										description: "Namespace object",
 									},
 								},
-								returns: 'ModuleEntry',
+								returns: 'Type',
 								description: "Module registry entry.",
 						}
 						//! END_REPLACE()
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'ModuleEntry'
+						$TYPE_NAME: 'Module'
 					}
 				)));
 				
@@ -1229,11 +1231,11 @@ module.exports = {
 				//-----------------------------------
 				// Package entry object
 				//-----------------------------------
-				entries.ADD('Package', root.DD_DOC(
+				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									root: {
 										type: 'Root',
@@ -1251,14 +1253,14 @@ module.exports = {
 										description: "Namespace object",
 									},
 								},
-								returns: 'PackageEntry',
+								returns: 'Type',
 								description: "Package registry entry.",
 						}
 						//! END_REPLACE()
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'PackageEntry'
+						$TYPE_NAME: 'Package'
 					}
 				)));
 				
@@ -1266,11 +1268,11 @@ module.exports = {
 				//-----------------------------------
 				// Application entry object
 				//-----------------------------------
-				entries.ADD('Application', root.DD_DOC(
+				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									root: {
 										type: 'Root',
@@ -1288,14 +1290,14 @@ module.exports = {
 										description: "Namespace object",
 									},
 								},
-								returns: 'ApplicationEntry',
+								returns: 'Type',
 								description: "Application registry entry.",
 						}
 						//! END_REPLACE()
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'ApplicationEntry'
+						$TYPE_NAME: 'Application'
 					}
 				)));
 				
