@@ -28,7 +28,7 @@
 	var exports = {};
 	
 	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
+	if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
 	//! END_REMOVE()
 		//! IF_SET("serverSide")
 			module.exports = exports;
@@ -574,6 +574,7 @@
 			symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol['for']) ? global.Symbol['for'] : undefined),
 			
 			// "getSymbolKey", "symbolIsGlobal"
+			symbolValueOf: global.Symbol.prototype.valueOf,
 			symbolKeyFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.keyFor) ? global.Symbol.keyFor : undefined),
 			
 			// "getSymbolFor", "getSymbolKey"
@@ -3530,7 +3531,7 @@
 		//==============
 		
 		if (types.isArray(_options)) {
-			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , (typeof DD_MODULES === 'object' ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
+			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
 		};
 
 		var __options__ = types.depthExtend(15, {
@@ -3681,7 +3682,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3694,8 +3695,24 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function getSymbolKey(symbol) {
-				if ((typeof obj === 'object') && (typeof obj.valueOf === 'function')) {
-					obj = obj.valueOf();
+				if (types.isNothing(symbol)) {
+					return undefined;
+				};
+				if (typeof symbol === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in symbol)) {
+						try {
+							symbol = _shared.Natives.symbolValueOf.call(symbol);
+						} catch(o) {
+							return undefined;
+						};
+					} else if (_shared.Natives.objectToString.call(symbol) !== '[object Symbol]') {
+						return undefined;
+					} else {
+						symbol = _shared.Natives.symbolValueOf.call(symbol);
+					};
+				};
+				if (typeof symbol !== 'symbol') {
+					return undefined;
 				};
 				var key = _shared.Natives.symbolKeyFor(symbol);
 				return key;
@@ -3708,7 +3725,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3721,8 +3738,24 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function symbolIsGlobal(symbol) {
-				if ((typeof symbol === 'object') && (typeof symbol.valueOf === 'function')) {
-					symbol = symbol.valueOf();
+				if (types.isNothing(symbol)) {
+					return false;
+				};
+				if (typeof symbol === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in symbol)) {
+						try {
+							symbol = _shared.Natives.symbolValueOf.call(symbol);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(symbol) !== '[object Symbol]') {
+						return false;
+					} else {
+						symbol = _shared.Natives.symbolValueOf.call(symbol);
+					};
+				};
+				if (typeof symbol !== 'symbol') {
+					return false;
 				};
 				return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
 			} : function symbolIsGlobal(symbol) {
@@ -6588,7 +6621,7 @@
 		//===================================
 
 		//! IF_UNSET("serverSide")
-			if (typeof DD_MODULES === 'object') {
+			if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {
 				modules = types.extend({}, DD_MODULES, modules);
 			};
 		//! END_IF()
@@ -6877,7 +6910,7 @@
 					}),
 					
 					//! BEGIN_REMOVE()
-						serverSide: types.READ_ONLY((typeof process === 'object') && !process.browser && (typeof module === 'object')),
+						serverSide: types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null)),
 					//! END_REMOVE()
 					//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
 					//!		INJECT("serverSide: types.READ_ONLY(true),")
