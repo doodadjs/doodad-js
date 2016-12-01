@@ -61,30 +61,14 @@ module.exports = {
 				// Options
 				//===================================
 					
-				var __options__ = types.nullObject({
-					caseSensitive: true,
-					//caseSensitiveUnicode: true,
-				}, _options);
+				//var __options__ = types.nullObject({
+				//}, _options);
 
-				__options__.caseSensitive = types.toBoolean(__options__.caseSensitive);
-				//__options__.caseSensitiveUnicode = types.toBoolean(__options__.caseSensitiveUnicode);
-
-				// Some options can be changed, so we don't freeze the object.
 				//types.freezeObject(__options__);
 
-				files.ADD('getOptions', function() {
-					// Because options are not frozen, we make a copy to force the use of "setOptions".
-					return types.extend({}, __options__);
-				});
-
-				files.ADD('setOptions', function(options) {
-					if (types.has(options, 'caseSensitive')) {
-						__options__.caseSensitive = types.toBoolean(options.caseSensitive);
-					};
-					//if (types.has(options, 'caseSensitiveUnicode')) {
-					//	__options__.caseSensitiveUnicode = types.toBoolean(options.caseSensitiveUnicode);
-					//};
-				});
+				//files.ADD('getOptions', function() {
+				//	return __options__;
+				//});
 
 				//===================================
 				// Hooks
@@ -908,11 +892,9 @@ module.exports = {
 										if (file.length <= 1) {
 											file = file[0];
 										} else  {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Invalid file name.");
-											};
+											var tmp = file[file.length - 1];
+											path = types.append([], path, file.slice(0, file.length - 1));
+											file = tmp;
 										};
 									};
 									
@@ -1321,8 +1303,8 @@ module.exports = {
 									throw new types.ParseError("'this' and 'to' must be from the same drive.");
 								};
 								
-								var filesOptions = files.getOptions(),
-									caseSensitive = types.get(options, 'caseSensitive', filesOptions.caseSensitive);
+								var os = tools.getOS(),
+									caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
 
 								var thisAr = this.toArray(),
 									toAr = to.toArray();

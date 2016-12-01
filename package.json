@@ -65,6 +65,7 @@
   },
   "tonicExampleFilename": "tonic.js",
   "dependencies": {
-    "uuid":  "^3.0.0"
+    "uuid":  "^3.0.0",
+	"ua-parser-js": "^0.7.12"
   }
 }

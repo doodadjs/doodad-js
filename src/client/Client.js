@@ -61,6 +61,8 @@ module.exports = {
 				var __Internal__ = {
 					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
+					UAParser: global.UAParser,
+
 					loadedScripts: types.nullObject(),   // <FUTURE> global to every thread
 				};
 
@@ -1026,7 +1028,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: null,
 							returns: 'object',
 							description: "Returns OS information.",
@@ -1040,18 +1042,22 @@ module.exports = {
 					// NOTE: Macintosh older than OS/X not supported
 					var os = __Internal__.os;
 					if (!os) {
-						var type = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3);
-						__Internal__.os = os = {
-							name: _shared.Natives.windowNavigator.platform,
-							type: ((type === 'win') ? 'windows' : ((type === 'lin') ? 'linux' : 'unix')),  // 'windows', 'linux', 'unix'
+						var uap = types.isFunction(__Internal__.UAParser) && (new __Internal__.UAParser()),
+							arch = uap && uap.getCPU().architecture || 'other',
+							platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
+							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
+							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix'));
+						__Internal__.os = os = types.freezeObject(types.nullObject({
+							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
+							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
 							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
-							//architecture: null, // TODO: Detect
-							dirChar: ((type === 'win') ? '\\' : '/'),
-							newLine: ((type === 'win') ? '\r\n' : '\n'),
-						};
+							// TODO: Validate "architecture"
+							architecture: (arch === 'amd64' ? 'x64' : arch), // 68k, x64, arm, arm64, avr, ia32, ia64, irix, irix64, mips, mips64, pa-risc, ppc, sparc, sparc64 (like Node.js, plus extra ones)
+							dirChar: ((name === 'win32') ? '\\' : '/'),
+							newLine: ((name === 'win32') ? '\r\n' : '\n'),
+							caseSensitive: ((name === 'win32') || (name === 'darwin') ? false : true), // NOTE: Because it is impossible to detect, we give what is the most popular per os
+						}));
 					};
-					var filesOptions = files.getOptions();
-					os.caseSensitive = filesOptions.caseSensitive; // || filesOptions.caseSensitiveUnicode;
 					return os;
 				}));
 
@@ -1185,7 +1191,7 @@ module.exports = {
 							_window.location.reload();
 							__Internal__.setCurrentLocationPending = true;
 						} else {
-							//if (types.isNativeFunction(_window.history.replaceState)) {
+							//if (_window.history && types.isNativeFunction(_window.history.replaceState)) {
 								//_window.history.replaceState(null, null, url.toString());
 							//} else {
 							if ('onpageshow' in _window) {

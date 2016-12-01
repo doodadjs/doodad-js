@@ -67,6 +67,7 @@ module.exports = {
 					os: null,
 					watchedFiles: {},
 					tmpdir: null,
+					caseSensitive: null,
 				};
 				
 				//===================================
@@ -656,7 +657,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: null,
 								returns: 'object',
 								description: "Returns OS information.",
@@ -667,17 +668,19 @@ module.exports = {
 						if (!os) {
 							const type = nodeOs.type(),
 								platform = nodeOs.platform();
-							__Internal__.os = os = {
+							os = types.freezeObject(types.nullObject({
 								name: platform,
 								type: ((type === 'Windows_NT') ? 'windows' : ((type === 'Linux') ? 'linux' : 'unix')),
 								//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
 								architecture: nodeOs.arch(),
 								dirChar: nodePath.sep,
 								newLine: nodeOs.EOL,
+								caseSensitive: !!__Internal__.caseSensitive,
+							}));
+							if (__Internal__.caseSensitive !== null) {
+								__Internal__.os = os;
 							};
 						};
-						const filesOptions = files.getOptions();
-						os.caseSensitive = filesOptions.caseSensitive; // || filesOptions.caseSensitiveUnicode;
 						return os;
 					}));
 							
@@ -2321,7 +2324,8 @@ module.exports = {
 
 
 				return function init(/*optional*/options) {
-					// Detect case-sensitive OS
+					// Detect case-sensitive
+					// NOTE: On some systems, the temp folder may have a different file system.
 					const temp = files.getTempFolder();
 					try {
 						files.rmdir(temp + 'DoOdAd');
@@ -2335,13 +2339,9 @@ module.exports = {
 						files.mkdir(temp + 'DoOdAd', {ignoreExists: false});
 						try {
 							files.mkdir(temp + 'dOoDaD', {ignoreExists: false});
-							files.setOptions({
-								caseSensitive: true,
-							});
+							__Internal__.caseSensitive = true;
 						} catch(ex) {
-							files.setOptions({
-								caseSensitive: false,
-							});
+							__Internal__.caseSensitive = false;
 						};
 					} catch(ex) {
 						// Test failed
@@ -2354,41 +2354,6 @@ module.exports = {
 						files.rmdir(temp + 'dOoDaD');
 					} catch(ex) {
 					};
-
-/*					
-					// Detect Unicode case-sensitive OS
-					try {
-						files.rmdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
-					} catch(ex) {
-					};
-					try {
-						files.rmdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
-					} catch(ex) {
-					};
-					try {
-						files.mkdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4", {ignoreExists: false}); // DoOdAd greek
-						try {
-							files.mkdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394", {ignoreExists: false}); // dOoDaD greek
-							files.setOptions({
-								caseSensitiveUnicode: true,
-							});
-						} catch(ex) {
-							files.setOptions({
-								caseSensitiveUnicode: false,
-							});
-						};
-					} catch(ex) {
-						// Test failed
-					};
-					try {
-						files.rmdir(temp + "\u0394\u03bf\u039f\u03b4\u0391\u03b4"); // DoOdAd greek
-					} catch(ex) {
-					};
-					try {
-						files.rmdir(temp + "\u03b4\u039f\u03bf\u0394\u03b1\u0394"); // dOoDaD greek
-					} catch(ex) {
-					};
-*/
 				};
 			},
 		};
