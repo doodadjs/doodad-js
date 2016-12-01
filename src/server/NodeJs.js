@@ -977,7 +977,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									source: {
 										type: 'string,Path',
@@ -1008,7 +1008,11 @@ module.exports = {
 							destination = files.Path.parse(destination);
 						};
 						const async = types.get(options, 'async', false),
-							bufferLength = types.get(options, 'bufferLength', 4096);
+							bufferLength = types.get(options, 'bufferLength', 4096),
+							preserveTimes = types.get(options, 'preserveTimes', true),
+							override = types.get(options, 'override', false),
+							recursive = types.get(options, 'recursive', false),
+							skipInvalid = types.get(options, 'skipInvalid', false);
 						if (async) {
 							return Promise.create(function copyPromise(resolve, reject) {
 								nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
@@ -1028,7 +1032,7 @@ module.exports = {
 													nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
 														if (ex) {
 															reject(ex);
-														} else if (types.get(options, 'preserveTimes')) {
+														} else if (preserveTimes) {
 															nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
 																if (ex) {
 																	reject(ex);
@@ -1065,7 +1069,7 @@ module.exports = {
 															nodeFs.close(destFd, function(ex2) {
 																if (ex1 || ex2) {
 																	reject(ex1 || ex2);
-																} else if (types.get(options, 'preserveTimes')) {
+																} else if (preserveTimes) {
 																	nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
 																		if (ex) {
 																			reject(ex);
@@ -1085,7 +1089,7 @@ module.exports = {
 												if (ex) {
 													reject(ex);
 												};
-												nodeFs.open(dest, (types.get(options, 'override', false) ? 'w' : 'wx'), function(ex, destFd) {
+												nodeFs.open(dest, (override ? 'w' : 'wx'), function(ex, destFd) {
 													if (ex) {
 														nodeFs.close(sourceFd, function() {
 															reject(ex);
@@ -1096,7 +1100,7 @@ module.exports = {
 													};
 												});
 											});
-										} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
+										} else if (stats.isDirectory() && recursive) {
 											// Recurse directory
 											const copyFile = function copyFile(dirFiles) {
 												const dirFile = dirFiles.shift();
@@ -1108,7 +1112,7 @@ module.exports = {
 														['catch'](function(ex) {
 															reject(ex);
 														});
-												} else if (types.get(options, 'preserveTimes')) {
+												} else if (preserveTimes) {
 													// FIXME: Dates are not correct
 													nodeFs.utimes(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime, function(ex) {
 														if (ex) {
@@ -1131,7 +1135,7 @@ module.exports = {
 												});
 											});
 											
-										} else if (!types.get(options, 'skipInvalid', false)) {
+										} else if (!skipInvalid) {
 											// Invalid file system object
 											let ex;
 											if (stats.isDirectory()) {
@@ -1157,7 +1161,7 @@ module.exports = {
 								const linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
 								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
 								nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
-								if (types.get(options, 'preserveTimes')) {
+								if (preserveTimes) {
 									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
 								};
 								return true;
@@ -1171,7 +1175,7 @@ module.exports = {
 									destFd = null;
 								try {
 									sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
-									destFd = nodeFs.openSync(dest, (types.get(options, 'override', false) ? 'w' : 'wx'));
+									destFd = nodeFs.openSync(dest, (override ? 'w' : 'wx'));
 									const buf = new Buffer(bufferLength);
 									let bytesRead = 0;
 									do {
@@ -1191,11 +1195,11 @@ module.exports = {
 										destFd && nodeFs.closeSync(destFd);
 									};
 								};
-								if (types.get(options, 'preserveTimes')) {
+								if (preserveTimes) {
 									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
 								};
 								return true;
-							} else if (stats.isDirectory() && types.get(options, 'recursive', false)) {
+							} else if (stats.isDirectory() && recursive) {
 								// Recurse directory
 								files.mkdir(destination, options);
 								const dirFiles = nodeFs.readdirSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
@@ -1203,12 +1207,12 @@ module.exports = {
 									const dirFile = dirFiles[i];
 									files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
 								};
-								if (types.get(options, 'preserveTimes')) {
+								if (preserveTimes) {
 									// FIXME: Dates are not correct
 									nodeFs.utimesSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime);
 								};
 								return true;
-							} else if (!types.get(options, 'skipInvalid', false)) {
+							} else if (!skipInvalid) {
 								// Invalid file system object
 								let ex;
 								if (stats.isDirectory()) {
