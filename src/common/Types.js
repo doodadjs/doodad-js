@@ -93,7 +93,7 @@ module.exports = {
 					windowNumber: global.Number,
 
 					// "keysInherited", "symbolsInherited"
-					windowObjectPrototype: global.Object.prototype,
+					objectPrototype: global.Object.prototype,
 					
 					// Polyfills
 					
@@ -109,10 +109,10 @@ module.exports = {
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
 					
 					// "isArrayBuffer"
-					windowArrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
+					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
 					
 					// "hasIterators", "isIterable"
-					windowSymbolIterator: (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 				
 				delete __Internal__.arrayObj;   // free memory
@@ -742,7 +742,7 @@ module.exports = {
 							return [];
 						};
 						obj = _shared.Natives.windowObject(obj);
-						if (obj === _shared.Natives.windowObjectPrototype) {
+						if (obj === _shared.Natives.objectPrototype) {
 							return [];
 						};
 						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
@@ -769,7 +769,7 @@ module.exports = {
 							return [];
 						};
 						obj = _shared.Natives.windowObject(obj);
-						if (obj === _shared.Natives.windowObjectPrototype) {
+						if (obj === _shared.Natives.objectPrototype) {
 							return [];
 						};
 						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
@@ -2252,7 +2252,7 @@ module.exports = {
 								description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.windowSymbolIterator ? function hasIterators(obj) {
+					, (_shared.Natives.symbolIterator ? function hasIterators(obj) {
 						return true;
 					} : function hasIterators(obj) {
 						return false;
@@ -2275,11 +2275,11 @@ module.exports = {
 								description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.windowSymbolIterator ? function isIterable(obj) {
+					, (_shared.Natives.symbolIterator ? function isIterable(obj) {
 						if (types.isNothing(obj)) {
 							return false;
 						};
-						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.windowSymbolIterator in obj));
+						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
 					} : function isIterable(obj) {
 						return false;
 					})));
@@ -2429,8 +2429,8 @@ module.exports = {
 								description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.windowArrayBuffer ? (function isArrayBuffer(obj) {
-						return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowArrayBuffer);
+					, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
+						return (typeof obj === 'object') && (obj instanceof _shared.Natives.arrayBuffer);
 						
 					}) : (function isArrayBuffer(obj) {
 						// ArrayBuffer is not implemented.
@@ -2635,6 +2635,18 @@ module.exports = {
 						$TYPE_NAME: 'Iterator',
 					},
 					{
+						_new: types.SUPER(function _new() {
+							this._super();
+
+							// <PRB> "Symbol.iterator" must be there for "[...iter]" even when we return the iterator itself.
+							if (_shared.Natives.symbolIterator) {
+								var self = this;
+								_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
+									return self;
+								}, {});
+							};
+						}),
+
 						close: null, // function()
 						
 						next: function next() {

@@ -1723,7 +1723,7 @@ module.exports = {
 				// Console
 				//=====================================
 				
-				nodejs.REGISTER(root.DD_DOC(
+				nodejs.ADD('Console', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -1753,7 +1753,7 @@ module.exports = {
 							description: "NodeJS Console with hooks.",
 				}
 				//! END_REPLACE()
-				, types.createType(
+				, types.INIT(types.createType(
 					/*name*/
 					"Console", 
 					
@@ -1897,7 +1897,7 @@ module.exports = {
 							};
 						})),
 					}
-				)));
+				))));
 
 				
 				//===================================

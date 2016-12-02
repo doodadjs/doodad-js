@@ -498,7 +498,7 @@
 			//numberToString: global.Number.prototype.toString,
 
 			// "hasKeyInherited"
-			windowObjectPrototype: global.Object.prototype,
+			objectPrototype: global.Object.prototype,
 			
 			// "has", "isCustomFunction", "isNativeFunction"
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
@@ -1983,7 +1983,7 @@
 				if (!types.isNothing(obj)) {
 					obj = _shared.Natives.windowObject(obj);
 					do {
-						if (obj === _shared.Natives.windowObjectPrototype) {
+						if (obj === _shared.Natives.objectPrototype) {
 							break;
 						};
 						if (types.has(obj, keys)) {
@@ -5763,7 +5763,7 @@
 				var baseIsType = types.isType(base);
 				if (baseIsType) {
 					if (!types.get(base, __Internal__.symbolInitialized)) {
-						throw new _shared.Natives.windowError("Base type '" + types.getTypeName(base) + "' is not initialized.");
+						throw new _shared.Natives.windowError("Base type '" + (types.getTypeName(base) || types.getFunctionName(base)) + "' is not initialized.");
 					};
 				};
 				
@@ -6504,23 +6504,24 @@
 				delete this[name];
 			});
 				
-		// Temporary
+		// Temporary, and not for registering classes
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
 			var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 				fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
 			if (!types.isInitialized(type)) {
-				if (type instanceof types.Namespace) {
-					type = types.INIT(type, types.append([this, name, fullName], args));
-				} else {
-					_shared.setAttributes(type, {
-						DD_PARENT: this,
-						DD_NAME: name,
-						DD_FULL_NAME: fullName,
-					}, {});
+				_shared.setAttributes(type, {
+					DD_PARENT: this,
+					DD_NAME: name,
+					DD_FULL_NAME: fullName,
+				}, {});
+				if (!types.isErrorType(type)) {
 					type = types.INIT(type, args);
 				};
 			};
-			this[name] = type;
+			// NOTE: Will get protected when the real REGISTER will get called.
+			_shared.setAttribute(this, name, type, {
+				configurable: true,
+			});
 			__Internal__.tempRegisteredOthers.push([this, [args, protect, type]]);
 		};
 	

@@ -60,6 +60,14 @@ module.exports = {
 				};
 
 				//===================================
+				// Shared
+				//===================================
+
+				types.complete(_shared.Natives, {
+					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
+				});
+
+				//===================================
 				// Utilities
 				//===================================
 				
@@ -89,6 +97,42 @@ module.exports = {
 					established: 2, e: 2,
 				})));
 				
+				if (_shared.Natives.symbolIterator) {
+					namespaces.ADD(_shared.Natives.symbolIterator, root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 1,
+									params: null,
+									returns: 'RegistryIterator',
+									description: "Returns an iterator of the registry namespaces.",
+							}
+							//! END_REPLACE()
+					, function symbolIterator() {
+						return __Internal__.DD_REGISTRY.iter();
+					}));
+				};
+
+				namespaces.ADD('iter', root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									type: {
+										type: 'entries.Object',
+										optional: true,
+										description: "Entry type.",
+									},
+								},
+								returns: 'RegistryIterator',
+								description: "Returns an iterator of the registry namespaces.",
+						}
+						//! END_REPLACE()
+				, function iter(/*optional*/type, /*optional*/exact) {
+					return __Internal__.DD_REGISTRY.iter(type, exact);
+				}));
+
 				namespaces.ADD('get', root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -101,7 +145,7 @@ module.exports = {
 										description: "Full namespace.",
 									},
 									type: {
-										type: 'NamespaceEntry',
+										type: 'entries.Object',
 										optional: true,
 										description: "Entry type.",
 									},
@@ -130,7 +174,7 @@ module.exports = {
 										description: "Full namespace.",
 									},
 									entry: {
-										type: 'NamespaceEntry',
+										type: 'entries.Object',
 										optional: false,
 										description: "Entry type.",
 									},
@@ -155,7 +199,7 @@ module.exports = {
 										description: "Full namespace.",
 									},
 									type: {
-										type: 'NamespaceEntry',
+										type: 'entries.Object',
 										optional: true,
 										description: "Entry type to be retrieved.",
 									},
@@ -280,7 +324,7 @@ module.exports = {
 							} else {
 								val = entryType;
 							};
-							if (val && (val === entries.Namespace) || types.baseof(entries.Namespace, val)) {
+							if (val && (val === entries.Object) || types.baseof(entries.Object, val)) {
 								entryType = val;
 							} else {
 								throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
@@ -880,6 +924,59 @@ module.exports = {
 					
 				__Internal__.NamespaceGetter = function() {};
 					
+				__Internal__.RegistryIterator = types.INIT(types.Iterator.$inherit(
+					{
+						$TYPE_NAME: 'RegistryIterator',
+					},
+					{
+						__values: types.READ_ONLY(null),
+						__type: types.READ_ONLY(null),
+						__exact: types.READ_ONLY(false),
+						__index: types.NOT_CONFIGURABLE(0),
+
+						_new: types.SUPER(function _new(registry, type, exact) {
+							this._super();
+
+							_shared.setAttributes(this, {
+								__type: type,
+								__exact: !!exact,
+								__values: tools.map(types.values(registry.registry), function(entry) {
+									// NOTE: We MUST NOT expose the entry object
+									return {
+										type: types.getType(entry),
+										name: entry.spec.name, 
+										namespace: entry.namespace
+									};
+								}),
+							}, {all: true});
+						}),
+
+						next: function next() {
+							var ar = this.__values,
+								len = ar.length,
+								type = this.__type,
+								exact = this.__exact,
+								ok = false,
+								entry;
+							while (!ok) {
+								if ((this.index < 0) || (this.__index >= len)) {
+									break;
+								};
+								entry = ar[this.__index++];
+								ok = ((entry.type === type) || (!exact && types.baseof(type, entry.type)))
+							};
+							if (ok) { 
+								return {
+									value: entry,
+								};
+							} else {
+								return {
+									done: true,
+								};
+							};
+						},
+					}));
+
 				__Internal__.Registry = root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -931,11 +1028,11 @@ module.exports = {
 								return null;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type)) {
+								if (!types.baseof(entries.Object, type)) {
 									return null;
 								};
 							} else {
-								type = entries.Namespace;
+								type = entries.Object;
 							};
 							var entry = this.registry[name];
 							if (!(entry instanceof type)) {
@@ -969,11 +1066,11 @@ module.exports = {
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type)) {
+								if (!types.baseof(entries.Object, type)) {
 									return false;
 								};
 							} else {
-								type = entries.Namespace;
+								type = entries.Object;
 							};
 							var entry = this.registry[name];
 							return (entry instanceof type);
@@ -1013,11 +1110,11 @@ module.exports = {
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Namespace, type)) {
+								if (!types.baseof(entries.Object, type)) {
 									return false;
 								};
 							} else {
-								type = entries.Namespace;
+								type = entries.Object;
 							};
 							var entry = this.registry[name];
 							if (!(entry instanceof type)) {
@@ -1073,7 +1170,7 @@ module.exports = {
 							if (name in this.registry) {
 								return false;
 							};
-							if (!(entry instanceof entries.Namespace)) {
+							if (!(entry instanceof entries.Object)) {
 								return false;
 							};
 							if (types.get(entry.spec, 'name') !== name) {
@@ -1096,13 +1193,17 @@ module.exports = {
 							};
 							return true;
 						}),
+
+						iter: function iter(/*optional*/type, /*optional*/exact) {
+							return new __Internal__.RegistryIterator(this, type || entries.Object, exact);
+						},
 					}
 				)));
 				
 				__Internal__.DD_REGISTRY = new __Internal__.Registry();
 				
 				//-----------------------------------
-				// Namespace entry object
+				// Object entry
 				//-----------------------------------
 
 				entries.REGISTER(root.DD_DOC(
@@ -1134,7 +1235,7 @@ module.exports = {
 				, types.Type.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Namespace'
+						$TYPE_NAME: 'Object'
 					},
 					
 					/*instanceProto*/
@@ -1186,6 +1287,43 @@ module.exports = {
 							this.objectInitialized = true;
 							this.objectInitializing = false;
 						}),
+					}
+				)));
+
+				//-----------------------------------
+				// Namespace entry
+				//-----------------------------------
+
+				entries.REGISTER(root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									root: {
+										type: 'Root',
+										optional: false,
+										description: "Root namespace object",
+									},
+									spec: {
+										type: 'object',
+										optional: false,
+										description: "Namespace specifications",
+									},
+									namespace: {
+										type: 'Namespace',
+										optional: false,
+										description: "Namespace object",
+									},
+								},
+								returns: 'Type',
+								description: "Namespace registry entry.",
+						}
+						//! END_REPLACE()
+				, entries.Object.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'Namespace'
 					}
 				)));
 

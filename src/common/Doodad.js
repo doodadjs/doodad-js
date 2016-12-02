@@ -919,33 +919,31 @@ module.exports = {
 						//root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
 						
 						var isSingleton = types.isSingleton(type),
-							isNamespace = (type === types.Namespace) || types.baseof(types.Namespace, type),
+							isType = types.isType(type),
+							isErrorType = types.isErrorType(type),
+							isClass = types.isClass(type),
 							name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : null),
-							isPrivate = (!name || (name.slice(0, 2) === '__'));
+							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
 						
-						if (!types.isInitialized(type)) {
-							if (isNamespace) {
-								if (types.isType(type) && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-									if ((root.getOptions().debug || __options__.enforcePolicies)) {
-										var mustOverride = type[__Internal__.symbolMustOverride];
-										if (mustOverride) {
-											throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type)]);
-										};
+						if ((isType || isErrorType) && !types.isInitialized(type)) {
+							if ((root.getOptions().debug || __options__.enforcePolicies)) {
+								if (isClass && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+									var mustOverride = type[__Internal__.symbolMustOverride];
+									if (mustOverride) {
+										throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
 									};
 								};
-								
-								type = types.INIT(type, types.append([this, name, fullName], args));
-							} else {
-								_shared.setAttributes(type, {
-									DD_PARENT: this,
-									DD_NAME: name,
-									DD_FULL_NAME: fullName,
-								}, {});
+							};
 
-								if (!types.isErrorType(type)) {
-									type = types.INIT(type, args);
-								};
+							_shared.setAttributes(type, {
+								DD_PARENT: this,
+								DD_NAME: name,
+								DD_FULL_NAME: fullName,
+							}, {});
+
+							if (!isErrorType) {
+								type = types.INIT(type, args);
 							};
 						};
 						
@@ -959,8 +957,10 @@ module.exports = {
 								};
 							};
 							
-							var entry = new entries.Type(root, null, type, {protect: protect});
+							var entryType = (isType || isErrorType ? entries.Type : entries.Object);
+							var entry = new entryType(root, null, type, {protect: protect});
 							entry.init();
+
 							namespaces.add(fullName, entry, {secret: _shared.SECRET});
 						};
 						
@@ -1025,39 +1025,6 @@ module.exports = {
 						return true;
 					});
 				
-				
-				root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									parent: {
-										type: 'Doodad.Types.Namespace',
-										optional: false,
-										description: "Parent namespace.",
-									}, 
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Short name.",
-									}, 
-									fullName: {
-										type: 'string',
-										optional: false,
-										description: "Full name.",
-									},
-								},
-								returns: 'TypeNamespace',
-								description: "Type Namespace object.",
-					}
-					//! END_REPLACE()
-					, doodad.REGISTER(types.Namespace.$inherit(
-						//typeProto
-						{
-							$TYPE_NAME: 'TypeNamespace',
-						}
-					)));
 				
 				//==================================
 				// Exceptions
@@ -1185,7 +1152,7 @@ module.exports = {
 							description: "Base of every attribute extenders. Not to be used directly.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(types.SINGLETON(doodad.TypeNamespace.$inherit(
+					, extenders.REGISTER(types.SINGLETON(types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: "Extender",
@@ -1226,8 +1193,8 @@ module.exports = {
 									return type;
 								})),
 
-							_new: types.SUPER(function(parent, name, fullName) {
-									this._super(parent, name, fullName);
+							_new: types.SUPER(function() {
+									this._super();
 									_shared.setAttributes(this, {
 										$cache: types.nullObject(),
 									}, {all: true});
@@ -2202,7 +2169,7 @@ module.exports = {
 									if (root.getOptions().debug || __options__.enforcePolicies) {
 										// Must override methods
 										if (modifiers & doodad.MethodModifiers.MustOverride) {
-											throw new types.Error("You must override the method '~0~' in '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											throw new types.Error("You must override the method '~0~' of type '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 										
 										// Destroyed objects
@@ -3311,7 +3278,7 @@ module.exports = {
 							description: "Event handler prototype.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(doodad.TypeNamespace.$inherit(
+					, doodad.REGISTER(types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'EventHandler',
@@ -5414,12 +5381,13 @@ module.exports = {
 				};
 				
 				__Internal__.$extend = function $extend(/*paramarray*/) {
-					var base = ((this === global) ? undefined : this);
+					var base = ((this === global) ? undefined : this),
+						baseType = types.getType(base);
 				
-					root.DD_ASSERT && root.DD_ASSERT(!base || types.baseof(types.Type, types.getType(base)), "Base must be a type.");
+					root.DD_ASSERT && root.DD_ASSERT(!base || (baseType === types.Type) || types.baseof(types.Type, baseType), "Base must be a type.");
 
 					if (!base) {
-						base = types.TypeNamespace;
+						base = types.Type;
 					};
 					
 					var index = tools.findLastItem(arguments, types.isJsObject),
@@ -5700,15 +5668,11 @@ module.exports = {
 					$TYPE_NAME: "Class",
 					
 					_new: types.SUPER(
-						function _new(parent, name, fullName /*paramarray*/) {
+						function _new() {
 							var cls = types.getType(this),
 								forType = types.isType(this);
 
-							if (forType) {
-								this._super(parent, name, fullName);
-							} else {
-								this._super();
-							};
+							this._super();
 
 							// Validate type
 							if (!cls) {
@@ -6097,7 +6061,7 @@ module.exports = {
 							description: "Main class of every Doodad classes.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(doodad.TypeNamespace, __Internal__.classProto))));
+					, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.classProto))));
 				
 				//==================================
 				// Interface
@@ -6113,11 +6077,9 @@ module.exports = {
 							var cls = types.getType(this),
 								forType = types.isType(this);
 
-							if (forType) {
-								this._super.apply(this, arguments); // (parent, name, fullName)
-							} else {
-								this._super();
+							this._super();
 
+							if (!forType) {
 								root.DD_ASSERT && root.DD_ASSERT((types.isType(this) && types.isClass(host)) || (types.isObject(this) && types._instanceof(host, doodad.Class)), "Invalid host.");
 							};
 
@@ -6223,7 +6185,7 @@ module.exports = {
 							description: "Isolated interface instance.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(doodad.TypeNamespace, __Internal__.interfaceProto))));
+					, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.interfaceProto))));
 				
 
 				//==================================
@@ -6798,7 +6760,7 @@ module.exports = {
 							description: "Event object.",
 					}
 					//! END_REPLACE()
-					, doodad.TypeNamespace.$inherit(
+					, types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: "Event",
