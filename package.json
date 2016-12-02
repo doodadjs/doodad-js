@@ -1,59 +1,88 @@
 {
+  "homepage": "https://github.com/doodadjs/",
+  "author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
+  "license": "Apache-2.0",
+  "files": [
+    "src",
+    "lib",
+    "build",
+    "dist",
+    "browserify",
+    "test",
+    "index.js",
+    "webpack.config.js",
+    "config.json",
+    "make.json",
+    "LICENSE",
+    "README.md",
+    "tonic.js"
+  ],
+  "scripts": {
+    "build": "node -r \"doodad-js-make/make.js\" . make",
+    "dist": "node -r \"doodad-js-make/make.js\" . install",
+    "browserify": "node -r \"doodad-js-make/make.js\" . custom=browserify",
+    "test": "echo Please install and start package 'doodad-js-test'."
+  },
+  "devDependencies": {
+    "doodad-js-make": "^1.5.0-alpha.0"
+  },
+  "main": "index.js",
+  "browser": "browserify/browserify.js",
+  "engines": {
+    "node": ">=4.2.0"
+  },
   "name": "doodad-js",
   "description": "Object-oriented programming framework for Javascript",
-  "version": "0.0.0",
+  "version": "6.0.0",
   "config": {
     "startup": {
-		"debug": false,
-		"fromSource": false,
-		"nodeEnvDevValues": "development,dev",
-		"enableSymbols": true,
-		"enableProperties": false,
-		"enableProxies": false,
-		"enableAsserts": false
-	},
+      "debug": false,
+      "fromSource": false,
+      "nodeEnvDevValues": "development,dev",
+      "enableSymbols": true,
+      "enableProperties": false,
+      "enableProxies": false,
+      "enableAsserts": false
+    },
     "Doodad__Types": {
       "toSourceItemsCount": 255
     },
     "Doodad__Tools": {
       "logLevel": 3,
-	  "unhandledRejectionsTimeout": 1000,
-	  "unhandledRejectionsMaxSize": 20
+      "unhandledRejectionsTimeout": 1000,
+      "unhandledRejectionsMaxSize": 20
     },
     "Doodad__Tools__Config": {
       "configPath": ""
     },
-	"Doodad__Modules": {
-		"modulesUri": "./"
-	},
+    "Doodad__Modules": {
+      "modulesUri": "./"
+    },
     "Doodad": {
-        "enforceScopes": false,
-        "enforcePolicies": false,
-        "publicOnDebug": false
+      "enforceScopes": false,
+      "enforcePolicies": false,
+      "publicOnDebug": false
     }
   },
-  "files": [
-	"tonic.js"
-  ],
   "keywords": [
     "oop",
-	"interface",
-	"interfaces",
-	"mixin",
-	"mixins",
-	"mix-in",
-	"mix-ins",
-	"class",
-	"classes",
-	"trait",
-	"traits",
+    "interface",
+    "interfaces",
+    "mixin",
+    "mixins",
+    "mix-in",
+    "mix-ins",
+    "class",
+    "classes",
+    "trait",
+    "traits",
     "object",
-	"objects",
-	"inherit",
-	"extend",
-	"multiple inheritance",
+    "objects",
+    "inherit",
+    "extend",
+    "multiple inheritance",
     "framework",
-	"doodad-js"
+    "doodad-js"
   ],
   "repository": {
     "type": "git",
@@ -65,7 +94,7 @@
   },
   "tonicExampleFilename": "tonic.js",
   "dependencies": {
-    "uuid":  "^3.0.0",
-	"ua-parser-js": "^0.7.12"
+    "uuid": "^3.0.0",
+    "ua-parser-js": "^0.7.12"
   }
 }
