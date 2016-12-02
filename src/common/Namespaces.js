@@ -124,6 +124,11 @@ module.exports = {
 										optional: true,
 										description: "Entry type.",
 									},
+									exact: {
+										type: 'bool',
+										optional: true,
+										description: "'true' will match exactly the entry type. 'false' will include inherited ones. Default is 'false'.",
+									},
 								},
 								returns: 'RegistryIterator',
 								description: "Returns an iterator of the registry namespaces.",
@@ -178,6 +183,11 @@ module.exports = {
 										optional: false,
 										description: "Entry type.",
 									},
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
+									},
 								},
 								returns: 'bool',
 								description: "Adds a namespace entry to the registry. Returns 'true' on success, otherwise returns 'false'.",
@@ -202,6 +212,11 @@ module.exports = {
 										type: 'entries.Object',
 										optional: true,
 										description: "Entry type to be retrieved.",
+									},
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
 								},
 								returns: 'bool',
@@ -941,11 +956,11 @@ module.exports = {
 								__type: type,
 								__exact: !!exact,
 								__values: tools.map(types.values(registry.registry), function(entry) {
-									// NOTE: We MUST NOT expose the entry object
+									// NOTE: We MUST NOT expose the entry objects
 									return {
 										type: types.getType(entry),
 										name: entry.spec.name, 
-										namespace: entry.namespace
+										object: entry.namespace
 									};
 								}),
 							}, {all: true});
