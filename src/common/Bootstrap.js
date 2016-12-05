@@ -1606,7 +1606,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1628,6 +1628,7 @@
 				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
 					try {
 						_shared.Natives.dateValueOf.call(obj);
+						return true;
 					} catch(o) {
 						return false;
 					};
