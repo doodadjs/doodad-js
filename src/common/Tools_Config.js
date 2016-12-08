@@ -88,7 +88,7 @@ module.exports = {
 				// Config
 				//===================================
 				
-				// NOTE: This function will get replaced by "Client.js" or "NodeJs.js".
+				// NOTE: This function will get overriden by "Client.js" or "NodeJs.js".
 				_shared.loadConfig = function load(url, /*optional*/options, /*optional*/callbacks) {
 					root.DD_ASSERT && root.DD_ASSERT((url instanceof files.Url) || (url instanceof files.Path), "Invalid 'url' argument.");
 						
@@ -115,6 +115,8 @@ module.exports = {
 						url = configPath.combine(url);
 					};
 						
+					var encoding = types.getDefault(options, 'encoding', 'utf-8');
+
 					var key = url.toString();
 						
 					var promise;
@@ -154,32 +156,35 @@ module.exports = {
 								return files.readFile(url, options)
 									.nodeify(function proceed(err, data) {
 										var promise;
-										if (err) {
-											def.data = err;
-											def.ready = true;
-											promise = Promise.reject(err);
-										} else {
-											try {
-												var encoding = options.encoding;
-												if (encoding) {
+										try {
+											if (err) {
+												def.data = err;
+												def.ready = true;
+												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
+												promise = Promise.reject(err);
+												tools.forEach(callbacks, function(callback) {
+													promise = promise.nodeify(callback)
+														.then(function(data) {
+															throw err;
+														});
+												});
+											} else {
+												if (encoding.slice(0, 3).toLowerCase() === 'utf') {
 													// <PRB> "JSON.parse" doesn't like the BOM
-													if (encoding.slice(0, 3).toLowerCase() === 'utf') {
-														// Remove the BOM
-														data = tools.trim(data, '\uFEFF', 1);
-														data = tools.trim(data, '\uFFFE', 1);
-													};
+													data = tools.trim(data, '\uFEFF', 1);
+													data = tools.trim(data, '\uFFFE', 1);
 												};
 												data = _shared.Natives.windowJSON.parse(data);
 												def.data = data;
 												def.ready = true;
-												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks,
-													promise = Promise.resolve(data);
+												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
+												promise = Promise.resolve(data);
 												tools.forEach(callbacks, function(callback) {
 													promise = promise.nodeify(callback);
 												});
-											} catch(ex) {
-												promise = Promise.reject(ex);
 											};
+										} catch(ex) {
+											promise = Promise.reject(ex);
 										};
 										return promise;
 									});
@@ -207,7 +212,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								url: {
 									type: 'Url,Path',
@@ -229,7 +234,7 @@ module.exports = {
 								},
 							},
 							returns: 'Promise',
-							description: "Loads a configuration file written with JSON and pass its content to the callback functions, then resolve a Promise with the final value.\n" +
+							description: "Loads a configuration file written in JSON and pass its content to the callback functions, then resolve a Promise with the final value.\n" +
 										"When the option 'watch' is set to 'true', the file is read again and callbacks called again when the file is modified.\n" +
 										"If 'loadFile' is called more than once with the same file, callbacks are chained.\n" +
 										"You can set the option 'force' to force the file to be read again.",
