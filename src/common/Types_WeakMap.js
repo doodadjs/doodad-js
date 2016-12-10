@@ -71,6 +71,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'WeakMap',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('WeakMap')), true) */,
 					},
 					/*instanceProto*/
 					{

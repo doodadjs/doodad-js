@@ -88,6 +88,10 @@
 			tempTypesRegistered: [],  // types to REGISTER into Doodad.Types
 			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
+
+			//typesMap: null,      // types mapped to their Symbol
+			//tempTypesToMap: [],  // types to map in "typesMap"
+			tempSetUUID: [],  // types to set the UUID
 			
 			DD_ASSERT: null,
 		};
@@ -493,6 +497,7 @@
 		// FUTURE: "types.extend(_shared.Natives, {...})" when "Object.assign" will be accessible on every engine
 		_shared.Natives = {
 			// General
+			windowFunction: global.Function,
 			windowObject: global.Object,
 			stringReplace: global.String.prototype.replace,
 			//numberToString: global.Number.prototype.toString,
@@ -3664,7 +3669,7 @@
 						description: "Gets or creates a Symbol.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function getSymbolFor(key, /*optional*/isGlobal) {
+			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function getSymbol(key, /*optional*/isGlobal) {
 				key = _shared.Natives.windowString(key);
 				var symbol;
 				if (isGlobal) {
@@ -3673,7 +3678,7 @@
 					symbol = _shared.Natives.windowSymbol(key);
 				};
 				return symbol;
-			} : function getSymbolFor(key, /*optional*/isGlobal) {
+			} : function getSymbol(key, /*optional*/isGlobal) {
 				// Not supported
 				key = _shared.Natives.windowString(key);
 				return key;
@@ -4381,6 +4386,27 @@
 		// Type functions
 		//===================================
 		
+		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
+		__Internal__.symbolTypeUUIDGenerated = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID_GEN')), true) */ '__DD_TYPE_UUID_GEN__' /*! END_REPLACE() */, true);
+
+		_shared.getTypeUUID = function getTypeUUID(type) {
+			if (types.isType(type)) {
+				return type[__Internal__.symbolTypeUUID];
+			};
+		};
+
+		_shared.getTypeSymbol = function getTypeSymbol(type) {
+			if (types.isType(type)) {
+				var name;
+				if (type[__Internal__.symbolTypeUUIDGenerated]) {
+					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
+				} else {
+					name = type[__Internal__.symbolTypeUUID];
+				};
+				return name && types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+			};
+		};
+
 		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
 		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
 
@@ -4432,7 +4458,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'object',
@@ -4445,7 +4471,14 @@
 			}
 			//! END_REPLACE()
 			, function isType(obj) {
-				return (!types.isNothing(obj)) && ((obj === types.Type) || types.baseof(types.Type, obj));
+				if (!types.isFunction(obj)) {
+					return false;
+				};
+				if (obj instanceof _shared.Natives.windowFunction) {
+					return (obj === types.Type) || types.baseof(types.Type, obj);
+				} else {
+					return types.has(obj, __Internal__.symbolTypeUUID);
+				};
 			}));
 		
 		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -4600,7 +4633,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							base: {
 								type: 'object',
@@ -4626,17 +4659,45 @@
 					// Please use "types.baseof"
 					return false;
 				};
-				if (!types.isArray(type)) {
-					type = [type];
-				};
-				for (var i = 0; i < type.length; i++) {
-					if (i in type) {
-						var t = type[i];
-						if (types.isFunction(t)) {
-							if (obj instanceof t) {
-								return true;
+				if (obj instanceof _shared.Natives.windowObject) {
+					if (!types.isArray(type)) {
+						type = [type];
+					};
+					for (var i = 0; i < type.length; i++) {
+						if (i in type) {
+							var t = type[i];
+							if (types.isFunction(t)) {
+								if (obj instanceof t) {
+									return true;
+								};
 							};
 						};
+					};
+				} else {
+					if (types.isArray(type)) {
+						type = types.clone(type);
+					} else {
+						type = [type];
+					};
+					var t = types.get(obj, 'constructor');
+					while (t) {
+						var symbol = _shared.getTypeSymbol(t);
+						if (!symbol) {
+							break;
+						};
+						for (var i = 0; i < type.length; i++) {
+							if (i in type) {
+								var s = type[i];
+								if (types.isFunction(s)) {
+									type[i] = s = _shared.getTypeSymbol(s); // optimization
+								};
+								if (s === symbol) {
+									return true;
+								};
+							};
+						};
+						obj = types.getPrototypeOf(obj);
+						t = types.get(obj, 'constructor');
 					};
 				};
 				
@@ -4921,7 +4982,7 @@
 						descriptor.value = value;
 						types.defineProperty(obj, attr, descriptor);
 					} else {
-						if (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value))) {
+						if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
 							// NOTE: Use native error because something might be wrong
 							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 						};
@@ -5486,6 +5547,7 @@
 			_super: null,
 
 			$TYPE_NAME: null,
+			$TYPE_UUID: null,
 		});
 		
 		_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
@@ -5893,8 +5955,6 @@
 			
 				proto.constructor = type;
 				
-				_shared.setAttribute(type, '$TYPE_NAME', name, {});
-				
 				if (typeProto) {
 					__Internal__.applyProto(type, base, typeProto, true);
 				};
@@ -5943,11 +6003,15 @@
 				// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
 				var base = ((this === global) ? undefined: this);
 				
-				var name = null;
+				var name = null,
+					uuid = null;
 				if (typeProto) {
-					name = types.get(typeProto, '$TYPE_NAME');
-					typeProto['$TYPE_NAME'] = types.READ_ONLY(name || null);
-					name = types.unbox(name) || null;
+					name = types.unbox(types.get(typeProto, '$TYPE_NAME'));
+					uuid = types.unbox(types.get(typeProto, '$TYPE_UUID'));
+					delete typeProto.$TYPE_NAME;
+					delete typeProto.$TYPE_UUID;
+					name = !types.isNothing(name) && types.toString(name) || '';
+					uuid = !types.isNothing(uuid) && types.toString(uuid) || '';
 				};
 	
 				var type = types.createType(
@@ -5969,7 +6033,30 @@
 						/*constructorContext*/
 						constructorContext
 					);
-					
+				
+				_shared.setAttribute(type, '$TYPE_NAME', name, {});
+
+				if (uuid) {
+					_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
+					_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, false, {});
+				} else {
+					if (tools.generateUUID) {
+						if (__Internal__.tempSetUUID) {
+							for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
+								var t = __Internal__.tempSetUUID[i];
+								_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
+								_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
+							};
+							delete __Internal__.tempSetUUID;
+						};
+						_shared.setAttribute(type, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
+						_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, true, {});
+					} else {
+						// Temporary
+						__Internal__.tempSetUUID.push(type);
+					};
+				};
+	
 				return type;
 			});
 		
@@ -6050,6 +6137,7 @@
 
 		__Internal__.typeTypeProto = {
 			$TYPE_NAME: 'Type',
+			$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
 
 			_super: null,
 			
@@ -6062,7 +6150,7 @@
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 		};
 		
-		 __Internal__.typeTypeProto[__Internal__.symbol$IsSingleton] = false,
+		 __Internal__.typeTypeProto[__Internal__.symbol$IsSingleton] = types.READ_ONLY(false),
 
 		__Internal__.typeInstanceProto = {
 			_super: null,
@@ -6124,6 +6212,7 @@
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'CustomEvent',
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEvent')), true) */,
 				},
 				/*instanceProto*/
 				{
@@ -6218,6 +6307,7 @@
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'CustomEventTarget',
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEventTarget')), true) */,
 				},
 				/*instanceProto*/
 				{
@@ -6435,44 +6525,25 @@
 		// Namespace
 		//===================================
 		
-		_shared.ADD = __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the object.",
-							}, 
-							obj: {
-								type: 'object,Type',
-								optional: false,
-								description: "Object to add.",
-							}, 
-							protect: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will protect the object. 'false' will not. Default is 'true'."
-							},
-							args: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Arguments of the constructor.",
-							}, 
-						},
-						returns: 'object',
-						description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
-			}
-			//! END_REPLACE()
-			, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
+		_shared.ADD = function ADD(name, obj, /*optional*/protect, /*optional*/args) {
 				if (types.isNothing(protect)) {
 					protect = true;
 				};
 
-				if (types.isType(obj) && !types.isInitialized(obj)) {
-					obj = types.INIT(obj, args);
+				var type = types.getType(obj);
+
+				if (type) {
+					if (!types.get(obj, 'DD_FULL_NAME')) {
+						_shared.setAttributes(obj, {
+							DD_PARENT: this,
+							DD_NAME: name,
+							DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
+						}, {});
+					};
+
+					if (!types.isInitialized(type) && !types.isErrorType(type)) {
+						type = types.INIT(type, args);
+					};
 				};
 
 				_shared.setAttribute(this, name, obj, {
@@ -6481,50 +6552,59 @@
 					writable: !protect,
 					ignoreWhenSame: true,
 				});
+
+				//if (type) {
+				//	if (!__Internal__.typesMap && types.WeakMap && types.getSymbol) {
+				//		__Internal__.typesMap = new types.WeakMap();
+				//		for (var i = 0; i < __Internal__.tempTypesToMap.length; i++) {
+				//			var t = __Internal__.tempTypesToMap[i];
+				//			if (!__Internal__.typesMap.has(t)) {
+				//				__Internal__.typesMap.set(t, _shared.getTypeSymbol(t));
+				//			};
+				//		};
+				//		delete __Internal__.tempTypesToMap;
+				//	};
+				//
+				//	if (__Internal__.typesMap) {
+				//		if (!__Internal__.typesMap.has(type)) {
+				//			__Internal__.typesMap.set(type, _shared.getTypeSymbol(type));
+				//		};
+				//	} else {
+				//		__Internal__.tempTypesToMap.push(type);
+				//	};
+				//};
 						
 				return obj;
-			});
+			};
 				
-		_shared.REMOVE = __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the object.",
-							}, 
-						},
-						returns: 'undefined',
-						description: "Removes the object from the current namespace object.",
-			}
-			//! END_REPLACE()
-			, function REMOVE(name) {
+		_shared.REMOVE = function REMOVE(name) {
 				delete this[name];
-			});
+			};
 				
 		// Temporary, and not for registering classes
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
-			var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
-				fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
-			if (!types.isInitialized(type)) {
-				_shared.setAttributes(type, {
-					DD_PARENT: this,
-					DD_NAME: name,
-					DD_FULL_NAME: fullName,
-				}, {});
-				if (!types.isErrorType(type)) {
+				var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
+					fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
+
+				if (!types.get(type, 'DD_FULL_NAME')) {
+					_shared.setAttributes(type, {
+						DD_PARENT: this,
+						DD_NAME: name,
+						DD_FULL_NAME: fullName,
+					}, {});
+				};
+
+				if (!types.isInitialized(type) && !types.isErrorType(type)) {
 					type = types.INIT(type, args);
 				};
+
+				// NOTE: Will get protected when the real REGISTER will get called.
+				_shared.setAttribute(this, name, type, {
+					configurable: true,
+				});
+
+				__Internal__.tempRegisteredOthers.push([this, [args, protect, type]]);
 			};
-			// NOTE: Will get protected when the real REGISTER will get called.
-			_shared.setAttribute(this, name, type, {
-				configurable: true,
-			});
-			__Internal__.tempRegisteredOthers.push([this, [args, protect, type]]);
-		};
 	
 		types.Namespace = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6556,6 +6636,7 @@
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Namespace',
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Namespace')), true) */,
 					
 					DD_PARENT: types.READ_ONLY(null),
 					DD_NAME: types.READ_ONLY(null),
@@ -6577,13 +6658,60 @@
 					DD_NAME: types.READ_ONLY(null),
 					DD_FULL_NAME: types.READ_ONLY(null),
 
-					ADD: function ADD(name, obj, /*optional*/protect) {
-						return _shared.ADD.apply(this, arguments);
-					},
+					ADD:  __Internal__.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Name of the object.",
+									}, 
+									obj: {
+										type: 'object,Type',
+										optional: false,
+										description: "Object to add.",
+									}, 
+									protect: {
+										type: 'bool',
+										optional: true,
+										description: "'true' will protect the object. 'false' will not. Default is 'true'."
+									},
+									args: {
+										type: 'arrayof(any)',
+										optional: true,
+										description: "Arguments of the constructor.",
+									}, 
+								},
+								returns: 'object',
+								description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
+					}
+					//! END_REPLACE()
+					, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
+						return _shared.ADD.call(this, name, obj, protect, args);
+					}),
 					
-					REMOVE: function REMOVE(name) {
+					REMOVE: __Internal__.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Name of the object.",
+									}, 
+								},
+								returns: 'undefined',
+								description: "Removes the object from the current namespace object.",
+					}
+					//! END_REPLACE()
+					, function REMOVE(name) {
 						return _shared.REMOVE.apply(this, arguments);
-					},
+					}),
 					
 					REGISTER: function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
 						var args;
@@ -6653,6 +6781,7 @@
 				/*typeProto*/
 				{
 					$TYPE_NAME: 'Root',
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RootNamespace')), true) */,
 
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						this._super(null, 'Root', 'Root');
@@ -6887,8 +7016,8 @@
 						entry.init(opts);
 						namespaces.add(root.DD_FULL_NAME, entry, nsOptions);
 						
-						delete types.Namespace[__Internal__.symbolInitialized];
-						types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
+						//delete types.Namespace[__Internal__.symbolInitialized];
+						//types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
 
 						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];

@@ -734,6 +734,7 @@ module.exports = {
 				//! END_REPLACE()
 				, doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: "JsEvents",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 					
 					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
 					// TODO: Do we need that ?
@@ -770,6 +771,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'JsEventHandler',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventHandler')), true) */,
 					},
 					/*instanceProto*/
 					{
@@ -910,6 +912,7 @@ module.exports = {
 				//! END_REPLACE()
 				, extenders.Event.$inherit({
 					$TYPE_NAME: "JsEvent",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
 					
 					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
 					// TODO: Do we need that ?
@@ -1229,6 +1232,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ScriptLoader',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ScriptLoader')), true) */,
 					},
 					/*instanceProto*/
 					{

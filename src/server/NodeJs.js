@@ -502,6 +502,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'ScriptLoader',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ScriptLoader')), true) */,
 						},
 						/*instanceProto*/
 						{
@@ -1916,6 +1917,7 @@ module.exports = {
 				//! END_REPLACE()
 				, doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: "NodeEvents",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
 					
 					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
 					// TODO: Do we need that ?
@@ -1952,6 +1954,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'NodeEventHandler',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventHandler')), true) */,
 						},
 						/*instanceProto*/
 						{
@@ -2081,6 +2084,7 @@ module.exports = {
 				//! END_REPLACE()
 				, extenders.Event.$inherit({
 					$TYPE_NAME: "NodeEvent",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
 					
 					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
 					// TODO: Do we need that ?
@@ -2192,6 +2196,7 @@ module.exports = {
 										mixIns.Events,
 				{
 					$TYPE_NAME: 'IEmitter',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('IEmitter')), true) */,
 					
 					onnewListener: doodad.RAW_EVENT(),
 					onremoveListener: doodad.RAW_EVENT(),

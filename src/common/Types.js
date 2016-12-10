@@ -2632,9 +2632,14 @@ module.exports = {
 				// Set / Map
 				//=========================
 					
+				//=========================
+				// Iterator
+				//=========================
+					
 				types.ADD('Iterator', types.Type.$inherit(
 					{
 						$TYPE_NAME: 'Iterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Iterator')), true) */,
 					},
 					{
 						_new: types.SUPER(function _new() {
@@ -2658,9 +2663,14 @@ module.exports = {
 						},
 					}));
 					
+				//=========================
+				// Set / Map
+				//=========================
+					
 				__Internal__.SetIterator = (!_shared.Natives.windowSet && types.INIT(types.Iterator.$inherit(
 					{
 						$TYPE_NAME: 'SetIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetIterator')), true) */,
 					},
 					{
 						__index: 0,
@@ -2675,6 +2685,7 @@ module.exports = {
 				__Internal__.SetValuesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
 					{
 						$TYPE_NAME: 'SetValuesIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetValuesIterator')), true) */,
 					},
 					{
 						next: function next() {
@@ -2694,6 +2705,7 @@ module.exports = {
 				__Internal__.SetEntriesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
 					{
 						$TYPE_NAME: 'SetEntriesIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetEntriesIterator')), true) */,
 					},
 					{
 						next: function next() {
@@ -2716,6 +2728,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Set',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Set')), true) */,
 					},
 					/*instanceProto*/
 					{
@@ -2793,6 +2806,7 @@ module.exports = {
 				__Internal__.MapIterator = (!_shared.Natives.windowMap && types.INIT(types.Iterator.$inherit(
 					{
 						$TYPE_NAME: 'MapIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapIterator')), true) */,
 					},
 					{
 						__index: 0,
@@ -2809,6 +2823,7 @@ module.exports = {
 				__Internal__.MapKeysIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapKeysIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapKeysIterator')), true) */,
 					},
 					{
 						next: function next() {
@@ -2828,6 +2843,7 @@ module.exports = {
 				__Internal__.MapValuesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapValuesIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapValuesIterator')), true) */,
 					},
 					{
 						next: function next() {
@@ -2847,6 +2863,7 @@ module.exports = {
 				__Internal__.MapEntriesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
 					{
 						$TYPE_NAME: 'MapEntriesIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapEntriesIterator')), true) */,
 					},
 					{
 						next: function next() {
@@ -2869,6 +2886,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Map',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Map')), true) */,
 					},
 					/*instanceProto*/
 					{

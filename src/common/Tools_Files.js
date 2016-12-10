@@ -346,6 +346,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Path',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Path')), true) */,
 
 							parse: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1446,6 +1447,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'UrlArguments',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('UrlArguments')), true) */,
 
 							parse: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1950,6 +1952,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Url',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Url')), true) */,
 
 							parse: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")

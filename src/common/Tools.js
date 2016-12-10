@@ -1999,6 +1999,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Version',
+							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Version')), true) */,
 							
 							__parse: function __parse(val, identifiers, trimSpaces) {
 								var ar = [];

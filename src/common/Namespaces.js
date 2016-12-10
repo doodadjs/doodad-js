@@ -942,6 +942,7 @@ module.exports = {
 				__Internal__.RegistryIterator = types.INIT(types.Iterator.$inherit(
 					{
 						$TYPE_NAME: 'RegistryIterator',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('RegistryIterator')), true) */,
 					},
 					{
 						__values: types.READ_ONLY(null),
@@ -1005,7 +1006,8 @@ module.exports = {
 				, types.INIT(types.Type.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Registry'
+						$TYPE_NAME: 'Registry',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Registry')), true) */,
 					},
 					
 					/*instanceProto*/
@@ -1250,7 +1252,8 @@ module.exports = {
 				, types.Type.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Object'
+						$TYPE_NAME: 'Object',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ObjectEntry')), true) */,
 					},
 					
 					/*instanceProto*/
@@ -1338,12 +1341,11 @@ module.exports = {
 				, entries.Object.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Namespace'
+						$TYPE_NAME: 'Namespace',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NamespaceEntry')), true) */,
 					}
 				)));
 
-				entries.ADD('NamespaceObject', types.Namespace);
-				
 				//-----------------------------------
 				// Module entry object
 				//-----------------------------------
@@ -1376,7 +1378,8 @@ module.exports = {
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Module'
+						$TYPE_NAME: 'Module',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ModuleEntry')), true) */,
 					}
 				)));
 				
@@ -1413,7 +1416,8 @@ module.exports = {
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Package'
+						$TYPE_NAME: 'Package',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackageEntry')), true) */,
 					}
 				)));
 				
@@ -1450,7 +1454,8 @@ module.exports = {
 				, entries.Namespace.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Application'
+						$TYPE_NAME: 'Application',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ApplicationEntry')), true) */,
 					}
 				)));
 				

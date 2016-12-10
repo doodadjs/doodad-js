@@ -236,6 +236,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Type',
+							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('TypeEntry')), true) */,
 						}
 					)));
 
@@ -1156,6 +1157,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: "Extender",
+							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Extender')), true) */,
 							
 							$cache: types.READ_ONLY(null),  // TODO: Protect from the outside
 							
@@ -1181,11 +1183,14 @@ module.exports = {
 										root.DD_ASSERT(types.isStringAndNotEmpty(types.unbox(proto.$TYPE_NAME)), "Extender prototype has no name.");
 									};
 									var name = proto.$TYPE_NAME;
+									var uuid = proto.$TYPE_UUID;
 									delete proto.$TYPE_NAME;
+									delete proto.$TYPE_UUID;
 									var type = this._super(
 										/*typeProto*/
 										{
 											$TYPE_NAME: name,
+											$TYPE_UUID: uuid,
 										},
 										/*instanceProto*/
 										proto
@@ -1388,6 +1393,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Extender.$inherit({
 						$TYPE_NAME: "Attribute",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('AttributeExtender')), true) */,
 						
 						isReadOnly: types.READ_ONLY(false),
 						isEnumerable: types.READ_ONLY(true),
@@ -1776,6 +1782,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Attribute.$inherit({
 						$TYPE_NAME: "Null",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
 						
 						extend: types.READ_ONLY(null),
 
@@ -1802,6 +1809,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Attribute.$inherit({
 						$TYPE_NAME: "ClonedAttribute",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ClonedAttributeExtender')), true) */,
 						
 						maxDepth: types.READ_ONLY(0),
 						keepUnlocked: types.READ_ONLY(false),
@@ -1868,6 +1876,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "ExtendObject",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
@@ -1906,6 +1915,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "UniqueArray",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
 						
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 								sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
@@ -1951,6 +1961,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "Method",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('MethodExtender')), true) */,
 						
 						keepUnlocked: types.READ_ONLY(true),
 
@@ -2716,6 +2727,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Method.$inherit({
 						$TYPE_NAME: "JsMethod",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('JsMethodExtender')), true) */,
 						
 						dontSetSuper: types.READ_ONLY(false),
 						
@@ -2921,6 +2933,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Method.$inherit({
 						$TYPE_NAME: "Property",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('PropertyExtender')), true) */,
 						
 						isReadOnly: types.READ_ONLY(false),
 						bindMethod: types.READ_ONLY(true),
@@ -3282,6 +3295,7 @@ module.exports = {
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'EventHandler',
+							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
 						},
 						/*instanceProto*/
 						__Internal__.eventHandlerInstanceProto
@@ -3305,6 +3319,7 @@ module.exports = {
 					//! END_REPLACE()
 					, extenders.REGISTER(extenders.Method.$inherit({
 						$TYPE_NAME: "Event",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
 
 						eventsAttr: types.READ_ONLY('__EVENTS'),
 						errorEventAttr: types.READ_ONLY('__ERROR_EVENT'),
@@ -5164,7 +5179,7 @@ module.exports = {
 						sourceIsType = sourceType && types.isType(source),
 						sourceIsClass = sourceType && (types.isClass(sourceType) || types.isInterfaceClass(sourceType)),
 						sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME));
-						base; doodad
+						//sourceUUID = (sourceType ? _shared.getTypeUUID(sourceType) : types.unbox(source.$TYPE_UUID));
 					if (!sourceIsClass || !_implements.has(source)) {
 						if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
 							if (root.getOptions().debug || __options__.enforcePolicies) {
@@ -5202,7 +5217,7 @@ module.exports = {
 									
 									//newImplements.add(source);
 									extendedAttributes = [];
-									var data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10*/ proto, /*11 modifiers*/ 0];
+									var data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10*/ proto, /*11 modifiers*/ 0, /*12 sourceUUID*/ null];
 
 									_isolated.set(source, data);
 									var impls = _shared.getAttribute(source, __Internal__.symbolImplements).values(),
@@ -5303,7 +5318,7 @@ module.exports = {
 					};
 				};
 				
-				__Internal__.createType = function createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, /*optional*/_new, /*optional*/_delete) {
+				__Internal__.createType = function createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, /*optional*/_new, /*optional*/_delete) {
 					// Post-Extend
 					__Internal__.postExtend(destAttributes, extendedAttributes);
 					
@@ -5312,6 +5327,7 @@ module.exports = {
 							instanceProto = {};
 						
 						typeProto.$TYPE_NAME = types.READ_ONLY(protoName);
+						typeProto.$TYPE_UUID = types.READ_ONLY(protoUUID);
 
 						if (_new) {
 							instanceProto._new = typeProto._new = _new;
@@ -5393,6 +5409,7 @@ module.exports = {
 					var index = tools.findLastItem(arguments, types.isJsObject),
 						proto = (index !== null) && arguments[index] || {},
 						protoName = proto && types.unbox(proto.$TYPE_NAME) || '',
+						protoUUID = proto && types.unbox(proto.$TYPE_UUID) || '',
 						_new = types.get(proto, '_new'),
 						_delete = types.get(proto, '_delete');
 					
@@ -5486,7 +5503,7 @@ module.exports = {
 					};
 
 					// Create and return extended version of "base"
-					var type = __Internal__.createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, _new, _delete);
+					var type = __Internal__.createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, _new, _delete);
 
 					return type;
 				};
@@ -5666,6 +5683,7 @@ module.exports = {
 
 				__Internal__.classProto = {
 					$TYPE_NAME: "Class",
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
 					
 					_new: types.SUPER(
 						function _new() {
@@ -5855,8 +5873,9 @@ module.exports = {
 								var _implements = data[9];
 								var proto = data[10];
 								var modifiers = data[11];
+								var protoUUID = data[12];
 
-								var _interface = __Internal__.createType(base, baseIsType, proto, protoName, typeStorage, instanceStorage, attributes, extendedAttributes, _isolated, _implements, modifiers);
+								var _interface = __Internal__.createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, attributes, extendedAttributes, _isolated, _implements, modifiers);
 
 								_interface = types.INIT(_interface, [cls]);
 
@@ -6069,6 +6088,7 @@ module.exports = {
 
 				__Internal__.interfaceProto = {
 					$TYPE_NAME: "Interface",
+					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Interface')), true) */,
 						
 					_new: types.SUPER(
 						function _new(host) {
@@ -6204,6 +6224,7 @@ module.exports = {
 					//! END_REPLACE()
 					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 						$TYPE_NAME: 'Clonable',
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Clonable')), true) */,
 
 						clone: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6230,6 +6251,7 @@ module.exports = {
 					//! END_REPLACE()
 					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 						$TYPE_NAME: 'Serializable',
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
 					
 						serialize: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6278,6 +6300,7 @@ module.exports = {
 					//! END_REPLACE()
 					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 						$TYPE_NAME: "Events",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Events')), true) */,
 					
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
 						__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
@@ -6359,6 +6382,7 @@ module.exports = {
 
 				__Internal__.creatablePrototype = {
 						$TYPE_NAME: 'Creatable',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
 
 						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function() {
 							return this[__Internal__.symbolDestroyed];
@@ -6526,6 +6550,7 @@ module.exports = {
 					//! END_REPLACE()
 					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 						$TYPE_NAME: 'Translatable',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Translatable')), true) */,
 					
 						$__translations: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
@@ -6629,6 +6654,7 @@ module.exports = {
 					//! END_REPLACE()
 					, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 						$TYPE_NAME: 'Configurable',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Configurable')), true) */,
 					
 						$__config: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
@@ -6738,6 +6764,7 @@ module.exports = {
 							mixIns.Creatable,
 					{
 						$TYPE_NAME: "Object",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
 					}))));
 				
 				//==================================
@@ -6764,6 +6791,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: "Event",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
 					},
 					/*instanceProto*/
 					{
@@ -6821,6 +6849,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'CancelEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
 					}))));
 
 				doodad.ADD('ErrorEvent', types.INIT(root.DD_DOC(
@@ -6848,6 +6877,7 @@ module.exports = {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'ErrorEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,
 					},
 					/*instanceProto*/
 					{
@@ -7090,6 +7120,7 @@ module.exports = {
 									interfaces.Serializable,
 					{
 						$TYPE_NAME: "PackedValue",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackedValue')), true) */,
 						
 						$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
 							'name',
