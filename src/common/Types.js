@@ -2147,7 +2147,9 @@ module.exports = {
 						} else {
 							var DDPromise = function() {};
 							DDPromise = types.setPrototypeOf(DDPromise, Promise);
-							DDPromise.prototype = types.createObject(Promise.prototype);
+							DDPromise.prototype = types.createObject(Promise.prototype, {
+								constructor: {value: DDPromise},
+							});
 						};
 
 						var isStillDDPromise = false;
@@ -2638,7 +2640,7 @@ module.exports = {
 						_new: types.SUPER(function _new() {
 							this._super();
 
-							// <PRB> "Symbol.iterator" must be there for "[...iter]" even when we return the iterator itself.
+							// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
 							if (_shared.Natives.symbolIterator) {
 								var self = this;
 								_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
