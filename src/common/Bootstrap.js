@@ -4592,7 +4592,7 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = types.get(obj, 'constructor');
+					obj = obj.constructor;
 				};
 				if (!types.isArray(type)) {
 					type = [type];
@@ -4603,7 +4603,7 @@
 							var t = type[i];
 							if (t) {
 								if (!types.isFunction(t)) {
-									t = types.get(t, 'constructor');
+									t = t.constructor;
 								};
 								if (obj === t) {
 									return true;
@@ -4618,7 +4618,7 @@
 							if (i in type) {
 								var t = type[i];
 								if (!types.isFunction(t)) {
-									t = types.get(t, 'constructor');
+									t = t.constructor;
 								};
 								if (_shared.getTypeSymbol(t) === symbol) {
 									return true;
@@ -4658,7 +4658,7 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = types.get(obj, 'constructor');
+					obj = obj.constructor;
 				};
 				if (obj instanceof _shared.Natives.windowFunction) {
 					if (!types.isArray(type)) {
@@ -4669,7 +4669,7 @@
 							var t = type[i];
 							if (t) {
 								if (!types.isFunction(t)) {
-									t = types.get(t, 'constructor');
+									t = t.constructor;
 								};
 								if ((t === obj) || types.isPrototypeOf(t, obj)) {
 									return true;
@@ -4692,7 +4692,7 @@
 							if (i in type) {
 								var s = type[i];
 								if (!types.isFunction(s) && !types.isSymbol(s)) {
-									s = types.get(s, 'constructor');
+									s = s.constructor;
 								};
 								if (types.isFunction(s)) {
 									type[i] = s = _shared.getTypeSymbol(s); // optimization
@@ -4758,7 +4758,7 @@
 					} else {
 						type = [type];
 					};
-					var t = types.get(obj, 'constructor');
+					var t = obj.constructor;
 					while (t) {
 						var symbol = _shared.getTypeSymbol(t);
 						if (!symbol) {
@@ -4776,7 +4776,7 @@
 							};
 						};
 						obj = types.getPrototypeOf(obj);
-						t = types.get(obj, 'constructor');
+						t = obj.constructor;
 					};
 				};
 				
