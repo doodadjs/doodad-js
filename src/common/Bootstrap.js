@@ -5814,8 +5814,9 @@
 						""
 					) +
 
-					"var obj;" +
-					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
+					"var initialized = ctx.get(this, ctx.InitializedSymbol)," + 
+						"obj;" +
+					"if (!initialized) {" +
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
 					"} else {" +
@@ -5824,7 +5825,7 @@
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true);" +
+							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, initialized);" +
 						"};"
 					: 
 						""
@@ -5832,7 +5833,7 @@
 
 					(instanceProto ?
 						"if (!forType) {" +
-							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true);" +
+							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, initialized);" +
 						"};"
 					: 
 						""
