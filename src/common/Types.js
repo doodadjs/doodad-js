@@ -78,7 +78,7 @@ module.exports = {
 					
 					objectToString: global.Object.prototype.toString,
 
-					//windowObject: global.Object,
+					windowObject: global.Object,
 					
 					// "toString"
 					windowString: global.String,
