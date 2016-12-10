@@ -76,6 +76,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_WeakMap.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "client/Browserify.js",
       "client": false,
       "server": false,
