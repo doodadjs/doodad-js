@@ -313,6 +313,7 @@ module.exports = {
 						os: null,		// '' = deactivate validation, 'windows', 'unix', 'linux'
 						dirChar: '/',
 						root: null,   // null = auto-detect
+						host: null, // For Windows only. null = auto-detect
 						drive: null,  // For Windows only. null = auto-detect 
 						path: null,
 						file: null,   // null = auto-detect. when set, changes 'extension'.
@@ -369,7 +370,6 @@ module.exports = {
 								//! END_REPLACE()
 								, function parse(path, /*optional*/options) {
 									// WARNING: Validation is incomplete.
-									// TODO: Windows network paths ("\\server\...")
 									
 									// Flags
 									var dontThrow = types.get(options, 'dontThrow', false),
@@ -434,7 +434,8 @@ module.exports = {
 										drive = types.get(options, 'drive', null),  // Default is Auto-detect
 										file = types.get(options, 'file', null),  // Default is Auto-detect
 										extension = types.get(options, 'extension', null), // Default is "file" 's extension
-										forceDrive = types.get(options, 'forceDrive', false);  // Default is False
+										forceDrive = types.get(options, 'forceDrive', false),  // Default is False
+										host = types.get(options, 'host', null); // Default is Auto-detect
 
 									path = types.get(options, 'path', path);
 									
@@ -645,7 +646,7 @@ module.exports = {
 									if (!file || !file.length || ((file.length === 1) && !file[0])) {
 										file = null;
 									};
-									
+
 									// Relative or absolute ?
 									if (types.isNothing(isRelative)) {
 										// Auto-detect
@@ -661,49 +662,86 @@ module.exports = {
 											);
 									};
 									
-									// Get and validate drive
+									// Get and validate host and drive
 									if (os === 'windows') {
-										if (!isRelative && types.isNothing(drive)) {
+										if (!isRelative && types.isNothing(host) && types.isNothing(drive)) {
 											if (dirRoot) {
-												var tmp = dirRoot[0];
-												if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
-													drive = dirRoot.shift()[0];
+												if ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]) {
+													host = dirRoot.splice(0, 3)[2];
+													drive = dirRoot.shift();
+												} else {
+													var tmp = dirRoot[0];
+													if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
+														drive = dirRoot.shift()[0];
+													};
 												};
 											};
 
 											if (path) {
+												var hasHost = ((path.length >= 4) && !path[0] && !path[1]);
 												var tmp = path[0];
-												if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
-													if (dirRoot) {
+												if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
+													if (host || drive) {
 														if (dontThrow) {
 															return null;
 														} else {
-															throw new types.ParseError("'path' can't have a drive letter because 'root' is defined.");
+															throw new types.ParseError("'path' can't have a network path or a drive letter because 'root' is defined.");
 														};
 													};
-													drive = path.shift()[0];
+													if (hasHost) {
+														host = path.splice(0, 3)[2];
+														drive = path.shift();
+													} else {
+														drive = path.shift()[0];
+													};
 												};
 											};
 										};
 
-										if (drive) {
+										if (host || drive) {
 											if (isRelative) {
 												if (dontThrow) {
 													return null;
 												} else {
-													throw new types.ParseError("Relative paths can't have a drive letter.");
+													throw new types.ParseError("Relative paths can't have a network path or a drive letter.");
 												};
 											};
 											
+											// Validate host
+											if (host) {
+												if (!drive) {
+													if (dontThrow) {
+														return null;
+													} else {
+														throw new types.ParseError("A network path must have a shared folder.");
+													};
+												};
+
+												// Validate host
+												// TODO: Complete validation
+												host = host.toUpperCase();
+												if (tools.indexOf(host, ':') >= 0) {
+													if (dontThrow) {
+														return null;
+													} else {
+														throw new types.ParseError("Invalid host name.");
+													};
+												};
+											};
+
 											// Validate drive letter
 											drive = drive.toUpperCase();
-											//var chr = unicode.codePointAt(drive, 0) || 0;
-											var chr = drive.charCodeAt(0) || 0;
-											if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
-												if (dontThrow) {
-													return null;
-												} else {
-													throw new types.ParseError("Invalid drive.");
+											if (host) {
+												// TODO: Validate shared folder
+											} else {
+												//var chr = unicode.codePointAt(drive, 0) || 0;
+												var chr = drive.charCodeAt(0) || 0;
+												if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
+													if (dontThrow) {
+														return null;
+													} else {
+														throw new types.ParseError("Invalid drive.");
+													};
 												};
 											};
 											
@@ -711,16 +749,16 @@ module.exports = {
 											if (dontThrow) {
 												return null;
 											} else {
-												throw new types.ParseError("A drive letter is mandatory for the absolute path.");
+												throw new types.ParseError("A network path or drive letter is mandatory for the absolute path.");
 											};
 										};
 										
 									} else {
-										if (drive) {
+										if (host || drive) {
 											if (dontThrow) {
 												return null;
 											} else {
-												throw new types.ParseError("'drive' option is invalid for Unix-like systems.");
+												throw new types.ParseError("'host' and 'drive' options are invalid for non-Windows systems.");
 											};
 										};
 									};
@@ -774,7 +812,23 @@ module.exports = {
 										};
 									};
 
-									if (!isRelative) {
+									if (isRelative) {
+										if (dirRoot && (dirRoot.length > 2)) {
+											dirRoot = tools.filter(dirRoot, function(val, i) {
+												return !!val;
+											});
+										};
+										if (path && (path.length > 2)) {
+											path = tools.filter(path, function(val, i) {
+												return !!val;
+											});
+										};
+										if (file && (file.length > 2)) {
+											file = tools.filter(file, function(val) {
+												return !!val;
+											});
+										};
+									} else {
 										// Resolve relative paths
 										if (dirRoot) {
 											var abs = __Internal__.relativeToAbsolute(dirRoot, null, {
@@ -923,6 +977,7 @@ module.exports = {
 									return new this({
 										os: os,
 										dirChar: dirChar,
+										host: host || '',
 										drive: drive || '',
 										root: dirRoot || [],
 										path: path || [],
@@ -1039,7 +1094,8 @@ module.exports = {
 									};
 									
 									
-									var drive = options.drive,
+									var host = options.host,
+										drive = options.drive,
 										dirRoot = options.root,
 										path = options.path,
 										file = options.file,
@@ -1066,14 +1122,16 @@ module.exports = {
 
 									var result = path.join(options.dirChar);
 
-									if (!options.isRelative || drive.length || hasRoot) {
+									if (!options.isRelative || host.length || drive.length || hasRoot) {
 										result = (options.dirChar + result);
 									};
 									
-									if (drive.length) {
+									if (host) {
+										result = (options.dirChar + options.dirChar + host + options.dirChar + drive) + result;
+									} else if (drive) {
 										result = (drive + ':') + result;
 									};
-									
+
 									if (options.quote) {
 										result = (options.quote + result + options.quote);
 									};
@@ -1131,7 +1189,8 @@ module.exports = {
 
 									if (path instanceof files.Path) {
 										var drive = types.get(options, 'drive', path.drive);
-										if ((path.os === 'windows') && drive && ((this.os !== 'windows') || (drive !== this.drive))) {
+										var host = types.get(options, 'host', path.host);
+										if ((path.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -1149,7 +1208,7 @@ module.exports = {
 											};
 										};
 										if (path.isWindows) {
-											if (dir.length && ((this.os !== 'windows') || (dir[0][0] !== this.drive))) {
+											if (dir.length && ((this.os !== 'windows') || this.host || (dir[0][0] !== this.drive))) {
 												if (dontThrow) {
 													return null;
 												} else {
@@ -1269,7 +1328,9 @@ module.exports = {
 								, function toArray() {
 									var path = types.append([], this.root, this.path);
 									if (!this.isRelative) {
-										if (this.drive) {
+										if (this.host) {
+											path.splice(0, 0, '', '', this.host, this.drive);
+										} else if (this.drive) {
 											path.unshift(this.drive + ':');
 										} else {
 											path.unshift('');
@@ -1299,8 +1360,8 @@ module.exports = {
 									throw new types.ParseError("Incompatible OSes.");
 								};
 								
-								if ((this.os === 'windows') && (this.drive !== to.drive)) {
-									throw new types.ParseError("'this' and 'to' must be from the same drive.");
+								if ((this.os === 'windows') && ((this.host !== to.host) || (this.drive !== to.drive))) {
+									throw new types.ParseError("'this' and 'to' must be from the same network share or the same drive.");
 								};
 								
 								var os = tools.getOS(),
@@ -1988,9 +2049,7 @@ module.exports = {
 										var pos;
 										
 										// Auto-detect "protocol"
-										//var pos = url.search(/^(?:[A-Za-z]+)\:\/\//);   // WHY IT DOESN'T RETURN THE POSITION OF /\:\/\// ???
-										//var pos = /^(?:[A-Za-z]+)[:]\:\/\//.exec(url)      // WHAT IS WRONG ???
-										if (/^[A-Za-z]+\:\/\//.test(url)) {
+										if (/^[A-Za-z+]+\:\/\//.test(url)) {
 											pos = url.indexOf(':');
 											if (pos >= 0) {
 												if (types.isNothing(protocol)) {
