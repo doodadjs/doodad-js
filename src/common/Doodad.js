@@ -927,24 +927,29 @@ module.exports = {
 							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : null),
 							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
 						
-						if ((isType || isErrorType) && !types.isInitialized(type)) {
-							if ((root.getOptions().debug || __options__.enforcePolicies)) {
-								if (isClass && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-									var mustOverride = type[__Internal__.symbolMustOverride];
-									if (mustOverride) {
-										throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+						if ((isType || isErrorType || isSingleton)) {
+							if (!types.isInitialized(type)) {
+								if ((root.getOptions().debug || __options__.enforcePolicies)) {
+									if (isClass && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+										var mustOverride = type[__Internal__.symbolMustOverride];
+										if (mustOverride) {
+											throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										};
 									};
+								};
+
+								if (!isErrorType) {
+									type = types.INIT(type, args);
 								};
 							};
 
-							_shared.setAttributes(type, {
-								DD_PARENT: this,
-								DD_NAME: name,
-								DD_FULL_NAME: fullName,
-							}, {});
-
-							if (!isErrorType) {
-								type = types.INIT(type, args);
+							var t = (isSingleton ? types.getType(type) : type);
+							if (!types.get(t, 'DD_FULL_NAME')) {
+								_shared.setAttributes(t, {
+									DD_PARENT: this,
+									DD_NAME: name,
+									DD_FULL_NAME: fullName,
+								}, {});
 							};
 						};
 						
@@ -958,7 +963,7 @@ module.exports = {
 								};
 							};
 							
-							var entryType = (isType || isErrorType ? entries.Type : entries.Object);
+							var entryType = (isType || isErrorType || isSingleton ? entries.Type : entries.Object);
 							var entry = new entryType(root, null, type, {protect: protect});
 							entry.init();
 
