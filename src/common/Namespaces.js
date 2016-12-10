@@ -963,7 +963,7 @@ module.exports = {
 										object: entry.namespace
 									};
 								}),
-							}, {all: true});
+							});
 						}),
 
 						next: function next() {

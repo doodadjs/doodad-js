@@ -2099,7 +2099,7 @@ module.exports = {
 							_shared.setAttributes(this, {
 								canReject: types.get(options, 'canReject', this.canReject),
 								types: types.freezeObject(types.get(options, 'types', this.types) || []),
-							}, {all: true});
+							});
 						};
 					})),
 					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {

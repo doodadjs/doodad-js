@@ -79,7 +79,7 @@ module.exports = {
 						_new: types.SUPER(function _new(ar) {
 							this._super();
 
-							_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP[' + tools.generateUUID() + ']_VALUE__'), {all: true});
+							_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP[' + tools.generateUUID() + ']_VALUE__'));
 
 							if (types.isNothing(ar)) {
 								// Do nothing

@@ -1197,7 +1197,7 @@ module.exports = {
 									this._super();
 									_shared.setAttributes(this, {
 										$cache: types.nullObject(),
-									}, {all: true});
+									});
 								}),
 						},
 						/*instanceProto*/
@@ -1238,7 +1238,7 @@ module.exports = {
 										isInstance: types.get(options, 'isInstance', this.isInstance),
 										isPersistent: types.get(options, 'isPersistent', this.isPersistent),
 										isPreserved: types.get(options, 'isPreserved', this.isPreserved),
-									}, {all: true});
+									});
 								}),
 							
 							getCacheName: root.DD_DOC(
@@ -1541,7 +1541,7 @@ module.exports = {
 									isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
 									isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
 									enableScopes: types.get(options, 'enableScopes', this.enableScopes),
-								}, {all: true});
+								});
 							}),
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
@@ -1813,7 +1813,7 @@ module.exports = {
 									maxDepth: types.get(options, 'maxDepth', this.maxDepth),
 									keepUnlocked: types.get(options, 'keepUnlocked', this.keepUnlocked),
 									cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
-								}, {all: true});
+								});
 							}),
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
@@ -2397,7 +2397,7 @@ module.exports = {
 									notReentrant: types.get(options, 'notReentrant', this.notReentrant),
 									byReference: types.get(options, 'byReference', this.byReference),
 									isExternal: types.get(options, 'isExternal', this.isExternal),
-								}, {all: true});
+								});
 							}),
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
@@ -2723,7 +2723,7 @@ module.exports = {
 								this._super(options);
 								_shared.setAttributes(this, {
 									dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
-								}, {all: true});
+								});
 							}),
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
@@ -3025,7 +3025,7 @@ module.exports = {
 							values[__Internal__.symbolStack] = [];
 							values[__Internal__.symbolObject] = obj;
 							values[__Internal__.symbolExtender] = extender;
-							_shared.setAttributes(this, values, {all: true});
+							_shared.setAttributes(this, values);
 						}),
 
 						apply: _shared.Natives.functionPrototype.apply,
@@ -3318,7 +3318,7 @@ module.exports = {
 								this._super(options);
 								_shared.setAttributes(this, {
 									errorEvent: types.get(options, 'errorEvent', this.errorEvent),
-								}, {all: true});
+								});
 							}),
 
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
@@ -6782,7 +6782,7 @@ module.exports = {
 							this._super();
 							
 							if (!types.isType(this)) {
-								_shared.setAttribute(this, 'data', data || {}, {all: true});
+								_shared.setAttribute(this, 'data', data || {});
 							};
 						}),
 						
@@ -6859,7 +6859,7 @@ module.exports = {
 							if (!types.isType(this)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
 								
-								_shared.setAttribute(this, 'error', error, {all: true});
+								_shared.setAttribute(this, 'error', error);
 							};
 						}),
 					}))));

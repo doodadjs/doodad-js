@@ -5814,9 +5814,8 @@
 						""
 					) +
 
-					"var initialized = ctx.get(this, ctx.InitializedSymbol)," + 
-						"obj;" +
-					"if (!initialized) {" +
+					"var obj;" +
+					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
 					"} else {" +
@@ -5825,7 +5824,7 @@
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, initialized);" +
+							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true);" +
 						"};"
 					: 
 						""
@@ -5833,7 +5832,7 @@
 
 					(instanceProto ?
 						"if (!forType) {" +
-							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, initialized);" +
+							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true);" +
 						"};"
 					: 
 						""
@@ -6148,7 +6147,7 @@
 								bubbles: !!init.bubbles,
 								cancelable: !!init.cancelable,
 								detail: init.detail,
-							}, {all: true});
+							});
 							this.bubbling = this.bubbles;
 						};
 					}),
@@ -6569,7 +6568,7 @@
 							DD_PARENT: parent,
 							DD_NAME: name,
 							DD_FULL_NAME: fullName,
-						}, {all: true});
+						});
 					}),
 				},
 				/*instanceProto*/
@@ -6611,7 +6610,7 @@
 							DD_PARENT: parent,
 							DD_NAME: name,
 							DD_FULL_NAME: fullName,
-						}, {all: true});
+						});
 					}),
 				}
 			));

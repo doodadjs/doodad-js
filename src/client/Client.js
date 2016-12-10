@@ -939,7 +939,7 @@ module.exports = {
 						if (!types.isType(this)) {
 							_shared.setAttributes(this, {
 								types: types.freezeObject(types.get(options, 'types', this.types) || []),
-							}, {all: true});
+							});
 						};
 					})),
 					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
