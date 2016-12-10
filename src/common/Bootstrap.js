@@ -89,8 +89,6 @@
 			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 
-			//typesMap: null,      // types mapped to their Symbol
-			//tempTypesToMap: [],  // types to map in "typesMap"
 			tempSetUUID: [],  // types to set the UUID
 			tempSetUUIDFn: function tempSetUUIDFn() { // function to set the UUID
 					if (__Internal__.tempSetUUID) {
@@ -103,7 +101,9 @@
 					};
 					delete __Internal__.tempSetUUIDFn;
 				},
-			
+
+			tempTypesSymbol: {},
+
 			DD_ASSERT: null,
 		};
 
@@ -4412,15 +4412,70 @@
 		};
 
 		_shared.getTypeSymbol = function getTypeSymbol(type) {
-			if (types.isType(type)) {
-				var name;
-				if (type[__Internal__.symbolTypeUUIDGenerated]) {
-					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
-				} else {
-					name = type[__Internal__.symbolTypeUUID];
+			var name = null;
+			if (!__Internal__.typesSymbolMap && types.WeakMap) {
+				__Internal__.typesSymbolMap = new types.WeakMap();
+				var symbols = types.append(types.keys(__Internal__.tempTypesSymbol), types.symbols(__Internal__.tempTypesSymbol));
+				for (var i = 0; i < symbols.length; i++) {
+					var symbol = symbols[i];
+					__Internal__.typesSymbolMap.set(__Internal__.tempTypesSymbol[symbol], symbol);
 				};
-				return name && types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+				delete __Internal__.tempTypesSymbol;
 			};
+			if (__Internal__.typesSymbolMap) {
+				name = __Internal__.typesSymbolMap.get(type);
+			};
+			if (!name) {
+				if (types.isType(type)) {
+					if (type[__Internal__.symbolTypeUUIDGenerated]) {
+						name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
+					} else {
+						name = type[__Internal__.symbolTypeUUID];
+					};
+					name = name && types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+				//} else if (types.isFunction(type)) {
+				} else if (types.isNativeFunction(type)) {
+					name = (types.get(type.prototype, 'constructor') === type) && types.getFunctionName(type);
+					if (name) {
+						//var isNative = types.isNativeFunction(type),
+						var proto,
+							lastProto;
+						while ((proto = types.getPrototypeOf(type.prototype)) && (lastProto !== proto)) {
+							var protoFn = types.get(proto, 'constructor');
+							var protoName;
+							//if (isNative) {
+								protoName = types.isNativeFunction(protoFn) && types.getFunctionName(protoFn);
+							//} else {
+							//	protoName = types.isFunction(protoFn) && types.getFunctionName(protoFn);
+							//};
+							if (!protoName) {
+								name = undefined;
+								break;
+							};
+							name += ('->' + protoName);
+							lastProto = proto;
+						};
+						if (name) {
+							//if (isNative) {
+								name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+							//} else {
+							//	name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+							//};
+						};
+					};
+				};
+				if (name) {
+					if (__Internal__.tempTypesSymbol) {
+						if (name in __Internal__.tempTypesSymbol) {
+							debugger;
+						};
+						__Internal__.tempTypesSymbol[name] = type;
+					} else {
+						__Internal__.typesSymbolMap.set(type, name);
+					};
+				};
+			};
+			return name;
 		};
 
 		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
@@ -4435,12 +4490,12 @@
 							base: {
 								type: 'type',
 								optional: false,
-								description: "A Doodad type.",
+								description: "A type.",
 							},
 							type: {
 								type: 'type',
 								optional: false,
-								description: "A Doodad type.",
+								description: "A type.",
 							},
 						},
 						returns: 'boolean',
@@ -4527,7 +4582,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'object',
@@ -4540,7 +4595,7 @@
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isLike(obj, types.Type);
+				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj);
 			}));
 
 		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
@@ -4567,27 +4622,27 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: ['object', 'type'],
 								optional: false,
-								description: "An object to test for. A Doodad type can be provided.",
+								description: "An object to test for. A type can be provided.",
 							},
 							type: {
 								type: ['type', 'object'],
 								optional: false,
-								description: "A Doodad type. If a Doodad object is provided, its type will be used.",
+								description: "A type. If an object is provided, its type will be used.",
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if object is from the specified Doodad type. Returns 'false' otherwise.",
+						description: "Returns 'true' if object is from the specified type. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function is(obj, type) {
 				// "obj" is of type "type".
 				
-				if ((obj === undefined) || (obj === null)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
@@ -4617,11 +4672,13 @@
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
 								var t = type[i];
-								if (!types.isFunction(t)) {
-									t = t.constructor;
-								};
-								if (_shared.getTypeSymbol(t) === symbol) {
-									return true;
+								if (!types.isNothing(t)) {
+									if (!types.isFunction(t)) {
+										t = t.constructor;
+									};
+									if (_shared.getTypeSymbol(t) === symbol) {
+										return true;
+									};
 								};
 							};
 						};
@@ -4639,21 +4696,21 @@
 							obj: {
 								type: ['object', 'type'],
 								optional: false,
-								description: "An object to test for. A Doodad type can be provided.",
+								description: "An object to test for. A type can be provided.",
 							},
 							type: {
 								type: ['type', 'object'],
 								optional: false,
-								description: "A Doodad type. If a Doodad object is provided, its type will be used.",
+								description: "A Doodad type. If an object is provided, its type will be used.",
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if object is from or inherits from the specified Doodad type. Returns 'false' otherwise.",
+						description: "Returns 'true' if object is from or inherits from the specified type. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isLike(obj, type) {
 				// "obj" is of or inherits type "types".
-				if ((obj === undefined) || (obj === null)) {
+				if (types.isNothing(obj)) {
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
@@ -4667,7 +4724,7 @@
 					for (var i = 0; i < type.length; i++) {
 						if (i in type) {
 							var t = type[i];
-							if (t) {
+							if (!types.isNothing(t)) {
 								if (!types.isFunction(t)) {
 									t = t.constructor;
 								};
@@ -4691,14 +4748,16 @@
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
 								var s = type[i];
-								if (!types.isFunction(s) && !types.isSymbol(s)) {
-									s = s.constructor;
-								};
-								if (types.isFunction(s)) {
-									type[i] = s = _shared.getTypeSymbol(s); // optimization
-								};
-								if (s === symbol) {
-									return true;
+								if (!types.isNothing(s)) {
+									if (!types.isFunction(s) && !types.isSymbol(s)) {
+										s = s.constructor;
+									};
+									if (types.isFunction(s)) {
+										type[i] = s = _shared.getTypeSymbol(s); // optimization
+									};
+									if (s === symbol) {
+										return true;
+									};
 								};
 							};
 						};
@@ -4717,12 +4776,12 @@
 							base: {
 								type: 'object',
 								optional: false,
-								description: "A Doodad object.",
+								description: "An object.",
 							},
 							type: {
 								type: 'type',
 								optional: false,
-								description: "A Doodad type.",
+								description: "A type.",
 							},
 						},
 						returns: 'boolean',
@@ -4732,7 +4791,9 @@
 			, function _instanceof(obj, type) {
 				// Uses prototypes chain like the operator "instanceof", but doesn't raise an exception when 'type' is not a type. 
 				// NOTE: With Doodad objects it is recommended to use this function instead of the operator.
-
+				if (types.isNothing(obj)) {
+					return false;
+				};
 				obj = _shared.Natives.windowObject(obj);
 				if (types.isFunction(obj)) {
 					// Please use "types.baseof"
@@ -4767,16 +4828,18 @@
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
 								var s = type[i];
-								if (types.isFunction(s)) {
-									type[i] = s = _shared.getTypeSymbol(s); // optimization
-								};
-								if (s === symbol) {
-									return true;
+								if (s) {
+									if (types.isFunction(s)) {
+										type[i] = s = _shared.getTypeSymbol(s); // optimization
+									};
+									if (s === symbol) {
+										return true;
+									};
 								};
 							};
 						};
 						obj = types.getPrototypeOf(obj);
-						t = obj.constructor;
+						t = obj && obj.constructor;
 					};
 				};
 				
@@ -6628,27 +6691,6 @@
 					ignoreWhenSame: true,
 				});
 
-				//if (type) {
-				//	if (!__Internal__.typesMap && types.WeakMap && types.getSymbol) {
-				//		__Internal__.typesMap = new types.WeakMap();
-				//		for (var i = 0; i < __Internal__.tempTypesToMap.length; i++) {
-				//			var t = __Internal__.tempTypesToMap[i];
-				//			if (!__Internal__.typesMap.has(t)) {
-				//				__Internal__.typesMap.set(t, _shared.getTypeSymbol(t));
-				//			};
-				//		};
-				//		delete __Internal__.tempTypesToMap;
-				//	};
-				//
-				//	if (__Internal__.typesMap) {
-				//		if (!__Internal__.typesMap.has(type)) {
-				//			__Internal__.typesMap.set(type, _shared.getTypeSymbol(type));
-				//		};
-				//	} else {
-				//		__Internal__.tempTypesToMap.push(type);
-				//	};
-				//};
-						
 				return obj;
 			};
 				
