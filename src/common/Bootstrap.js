@@ -2733,7 +2733,6 @@
 					var obj = types.createObject(type.prototype, {
 						constructor: {
 							configurable: true,
-							//enumerable: false, 'FALSE' is the default
 							value: type,
 							writable: true,
 						},
@@ -4414,7 +4413,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							base: {
 								type: 'type',
@@ -4438,17 +4437,43 @@
 					// Use "isLike"
 					return false;
 				};
-				if (!types.isArray(base)) {
-					base = [base];
-				};
-				for (var i = 0; i < base.length; i++) {
-					if (i in base) {
-						var b = base[i];
-						if (types.isFunction(b)) {
-							if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
-								return true;
+				if (type instanceof _shared.Natives.windowFunction) {
+					if (!types.isArray(base)) {
+						base = [base];
+					};
+					for (var i = 0; i < base.length; i++) {
+						if (i in base) {
+							var b = base[i];
+							if (types.isFunction(b)) {
+								if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
+									return true;
+								};
 							};
 						};
+					};
+				} else {
+					if (types.isArray(base)) {
+						base = types.clone(base);
+					} else {
+						base = [base];
+					};
+					while (type) {
+						var symbol = _shared.getTypeSymbol(type);
+						if (!symbol) {
+							break;
+						};
+						for (var i = 0; i < base.length; i++) {
+							if (i in base) {
+								var s = base[i];
+								if (types.isFunction(s)) {
+									base[i] = s = _shared.getTypeSymbol(s); // optimization
+								};
+								if (s === symbol) {
+									return true;
+								};
+							};
+						};
+						type = types.getPrototypeOf(type);
 					};
 				};
 				return false;
@@ -4485,7 +4510,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'object',
@@ -4498,14 +4523,14 @@
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !types.isJsClass(obj) && (obj !== types.Type) && !types.baseof(types.Type, obj);
+				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isLike(obj, types.Type);
 			}));
 
 		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'object',
@@ -4518,23 +4543,14 @@
 			}
 			//! END_REPLACE()
 			, function isJsObject(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj !== 'object') {
-					return false;
-				};
-				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
-				//	// ???
-				//};
-				return (_shared.Natives.objectToString.call(obj) === '[object Object]') && !types._instanceof(obj, types.Type);
+				return types.isObject(obj) && !types._instanceof(obj, types.Type);
 			}));
 
 		__Internal__.ADD('is', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4558,21 +4574,38 @@
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
+				if (!types.isFunction(obj)) {
+					obj = types.get(obj, 'constructor');
+				};
 				if (!types.isArray(type)) {
 					type = [type];
 				};
-				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
-				};
-				for (var i = 0; i < type.length; i++) {
-					if (i in type) {
-						var t = type[i];
-						if (t) {
-							if (!types.isFunction(t)) {
-								t = t.constructor;
+				if (obj instanceof _shared.Natives.windowFunction) {
+					for (var i = 0; i < type.length; i++) {
+						if (i in type) {
+							var t = type[i];
+							if (t) {
+								if (!types.isFunction(t)) {
+									t = types.get(t, 'constructor');
+								};
+								if (obj === t) {
+									return true;
+								};
 							};
-							if (obj === t) {
-								return true;
+						};
+					};
+				} else {
+					var symbol = _shared.getTypeSymbol(obj);
+					if (symbol) {
+						for (var i = 0; i < type.length; i++) {
+							if (i in type) {
+								var t = type[i];
+								if (!types.isFunction(t)) {
+									t = types.get(t, 'constructor');
+								};
+								if (_shared.getTypeSymbol(t) === symbol) {
+									return true;
+								};
 							};
 						};
 					};
@@ -4584,7 +4617,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4608,22 +4641,51 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.get(obj, 'constructor');
 				};
-				if (!types.isArray(type)) {
-					type = [type];
-				};
-				for (var i = 0; i < type.length; i++) {
-					if (i in type) {
-						var t = type[i];
-						if (t) {
-							if (!types.isFunction(t)) {
-								t = t.constructor;
-							};
-							if ((t === obj) || types.isPrototypeOf(t, obj)) {
-								return true;
+				if (obj instanceof _shared.Natives.windowFunction) {
+					if (!types.isArray(type)) {
+						type = [type];
+					};
+					for (var i = 0; i < type.length; i++) {
+						if (i in type) {
+							var t = type[i];
+							if (t) {
+								if (!types.isFunction(t)) {
+									t = types.get(t, 'constructor');
+								};
+								if ((t === obj) || types.isPrototypeOf(t, obj)) {
+									return true;
+								};
 							};
 						};
+					};
+				} else {
+					if (types.isArray(type)) {
+						type = types.clone(type);
+					} else {
+						type = [type];
+					};
+					while (obj) {
+						var symbol = _shared.getTypeSymbol(obj);
+						if (!symbol) {
+							break;
+						};
+						for (var i = 0; i < type.length; i++) {
+							if (i in type) {
+								var s = type[i];
+								if (!types.isFunction(s) && !types.isSymbol(s)) {
+									s = types.get(s, 'constructor');
+								};
+								if (types.isFunction(s)) {
+									type[i] = s = _shared.getTypeSymbol(s); // optimization
+								};
+								if (s === symbol) {
+									return true;
+								};
+							};
+						};
+						obj = types.getPrototypeOf(obj);
 					};
 				};
 				return false;
@@ -4754,9 +4816,9 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.get(obj, 'constructor');
 				};
-				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
+				if (!types.isType(obj)) {
 					return null;
 				};
 				return obj;
@@ -4784,9 +4846,9 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.get(obj, 'constructor');
 				};
-				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
+				if (!types.isType(obj)) {
 					return null;
 				};
 				return obj.$TYPE_NAME || types.getFunctionName(obj);
@@ -4814,9 +4876,9 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.get(obj, 'constructor');
 				};
-				if ((obj !== types.Type) && !types.baseof(types.Type, obj)) {
+				if (!types.isType(obj)) {
 					return null;
 				};
 				return types.getPrototypeOf(obj);
@@ -5061,10 +5123,10 @@
 				value = _shared.Natives.windowObject(value);
 				if (types.hasDefinePropertyEnabled()) {
 					types.defineProperty(value, __Internal__.symbolDD_DOC, {
-						value: doc,
+						value: doc && types.freezeObject(doc),
 					});
 				} else {
-					value[__Internal__.symbolDD_DOC] = doc;
+					value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
 				};
 				return value;
 			});
@@ -5240,9 +5302,7 @@
 
 				type.prototype = types.createObject(base.prototype, {
 					constructor: {
-						configurable: true,
 						value: type,
-						writable: true,
 					},
 				});
 
@@ -5878,6 +5938,9 @@
 
 					"var obj;" +
 					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
+						"if (!forType) {" +
+							"ctx.setAttribute(this, 'constructor', ctx.type, {});" +
+						"};" +
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
 					"} else {" +
@@ -5925,7 +5988,6 @@
 					baseof: types.baseof,
 					newInstance: types.newInstance,
 					get: types.get,
-					protectObject: __Internal__.protectObject,
 					setAttribute: _shared.setAttribute,
 					InitializedSymbol: __Internal__.symbolInitialized,
 					getTypeName: types.getTypeName,
@@ -5933,8 +5995,10 @@
 					instanceProto: instanceProto,
 					instanceBase: (base ? base.prototype : null),
 					applyProto: __Internal__.applyProto,
+					type: null, // will be set after type creation
 				};
 				var type = types.eval(expr, ctx);
+				ctx.type = type;
 				
 				// Inherit base
 				var proto;
@@ -5948,13 +6012,12 @@
 //IE8					proto = types.createObject({});
 //IE8					type.prototype = proto;
 					proto = type.prototype;
+					_shared.setAttribute(proto, 'constructor', type, {});
 				};
 			
 				ctx.type = type;
 				ctx.proto = proto;
 			
-				proto.constructor = type;
-				
 				if (typeProto) {
 					__Internal__.applyProto(type, base, typeProto, true);
 				};
