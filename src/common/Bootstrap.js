@@ -92,6 +92,17 @@
 			//typesMap: null,      // types mapped to their Symbol
 			//tempTypesToMap: [],  // types to map in "typesMap"
 			tempSetUUID: [],  // types to set the UUID
+			tempSetUUIDFn: function tempSetUUIDFn() { // function to set the UUID
+					if (__Internal__.tempSetUUID) {
+						for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
+							var t = __Internal__.tempSetUUID[i];
+							_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
+							_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
+						};
+						delete __Internal__.tempSetUUID;
+					};
+					delete __Internal__.tempSetUUIDFn;
+				},
 			
 			DD_ASSERT: null,
 		};
@@ -6104,13 +6115,8 @@
 					_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, false, {});
 				} else {
 					if (tools.generateUUID) {
-						if (__Internal__.tempSetUUID) {
-							for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
-								var t = __Internal__.tempSetUUID[i];
-								_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
-								_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
-							};
-							delete __Internal__.tempSetUUID;
+						if (__Internal__.tempSetUUIDFn) {
+							__Internal__.tempSetUUIDFn();
 						};
 						_shared.setAttribute(type, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
 						_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, true, {});
@@ -6700,20 +6706,6 @@
 				{
 					$TYPE_NAME: 'Namespace',
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Namespace')), true) */,
-					
-					DD_PARENT: types.READ_ONLY(null),
-					DD_NAME: types.READ_ONLY(null),
-					DD_FULL_NAME: types.READ_ONLY(null),
-
-					_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
-						this._super();
-						
-						_shared.setAttributes(this, {
-							DD_PARENT: parent,
-							DD_NAME: name,
-							DD_FULL_NAME: fullName,
-						});
-					}),
 				},
 				/*instanceProto*/
 				{
@@ -6845,10 +6837,6 @@
 				{
 					$TYPE_NAME: 'Root',
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RootNamespace')), true) */,
-
-					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
-						this._super(null, 'Root', 'Root');
-					}),
 				},
 				/*instanceProto*/
 				{
@@ -6875,7 +6863,7 @@
 								$TYPE_NAME: '__TypesNamespace',
 							},
 							{
-								toString: types.CONFIGURABLE(null),  // Will get set next
+								toString: types.CONFIGURABLE(null),  // Will get set later by "tempTypesAdded"
 							}));
 						root.Doodad.Types = new __typesTmp(root.Doodad, 'Types', 'Doodad.Types');
 
@@ -7045,6 +7033,10 @@
 							};
 						};
 
+						if (__Internal__.tempSetUUIDFn) {
+							__Internal__.tempSetUUIDFn();
+						};
+
 						var names = types.keys(inits),
 							nsOptions = {secret: _shared.SECRET};
 
@@ -7074,13 +7066,8 @@
 							namespaces.add(name, entry, nsOptions);
 						};
 						
-						var opts = options[root.DD_FULL_NAME];
-						var entry = new entries.Namespace(root, null, root);
-						entry.init(opts);
-						namespaces.add(root.DD_FULL_NAME, entry, nsOptions);
-						
-						//delete types.Namespace[__Internal__.symbolInitialized];
-						//types.REGISTER(types.INIT(types.Namespace, [types, 'Namespace', 'Doodad.Types.Namespace']));
+						delete types.Namespace[__Internal__.symbolInitialized];
+						types.REGISTER(types.INIT(types.Namespace));
 
 						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];
@@ -7155,6 +7142,8 @@
 					},
 				}
 			))), [modules, _options]);
+
+		types.REGISTER(root);
 
 		return root.Doodad.Namespaces.load(modules, _options, startup);
 	};
