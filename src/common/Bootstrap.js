@@ -590,7 +590,8 @@
 			symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol['for']) ? global.Symbol['for'] : undefined),
 			
 			// "getSymbolKey", "symbolIsGlobal"
-			symbolValueOf: global.Symbol.prototype.valueOf,
+			symbolToString: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString : undefined),
+			symbolValueOf: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.valueOf) ? global.Symbol.prototype.valueOf : undefined),
 			symbolKeyFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.keyFor) ? global.Symbol.keyFor : undefined),
 			
 			// "getSymbolFor", "getSymbolKey"
@@ -3698,7 +3699,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3731,6 +3732,11 @@
 					return undefined;
 				};
 				var key = _shared.Natives.symbolKeyFor(symbol);
+				if (types.isNothing(key)) {
+					key = _shared.Natives.symbolToString.call(symbol);
+					key = /^Symbol[(]((.|\n)*)[)]$/gm.exec(key) || undefined;
+					key = key && key[1];
+				};
 				return key;
 			} : function getSymbolKey(symbol) {
 				// Not supported
