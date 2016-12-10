@@ -1678,7 +1678,8 @@ module.exports = {
 								} else if (types.isDate(obj)) {
 									return '(new Date(' + obj.getFullYear() + ', ' + obj.getMonth() + ', ' + obj.getDate() + ', ' + obj.getHours() + ', ' + obj.getMinutes() + ', ' + obj.getSeconds() + ', ' + obj.getMilliseconds() + '))';
 								} else if (types.isSymbol(obj)) {
-									return (types.symbolIsGlobal(obj) ? "Symbol.for(" + types.toSource(types.getSymbolKey(obj), null, options) + ")" : "Symbol()");
+									var key = types.getSymbolKey(obj);
+									return (types.symbolIsGlobal(obj) && !types.isNothing(key) ? "Symbol.for(" + types.toSource(key, null, options) + ")" : (types.isNothing(key) ? "Symbol()" : "Symbol(" + types.toSource(key, null, options) + ")"));
 								} else if (types.isError(obj)) {
 									return '(new Error(' + types.toSource(obj.message || obj.description, null, options) + '))';
 								} else if (types.isFunction(obj)) {
