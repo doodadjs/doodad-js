@@ -1783,12 +1783,14 @@ module.exports = {
 				//===================================
 
 				__Internal__.Promise = null;
+				__Internal__.symbolIsPromise = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromise')), true) */ '__DD_IS_PROMISE__' /*! END_REPLACE() */, true);
+				__Internal__.symbolIsPromiseExtended = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromiseExtended')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true);
 				
 				types.ADD('isPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'object',
@@ -1801,8 +1803,11 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isPromise(obj) {
-						if (!__Internal__.Promise) {
+						if (types.isNothing(obj) || (typeof obj !== 'object')) {
 							return false;
+						};
+						if (types.isFunction(obj.constructor) && obj.constructor[__Internal__.symbolIsPromise]) {
+							return true;
 						};
 						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]);
 					}));
@@ -2101,12 +2106,12 @@ module.exports = {
 						}, null, thisObj);
 					};
 				};
-					
+				
 				types.ADD('setPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								Promise: {
 									type: 'Promise',
@@ -2119,8 +2124,21 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function setPromise(Promise) {
-						if (Promise && (Promise === __Internal__.Promise)) {
+						if (!types.isFunction(Promise)) {
+							return;
+						};
+
+						if (Promise === __Internal__.Promise) {
 							// Already set
+							return;
+						};
+
+						if (Promise[__Internal__.symbolIsPromise]) {
+							if (Promise[__Internal__.symbolIsPromiseExtended]) {
+								__Internal__.Promise = Promise;
+							} else {
+								throw new types.TypeError("That 'Promise' constructor has been already extended into another constructor. Set that one instead.");
+							};
 							return;
 						};
 
@@ -2166,6 +2184,15 @@ module.exports = {
 
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
+
+						_shared.setAttribute(DDPromise, __Internal__.symbolIsPromise, true, {});
+						_shared.setAttribute(DDPromise, __Internal__.symbolIsPromiseExtended, true, {});
+
+						if (Promise !== DDPromise) {
+							_shared.setAttribute(Promise, __Internal__.symbolIsPromise, true, {});
+							_shared.setAttribute(Promise, __Internal__.symbolIsPromiseExtended, false, {});
+						};
+
 						__Internal__.Promise = DDPromise;
 					}));
 				

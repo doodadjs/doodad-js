@@ -4423,14 +4423,17 @@
 		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
 		__Internal__.symbolTypeUUIDGenerated = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID_GEN')), true) */ '__DD_TYPE_UUID_GEN__' /*! END_REPLACE() */, true);
 
+		__Internal__.ADD('UUIDSymbol', types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true))
+
 		_shared.getTypeUUID = function getTypeUUID(type) {
 			if (types.isType(type)) {
 				return type[__Internal__.symbolTypeUUID];
+			} else if (types.isFunction(type)) {
+				return types.get(type, types.UUIDSymbol);
 			};
 		};
 
 		_shared.getTypeSymbol = function getTypeSymbol(type) {
-			var name = null;
 			if (!__Internal__.typesSymbolMap && types.WeakMap) {
 				__Internal__.typesSymbolMap = new types.WeakMap();
 				var symbols = types.append(types.keys(__Internal__.tempTypesSymbol), types.symbols(__Internal__.tempTypesSymbol));
@@ -4440,58 +4443,40 @@
 				};
 				delete __Internal__.tempTypesSymbol;
 			};
-			if (__Internal__.typesSymbolMap) {
-				name = __Internal__.typesSymbolMap.get(type);
+			if (__Internal__.typesSymbolMap && __Internal__.typesSymbolMap.has(type)) {
+				return __Internal__.typesSymbolMap.get(type);
 			};
-			if (!name) {
-				if (types.isType(type)) {
-					if (type[__Internal__.symbolTypeUUIDGenerated]) {
-						name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
-					} else {
-						name = type[__Internal__.symbolTypeUUID];
-					};
-					name = name && types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
-				//} else if (types.isFunction(type)) {
-				} else if (types.isNativeFunction(type)) {
-					name = (types.get(type.prototype, 'constructor') === type) && types.getFunctionName(type);
-					if (name) {
-						//var isNative = types.isNativeFunction(type),
-						var proto,
-							lastProto;
-						while ((proto = types.getPrototypeOf(type.prototype)) && (lastProto !== proto)) {
-							var protoFn = types.get(proto, 'constructor');
-							var protoName;
-							//if (isNative) {
-								protoName = types.isNativeFunction(protoFn) && types.getFunctionName(protoFn);
-							//} else {
-							//	protoName = types.isFunction(protoFn) && types.getFunctionName(protoFn);
-							//};
-							if (!protoName) {
-								name = undefined;
-								break;
-							};
-							name += ('->' + protoName);
-							lastProto = proto;
-						};
-						if (name) {
-							//if (isNative) {
-								name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
-							//} else {
-							//	name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
-							//};
-						};
+			var name = undefined;
+			if (types.isType(type)) {
+				if (type[__Internal__.symbolTypeUUIDGenerated]) {
+					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
+				} else {
+					name = type[__Internal__.symbolTypeUUID];
+				};
+				if (name) {
+					name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+				};
+			} else if (types.isFunction(type)) {
+				var isNative = types.isNativeFunction(type) && !types.isJsClass(type);
+				if ((types.get(type.prototype, 'constructor') === type)) {
+					name = types.get(type, types.UUIDSymbol);
+					if (isNative && types.isNothing(name)) {
+						name = types.getFunctionName(type);
 					};
 				};
 				if (name) {
-					if (__Internal__.tempTypesSymbol) {
-						if (name in __Internal__.tempTypesSymbol) {
-							debugger;
-						};
-						__Internal__.tempTypesSymbol[name] = type;
+					if (isNative) {
+						name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
 					} else {
-						__Internal__.typesSymbolMap.set(type, name);
+						name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
 					};
 				};
+			};
+			if (__Internal__.typesSymbolMap) {
+				__Internal__.typesSymbolMap.set(type, name);
+			} else if (name) {
+				// Temporary
+				__Internal__.tempTypesSymbol[name] = type;
 			};
 			return name;
 		};
@@ -4503,7 +4488,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							base: {
 								type: 'type',
@@ -4523,10 +4508,13 @@
 			, function baseof(base, type) {
 				// "obj" is a type that inherits "type".
 
+				type = _shared.Natives.windowObject(type);
+
 				if (!types.isFunction(type)) {
 					// Use "isLike"
 					return false;
 				};
+
 				if (type instanceof _shared.Natives.windowFunction) {
 					if (!types.isArray(base)) {
 						base = [base];
