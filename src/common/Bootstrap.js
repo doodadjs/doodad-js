@@ -316,7 +316,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						obj: {
 							type: 'any',
@@ -343,9 +343,7 @@
 					if (index2 < 0) {
 						return false;
 					};
-					str = str.slice(index1, index2);
-					var len = str.length;
-					for (var i = 0; i < len; i++) {
+					for (var i = index1; i < index2; i++) {
 						var chr = str[i];
 						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
 							return false;
@@ -361,7 +359,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -388,9 +386,7 @@
 					if (index2 < 0) {
 						return true;
 					};
-					str = str.slice(index1, index2);
-					var len = str.length;
-					for (var i = 0; i < len; i++) {
+					for (var i = index1; i < index2; i++) {
 						var chr = str[i];
 						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
 							return true;
