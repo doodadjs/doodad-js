@@ -65,6 +65,9 @@
 				
 				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
 				functionToString: global.Function.prototype.toString,
+
+				// "supportsES6Classes"
+				objectCreate: global.Object.create,
 			},
 		};
 		
@@ -73,7 +76,7 @@
 
 			// "isNativeFunction", "isCustomFunction"
 			hasIncompatibleFunctionToStringBug: false,
-			
+
 			// "createObject", "getPrototypeOf", "setPrototypeOf"
 			hasProto: !!({}.__proto__),
 
@@ -166,11 +169,21 @@
 		//===================================
 
 		__Internal__.hasClasses = false;
-		try {
-			__Internal__.evals.eval("class A {}");
-			__Internal__.hasClasses = true;
-		} catch(ex) {
-		};
+		__Internal__.classesNotCallable = true;
+		(function() {
+			try {
+				var cls = __Internal__.evals.eval("class A {}");
+				__Internal__.hasClasses = /^class[ ]/.test(_shared.Natives.functionToString.call(cls));  // Check for Firefox's bug
+				if (__Internal__.hasClasses) {
+					try {
+						cls.call(_shared.Natives.objectCreate(cls.prototype));
+						__Internal__.classesNotCallable = false; // in case of !
+					} catch(o) {
+					};
+				};
+			} catch(o) {
+			};
+		})();
 
 		__Internal__.ADD('supportsES6Classes', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2710,7 +2723,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							type: {
 								type: 'type',
@@ -2741,15 +2754,20 @@
 						type.prototype = {};
 					};
 				};
+				var obj;
 				if (args && args.length) {
-					var obj = types.createObject(type.prototype, {
-						constructor: {
-							configurable: true,
-							value: type,
-							writable: true,
-						},
-					});
-					obj.constructor.apply(obj, args);
+					if (__Internal__.classesNotCallable && types.isJsClass(type)) {
+						obj = types.eval("new ctx.type(...ctx.args)", {type: type, args: args});
+					} else {
+						obj = types.createObject(type.prototype, {
+							constructor: {
+								configurable: true,
+								value: type,
+								writable: true,
+							},
+						});
+						obj.constructor.apply(obj, args);
+					};
 				} else {
 					obj = new type();
 				};
