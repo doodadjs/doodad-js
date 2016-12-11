@@ -672,7 +672,7 @@ module.exports = {
 							description: "Makes a function like called from inside an object.",
 					}
 					//! END_REPLACE()
-					, function(/*optional*/obj, fn, /*optional*/secret) {
+					, function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 						if (types.isCallback(fn)) {
 							throw new types.Error("Invalid function.");
 						};
@@ -6939,7 +6939,7 @@ module.exports = {
 							description: "Creates a callback handler.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+					, types.setPrototypeOf(function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						var attr;
 						if (types.isString(fn) || types.isSymbol(fn)) {
