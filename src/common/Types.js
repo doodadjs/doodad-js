@@ -1804,7 +1804,7 @@ module.exports = {
 						if (!__Internal__.Promise) {
 							return false;
 						};
-						return (typeof obj === 'object') && (obj instanceof __Internal__.Promise);
+						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]);
 					}));
 				
 				types.ADD('getPromise', root.DD_DOC(
