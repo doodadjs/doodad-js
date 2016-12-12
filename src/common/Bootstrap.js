@@ -92,8 +92,6 @@
 			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 
-			tempSetUUID: [],  // types to set the UUID
-
 			tempTypesSymbol: {},
 
 			DD_ASSERT: null,
@@ -2708,7 +2706,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							type: {
 								type: 'type',
@@ -2746,9 +2744,7 @@
 					} else {
 						obj = types.createObject(type.prototype, {
 							constructor: {
-								configurable: true,
 								value: type,
-								writable: true,
 							},
 						});
 						obj.constructor.apply(obj, args);
@@ -3792,14 +3788,13 @@
 		// Type functions
 		//===================================
 		
+		__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IS_TYPE')), true) */ '__DD_IS_TYPE__' /*! END_REPLACE() */, true);
 		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
-		__Internal__.symbolTypeUUIDGenerated = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID_GEN')), true) */ '__DD_TYPE_UUID_GEN__' /*! END_REPLACE() */, true);
-
 		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
 
 		_shared.getTypeUUID = function getTypeUUID(type) {
 			if (types.isType(type)) {
-				return type[__Internal__.symbolTypeUUID];
+				return types.get(type, __Internal__.symbolTypeUUID);
 			} else if (types.isFunction(type)) {
 				return types.get(type, _shared.UUIDSymbol);
 			};
@@ -3820,10 +3815,10 @@
 			};
 			var name = undefined;
 			if (types.isType(type)) {
-				if (type[__Internal__.symbolTypeUUIDGenerated]) {
-					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
-				} else {
+				if (types.has(type, __Internal__.symbolTypeUUID)) {
 					name = type[__Internal__.symbolTypeUUID];
+				} else {
+					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
 				};
 				if (name) {
 					name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
@@ -3946,7 +3941,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'object',
@@ -3962,7 +3957,7 @@
 				if (!types.isFunction(obj)) {
 					return false;
 				};
-				return types.has(obj, __Internal__.symbolTypeUUID);
+				return types.has(obj, __Internal__.symbolIsType);
 			}));
 		
 		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -4614,7 +4609,7 @@
 		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbol('__ERROR_CONSTRUCTOR_CALLED__');
 
 		__Internal__.ADD('isErrorType', function isErrorType(type) {
-			return types.isFunction(type) && !!type[__Internal__.symbolIsErrorType];
+			return types.isFunction(type) && types.has(type, __Internal__.symbolIsErrorType);
 		});
 			
 		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
@@ -4810,7 +4805,7 @@
 					type.prototype[_shared.Natives.symbolToStringTag] = 'Error';
 				};
 				
-				_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
+				_shared.setAttribute(type, __Internal__.symbolIsErrorType, undefined, {});
 				_shared.setAttribute(type, _shared.UUIDSymbol, !types.isNothing(uuid) && types.toString(uuid) || '', {});
 
 				return type;
@@ -5984,7 +5979,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							name: {
 								type: 'string',
@@ -6087,7 +6082,7 @@
 					"var obj;" +
 					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
 						"if (!forType) {" +
-							"ctx.setAttribute(this, 'constructor', ctx.type, {});" +
+							"ctx.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
 						"};" +
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
@@ -6167,19 +6162,10 @@
 				ctx.proto = proto;
 			
 				_shared.setAttribute(type, '$TYPE_NAME', name, {});
+				_shared.setAttribute(type, __Internal__.symbolIsType, undefined, {});
 
 				if (uuid) {
 					_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
-					_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, false, {});
-				} else {
-					if (tools.generateUUID) {
-						_shared.setAttribute(type, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
-						_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, true, {});
-					} else {
-						// Temporary
-						_shared.setAttribute(type, __Internal__.symbolTypeUUID, null, {configurable: true}); // for "isType"
-						__Internal__.tempSetUUID.push(type);
-					};
 				};
 	
 				if (typeProto) {
@@ -7148,13 +7134,6 @@
 								};
 							};
 						};
-
-						for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
-							var t = __Internal__.tempSetUUID[i];
-							_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
-							_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
-						};
-						delete __Internal__.tempSetUUID;
 
 						var names = types.keys(inits),
 							nsOptions = {secret: _shared.SECRET};
