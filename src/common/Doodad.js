@@ -248,7 +248,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -261,14 +261,17 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isClass(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj));
+						if (!types.isFunction(obj)) {
+							return false;
+						};
+						return types.isLike(obj, doodad.Class);
 					}));
 				
 				types.ADD('isInterfaceClass', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Type',
@@ -281,14 +284,17 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isInterfaceClass(obj) {
-						return !!obj && ((obj === doodad.Interface) || types.baseof(doodad.Interface, obj));
+						if (!types.isFunction(obj)) {
+							return false;
+						};
+						return types.isLike(obj, doodad.Interface);
 					}));
 				
 				types.ADD('isBase', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -301,14 +307,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isBase(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Base);
+						return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Base);
 					}));
 				
 				types.ADD('isMixIn', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -321,14 +327,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isMixIn(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.MixIn);
+						return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.MixIn);
 					}));
 
 				types.ADD('isInterface', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -341,14 +347,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isInterface(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Interface);
+						return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Interface);
 					}));
 
 				types.ADD('isIsolated', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -361,14 +367,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isIsolated(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Isolated);
+						return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Isolated);
 					}));
 
 				types.ADD('isNewable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'Class',
@@ -381,39 +387,27 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isNewable(obj) {
-						return !!obj && ((obj === doodad.Class) || types.baseof(doodad.Class, obj)) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
+						return types.isClass(obj) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 					}));
 				
 				types.ADD('isSealedClass', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
-										type: 'Object,Class',
+										type: 'Class',
 										optional: false,
-										description: "Object to test for.",
+										description: "Class to test for.",
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' when object is a sealed class. Returns 'false' otherwise.",
+								description: "Returns 'true' when class is a sealed class. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, function isSealedClass(obj) {
-						if (types.isNothing(obj)) {
-							return null;
-						};
-						if (types.isObject(obj)) {
-							obj = types.getType(obj);
-						};
-						if (!obj) {
-							return false;
-						};
-						if ((obj !== doodad.Class) && !types.baseof(doodad.Class, obj)) {
-							return false;
-						};
-						return !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Sealed);
+						return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Sealed);
 					}));
 				
 				types.ADD('isSerializable', root.DD_DOC(
@@ -924,7 +918,7 @@ module.exports = {
 							isErrorType = types.isErrorType(type),
 							isClass = types.isClass(type),
 							name = (types.getTypeName(type) || types.getFunctionName(type) || null),
-							fullName = (name ? ((this !== root) && (this instanceof types.Namespace) ? this.DD_FULL_NAME + '.' : '') + name : null),
+							fullName = (name ? (types._instanceof(this, types.Namespace) && !types.is(this, root) ? this.DD_FULL_NAME + '.' : '') + name : null),
 							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
 						
 						if ((isType || isErrorType || isSingleton)) {
@@ -3821,7 +3815,7 @@ module.exports = {
 					};
 					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
 					return doodad.PROTECTED(function handleEvent(/*optional*/ev) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || (ev instanceof eventType), "Invalid event object.");
+						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || types._instanceof(ev, eventType), "Invalid event object.");
 						
 						if (types.isNothing(ev)) {
 							ev = new eventType();
@@ -5529,7 +5523,7 @@ module.exports = {
 							var attributes = this[__Internal__.symbolAttributes];
 							var storage = this[__Internal__.symbolAttributesStorage];
 							var attrs = types.append(types.keys(attributes), types.symbols(attributes));
-							var sealed = types.isSealedClass(this);
+							var sealed = types.isSealedClass(cls);
 								
 							for (var i = attrs.length - 1; i >= 0; i--) {
 								var attr = attrs[i],
