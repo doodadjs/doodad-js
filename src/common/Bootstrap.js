@@ -957,14 +957,14 @@
 			, function map(obj, fn, /*optional*/thisObj) {
 				if (!types.isNothing(obj)) {
 					obj = Object(obj);
-					if (obj instanceof types.Set) {
+					if (types._instanceof(obj, types.Set)) {
 						var len = obj.length,
 							result = new types.Set();
 						obj.forEach(function(value, key, obj) {
 							result.add(fn.call(thisObj, value, key, obj));
 						});
 						return result;
-					} else if (obj instanceof types.Map) {
+					} else if (types._instanceof(obj, types.Map)) {
 						var len = obj.length,
 							result = new types.Map();
 						obj.forEach(function(value, key, obj) {
@@ -3631,7 +3631,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -3647,13 +3647,20 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				if (typeof obj === 'symbol') {
-					return true;
-				} else if ((typeof obj === 'object') && (obj instanceof _shared.Natives.windowSymbol)) {
-					return true;
-				} else {
-					return false;
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+						try {
+							obj = _shared.Natives.symbolValueOf.call(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToString.call(obj) !== '[object Symbol]') {
+						return false;
+					} else {
+						obj = _shared.Natives.symbolValueOf.call(obj);
+					};
 				};
+				return (typeof obj === 'symbol');
 			} : function isSymbol(obj) {
 				return false;
 			})));
@@ -3698,7 +3705,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3711,26 +3718,10 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function getSymbolKey(symbol) {
-				if (types.isNothing(symbol)) {
+				if (!types.isSymbol(symbol)) {
 					return undefined;
 				};
-				if (typeof symbol === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in symbol)) {
-						try {
-							symbol = _shared.Natives.symbolValueOf.call(symbol);
-						} catch(o) {
-							return undefined;
-						};
-					} else if (_shared.Natives.objectToString.call(symbol) !== '[object Symbol]') {
-						return undefined;
-					} else {
-						symbol = _shared.Natives.symbolValueOf.call(symbol);
-					};
-				};
-				if (typeof symbol !== 'symbol') {
-					return undefined;
-				};
-				var key = _shared.Natives.symbolKeyFor(symbol);
+				var key = _shared.Natives.symbolKeyFor(symbol.valueOf());
 				if (types.isNothing(key)) {
 					key = _shared.Natives.symbolToString.call(symbol);
 					key = /^Symbol[(]((.|\n)*)[)]$/gm.exec(key) || undefined;
@@ -3746,7 +3737,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							symbol: {
 								type: 'symbol',
@@ -3759,26 +3750,10 @@
 			}
 			//! END_REPLACE()
 			, (_shared.Natives.windowSymbol ? function symbolIsGlobal(symbol) {
-				if (types.isNothing(symbol)) {
+				if (!types.isSymbol(symbol)) {
 					return false;
 				};
-				if (typeof symbol === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in symbol)) {
-						try {
-							symbol = _shared.Natives.symbolValueOf.call(symbol);
-						} catch(o) {
-							return false;
-						};
-					} else if (_shared.Natives.objectToString.call(symbol) !== '[object Symbol]') {
-						return false;
-					} else {
-						symbol = _shared.Natives.symbolValueOf.call(symbol);
-					};
-				};
-				if (typeof symbol !== 'symbol') {
-					return false;
-				};
-				return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
+				return (_shared.Natives.symbolKeyFor(symbol.valueOf()) !== undefined);
 			} : function symbolIsGlobal(symbol) {
 				// Not supported
 				return false;
@@ -5174,7 +5149,7 @@
 			, function box(value) {
 				//if (new.target) {
 				if (this instanceof types.box) {
-					if (value instanceof types.box) {
+					if (types._instanceof(value, types.box)) {
 						value.setAttributes(this);
 						value = value[_shared.OriginalValueSymbol];
 					};
@@ -5226,7 +5201,7 @@
 			}
 			//! END_REPLACE()
 			, function unbox(value) {
-				return ((value instanceof types.box) ? value.valueOf() : value);
+				return (types._instanceof(value, types.box) ? value.valueOf() : value);
 			}));
 					
 		//===================================
@@ -5466,7 +5441,7 @@
 			, types.INHERIT(types.box, function AttributeBox(value) {
 				//if (new.target) {
 				if (this instanceof types.AttributeBox) {
-					if (value instanceof types.box) {
+					if (types._instanceof(value, types.box)) {
 						value.setAttributes(this);
 						value = value[_shared.OriginalValueSymbol];
 					};
@@ -6421,18 +6396,15 @@
 					
 					_new: types.SUPER(function _new(type, /*optional*/init) {
 						this._super();
-						//if (new.target) {
-						if (this instanceof types.CustomEvent) {
-							init = types.nullObject(init);
-							_shared.setAttributes(this, {
-								type: type,
-								// NOTE: Event targets are responsible to bubble events to their parent when "bubbling" is true.
-								bubbles: !!init.bubbles,
-								cancelable: !!init.cancelable,
-								detail: init.detail,
-							});
-							this.bubbling = this.bubbles;
-						};
+						init = types.nullObject(init);
+						_shared.setAttributes(this, {
+							type: type,
+							// NOTE: Event targets are responsible to bubble events to their parent when "bubbling" is true.
+							bubbles: !!init.bubbles,
+							cancelable: !!init.cancelable,
+							detail: init.detail,
+						});
+						this.bubbling = this.bubbles;
 					}),
 					
 					preventDefault: __Internal__.DD_DOC(
@@ -6507,14 +6479,7 @@
 				{
 					_new: types.SUPER(function _new() {
 						this._super();
-						//if (new.target) {
-						if (this instanceof types.CustomEventTarget) {
-							_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {
-								configurable: true, 
-								//enumerable: false,  'FALSE' is the default
-								//writable: false 'FALSE' is the default
-							});
-						};
+						_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {});
 					}),
 					
 					addEventListener: __Internal__.DD_DOC(
