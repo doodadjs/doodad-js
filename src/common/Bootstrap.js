@@ -3410,7 +3410,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -3423,7 +3423,10 @@
 			}
 			//! END_REPLACE()
 			, function isObjectLike(obj) {
-				return (types.isObject(obj) || (obj instanceof _shared.Natives.windowObject));
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				return (typeof obj === 'object') || (typeof obj === 'function');
 			}));
 		
 		__Internal__.ADD('isExtensible', (_shared.Natives.objectIsExtensible || __Internal__.DD_DOC(
