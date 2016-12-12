@@ -93,17 +93,6 @@
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 
 			tempSetUUID: [],  // types to set the UUID
-			tempSetUUIDFn: function tempSetUUIDFn() { // function to set the UUID
-					if (__Internal__.tempSetUUID) {
-						for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
-							var t = __Internal__.tempSetUUID[i];
-							_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
-							_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
-						};
-						delete __Internal__.tempSetUUID;
-					};
-					delete __Internal__.tempSetUUIDFn;
-				},
 
 			tempTypesSymbol: {},
 
@@ -1722,7 +1711,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1745,7 +1734,7 @@
 				//	????
 				//};
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
-				return ((_shared.Natives.objectToString.call(obj) === '[object Error]') || (obj instanceof types.Error) || (obj instanceof types.TypeError));
+				return (_shared.Natives.objectToString.call(obj) === '[object Error]') || types.isErrorType(obj.constructor);
 			}));
 		
 		__Internal__.ADD('isNaN', (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
@@ -3800,632 +3789,19 @@
 			})));
 			
 		//===================================
-		// Errors
-		//===================================
-		
-		__Internal__.ADD('isErrorType', function isErrorType(type) {
-			return types.isFunction(type) && ((_shared.Natives.windowError.prototype === type.prototype) || types.isPrototypeOf(_shared.Natives.windowError.prototype, type.prototype));
-		});
-			
-		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbol("__ERROR_CONSTRUCTOR__");
-		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbol("__ERROR_CONSTRUCTOR_CALLED__");
-
-		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
-		// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
-		__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the resulting error type.",
-							},
-							base: {
-								type: 'error',
-								optional: true,
-								description: "Error type from which to inherit. Defaults to 'Error'.",
-							},
-							constructor: {
-								type: 'function',
-								optional: true,
-								description: "A function to be called to construct a new instance. Defaults to base's constructor.",
-							},
-						},
-						returns: 'error',
-						description: "Creates a new error type, based on another error type.",
-			}
-			//! END_REPLACE()
-			, function createErrorType(name, /*optional*/base, /*optional*/constructor) {
-				if (types.isNothing(base)) {
-					base = _shared.Natives.windowError;
-				};
-				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
-				if (__Internal__.hasClasses) {
-					// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
-					var expr = "class " + name + " extends ctx.base {" +
-						"constructor(/*paramarray*/...args) {" +
-							"super(...args);" +
-							"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
-						"}" +
-						"[ctx.errorConstructor](/*paramarray*/) {" +
-							"this[ctx.errorConstructorCalled] = true;" +
-							(constructor ? (
-								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);"
-							) : (
-								""
-							)) +
-							"this.name = ctx.name;" +
-							"this.description = this.message;" +
-						"}" +
-					"}";
-
-					// NOTE: Use of "eval" to give the name to the class
-					var type = types.eval(expr, {
-						base: base,
-						constructor: constructor,
-						name: name,
-						errorConstructor: __Internal__.symbolErrorConstructor,
-						errorConstructorCalled: __Internal__.symbolErrorConstructorCalled,
-					});
-
-				} else {
-					var expr = "function " + name + "(/*paramarray*/) {" +
-						(constructor ? (
-							"var error = ctx.constructor.apply({_this: this, _super: ctx.base}, arguments) || this;" +
-							"this.throwLevel++;"
-						) : (
-							"var error = ctx.base.apply(this, arguments) || this;"
-						)) +
-						"if (error !== this) {" +
-							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
-							//
-							//       Proof of concept :
-							//          var a = new Error("hello");
-							//          var b = Error.call(a, "bye");
-							//          a === b  // always returns "false"
-							//          a.constructor === b.constructor  // returns "true"
-							//          a.constructor === Error  // returns "true"
-							//          a instanceof Error  // returns "true"
-							//          b instanceof Error  // returns "true"
-							//
-							//       Moreover :
-							//          this instanceof Error  // returns "true"
-							"this.message = (error.message || error.description);" +
-							// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
-							// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
-							// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
-							"if (error.stack) {" +
-								"this.stack = error.stack;" +
-							"};" +
-						"};" +
-						"this.throwLevel++;" +
-						"this.name = ctx.name;" +
-						"this.description = this.message;" +
-						"return this;" +
-					"}";
-				
-					// NOTE: Use of "eval" to give the name to the function				
-					var type = types.eval(expr, {
-						base: base,
-						constructor: constructor,
-						name: name,
-					});
-				
-					// For "instanceof".
-					type.prototype = types.setPrototypeOf(type.prototype, base.prototype);
-				};
-				
-				types.extend(type.prototype, {
-					name: name,
-					throwLevel: 0,
-					parsed: false,
-					parsedStack: null,
-					bubble: false,
-					critical: false,
-					trapped: false,
-					
-					toString: function toString(/*paramarray*/) {
-						return this.message;
-					},
-					
-					parse: function parse() {
-						// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
-						if (!this.parsed) {
-							var stack;
-							if (this.stack) {
-								stack = tools.parseStack(this.stack);
-								if (stack) {
-									stack.splice(0, this.throwLevel);
-									// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
-									if (!stack.length) {
-										stack = null;
-									};
-								};
-								this.parsedStack = stack;
-							};
-							
-							var fileName,
-								lineNumber,
-								columnNumber,
-								functionName;
-							if (this.fileName) {
-								// <FUTURE> Firefox
-								// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
-								fileName = this.fileName;
-								lineNumber = this.lineNumber;
-								functionName = "";
-							} else if (this.sourceURL) {
-								// Safari 5
-								// NOTE: "this.line" should be already set
-								fileName = this.sourceURL;
-								lineNumber = this.line;
-								columnNumber = 0;
-								functionName = "";
-							} else {
-								// Other browsers
-								// Set attributes from the stack.
-								if (stack) {
-									var trace = stack[0];
-									fileName = trace.path;
-									columnNumber = trace.columnNumber;
-									lineNumber = trace.lineNumber;
-									functionName = trace.functionName;
-								} else {
-									fileName = "";
-									columnNumber = 0;
-									lineNumber = 0;
-									functionName = "";
-								};
-							};
-							this.fileName = fileName;
-							this.sourceURL = fileName;
-							this.line = lineNumber;
-							this.lineNumber = lineNumber;
-							this.columnNumber = columnNumber;
-							this.functionName = functionName;
-							this.parsed = true;
-						};
-					},
-				});
-				
-				return type;
-			}));
-		
-		__Internal__.createErrorConstructor = function() {
-			return function _new(message, /*optional*/params) {
-				message = tools.format(message, params);
-				return this._super.call(this._this, message);
-			};
-		};
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'error',
-						description: "Raised on invalid value type.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.windowTypeError
-				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor())
-				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor())
-			)));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: false,
-								description: "Error message",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'undefined',
-						description: "Generic error with message formatting.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor())));
-
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: false,
-								description: "A message explaining the assertion.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised when an assertion fail.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("AssertionFailed", types.Error, function _new(message, /*optional*/params) {
-				if (message) {
-					return this._super.call(this._this, "Assertion failed: " + message, params);
-				} else {
-					return this._super.call(this._this, "Assertion failed.");
-				};
-			})));
-
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that something has failed to parse.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on parse error.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Parse error.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining what is not supported.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised when something is not supported.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Not supported.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining what is not available.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised when something is not available.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Not available.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							code: {
-								type: 'integer',
-								optional: false,
-								description: "HTTP status code.",
-							},
-							message: {
-								type: 'string',
-								optional: false,
-								description: "A message explaining the error.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on HTTP error.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
-				this._this.code = code;
-				return this._super.call(this._this, message, params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that something has overflowed.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on buffer overflow.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Buffer overflow.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that something has timed out.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on timeout.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Operation timed out.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that something has been canceled.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on cancel.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Operation canceled.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that something is denied or not allowed.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised on access denied or not allowed operation.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Access denied.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that the script execution has been interrupted.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Signals that script execution has been interrupted, but not aborted.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				this._this.bubble = true;
-				return this._super.call(this._this, message || "Script interrupted.", params);
-			})));
-		
-		__Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						exitCode: {
-							type: 'integer',
-							optional: true,
-							description: "Exit code.",
-						},
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that the script has been aborted.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Signals that script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
-			}
-			//! END_REPLACE()
-			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-				this._this.exitCode = types.toInteger(exitCode) || 0;
-				this._this.critical = true;
-				return this._super.call(this._this, message || "Script aborted.", params);
-			})));
-				
-		//===================================
-		// Box/Unbox
-		//===================================
-		
-		_shared.OriginalValueSymbol = types.getSymbol('__ORIGINAL_VALUE__');
-		
-		__Internal__.ADD('box', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							value: {
-								type: 'any',
-								optional: false,
-								description: "A value.",
-							},
-						},
-						returns: 'Doodad.Types.box',
-						description: "Box a value inside a box object.",
-			}
-			//! END_REPLACE()
-			, function box(value) {
-				//if (new.target) {
-				if (this instanceof types.box) {
-					if (value instanceof types.box) {
-						value.setAttributes(this);
-						value = value[_shared.OriginalValueSymbol];
-					};
-					this[_shared.OriginalValueSymbol] = value;
-					return this;
-				} else {
-					return new types.box(value);
-				};
-			}));
-		types.extend(types.box.prototype, {
-			setAttributes: function setAttributes(dest, /*optional*/override) {
-				var keys = types.append(types.keys(this), types.symbols(this));
-				for (var i = 0; i < keys.length; i++) {
-					var key = keys[i];
-					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
-						dest[key] = this[key];
-					};
-				};
-				return dest;
-			},
-			valueOf: function valueOf() {
-				return this[_shared.OriginalValueSymbol];
-			},
-			setValue: function setValue(value, /*optional*/override) {
-				// NOTE: "OriginalValueSymbol" is immutable
-				var type = this.constructor;
-				var newBox = new type(value);
-				return this.setAttributes(newBox, override);
-			},
-			clone: function clone() {
-				return this.setValue(this[_shared.OriginalValueSymbol]);
-			},
-		});
-			
-		__Internal__.ADD('unbox', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'Doodad.Types.box',
-								optional: false,
-								description: "A value.",
-							},
-						},
-						returns: 'object',
-						description: "Extract the value of a box object.",
-			}
-			//! END_REPLACE()
-			, function unbox(value) {
-				return ((value instanceof types.box) ? value.valueOf() : value);
-			}));
-					
-		//===================================
 		// Type functions
 		//===================================
 		
 		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
 		__Internal__.symbolTypeUUIDGenerated = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID_GEN')), true) */ '__DD_TYPE_UUID_GEN__' /*! END_REPLACE() */, true);
 
-		__Internal__.ADD('UUIDSymbol', types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true))
+		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
 
 		_shared.getTypeUUID = function getTypeUUID(type) {
 			if (types.isType(type)) {
 				return type[__Internal__.symbolTypeUUID];
 			} else if (types.isFunction(type)) {
-				return types.get(type, types.UUIDSymbol);
+				return types.get(type, _shared.UUIDSymbol);
 			};
 		};
 
@@ -4455,7 +3831,7 @@
 			} else if (types.isFunction(type)) {
 				var isNative = types.isNativeFunction(type) && !types.isJsClass(type);
 				if ((types.get(type.prototype, 'constructor') === type)) {
-					name = types.get(type, types.UUIDSymbol);
+					name = types.get(type, _shared.UUIDSymbol);
 					if (isNative && types.isNothing(name)) {
 						name = types.getFunctionName(type);
 					};
@@ -4484,7 +3860,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							base: {
 								type: 'type',
@@ -4504,28 +3880,37 @@
 			, function baseof(base, type) {
 				// "obj" is a type that inherits "type".
 
-				type = _shared.Natives.windowObject(type);
-
 				if (!types.isFunction(type)) {
 					// Use "isLike"
 					return false;
 				};
 
-				if (type instanceof _shared.Natives.windowFunction) {
+				type = _shared.Natives.windowObject(type);
+				var crossRealm = !(type instanceof _shared.Natives.windowFunction);
+
+				if (!crossRealm) {
 					if (!types.isArray(base)) {
 						base = [base];
 					};
 					for (var i = 0; i < base.length; i++) {
 						if (i in base) {
 							var b = base[i];
-							if (types.isFunction(b)) {
-								if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
-									return true;
+							if (!types.isNothing(b)) {
+								if (types.isFunction(b)) {
+									if (_shared.Natives.windowObject(b) instanceof _shared.Natives.windowFunction) {
+										if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
+											return true;
+										};
+									} else {
+										crossRealm = true;
+										break;
+									};
 								};
 							};
 						};
 					};
-				} else {
+				};
+				if (crossRealm) {
 					if (types.isArray(base)) {
 						base = types.clone(base);
 					} else {
@@ -4539,11 +3924,15 @@
 						for (var i = 0; i < base.length; i++) {
 							if (i in base) {
 								var s = base[i];
-								if (types.isFunction(s)) {
-									base[i] = s = _shared.getTypeSymbol(s); // optimization
-								};
-								if (s === symbol) {
-									return true;
+								if (!types.isNothing(s)) {
+									if (types.isFunction(s)) {
+										base[i] = s = _shared.getTypeSymbol(s); // optimization
+									};
+									if (types.isSymbol(s)) {
+										if (s === symbol) {
+											return true;
+										};
+									};
 								};
 							};
 						};
@@ -4557,7 +3946,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'object',
@@ -4566,18 +3955,14 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' when object is a Doodad type (inherits from 'Doodad.Types.Type'). Returns 'false' otherwise.",
+						description: "Returns 'true' when object is a Doodad type (created using 'Types.createType'). Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isType(obj) {
 				if (!types.isFunction(obj)) {
 					return false;
 				};
-				if (obj instanceof _shared.Natives.windowFunction) {
-					return (obj === types.Type) || types.baseof(types.Type, obj);
-				} else {
-					return types.has(obj, __Internal__.symbolTypeUUID);
-				};
+				return types.has(obj, __Internal__.symbolTypeUUID);
 			}));
 		
 		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -4624,7 +4009,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4650,25 +4035,39 @@
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
 					obj = obj.constructor;
+					obj = _shared.Natives.windowObject(obj);
+				};
+				if (!types.isFunction(obj)) {
+					return false;
 				};
 				if (!types.isArray(type)) {
 					type = [type];
 				};
-				if (obj instanceof _shared.Natives.windowFunction) {
+				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
+				if (!crossRealm) {
 					for (var i = 0; i < type.length; i++) {
 						if (i in type) {
 							var t = type[i];
-							if (t) {
+							if (!types.isNothing(t)) {
 								if (!types.isFunction(t)) {
+									t = _shared.Natives.windowObject(t);
 									t = t.constructor;
 								};
-								if (obj === t) {
-									return true;
+								if (types.isFunction(t)) {
+									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
+										if (obj === t) {
+											return true;
+										};
+									} else {
+										crossRealm = true;
+										break;
+									};
 								};
 							};
 						};
 					};
-				} else {
+				};
+				if (crossRealm) {
 					var symbol = _shared.getTypeSymbol(obj);
 					if (symbol) {
 						for (var i = 0; i < type.length; i++) {
@@ -4676,10 +4075,13 @@
 								var t = type[i];
 								if (!types.isNothing(t)) {
 									if (!types.isFunction(t)) {
+										t = _shared.Natives.windowObject(t);
 										t = t.constructor;
 									};
-									if (_shared.getTypeSymbol(t) === symbol) {
-										return true;
+									if (types.isFunction(t)) {
+										if (_shared.getTypeSymbol(t) === symbol) {
+											return true;
+										};
 									};
 								};
 							};
@@ -4693,7 +4095,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4718,8 +4120,13 @@
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
 					obj = obj.constructor;
+					obj = _shared.Natives.windowObject(obj);
 				};
-				if (obj instanceof _shared.Natives.windowFunction) {
+				if (!types.isFunction(obj)) {
+					return false;
+				};
+				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
+				if (!crossRealm) {
 					if (!types.isArray(type)) {
 						type = [type];
 					};
@@ -4728,21 +4135,30 @@
 							var t = type[i];
 							if (!types.isNothing(t)) {
 								if (!types.isFunction(t)) {
+									t = _shared.Natives.windowObject(t);
 									t = t.constructor;
 								};
-								if ((t === obj) || types.isPrototypeOf(t, obj)) {
-									return true;
+								if (types.isFunction(t)) {
+									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
+										if ((t === obj) || types.isPrototypeOf(t, obj)) {
+											return true;
+										};
+									} else {
+										crossRealm = true;
+										break;
+									};
 								};
 							};
 						};
 					};
-				} else {
+				};
+				if (crossRealm) {
 					if (types.isArray(type)) {
 						type = types.clone(type);
 					} else {
 						type = [type];
 					};
-					while (obj) {
+					while (types.isFunction(obj)) {
 						var symbol = _shared.getTypeSymbol(obj);
 						if (!symbol) {
 							break;
@@ -4757,8 +4173,10 @@
 									if (types.isFunction(s)) {
 										type[i] = s = _shared.getTypeSymbol(s); // optimization
 									};
-									if (s === symbol) {
-										return true;
+									if (types.isSymbol(s)) {
+										if (s === symbol) {
+											return true;
+										};
 									};
 								};
 							};
@@ -4773,7 +4191,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							base: {
 								type: 'object',
@@ -4796,33 +4214,43 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				obj = _shared.Natives.windowObject(obj);
 				if (types.isFunction(obj)) {
 					// Please use "types.baseof"
 					return false;
 				};
-				if (obj instanceof _shared.Natives.windowObject) {
+				obj = _shared.Natives.windowObject(obj);
+				var crossRealm = !(obj instanceof _shared.Natives.windowObject);
+				if (!crossRealm) {
 					if (!types.isArray(type)) {
 						type = [type];
 					};
 					for (var i = 0; i < type.length; i++) {
 						if (i in type) {
 							var t = type[i];
-							if (types.isFunction(t)) {
-								if (obj instanceof t) {
-									return true;
+							if (!types.isNothing(t)) {
+								if (types.isFunction(t)) {
+									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
+										if (obj instanceof t) {
+											return true;
+										};
+									} else {
+										// Cross-realm
+										crossRealm = true;
+										break;
+									};
 								};
 							};
 						};
 					};
-				} else {
+				};
+				if (crossRealm) {
 					if (types.isArray(type)) {
 						type = types.clone(type);
 					} else {
 						type = [type];
 					};
 					var t = obj.constructor;
-					while (t) {
+					while (types.isFunction(t)) {
 						var symbol = _shared.getTypeSymbol(t);
 						if (!symbol) {
 							break;
@@ -4830,12 +4258,14 @@
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
 								var s = type[i];
-								if (s) {
+								if (!types.isNothing(s)) {
 									if (types.isFunction(s)) {
 										type[i] = s = _shared.getTypeSymbol(s); // optimization
 									};
-									if (s === symbol) {
-										return true;
+									if (types.isSymbol(s)) {
+										if (s === symbol) {
+											return true;
+										};
 									};
 								};
 							};
@@ -5173,6 +4603,637 @@
 				return values;
 			});
 
+		//===================================
+		// Errors
+		//===================================
+		
+		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsErrorType')), true) */ '__DD_IS_ERROR_TYPE__' /*! END_REPLACE() */, true);
+
+		// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
+		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbol('__ERROR_CONSTRUCTOR__');
+		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbol('__ERROR_CONSTRUCTOR_CALLED__');
+
+		__Internal__.ADD('isErrorType', function isErrorType(type) {
+			return types.isFunction(type) && !!type[__Internal__.symbolIsErrorType];
+		});
+			
+		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
+		// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
+		__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Name of the resulting error type.",
+							},
+							base: {
+								type: 'error',
+								optional: true,
+								description: "Error type from which to inherit. Defaults to 'Error'.",
+							},
+							constructor: {
+								type: 'function',
+								optional: true,
+								description: "A function to be called to construct a new instance. Defaults to base's constructor.",
+							},
+							uuid: {
+								type: 'string',
+								optional: true,
+								description: "UUID of the resulting error type.",
+							},
+						},
+						returns: 'error',
+						description: "Creates a new error type, based on another error type.",
+			}
+			//! END_REPLACE()
+			, function createErrorType(name, /*optional*/base, /*optional*/constructor, /*optional*/uuid) {
+				if (types.isNothing(base)) {
+					base = _shared.Natives.windowError;
+				};
+				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
+				if (__Internal__.hasClasses) {
+					var expr = "class " + name + " extends ctx.base {" +
+						"constructor(/*paramarray*/...args) {" +
+							"super(...args);" +
+							"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
+						"}" +
+						"[ctx.errorConstructor](/*paramarray*/) {" +
+							"this[ctx.errorConstructorCalled] = true;" +
+							(constructor ? (
+								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);"
+							) : (
+								""
+							)) +
+							"this.name = ctx.name;" +
+							"this.description = this.message;" +
+						"}" +
+					"}";
+
+					// NOTE: Use of "eval" to give the name to the class
+					var type = types.eval(expr, {
+						base: base,
+						constructor: constructor,
+						name: name,
+						errorConstructor: __Internal__.symbolErrorConstructor,
+						errorConstructorCalled: __Internal__.symbolErrorConstructorCalled,
+					});
+
+				} else {
+					var expr = "function " + name + "(/*paramarray*/) {" +
+						(constructor ? (
+							"var error = ctx.constructor.apply({_this: this, _super: ctx.base}, arguments) || this;" +
+							"this.throwLevel++;"
+						) : (
+							"var error = ctx.base.apply(this, arguments) || this;"
+						)) +
+						"if (error !== this) {" +
+							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
+							//
+							//       Proof of concept :
+							//          var a = new Error("hello");
+							//          var b = Error.call(a, "bye");
+							//          a === b  // always returns "false"
+							//          a.constructor === b.constructor  // returns "true"
+							//          a.constructor === Error  // returns "true"
+							//          a instanceof Error  // returns "true"
+							//          b instanceof Error  // returns "true"
+							//
+							//       Moreover :
+							//          this instanceof Error  // returns "true"
+							"this.message = (error.message || error.description);" +
+							// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
+							// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
+							// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
+							"if (error.stack) {" +
+								"this.stack = error.stack;" +
+							"};" +
+						"};" +
+						"this.throwLevel++;" +
+						"this.name = ctx.name;" +
+						"this.description = this.message;" +
+						"return this;" +
+					"}";
+				
+					// NOTE: Use of "eval" to give the name to the function				
+					var type = types.eval(expr, {
+						base: base,
+						constructor: constructor,
+						name: name,
+					});
+				
+					// For "instanceof".
+					type.prototype = types.createObject(base.prototype, {
+						constructor: {
+							value: type,
+						},
+					});
+				};
+				
+				types.extend(type.prototype, {
+					name: name,
+					throwLevel: 0,
+					parsed: false,
+					parsedStack: null,
+					bubble: false,
+					critical: false,
+					trapped: false,
+					
+					toString: function toString(/*paramarray*/) {
+						return this.message;
+					},
+					
+					parse: function parse() {
+						// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
+						if (!this.parsed) {
+							var stack;
+							if (this.stack) {
+								stack = tools.parseStack(this.stack);
+								if (stack) {
+									stack.splice(0, this.throwLevel);
+									// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
+									if (!stack.length) {
+										stack = null;
+									};
+								};
+								this.parsedStack = stack;
+							};
+							
+							var fileName,
+								lineNumber,
+								columnNumber,
+								functionName;
+							if (this.fileName) {
+								// <FUTURE> Firefox
+								// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
+								fileName = this.fileName;
+								lineNumber = this.lineNumber;
+								functionName = "";
+							} else if (this.sourceURL) {
+								// Safari 5
+								// NOTE: "this.line" should be already set
+								fileName = this.sourceURL;
+								lineNumber = this.line;
+								columnNumber = 0;
+								functionName = "";
+							} else {
+								// Other browsers
+								// Set attributes from the stack.
+								if (stack) {
+									var trace = stack[0];
+									fileName = trace.path;
+									columnNumber = trace.columnNumber;
+									lineNumber = trace.lineNumber;
+									functionName = trace.functionName;
+								} else {
+									fileName = "";
+									columnNumber = 0;
+									lineNumber = 0;
+									functionName = "";
+								};
+							};
+							this.fileName = fileName;
+							this.sourceURL = fileName;
+							this.line = lineNumber;
+							this.lineNumber = lineNumber;
+							this.columnNumber = columnNumber;
+							this.functionName = functionName;
+							this.parsed = true;
+						};
+					},
+				});
+
+				if (_shared.Natives.symbolToStringTag) {
+					type.prototype[_shared.Natives.symbolToStringTag] = 'Error';
+				};
+				
+				_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
+				_shared.setAttribute(type, _shared.UUIDSymbol, !types.isNothing(uuid) && types.toString(uuid) || '', {});
+
+				return type;
+			}));
+		
+		__Internal__.createErrorConstructor = function() {
+			return function _new(message, /*optional*/params) {
+				message = tools.format(message, params);
+				return this._super.call(this._this, message);
+			};
+		};
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'error',
+						description: "Raised on invalid value type.",
+			}
+			//! END_REPLACE()
+			, (_shared.Natives.windowTypeError
+				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
+				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
+			)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: false,
+								description: "Error message",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'undefined',
+						description: "Generic error with message formatting.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
+
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: false,
+								description: "A message explaining the assertion.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised when an assertion fail.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("AssertionFailed", types.Error, function _new(message, /*optional*/params) {
+				if (message) {
+					return this._super.call(this._this, "Assertion failed: " + message, params);
+				} else {
+					return this._super.call(this._this, "Assertion failed.");
+				};
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionFailed')), true) */ null /*! END_REPLACE() */)));
+
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something has failed to parse.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on parse error.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Parse error.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining what is not supported.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised when something is not supported.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Not supported.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining what is not available.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised when something is not available.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Not available.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							code: {
+								type: 'integer',
+								optional: false,
+								description: "HTTP status code.",
+							},
+							message: {
+								type: 'string',
+								optional: false,
+								description: "A message explaining the error.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on HTTP error.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
+				this._this.code = code;
+				return this._super.call(this._this, message, params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something has overflowed.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on buffer overflow.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Buffer overflow.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something has timed out.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on timeout.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Operation timed out.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something has been canceled.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on cancel.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Operation canceled.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that something is denied or not allowed.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised on access denied or not allowed operation.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
+				return this._super.call(this._this, message || "Access denied.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that the script execution has been interrupted.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Signals that script execution has been interrupted, but not aborted.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
+				this._this.bubble = true;
+				return this._super.call(this._this, message || "Script interrupted.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */)));
+		
+		__Internal__.REGISTER(__Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						exitCode: {
+							type: 'integer',
+							optional: true,
+							description: "Exit code.",
+						},
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that the script has been aborted.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
+			}
+			//! END_REPLACE()
+			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
+				this._this.exitCode = types.toInteger(exitCode) || 0;
+				this._this.critical = true;
+				return this._super.call(this._this, message || "Script aborted.", params);
+			}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
+				
+		//===================================
+		// Box/Unbox
+		//===================================
+		
+		_shared.OriginalValueSymbol = types.getSymbol('__ORIGINAL_VALUE__');
+		
+		__Internal__.ADD('box', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							value: {
+								type: 'any',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'Doodad.Types.box',
+						description: "Box a value inside a box object.",
+			}
+			//! END_REPLACE()
+			, function box(value) {
+				//if (new.target) {
+				if (this instanceof types.box) {
+					if (value instanceof types.box) {
+						value.setAttributes(this);
+						value = value[_shared.OriginalValueSymbol];
+					};
+					this[_shared.OriginalValueSymbol] = value;
+					return this;
+				} else {
+					return new types.box(value);
+				};
+			}));
+		types.extend(types.box.prototype, {
+			setAttributes: function setAttributes(dest, /*optional*/override) {
+				var keys = types.append(types.keys(this), types.symbols(this));
+				for (var i = 0; i < keys.length; i++) {
+					var key = keys[i];
+					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
+						dest[key] = this[key];
+					};
+				};
+				return dest;
+			},
+			valueOf: function valueOf() {
+				return this[_shared.OriginalValueSymbol];
+			},
+			setValue: function setValue(value, /*optional*/override) {
+				// NOTE: "OriginalValueSymbol" is immutable
+				var type = this.constructor;
+				var newBox = new type(value);
+				return this.setAttributes(newBox, override);
+			},
+			clone: function clone() {
+				return this.setValue(this[_shared.OriginalValueSymbol]);
+			},
+		});
+			
+		__Internal__.ADD('unbox', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'Doodad.Types.box',
+								optional: false,
+								description: "A value.",
+							},
+						},
+						returns: 'object',
+						description: "Extract the value of a box object.",
+			}
+			//! END_REPLACE()
+			, function unbox(value) {
+				return ((value instanceof types.box) ? value.valueOf() : value);
+			}));
+					
 		//===================================
 		// DD_DOC
 		//===================================
@@ -5955,12 +6016,17 @@
 								optional: true,
 								description: "A variable that can be used by the constructor body.",
 							},
+							uuid: {
+								type: 'string',
+								optional: true,
+								description: "UUID of the new type.",
+							},
 						},
 						returns: 'type',
 						description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
 			}
 			//! END_REPLACE()
-			, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructorContext) {
+			, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructorContext, /*optional*/uuid) {
 				if (types.isNothing(name)) {
 					name = '';
 				};
@@ -6100,6 +6166,22 @@
 				ctx.type = type;
 				ctx.proto = proto;
 			
+				_shared.setAttribute(type, '$TYPE_NAME', name, {});
+
+				if (uuid) {
+					_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
+					_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, false, {});
+				} else {
+					if (tools.generateUUID) {
+						_shared.setAttribute(type, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
+						_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, true, {});
+					} else {
+						// Temporary
+						_shared.setAttribute(type, __Internal__.symbolTypeUUID, null, {configurable: true}); // for "isType"
+						__Internal__.tempSetUUID.push(type);
+					};
+				};
+	
 				if (typeProto) {
 					__Internal__.applyProto(type, base, typeProto, true);
 				};
@@ -6150,6 +6232,7 @@
 				
 				var name = null,
 					uuid = null;
+
 				if (typeProto) {
 					name = types.unbox(types.get(typeProto, '$TYPE_NAME'));
 					uuid = types.unbox(types.get(typeProto, '$TYPE_UUID'));
@@ -6176,27 +6259,12 @@
 						instanceProto, 
 						
 						/*constructorContext*/
-						constructorContext
+						constructorContext,
+
+						/*uuid*/
+						uuid
 					);
 				
-				_shared.setAttribute(type, '$TYPE_NAME', name, {});
-
-				if (uuid) {
-					_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
-					_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, false, {});
-				} else {
-					if (tools.generateUUID) {
-						if (__Internal__.tempSetUUIDFn) {
-							__Internal__.tempSetUUIDFn();
-						};
-						_shared.setAttribute(type, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
-						_shared.setAttribute(type, __Internal__.symbolTypeUUIDGenerated, true, {});
-					} else {
-						// Temporary
-						__Internal__.tempSetUUID.push(type);
-					};
-				};
-	
 				return type;
 			});
 		
@@ -6666,24 +6734,22 @@
 		//===================================
 		
 		_shared.ADD = function ADD(name, obj, /*optional*/protect, /*optional*/args) {
+				// NOTE: "name" is a String or a Symbol.
+				// NOTE: "obj" is a Doodad Type, a Doodad Error Type, or any object.
 				if (types.isNothing(protect)) {
 					protect = true;
 				};
 
-				var type = types.getType(obj);
+				if (types.isString(name) && !types.has(obj, 'DD_FULL_NAME') && types.isExtensible(obj)) {
+					_shared.setAttributes(obj, {
+						DD_PARENT: this,
+						DD_NAME: name,
+						DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
+					}, {});
+				};
 
-				if (type) {
-					if (!types.get(obj, 'DD_FULL_NAME')) {
-						_shared.setAttributes(obj, {
-							DD_PARENT: this,
-							DD_NAME: name,
-							DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
-						}, {});
-					};
-
-					if (!types.isInitialized(type) && !types.isErrorType(type)) {
-						type = types.INIT(type, args);
-					};
+				if (types.isType(obj) && !types.isInitialized(obj)) {
+					obj = types.INIT(obj, args);
 				};
 
 				_shared.setAttribute(this, name, obj, {
@@ -6700,12 +6766,13 @@
 				delete this[name];
 			};
 				
-		// Temporary, and not for registering classes
+		// Temporary, and not for registering classes.
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
+				// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
 				var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 					fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
 
-				if (!types.get(type, 'DD_FULL_NAME')) {
+				if (!types.has(type, 'DD_FULL_NAME') && types.isExtensible(type)) {
 					_shared.setAttributes(type, {
 						DD_PARENT: this,
 						DD_NAME: name,
@@ -6713,7 +6780,7 @@
 					}, {});
 				};
 
-				if (!types.isInitialized(type) && !types.isErrorType(type)) {
+				if (!types.isErrorType(type) && !types.isInitialized(type)) {
 					type = types.INIT(type, args);
 				};
 
@@ -7018,7 +7085,6 @@
 									var shortName = shortNames[k];
 									fullName += '.' + shortName;
 									var fn = fullName.slice(1);
-									//var prevNsObj = nsObjs[fn];
 									var prevNsObj = types.get(parent, shortName);
 									if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !(prevNsObj instanceof types.Namespace)))) {
 										var nsType = types.getType(prevNsObj) || types.Namespace;
@@ -7083,9 +7149,12 @@
 							};
 						};
 
-						if (__Internal__.tempSetUUIDFn) {
-							__Internal__.tempSetUUIDFn();
+						for (var i = 0; i < __Internal__.tempSetUUID.length; i++) {
+							var t = __Internal__.tempSetUUID[i];
+							_shared.setAttribute(t, __Internal__.symbolTypeUUID, tools.generateUUID(), {});
+							_shared.setAttribute(t, __Internal__.symbolTypeUUIDGenerated, true, {});
 						};
+						delete __Internal__.tempSetUUID;
 
 						var names = types.keys(inits),
 							nsOptions = {secret: _shared.SECRET};
