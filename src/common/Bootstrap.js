@@ -272,7 +272,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -286,13 +286,7 @@
 			//! END_REPLACE()
 			, __Internal__.hasClasses ? function isJsClass(obj) {
 				if (types.isFunction(obj)) {
-					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-						str = obj.toString();
-					} else {
-						str = _shared.Natives.functionToString.call(obj);
-					};
-					return /^class[ ]/.test(str);
+					return /^class[ ]/.test(_shared.Natives.functionToString.call(obj));
 				};
 				return false;
 			} : function isJsClass(obj) {
@@ -3904,11 +3898,11 @@
 									if (types.isFunction(s)) {
 										base[i] = s = _shared.getTypeSymbol(s); // optimization
 									};
-									if (types.isSymbol(s)) {
+									//if (types.isSymbol(s)) {
 										if (s === symbol) {
 											return true;
 										};
-									};
+									//};
 								};
 							};
 						};
@@ -4143,17 +4137,17 @@
 							if (i in type) {
 								var s = type[i];
 								if (!types.isNothing(s)) {
-									if (!types.isFunction(s) && !types.isSymbol(s)) {
+									if (types.isObjectLike(s)) {
 										s = s.constructor;
 									};
 									if (types.isFunction(s)) {
 										type[i] = s = _shared.getTypeSymbol(s); // optimization
 									};
-									if (types.isSymbol(s)) {
+									//if (types.isSymbol(s)) {
 										if (s === symbol) {
 											return true;
 										};
-									};
+									//};
 								};
 							};
 						};
@@ -4238,11 +4232,11 @@
 									if (types.isFunction(s)) {
 										type[i] = s = _shared.getTypeSymbol(s); // optimization
 									};
-									if (types.isSymbol(s)) {
+									//if (types.isSymbol(s)) {
 										if (s === symbol) {
 											return true;
 										};
-									};
+									//};
 								};
 							};
 						};
@@ -6697,7 +6691,7 @@
 					protect = true;
 				};
 
-				if (types.isString(name) && !types.has(obj, 'DD_FULL_NAME') && types.isExtensible(obj)) {
+				if (types.isObjectLike(obj) && types.isString(name) && !types.has(obj, 'DD_FULL_NAME') && types.isExtensible(obj)) {
 					_shared.setAttributes(obj, {
 						DD_PARENT: this,
 						DD_NAME: name,

@@ -665,7 +665,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -681,7 +681,7 @@ module.exports = {
 					if (types.isNothing(obj)) {
 						return false;
 					};
-					return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.windowEventTarget);
+					return types._instanceof(obj, _shared.Natives.windowEventTarget);
 				}) : (function isElement(obj) {
 					 return client.isDocument(obj) || client.isElement(obj);
 				}))));
