@@ -3698,7 +3698,11 @@
 			} : function isSymbol(obj) {
 				return false;
 			})));
-			
+		
+		if (!__options__.enableSymbols || !_shared.Natives.windowSymbol) {
+			__Internal__.globalSymbolsUUID = tools.generateUUID();
+		};
+	
 		__Internal__.ADD('getSymbol', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3732,9 +3736,7 @@
 			} : function getSymbol(key, /*optional*/isGlobal) {
 				// Not supported
 				key = _shared.Natives.windowString(key);
-				if (!isGlobal) {
-					key += '$' + tools.generateUUID();
-				};
+				key += '$' + (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
 				return key;
 			})));
 			
