@@ -389,7 +389,7 @@ module.exports = {
 						var prevNamespace = null;
 						if (types.has(parent, shortName)) {
 							prevNamespace = parent[shortName];
-							if ((!replaceEntry && (namespace instanceof types.Namespace)) || !spec.replaceObject) {
+							if ((!replaceEntry && types._instanceof(namespace, types.Namespace)) || !spec.replaceObject) {
 								namespace = prevNamespace;
 								prevNamespace = null;
 							};
@@ -401,13 +401,13 @@ module.exports = {
 						};
 						
 						var proto;
-						if (prevNamespace && (!prevNamespace instanceof namespaceType)) {
+						if (prevNamespace && !types._instanceof(prevNamespace, namespaceType)) {
 							var proto = {};
 							var keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
 							for (var i = 0; i < keys.length; i++) {
 								var key = keys[i];
 								var val = prevNamespace[key];
-								if (!(val instanceof types.AttributeBox)) {
+								if (!types._instanceof(val, types.AttributeBox)) {
 									// Sets everything to READ_ONLY by default
 									val = types.READ_ONLY(types.ENUMERABLE(val));
 								};
@@ -484,7 +484,7 @@ module.exports = {
 					function createObject(entry) {
 						if (entry) {
 							var baseName = entry.spec.name.split('/', 2)[0];
-							var opts = ((entry instanceof entries.Package) ? options : types.get(options, baseName));
+							var opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
 							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
 								var retval = null;
 								entry.objectCreating = true;
@@ -1052,7 +1052,7 @@ module.exports = {
 								type = entries.Object;
 							};
 							var entry = this.registry[name];
-							if (!(entry instanceof type)) {
+							if (!types._instanceof(entry, type)) {
 								return null;
 							};
 							return entry;
@@ -1090,7 +1090,7 @@ module.exports = {
 								type = entries.Object;
 							};
 							var entry = this.registry[name];
-							return (entry instanceof type);
+							return types._instanceof(entry, type);
 						}),
 						remove: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1134,7 +1134,7 @@ module.exports = {
 								type = entries.Object;
 							};
 							var entry = this.registry[name];
-							if (!(entry instanceof type)) {
+							if (!types._instanceof(entry, type)) {
 								return false;
 							};
 							if (entry.options.protect) {
@@ -1187,7 +1187,7 @@ module.exports = {
 							if (name in this.registry) {
 								return false;
 							};
-							if (!(entry instanceof entries.Object)) {
+							if (!types._instanceof(entry, entries.Object)) {
 								return false;
 							};
 							if (types.get(entry.spec, 'name') !== name) {
@@ -1198,7 +1198,7 @@ module.exports = {
 							types.freezeObject(entry.spec);
 							//types.freezeObject(entry);
 							this.registry[name] = entry;
-							if (!(entry instanceof entries.Package)) {
+							if (!types._instanceof(entry, entries.Package)) {
 								var namespace = entry.namespace;
 								if (namespace) {
 									var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);

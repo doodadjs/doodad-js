@@ -90,7 +90,7 @@ module.exports = {
 				
 				// NOTE: This function will get overriden by "Client.js" or "NodeJs.js".
 				_shared.loadConfig = function load(url, /*optional*/options, /*optional*/callbacks) {
-					root.DD_ASSERT && root.DD_ASSERT((url instanceof files.Url) || (url instanceof files.Path), "Invalid 'url' argument.");
+					root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url) || types._instanceof(url, files.Path), "Invalid 'url' argument.");
 						
 					var Promise = types.getPromise();
 						
@@ -111,7 +111,7 @@ module.exports = {
 						
 					var configPath = types.getIn(options, 'configPath', __options__.configPath);
 					if (configPath) {
-						root.DD_ASSERT && root.DD_ASSERT((configPath instanceof files.Url) || (configPath instanceof files.Path), "Invalid 'configPath' option.");
+						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(configPath, files.Url) || types._instanceof(configPath, files.Path), "Invalid 'configPath' option.");
 						url = configPath.combine(url);
 					};
 						

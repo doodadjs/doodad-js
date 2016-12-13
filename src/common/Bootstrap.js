@@ -3807,6 +3807,9 @@
 					name = types.get(type, _shared.UUIDSymbol);
 					if (isNative && types.isNothing(name)) {
 						name = types.getFunctionName(type);
+						if (!(name in global)) {
+							name = undefined;
+						};
 					};
 				};
 				if (name) {

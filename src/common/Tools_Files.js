@@ -377,12 +377,12 @@ module.exports = {
 										pathWasNothing = types.isNothing(path),
 										pathWasPath = false;
 									
-									if (path instanceof files.Path) {
+									if (types._instanceof(path, files.Path)) {
 										options = types.fill(__Internal__.pathOptionsKeys, {}, path, options);
 										path = options.path;
 										pathWasPath = true;
 										
-									} else if (path instanceof files.Url) {
+									} else if (types._instanceof(path, files.Url)) {
 										var proto = types.get(options, 'protocol', path.protocol);
 										if (proto && (proto !== 'file')) {
 											if (dontThrow) {
@@ -997,26 +997,23 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								//if (new.target) {
-								if (this instanceof files.Path) {
-									var dirChar = options.dirChar,
-										properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
-									if (types.hasDefinePropertyEnabled()) {
-										tools.forEach(properties, function(value, key) {
-											//if (((key === 'path') || (key === 'root')) && types.isString(value)) {
-											//	value = value.split(dirChar || '/');
-											//};
-											properties[key] = {
-												configurable: true,
-												enumerable: true,
-												value: value,
-												writable: false,
-											};
-										});
-										types.defineProperties(this, properties);
-									} else {
-										types.extend(this, properties);
-									};
+								var dirChar = options.dirChar,
+									properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
+								if (types.hasDefinePropertyEnabled()) {
+									tools.forEach(properties, function(value, key) {
+										//if (((key === 'path') || (key === 'root')) && types.isString(value)) {
+										//	value = value.split(dirChar || '/');
+										//};
+										properties[key] = {
+											configurable: true,
+											enumerable: true,
+											value: value,
+											writable: false,
+										};
+									});
+									types.defineProperties(this, properties);
+								} else {
+									types.extend(this, properties);
 								};
 							}),
 							
@@ -1060,7 +1057,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toString(/*optional*/options) {
-									if (!(this instanceof files.Path)) {
+									if (!types._instanceof(this, files.Path)) {
 										return '';
 									};
 
@@ -1188,7 +1185,7 @@ module.exports = {
 
 									var data = types.fill(__Internal__.pathOptionsKeys, {}, this);
 
-									if (path instanceof files.Path) {
+									if (types._instanceof(path, files.Path)) {
 										var drive = types.get(options, 'drive', path.drive);
 										var host = types.get(options, 'host', path.host);
 										if ((path.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
@@ -1200,7 +1197,7 @@ module.exports = {
 										};
 										dirRoot = types.get(options, 'root', path.root);
 
-									} else { //if (path instanceof files.Url)
+									} else { //if (types._instanceof(path, files.Url))
 										if (path.protocol && (path.protocol !== 'file')) {
 											if (dontThrow) {
 												return null;
@@ -1350,7 +1347,7 @@ module.exports = {
 									throw new types.ParseError("'this' must be an absolute path.");
 								};
 								
-								if (!(to instanceof files.Path)) {
+								if (!types._instanceof(to, files.Path)) {
 									to = files.Path.parse(to, options);
 								};
 								if (to.isRelative) {
@@ -1532,31 +1529,28 @@ module.exports = {
 							
 							_new: types.SUPER(function(args, /*optional*/options) {
 								this._super();
-								//if (new.target) {
-								if (this instanceof files.UrlArguments) {
-									if (root.DD_ASSERT) {
-										root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
-									};
+								if (root.DD_ASSERT) {
+									root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
+								};
 
-									if (types.hasDefinePropertyEnabled()) {
-										types.defineProperties(this, {
-											options: {
-												configurable: true,
-												enumerable: true,
-												value: options,
-												writable: false,
-											},
-											__args: {
-												configurable: true,
-												enumerable: true,
-												value: args,
-												writable: false,
-											},
-										});
-									} else {
-										this.options = options;
-										this.__args = args;
-									};
+								if (types.hasDefinePropertyEnabled()) {
+									types.defineProperties(this, {
+										options: {
+											configurable: true,
+											enumerable: true,
+											value: options,
+											writable: false,
+										},
+										__args: {
+											configurable: true,
+											enumerable: true,
+											value: args,
+											writable: false,
+										},
+									});
+								} else {
+									this.options = options;
+									this.__args = args;
 								};
 							}),
 							
@@ -1628,7 +1622,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function has(name) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT((this instanceof files.UrlArguments), "Invalid arguments object.");
+										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 									if (this.__args) {
@@ -1664,7 +1658,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function get(name, /*optional*/singleValue) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT((this instanceof files.UrlArguments), "Invalid arguments object.");
+										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 									var result = undefined,
@@ -1721,7 +1715,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function set(name, /*optional*/value, /*optional*/replace) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT((this instanceof files.UrlArguments), "Invalid arguments object.");
+										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isString(name) || types.isArray(name) || types.isJsObject(name), "Invalid name.");
 										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || types.isArray(value), "Invalid value.");
 									};
@@ -1816,7 +1810,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function remove(names) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT((this instanceof files.UrlArguments), "Invalid url object.");
+										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid url object.");
 										root.DD_ASSERT(types.isNothing(names) || types.isString(names) || types.isArray(names), "Invalid names.");
 									};
 									if (!types.isArray(names)) {
@@ -1867,7 +1861,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function combine(args, /*optional*/options) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT((types.isString(args)) || (args instanceof files.UrlArguments) || (types.isJsObject(args)), "Invalid arguments.");
+										root.DD_ASSERT((types.isString(args)) || types._instanceof(args, files.UrlArguments) || (types.isJsObject(args)), "Invalid arguments.");
 									};
 									options = types.extend({}, this.options, options);
 									var mode = types.get(options, 'argsMode', 'merge');
@@ -1991,7 +1985,7 @@ module.exports = {
 										path = url;
 										url = null;
 										
-									} else if (url instanceof files.Url) {
+									} else if (types._instanceof(url, files.Url)) {
 										var args = types.get(options, 'args', null);
 										
 										options = types.fill(__Internal__.urlOptionsKeys, {}, url, options);
@@ -2002,7 +1996,7 @@ module.exports = {
 										
 										url = null;
 										
-									} else if (url instanceof files.Path) {
+									} else if (types._instanceof(url, files.Path)) {
 										var pathTmp = url.path,
 											isWindows = (url.os === 'windows');
 										
@@ -2198,7 +2192,7 @@ module.exports = {
 										args = files.UrlArguments.parse(args, {
 											noEscapes: noEscapes,
 										});
-									} else if (!(args instanceof files.UrlArguments)) {
+									} else if (!types._instanceof(args, files.UrlArguments)) {
 										if (dontThrow) {
 											return null;
 										} else {
@@ -2376,25 +2370,20 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								//if (new.target) {
-								if (this instanceof files.Url) {
-									var properties = types.fill(__Internal__.urlOptionsKeys, {}, options),
-										self = this;
-									if (types.hasDefinePropertyEnabled()) {
-										tools.forEach(properties, function(value, key) {
-											properties[key] = {
-												configurable: true,
-												enumerable: true,
-												value: value,
-												writable: false,
-											};
-										});
-										types.defineProperties(this, properties);
-									} else {
-										types.extend(this, properties);
-									};
+								var properties = types.fill(__Internal__.urlOptionsKeys, {}, options),
+									self = this;
+								if (types.hasDefinePropertyEnabled()) {
+									tools.forEach(properties, function(value, key) {
+										properties[key] = {
+											configurable: true,
+											enumerable: true,
+											value: value,
+											writable: false,
+										};
+									});
+									types.defineProperties(this, properties);
 								} else {
-									return new files.Url(options);
+									types.extend(this, properties);
 								};
 							}),
 							
@@ -2493,7 +2482,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toString(/*optional*/options) {
-									if (!(this instanceof files.Url)) {
+									if (!types._instanceof(this, files.Url)) {
 										return '';
 									};
 
@@ -2599,7 +2588,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function compare(url) {
-									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || (url instanceof files.Url), "Invalid url.");
+									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, files.Url), "Invalid url.");
 									
 									if (types.isString(url)) {
 										url = files.Url.parse(url);
@@ -2647,7 +2636,7 @@ module.exports = {
 									
 									var pathRoot = null;
 
-									if (url instanceof files.Url) {
+									if (types._instanceof(url, files.Url)) {
 										if (url.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
@@ -2670,7 +2659,7 @@ module.exports = {
 										if (args) {
 											data.args = this.args.combine(args, options);
 										};
-									} else { // if (url instanceof files.Path)
+									} else { // if (types._instanceof(url, files.Path))
 										if (url.root) {
 											pathRoot = tools.trim(url.root, '');
 										};

@@ -586,7 +586,7 @@ module.exports = {
 					, function replace(text, from, to, /*optional*/options) {
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isArrayLike(text), "Invalid text.");
-							root.DD_ASSERT(types.isString(from) || (from instanceof RegExp), "Invalid 'from'.");
+							root.DD_ASSERT(types.isString(from) || types._instanceof(from, _shared.Natives.windowRegExp), "Invalid 'from'.");
 							root.DD_ASSERT(types.isString(to) || types.isFunction(to), "Invalid 'to'.");
 							root.DD_ASSERT(types.isNothing(options) || types.isString(options), "Invalid options.");
 						};
@@ -648,10 +648,10 @@ module.exports = {
 					, function search(str, text, /*optional*/start, /*optional*/end, /*optional*/stopStr, /*optional*/getText) {
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isString(str), "Invalid string.");
-							root.DD_ASSERT(types.isString(text) || (text instanceof RegExp), "Invalid text.");
+							root.DD_ASSERT(types.isString(text) || types._instanceof(text, _shared.Natives.windowRegExp), "Invalid text.");
 							root.DD_ASSERT(types.isNothing(start) || types.isInteger(start), "Invalid 'start'.");
 							root.DD_ASSERT(types.isNothing(end) || types.isInteger(end), "Invalid 'end'.");
-							root.DD_ASSERT(types.isNothing(stopStr) || types.isString(stopStr) || (stopStr instanceof RegExp), "Invalid stop string.");
+							root.DD_ASSERT(types.isNothing(stopStr) || types.isString(stopStr) || types._instanceof(stopStr, _shared.Natives.windowRegExp), "Invalid stop string.");
 						};
 
 						if (types.isNothing(start)) {
@@ -1196,7 +1196,7 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
 						
 						if (!types.isNothing(obj)) {
-							if ((obj instanceof types.Map) || (obj instanceof types.Set)) {
+							if (types._instanceof(obj, types.Map) || types._instanceof(obj, types.Set)) {
 								// "Map" and "Set" have their own "forEach" method.
 								return obj.forEach.call(obj, fn, thisObj);
 							} else if (types.isArrayLike(obj)) {
@@ -1284,14 +1284,14 @@ module.exports = {
 								key,
 								val;
 							if (!includeFunctions && types.isFunction(items)) {
-								if (obj instanceof types.Map) {
+								if (types._instanceof(obj, types.Map)) {
 									result = new types.Map();
 									obj.forEach(function(val, key) {
 										if (invert === !items.call(thisObj, val, key, obj)) {
 											result.set(key, val);
 										};
 									});
-								} else if (obj instanceof types.Set) {
+								} else if (types._instanceof(obj, types.Set)) {
 									result = new types.Set();
 									obj.forEach(function(val, key) {
 										if (invert === !items.call(thisObj, val, key, obj)) {
@@ -1336,14 +1336,14 @@ module.exports = {
 									};
 								};
 							} else {
-								if (obj instanceof types.Map) {
+								if (types._instanceof(obj, types.Map)) {
 									result = new types.Map();
 									obj.forEach(function(val, key) {
 										if (invert === (tools.findItem(items, val, undefined, true) === null)) {
 											result.set(key, val);
 										};
 									});
-								} else if (obj instanceof types.Set) {
+								} else if (types._instanceof(obj, types.Set)) {
 									result = new types.Set();
 									obj.forEach(function(val, key) {
 										if (invert === (tools.findItem(items, val, undefined, true) === null)) {
@@ -1555,7 +1555,7 @@ module.exports = {
 										};
 									};
 								};
-							} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
+							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 								var entries = obj.entries(),
 									entry;
 								while (entry = entries.next()) {
@@ -1598,7 +1598,7 @@ module.exports = {
 										};
 									};
 								};
-							} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
+							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 								var entries = obj.entries(),
 									entry;
 								while (entry = entries.next()) {
@@ -1695,7 +1695,7 @@ module.exports = {
 											};
 										};
 									};
-								} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
+								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 									var entries = obj.entries(),
 										entry;
 									while (entry = entries.next()) {
@@ -1740,7 +1740,7 @@ module.exports = {
 											};
 										};
 									};
-								} else if ((obj instanceof types.Set) || (obj instanceof types.Map)) {
+								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 									var entries = obj.entries(),
 										entry;
 									while (entry = entries.next()) {
@@ -2061,7 +2061,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function parse(str, /*optional*/options) {
-									if (str instanceof tools.Version) {
+									if (types._instanceof(str, tools.Version)) {
 										return str;
 									};
 									
@@ -2113,7 +2113,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function compare(version1, version2, /*optional*/options) {
-									if (!(version1 instanceof tools.Version)) {
+									if (!types._instanceof(version1, tools.Version)) {
 										version1 = this.parse(version1, options);
 									};
 									return version1.compare(version2, options);
@@ -2155,7 +2155,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function compare(version, /*optional*/options) {
 									options = types.nullObject(this.options, options);
-									if (!(version instanceof tools.Version)) {
+									if (!types._instanceof(version, tools.Version)) {
 										version = types.getType(this).parse(version, options);
 									};
 									var data1 = this.data,
@@ -2251,7 +2251,7 @@ module.exports = {
 							});
 							
 							types.addAppEventListener('unhandledrejection', function(ev) {
-								if (!(ev.detail.reason instanceof types.ScriptInterruptedError)) {
+								if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
 									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
 										 __Internal__.unhandledRejections.set(ev.detail.promise, {
 											reason: ev.detail.reason,

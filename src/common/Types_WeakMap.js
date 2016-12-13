@@ -84,7 +84,7 @@ module.exports = {
 
 							if (types.isNothing(ar)) {
 								// Do nothing
-							} else if ((ar instanceof types.Map) || (ar instanceof types.Set)) {
+							} else if (types._instanceof(ar, types.Map) || types._instanceof(ar, types.Set)) {
 								var self = this;
 								ar.forEach(function(val, key) {
 									self.set(key, val);

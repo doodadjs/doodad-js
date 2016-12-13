@@ -409,7 +409,7 @@ module.exports = {
 						var exitCode = 1; // 1 = General error
 
 						try {
-							if (err instanceof types.ScriptAbortedError) {
+							if (types._instanceof(err, types.ScriptAbortedError)) {
 								exitCode = err.exitCode;
 							} else {
 								debugger;
@@ -485,7 +485,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -498,10 +498,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function isEvent(obj) {
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventConstructor);
+					return types._instanceof(obj, _shared.Natives.windowEventConstructor);
 				}));
 				
 				client.ADD('isWindow', root.DD_DOC(
@@ -684,7 +681,7 @@ module.exports = {
 					if (types.isNothing(obj)) {
 						return false;
 					};
-					return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowEventTarget);
+					return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.windowEventTarget);
 				}) : (function isElement(obj) {
 					 return client.isDocument(obj) || client.isElement(obj);
 				}))));
@@ -889,7 +886,7 @@ module.exports = {
 							var Promise = types.getPromise();
 							return Promise.create(function eventPromise(resolve, reject) {
 								self.attachOnce(elements, context, useCapture, function(ev) {
-									if (canReject && (ev instanceof doodad.ErrorEvent)) {
+									if (canReject && types._instanceof(ev, doodad.ErrorEvent)) {
 										return reject(ev);
 									} else {
 										return resolve(ev);
@@ -1176,12 +1173,12 @@ module.exports = {
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort, /*optional*/noReload, /*optional*/_window) {
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof files.Url), "Invalid url.");
+						root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
 						root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
 					};
 					
 					if (!__Internal__.setCurrentLocationPending) {
-						if (!(url instanceof files.Url)) {
+						if (!types._instanceof(url, files.Url)) {
 							url = files.Url.parse(url);
 						};
 						
@@ -1438,11 +1435,11 @@ module.exports = {
 
 					var loader = null;
 					
-					if (url instanceof files.Path) {
+					if (types._instanceof(url, files.Path)) {
 						url = files.Url.parse(url);
 					};
 					
-					if (url instanceof files.Url) {
+					if (types._instanceof(url, files.Url)) {
 						url = url.toString();
 					};
 					
@@ -1582,11 +1579,11 @@ module.exports = {
 						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
 
-					if (url instanceof files.Path) {
+					if (types._instanceof(url, files.Path)) {
 						url = files.Url.parse(url);
 					};
 					
-					if (url instanceof files.Url) {
+					if (types._instanceof(url, files.Url)) {
 						url = url.toString();
 					};
 					
@@ -1757,7 +1754,7 @@ module.exports = {
 						if (types.isString(url)) {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
-						root.DD_ASSERT && root.DD_ASSERT(url instanceof files.Url, "Invalid url.");
+						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
 						var async = options.async,
 							encoding = options.encoding;
 						if (encoding === 'iso-8859') {

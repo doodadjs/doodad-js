@@ -885,7 +885,7 @@ module.exports = {
 				
 				// NOTE: These functions will get replaced when "Doodad.js" is loaded.
 				_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
-					return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || (obj instanceof types.Map) || (obj instanceof types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
+					return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || types._instanceof(obj, types.Map) || types._instanceof(obj, types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
 				};
 
 				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
@@ -920,9 +920,9 @@ module.exports = {
 								} else {
 									return obj;
 								};
-							} else if (obj instanceof types.Map) {
+							} else if (types._instanceof(obj, types.Map)) {
 								result = new types.Map(obj);
-							} else if (obj instanceof types.Set) {
+							} else if (types._instanceof(obj, types.Set)) {
 								result = new types.Set(obj);
 							} else {  // if (types.isObject(obj))
 								result = types.createObject(types.getPrototypeOf(obj));
@@ -1766,12 +1766,12 @@ module.exports = {
 						throw new types.NotSupported("Type is a base type.");
 					}));
 				
-				types.ADD('isCallback', function(obj) {
+				types.ADD('isCallback', function isCallback(obj) {
 					return types.isCallable(obj) && types.baseof(types.Callback, obj);
 				});
 				
 				// NOTE: Will be replaced by "Doodad.js"
-				_shared.makeInside = function(/*optional*/obj, fn) {
+				_shared.makeInside = function makeInside(/*optional*/obj, fn) {
 					fn = types.unbind(fn);
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
@@ -2031,7 +2031,7 @@ module.exports = {
 								forEachType: for (var i = 0; i < filters.length; i++) {
 									var type = filters[i];
 									if (types.isFunction(type)) { // isErrorType
-										if (ex instanceof type) {
+										if (types._instanceof(ex, type)) {
 											ok = true;
 											break forEachType;
 										};
@@ -2347,6 +2347,9 @@ module.exports = {
 				
 				try {
 					_shared.Natives.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
+
+					// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+					_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('GeneratorFunction')), true) */ ;
 				} catch(ex) {
 				};
 
@@ -2393,13 +2396,13 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise.",
+								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
 					}
 					//! END_REPLACE()
 					, (_shared.Natives.functionIsGenerator ? function isGeneratorFunction(obj) {
 						return _shared.Natives.functionIsGenerator.call(obj);
 					} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
-						return (typeof obj === 'function') && (obj instanceof _shared.Natives.GeneratorFunction);
+						return (typeof obj === 'function') && (types._instanceof(obj, _shared.Natives.GeneratorFunction));
 					} : function isGeneratorFunction(obj) {
 						return false;
 					}))));
@@ -2417,7 +2420,7 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise.",
+								description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
 					}
 					//! END_REPLACE()
 					, (_shared.Natives.GeneratorFunction ? function isGenerator(obj) {
@@ -2460,12 +2463,11 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
-						return (typeof obj === 'object') && (obj instanceof _shared.Natives.arrayBuffer);
+						return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
 						
 					}) : (function isArrayBuffer(obj) {
 						// ArrayBuffer is not implemented.
 						return false;
-						
 					}))));
 				
 				//===================================
@@ -2482,6 +2484,9 @@ module.exports = {
 							__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
 													global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
 													global.Float64Array];
+						} else {
+							// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+							_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('TypedArray')), true) */ ;
 						};
 					} catch(ex) {
 					};
@@ -2500,17 +2505,17 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise.",
+								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
 					}
 					//! END_REPLACE()
 					, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {
-						return (typeof obj === 'object') && (obj instanceof _shared.Natives.windowTypedArray);
+						return types._instanceof(obj, _shared.Natives.windowTypedArray);
 						
 					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
 						// <PRB> NodeJs has no TypedArray constructor.
 						for (var i = 0; i < __Internal__.TypedArrays.length; i++) {
 							var type = __Internal__.TypedArrays[i];
-							if (type && (obj instanceof type)) {
+							if (type && types._instanceof(obj, type)) {
 								return true;
 							};
 						};
@@ -2530,12 +2535,10 @@ module.exports = {
 				
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;
-				(function() {
-					try {
-						__Internal__.arrowIsBindable = (types.eval("(_ => this.doodad)").bind({doodad: 1})() === 1);
-					} catch(ex) {
-					};
-				})();
+				try {
+					__Internal__.arrowIsBindable = (types.eval("(_ => this.doodad)").bind({doodad: 1})() === 1);
+				} catch(ex) {
+				};
 				
 				types.ADD('isBindable', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2554,7 +2557,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isBindable(obj) {
-						return types.isCustomFunction(obj) && (!types.has(obj, _shared.BoundObjectSymbol)) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
+						return types.isCustomFunction(obj) && !types.has(obj, _shared.BoundObjectSymbol) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
 					}));
 				
 				types.ADD('bind', root.DD_DOC(
@@ -2768,9 +2771,9 @@ module.exports = {
 							
 							if (types.isNothing(ar)) {
 								this.__ar = [];
-							} else if (ar instanceof types.Set) {
+							} else if (types._instanceof(ar, types.Set)) {
 								this.__ar = types.clone(ar.__ar);
-							} else if (ar instanceof types.Map) {
+							} else if (types._instanceof(ar, types.Map)) {
 								var mapAr = ar.__keys,
 									mapVals = ar.__values,
 									newAr = new _shared.Natives.arrayConstructor(mapAr.length);
@@ -2927,11 +2930,11 @@ module.exports = {
 							
 							if (types.isNothing(ar)) {
 								// Do nothing
-							} else if (ar instanceof types.Map) {
+							} else if (types._instanceof(ar, types.Map)) {
 								this.__keys = types.clone(ar.__keys);
 								this.__values = types.clone(ar.__values);
 								return;
-							} else if (ar instanceof types.Set) {
+							} else if (types._instanceof(ar, types.Set)) {
 								ar = ar.__ar;
 							} else if (types.isArrayLike(ar)) {
 								// Do nothing

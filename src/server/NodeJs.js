@@ -368,7 +368,7 @@ module.exports = {
 						try {
 							global.process.exitCode = 1; // 1 = General error
 
-							if (err instanceof types.ScriptAbortedError) {
+							if (types._instanceof(err, types.ScriptAbortedError)) {
 								global.process.exitCode = err.exitCode;
 							} else {
 								debugger;
@@ -452,7 +452,7 @@ module.exports = {
 						// FIXME: Does "nothing"
 						
 						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isStringAndNotEmpty(url) || (url instanceof files.Url), "Invalid url.");
+							root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
 						};
 						
 						if (types.isString(url)) {
@@ -618,11 +618,11 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function getJsScriptFileLoader(file, /*optional*/async, /*optional*/timeout, /*optional*/reload) {
-						if (file instanceof files.Url) {
+						if (types._instanceof(file, files.Url)) {
 							file = files.Path.parse(file);
 						};
 
-						if (file instanceof files.Path) {
+						if (types._instanceof(file, files.Path)) {
 							file = file.toString({
 								os: null,
 								dirChar: null,
@@ -1477,8 +1477,8 @@ module.exports = {
 								timeoutId: null,
 								data: null,
 							};
-							if ((path instanceof files.Path) || ((path instanceof files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
-								if (path instanceof files.Url) {
+							if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+								if (types._instanceof(path, files.Url)) {
 									path = files.Path.parse(path);
 								};
 								path = path.toString({
@@ -1637,8 +1637,8 @@ module.exports = {
 							callbacks = [callbacks];
 						};
 						
-						if ((path instanceof files.Path) || ((path instanceof files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
-							if (path instanceof files.Url) {
+						if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+							if (types._instanceof(path, files.Url)) {
 								path = files.Path.parse(path);
 							};
 							path = path.toString({
@@ -1763,7 +1763,7 @@ module.exports = {
 
 					/*constructor*/
 					function(hook, /*optional*/stdout, /*optional*/stderr) {
-						if (nodejs.Console && (this instanceof nodejs.Console)) {
+						if (!types.isType(this)) {
 							if (!types.isJsFunction(hook)) {
 								throw new types.TypeError("Invalid hook function.");
 							};
