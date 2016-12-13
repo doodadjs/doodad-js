@@ -3700,7 +3700,7 @@
 			})));
 		
 		if (!__options__.enableSymbols || !_shared.Natives.windowSymbol) {
-			__Internal__.globalSymbolsUUID = tools.generateUUID();
+			__Internal__.globalSymbolsUUID = /*! REPLACE_BY(TO_SOURCE(UUID('Symbol')), true) */ tools.generateUUID() /*! END_REPLACE() */;
 		};
 	
 		__Internal__.ADD('getSymbol', __Internal__.DD_DOC(
