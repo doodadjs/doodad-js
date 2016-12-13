@@ -31,14 +31,8 @@ module.exports = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			bootstrap: true,
 			dependencies: [
-				{
-					name: 'Doodad.Client', // for "tools.generateUUID"
-					optional: true,
-				},
-				{
-					name: 'Doodad.NodeJs', // for "tools.generateUUID"
-					optional: true,
-				},
+				'Doodad.Types',
+				'Doodad.Tools',
 			],
 			
 			create: function create(root, /*optional*/_options, _shared) {

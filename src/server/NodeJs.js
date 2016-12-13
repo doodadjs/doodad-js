@@ -53,8 +53,7 @@ module.exports = {
 					nodeChildProcess = require('child_process'),
 					nodeFs = require('fs'),
 					nodeHttp = require('http'),
-					nodeConsole = require('console').Console,
-					nodeUUID = require('uuid');
+					nodeConsole = require('console').Console;
 
 				
 				//===================================
@@ -2308,28 +2307,6 @@ module.exports = {
 						return this;
 					}),
 				}))));
-
-
-				//===================================
-				// Misc functions
-				//===================================
-				
-				tools.ADD('generateUUID', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'string',
-							description: "Generates and returns a UUID.",
-					}
-					//! END_REPLACE()
-					, function generateUUID() {
-						// TODO: Maybe use some options of the 'uuid' package ?
-						return nodeUUID();
-					}));
-
-
 
 
 				return function init(/*optional*/options) {

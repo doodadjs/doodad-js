@@ -644,6 +644,9 @@
 			
 			// "hasProxies", "hasProxyEnabled", "createProxy"
 			windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+
+			// generateUUID
+			mathRandom: global.Math.random,
 		};
 
 		//===================================
@@ -3589,6 +3592,40 @@
 			})));
 		
 		//===================================
+		// UUIDs
+		//===================================
+
+		if (typeof require === 'function') {
+			try {
+				// NOTE: Client-side 'uuid' is browserified
+				__Internal__.nodeUUID = require('uuid');
+			} catch(ex) {
+			};
+		};
+
+		__Internal__.ADD_TOOL('generateUUID', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'string',
+					description: "Generates and returns a UUID.",
+			}
+			//! END_REPLACE()
+			, function generateUUID() {
+				if (__Internal__.nodeUUID) {
+					return __Internal__.nodeUUID();
+				} else {
+					// Source: https://gist.github.com/LeverOne
+					var a, b;
+					for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
+					return b
+				};
+			})
+		);
+
+		//===================================
 		// Symbols
 		//===================================
 		
@@ -3666,7 +3703,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							key: {
 								type: 'string',
@@ -3695,6 +3732,9 @@
 			} : function getSymbol(key, /*optional*/isGlobal) {
 				// Not supported
 				key = _shared.Natives.windowString(key);
+				if (!isGlobal) {
+					key += '$' + tools.generateUUID();
+				};
 				return key;
 			})));
 			

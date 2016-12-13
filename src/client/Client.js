@@ -136,9 +136,6 @@ module.exports = {
 												(types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame) ||
 												undefined,
 
-					// generateUUID
-					mathRandom: global.Math.random,
-
 					// setCurrentLocation
 					//historyPushState: (global.history && types.isNativeFunction(global.history.pushState) ? global.history.pushState.bind(global.history) : undefined),
 				});
@@ -1931,41 +1928,9 @@ module.exports = {
 				}));
 
 				//===================================
-				// Misc functions
-				//===================================
-
-				tools.ADD('generateUUID', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'string',
-							description: "Generates and returns a UUID.",
-					}
-					//! END_REPLACE()
-					, function generateUUID() {
-						if (__Internal__.nodeUUID) {
-							return __Internal__.nodeUUID();
-						} else {
-							// Source: https://gist.github.com/LeverOne
-							var a, b;
-							for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
-							return b
-						};
-					})
-				);
-
-				//===================================
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					// <PRB> The "uuid" npm module is specificaly designed for browserify.
-					try {
-						__Internal__.nodeUUID = require('uuid');
-					} catch(o) {
-					};
-
 					try {
 						types.getPromise();
 					} catch(ex) {
