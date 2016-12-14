@@ -2349,7 +2349,7 @@ module.exports = {
 					_shared.Natives.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
 
 					// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-					_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('GeneratorFunction')), true) */ ;
+					_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;
 				} catch(ex) {
 				};
 
@@ -2486,7 +2486,7 @@ module.exports = {
 													global.Float64Array];
 						} else {
 							// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-							_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('TypedArray')), true) */ ;
+							_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */ ;
 						};
 					} catch(ex) {
 					};

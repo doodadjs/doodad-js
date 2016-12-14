@@ -3839,15 +3839,15 @@
 				};
 			} else if (types.isFunction(type)) {
 				var isNative = types.isNativeFunction(type) && !types.isJsClass(type);
-				if ((types.get(type.prototype, 'constructor') === type)) {
+				//if ((types.get(type.prototype, 'constructor') === type)) {
 					name = types.get(type, _shared.UUIDSymbol);
-					if (isNative && types.isNothing(name)) {
-						name = types.getFunctionName(type);
-						if (!(name in global)) {
-							name = undefined;
-						};
-					};
-				};
+					//if (isNative && types.isNothing(name)) {
+					//	name = types.getFunctionName(type);
+					//	if (!(name in global)) {
+					//		name = undefined;
+					//	};
+					//};
+				//};
 				if (name) {
 					if (isNative) {
 						name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
@@ -3864,6 +3864,12 @@
 			};
 			return name;
 		};
+
+		//! FOR_EACH(EVAL("root.Doodad.Types.allKeys(global)"), "key")
+			//! IF(EVAL("root.Doodad.Types.isNativeFunction(global[key])"))
+				//!	INJECT("if (types.isNativeFunction(global[" + TO_SOURCE(VAR("key")) + "])) {global[" + TO_SOURCE(VAR("key")) + "][_shared.UUIDSymbol] = " + TO_SOURCE(UUID('Native_' + VAR("key"))) + "};");
+			//! END_IF()
+		//! END_FOR()
 
 		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
 		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
