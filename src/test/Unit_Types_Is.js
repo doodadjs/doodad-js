@@ -1122,7 +1122,7 @@ module.exports = {
 					command.run(true, {eval: true, repetitions: 100, note: "May fail under MS Internet Explorer because properties 'number' and 'description' are own properties."},        /**/ "new Error");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "(function(){})");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
-					command.run(true, {eval: true, repetitions: 100},        /**/ "Object");
+					//command.run(true, {eval: true, repetitions: 100},        /**/ "Object");
 					global.document && command.run(true, {eval: true, repetitions: 100, note: "May fail under Chrome, Opera and Safari because properties are owned properties."},        /**/ "document.body");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "a");
 					command.run(false, {eval: true, repetitions: 100},        /**/"b");
@@ -1163,7 +1163,7 @@ module.exports = {
 					command.run(true, {eval: true, repetitions: 100, note: "May fail under MS Internet Explorer because properties 'number' and 'description' are own properties."},        /**/ "new Error");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "(function(){})");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
-					command.run(true, {eval: true, repetitions: 100},        /**/ "Object");
+					//command.run(true, {eval: true, repetitions: 100},        /**/ "Object");
 					global.document && command.run(true, {eval: true, repetitions: 100, note: "May fail under Chrome, Opera and Safari because properties are owned properties."},        /**/ "document.body");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "a");
 					command.run(false, {eval: true, repetitions: 100},        /**/"b");
@@ -1327,7 +1327,7 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100, note: "May fail under MS Internet Explorer because properties 'number' and 'description' are own properties."},        /**/ "new Error");
 					command.run(false, {eval: true, repetitions: 100},        /**/"(function(){})");
 					command.run(false, {eval: true, repetitions: 100},        /**/"Object.prototype.toString");
-					command.run(false, {eval: true, repetitions: 100},        /**/"Object");
+					//command.run(false, {eval: true, repetitions: 100},        /**/"Object");
 					global.document && command.run(false, {eval: true, repetitions: 100, note: "May fail under Chrome, Opera and Safari because properties are owned properties."},        /**/"document.body");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "a");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "b");
