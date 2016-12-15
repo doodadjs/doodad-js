@@ -3866,14 +3866,18 @@
 		};
 
 		(function() {
-			var tempNatives = [
-				//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
-			];
+			var tempNatives = [/*! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8') */],
+				uuids = types.nullObject();
 			for (var i = 0; i < tempNatives.length; i++) {
 				var item = tempNatives[i],
 					native = global[item[0]];
 				if (types.isNativeFunction(native)) {
-					native[_shared.UUIDSymbol] = item[1];
+					var uuid = item[1];
+					if (types.get(uuids, uuid)) {
+						throw new global.Error("Duplicated UUID : " + uuid);
+					};
+					uuids[uuid] = true;
+					native[_shared.UUIDSymbol] = uuid;
 				};
 			};
 		})();
