@@ -3827,42 +3827,29 @@
 			if (__Internal__.typesSymbolMap && __Internal__.typesSymbolMap.has(type)) {
 				return __Internal__.typesSymbolMap.get(type);
 			};
-			var name = undefined;
+			var symbol = undefined;
 			if (types.isType(type)) {
-				if (types.has(type, __Internal__.symbolTypeUUID)) {
-					name = type[__Internal__.symbolTypeUUID];
-				} else {
-					name = types.get(type, 'DD_FULL_NAME') || types.get(type, '$TYPE_NAME');
-				};
-				if (name) {
-					name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+				var uuid = types.get(type, __Internal__.symbolTypeUUID);
+				if (uuid) {
+					symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
 				};
 			} else if (types.isFunction(type)) {
-				var isNative = types.isNativeFunction(type) && !types.isJsClass(type);
-				//if ((types.get(type.prototype, 'constructor') === type)) {
-					name = types.get(type, _shared.UUIDSymbol);
-					//if (isNative && types.isNothing(name)) {
-					//	name = types.getFunctionName(type);
-					//	if (!(name in global)) {
-					//		name = undefined;
-					//	};
-					//};
-				//};
-				if (name) {
-					if (isNative) {
-						name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+				var uuid = types.get(type, _shared.UUIDSymbol);
+				if (uuid) {
+					if (types.isNativeFunction(type) && !types.isJsClass(type)) {
+						symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
 					} else {
-						name = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + name, true);
+						symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
 					};
 				};
 			};
 			if (__Internal__.typesSymbolMap) {
-				__Internal__.typesSymbolMap.set(type, name);
-			} else if (name) {
+				__Internal__.typesSymbolMap.set(type, symbol);
+			} else if (symbol) {
 				// Temporary
-				__Internal__.tempTypesSymbol[name] = type;
+				__Internal__.tempTypesSymbol[symbol] = type;
 			};
-			return name;
+			return symbol;
 		};
 
 		(function() {
@@ -3889,7 +3876,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							base: {
 								type: 'type',
@@ -3945,27 +3932,29 @@
 					} else {
 						base = [base];
 					};
-					while (type) {
+					while (types.isFunction(type)) {
 						var symbol = _shared.getTypeSymbol(type);
-						if (!symbol) {
-							break;
-						};
-						for (var i = 0; i < base.length; i++) {
-							if (i in base) {
-								var s = base[i];
-								if (!types.isNothing(s)) {
-									if (types.isFunction(s)) {
-										base[i] = s = _shared.getTypeSymbol(s); // optimization
-									};
-									//if (types.isSymbol(s)) {
-										if (s === symbol) {
-											return true;
+						if (symbol) {
+							for (var i = 0; i < base.length; i++) {
+								if (i in base) {
+									var s = base[i];
+									if (!types.isNothing(s)) {
+										if (types.isFunction(s)) {
+											base[i] = s = _shared.getTypeSymbol(s); // optimization
 										};
-									//};
+										//if (types.isSymbol(s)) {
+											if (s === symbol) {
+												return true;
+											};
+										//};
+									};
 								};
 							};
 						};
-						type = types.getPrototypeOf(type);
+						type = types.getPrototypeOf(type.prototype);
+						if (type) {
+							type = type.constructor;
+						};
 					};
 				};
 				return false;
@@ -3998,7 +3987,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'object',
@@ -4011,7 +4000,7 @@
 			}
 			//! END_REPLACE()
 			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj);
+				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj) && !types.isErrorType(obj);
 			}));
 
 		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
@@ -4124,7 +4113,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4189,28 +4178,30 @@
 					};
 					while (types.isFunction(obj)) {
 						var symbol = _shared.getTypeSymbol(obj);
-						if (!symbol) {
-							break;
-						};
-						for (var i = 0; i < type.length; i++) {
-							if (i in type) {
-								var s = type[i];
-								if (!types.isNothing(s)) {
-									if (types.isObjectLike(s)) {
-										s = s.constructor;
-									};
-									if (types.isFunction(s)) {
-										type[i] = s = _shared.getTypeSymbol(s); // optimization
-									};
-									//if (types.isSymbol(s)) {
-										if (s === symbol) {
-											return true;
+						if (symbol) {
+							for (var i = 0; i < type.length; i++) {
+								if (i in type) {
+									var s = type[i];
+									if (!types.isNothing(s)) {
+										if (types.isObjectLike(s)) {
+											s = s.constructor;
 										};
-									//};
+										if (types.isFunction(s)) {
+											type[i] = s = _shared.getTypeSymbol(s); // optimization
+										};
+										//if (types.isSymbol(s)) {
+											if (s === symbol) {
+												return true;
+											};
+										//};
+									};
 								};
 							};
 						};
-						obj = types.getPrototypeOf(obj);
+						obj = types.getPrototypeOf(obj.prototype);
+						if (obj) {
+							obj = obj.constructor;
+						};
 					};
 				};
 				return false;
@@ -4220,7 +4211,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							base: {
 								type: 'object',
@@ -4281,21 +4272,20 @@
 					var t = obj.constructor;
 					while (types.isFunction(t)) {
 						var symbol = _shared.getTypeSymbol(t);
-						if (!symbol) {
-							break;
-						};
-						for (var i = 0; i < type.length; i++) {
-							if (i in type) {
-								var s = type[i];
-								if (!types.isNothing(s)) {
-									if (types.isFunction(s)) {
-										type[i] = s = _shared.getTypeSymbol(s); // optimization
-									};
-									//if (types.isSymbol(s)) {
-										if (s === symbol) {
-											return true;
+						if (symbol) {
+							for (var i = 0; i < type.length; i++) {
+								if (i in type) {
+									var s = type[i];
+									if (!types.isNothing(s)) {
+										if (types.isFunction(s)) {
+											type[i] = s = _shared.getTypeSymbol(s); // optimization
 										};
-									//};
+										//if (types.isSymbol(s)) {
+											if (s === symbol) {
+												return true;
+											};
+										//};
+									};
 								};
 							};
 						};
@@ -4369,7 +4359,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4382,14 +4372,9 @@
 			}
 			//! END_REPLACE()
 			, function getTypeName(obj) {
-				if (types.isNothing(obj)) {
-					return null;
-				};
 				obj = _shared.Natives.windowObject(obj);
-				if (!types.isFunction(obj)) {
-					obj = types.get(obj, 'constructor');
-				};
-				if (!types.isType(obj)) {
+				obj = types.getType(obj);
+				if (!obj) {
 					return null;
 				};
 				return obj.$TYPE_NAME || types.getFunctionName(obj);
@@ -4399,7 +4384,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4412,17 +4397,16 @@
 			}
 			//! END_REPLACE()
 			, function getBase(obj) {
-				if (types.isNothing(obj)) {
-					return null;
-				};
 				obj = _shared.Natives.windowObject(obj);
-				if (!types.isFunction(obj)) {
-					obj = types.get(obj, 'constructor');
-				};
-				if (!types.isType(obj)) {
+				obj = types.getType(obj);
+				if (!obj) {
 					return null;
 				};
-				return types.getPrototypeOf(obj);
+				obj = types.getPrototypeOf(obj.prototype);
+				if (!obj) {
+					return null;
+				};
+				return obj.constructor;
 			}));
 
 		_shared.invoke = __Internal__.DD_DOC(
