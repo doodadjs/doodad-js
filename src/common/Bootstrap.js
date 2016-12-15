@@ -3865,11 +3865,20 @@
 			return name;
 		};
 
-		//! FOR_EACH(EVAL("root.Doodad.Types.allKeys(global)"), "key")
-			//! IF(EVAL("root.Doodad.Types.isNativeFunction(global[key])"))
-				//!	INJECT("if (types.isNativeFunction(global[" + TO_SOURCE(VAR("key")) + "])) {global[" + TO_SOURCE(VAR("key")) + "][_shared.UUIDSymbol] = " + TO_SOURCE(UUID('Native_' + VAR("key"))) + "};");
-			//! END_IF()
-		//! END_FOR()
+		(function() {
+			var tempNatives = [
+				//! MAP(EVAL("root.Doodad.Types.allKeys(global).filter(k => root.Doodad.Types.isNativeFunction(global[k]))"), "key")
+					//! INJECT("[" + TO_SOURCE(VAR("key")) + ", " + TO_SOURCE(UUID('Native_' + VAR("key"))) + "]")
+				//! END_MAP()
+			];
+			for (var i = 0; i < tempNatives.length; i++) {
+				var item = tempNatives[i],
+					native = global[item[0]];
+				if (types.isNativeFunction(native)) {
+					native[_shared.UUIDSymbol] = item[1];
+				};
+			};
+		})();
 
 		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
 		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
