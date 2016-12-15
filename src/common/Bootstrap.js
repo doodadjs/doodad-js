@@ -3867,9 +3867,7 @@
 
 		(function() {
 			var tempNatives = [
-				//! MAP(EVAL("root.Doodad.Types.allKeys(global).filter(k => (['GLOBAL', 'root'].indexOf(k) < 0) && root.Doodad.Types.isNativeFunction(global[k]))"), "key")
-					//! INJECT("[" + TO_SOURCE(VAR("key")) + ", " + TO_SOURCE(UUID('Native_' + VAR("key"))) + "]")
-				//! END_MAP()
+				//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
 			];
 			for (var i = 0; i < tempNatives.length; i++) {
 				var item = tempNatives[i],
