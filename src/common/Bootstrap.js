@@ -4007,7 +4007,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'object',
@@ -4020,7 +4020,7 @@
 			}
 			//! END_REPLACE()
 			, function isJsObject(obj) {
-				return types.isObject(obj) && !types._instanceof(obj, types.Type);
+				return types.isObject(obj) && !types.getType(obj);
 			}));
 
 		__Internal__.ADD('is', __Internal__.DD_DOC(
@@ -4045,8 +4045,6 @@
 			}
 			//! END_REPLACE()
 			, function is(obj, type) {
-				// "obj" is of type "type".
-				
 				if (types.isNothing(obj)) {
 					return false;
 				};
@@ -4211,7 +4209,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							base: {
 								type: 'object',
@@ -4232,10 +4230,6 @@
 				// Uses prototypes chain like the operator "instanceof", but doesn't raise an exception when 'type' is not a type. 
 				// NOTE: With Doodad objects it is recommended to use this function instead of the operator.
 				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (types.isFunction(obj)) {
-					// Please use "types.baseof"
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);

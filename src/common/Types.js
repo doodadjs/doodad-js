@@ -2387,7 +2387,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -2402,7 +2402,7 @@ module.exports = {
 					, (_shared.Natives.functionIsGenerator ? function isGeneratorFunction(obj) {
 						return _shared.Natives.functionIsGenerator.call(obj);
 					} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
-						return (typeof obj === 'function') && (types._instanceof(obj, _shared.Natives.GeneratorFunction));
+						return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
 					} : function isGeneratorFunction(obj) {
 						return false;
 					}))));
@@ -2464,7 +2464,6 @@ module.exports = {
 					//! END_REPLACE()
 					, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
 						return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
-						
 					}) : (function isArrayBuffer(obj) {
 						// ArrayBuffer is not implemented.
 						return false;
