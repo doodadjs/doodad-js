@@ -2475,7 +2475,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -2498,9 +2498,6 @@
 			}
 			//! END_REPLACE()
 			, (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperty ? (function defineProperty(obj, name, descriptor) {
-				if (!types.isJsObject(descriptor)) {
-					throw new types.TypeError("Invalid descriptor.");
-				};
 				// <PRB> "Object.defineProperty" stupidly takes inherited properties instead of just own properties. So we fix that because of "Object.prototype".
 				descriptor = types.extend(types.createObject(null), descriptor);
 				types.getDefault(descriptor, 'configurable', false);
@@ -2510,14 +2507,12 @@
 				};
 				return _shared.Natives.objectDefineProperty(obj, name, descriptor);
 			}) : (function defineProperty(obj, name, descriptor) {
-				if (!types.isJsObject(descriptor)) {
-					throw new types.TypeError("Invalid descriptor.");
-				};
+				descriptor = types.extend(types.createObject(null), descriptor);
 				if (descriptor.get || descriptor.set || !descriptor.enumerable || !descriptor.writable || !descriptor.configurable) {
-					throw new types.TypeError("Properties are not supported.");
+					throw new global.Error("Properties are not supported.");
 				} else {
 					if (!types.isObjectLike(obj)) {
-						throw new types.TypeError("Not an object.");
+						throw new global.Error("Not an object.");
 					};
 					obj[name] = descriptor.value;
 				};
@@ -3864,7 +3859,11 @@
 						throw new global.Error("Duplicated UUID : " + uuid);
 					};
 					uuids[uuid] = true;
-					native[_shared.UUIDSymbol] = uuid;
+					if (types.hasProperties()) {
+						types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
+					} else {
+						native[_shared.UUIDSymbol] = uuid;
+					};
 				};
 			};
 		})();
