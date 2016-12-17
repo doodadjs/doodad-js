@@ -197,7 +197,8 @@
 		} catch(ex) {
 		};
 
-		__Internal__.ADD('supportsArrowFunctions', __Internal__.DD_DOC(
+		// FUTURE: Remove "supportsArrowFunctions"
+		__Internal__.ADD('hasArrows', __Internal__.ADD('supportsArrowFunctions', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -207,9 +208,9 @@
 					description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function supportsArrowFunctions() {
+			, function hasArrows() {
 				return __Internal__.hasArrows;
-			}));
+			})));
 
 		//===================================
 		// ES7 async/await
@@ -222,7 +223,8 @@
 		} catch(ex) {
 		};
 
-		__Internal__.ADD('supportsAsyncAwait', __Internal__.DD_DOC(
+		// FUTURE: Remove "supportsAsyncAwait"
+		__Internal__.ADD('hasAsyncAwait', __Internal__.ADD('supportsAsyncAwait', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -232,9 +234,9 @@
 					description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function supportsAsyncAwait() {
+			, function hasAsyncAwait() {
 				return __Internal__.hasAsyncAwait;
-			}));
+			})));
 
 		//===================================
 		// Native functions
@@ -3822,12 +3824,14 @@
 			if (__Internal__.typesSymbolMap && __Internal__.typesSymbolMap.has(type)) {
 				return __Internal__.typesSymbolMap.get(type);
 			};
-			var symbol = undefined;
+			var symbol = undefined,
+				ok = false;
 			if (types.isType(type)) {
 				var uuid = types.get(type, __Internal__.symbolTypeUUID);
 				if (uuid) {
 					symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
 				};
+				ok = true;
 			} else if (types.isFunction(type)) {
 				var uuid = types.get(type, _shared.UUIDSymbol);
 				if (uuid) {
@@ -3837,12 +3841,15 @@
 						symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
 					};
 				};
+				ok = true;
 			};
-			if (__Internal__.typesSymbolMap) {
-				__Internal__.typesSymbolMap.set(type, symbol);
-			} else if (symbol) {
-				// Temporary
-				__Internal__.tempTypesSymbol[symbol] = type;
+			if (ok) {
+				if (__Internal__.typesSymbolMap) {
+					__Internal__.typesSymbolMap.set(type, symbol);
+				} else if (symbol) {
+					// Temporary
+					__Internal__.tempTypesSymbol[symbol] = type;
+				};
 			};
 			return symbol;
 		};
@@ -3855,7 +3862,7 @@
 					native = global[item[0]];
 				if (types.isNativeFunction(native)) {
 					var uuid = item[1];
-					if (types.get(uuids, uuid)) {
+					if (types.has(uuids, uuid)) {
 						throw new global.Error("Duplicated UUID : " + uuid);
 					};
 					uuids[uuid] = true;
