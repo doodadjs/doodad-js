@@ -3714,7 +3714,7 @@
 							isGlobal: {
 								type: 'bool',
 								optional: true,
-								description: "When 'true', gets or creates a global symbol. Otherwise, returns a new anonymous symbol.",
+								description: "When 'true', gets or creates a global symbol. Otherwise, returns a new unique symbol.",
 							},
 						},
 						returns: 'symbol',
@@ -3865,11 +3865,15 @@
 				uuids = types.nullObject();
 			for (var i = 0; i < tempNatives.length; i++) {
 				var item = tempNatives[i],
-					native = global[item[0]];
+					name = item[0],
+					native = global[name];
 				if (types.isFunction(native)) {
+					if (types.has(native, _shared.UUIDSymbol)) {
+						throw new _shared.Natives.windowError("Duplicated native constructor : " + name);
+					};
 					var uuid = item[1];
 					if (types.has(uuids, uuid)) {
-						throw new global.Error("Duplicated UUID : " + uuid);
+						throw new _shared.Natives.windowError("Duplicated UUID : " + uuid);
 					};
 					uuids[uuid] = true;
 					if (types.hasProperties()) {
