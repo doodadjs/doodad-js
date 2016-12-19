@@ -62,7 +62,11 @@
       "enforceScopes": false,
       "enforcePolicies": false,
       "publicOnDebug": false
-    }
+    },
+	"Doodad__Client": {
+	  "enableDomObjectsModel": true,
+	  "defaultScriptTimeout": 10000
+	}
   },
   "keywords": [
     "oop",
