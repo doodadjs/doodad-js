@@ -59,7 +59,7 @@ module.exports = {
 				//=============================
 					
 				var __Internal__ = {
-					documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
+					//documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
 					UAParser: global.UAParser,
 
@@ -71,7 +71,7 @@ module.exports = {
 				//=====================
 				
 				var __options__ = types.extend({
-					enableDomObjectsModel: false,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
+					enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 					defaultScriptTimeout: 10000,		// milliseconds
 				}, _options);
 
@@ -119,7 +119,7 @@ module.exports = {
 					windowEventTarget: (types.isNativeFunction(global.EventTarget) ? global.EventTarget : undefined),
 					
 					// isEvent
-					windowEventConstructor: (types.isFunction(global.Event) ? global.Event : global.Event.constructor),
+					windowEvent: (types.isFunction(global.Event) ? global.Event : global.Event.constructor),
 					
 					// callAsync
 					mathMax: global.Math.max,
@@ -495,14 +495,14 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function isEvent(obj) {
-					return types._instanceof(obj, _shared.Natives.windowEventConstructor);
+					return types._instanceof(obj, _shared.Natives.windowEvent);
 				}));
 				
 				client.ADD('isWindow', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -515,19 +515,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, (__options__.enableDomObjectsModel && _shared.Natives.windowWindow ? (function isWindow(obj) {
-					// NOTE: Browsers really need to review their objects model.
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					if (obj === global) {
-						return true;
-					};
-					if (typeof obj !== 'object') {
-						return false;
-					};
-					var W = obj.Window;
-					//SLOWER return types.isNativeFunction(W) && (obj instanceof W);
-					return types.isFunction(W) && (obj instanceof W);
+					return types._instanceof(obj, _shared.Natives.windowWindow);
 				}) : (function isWindow(obj) {
 					 return !!obj && (typeof obj === "object") && types.isNativeFunction(obj.setTimeout) && types.isNativeFunction(obj.focus);
 				}))));
@@ -536,7 +524,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -548,27 +536,8 @@ module.exports = {
 							description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowHtmlDocument ? (function isDocument(obj) {
-					// NOTE: Browsers really need to review their objects model.
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					if (obj === _shared.Natives.windowDocument) {
-						return true;
-					};
-					if (typeof obj !== 'object') {
-						return false;
-					};
-					var w = obj.parentWindow;
-					if (!types.isObjectLike(w)) {
-						return false;
-					};
-					if (w === global.window) {
-						return (obj instanceof _shared.Natives.windowHtmlDocument);
-					};
-					var hd = w.HTMLDocument;
-					//SLOWER return types.isNativeFunction(hd) && (obj instanceof hd);
-					return types.isFunction(hd) && (obj instanceof hd);
+				, (__options__.enableDomObjectsModel && _shared.Natives.windowHtmlDocument ? (function isDocument(obj) {
+					return types._instanceof(obj, _shared.Natives.windowHtmlDocument);
 				}) : (function isDocument(obj) {
 					 return !!obj && (typeof obj === "object") && (obj.nodeType === 9) && (typeof obj.nodeName === "string");
 				}))));
@@ -577,7 +546,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -589,28 +558,8 @@ module.exports = {
 							description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowNode ? (function isNode(obj) {
-					// NOTE: Browsers really need to review their objects model.
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					if (typeof obj !== 'object') {
-						return false;
-					};
-					var d = obj.ownerDocument;
-					if (!types.isObjectLike(d)) {
-						return false;
-					};
-					var w = d.parentWindow;
-					if (!types.isObjectLike(w)) {
-						return false;
-					};
-					if (w === global) {
-						return (obj instanceof _shared.Natives.windowNode);
-					};
-					var n = w.Node;
-					//SLOWER return types.isNativeFunction(n) && (obj instanceof n);
-					return types.isFunction(n) && (obj instanceof n);
+				, (__options__.enableDomObjectsModel && _shared.Natives.windowNode ? (function isNode(obj) {
+					return types._instanceof(obj, _shared.Natives.windowNode);
 				}) : (function isNode(obj) {
 					return !!obj && (typeof obj === "object") && (+obj.nodeType === obj.nodeType) && (typeof obj.nodeName === "string");
 				}))));
@@ -619,7 +568,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -631,28 +580,8 @@ module.exports = {
 							description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (__options__.enableDomObjectsModel && __Internal__.documentHasParentWindow && _shared.Natives.windowHtmlElement ? (function isElement(obj) {
-					// NOTE: Browsers really need to review their objects model.
-					if (types.isNothing(obj)) {
-						return false;
-					};
-					if (typeof obj !== 'object') {
-						return false;
-					};
-					var d = obj.ownerDocument;
-					if (!types.isObjectLike(d)) {
-						return false;
-					};
-					var w = d.parentWindow;
-					if (!types.isObjectLike(w)) {
-						return false;
-					};
-					if (w === global) {
-						return (obj instanceof _shared.Natives.windowHtmlElement);
-					};
-					var he = w.HTMLElement;
-					//SLOWER return types.isNativeFunction(he) && (obj instanceof he);
-					return types.isFunction(he) && (obj instanceof he);
+				, (__options__.enableDomObjectsModel && _shared.Natives.windowHtmlElement ? (function isElement(obj) {
+					return types._instanceof(obj, _shared.Natives.windowHtmlElement);
 				}) : (function isElement(obj) {
 					 return !!obj && (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.nodeName === "string");
 				}))));
@@ -675,9 +604,6 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
-					if (types.isNothing(obj)) {
-						return false;
-					};
 					return types._instanceof(obj, _shared.Natives.windowEventTarget);
 				}) : (function isElement(obj) {
 					 return client.isDocument(obj) || client.isElement(obj);
@@ -1220,8 +1146,6 @@ module.exports = {
 				// Script loader functions
 				//===================================
 
-				// NOTE: These functions will get replaced when "NodeJs.js" is loaded.
-				
 				__Internal__.ScriptLoader = types.INIT(types.CustomEventTarget.$inherit(
 					/*typeProto*/
 					{
@@ -1622,7 +1546,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								script: {
 									type: 'string',
@@ -1660,13 +1584,13 @@ module.exports = {
 						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
 
+					if (!_document) {
+						_document = _shared.Natives.windowDocument;
+					};
+
 					var loader;
 					
 					if (async && _shared.Natives.windowBlob && global.URL) {
-						if (!_document) {
-							_document = _shared.Natives.windowDocument;
-						};
-						
 						// Firefox
 						loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
@@ -1680,10 +1604,6 @@ module.exports = {
 							this.element.href = URL.createObjectURL(new Blob(script));
 						});
 					} else {
-						if (!_document) {
-							_document = _shared.Natives.windowDocument;
-						};
-						
 						loader = new __Internal__.ScriptLoader(/*tag*/'style', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
 						loader.addEventListener('init', function() {
