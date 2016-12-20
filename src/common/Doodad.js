@@ -2183,7 +2183,7 @@ module.exports = {
 										};
 										
 										// Destroyed objects
-										if (this._implements(mixIns.Creatable)) {
+										if (types._implements(this, mixIns.Creatable)) {
 											var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
 											if ((destroyed === null) && !forType && (attr !== 'create')) {
 												throw new types.Error("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
@@ -5586,7 +5586,7 @@ module.exports = {
 								throw new types.TypeError("The 'cls' argument must be a type.");
 							};
 							
-							if (!this._implements(cls)) {
+							if (!types._implements(this, cls)) {
 								throw new types.TypeError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || __Internal__.ANONYMOUS, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 							};
 							
