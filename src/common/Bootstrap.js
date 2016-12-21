@@ -1373,36 +1373,42 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'object',
 						description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
 			}
 			//! END_REPLACE()
 			, function getSafeIntegerLen() {
-				return {
-					len: __Internal__.SAFE_INTEGER_LEN, 
-					min: _shared.Natives.numberMinSafeInteger, 
-					max: _shared.Natives.numberMaxSafeInteger,
+				if (!__Internal__.safeIntegerLen) {
+					__Internal__.safeIntegerLen = types.freezeObject(types.nullObject({
+						len: __Internal__.SAFE_INTEGER_LEN, 
+						min: _shared.Natives.numberMinSafeInteger, 
+						max: _shared.Natives.numberMaxSafeInteger,
+					}));
 				};
+				return __Internal__.safeIntegerLen;
 			}));
 		
 		__Internal__.ADD('getBitwiseIntegerLen', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'object',
 						description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
 			}
 			//! END_REPLACE()
 			, function getBitwiseIntegerLen() {
-				return {
-					len: __Internal__.BITWISE_INTEGER_LEN, 
-					min: __Internal__.MIN_BITWISE_INTEGER, 
-					max: __Internal__.MAX_BITWISE_INTEGER,
+				if (!__Internal__.bitwiseIntegerLen) {
+					__Internal__.bitwiseIntegerLen = types.freezeObject(types.nullObject({
+						len: __Internal__.BITWISE_INTEGER_LEN, 
+						min: __Internal__.MIN_BITWISE_INTEGER, 
+						max: __Internal__.MAX_BITWISE_INTEGER,
+					}));
 				};
+				return __Internal__.bitwiseIntegerLen;
 			}));
 		
 		__Internal__.ADD('isFinite', __Internal__.DD_DOC(
