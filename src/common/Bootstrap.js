@@ -1369,7 +1369,8 @@
 				};
 			}));
 		
-		__Internal__.ADD('getSafeIntegerLen', __Internal__.DD_DOC(
+		// <FUTURE> Remove "getSafeIntegerLen".
+		__Internal__.ADD('getSafeIntegerBounds', __Internal__.ADD('getSafeIntegerLen', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1379,7 +1380,7 @@
 						description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
 			}
 			//! END_REPLACE()
-			, function getSafeIntegerLen() {
+			, function getSafeIntegerBounds() {
 				if (!__Internal__.safeIntegerLen) {
 					__Internal__.safeIntegerLen = types.freezeObject(types.nullObject({
 						len: __Internal__.SAFE_INTEGER_LEN, 
@@ -1388,9 +1389,10 @@
 					}));
 				};
 				return __Internal__.safeIntegerLen;
-			}));
+			})));
 		
-		__Internal__.ADD('getBitwiseIntegerLen', __Internal__.DD_DOC(
+		// <FUTURE> Remove "getBitwiseIntegerLen".
+		__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.ADD('getBitwiseIntegerLen', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1400,7 +1402,7 @@
 						description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
 			}
 			//! END_REPLACE()
-			, function getBitwiseIntegerLen() {
+			, function getBitwiseIntegerBounds() {
 				if (!__Internal__.bitwiseIntegerLen) {
 					__Internal__.bitwiseIntegerLen = types.freezeObject(types.nullObject({
 						len: __Internal__.BITWISE_INTEGER_LEN, 
@@ -1409,7 +1411,7 @@
 					}));
 				};
 				return __Internal__.bitwiseIntegerLen;
-			}));
+			})));
 		
 		__Internal__.ADD('isFinite', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
