@@ -246,7 +246,7 @@ module.exports = {
 					
 					var command = test.prepareCommand(types.values, "Doodad.Types.values");
 					command.run("[]",                    {eval: true}     /**/ );
-					command.run("[1, 2]",                {eval: true},    /**/ "ar1");
+					command.run("[3]",                   {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
@@ -342,8 +342,6 @@ module.exports = {
 					command.run("[1]",      {eval: true, contains: true}, /**/  "ar1", "[0, 1]");
 					createArrays();
 					command.run("[1, 2]",   {eval: true, contains: true}, /**/  "ar1", "[0, 1, 2]");
-					createArrays();
-					command.run("[1, 2]",   {eval: true, contains: true}, /**/  "ar1", "{a: 0, b: 1, c: 2}");
 					createArrays();
 					command.run("[1]",      {eval: true, contains: true}, /**/  "ar1", "function(val, key, obj){return val === 1}");
 					command.end();

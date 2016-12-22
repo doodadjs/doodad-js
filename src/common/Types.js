@@ -97,6 +97,12 @@ module.exports = {
 					
 					// Polyfills
 					
+					// "values"
+					objectValues: (types.isNativeFunction(global.Object.values) ? global.Object.values : undefined),
+					
+					// "entries"
+					objectEntries: (types.isNativeFunction(global.Object.entries) ? global.Object.entries : undefined),
+					
 					// "bind"
 					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
 					
@@ -1112,7 +1118,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object,arraylike',
@@ -1128,23 +1134,54 @@ module.exports = {
 						if (types.isNothing(obj)) {
 							return [];
 						} else {
-							obj = _shared.Natives.windowObject(obj);
-							var result = [];
-							if (types.isArrayLike(obj)) {
-								var len = obj.length;
-								for (var key = 0; key < len; key++) {
-									if (key in obj) {
-										result.push(obj[key]);
-									};
-								};
+							if (_shared.Natives.objectValues && !types.isArrayLike(obj)) {
+								return _shared.Natives.objectValues(obj);
 							} else {
+								obj = _shared.Natives.windowObject(obj);
+								var result = [];
 								var keys = types.keys(obj),
 									len = keys.length; // performance
 								for (var i = 0; i < len; i++) {
 									result.push(obj[keys[i]]);
 								};
+								return result;
 							};
-							return result;
+						};
+					}));
+				
+				types.ADD('entries', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'arrayof(array)',
+								description: "Returns index-value pairs of an array-like object, or key-value pairs of the owned properties of an object.",
+					}
+					//! END_REPLACE()
+					, function entries(obj) {
+						if (types.isNothing(obj)) {
+							return [];
+						} else {
+							if (_shared.Natives.objectEntries && !types.isArrayLike(obj)) {
+								return _shared.Natives.objectEntries(obj);
+							} else {
+								obj = _shared.Natives.windowObject(obj);
+								var result = [];
+								var keys = types.keys(obj),
+									len = keys.length; // performance
+								for (var i = 0; i < len; i++) {
+									var key = keys[i];
+									result.push([key, obj[key]]);
+								};
+								return result;
+							};
 						};
 					}));
 				
@@ -1431,7 +1468,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1448,22 +1485,17 @@ module.exports = {
 										optional: true,
 										description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
 									},
-									includeFunctions: {
-										type: 'bool',
-										optional: true,
-										description: "When 'true' and 'items' is a function, considers that function as a value. Default is 'false'",
-									},
 								},
 								returns: 'arrayof(any)',
 								description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
 					}
 					//! END_REPLACE()
-					, function popItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
+					, function popItems(obj, items, /*optional*/thisObj) {
 						var result = [];
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 								
-							if (!includeFunctions && types.isFunction(items)) {
+							if (types.isFunction(items)) {
 								if (types.isArray(obj)) {
 									for (var key = obj.length - 1; key >= 0; key--) {
 										if (key in obj) {
@@ -1486,17 +1518,18 @@ module.exports = {
 										};
 									};
 								};
-							} else {
-								var values = types.values(items),
-									valuesLen = values.length;
+							} else if (types.isArray(items)) {
+								var itemsLen = items.length;
 								if (types.isArray(obj)) {
 									for (var key = obj.length - 1; key >= 0; key--) {
 										if (key in obj) {
 											var val = obj[key];
-											for (var j = 0; j < valuesLen; j++) {
-												if (values[j] === val) {
-													_shared.Natives.arraySplice.call(obj, key, 1);
-													result.push(val);
+											for (var j = 0; j < itemsLen; j++) {
+												if (j in items) {
+													if (items[j] === val) {
+														_shared.Natives.arraySplice.call(obj, key, 1);
+														result.push(val);
+													};
 												};
 											};
 										};
@@ -1507,10 +1540,12 @@ module.exports = {
 									for (var i = 0; i < len; i++) {
 										var key = keys[i];
 										var val = obj[key];
-										for (var j = 0; j < valuesLen; j++) {
-											if (values[j] === val) {
-												delete obj[key];
-												result.push(val);
+										for (var j = 0; j < itemsLen; j++) {
+											if (j in items) {
+												if (items[j] === val) {
+													delete obj[key];
+													result.push(val);
+												};
 											};
 										};
 									};

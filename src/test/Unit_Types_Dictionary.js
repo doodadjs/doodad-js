@@ -877,8 +877,6 @@ module.exports = {
 					createDicts();
 					command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "[0, 1, 2]");
 					createDicts();
-					command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "{a: 0, b: 1, c: 2}");
-					createDicts();
 					command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
 					command.end();
 					createDicts();
