@@ -4643,10 +4643,6 @@
 		
 		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsErrorType')), true) */ '__DD_IS_ERROR_TYPE__' /*! END_REPLACE() */, true);
 
-		// <PRB> Error "this is not defined" : They force a call to "super" before being able to use "this" !!!!
-		__Internal__.symbolErrorConstructor = __Internal__.hasClasses && types.getSymbol('__ERROR_CONSTRUCTOR__');
-		__Internal__.symbolErrorConstructorCalled = __Internal__.hasClasses && types.getSymbol('__ERROR_CONSTRUCTOR_CALLED__');
-
 		__Internal__.ADD('isErrorType', function isErrorType(type) {
 			return types.isFunction(type) && types.has(type, __Internal__.symbolIsErrorType);
 		});
@@ -4657,7 +4653,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							name: {
 								type: 'string',
@@ -4689,25 +4685,21 @@
 					base = _shared.Natives.windowError;
 				};
 				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
-				// NOTE: "classes" deactivated because of a big problem : we don't have access to 'this' without calling 'super' !!!!!!! grrrr
 				// <FUTURE> Get ride of "createErrorType" and declare classes directly (when ES6 will be everywhere)
-				if (false && __Internal__.hasClasses) {
+				if (__Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
-						//"constructor(/*paramarray*/...args) {" +
-						//	"if (!args.length) {args = ['']};" + // Patch for "AssertionError"
-						//	"super(...args);" +
-						//	"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
-						//"}" +
-						//"[ctx.errorConstructor](/*paramarray*/) {" +
-						//	"this[ctx.errorConstructorCalled] = true;" +
-						//	(constructor ? (
-						//		"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || ctx._super || function(message) {this.message = message}}, arguments);"
-						//	) : (
-						//		""
-						//	)) +
-						//	"this.name = ctx.name;" +
-						//	"this.description = this.message;" +
-						//"}" +
+						"constructor(/*paramarray*/...args) {" +
+							"var context = {_this: {}, superArgs: null};" +
+							(constructor ? (
+								"ctx.constructor.apply(context, arguments);"
+							) : (
+								""
+							)) +
+							"super(...(context.superArgs || arg));" +
+							"ctx.extend(this, context._this);" +
+							"this.name = ctx.name;" +
+							"this.description = this.message;" +
+						"}" +
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
@@ -4715,19 +4707,20 @@
 						base: base,
 						constructor: constructor,
 						name: name,
-						errorConstructor: __Internal__.symbolErrorConstructor,
-						errorConstructorCalled: __Internal__.symbolErrorConstructorCalled,
-						_super: (types.isNativeFunction(base) ? undefined : base),
+						extend: types.extend,
 					});
 
 				} else {
 					var expr = "function " + name + "(/*paramarray*/) {" +
 						(constructor ? (
-							"var error = ctx.constructor.apply({_this: this, _super: ctx.base}, arguments) || this;" +
+							"var context = {superArgs: null};" +
+							"var error = ctx.constructor.apply(context, arguments) || this;" +
+							"ctx.extend(this, context._this);" +
 							"this.throwLevel++;"
 						) : (
-							"var error = ctx.base.apply(this, arguments) || this;"
+							""
 						)) +
+						"var error = ctx.base.apply(this, (context.superArgs || arguments)) || this;"
 						"if (error !== this) {" +
 							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
 							//
@@ -4761,6 +4754,7 @@
 						base: base,
 						constructor: constructor,
 						name: name,
+						extend: types.extend,
 					});
 				
 					// For "instanceof".
@@ -4857,7 +4851,7 @@
 		__Internal__.createErrorConstructor = function() {
 			return function _new(message, /*optional*/params) {
 				message = tools.format(message, params);
-				return this._super.call(this._this, message);
+				this.superArgs = [message];
 			};
 		};
 		
@@ -4933,27 +4927,27 @@
 			, (__Internal__.AssertionError ? 
 				types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
 					if (message) {
-						return this._super.call(this._this, {
+						this.superArgs = [{
 							actual: false,
 							expected: true,
 							operator: '==',
 							message: tools.format("Assertion failed: " + message, params),
-						});
+						}];
 					} else {
-						return this._super.call(this._this, {
+						this.superArgs = [{
 							actual: false,
 							expected: true,
 							operator: '==',
 							message: "Assertion failed.",
-						});
+						}];
 					};
 				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
 			:
 				types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
 					if (message) {
-						return this._super.call(this._this, "Assertion failed: " + message, params);
+						this.superArgs = ["Assertion failed: " + message, params];
 					} else {
-						return this._super.call(this._this, "Assertion failed.");
+						this.superArgs = ["Assertion failed."];
 					};
 				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
 			))));
@@ -4980,7 +4974,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Parse error.", params);
+				this.superArgs = [message || "Parse error.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5005,7 +4999,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Not supported.", params);
+				this.superArgs = [message || "Not supported.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5030,7 +5024,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Not available.", params);
+				this.superArgs = [message || "Not available.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5061,7 +5055,7 @@
 			//! END_REPLACE()
 			, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
 				this._this.code = code;
-				return this._super.call(this._this, message, params);
+				this.superArgs = [message, params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5086,7 +5080,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Buffer overflow.", params);
+				this.superArgs = [message || "Buffer overflow.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5111,7 +5105,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Operation timed out.", params);
+				this.superArgs = [message || "Operation timed out.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5161,7 +5155,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Access denied.", params);
+				this.superArgs = [message || "Access denied.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5187,7 +5181,7 @@
 			//! END_REPLACE()
 			, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
 				this._this.bubble = true;
-				return this._super.call(this._this, message || "Script interrupted.", params);
+				this.superArgs = [message || "Script interrupted.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5217,9 +5211,9 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-				this._this.exitCode = types.toInteger(exitCode) || 0;
-				this._this.critical = true;
-				return this._super.call(this._this, message || "Script aborted.", params);
+				//this._this.exitCode = types.toInteger(exitCode) || 0;
+				//this._this.critical = true;
+				this.superArgs = [message || "Script aborted.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
 				
 		//===================================

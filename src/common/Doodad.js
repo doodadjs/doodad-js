@@ -1059,7 +1059,7 @@ module.exports = {
 					, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
 						this._this.title = title;
-						this._super.call(this._this, message, params);
+						this.superArgs = [message, params];
 					})));
 
 				doodad.ADD('trapException', root.DD_DOC(
