@@ -56,7 +56,7 @@ module.exports = {
 					var command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
 					
 					command.run(undefined,                                       {repetitions: 100}  /**/);
-					command.run(types.AssertionFailed,                        {mode: 'isinstance'}, /**/ 1);
+					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
 					command.run("",                                              {repetitions: 100}, /**/ "");
 					command.run("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
 
@@ -66,7 +66,7 @@ module.exports = {
 					var command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
 					
 					command.run(undefined,                                       {repetitions: 100}  /**/);
-					command.run(types.AssertionFailed,                        {mode: 'isinstance'}, /**/ 1);
+					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
 					command.run("",                                              {repetitions: 100}, /**/ "");
 					command.run("\\[\\(\\$1\\+\\$2\\)\\|\\(\\^\\$3\\)\\]",       {repetitions: 100}, /**/ '[($1+$2)|(^$3)]');
 

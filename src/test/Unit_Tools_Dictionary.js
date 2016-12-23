@@ -91,9 +91,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.map, "Doodad.Tools.map");
 					
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "");
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "");
 					command.run({val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return val});
 
 					command.end();

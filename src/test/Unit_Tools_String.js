@@ -88,8 +88,8 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.repeat, "Doodad.Tools.repeat");
 					
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "a");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "a");
 					command.run("",                                               {repetitions: 100}, /**/ "a", 0);
 					command.run("a",                                              {repetitions: 100}, /**/ "a", 1);
 					command.run("aa",                                             {repetitions: 100}, /**/ "a", 2);
@@ -100,10 +100,10 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.trim, "Doodad.Tools.trim");
 					
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "a", 0);
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "  a  ", " ", "");
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "  a  ", " ", 0, "");
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "a", 0);
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "  a  ", " ", "");
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "  a  ", " ", 0, "");
 					command.run("a",                                              {repetitions: 100}, /**/ "  a  ");
 					command.run("a",                                              {repetitions: 100}, /**/ "  a  ", " ");
 					command.run("a",                                              {repetitions: 100}, /**/ "  a  ", " ", 0);
@@ -118,11 +118,11 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.replace, "Doodad.Tools.replace");
 					
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", 0);
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "a");
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "a", 0);
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "a", " ", 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "a");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "a", 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "a", " ", 0);
 					command.run(" bcabcabc",                                      {repetitions: 100}, /**/ "abcabcabc", "a", " ");
 					command.run(" bc bc bc",                                      {repetitions: 100}, /**/ "abcabcabc", "a", " ", "g");
 					command.run(" bc bc bc",                                      {repetitions: 100}, /**/ "abcabcabc", new RegExp("a", "g"), " ");
@@ -132,12 +132,12 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.search, "Doodad.Tools.search");
 					
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc");
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", 1);
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", "");
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", 0, "");
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", 0, 1, 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", 1);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", "");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", 0, "");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", "b", 0, 1, 0);
 					command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", "b");
 					command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", "b", 0);
 					command.run(4,                                                {repetitions: 100}, /**/ "abcabcabc", "b", 2);
@@ -162,9 +162,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.join, "Doodad.Tools.join");
 					
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "");
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ ['a', 'b', 'c'], 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "");
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ ['a', 'b', 'c'], 0);
 					command.run("abc",                                            {repetitions: 100}, /**/ ['a', 'b', 'c']);
 					command.run("a,b,c",                                          {repetitions: 100}, /**/ ['a', 'b', 'c'], ",");
 					command.run("1,2,3",                                          {repetitions: 100}, /**/ [1, 2, 3], ",");
@@ -174,9 +174,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.title, "Doodad.Tools.title");
 					
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ 0);
-					root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "cHarLie bRaVO", 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ 0);
+					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "cHarLie bRaVO", 0);
 					command.run("",                                               {repetitions: 100}, /**/ "");
 					command.run(" ",                                              {repetitions: 100}, /**/ " ");
 					command.run("Charlie Bravo",                                  {repetitions: 100}, /**/ "cHarLie bRaVO");
@@ -222,9 +222,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.map, "Doodad.Tools.map");
 					
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}  /**/ );
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcdef");
-					//root.DD_ASSERT && command.run(types.AssertionFailed,    {mode: 'isinstance'}, /**/ "abcdef", "");
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcdef");
+					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcdef", "");
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ "abcdef", function(val, key, obj) {return val});
 
 					command.end();
@@ -316,9 +316,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.reduce, "Doodad.Tools.reduce");
 					
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'}   /**/);
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'},  /**/ "");
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'},  /**/ "", 1);
+					command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
+					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");
+					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "", 1);
 					command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 					command.run(0,                                                {repetitions: 100}, /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run(6,                                                {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
@@ -329,9 +329,9 @@ module.exports = {
 					
 					var command = test.prepareCommand(tools.reduceRight, "Doodad.Tools.reduceRight");
 					
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'}   /**/);
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'},  /**/ "");
-					command.run(types.AssertionFailed,                         {mode: 'isinstance'},  /**/ "", 1);
+					command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
+					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");
+					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "", 1);
 					command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 					command.run(0,                                                {repetitions: 100}, /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run(6,                                                {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
