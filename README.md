@@ -173,7 +173,7 @@ If you want to load additional Doodad modules :
 
   - **types.TypeError**: (alias to 'global.TypeError') Raised on invalid value type.
   - **types.Error**: (inherits 'global.Error') Generic error with message formatting.
-  - **types.AssertionFailed**: (inherits 'types.Error') Raised when an assertion fail.
+  - **types.AssertionError**: (inherits 'types.Error') Raised when an assertion fail.
   - **types.ParseError**: (inherits 'types.Error') Raised on parse error.
   - **types.NotSupported**: (inherits 'types.Error') Raised when something is not supported.
   - **types.NotAvailable**: (inherits 'types.Error') Raised when something is not available.
