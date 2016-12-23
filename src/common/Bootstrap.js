@@ -4690,6 +4690,7 @@
 				};
 				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
 				// NOTE: "classes" deactivated because of a big problem : we don't have access to 'this' without calling 'super' !!!!!!! grrrr
+				// <FUTURE> Get ride of "createErrorType" and declare classes directly (when ES6 will be everywhere)
 				if (false && __Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
 						//"constructor(/*paramarray*/...args) {" +
