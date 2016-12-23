@@ -4695,7 +4695,7 @@
 							) : (
 								""
 							)) +
-							"super(...(context.superArgs || arg));" +
+							"super(...(context.superArgs || args));" +
 							"ctx.extend(this, context._this);" +
 							"this.name = ctx.name;" +
 							"this.description = this.message;" +
