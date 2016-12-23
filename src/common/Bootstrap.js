@@ -649,6 +649,9 @@
 
 			// generateUUID
 			mathRandom: global.Math.random,
+
+			// AssertionError
+			consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
 		};
 
 		//===================================
@@ -1184,7 +1187,7 @@
 							},
 						},
 						returns: 'undefined',
-						description: "Throws 'AssertionFailed' when expression resolves to 'false'. Does nothing otherwise.",
+						description: "Throws 'AssertionError' when expression resolves to 'false'. Does nothing otherwise.",
 			}
 			//! END_REPLACE()
 			, function ASSERT(expr, /*optional*/message, /*optional*/params) {
@@ -1197,7 +1200,7 @@
 						message = tools.format(message, params || []);
 					};
 					debugger;
-					throw new types.AssertionFailed(message);
+					throw new types.AssertionError(message);
 				};
 			});
 		
@@ -4235,7 +4238,7 @@
 						author: "Claude Petit",
 						revision: 6,
 						params: {
-							base: {
+							obj: {
 								type: 'object',
 								optional: false,
 								description: "An object.",
@@ -4654,7 +4657,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							name: {
 								type: 'string',
@@ -4686,22 +4689,24 @@
 					base = _shared.Natives.windowError;
 				};
 				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
-				if (__Internal__.hasClasses) {
+				// NOTE: "classes" deactivated because of a big problem : we don't have access to 'this' without calling 'super' !!!!!!! grrrr
+				if (false && __Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
-						"constructor(/*paramarray*/...args) {" +
-							"super(...args);" +
-							"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
-						"}" +
-						"[ctx.errorConstructor](/*paramarray*/) {" +
-							"this[ctx.errorConstructorCalled] = true;" +
-							(constructor ? (
-								"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || function(message) {this.message = message}}, arguments);"
-							) : (
-								""
-							)) +
-							"this.name = ctx.name;" +
-							"this.description = this.message;" +
-						"}" +
+						//"constructor(/*paramarray*/...args) {" +
+						//	"if (!args.length) {args = ['']};" + // Patch for "AssertionError"
+						//	"super(...args);" +
+						//	"!this[ctx.errorConstructorCalled] && this[ctx.errorConstructor](...args);" +
+						//"}" +
+						//"[ctx.errorConstructor](/*paramarray*/) {" +
+						//	"this[ctx.errorConstructorCalled] = true;" +
+						//	(constructor ? (
+						//		"ctx.constructor.apply({_this: this, _super: ctx.base.prototype[ctx.errorConstructor] || ctx._super || function(message) {this.message = message}}, arguments);"
+						//	) : (
+						//		""
+						//	)) +
+						//	"this.name = ctx.name;" +
+						//	"this.description = this.message;" +
+						//"}" +
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
@@ -4711,6 +4716,7 @@
 						name: name,
 						errorConstructor: __Internal__.symbolErrorConstructor,
 						errorConstructorCalled: __Internal__.symbolErrorConstructorCalled,
+						_super: (types.isNativeFunction(base) ? undefined : base),
 					});
 
 				} else {
@@ -4892,11 +4898,21 @@
 			//! END_REPLACE()
 			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
 
-		__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! IF_SET('serverSide')
+			if (typeof require === 'function') {
+				try {
+					__Internal__.AssertionError = require('assert').AssertionError;
+				} catch(ex) {
+				};
+			};
+		//! END_IF()
+
+		// <FUTURE> Remove "AssertionFailed" alias
+		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							message: {
 								type: 'string',
@@ -4913,13 +4929,33 @@
 						description: "Raised when an assertion fail.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType("AssertionFailed", types.Error, function _new(message, /*optional*/params) {
-				if (message) {
-					return this._super.call(this._this, "Assertion failed: " + message, params);
-				} else {
-					return this._super.call(this._this, "Assertion failed.");
-				};
-			}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionFailed')), true) */ null /*! END_REPLACE() */)));
+			, (__Internal__.AssertionError ? 
+				types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
+					if (message) {
+						return this._super.call(this._this, {
+							actual: false,
+							expected: true,
+							operator: '==',
+							message: tools.format("Assertion failed: " + message, params),
+						});
+					} else {
+						return this._super.call(this._this, {
+							actual: false,
+							expected: true,
+							operator: '==',
+							message: "Assertion failed.",
+						});
+					};
+				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
+			:
+				types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
+					if (message) {
+						return this._super.call(this._this, "Assertion failed: " + message, params);
+					} else {
+						return this._super.call(this._this, "Assertion failed.");
+					};
+				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
+			))));
 
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
