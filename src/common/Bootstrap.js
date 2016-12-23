@@ -4685,7 +4685,7 @@
 					base = _shared.Natives.windowError;
 				};
 				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
-				// <FUTURE> Get ride of "createErrorType" and declare classes directly (when ES6 will be everywhere)
+				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
 				if (__Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
 						"constructor(/*paramarray*/...args) {" +
