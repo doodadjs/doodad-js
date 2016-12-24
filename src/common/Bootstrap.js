@@ -3879,18 +3879,17 @@
 					name = item[0],
 					native = global[name];
 				if (types.isFunction(native)) {
-					if (types.has(native, _shared.UUIDSymbol)) {
-						throw new _shared.Natives.windowError("Duplicated native constructor : " + name);
-					};
-					var uuid = item[1];
-					if (types.has(uuids, uuid)) {
-						throw new _shared.Natives.windowError("Duplicated UUID : " + uuid);
-					};
-					uuids[uuid] = true;
-					if (types.hasProperties()) {
-						types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
-					} else {
-						native[_shared.UUIDSymbol] = uuid;
+					if (!types.has(native, _shared.UUIDSymbol)) { // Some natives are aliases
+						var uuid = item[1];
+						if (types.has(uuids, uuid)) {
+							throw new _shared.Natives.windowError("Duplicated UUID : " + uuid);
+						};
+						uuids[uuid] = true;
+						if (types.hasProperties()) {
+							types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
+						} else {
+							native[_shared.UUIDSymbol] = uuid;
+						};
 					};
 				};
 			};
@@ -4689,9 +4688,9 @@
 				if (__Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
 						"constructor(/*paramarray*/...args) {" +
-							"var context = {_this: {}, superArgs: null};" +
+							"const context = {_this: {}, superArgs: null};" +
 							(constructor ? (
-								"ctx.constructor.apply(context, arguments);"
+								"ctx.constructor.apply(context, args);"
 							) : (
 								""
 							)) +
@@ -4703,7 +4702,7 @@
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
-					var type = types.eval(expr, {
+					var type = types.evalStrict(expr, {
 						base: base,
 						constructor: constructor,
 						name: name,
@@ -4712,8 +4711,8 @@
 
 				} else {
 					var expr = "function " + name + "(/*paramarray*/) {" +
+						"var context = {_this: {}, superArgs: null};" +
 						(constructor ? (
-							"var context = {superArgs: null};" +
 							"var error = ctx.constructor.apply(context, arguments) || this;" +
 							"ctx.extend(this, context._this);" +
 							"this.throwLevel++;"
