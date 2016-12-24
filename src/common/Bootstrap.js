@@ -4720,7 +4720,7 @@
 						) : (
 							""
 						)) +
-						"var error = ctx.base.apply(this, (context.superArgs || arguments)) || this;"
+						"var error = ctx.base.apply(this, (context.superArgs || arguments)) || this;" +
 						"if (error !== this) {" +
 							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
 							//
@@ -5130,7 +5130,7 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-				return this._super.call(this._this, message || "Operation canceled.", params);
+				this.superArgs = [message || "Operation canceled.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */)));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -5211,8 +5211,8 @@
 			}
 			//! END_REPLACE()
 			, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-				//this._this.exitCode = types.toInteger(exitCode) || 0;
-				//this._this.critical = true;
+				this._this.exitCode = types.toInteger(exitCode) || 0;
+				this._this.critical = true;
 				this.superArgs = [message || "Script aborted.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
 				
