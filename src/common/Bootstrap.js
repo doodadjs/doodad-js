@@ -1745,11 +1745,11 @@
 				return (_shared.Natives.objectToString.call(obj) === '[object Error]') || types.isErrorType(obj.constructor);
 			}));
 		
-		__Internal__.ADD('isNaN', (_shared.Natives.numberIsNaN || __Internal__.DD_DOC(
+		__Internal__.ADD('isNaN', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1782,9 +1782,13 @@
 				if (typeof obj !== 'number') {
 					return false;
 				};
-				// Explanation: NaN is the only object not equal to itself.
-				return (obj !== obj); // NaN
-			})));
+				if (_shared.Natives.numberIsNaN) {
+					return _shared.Natives.numberIsNaN(obj);
+				} else {
+					// Explanation: NaN is the only object not equal to itself.
+					return (obj !== obj); // NaN
+				};
+			}));
 		
 		__Internal__.ADD('isCallable', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")

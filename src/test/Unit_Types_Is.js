@@ -848,7 +848,7 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
 					command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
 					command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0.1)");
-					command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
+					command.run(true,  {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
 					global.document && command.run(false, {eval: true, repetitions: 100},        /**/ "document.forms");
