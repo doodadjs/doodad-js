@@ -253,6 +253,16 @@
         },
         {
           "class": "Make.Folder.Create",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/tools"
+        },
+        {
+          "class": "Make.File.Javascript",
+          "source": "%SOURCEDIR%/make/res/generateNatives.templ.js",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/tools/generateNatives.js",
+          "runDirectives": true
+        },
+        {
+          "class": "Make.Folder.Create",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/lib"
         },
         {
