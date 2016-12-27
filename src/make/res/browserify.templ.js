@@ -86,7 +86,7 @@ module.exports = {
 		};
 
 		//! FOR_EACH(VAR("modules"), "mod")
-			//! IF(!VAR("mod.manual"))
+			//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
 				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
 			//! END_IF()
 		//! END_FOR()

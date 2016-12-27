@@ -3869,36 +3869,6 @@
 			return symbol;
 		};
 
-		(function() {
-			var tempNatives = [
-					//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
-						//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
-					//! ELSE()
-						//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
-					//! END_IF()
-				],
-				uuids = types.nullObject();
-			for (var i = 0; i < tempNatives.length; i++) {
-				var item = tempNatives[i],
-					name = item[0],
-					native = global[name];
-				if (types.isFunction(native)) {
-					if (!types.has(native, _shared.UUIDSymbol)) { // Some natives are aliases
-						var uuid = item[1];
-						if (types.has(uuids, uuid)) {
-							throw new _shared.Natives.windowError("Duplicated UUID : " + uuid);
-						};
-						uuids[uuid] = true;
-						if (types.hasProperties()) {
-							types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
-						} else {
-							native[_shared.UUIDSymbol] = uuid;
-						};
-					};
-				};
-			};
-		})();
-
 		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
 		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
 

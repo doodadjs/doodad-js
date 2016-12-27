@@ -82,6 +82,13 @@
       "browserify": true
     },
     {
+      "src": "common/Types_UUIDS.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "exclude": true
+    },
+    {
       "src": "client/Browserify.js",
       "client": false,
       "server": false,
