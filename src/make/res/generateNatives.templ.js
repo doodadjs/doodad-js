@@ -20,10 +20,10 @@
 	});
 
 	var str = '',
-		QTE = 50,
+		QTY = 50,
 		len = natives.length;
 
-	for (var s = 0, e = QTE; s < len; s += QTE, e += QTE) {
+	for (var s = 0, e = QTY; s < len; s += QTY, e += QTY) {
 		str += types.toSource(natives.slice(s, e), 2).slice(1, -1) + (e < len ? ', ' : '') + '\n';
 	};
 
