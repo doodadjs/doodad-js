@@ -32,7 +32,6 @@ module.exports = {
 			bootstrap: true,
 			dependencies: [
 				'Doodad.Types',
-				'Doodad.Tools',
 			],
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -43,8 +42,7 @@ module.exports = {
 				//===================================
 
 				var doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools;
+					types = doodad.Types;
 				
 				//===================================
 				// Internal
@@ -74,7 +72,7 @@ module.exports = {
 						_new: types.SUPER(function _new(ar) {
 							this._super();
 
-							_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP[' + tools.generateUUID() + ']_VALUE__'));
+							_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP_VALUE__'));
 
 							if (types.isNothing(ar)) {
 								// Do nothing
