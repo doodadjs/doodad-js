@@ -47,8 +47,8 @@ module.exports = {
 				//===================================
 					
 				//// <FUTURE> Thread context
-				var __Internal__ = {
-				};
+				//var __Internal__ = {
+				//};
 				
 				
 				//===================================
@@ -78,18 +78,18 @@ module.exports = {
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					__Internal__.natives = [
+					var tempNatives = [
 							//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
 								//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
 							//! ELSE()
 								//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
 							//! END_IF()
-						];
+						],
 
-					var uuids = types.nullObject();
+						uuids = types.nullObject();
 
-					for (var i = 0; i < __Internal__.natives.length; i++) {
-						var item = __Internal__.natives[i],
+					for (var i = 0; i < tempNatives.length; i++) {
+						var item = tempNatives[i],
 							name = item[0],
 							native = global[name];
 						if (types.isFunction(native)) {
@@ -107,8 +107,6 @@ module.exports = {
 							};
 						};
 					};
-
-					delete __Internal__.natives; // free memory
 				};
 			},
 		};
