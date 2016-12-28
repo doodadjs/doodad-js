@@ -76,7 +76,6 @@ module.exports = {
 			// Enable some validations on debug
 			config.startup.enableAsserts = true;
 			config.startup.enableProperties = true;
-			config.startup.enableProtection = true;
 
 			// Ease debug
 			config.startup.enableSymbols = false;
