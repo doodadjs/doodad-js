@@ -2071,20 +2071,11 @@ module.exports = {
 												debugger;
 											};
 
-											if (ex.trapped || ex.bubble) {
-												if (modifiers & doodad.MethodModifiers.Async) {
-													var Promise = types.getPromise();
-													return Promise.reject(ex);
-												} else {
-													throw ex;
-												};
+											if (modifiers & doodad.MethodModifiers.Async) {
+												var Promise = types.getPromise();
+												return Promise.reject(ex);
 											} else {
-												if (modifiers & doodad.MethodModifiers.Async) {
-													var Promise = types.getPromise();
-													return Promise.reject(doodad.trapException(ex, this, attr, _caller));
-												} else {
-													throw doodad.trapException(ex, this, attr, _caller);
-												};
+												throw ex;
 											};
 										};
 										
