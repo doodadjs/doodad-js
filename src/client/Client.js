@@ -1645,7 +1645,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								url: {
 									type: 'string,Url',
@@ -1667,7 +1667,7 @@ module.exports = {
 				, function readFile(url, /*optional*/options) {
 					var Promise = types.getPromise();
 					options = types.nullObject(options);
-					return Promise.create(function readFilePromise(resolve, reject) {
+					return Promise['try'](function readFilePromise() {
 						if (types.isString(url)) {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
@@ -1704,25 +1704,28 @@ module.exports = {
 								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
 								init.credentials = 'include';
 							};
-							_shared.Natives.windowFetch.call(global, url, init).then(function(response) {
-								if (response.ok || types.HttpStatus.isSuccessful(response.status)) {
+							return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
+								if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
 										var reader = new _shared.Natives.windowFileReader();
-										reader.onloadend = function(ev) {
-											if (reader.error) {
-												reject(reader.error);
-											} else {
-												resolve(reader.result);
+										var promise = Promise.create(function readerPromise(resolve, reject) {
+											reader.onloadend = function(ev) {
+												if (reader.error) {
+													reject(reader.error);
+												} else {
+													resolve(reader.result);
+												};
 											};
-										};
+										});
 										if (encoding) {
 											reader.readAsText(blob, encoding);
 										} else {
 											reader.readAsArrayBuffer(blob);
 										};
+										return promise;
 									});
 								} else {
-									reject(new types.HttpError(response.status, response.statusText));
+									throw new types.HttpError(response.status, response.statusText);
 								};
 							});
 						} else {
@@ -1764,55 +1767,57 @@ module.exports = {
 								xhr.responseType = (encoding ? 'text' : 'blob');
 							};
 							var loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
-							client.addListener(xhr, loadEv, function(ev) {
-								if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
+							return Promise.create(function readerPromise(resolve, reject) {
+								client.addListener(xhr, loadEv, function(ev) {
+									if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
+										if (state.timeoutId) {
+											clearTimeout(state.timeoutId);
+											state.timeoutId = null;
+										};
+										if (!this.ready) {
+											this.ready = true;
+											resolve(
+												('response' in xhr) ?
+													xhr.response  // IE 10+ and other browsers
+												:
+													(encoding ? xhr.responseText : xhr.responseBody) // IE 7-9
+											);
+										};
+									};
+								});
+								var handleError = function(ex) {
 									if (state.timeoutId) {
 										clearTimeout(state.timeoutId);
 										state.timeoutId = null;
 									};
-									if (!this.ready) {
-										this.ready = true;
-										resolve(
-											('response' in xhr) ?
-												xhr.response  // IE 10+ and other browsers
-											:
-												(encoding ? xhr.responseText : xhr.responseBody) // IE 7-9
-										);
-									};
-								};
-							});
-							var handleError = function(ex) {
-								if (state.timeoutId) {
-									clearTimeout(state.timeoutId);
-									state.timeoutId = null;
-								};
-								if (!state.ready) {
-									state.ready = true;
-									reject(ex);
-								};
-							};
-							client.addListener(xhr, 'error', function(ev) {
-								handleError(new types.HttpError(xhr.status, xhr.statusText));
-							});
-							var timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
-							if ('timeout' in xhr) {
-								xhr.timeout = timeout;
-							} else {
-								state.timeoutId = setTimeout(function(ev) {
-									state.timeoutId = null;
 									if (!state.ready) {
-										xhr.abort();
-										handleError(new types.TimeoutError("Request has timed out."));
+										state.ready = true;
+										reject(ex);
 									};
-								}, timeout);
-							};
-							try {
-								xhr.send();
-							} catch(ex) {
-								if (!state.ready) {
-									handleError(ex);
 								};
-							};
+								client.addListener(xhr, 'error', function(ev) {
+									handleError(new types.HttpError(xhr.status, xhr.statusText));
+								});
+								var timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
+								if ('timeout' in xhr) {
+									xhr.timeout = timeout;
+								} else {
+									state.timeoutId = setTimeout(function(ev) {
+										state.timeoutId = null;
+										if (!state.ready) {
+											xhr.abort();
+											handleError(new types.TimeoutError("Request has timed out."));
+										};
+									}, timeout);
+								};
+								try {
+									xhr.send();
+								} catch(ex) {
+									if (!state.ready) {
+										handleError(ex);
+									};
+								};
+							});
 						};
 					});
 				}));
