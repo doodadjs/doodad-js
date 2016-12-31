@@ -30,7 +30,13 @@ module.exports = {
 		DD_MODULES['Doodad.NodeJs/root'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			namespaces: ['MixIns', 'Interfaces'],
-			dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Config', 'Doodad.Tools.Files', 'Doodad'],
+			dependencies: [
+				'Doodad.Types', 
+				'Doodad.Tools', 
+				'Doodad.Tools.Config', 
+				'Doodad.Tools.Files', 
+				'Doodad'
+			],
 			bootstrap: true,
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -364,30 +370,26 @@ module.exports = {
 					if (!__Internal__.catchAndExitCalled) {
 						__Internal__.catchAndExitCalled = true;
 						
-						try {
-							global.process.exitCode = 1; // 1 = General error
+						global.process.exitCode = 1; // 1 = General error
 
+						try {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
 								global.process.exitCode = err.exitCode;
 							} else {
-								debugger;
-								if (!err.trapped) {
-									try {
-										err.trapped = true;
-										global.console.error(err.stack || err.message);
-									} catch(p) {
-										debugger;
-									};
-								};
+								doodad.trapException(err);
 							};
 						} catch(o) {
-							debugger;
+							if (root.getOptions().debug) {
+								debugger;
+							};
 						};
 						
 						try {
 							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: global.process.exitCode}})); // sync
 						} catch(o) {
-							debugger;
+							if (root.getOptions().debug) {
+								debugger;
+							};
 						};
 						
 						tools.callAsync(_shared.Natives.processExit, 0);

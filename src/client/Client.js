@@ -138,6 +138,8 @@ module.exports = {
 
 					// setCurrentLocation
 					//historyPushState: (global.history && types.isNativeFunction(global.history.pushState) ? global.history.pushState.bind(global.history) : undefined),
+
+					windowLocation: global.location,
 				});
 				
 				
@@ -409,28 +411,20 @@ module.exports = {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
 								exitCode = err.exitCode;
 							} else {
-								debugger;
-								if (!err.trapped) {
-									try {
-										err.trapped = true;
-										if (global.console.error) {
-											global.console.error(err.stack || err.message || err.description);
-										} else {
-											global.console.log(err.stack || err.message || err.description);
-										};
-									} catch(p) {
-										debugger;
-									};
-								};
+								doodad.trapException(err);
 							};
 						} catch(o) {
-							debugger;
+							if (root.getOptions().debug) {
+								debugger;
+							};
 						};
 						
 						try {
 							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: exitCode}})); // sync
 						} catch(o) {
-							debugger;
+							if (root.getOptions().debug) {
+								debugger;
+							};
 						};
 						
 						try {
@@ -440,7 +434,7 @@ module.exports = {
 						
 						if (!__Internal__.setCurrentLocationPending) {
 							var reload = false;
-							var url = global.window.location.href;
+							var url = _shared.Natives.windowLocation.href;
 							
 							try {
 								url = files.Url.parse(url);
@@ -457,7 +451,9 @@ module.exports = {
 								};
 								_shared.Natives.windowDocument.close();
 							} catch(o) {
-								debugger;
+								if (root.getOptions().debug) {
+									debugger;
+								};
 							};
 							
 							if (reload) {
@@ -465,7 +461,9 @@ module.exports = {
 									url = url.setArgs({crashReport: true})
 									tools.setCurrentLocation(url, true);
 								} catch(o) {
-									debugger;
+									if (root.getOptions().debug) {
+										debugger;
+									};
 								};
 							};
 						};
@@ -1054,10 +1052,11 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function getCurrentLocation(/*optional*/_window) {
-					if (!_window) {
-						_window = global.window;
+					var _location = _shared.Natives.windowLocation;
+					if (_window) {
+						_location = _window.location;
 					};
-					return files.Url.parse(_window.location.href);
+					return files.Url.parse(_location.href);
 				}));
 				
 				
@@ -1105,13 +1104,16 @@ module.exports = {
 							url = files.Url.parse(url);
 						};
 						
-						if (!_window) {
-							_window = global.window;
+						var _location = _shared.Natives.windowLocation;
+						if (_window) {
+							_location = _window.location;
+						} else {
+							_window = global;
 						};
 
-						var result = url.compare(_window.location.href);
+						var result = url.compare(_location.href);
 						if (!noReload && (result === 0)) {
-							_window.location.reload();
+							_location.reload();
 							__Internal__.setCurrentLocationPending = true;
 						} else {
 							//if (_window.history && types.isNativeFunction(_window.history.replaceState)) {
@@ -1120,7 +1122,7 @@ module.exports = {
 							if ('onpageshow' in _window) {
 								client.addListener(_window, 'pageshow', function(ev) {
 									if (ev.persisted) {
-										_window.location.reload() 
+										_location.reload();
 									};
 								});
 							} else if ('onunload' in _window) {
@@ -1132,7 +1134,7 @@ module.exports = {
 								_shared.Natives.windowDocument.open('text/plain', false);
 								_shared.Natives.windowDocument.close();
 							};
-							_window.location.href = url.toString();
+							_location.href = url.toString();
 							__Internal__.setCurrentLocationPending = (result !== 0);
 						};
 					};

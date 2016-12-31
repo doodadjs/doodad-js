@@ -136,6 +136,7 @@ module.exports = {
 					arraySplice: __Internal__.arrayObj.splice,
 					arrayUnshift: __Internal__.arrayObj.unshift,
 					functionPrototype: global.Function.prototype,
+					windowObject: global.Object,
 				});
 				
 				delete __Internal__.arrayObj;  // free memory
@@ -176,21 +177,21 @@ module.exports = {
 				// Hooks
 				//=======================
 				
-				_shared.popupExceptionHook = function popupExceptionHook(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
+				_shared.popupExceptionHook = function popupExceptionHook(ex, /*optional*/obj, /*optional*/attr) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isError(ex));
 					global.alert && global.alert(ex.message);
 				};
 				
-				_shared.catchExceptionHook = function catchExceptionHook(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
+				_shared.catchExceptionHook = function catchExceptionHook(ex, /*optional*/obj, /*optional*/attr) {
 					var doodad = root.Doodad,
 						tools = doodad.Tools;
-					types.Error.prototype.parse.apply(ex);
 					if (ex.stack) {
 						tools.log(tools.LogLevels.Error, ex.stack);
 					} else {
+						types.Error.prototype.parse.apply(ex);
 						tools.log(tools.LogLevels.Error, "[~0~] in '~1~.~2~' at '~3~:~4~:~5~'.", [
 							/*0*/ ex.toString(), 
-							/*1*/ (caller && types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME)) || types.getTypeName(obj) || '<unknown>',
+							/*1*/ types.getTypeName(obj) || '<unknown>',
 							/*2*/ attr || ex.functionName || '<unknown>',
 							/*3*/ ex.fileName || '<unknown>', 
 							/*4*/ types.isNothing(ex.lineNumber) ? -1 : ex.lineNumber, 
@@ -1066,7 +1067,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									ex: {
 										type: 'error',
@@ -1083,27 +1084,22 @@ module.exports = {
 										optional: true,
 										description: "Attribute name.",
 									},
-									caller: {
-										type: 'function',
-										optional: true,
-										description: "Caller function.",
-									},
 								},
 								returns: 'error',
 								description: "Errors manager.",
 					}
 					//! END_REPLACE()
-					, function trapException(ex, /*optional*/obj, /*optional*/attr, /*optional*/caller) {
+					, function trapException(ex, /*optional*/obj, /*optional*/attr) {
 						if (!__Internal__.inTrapException) {
 							__Internal__.inTrapException = true;
-							ex = Object(ex);
+							ex = _shared.Natives.windowObject(ex);
 							try {
 								if (!ex.trapped) {
 									if (!ex.bubble) {
 										if (types._instanceof(ex, exceptions.Application)) {
-											_shared.popupExceptionHook(ex, obj, attr, caller);
+											_shared.popupExceptionHook(ex, obj, attr);
 										} else {
-											_shared.catchExceptionHook(ex, obj, attr, caller);
+											_shared.catchExceptionHook(ex, obj, attr);
 										};
 									};
 								};
@@ -2068,7 +2064,9 @@ module.exports = {
 													};
 												};
 											} catch(o) {
-												debugger;
+												if (root.getOptions().debug) {
+													debugger;
+												};
 											};
 
 											if (modifiers & doodad.MethodModifiers.Async) {
@@ -6960,7 +6958,9 @@ module.exports = {
 									try {
 										callback.lastError = doodad.trapException(ex, obj, attr);
 									} catch(o) {
-										debugger;
+										if (root.getOptions().debug) {
+											debugger;
+										};
 									};
 								};
 							};
@@ -7066,7 +7066,9 @@ module.exports = {
 												callback.lastError = doodad.trapException(ex, obj, attr);
 												reject(callback.lastError);
 											} catch(o) {
-												debugger;
+												if (root.getOptions().debug) {
+													debugger;
+												};
 												reject(ex);
 											};
 										};
