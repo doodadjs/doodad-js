@@ -2783,6 +2783,26 @@ module.exports = {
 									return path;
 								}),
 								
+							getPath: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: null,
+											returns: 'Url',
+											description: "Returns the path as an Url without dommain.",
+								}
+								//! END_REPLACE()
+								, function getPath() {
+									return this.set({
+										protocol: null,
+										domain: null,
+										user: null,
+										password: null,
+										port: null,
+									});
+								}),
+								
 						}, __Internal__.urlOptions)
 					))));
 
