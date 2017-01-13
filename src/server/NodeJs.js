@@ -84,9 +84,11 @@ module.exports = {
 					globalBuffer: global.Buffer,
 					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
 
-					// "callAsync"
+					// "callAsync", "readFile"
 					windowSetTimeout: global.setTimeout,
 					windowClearTimeout: global.clearTimeout,
+
+					// "callAsync"
 					windowSetImmediate: global.setImmediate,
 					windowClearImmediate: global.clearImmediate,
 					processNextTick: global.process.nextTick,
@@ -726,98 +728,234 @@ module.exports = {
 				};
 
 
-					//=====================================
-					// Files functions
-					//=====================================
+				//=====================================
+				// Files functions
+				//=====================================
 					
-					files.ADD('rmdir', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									path: {
-										type: 'string,Path',
-										optional: false,
-										description: "Target folder path.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
-									},
+				files.ADD('rmdir', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Target folder path.",
 								},
-								returns: 'bool,Promise(bool)',
-								description: "Removes specified system folder.",
-					}
-					//! END_REPLACE()
-					, function rmdir(path, /*optional*/options) {
-						const Promise = types.getPromise();
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Removes specified system folder.",
+				}
+				//! END_REPLACE()
+				, function rmdir(path, /*optional*/options) {
+					const Promise = types.getPromise();
+					if (types.isString(path)) {
+						path = files.Path.parse(path);
+					};
+					const name = path.toString({
+						os: null,
+						dirChar: null,
+						shell: 'api',
+					});
+					const async = types.get(options, 'async', false);
+					if (async) {
+						return Promise.create(function rmdirPromise(resolve, reject) {
+							nodeFs.rmdir(name, function(ex) {
+								if (ex) {
+									if (ex.code === 'ENOENT') {
+										resolve(true);
+									} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
+										const deleteContent = function deleteContent(dirFiles) {
+											const dirFile = dirFiles.shift();
+											if (dirFile) {
+												const newPath = path.combine(null, {
+													file: dirFile,
+												});
+												const fname = newPath.toString({
+													os: null,
+													dirChar: null,
+													shell: 'api',
+												});
+												nodeFs.unlink(fname, function(ex) {
+													if (ex) {
+														if (ex.code === 'ENOENT') {
+															deleteContent(dirFiles);
+														} else if (ex.code === 'EPERM') {
+															files.rmdir(newPath, options)
+																.then(function() {
+																	deleteContent(dirFiles);
+																});
+														} else {
+															reject(ex);
+														};
+													} else {
+														deleteContent(dirFiles);
+													};
+												});
+											} else {
+												// End
+												nodeFs.rmdir(name, function(ex) {
+													if (ex) {
+														if (ex.code === 'ENOENT') {
+															resolve(true);
+														} else {
+															reject(ex);
+														};
+													} else {
+														resolve(true);
+													};
+												});
+											};
+										};
+										nodeFs.readdir(name, function(ex, dirFiles) {
+											if (ex) {
+												reject(ex);
+											} else {
+												deleteContent(dirFiles);
+											};
+										});
+									} else {
+										reject(ex);
+									};
+								} else {
+									resolve(true);
+								};
+							});
+						});
+					} else {
+						try {
+							nodeFs.rmdirSync(name);
+						} catch(ex) {
+							if (ex.code === 'ENOENT') {
+								// Do nothing
+							} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
+								const dirFiles = nodeFs.readdirSync(name);
+								let dirFile;
+								while (dirFile = dirFiles.shift()) {
+									const newPath = path.combine(null, {
+										file: dirFile,
+									});
+									const fname = newPath.toString({
+										os: null,
+										dirChar: null,
+										shell: 'api',
+									});
+									try {
+										nodeFs.unlinkSync(fname);
+									} catch(ex) {
+										if (ex.code === 'ENOENT') {
+											// Do nothing
+										} else if (ex.code === 'EPERM') {
+											files.rmdir(newPath, options);
+										} else {
+											throw ex;
+										};
+									};
+								};
+								try {
+									nodeFs.rmdirSync(name);
+								} catch(ex) {
+									if (ex.code !== 'ENOENT') {
+										throw ex;
+									};
+								};
+							} else {
+								throw ex;
+							};
 						};
+						return true;
+					};
+				}));
+					
+				files.ADD('mkdir', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 4,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Target folder path.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Creates specified system folder.",
+				}
+				//! END_REPLACE()
+				, function mkdir(path, /*optional*/options) {
+					const Promise = types.getPromise();
+					if (types.isString(path)) {
+						path = files.Path.parse(path);
+					};
+					const async = types.get(options, 'async', false);
+					const ignoreExists = types.get(options, 'ignoreExists', true);
+					if (types.get(options, 'makeParents', false)) {
+						const create = function(dir, index) {
+							if (index < dir.length) {
+								const name = path.toString({
+									path: dir.slice(0, index + 1),
+									file: null,
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								if (async) {
+									return Promise.create(function nodeFsMkdirPromise(resolve, reject) {
+										nodeFs.mkdir(name, function (ex) {
+											if (ex) {
+												if ((ignoreExists || (index < dir.length - 1)) && (ex.code === 'EEXIST')) {
+													resolve(create(dir, ++index));
+												} else {
+													reject(ex);
+												};
+											} else {
+												resolve(create(dir, ++index));
+											};
+										});
+									});
+								} else {
+									try {
+										nodeFs.mkdirSync(name);
+									} catch(ex) {
+										if ((!ignoreExists && (index === dir.length - 1)) || (ex.code !== 'EEXIST')) {
+											throw ex;
+										};
+									};
+									return create(dir, ++index);
+								};
+							} else {
+								if (async) {
+									return Promise.resolve(true);
+								} else {
+									return true;
+								};
+							};
+						};
+						return create(path.path, 0);
+					} else {
 						const name = path.toString({
 							os: null,
 							dirChar: null,
 							shell: 'api',
 						});
-						const async = types.get(options, 'async', false);
 						if (async) {
-							return Promise.create(function rmdirPromise(resolve, reject) {
-								nodeFs.rmdir(name, function(ex) {
+							return Promise.create(function nodeFsMkdirPromise2(resolve, reject) {
+								nodeFs.mkdir(name, function(ex) {
 									if (ex) {
-										if (ex.code === 'ENOENT') {
+										if (ignoreExists && (ex.code === 'EEXIST')) {
 											resolve(true);
-										} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
-											const deleteContent = function deleteContent(dirFiles) {
-												const dirFile = dirFiles.shift();
-												if (dirFile) {
-													const newPath = path.combine(null, {
-														file: dirFile,
-													});
-													const fname = newPath.toString({
-														os: null,
-														dirChar: null,
-														shell: 'api',
-													});
-													nodeFs.unlink(fname, function(ex) {
-														if (ex) {
-															if (ex.code === 'ENOENT') {
-																deleteContent(dirFiles);
-															} else if (ex.code === 'EPERM') {
-																files.rmdir(newPath, options)
-																	.then(function() {
-																		deleteContent(dirFiles);
-																	});
-															} else {
-																reject(ex);
-															};
-														} else {
-															deleteContent(dirFiles);
-														};
-													});
-												} else {
-													// End
-													nodeFs.rmdir(name, function(ex) {
-														if (ex) {
-															if (ex.code === 'ENOENT') {
-																resolve(true);
-															} else {
-																reject(ex);
-															};
-														} else {
-															resolve(true);
-														};
-													});
-												};
-											};
-											nodeFs.readdir(name, function(ex, dirFiles) {
-												if (ex) {
-													reject(ex);
-												} else {
-													deleteContent(dirFiles);
-												};
-											});
 										} else {
 											reject(ex);
 										};
@@ -828,635 +966,507 @@ module.exports = {
 							});
 						} else {
 							try {
-								nodeFs.rmdirSync(name);
+								nodeFs.mkdirSync(name);
 							} catch(ex) {
-								if (ex.code === 'ENOENT') {
-									// Do nothing
-								} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
-									const dirFiles = nodeFs.readdirSync(name);
-									let dirFile;
-									while (dirFile = dirFiles.shift()) {
-										const newPath = path.combine(null, {
-											file: dirFile,
-										});
-										const fname = newPath.toString({
-											os: null,
-											dirChar: null,
-											shell: 'api',
-										});
-										try {
-											nodeFs.unlinkSync(fname);
-										} catch(ex) {
-											if (ex.code === 'ENOENT') {
-												// Do nothing
-											} else if (ex.code === 'EPERM') {
-												files.rmdir(newPath, options);
-											} else {
-												throw ex;
-											};
-										};
-									};
-									try {
-										nodeFs.rmdirSync(name);
-									} catch(ex) {
-										if (ex.code !== 'ENOENT') {
-											throw ex;
-										};
-									};
-								} else {
+								if (!ignoreExists || (ex.code !== 'EEXIST')) {
 									throw ex;
 								};
 							};
 							return true;
 						};
-					}));
+					};
+				}));
 					
-					files.ADD('mkdir', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									path: {
-										type: 'string,Path',
-										optional: false,
-										description: "Target folder path.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
-									},
+				files.ADD('copy', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 4,
+							params: {
+								source: {
+									type: 'string,Path',
+									optional: false,
+									description: "Source folder or file path.",
 								},
-								returns: 'bool,Promise(bool)',
-								description: "Creates specified system folder.",
-					}
-					//! END_REPLACE()
-					, function mkdir(path, /*optional*/options) {
-						const Promise = types.getPromise();
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
-						const async = types.get(options, 'async', false);
-						const ignoreExists = types.get(options, 'ignoreExists', true);
-						if (types.get(options, 'makeParents', false)) {
-							const create = function(dir, index) {
-								if (index < dir.length) {
-									const name = path.toString({
-										path: dir.slice(0, index + 1),
-										file: null,
-										os: null,
-										dirChar: null,
-										shell: 'api',
-									});
-									if (async) {
-										return Promise.create(function nodeFsMkdirPromise(resolve, reject) {
-											nodeFs.mkdir(name, function (ex) {
-												if (ex) {
-													if ((ignoreExists || (index < dir.length - 1)) && (ex.code === 'EEXIST')) {
-														resolve(create(dir, ++index));
-													} else {
-														reject(ex);
-													};
-												} else {
-													resolve(create(dir, ++index));
-												};
-											});
-										});
-									} else {
-										try {
-											nodeFs.mkdirSync(name);
-										} catch(ex) {
-											if ((!ignoreExists && (index === dir.length - 1)) || (ex.code !== 'EEXIST')) {
-												throw ex;
-											};
-										};
-										return create(dir, ++index);
-									};
+								destination: {
+									type: 'string,Path',
+									optional: false,
+									description: "Destination folder or file path.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Copies source file or folder to destination.",
+				}
+				//! END_REPLACE()
+				, function copy(source, destination, /*optional*/options) {
+					const Promise = types.getPromise();
+					if (types.isString(source)) {
+						source = files.Path.parse(source);
+					};
+					if (types.isString(destination)) {
+						destination = files.Path.parse(destination);
+					};
+					const async = types.get(options, 'async', false),
+						bufferLength = types.get(options, 'bufferLength', 4096),
+						preserveTimes = types.get(options, 'preserveTimes', true),
+						override = types.get(options, 'override', false),
+						recursive = types.get(options, 'recursive', false),
+						skipInvalid = types.get(options, 'skipInvalid', false);
+					if (async) {
+						return Promise.create(function copyPromise(resolve, reject) {
+							nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
+								if (ex) {
+									reject(ex);
 								} else {
-									if (async) {
-										return Promise.resolve(true);
-									} else {
-										return true;
-									};
-								};
-							};
-							return create(path.path, 0);
-						} else {
-							const name = path.toString({
-								os: null,
-								dirChar: null,
-								shell: 'api',
-							});
-							if (async) {
-								return Promise.create(function nodeFsMkdirPromise2(resolve, reject) {
-									nodeFs.mkdir(name, function(ex) {
-										if (ex) {
-											if (ignoreExists && (ex.code === 'EEXIST')) {
-												resolve(true);
-											} else {
-												reject(ex);
-											};
-										} else {
-											resolve(true);
+									if (stats.isSymbolicLink()) {
+										// Copy symbolic link
+										if (!destination.file) {
+											destination = destination.set({ file: source.file });
 										};
-									});
-								});
-							} else {
-								try {
-									nodeFs.mkdirSync(name);
-								} catch(ex) {
-									if (!ignoreExists || (ex.code !== 'EEXIST')) {
-										throw ex;
-									};
-								};
-								return true;
-							};
-						};
-					}));
-					
-					files.ADD('copy', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									source: {
-										type: 'string,Path',
-										optional: false,
-										description: "Source folder or file path.",
-									},
-									destination: {
-										type: 'string,Path',
-										optional: false,
-										description: "Destination folder or file path.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
-									},
-								},
-								returns: 'bool,Promise(bool)',
-								description: "Copies source file or folder to destination.",
-					}
-					//! END_REPLACE()
-					, function copy(source, destination, /*optional*/options) {
-						const Promise = types.getPromise();
-						if (types.isString(source)) {
-							source = files.Path.parse(source);
-						};
-						if (types.isString(destination)) {
-							destination = files.Path.parse(destination);
-						};
-						const async = types.get(options, 'async', false),
-							bufferLength = types.get(options, 'bufferLength', 4096),
-							preserveTimes = types.get(options, 'preserveTimes', true),
-							override = types.get(options, 'override', false),
-							recursive = types.get(options, 'recursive', false),
-							skipInvalid = types.get(options, 'skipInvalid', false);
-						if (async) {
-							return Promise.create(function copyPromise(resolve, reject) {
-								nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
-									if (ex) {
-										reject(ex);
-									} else {
-										if (stats.isSymbolicLink()) {
-											// Copy symbolic link
-											if (!destination.file) {
-												destination = destination.set({ file: source.file });
-											};
-											nodeFs.readlink(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, linkString) {
-												if (ex) {
-													reject(ex);
-												} else {
-													const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
-													nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
-														if (ex) {
-															reject(ex);
-														} else if (preserveTimes) {
-															nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
-																if (ex) {
-																	reject(ex);
-																} else {
-																	resolve(true);
-																};
-															});
-														} else {
-															resolve(true);
-														};
-													});
-												};
-											});
-										} else if (stats.isFile()) {
-											// Copy file
-											if (!destination.file) {
-												destination = destination.set({ file: source.file });
-											};
-											const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
-											const copyFile = function copyFile(buf, sourceFd, destFd) {
-												nodeFs.read(sourceFd, buf, null, buf.length, null, function(ex, bytesRead, _buf) {
+										nodeFs.readlink(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, linkString) {
+											if (ex) {
+												reject(ex);
+											} else {
+												const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+												nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
 													if (ex) {
 														reject(ex);
-													} else if (bytesRead) {
-														nodeFs.write(destFd, _buf, 0, bytesRead, function(ex) {
+													} else if (preserveTimes) {
+														nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
 															if (ex) {
 																reject(ex);
 															} else {
-																copyFile(buf, sourceFd, destFd);
+																resolve(true);
 															};
 														});
 													} else {
-														nodeFs.close(sourceFd, function(ex1) {
-															nodeFs.close(destFd, function(ex2) {
-																if (ex1 || ex2) {
-																	reject(ex1 || ex2);
-																} else if (preserveTimes) {
-																	nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
-																		if (ex) {
-																			reject(ex);
-																		} else {
-																			resolve(true);
-																		};
-																	});
-																} else {
-																	resolve(true);
-																};
-															});
-														});
+														resolve(true);
 													};
 												});
 											};
-											nodeFs.open(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r', function(ex, sourceFd) {
+										});
+									} else if (stats.isFile()) {
+										// Copy file
+										if (!destination.file) {
+											destination = destination.set({ file: source.file });
+										};
+										const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+										const copyFile = function copyFile(buf, sourceFd, destFd) {
+											nodeFs.read(sourceFd, buf, null, buf.length, null, function(ex, bytesRead, _buf) {
 												if (ex) {
 													reject(ex);
-												};
-												nodeFs.open(dest, (override ? 'w' : 'wx'), function(ex, destFd) {
-													if (ex) {
-														nodeFs.close(sourceFd, function() {
-															reject(ex);
-														});
-													} else {
-														const buf = new Buffer(bufferLength);
-														copyFile(buf, sourceFd, destFd);
-													};
-												});
-											});
-										} else if (stats.isDirectory() && recursive) {
-											// Recurse directory
-											const copyFile = function copyFile(dirFiles) {
-												const dirFile = dirFiles.shift();
-												if (dirFile) {
-													files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options)
-														.then(function() {
-															copyFile(dirFiles);
-														})
-														['catch'](function(ex) {
-															reject(ex);
-														});
-												} else if (preserveTimes) {
-													// FIXME: Dates are not correct
-													nodeFs.utimes(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime, function(ex) {
+												} else if (bytesRead) {
+													nodeFs.write(destFd, _buf, 0, bytesRead, function(ex) {
 														if (ex) {
 															reject(ex);
 														} else {
-															resolve(true);
+															copyFile(buf, sourceFd, destFd);
 														};
 													});
 												} else {
-													resolve(true);
+													nodeFs.close(sourceFd, function(ex1) {
+														nodeFs.close(destFd, function(ex2) {
+															if (ex1 || ex2) {
+																reject(ex1 || ex2);
+															} else if (preserveTimes) {
+																nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
+																	if (ex) {
+																		reject(ex);
+																	} else {
+																		resolve(true);
+																	};
+																});
+															} else {
+																resolve(true);
+															};
+														});
+													});
 												};
+											});
+										};
+										nodeFs.open(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r', function(ex, sourceFd) {
+											if (ex) {
+												reject(ex);
 											};
-											files.mkdir(destination, options).then(function() {
-												nodeFs.readdir(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, dirFiles) {
+											nodeFs.open(dest, (override ? 'w' : 'wx'), function(ex, destFd) {
+												if (ex) {
+													nodeFs.close(sourceFd, function() {
+														reject(ex);
+													});
+												} else {
+													const buf = new Buffer(bufferLength);
+													copyFile(buf, sourceFd, destFd);
+												};
+											});
+										});
+									} else if (stats.isDirectory() && recursive) {
+										// Recurse directory
+										const copyFile = function copyFile(dirFiles) {
+											const dirFile = dirFiles.shift();
+											if (dirFile) {
+												files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options)
+													.then(function() {
+														copyFile(dirFiles);
+													})
+													['catch'](function(ex) {
+														reject(ex);
+													});
+											} else if (preserveTimes) {
+												// FIXME: Dates are not correct
+												nodeFs.utimes(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime, function(ex) {
 													if (ex) {
 														reject(ex);
 													} else {
-														copyFile(dirFiles);
+														resolve(true);
 													};
 												});
-											});
-											
-										} else if (!skipInvalid) {
-											// Invalid file system object
-											let ex;
-											if (stats.isDirectory()) {
-												ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
 											} else {
-												ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+												resolve(true);
 											};
-											reject(ex);
+										};
+										files.mkdir(destination, options).then(function() {
+											nodeFs.readdir(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, dirFiles) {
+												if (ex) {
+													reject(ex);
+												} else {
+													copyFile(dirFiles);
+												};
+											});
+										});
+											
+									} else if (!skipInvalid) {
+										// Invalid file system object
+										let ex;
+										if (stats.isDirectory()) {
+											ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
 										} else {
-											// Skip invalid file system object
-											resolve(false);
+											ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
 										};
+										reject(ex);
+									} else {
+										// Skip invalid file system object
+										resolve(false);
 									};
-								});
+								};
 							});
-						} else {
-							const stats = nodeFs.lstatSync(source.toString({os: null, dirChar: null, shell: 'api'}));
-							if (stats.isSymbolicLink()) {
-								// Copy symbolic link
-								if (!destination.file) {
-									destination = destination.set({ file: source.file });
-								};
-								const linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
-								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
-								nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
-								if (preserveTimes) {
-									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
-								};
-								return true;
-							} else if (stats.isFile()) {
-								// Copy file
-								if (!destination.file) {
-									destination = destination.set({ file: source.file });
-								};
-								const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
-								let sourceFd = null,
-									destFd = null;
+						});
+					} else {
+						const stats = nodeFs.lstatSync(source.toString({os: null, dirChar: null, shell: 'api'}));
+						if (stats.isSymbolicLink()) {
+							// Copy symbolic link
+							if (!destination.file) {
+								destination = destination.set({ file: source.file });
+							};
+							const linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+							const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+							nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
+							if (preserveTimes) {
+								nodeFs.utimesSync(dest, stats.atime, stats.mtime);
+							};
+							return true;
+						} else if (stats.isFile()) {
+							// Copy file
+							if (!destination.file) {
+								destination = destination.set({ file: source.file });
+							};
+							const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+							let sourceFd = null,
+								destFd = null;
+							try {
+								sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
+								destFd = nodeFs.openSync(dest, (override ? 'w' : 'wx'));
+								const buf = new Buffer(bufferLength);
+								let bytesRead = 0;
+								do {
+									bytesRead = nodeFs.readSync(sourceFd, buf, null, buf.length);
+									if (bytesRead) {
+										nodeFs.writeSync(destFd, buf, 0, bytesRead);
+									};
+								} while (bytesRead);
+							} catch(ex) {
+								throw ex;
+							} finally {
 								try {
-									sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
-									destFd = nodeFs.openSync(dest, (override ? 'w' : 'wx'));
-									const buf = new Buffer(bufferLength);
-									let bytesRead = 0;
-									do {
-										bytesRead = nodeFs.readSync(sourceFd, buf, null, buf.length);
-										if (bytesRead) {
-											nodeFs.writeSync(destFd, buf, 0, bytesRead);
-										};
-									} while (bytesRead);
+									sourceFd && nodeFs.closeSync(sourceFd);
 								} catch(ex) {
 									throw ex;
 								} finally {
-									try {
-										sourceFd && nodeFs.closeSync(sourceFd);
-									} catch(ex) {
-										throw ex;
-									} finally {
-										destFd && nodeFs.closeSync(destFd);
-									};
+									destFd && nodeFs.closeSync(destFd);
 								};
-								if (preserveTimes) {
-									nodeFs.utimesSync(dest, stats.atime, stats.mtime);
-								};
-								return true;
-							} else if (stats.isDirectory() && recursive) {
-								// Recurse directory
-								files.mkdir(destination, options);
-								const dirFiles = nodeFs.readdirSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
-								for (let i = 0; i < dirFiles.length; i++) {
-									const dirFile = dirFiles[i];
-									files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
-								};
-								if (preserveTimes) {
-									// FIXME: Dates are not correct
-									nodeFs.utimesSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime);
-								};
-								return true;
-							} else if (!skipInvalid) {
-								// Invalid file system object
-								let ex;
-								if (stats.isDirectory()) {
-									ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
-								} else {
-									ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
-								};
-								throw ex;
-							} else {
-								// Skip invalid file system object
-								return false;
 							};
+							if (preserveTimes) {
+								nodeFs.utimesSync(dest, stats.atime, stats.mtime);
+							};
+							return true;
+						} else if (stats.isDirectory() && recursive) {
+							// Recurse directory
+							files.mkdir(destination, options);
+							const dirFiles = nodeFs.readdirSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+							for (let i = 0; i < dirFiles.length; i++) {
+								const dirFile = dirFiles[i];
+								files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
+							};
+							if (preserveTimes) {
+								// FIXME: Dates are not correct
+								nodeFs.utimesSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime);
+							};
+							return true;
+						} else if (!skipInvalid) {
+							// Invalid file system object
+							let ex;
+							if (stats.isDirectory()) {
+								ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+							} else {
+								ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+							};
+							throw ex;
+						} else {
+							// Skip invalid file system object
+							return false;
 						};
-					}));
+					};
+				}));
 					
-					files.ADD('readdir', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									path: {
-										type: 'string,Path',
-										optional: false,
-										description: "Target folder path.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
-									},
+				files.ADD('readdir', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Target folder path.",
 								},
-								returns: 'arrayof(object),Promise(arrayof(object))',
-								description: "Returns files and folders list with stats.",
-					}
-					//! END_REPLACE()
-					, function readdir(path, /*optional*/options) {
-						// TODO: Returns just files and folders.
-						// TODO: 'depth' for synchronous
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'arrayof(object),Promise(arrayof(object))',
+							description: "Returns files and folders list with stats.",
+				}
+				//! END_REPLACE()
+				, function readdir(path, /*optional*/options) {
+					// TODO: Returns just files and folders.
+					// TODO: 'depth' for synchronous
 						
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+					if (types.isString(path)) {
+						path = files.Path.parse(path);
+					};
 
-						const Promise = types.getPromise(),
-							async = types.get(options, 'async', false),
-							depth = (+types.get(options, 'depth') || 0) - 1,  // null|undefined|true|false|NaN|Infinity
-							relative = types.get(options, 'relative', false),
-							followLinks = types.get(options, 'followLinks', false);
+					const Promise = types.getPromise(),
+						async = types.get(options, 'async', false),
+						depth = (+types.get(options, 'depth') || 0) - 1,  // null|undefined|true|false|NaN|Infinity
+						relative = types.get(options, 'relative', false),
+						followLinks = types.get(options, 'followLinks', false);
 
-						const result = [];
+					const result = [];
 
-						if (depth >= -1) {
-							const getStats = function getStats(file, parent, parentRel) {
-								let filePath = parent.combine(null, {
-									file: file,
+					if (depth >= -1) {
+						const getStats = function getStats(file, parent, parentRel) {
+							let filePath = parent.combine(null, {
+								file: file,
+							});
+							let filePathRel;
+							if (relative) {
+								filePathRel = parentRel.combine(null, {
+									file: file
 								});
-								let filePathRel;
-								if (relative) {
-									filePathRel = parentRel.combine(null, {
-										file: file
-									});
-								};
-								const addFile = function addFile(stats) {
-									if (stats.isDirectory()) {
-										filePath = filePath.pushFile();
-										if (relative) {
-											filePathRel = filePathRel.pushFile();
-										};
+							};
+							const addFile = function addFile(stats) {
+								if (stats.isDirectory()) {
+									filePath = filePath.pushFile();
+									if (relative) {
+										filePathRel = filePathRel.pushFile();
 									};
-									const isFolder = stats.isDirectory(),
-										isFile = stats.isFile();
+								};
+								const isFolder = stats.isDirectory(),
+									isFile = stats.isFile();
 										
-									if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
-										const obj = {
-											name: file,
-											path: (relative ? filePathRel : filePath),
-											isFolder: isFolder,
-											isFile: isFile,
-											size: stats.size, // bytes
-											// ...
-										};
-										result.push(obj);
-										return isFolder;
-									} else {
-										return false;
+								if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
+									const obj = {
+										name: file,
+										path: (relative ? filePathRel : filePath),
+										isFolder: isFolder,
+										isFile: isFile,
+										size: stats.size, // bytes
+										// ...
 									};
-								};
-								if (async) {
-									return Promise.create(function nodeFsStatsPromise(resolve, reject) {
-										const callback = function callback(ex, stats) {
-											if (ex) {
-												reject(ex);
-											} else {
-												try {
-													resolve(addFile(stats));
-												} catch(ex) {
-													reject(ex);
-												};
-											};
-										};
-										if (followLinks) {
-											nodeFs.stat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
-										} else {
-											nodeFs.lstat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
-										};
-									});
+									result.push(obj);
+									return isFolder;
 								} else {
-									return addFile(nodeFs.statSync(filePath.toString({os: null, dirChar: null, shell: 'api'})));
+									return false;
 								};
 							};
-							
 							if (async) {
-								const readdir = function readdir(name, parent, parentRel, depth) {
-									return Promise.create(function nodeFsReaddirPromise(resolve, reject) {
-										const path = (name ? parent.combine(name) : parent);
-										let pathRel;
-										if (relative) {
-											pathRel = (name ? parentRel.combine(name) : parentRel);
-										};
-										nodeFs.readdir(path.toString({
-											os: null,
-											dirChar: null, 
-											shell: 'api',
-										}), function(ex, files) {
-											if (ex) {
+								return Promise.create(function nodeFsStatsPromise(resolve, reject) {
+									const callback = function callback(ex, stats) {
+										if (ex) {
+											reject(ex);
+										} else {
+											try {
+												resolve(addFile(stats));
+											} catch(ex) {
 												reject(ex);
-											} else {
-												try {
-													resolve(proceed(files, path, pathRel, depth));
-												} catch(ex) {
-													reject(ex);
-												};
 											};
-										});
-									});
-								};
-								const proceed = function proceed(files, parent, parentRel, depth) {
-									const file = files.shift();
-									if (file) {
-										return getStats(file, parent, parentRel).then(function(isFolder) {
-											if (isFolder && (depth >= 0)) {
-												return readdir(file, parent, parentRel, depth - 1)
-													.then(function() {
-														return proceed(files, parent, parentRel, depth);
-													});
-											} else {
-												return proceed(files, parent, parentRel, depth);
-											};
-										});
-									} else {
-										// End
-										return result;
+										};
 									};
-								};
-								return readdir(null, path, (relative ? files.Path.parse('./', {os: 'linux'}) : null), depth);
+									if (followLinks) {
+										nodeFs.stat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+									} else {
+										nodeFs.lstat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+									};
+								});
 							} else {
-								if (depth >= 0) {
-									throw new types.NotSupported("'depth' is not supported for the synchronous operation.");
-								};
-								const files = nodeFs.readdirSync(path.toString({
+								return addFile(nodeFs.statSync(filePath.toString({os: null, dirChar: null, shell: 'api'})));
+							};
+						};
+							
+						if (async) {
+							const readdir = function readdir(name, parent, parentRel, depth) {
+								return Promise.create(function nodeFsReaddirPromise(resolve, reject) {
+									const path = (name ? parent.combine(name) : parent);
+									let pathRel;
+									if (relative) {
+										pathRel = (name ? parentRel.combine(name) : parentRel);
+									};
+									nodeFs.readdir(path.toString({
 										os: null,
 										dirChar: null, 
 										shell: 'api',
-									}));
-								let pathRel = (relative ? files.Path.parse('./', {os: 'linux'}) : null),
-									file;
-								while (file = files.shift()) {
-									const isFolder = getStats(file, path, pathRel);
-									//...
+									}), function(ex, files) {
+										if (ex) {
+											reject(ex);
+										} else {
+											try {
+												resolve(proceed(files, path, pathRel, depth));
+											} catch(ex) {
+												reject(ex);
+											};
+										};
+									});
+								});
+							};
+							const proceed = function proceed(files, parent, parentRel, depth) {
+								const file = files.shift();
+								if (file) {
+									return getStats(file, parent, parentRel).then(function(isFolder) {
+										if (isFolder && (depth >= 0)) {
+											return readdir(file, parent, parentRel, depth - 1)
+												.then(function() {
+													return proceed(files, parent, parentRel, depth);
+												});
+										} else {
+											return proceed(files, parent, parentRel, depth);
+										};
+									});
+								} else {
+									// End
+									return result;
 								};
-								return result;
 							};
+							return readdir(null, path, (relative ? files.Path.parse('./', {os: 'linux'}) : null), depth);
 						} else {
-							if (async) {
-								return Promise.resolve(result);
-							} else {
-								return result;
+							if (depth >= 0) {
+								throw new types.NotSupported("'depth' is not supported for the synchronous operation.");
 							};
+							const files = nodeFs.readdirSync(path.toString({
+									os: null,
+									dirChar: null, 
+									shell: 'api',
+								}));
+							let pathRel = (relative ? files.Path.parse('./', {os: 'linux'}) : null),
+								file;
+							while (file = files.shift()) {
+								const isFolder = getStats(file, path, pathRel);
+								//...
+							};
+							return result;
 						};
-					}));
+					} else {
+						if (async) {
+							return Promise.resolve(result);
+						} else {
+							return result;
+						};
+					};
+				}));
 					
-					files.ADD('getTempFolder', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: null,
-								returns: 'string',
-								description: "Returns system temporary folder path.",
-					}
-					//! END_REPLACE()
-					, function getTempFolder() {
-						if (__Internal__.tmpdir) {
-							return __Internal__.tmpdir;
-						};
-						let folder = nodeOs.tmpdir(); // ??? it looks like my code before revision 1
-						let stats = null;
+				files.ADD('getTempFolder', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 1,
+							params: null,
+							returns: 'string',
+							description: "Returns system temporary folder path.",
+				}
+				//! END_REPLACE()
+				, function getTempFolder() {
+					if (__Internal__.tmpdir) {
+						return __Internal__.tmpdir;
+					};
+					let folder = nodeOs.tmpdir(); // ??? it looks like my code before revision 1
+					let stats = null;
+					try {
+						stats = nodeFs.statSync(folder)
+					} catch(ex) {
+					};
+					if (!stats || !stats.isDirectory()) {
+						// Android or other
+						folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
 						try {
-							stats = nodeFs.statSync(folder)
+							files.mkdir(folder);
 						} catch(ex) {
 						};
-						if (!stats || !stats.isDirectory()) {
-							// Android or other
-							folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
-							try {
-								files.mkdir(folder);
-							} catch(ex) {
-							};
-							folder = folder.toString({os: null});
-						};
-						const os = tools.getOS();
-						if (folder[folder.length - 1] !== os.dirChar) {
-							folder += os.dirChar;
-						};
-						__Internal__.tmpdir = folder;
-						return folder;
-					}));
+						folder = folder.toString({os: null});
+					};
+					const os = tools.getOS();
+					if (folder[folder.length - 1] !== os.dirChar) {
+						folder += os.dirChar;
+					};
+					__Internal__.tmpdir = folder;
+					return folder;
+				}));
 					
-					files.ADD('readFile', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									path: {
-										type: 'string,Url,Path',
-										optional: false,
-										description: "File Url or Path.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
-									},
+				files.ADD('readFile', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 6,
+							params: {
+								path: {
+									type: 'string,Url,Path',
+									optional: false,
+									description: "File Url or Path.",
 								},
-								returns: 'Promise',
-								description: "Reads a remote or local file.",
-					}
-					//! END_REPLACE()
-					, function readFile(path, /*optional*/options) {
-						const Promise = types.getPromise();
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'Promise',
+							description: "Reads a remote or local file.",
+				}
+				//! END_REPLACE()
+				, function readFile(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+					if (!async) {
+						throw new types.NotSupported("Synchronous read is not implemented.");
+					};
+					const Promise = types.getPromise();
+					return Promise.try(function tryReadFile() {
+						const encoding = types.get(options, 'encoding', null),
+							timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
+							maxLength = types.get(options, 'maxLength', 1024 * 1024 * 100);
 						if (types.isString(path)) {
 							const url = files.Url.parse(path);
 							if (url.protocol) {
@@ -1465,20 +1475,8 @@ module.exports = {
 								path = files.Path.parse(path);
 							};
 						};
-						const async = types.get(options, 'async', false),
-							encoding = types.get(options, 'encoding', null),
-							timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
-							maxLength = types.get(options, 'maxLength', 1024 * 1024 * 100);
-						if (!async) {
-							throw new types.NotSupported("Synchronous read is not implemented.");
-						};
-						return Promise.create(function readFilePromise(resolve, reject) {
-							const state = {
-								ready: false,
-								timeoutId: null,
-								data: null,
-							};
-							if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+						if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+							return Promise.create(function readFile(resolve, reject) {
 								if (types._instanceof(path, files.Url)) {
 									path = files.Path.parse(path);
 								};
@@ -1487,60 +1485,57 @@ module.exports = {
 									dirChar: null,
 									shell: 'api',
 								});
-				
-								try {
-									nodeFs.stat(path, function(ex, stats) {
-										if (ex) {
-											reject(ex);
-										} else if (stats.size > maxLength) {
-											throw new types.Error("File size exceeds maximum length.");
-										} else {
-											nodeFs.readFile(path, {encoding: encoding}, function(ex, data) {
-												if (!state.ready) {
-													state.ready = true;
-													if (ex) {
-														reject(ex);
-													} else {
-														resolve(data);
-													};
-												};
-											});
-										};
-									});
-								} catch(ex) {
-									if (!state.ready) {
-										state.ready = true;
+								nodeFs.stat(path, function(ex, stats) {
+									if (ex) {
 										reject(ex);
-									};
-								};
-							} else {
-								// "path" is a URL
-								// TODO: HTTPS
-								if (path.protocol === 'http') {
-									const onEnd = function onEnd(ex) {
-										if (state.timeoutId) {
-											clearTimeout(state.timeoutId);
-											state.timeoutId = null;
-										};
-										if (!state.ready) {
-											state.ready = true;
+									} else if (stats.size > maxLength) {
+										reject(new types.Error("File size exceeds maximum length."));
+									} else {
+										nodeFs.readFile(path, {encoding: encoding}, function(ex, data) {
 											if (ex) {
 												reject(ex);
 											} else {
-												resolve(state.data);
+												resolve(data);
 											};
-											state.data = null;
-											state.request = null;
-										};
+										});
 									};
-									try {
-										const user = types.get(options, 'user', undefined),
-											password = types.get(options, 'password', undefined);
-										let auth = null;
-										if (user || password) {
-											auth = (user || '') + (password ? (':' + password) : '');
+								});
+							});
+						// "path" is a URL
+						// TODO: Test
+						// TODO: HTTPS
+						} else if (path.protocol === 'http') {
+							return Promise.create(function remoteReadFile(resolve, reject) {
+								const user = types.get(options, 'user', undefined),
+									password = types.get(options, 'password', undefined);
+								let auth = null;
+								if (user || password) {
+									auth = (user || '') + (password ? (':' + password) : '');
+								};
+								const state = {
+									request: null,
+									ready: false,
+									timeoutId: null,
+									data: null,
+								};
+								const onEnd = function onEnd(ex) {
+									if (state.timeoutId) {
+										_shared.Natives.windowClearTimeout(state.timeoutId);
+										state.timeoutId = null;
+									};
+									if (!state.ready) {
+										state.ready = true;
+										if (ex) {
+											reject(ex);
+										} else {
+											resolve(state.data);
 										};
-										state.request = nodeHttp.request({
+										state.data = null;
+										state.request = null;
+									};
+								};
+								try {
+									state.request = nodeHttp.request({
 											hostname: path.domain || 'localhost',
 											port: path.port || 80,
 											path: (tools.trim(path.path, '/', -1) || '') + '/' + (path.file || ''),
@@ -1576,56 +1571,68 @@ module.exports = {
 												onEnd(new types.Error("The transfer has been aborted."));
 											});
 										});
-										state.request.on('error', onEnd);
-										const body = types.get(options, 'body', null);
-										if (body) {
-											state.request.write(body);
-										};
-										state.timeoutId = setTimeout(function(ev) {
-											state.timeoutId = null;
-											if (!state.ready) {
-												if (state.request) {
-													state.request.abort();
-													state.request = null;
-												};
-												onEnd(new types.TimeoutError("Request has timed out."));
-											};
-										}, timeout);
-										state.request.end();
-									} catch(ex) {
-										onEnd(ex);
-										throw ex;
+									state.request.on('error', onEnd);
+									const body = types.get(options, 'body', null);
+									if (body) {
+										state.request.write(body);
 									};
-									
-								} else {
-									throw new types.NotSupported("Unsupported protocol.");
+									state.timeoutId = _shared.Natives.windowSetTimeout(function(ev) {
+										state.timeoutId = null;
+										if (!state.ready) {
+											if (state.request) {
+												state.request.abort();
+												state.request = null;
+											};
+											onEnd(new types.TimeoutError("Request has timed out."));
+										};
+									}, timeout);
+									state.request.end();
+								} catch(ex) {
+									onEnd(ex);
 								};
-							};
-						});
-					}));
+							});
+						} else {
+							throw new types.NotSupported("Unsupported protocol.");
+						};
+					});
+				}));
 
-					files.ADD('watch', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									path: {
-										type: 'string,Url,Path',
-										optional: false,
-										description: "File Url or Path.",
-									},
-									callbacks: {
-										type: 'arrayof(function),function',
-										optional: false,
-										description: "Callback functions.",
-									},
+				files.ADD('writeFile', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								path: {
+									type: 'string,Url,Path',
+									optional: false,
+									description: "File Url or Path.",
 								},
-								returns: 'undefined',
-								description: "Creates a file watcher.",
-					}
-					//! END_REPLACE()
-					, function watch(path, callbacks, /*optional*/options) {
+								data: {
+									type: 'any',
+									optional: false,
+									description: "File content.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'Promise',
+							description: "Writes to a remote or local file.",
+				}
+				//! END_REPLACE()
+				, function writeFile(path, data, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+					if (!async) {
+						throw new types.NotSupported("Synchronous write is not implemented.");
+					};
+					const Promise = types.getPromise();
+					return Promise.try(function tryWriteFile() {
+						const encoding = types.get(options, 'encoding', null),
+							//timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
+							mode = types.get(options, 'mode', 'update'); // 'forceUpdate' (file must exists), 'update' (file is created if it doesn't exist), 'forceAppend' (file must exists), 'append' (file is created if it doesn't exist)
 						if (types.isString(path)) {
 							const url = files.Url.parse(path);
 							if (url.protocol) {
@@ -1634,11 +1641,20 @@ module.exports = {
 								path = files.Path.parse(path);
 							};
 						};
-						if (!types.isArray(callbacks)) {
-							callbacks = [callbacks];
-						};
-						
 						if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+							let wf;
+							switch (mode) {
+								case 'forceUpdate':
+								case 'update':
+									wf = 'w';
+									break;
+								case 'forceAppend':
+								case 'append':
+									wf = 'a';
+									break;
+								default:
+									throw new types.Error("Invalid write mode : '~0~'.", [mode]);
+							};
 							if (types._instanceof(path, files.Url)) {
 								path = files.Path.parse(path);
 							};
@@ -1647,42 +1663,119 @@ module.exports = {
 								dirChar: null,
 								shell: 'api',
 							});
-							
-							let fileCallbacks;
-							if (types.has(__Internal__.watchedFiles, path)) {
-								fileCallbacks = __Internal__.watchedFiles[path];
-							} else {
-								fileCallbacks = [];
-								nodeFs.watch(path, {persistent: false}, doodad.Callback(this, function(event, filename) {
-									const callbacks = __Internal__.watchedFiles[path];
-									for (let i = callbacks.length - 1; i >= 0; i--) {
-										let callback = callbacks[i];
-										if (callback) {
-											try {
-												callback.apply(null, arguments);
-											} catch(ex) {
+							return Promise.create(function statFile(resolve, reject) {
+									nodeFs.stat(path, function(ex, stats) {
+										if (ex) {
+											if (ex.code === 'ENOENT') {
+												switch (mode) {
+													case 'forceUpdate':
+													case 'forceAppend':
+														reject(new types.Error("File '~0~' doesn't exists.", [path]));
+													default:
+														resolve();
+												};
+											} else {
+												reject(ex);
 											};
-											if (types.get(callback.__OPTIONS__, 'once', false)) {
-												callback = null;
-											};
+										} else {
+											resolve();
 										};
-										if (!callback) {
-											callbacks.splice(i, 1);
+									});
+								})
+								.thenCreate(function writeFile(stats, resolve, reject) {
+									nodeFs.writeFile(path, data, {encoding: encoding, flag: wf}, function(ex) {
+										if (ex) {
+											reject(ex);
+										} else {
+											resolve();
+										};
+									});
+								});
+						} else {
+							throw new types.NotSupported("Remote files are not implemented.");
+						};
+					});
+				}));
+
+				files.ADD('watch', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								path: {
+									type: 'string,Url,Path',
+									optional: false,
+									description: "File Url or Path.",
+								},
+								callbacks: {
+									type: 'arrayof(function),function',
+									optional: false,
+									description: "Callback functions.",
+								},
+							},
+							returns: 'undefined',
+							description: "Creates a file watcher.",
+				}
+				//! END_REPLACE()
+				, function watch(path, callbacks, /*optional*/options) {
+					if (types.isString(path)) {
+						const url = files.Url.parse(path);
+						if (url.protocol) {
+							path = url;
+						} else {
+							path = files.Path.parse(path);
+						};
+					};
+					if (!types.isArray(callbacks)) {
+						callbacks = [callbacks];
+					};
+						
+					if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+						if (types._instanceof(path, files.Url)) {
+							path = files.Path.parse(path);
+						};
+						path = path.toString({
+							os: null,
+							dirChar: null,
+							shell: 'api',
+						});
+							
+						let fileCallbacks;
+						if (types.has(__Internal__.watchedFiles, path)) {
+							fileCallbacks = __Internal__.watchedFiles[path];
+						} else {
+							fileCallbacks = [];
+							nodeFs.watch(path, {persistent: false}, doodad.Callback(this, function(event, filename) {
+								const callbacks = __Internal__.watchedFiles[path];
+								for (let i = callbacks.length - 1; i >= 0; i--) {
+									let callback = callbacks[i];
+									if (callback) {
+										try {
+											callback.apply(null, arguments);
+										} catch(ex) {
+										};
+										if (types.get(callback.__OPTIONS__, 'once', false)) {
+											callback = null;
 										};
 									};
-								}));
-							};
-							
-							tools.forEach(callbacks, function(callback) {
-								callback.__OPTIONS__ = options;
-							});
-							
-							__Internal__.watchedFiles[path] = types.unique(fileCallbacks, callbacks);
-							
-						} else {
-							throw new types.NotSupported("Remote files are not supported.");
+									if (!callback) {
+										callbacks.splice(i, 1);
+									};
+								};
+							}));
 						};
-					}));
+							
+						tools.forEach(callbacks, function(callback) {
+							callback.__OPTIONS__ = options;
+						});
+							
+						__Internal__.watchedFiles[path] = types.unique(fileCallbacks, callbacks);
+							
+					} else {
+						throw new types.NotSupported("Remote files are not supported.");
+					};
+				}));
 					
 					
 				//===================================
