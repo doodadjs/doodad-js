@@ -1238,7 +1238,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1255,7 +1255,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1277,7 +1277,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'any',
@@ -1294,7 +1294,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1328,7 +1328,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1345,7 +1345,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1420,7 +1420,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1437,7 +1437,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1472,7 +1472,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1489,7 +1489,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1508,7 +1508,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1525,7 +1525,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1555,7 +1555,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1572,7 +1572,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Boolean')) {
 						try {
 							obj = _shared.Natives.booleanValueOf.call(obj);
 						} catch(o) {
@@ -1592,7 +1592,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1609,7 +1609,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'String')) {
 						try {
 							obj = _shared.Natives.stringValueOf.call(obj);
 						} catch(o) {
@@ -1629,7 +1629,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1648,7 +1648,7 @@
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Date')) {
 					try {
 						_shared.Natives.dateValueOf.call(obj);
 						return true;
@@ -1738,7 +1738,7 @@
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Error')) {
 				//	????
 				//};
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
@@ -1749,7 +1749,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1767,7 +1767,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
 							obj = _shared.Natives.numberValueOf.call(obj);
 						} catch(o) {
@@ -1794,7 +1794,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -1816,7 +1816,7 @@
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Function')) {
 					try {
 						_shared.Natives.functionToString.call(obj);
 					} catch(o) {
@@ -3409,7 +3409,7 @@
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				//if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+				//if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
 				//	????
 				//};
 				return (_shared.Natives.objectToString.call(obj) === '[object Object]');
@@ -3677,7 +3677,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -3694,7 +3694,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (_shared.Natives.symbolToStringTag in obj)) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Symbol')) {
 						try {
 							obj = _shared.Natives.symbolValueOf.call(obj);
 						} catch(o) {
