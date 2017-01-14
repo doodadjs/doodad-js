@@ -2817,6 +2817,8 @@ module.exports = {
 							} else {
 								throw types.TypeError("Invalid array.");
 							};
+
+							this.size = this.__ar.length;
 						}),
 						has: function has(value) {
 							for (var i = 0; i < this.__ar.length; i++) {
@@ -2964,6 +2966,7 @@ module.exports = {
 							} else if (types._instanceof(ar, types.Map)) {
 								this.__keys = types.clone(ar.__keys);
 								this.__values = types.clone(ar.__values);
+								this.size = ar.size;
 								return;
 							} else if (types._instanceof(ar, types.Set)) {
 								ar = ar.__ar;
@@ -2982,6 +2985,7 @@ module.exports = {
 									this.__keys.push(item[0]);
 									this.__values.push(item[1]);
 								};
+								this.size = ar.length;
 							};
 						}),
 						has: function has(key) {
