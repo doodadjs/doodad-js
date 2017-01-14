@@ -553,7 +553,8 @@
 			objectToString: global.Object.prototype.toString,
 			
 			// "isArray"
-			arrayIsArray: (global.Array && types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
+			arrayIsArray: (types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
+			arraySplice: global.Array.prototype.splice,
 
 			// "isArray"
 			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
@@ -1664,7 +1665,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1680,7 +1681,17 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				return (typeof obj === 'object') && (_shared.Natives.objectToString.call(obj) === '[object Array]');
+				if (typeof obj !== 'object') {
+					return false;
+				};
+				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Array')) {
+					try {
+						_shared.Natives.arraySplice.call(obj, 0, 0);
+					} catch(o) {
+						return false;
+					};
+				};
+				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
 			})));
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
