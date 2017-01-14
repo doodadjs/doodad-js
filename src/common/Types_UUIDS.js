@@ -93,17 +93,22 @@ module.exports = {
 							name = item[0],
 							native = global[name];
 						if (types.isFunction(native)) {
-							if (!types.has(native, _shared.UUIDSymbol)) { // Some natives are aliases
-								var uuid = item[1];
-								if (types.has(uuids, uuid)) {
-									throw new types.Error("Duplicated UUID : ~0~.", [uuid]);
-								};
-								uuids[uuid] = true;
-								if (types.hasProperties()) {
-									types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
+							var uuid = item[1];
+							if (types.has(native, _shared.UUIDSymbol)) {
+								if (native[_shared.UUIDSymbol] === uuid) {
+									continue;
 								} else {
-									native[_shared.UUIDSymbol] = uuid;
+									throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
 								};
+							};
+							if (types.has(uuids, uuid)) {
+								throw new types.Error("Duplicated UUID : ~0~.", [uuid]);
+							};
+							uuids[uuid] = true;
+							if (types.hasProperties()) {
+								types.defineProperty(native, _shared.UUIDSymbol, {value: uuid});
+							} else {
+								native[_shared.UUIDSymbol] = uuid;
 							};
 						};
 					};

@@ -9,15 +9,27 @@
 		return (tools.indexOf(['GLOBAL', 'root'], k) < 0) && /^[A-Z]/.test(k) && !/^[A-Z_]*$/.test(k) && types.isNativeFunction(window[k]);
 	});
 
+	var knownNatives = [/*! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8') */];
+
 	natives = tools.filter(natives, function(k) {
-		return (tools.findItem([/*! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8') */], function(i) {
+		return (tools.findItem(knownNatives, function(i) {
 				return (i[0] === k);
 			}) === null);
 	});
 
-	natives = tools.map(natives, function(k) {
-		return [k, tools.generateUUID()];
-	});
+	natives = tools.reduce(natives, function(r, k) {
+		var item = tools.getItem(knownNatives, function(i) {
+				return (window[i[0]] === window[k]);
+			}) || tools.getItem(r, function(i) {
+				return (window[i[0]] === window[k]);
+			});
+		if (item === null) {
+			r.push([k, tools.generateUUID()]);
+		} else {
+			r.push([k, item[1]]);
+		};
+		return r;
+	}, []);
 
 	var str = '',
 		QTY = 50,
