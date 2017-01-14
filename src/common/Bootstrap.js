@@ -159,14 +159,11 @@
 		__Internal__.classesNotCallable = true;
 		(function() {
 			try {
-				var cls = __Internal__.evals.eval("class A {}");
+				var cls = __Internal__.evals.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
 				__Internal__.hasClasses = /^class[ ]/.test(_shared.Natives.functionToString.call(cls));  // Check for Firefox's bug
 				if (__Internal__.hasClasses) {
-					try {
-						cls.call(_shared.Natives.objectCreate(cls.prototype));
-						__Internal__.classesNotCallable = false; // in case of !
-					} catch(o) {
-					};
+					cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
+					__Internal__.classesNotCallable = false; // in case of !
 				};
 			} catch(o) {
 			};
