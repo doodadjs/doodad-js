@@ -59,22 +59,20 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 				// NOTE: Store everything because third-parties can override them.
 				
-				__Internal__.arrayObj = global.Array && global.Array.prototype || []; // temporary
-				
 				types.complete(_shared.Natives, {
 					// No polyfills
 
 					// "toArray"
-					arrayConstructor: __Internal__.arrayObj.constructor,
+					arrayConstructor: global.Array,
 					
 					// "clone", "toArray", "setPromise"
-					arraySlice: __Internal__.arrayObj.slice,
+					arraySlice: global.Array.prototype.slice,
 					
 					// "popAt", "popItem", "popItems"
-					arraySplice: __Internal__.arrayObj.splice,
+					arraySplice: global.Array.prototype.splice,
 					
 					// "prepend"
-					arrayUnshift: __Internal__.arrayObj.unshift,
+					arrayUnshift: global.Array.prototype.unshift,
 					
 					objectToString: global.Object.prototype.toString,
 
@@ -121,8 +119,6 @@ module.exports = {
 					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 				
-				delete __Internal__.arrayObj;   // free memory
-
 				//===================================
 				// Conversion
 				//===================================
