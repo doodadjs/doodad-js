@@ -2566,7 +2566,7 @@ module.exports = {
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;
 				try {
-					__Internal__.arrowIsBindable = (types.eval("(_ => this.doodad)").bind({doodad: 1})() === 1);
+					__Internal__.arrowIsBindable = (types.eval("() => this.doodad").bind({doodad: 1})() === 1);
 				} catch(ex) {
 				};
 				
@@ -2587,6 +2587,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isBindable(obj) {
+						// NOTE: Native functions may or may not be bindable and there is no way to know it !!!
 						return types.isCustomFunction(obj) && !types.has(obj, _shared.BoundObjectSymbol) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
 					}));
 				
