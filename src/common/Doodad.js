@@ -2054,7 +2054,7 @@ module.exports = {
 										} else {
 											try {
 												if (types.isClass(type) && this._implements(mixIns.Events)) {
-													var errorEvent = this['__ERROR_EVENT'];
+													var errorEvent = this.__ERROR_EVENT;
 													if (errorEvent && (attr !== errorEvent)) {
 														var ev = new doodad.ErrorEvent(ex);
 														this[errorEvent](ev);
@@ -2183,25 +2183,44 @@ module.exports = {
 										};
 									};
 
-									var validateReturnedValue = function validateReturnedValue(retval) {
-										if (root.getOptions().debug || __options__.enforcePolicies) {
-											var validator = attribute[__Internal__.symbolReturns];
-											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-											if (validator && !validator.call(this, retVal)) {
-												if (attr === 'toString') {
-													return tools.format("Invalid returned value from method '~0~'.", [attr]);
-												} else {
-													throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+									var validateRetVal = function validateRetVal(retval) {
+										if (modifiers & doodad.MethodModifiers.Async) {
+											// Asynchronous methods must always return a Promise
+											if (!types.isPromise(retVal)) {
+												var Promise = types.getPromise();
+												retVal = Promise.resolve(retVal);
+											};
+											if (root.getOptions().debug || __options__.enforcePolicies) {
+												var validator = attribute[__Internal__.symbolReturns];
+												if (validator) {
+													retVal = retVal.then(function(result) {
+														if (!validator.call(this, result)) {
+															throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+														};
+														return result;
+													});
+												};
+											};
+										} else {
+											if (root.getOptions().debug || __options__.enforcePolicies) {
+												var validator = attribute[__Internal__.symbolReturns];
+												// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+												if (validator && !validator.call(this, retVal)) {
+													if (attr === 'toString') {
+														retVal = tools.format("Invalid returned value from method '~0~'.", [attr]);
+													} else {
+														throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+													};
 												};
 											};
 										};
+										return retVal;
 									};
 
 									var caller = _dispatch[__Internal__.symbolCallers][0];
 									if (!caller) {
 										// No caller
-										validateReturnedValue(undefined);
-										return;
+										return validateRetVal(undefined);
 									};
 									
 									var oldCallerCalled = caller[__Internal__.symbolCalled];
@@ -2241,17 +2260,7 @@ module.exports = {
 										
 										var retVal = caller.apply(this, arguments);
 
-										if (modifiers & doodad.MethodModifiers.Async) {
-											// Asynchronous methods must always return a Promise
-											if (!types.isPromise(retVal)) {
-												var Promise = types.getPromise();
-												retVal = Promise.resolve(retVal);
-											};
-										};
-										
-										validateReturnedValue(retVal);
-										
-										return retVal;
+										return validateRetVal(retVal);
 										
 									} catch(ex) {
 										if (attr === 'toString') {
@@ -4668,7 +4677,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: null,
 							returns: 'AttributeBox',
 							description: "Specifies that this method is async and always returns a Promise.",
@@ -4676,12 +4685,8 @@ module.exports = {
 					//! END_REPLACE()
 					, function ASYNC(/*optional*/fn) {
 						fn = types.AttributeBox(fn);
-						if (fn[__Internal__.symbolModifiers] & doodad.MethodModifiers.Async) {
-							return fn;
-						} else {
-							fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
-							return doodad.RETURNS(types.isPromise, doodad.METHOD(fn));
-						};
+						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
+						return doodad.METHOD(fn);
 					}));
 				
 				doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
@@ -7171,7 +7176,7 @@ module.exports = {
 								};
 								var self = this;
 								tools.forEach(self.$ERROR_ATTRIBUTES, function(key) {
-									if (types.hasKeyInherited(value, key)) {
+									if (types.hasInherited(value, key)) {
 										tmp[key] = self.$pack(value[key]);
 									};
 								});
