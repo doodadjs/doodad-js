@@ -5978,10 +5978,14 @@
 						_shared.setAttribute(target, key, value, {all: true});
 
 					} else {
-						var enu = types.get(attr, _shared.EnumerableSymbol),
-							cf = types.get(attr, _shared.ConfigurableSymbol),
+						var cf = types.get(attr, _shared.ConfigurableSymbol),
+							enu = types.get(attr, _shared.EnumerableSymbol),
 							g = types.get(attr, __Internal__.symbolGetter),
 							s = types.get(attr, __Internal__.symbolSetter);
+
+						if (types.isNothing(cf)) {
+							cf = false;
+						};
 
 						if (types.isNothing(enu)) {
 							enu = true;
@@ -5989,11 +5993,6 @@
 
 						if (g || s) {
 							// TODO: SUPER
-
-							if (types.isNothing(cf)) {
-								cf = false;
-							};
-
 							types.defineProperty(target, key, {
 								configurable: !!cf,
 								enumerable: !!enu,
@@ -6004,10 +6003,6 @@
 							var ro = types.get(attr, _shared.ReadOnlySymbol);
 							if (types.isNothing(ro)) {
 								ro = isFunction;
-							};
-
-							if (types.isNothing(cf)) {
-								cf = false;
 							};
 
 							_shared.setAttribute(target, key, value, {
