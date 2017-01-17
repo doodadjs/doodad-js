@@ -5983,10 +5983,6 @@
 							g = types.get(attr, __Internal__.symbolGetter),
 							s = types.get(attr, __Internal__.symbolSetter);
 
-						if (types.isNothing(cf)) {
-							cf = false;
-						};
-
 						if (types.isNothing(enu)) {
 							enu = true;
 						};
