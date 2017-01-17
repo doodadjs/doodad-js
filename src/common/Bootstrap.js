@@ -502,7 +502,7 @@
 			stringReplace: global.String.prototype.replace,
 			//numberToString: global.Number.prototype.toString,
 
-			// "hasKeyInherited"
+			// "hasInherited"
 			objectPrototype: global.Object.prototype,
 			
 			// "has", "isCustomFunction", "isNativeFunction"
@@ -5978,14 +5978,14 @@
 						_shared.setAttribute(target, key, value, {all: true});
 
 					} else {
-						var enu = types.get(attr, _shared.EnumerableSymbol);
+						var enu = types.get(attr, _shared.EnumerableSymbol),
+							cf = types.get(attr, _shared.ConfigurableSymbol),
+							g = types.get(attr, __Internal__.symbolGetter),
+							s = types.get(attr, __Internal__.symbolSetter);
+
 						if (types.isNothing(enu)) {
 							enu = true;
 						};
-
-						var cf = types.get(attr, _shared.ConfigurableSymbol);
-						var g = types.get(attr, __Internal__.symbolGetter);
-						var s = types.get(attr, __Internal__.symbolSetter);
 
 						if (g || s) {
 							// TODO: SUPER
@@ -5996,6 +5996,7 @@
 
 							types.defineProperty(target, key, {
 								configurable: !!cf,
+								enumerable: !!enu,
 								get: g || undefined,
 								set: s || undefined,
 							});
