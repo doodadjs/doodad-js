@@ -5951,25 +5951,43 @@
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 		});
 		
-		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting) {
+		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables) {
 			var forType = types.isType(target),
 				keys = types.append(types.keys(proto), types.symbols(proto));
 
 			for (var i = 0; i < keys.length; i++) {
 				var key = keys[i];
 
-				var hasValue = types.has(target, key);
-				if (hasValue && skipExisting) {
+				var hasKey = types.has(target, key);
+				if (hasKey && skipExisting) {
 					continue;
 				};
 
 				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
 					var attr = types.AttributeBox(proto[key]),
-						targetValue = hasValue && target[key],
-						value = types.unbox(hasValue ? targetValue : attr),
-						isFunction = types.isJsFunction(value),
-						createSuper = (!hasValue && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
+						g = types.get(attr, __Internal__.symbolGetter),
+						s = types.get(attr, __Internal__.symbolSetter),
+						value = attr,
+						isFunction = false;
 
+					if (!g && !s) {
+						if (hasKey) {
+							value = target[key];
+						};
+						value = types.unbox(value);
+						isFunction = types.isJsFunction(value);
+					};
+
+					var cf = types.get(attr, _shared.ConfigurableSymbol);
+					if (types.isNothing(cf)) {
+						cf = !isFunction;
+					};
+
+					if (cf && skipConfigurables && !types.hasIn(target, key)) {
+						continue;
+					};
+
+					var createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
 					if (createSuper) {
 						value = __Internal__.createCaller(key, value, base && _shared.getAttribute(base, key));
 					};
@@ -5978,11 +5996,7 @@
 						_shared.setAttribute(target, key, value, {all: true});
 
 					} else {
-						var cf = types.get(attr, _shared.ConfigurableSymbol),
-							enu = types.get(attr, _shared.EnumerableSymbol),
-							g = types.get(attr, __Internal__.symbolGetter),
-							s = types.get(attr, __Internal__.symbolSetter);
-
+						var enu = types.get(attr, _shared.EnumerableSymbol);
 						if (types.isNothing(enu)) {
 							enu = true;
 						};
@@ -6119,20 +6133,22 @@
 						""
 					) +
 
-					"var obj;" +
+					"var " + (typeProto ? "skipConfigurables = true," : "") +
+						"obj;" +
 					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
 						"if (!forType) {" +
 							"ctx.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
 						"};" +
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
+						(typeProto ? "skipConfigurables = false;" : "") +
 					"} else {" +
 						"obj = this;" +
 					"};" +
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true);" +
+							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
 						"};"
 					: 
 						""
@@ -6140,7 +6156,7 @@
 
 					(instanceProto ?
 						"if (!forType) {" +
-							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true);" +
+							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
 						"};"
 					: 
 						""
@@ -6209,11 +6225,11 @@
 				};
 	
 				if (typeProto) {
-					__Internal__.applyProto(type, base, typeProto, true);
+					__Internal__.applyProto(type, base, typeProto, true, false, false);
 				};
 
 				if (instanceProto) {
-					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto);
+					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto, false, false, false);
 				};
 				
 				// Return type
@@ -6377,8 +6393,8 @@
 			
 			$inherit: __Internal__.typeInherit,
 			
-			_new: types.READ_ONLY(null), //__Internal__.typeNew,
-			_delete: types.READ_ONLY(null), //__Internal__.typeDelete,
+			_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
+			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeDelete,
 			
 			toString: types.SUPER(__Internal__.typeToString),
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
@@ -6389,8 +6405,8 @@
 		__Internal__.typeInstanceProto = {
 			_super: null,
 			
-			_new: types.READ_ONLY(null), //__Internal__.typeNew,
-			_delete: types.READ_ONLY(null), //__Internal__.typeDelete,
+			_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
+			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeDelete,
 			
 			toString: types.SUPER(__Internal__.typeToString),
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
