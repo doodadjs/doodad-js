@@ -1745,16 +1745,24 @@ module.exports = {
 								if (this.__isFromStorage(attribute)) {
 									this.__createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value);
 								} else {
-									_shared.setAttribute(obj, attr, value, {configurable: this.isReadOnly, enumerable: this.isEnumerable, writable: !this.isReadOnly});
+									_shared.setAttribute(obj, attr, value, {
+										configurable: this.isReadOnly || !this.isPersistent, // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
+										enumerable: this.isEnumerable, 
+										writable: !this.isReadOnly
+									});
 								};
 							}),
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
-									delete storage[attr];
-									//	var descriptor = types.getOwnPropertyDescriptor(obj, attr);
-									//	if (types.get(descriptor, 'configurable')) {
-									//		delete obj[attr];
-									//	};
+									if (this.__isFromStorage(attribute)) {
+										delete storage[attr];
+										//	var descriptor = types.getOwnPropertyDescriptor(obj, attr);
+										//	if (types.get(descriptor, 'configurable')) {
+										//		delete obj[attr];
+										//	};
+									} else {
+										delete obj[attr];
+									};
 								};
 							}),
 					})));
