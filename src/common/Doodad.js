@@ -1659,50 +1659,6 @@ module.exports = {
 										) 
 								);
 						},
-						__createProperty: function __createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value, isProto) {
-								var storage = (forType ? typeStorage : instanceStorage);
-
-								if (this.__isFromStorage(attribute)) {
-									storage[attr] = value; // stored regardless of "isProto"
-
-									if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
-										if (attr !== __Internal__.symbolAttributesStorage) {
-											storage = null;
-										};
-								
-										var descriptor = types.getOwnPropertyDescriptor(obj, attr);
-
-										if (
-											storage ||
-											!descriptor ||
-											descriptor.configurable ||
-											!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
-											(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
-										) {
-											var descriptor = {
-												configurable: false,
-												enumerable: this.isEnumerable,
-												get: this.getterTemplate(attr, attribute, forType, storage),
-											};
-
-											if (!this.isReadOnly) {
-												descriptor.set = this.setterTemplate(attr, attribute, forType, storage);
-											};
-
-											types.defineProperty(obj, attr, descriptor);
-										};
-									};
-								} else {
-									if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
-										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
-										_shared.setAttribute(obj, attr, value, {
-											configurable: cf,
-											enumerable: this.isEnumerable, 
-											writable: !this.isReadOnly
-										});
-									};
-								};
-							},
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1760,10 +1716,52 @@ module.exports = {
 							}
 							//! END_REPLACE()
 							, function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+								var storage = (forType ? typeStorage : instanceStorage);
+
 								if (attr === __Internal__.symbolAttributesStorage) {
-									value = (forType ? typeStorage : instanceStorage);
+									value = storage;
 								};
-								this.__createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value, isProto);
+
+								if (this.__isFromStorage(attribute)) {
+									storage[attr] = value; // stored regardless of "isProto"
+
+									if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
+										if (attr !== __Internal__.symbolAttributesStorage) {
+											storage = null;
+										};
+								
+										var descriptor = types.getOwnPropertyDescriptor(obj, attr);
+
+										if (
+											storage ||
+											!descriptor ||
+											descriptor.configurable ||
+											!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
+											(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
+										) {
+											var descriptor = {
+												configurable: false,
+												enumerable: this.isEnumerable,
+												get: this.getterTemplate(attr, attribute, forType, storage),
+											};
+
+											if (!this.isReadOnly) {
+												descriptor.set = this.setterTemplate(attr, attribute, forType, storage);
+											};
+
+											types.defineProperty(obj, attr, descriptor);
+										};
+									};
+								} else {
+									if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
+										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
+										_shared.setAttribute(obj, attr, value, {
+											configurable: cf,
+											enumerable: this.isEnumerable, 
+											writable: !this.isReadOnly
+										});
+									};
+								};
 							}),
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
