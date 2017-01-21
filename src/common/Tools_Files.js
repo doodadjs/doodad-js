@@ -1524,8 +1524,8 @@ module.exports = {
 						},
 						/*instanceProto*/
 						{
-							options: null,
-							__args: null,
+							options: types.READ_ONLY( null ),
+							__args: types.READ_ONLY( null ),
 							
 							_new: types.SUPER(function(args, /*optional*/options) {
 								this._super();
@@ -1534,26 +1534,43 @@ module.exports = {
 								};
 
 								if (types.hasDefinePropertyEnabled()) {
-									types.defineProperties(this, {
-										options: {
-											configurable: true,
-											enumerable: true,
-											value: options,
-											writable: false,
-										},
-										__args: {
-											configurable: true,
-											enumerable: true,
-											value: args,
-											writable: false,
-										},
-									});
+									_shared.setAttribute(this, 'options', options, {});
+									_shared.setAttribute(this, '__args', args, {});
 								} else {
 									this.options = options;
 									this.__args = args;
 								};
 							}),
 							
+							toArray: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: null,
+										returns: 'array',
+										description: "Return arguments in an array of name-value pairs.",
+								}
+								//! END_REPLACE()
+								, function toArray() {
+									return tools.reduce(tools.reduce(this.__args, function(result, arg) {
+											if (arg.name) {
+												if (arg.name in result) {
+													result[arg.name].push(arg.value);
+												} else {
+													result[arg.name] = [arg.value];
+												};
+											};
+											return result;
+										}, types.nullObject()), function(result, val, name) {
+											if (val.length === 1) {
+												val = val[0];
+											};
+											result.push([name, val]);
+											return result;
+										}, []);
+								}),
+
 							toString: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
