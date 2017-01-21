@@ -160,7 +160,7 @@
 		(function() {
 			try {
 				var cls = __Internal__.evals.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
-				__Internal__.hasClasses = /^class[ ]/.test(_shared.Natives.functionToString.call(cls));  // Check for Firefox's bug
+				__Internal__.hasClasses = (_shared.Natives.functionToString.call(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
 				if (__Internal__.hasClasses) {
 					cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
 					__Internal__.classesNotCallable = false; // in case of !
@@ -271,7 +271,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'any',
@@ -285,7 +285,7 @@
 			//! END_REPLACE()
 			, __Internal__.hasClasses ? function isJsClass(obj) {
 				if (types.isFunction(obj)) {
-					return /^class[ ]/.test(_shared.Natives.functionToString.call(obj));
+					return (_shared.Natives.functionToString.call(obj).slice(0, 6) === 'class ');
 				};
 				return false;
 			} : function isJsClass(obj) {
