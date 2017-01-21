@@ -1362,7 +1362,7 @@ module.exports = {
 							getValue: types.READ_ONLY(null), // function getValue(attr, attribute, forType)
 							extend: types.READ_ONLY(null),   // function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName)
 							postExtend: types.READ_ONLY(null), // function postExtend(attr, destAttributes, destAttribute)
-							init: types.READ_ONLY(null), // function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value)
+							init: types.READ_ONLY(null), // function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto)
 							remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 						}
 					))));
@@ -1393,6 +1393,7 @@ module.exports = {
 						isReadOnly: types.READ_ONLY(false),
 						isEnumerable: types.READ_ONLY(true),
 						enableScopes: types.READ_ONLY(true),
+						isProto: types.READ_ONLY(true), // true: target is the prototype, false: target is the instance, null: both true and false
 						
 						getterTemplate: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1542,22 +1543,25 @@ module.exports = {
 									isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
 									isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
 									enableScopes: types.get(options, 'enableScopes', this.enableScopes),
+									isProto: types.get(options, 'isProto', this.isProto),
 								});
 							}),
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'isReadOnly', this.isReadOnly) ? '1' : '0') +
 									',' + (types.get(options, 'isEnumerable', this.isEnumerable) ? '1' : '0') +
-									',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0');
+									',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0') +
+									',' + (types.get(options, 'isProto', this.isProto) ? '1' : '0');
 							}),
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['isReadOnly', 'isEnumerable', 'enableScopes'], options, this, newOptions);
+									types.fill(['isReadOnly', 'isEnumerable', 'enableScopes', 'isProto'], options, this, newOptions);
 								} else {
 									options.isReadOnly = !!newOptions.isReadOnly || this.isReadOnly;
 									options.isEnumerable = !!newOptions.isEnumerable || this.isEnumerable;
 									options.enableScopes = !!newOptions.enableScopes || this.enableScopes;
+									options.isProto = !!newOptions.isProto || this.isProto;
 								};
 								return options;
 							}),
@@ -1655,42 +1659,55 @@ module.exports = {
 										) 
 								);
 						},
-						__createProperty: function __createProperty(attr, proto, typeStorage, instanceStorage, forType, destAttribute, value) {
+						__createProperty: function __createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								var storage = (forType ? typeStorage : instanceStorage);
 
-								storage[attr] = value;
-									
-								if (attr !== __Internal__.symbolAttributesStorage) {
-									storage = null;
-								};
+								if (this.__isFromStorage(attribute)) {
+									storage[attr] = value; // stored regardless of "isProto"
+
+									if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
+										if (attr !== __Internal__.symbolAttributesStorage) {
+											storage = null;
+										};
 								
-								var descriptor = types.getOwnPropertyDescriptor(proto, attr);
+										var descriptor = types.getOwnPropertyDescriptor(obj, attr);
 
-								if (
-									storage ||
-									!descriptor ||
-									descriptor.configurable ||
-									!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
-									(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
-								) {
-									var descriptor = {
-										configurable: false,
-										enumerable: this.isEnumerable,
-										get: this.getterTemplate(attr, destAttribute, forType, storage),
+										if (
+											storage ||
+											!descriptor ||
+											descriptor.configurable ||
+											!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
+											(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
+										) {
+											var descriptor = {
+												configurable: false,
+												enumerable: this.isEnumerable,
+												get: this.getterTemplate(attr, attribute, forType, storage),
+											};
+
+											if (!this.isReadOnly) {
+												descriptor.set = this.setterTemplate(attr, attribute, forType, storage);
+											};
+
+											types.defineProperty(obj, attr, descriptor);
+										};
 									};
-
-									if (!this.isReadOnly) {
-										descriptor.set = this.setterTemplate(attr, destAttribute, forType, storage);
+								} else {
+									if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
+										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
+										_shared.setAttribute(obj, attr, value, {
+											configurable: cf,
+											enumerable: this.isEnumerable, 
+											writable: !this.isReadOnly
+										});
 									};
-
-									types.defineProperty(proto, attr, descriptor);
 								};
 							},
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -1732,25 +1749,21 @@ module.exports = {
 											optional: false,
 											description: "Current attribute value.",
 										},
+										isProto: {
+											type: 'bool,null',
+											optional: false,
+											description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
+										},
 									},
 									returns: 'undefined',
 									description: "Initializes an attribute for a new object instance.",
 							}
 							//! END_REPLACE()
-							, function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+							, function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (attr === __Internal__.symbolAttributesStorage) {
 									value = (forType ? typeStorage : instanceStorage);
 								};
-
-								if (this.__isFromStorage(attribute)) {
-									this.__createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value);
-								} else {
-									_shared.setAttribute(obj, attr, value, {
-										configurable: this.isReadOnly || !this.isPersistent, // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
-										enumerable: this.isEnumerable, 
-										writable: !this.isReadOnly
-									});
-								};
+								this.__createProperty(attr, obj, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
@@ -1789,8 +1802,8 @@ module.exports = {
 						
 						extend: types.READ_ONLY(null),
 
-						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
-								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, null);
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, null, isProto);
 							}),
 					})));
 				
@@ -1852,12 +1865,12 @@ module.exports = {
 								};
 								return attribute;
 							}),
-						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (this.cloneOnInit) {
 									value = types.clone(value, this.maxDepth, false, this.keepUnlocked);
 								};
 								
-								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
 					})));
 
@@ -1937,12 +1950,12 @@ module.exports = {
 								
 								return sourceAttribute;
 							}),
-						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (!types.isNothing(value)) {
 									value = types.unique(value);
 								};
 								
-								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
 					})));
 				
@@ -2695,7 +2708,7 @@ module.exports = {
 								
 								return destAttribute;
 							})),
-						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value) {
+						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								value = this.createDispatch(attr, obj, attribute, value);
 
 								if (root.getOptions().debug || __options__.enforcePolicies) {
@@ -2709,7 +2722,7 @@ module.exports = {
 									value = types.bind(obj, value);
 								};
 
-								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
 						remove: types.READ_ONLY(null),
 					})));
@@ -2992,40 +3005,42 @@ module.exports = {
 								
 								return sourceAttribute.setValue(srcDesc);  // copy attribute flags of "sourceAttribute"
 							}),
-						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, value) {
-								if (value) {
-									var attribute = attributes[attr];
-									
-									var descriptor = types.extend({}, value);
-									
-									var value = types.get(descriptor, 'get');
+						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, value, isProto) {
+								if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
 									if (value) {
-										value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
-										if (this.bindMethod) {
-											value = types.bind(obj, value);
+										var attribute = attributes[attr];
+									
+										var descriptor = types.extend({}, value);
+									
+										var value = types.get(descriptor, 'get');
+										if (value) {
+											value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
+											if (this.bindMethod) {
+												value = types.bind(obj, value);
+											};
+											descriptor.get = value;
 										};
-										descriptor.get = value;
-									};
 									
-									value = types.get(descriptor, 'set');
-									if (value) {
-										value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
-										if (this.bindMethod) {
-											value = types.bind(obj, value);
+										value = types.get(descriptor, 'set');
+										if (value) {
+											value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
+											if (this.bindMethod) {
+												value = types.bind(obj, value);
+											};
+											descriptor.set = value;
 										};
-										descriptor.set = value;
+									
+										descriptor.enumerable = this.isEnumerable;
+									
+										if (types.has(descriptor, 'get') || types.has(descriptor, 'set')) {
+											descriptor.configurable = false;
+										} else {
+											descriptor.configurable = this.isReadOnly;
+											descriptor.writable = !this.isReadOnly;
+										};
+									
+										types.defineProperty(obj, attr, descriptor);
 									};
-									
-									descriptor.enumerable = this.isEnumerable;
-									
-									if (types.has(descriptor, 'get') || types.has(descriptor, 'set')) {
-										descriptor.configurable = false;
-									} else {
-										descriptor.configurable = this.isReadOnly;
-										descriptor.writable = !this.isReadOnly;
-									};
-									
-									types.defineProperty(obj, attr, descriptor);
 								};
 							},
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
@@ -3333,6 +3348,8 @@ module.exports = {
 
 						enableScopes: types.READ_ONLY(false),
 						errorEvent: types.READ_ONLY(false),
+
+						isProto: types.READ_ONLY(false), // must be created on Class instances, not on the prototype
 						
 						_new: types.SUPER(function _new(/*optional*/options) {
 								this._super(options);
@@ -4788,26 +4805,25 @@ module.exports = {
 					var attributes = types.nullObject();
 
 					// From "Doodad.Class"
-					attributes[__Internal__.symbolAttributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(attributes, extenders.Attribute))))))));
-					attributes[__Internal__.symbolPrototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
-					attributes[__Internal__.symbolModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute)))))));
-					attributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
+					attributes[__Internal__.symbolAttributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(attributes, extenders.Attribute, {isProto: null}))))))));
+					attributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null}))))))));
+					attributes[__Internal__.symbolPrototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))))))));
+					attributes[__Internal__.symbolModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isProto: false})))))));
+					attributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))))))));
+					attributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))))));
 					attributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null))))));
-					attributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
-					attributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))))));
 					attributes[__Internal__.symbolCurrentDispatch] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 					attributes[__Internal__.symbolCurrentCallerIndex] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(extenders.Null)))))));
 
 					//if (__Internal__.creatingClass) {
-						attributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute)))))));
-						attributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute))))));
+						attributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))))));
+						attributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))))));
 					//};
 
-					root.DD_ASSERT && root.DD_ASSERT(types.isObject(__Internal__.classProto));
-					
-					var keys = types.append(types.keys(attributes), types.symbols(attributes));
-
 					var proto = (__Internal__.creatingClass ? __Internal__.classProto : __Internal__.interfaceProto);
+					root.DD_ASSERT && root.DD_ASSERT(types.isObject(proto));
+
+					var keys = types.append(types.keys(attributes), types.symbols(attributes));
 					tools.forEach(keys, function(key) {
 						var attribute = attributes[key] = doodad.OPTIONS({isEnumerable: false}, attributes[key]);
 						attribute[__Internal__.symbolPrototype] = proto;
@@ -5256,7 +5272,7 @@ module.exports = {
 					};
 				};
 
-				__Internal__.initializeAttributes = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType, /*optional*/values, /*optional*/extendedAttributes) {
+				__Internal__.initializeAttributes = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType, isProto, /*optional*/values, /*optional*/extendedAttributes) {
 					var storage = (forType ? typeStorage : instanceStorage);
 					var attrs = (extendedAttributes ? types.unique(extendedAttributes) : types.append(types.keys(attributes), types.symbols(attributes)))
 					for (var i = attrs.length - 1; i >= 0; i--) {
@@ -5268,10 +5284,10 @@ module.exports = {
 							if ((forType && extender.isType) || (!forType && extender.isInstance)) {
 								if (extender.preExtend) {
 									var value = types.get(values, attr, types.unbox(attribute));
-									extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+									extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 									if (extender.isPreserved && !types.isSymbol(attr)) {
 										var presAttr = '__' + attr + '_preserved__';
-										extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+										extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 									};
 									delete attrs[i]; //attrs.splice(i, 1);
 								};
@@ -5292,10 +5308,10 @@ module.exports = {
 							if (extender) {
 								// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice()".
 								var value = types.get(values, attr, types.unbox(attribute));
-								extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+								extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 								if (extender.isPreserved && !types.isSymbol(attr)) {
 									var presAttr = '__' + attr + '_preserved__';
-									extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value);
+									extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 								};
 							};
 						};
@@ -5387,7 +5403,7 @@ module.exports = {
 						return type;
 
 					} else {
-						__Internal__.initializeAttributes(base, destAttributes, typeStorage, instanceStorage, false, null, extendedAttributes);
+						__Internal__.initializeAttributes(base, destAttributes, typeStorage, instanceStorage, false, null, null, extendedAttributes);
 
 						if (base._implements(mixIns.Creatable)) {
 							_shared.setAttribute(base, __Internal__.symbolDestroyed, null);
@@ -5604,7 +5620,7 @@ module.exports = {
 
 							this.overrideSuper();
 							
-							return cls[name].bind(this);
+							return _shared.getAttribute(cls, name).bind(this);
 						}))))))));
 				
 				__Internal__.overrideSuper = root.DD_DOC(
@@ -5727,7 +5743,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated];
 								values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, values);
+								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, null, values);
 
 								var values = types.nullObject();
 								var attributes = values[__Internal__.symbolAttributes] = this.prototype[__Internal__.symbolAttributes]; // NOTE: already cloned
@@ -5735,7 +5751,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: already cloned
 								values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false, values);
+								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false, true, values);
 							} else {
 								var values = types.nullObject();
 								var attributes = values[__Internal__.symbolAttributes] = types.clone(cls.prototype[__Internal__.symbolAttributes]);
@@ -5743,7 +5759,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = types.clone(cls.prototype[__Internal__.symbolIsolated]);
 								values[__Internal__.symbolPrototype] = cls.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = cls.prototype[__Internal__.symbolBase];
-								__Internal__.initializeAttributes(this, attributes, typeStorage, types.clone(instanceStorage), false, values);
+								__Internal__.initializeAttributes(this, attributes, typeStorage, types.clone(instanceStorage), false, false, values);
 							};
 	
 							// Call constructor
@@ -6121,7 +6137,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated];
 								values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, values);
+								__Internal__.initializeAttributes(this, attributes, typeStorage, instanceStorage, true, null, values);
 
 								var values = types.nullObject();
 								var attributes = values[__Internal__.symbolAttributes] = this.prototype[__Internal__.symbolAttributes]; // NOTE: already cloned
@@ -6129,7 +6145,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: already cloned
 								values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false, values);
+								__Internal__.initializeAttributes(this.prototype, attributes, typeStorage, instanceStorage, false, true, values);
 							} else {
 								var values = types.nullObject();
 								var attributes = values[__Internal__.symbolAttributes] = types.clone(cls.prototype[__Internal__.symbolAttributes]);
@@ -6138,7 +6154,7 @@ module.exports = {
 								values[__Internal__.symbolPrototype] = cls.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = cls.prototype[__Internal__.symbolBase];
 								values[__Internal__.symbolHost] = host;
-								__Internal__.initializeAttributes(this, attributes, typeStorage, types.clone(instanceStorage), false, values);
+								__Internal__.initializeAttributes(this, attributes, typeStorage, types.clone(instanceStorage), false, false, values);
 							};
 	
 							return this;
@@ -6187,7 +6203,7 @@ module.exports = {
 				};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
-				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(null))));
+				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))));
 				
 				__Internal__.creatingInterfaceClass = true;
 				root.DD_DOC(
