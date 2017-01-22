@@ -1149,7 +1149,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -1158,23 +1158,22 @@ module.exports = {
 									},
 								},
 								returns: 'arrayof(array)',
-								description: "Returns index-value pairs of an array-like object, or key-value pairs of the owned properties of an object.",
+								description: "Returns key-value pairs of the owned properties of an object. Also includes indexes of array-like objects.",
 					}
 					//! END_REPLACE()
 					, function entries(obj) {
 						if (types.isNothing(obj)) {
 							return [];
 						} else {
-							if (_shared.Natives.objectEntries && !types.isArrayLike(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (_shared.Natives.objectEntries) {
 								return _shared.Natives.objectEntries(obj);
 							} else {
-								obj = _shared.Natives.windowObject(obj);
 								var result = [];
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									result.push([key, obj[key]]);
+								for (var key in obj) {
+									if (types.has(obj, key)) {
+										result.push([key, obj[key]]);
+									};
 								};
 								return result;
 							};
@@ -1185,7 +1184,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object,arraylike',
@@ -1202,23 +1201,26 @@ module.exports = {
 							return [];
 						} else {
 							obj = _shared.Natives.windowObject(obj);
-							var result = [];
 							if (types.isArrayLike(obj)) {
+								var result = [];
 								var len = obj.length;
 								for (var key = 0; key < len; key++) {
-									if (key in obj) {
+									if (types.has(obj, key)) {
 										result.push([key, obj[key]]);
 									};
 								};
+								return result;
+							} else if (_shared.Natives.objectEntries) {
+								return _shared.Natives.objectEntries(obj);
 							} else {
-								var keys = types.keys(obj),
-									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
-									var key = keys[i];
-									result.push([key, obj[key]]);
+								var result = [];
+								for (var key in obj) {
+									if (types.has(obj, key)) {
+										result.push([key, obj[key]]);
+									};
 								};
+								return result;
 							};
-							return result;
 						};
 					}));
 				
