@@ -2046,10 +2046,8 @@ module.exports = {
 										var retVal = fn.apply(this, arguments);
 
 										if (modifiers & doodad.MethodModifiers.Async) {
-											if (!types.isPromise(retVal)) {
-												var Promise = types.getPromise();
-												retVal = Promise.resolve(retVal);
-											};
+											var Promise = types.getPromise();
+											retVal = Promise.resolve(retVal);
 										};
 										
 										_caller[__Internal__.symbolCalled] = true;
@@ -2205,10 +2203,8 @@ module.exports = {
 									var validateRetVal = function validateRetVal(retval) {
 										if (modifiers & doodad.MethodModifiers.Async) {
 											// Asynchronous methods must always return a Promise
-											if (!types.isPromise(retVal)) {
-												var Promise = types.getPromise();
-												retVal = Promise.resolve(retVal);
-											};
+											var Promise = types.getPromise();
+											retVal = Promise.resolve(retVal);
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												var validator = attribute[__Internal__.symbolReturns];
 												if (validator) {
@@ -3745,11 +3741,11 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function METHOD(/*optional*/fn) {
-						var val = types.unbox(fn);
 						if (root.DD_ASSERT) {
+							var val = types.unbox(fn);
 							root.DD_ASSERT(types.isNothing(val) || (types.isJsFunction(val) && types.isBindable(val)), "Invalid function.");
 						};
-						if (types.isAsyncFunction(val)) {
+						if (types.isAsyncFunction(fn)) {
 							return doodad.ASYNC(fn);
 						} else {
 							return doodad.ATTRIBUTE(fn, extenders.Method);
@@ -4707,9 +4703,9 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function ASYNC(/*optional*/fn) {
-						fn = types.AttributeBox(fn);
+						fn = doodad.METHOD(fn);
 						fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
-						return doodad.METHOD(fn);
+						return fn;
 					}));
 				
 				doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
