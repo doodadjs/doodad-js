@@ -94,6 +94,7 @@ module.exports = {
 					processNextTick: global.process.nextTick,
 					
 					// "catchAndExit"
+					process: global.process,
 					processExit: global.process.exit,
 
 					// "addAppListener", "removeAppListener"
@@ -372,11 +373,11 @@ module.exports = {
 					if (!__Internal__.catchAndExitCalled) {
 						__Internal__.catchAndExitCalled = true;
 						
-						global.process.exitCode = 1; // 1 = General error
+						_shared.Natives.process.exitCode = 1; // 1 = General error
 
 						try {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
-								global.process.exitCode = err.exitCode;
+								_shared.Natives.process.exitCode = err.exitCode;
 							} else {
 								doodad.trapException(err);
 							};
@@ -387,7 +388,7 @@ module.exports = {
 						};
 						
 						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: global.process.exitCode}})); // sync
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: _shared.Natives.process.exitCode}})); // sync
 						} catch(o) {
 							if (root.getOptions().debug) {
 								debugger;
