@@ -2231,7 +2231,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -2250,7 +2250,7 @@ module.exports = {
 								},
 							},
 							returns: 'function',
-							description: "Creates a callback handler specially for a Promise.",
+							description: "Creates a callback handler for DDPromise.",
 					}
 					//! END_REPLACE()
 					, types.setPrototypeOf(function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
@@ -2266,28 +2266,34 @@ module.exports = {
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 						var insideFn = _shared.makeInside(obj, fn, secret);
+						var isCreatable = doodad.MixIns && types._implements(obj, doodad.MixIns.Creatable);
 						var callback = function callbackHandler(/*paramarray*/) {
-							try {
-								return insideFn.apply(obj, arguments);
-							} catch(ex) {
-								if (ex.bubble) {
-									throw ex;
-								} else {
-									if (!ex.trapped) {
-										ex.trapped = true;
-										try {
-											var tools = root.Doodad.Tools;
-											tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
-											if (ex.stack) {
-												tools.log(tools.LogLevels.Error, ex.stack);
-											} else {
-												tools.log(tools.LogLevels.Error, ex);
+							var destroyed = isCreatable && obj.isDestroyed();
+							if (destroyed) {
+								throw new types.NotAvailable("Object has been destroyed.");
+							} else {
+								try {
+									return insideFn.apply(obj, arguments);
+								} catch(ex) {
+									if (ex.bubble) {
+										throw ex;
+									} else {
+										if (!ex.trapped) {
+											ex.trapped = true;
+											try {
+												var tools = root.Doodad.Tools;
+												tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
+												if (ex.stack) {
+													tools.log(tools.LogLevels.Error, ex.stack);
+												} else {
+													tools.log(tools.LogLevels.Error, ex);
+												};
+												//tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
+											} catch(o) {
 											};
-											//tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
-										} catch(o) {
 										};
+										throw ex;
 									};
-									throw ex;
 								};
 							};
 						};
