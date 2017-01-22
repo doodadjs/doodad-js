@@ -2212,11 +2212,13 @@
 //IE8		  'length',
 //IE8		];
 		
+		__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
+
 		__Internal__.ADD('keys', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -2235,14 +2237,15 @@
 					return [];
 				};
 				
+				obj = _shared.Natives.windowObject(obj);
+
 				var result,
 					key;
 					
 				if (types.isArrayLike(obj)) {
 					result = [];
 					for (key in obj) {
-						var number = Number(key);
-						if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
+						if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
 							result.push(key);
 						};
 					};
@@ -2250,7 +2253,6 @@
 					 result = _shared.Natives.objectKeys(obj);
 				} else {
 					// Polyfill from Mozilla Developer Network.
-					obj = _shared.Natives.windowObject(obj);
 					result = [];
 					for (key in obj) {
 						if (types.has(obj, key)) {
