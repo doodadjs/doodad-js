@@ -7291,7 +7291,8 @@
 
 		types.REGISTER(root);
 
-		return root.Doodad.Namespaces.load(modules, _options, startup);
+		return root.Doodad.Namespaces.load(modules, _options, startup)
+			['catch'](root.Doodad.Tools.catchAndExit);
 	};
 	
 	//! BEGIN_REMOVE()
