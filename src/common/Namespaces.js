@@ -709,7 +709,7 @@ module.exports = {
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
 								};
 
-								if (dontThrow) {
+								if (dontThrow && !err.critical) {
 									return Promise.resolve(root);
 								} else {
 									return Promise.reject(err);
@@ -741,7 +741,7 @@ module.exports = {
 											return root;
 										})
 										['catch'](function(ex) {
-											if (dontThrow) {
+											if (dontThrow && !ex.critical) {
 												return root;
 											} else {
 												throw ex;
@@ -822,9 +822,7 @@ module.exports = {
 						return loopCreateModules({missings: [], optionals: [], ignoreOptionals: false})
 							.then(loopInitModules)
 							.nodeify(terminate);
-						
 					});
-						//.catch(tools.catchAndExit);
 				}));
 
 				/*
