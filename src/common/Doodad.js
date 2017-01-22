@@ -2192,10 +2192,10 @@ module.exports = {
 										if (types._implements(this, mixIns.Creatable)) {
 											var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
 											if ((destroyed === null) && !forType && (attr !== 'create')) {
-												throw new types.Error("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 											};
 											if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-												throw new types.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 											};
 										};
 									};
@@ -5663,10 +5663,10 @@ module.exports = {
 										var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
 										var attr = dispatch[_shared.NameSymbol];
 										if ((destroyed === null) && !forType && (attr !== 'create')) {
-											throw new types.Error("Method '~0~' of '~1~' is unavailable because object has not been created.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 										if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-											throw new types.Error("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 									};
 									
