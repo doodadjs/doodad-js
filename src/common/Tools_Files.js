@@ -1546,29 +1546,30 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: null,
 										returns: 'array',
 										description: "Return arguments in an array of name-value pairs.",
 								}
 								//! END_REPLACE()
 								, function toArray() {
-									return tools.reduce(tools.reduce(this.__args, function(result, arg) {
+									return types.entries(
+										tools.reduce(this.__args, function(result, arg) {
 											if (arg.name) {
 												if (arg.name in result) {
-													result[arg.name].push(arg.value);
+													var item = result[arg.name];
+													if (types.isArray(item)) {
+														item.push(arg.value);
+													} else {
+														result[arg.name] = [item, arg.value];
+													};
 												} else {
-													result[arg.name] = [arg.value];
+													result[arg.name] = arg.value;
 												};
 											};
 											return result;
-										}, types.nullObject()), function(result, val, name) {
-											if (val.length === 1) {
-												val = val[0];
-											};
-											result.push([name, val]);
-											return result;
-										}, []);
+										}, types.nullObject())
+									);
 								}),
 
 							toString: root.DD_DOC(
