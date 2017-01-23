@@ -800,7 +800,7 @@ module.exports = {
 									// Dispatches "onerror"
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
 								};
-								if (!dontThrow || err.critical) {
+								if (!dontThrow || err.bubble) {
 									throw err;
 								};
 							})
