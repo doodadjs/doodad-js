@@ -76,8 +76,6 @@ module.exports = {
 					inTrapException: false, // <FUTURE> thread level
 					inEventHandler: false, // <FUTURE> thread level
 					
-					arrayObj: (global.Array && global.Array.prototype || []), // temporary, will get deleted
-					
 					// Class
 					symbolAttributes: types.getSymbol('__ATTRIBUTES'),
 					symbolImplements: types.getSymbol('IMPLEMENTS'),
@@ -132,14 +130,12 @@ module.exports = {
 				};
 
 				types.complete(_shared.Natives, {
-					arraySlice: __Internal__.arrayObj.slice,
-					arraySplice: __Internal__.arrayObj.splice,
-					arrayUnshift: __Internal__.arrayObj.unshift,
+					arraySlice: global.Array.prototype.slice,
+					arraySplice: global.Array.prototype.splice,
+					arrayUnshift: global.Array.prototype.unshift,
 					functionPrototype: global.Function.prototype,
 					windowObject: global.Object,
 				});
-				
-				delete __Internal__.arrayObj;  // free memory
 				
 				// Interface
 				doodad.ADD('HostSymbol', __Internal__.symbolHost);
