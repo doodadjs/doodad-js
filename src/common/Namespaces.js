@@ -663,7 +663,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 10,
+								revision: 11,
 								params: {
 									modules: {
 										type: 'object',
@@ -681,91 +681,66 @@ module.exports = {
 										description: "Callback function.",
 									},
 								},
-								returns: 'Promise(bool)',
-								description: "Returns 'true' when successful. Returns 'false' otherwise.",
+								returns: 'Promise',
+								description: "Loads additional Doodad modules, then returns 'root'.",
 						}
 						//! END_REPLACE()
 				, function load(modules, /*optional*/options, /*optional*/callback) {
 					var Promise = types.getPromise();
-
-					if (types.isArray(options)) {
-						options = types.depthExtend.apply(null, types.append([15, {}], options));
-					};
-
-					if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
-						throw new types.AccessDenied("Secrets mismatch.");
-					};
-
-					var dontThrow = types.get(options, 'dontThrow');
-					
 					return Promise.try(function() {
-						var toInit = [];
+						if (types.isArray(options)) {
+							options = types.depthExtend.apply(null, types.append([15, {}], options));
+						};
+
+						if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
+							throw new types.AccessDenied("Secrets mismatch.");
+						};
+
+						var dontThrow = types.get(options, 'dontThrow');
+					
+						var names = types.keys(modules),
+							toInit = [];
 						
-						var terminate = function _terminate(err, result) {
-							if (err) {
-								debugger;
-								// Dispatches "onerror"
-								if (!__Internal__.waiting) {
-									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
-								};
-
-								if (dontThrow && !err.critical) {
-									return Promise.resolve(root);
-								} else {
-									return Promise.reject(err);
-								};
-
-							} else {
-								// Create Promise for callback result
-								var cbPromise = null;
-								if (callback) {
-									cbPromise = Promise.create(function readyPromise(resolve, reject) {
-										var cbReadyHandler = function(ev) {
+						var doCallback = function _doCallback() {
+							// Create Promise for callback result
+							var cbPromise = null;
+							if (callback) {
+								cbPromise = Promise.create(function readyPromise(resolve, reject) {
+										var cbReadyHandler,
+											cbErrorHandler;
+										var cbCleanUp = function() {
 											namespaces.removeEventListener('ready', cbReadyHandler);
 											namespaces.removeEventListener('error', cbErrorHandler);
+										};
+										cbReadyHandler = function(ev) {
+											cbCleanUp();
 											try {
 												resolve(callback(root, _shared));
 											} catch(ex) {
 												reject(ex);
 											};
 										};
-										var cbErrorHandler = function(ev) {
-											namespaces.removeEventListener('ready', cbReadyHandler);
-											namespaces.removeEventListener('error', cbErrorHandler);
+										cbErrorHandler = function(ev) {
+											cbCleanUp();
 											reject(ev.detail.error);
 										};
 										namespaces.addEventListener('ready', cbReadyHandler);
 										namespaces.addEventListener('error', cbErrorHandler);
-									})
-										.then(function() {
-											return root;
-										})
-										['catch'](function(ex) {
-											if (dontThrow && !ex.critical) {
-												return root;
-											} else {
-												throw ex;
-											};
-										});
-								};
+									});
+							};
 								
-								// Dispatches "onready"
-								if (!__Internal__.waiting) {
-									namespaces.dispatchEvent(new types.CustomEvent('ready'));
-								};
+							// Dispatches "onready"
+							if (!__Internal__.waiting) {
+								namespaces.dispatchEvent(new types.CustomEvent('ready'));
+							};
 								
-								// Returns the callback promise or a "done" flag.
-								if (cbPromise) {
-									// NOTE: Returns the result of "cbPromise". This allows to catch callback errors.
-									return cbPromise;
-								} else {
-									return Promise.resolve(root);
-								};
+							// Returns the callback promise or nothing.
+							if (cbPromise) {
+								// NOTE: Returns "cbPromise". This allows to catch callback errors.
+								return cbPromise;
 							};
 						};
 
-						var names = types.keys(modules);
-						
 						var loopCreateModules = function loopCreateModules(state) {
 							if (names.length) {
 								if (state.missings.length >= names.length) {
@@ -814,14 +789,24 @@ module.exports = {
 								return promise.then(function() {
 									return loopInitModules();
 								});
-							} else {
-								return Promise.resolve();
 							};
 						};
 						
 						return loopCreateModules({missings: [], optionals: [], ignoreOptionals: false})
 							.then(loopInitModules)
-							.nodeify(terminate);
+							.then(doCallback)
+							['catch'](function(err) {
+								if (!__Internal__.waiting) {
+									// Dispatches "onerror"
+									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
+								};
+								if (!dontThrow || err.critical) {
+									throw err;
+								};
+							})
+							.then(function() {
+								return root;
+							});
 					});
 				}));
 
