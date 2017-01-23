@@ -74,6 +74,13 @@ module.exports = {
 				// Hooks
 				//===================================
 
+				_shared.urlArgumentsParser = function urlArgumentsParser(/*optional*/args, /*optional*/options) {
+					if (!types._instanceof(args, files.UrlArguments)) {
+						args = files.UrlArguments.parse(args, options);
+					};
+					return args;
+				};
+				
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
 					if (types.isString(url)) {
 						if (!options) {
@@ -1037,7 +1044,8 @@ module.exports = {
 									var newOptions = types.fill(__Internal__.pathOptionsKeys, {}, this);
 									delete newOptions.extension;
 									newOptions = types.fill(__Internal__.pathOptionsKeys, newOptions, options);
-									return files.Path.parse(null, newOptions);
+									var type = types.getType(this);
+									return type.parse(null, newOptions);
 								}),
 							
 							toString: root.DD_DOC(
@@ -1080,7 +1088,8 @@ module.exports = {
 											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
-											options = files.Path.parse(this, options);
+											var type = types.getType(this);
+											options = type.parse(this, options);
 											if (!options) {
 												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
 												//throw new files.PathError("Invalid path.");
@@ -1161,10 +1170,11 @@ module.exports = {
 								, function combine(/*optional*/path, /*optional*/options) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(path) || types.isString(path) || types._instanceof(path, [files.Path, files.Url]), "Invalid path.");
 
+									var type = types.getType(this);
 									var dontThrow = types.get(options, 'dontThrow', false);
 									
 									if (types.isNothing(path) || types.isString(path)) {
-										path = files.Path.parse(path, options);
+										path = type.parse(path, options);
 										options = null;
 									};
 									
@@ -1244,7 +1254,7 @@ module.exports = {
 									data.file = types.get(options, 'file', path.file || thisFile);
 									data.extension = types.get(options, 'extension', path.extension);
 
-									path = files.Path.parse(null, data);
+									path = type.parse(null, data);
 
 									return path;
 								}),
@@ -1292,7 +1302,8 @@ module.exports = {
 									} else {
 										path = this.path.slice(0, i + 1);
 									};
-									return files.Path.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {path: path}));
+									var type = types.getType(this);
+									return type.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -1306,10 +1317,11 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function pushFile() {
+									var type = types.getType(this);
 									if (this.file) {
-										return files.Path.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
-										return files.Path.parse(this);
+										return type.parse(this);
 									};
 								}),
 							
@@ -1346,9 +1358,11 @@ module.exports = {
 								if (this.isRelative) {
 									throw new types.ParseError("'this' must be an absolute path.");
 								};
+
+								var type = types.getType(this);
 								
 								if (!types._instanceof(to, files.Path)) {
-									to = files.Path.parse(to, options);
+									to = type.parse(to, options);
 								};
 								if (to.isRelative) {
 									throw new types.ParseError("'to' must be an absolute path.");
@@ -1397,7 +1411,7 @@ module.exports = {
 									pathAr.push(thisAr[j]);
 								};
 								
-								return files.Path.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
+								return type.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
 							},
 						}, __Internal__.pathOptions)
 					))));
@@ -1450,7 +1464,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											args: {
 												type: 'string,object,array',
@@ -1519,7 +1533,7 @@ module.exports = {
 										};
 									};
 									
-									return new files.UrlArguments(args, options);
+									return new this(args, options);
 								}),
 						},
 						/*instanceProto*/
@@ -1640,7 +1654,6 @@ module.exports = {
 								//! END_REPLACE()
 								, function has(name) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 									if (this.__args) {
@@ -1676,7 +1689,6 @@ module.exports = {
 								//! END_REPLACE()
 								, function get(name, /*optional*/singleValue) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 									var result = undefined,
@@ -1709,7 +1721,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											name: {
 												type: 'string,arrayof(string),object',
@@ -1733,7 +1745,6 @@ module.exports = {
 								//! END_REPLACE()
 								, function set(name, /*optional*/value, /*optional*/replace) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid arguments object.");
 										root.DD_ASSERT(types.isString(name) || types.isArray(name) || types.isJsObject(name), "Invalid name.");
 										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || types.isArray(value), "Invalid value.");
 									};
@@ -1807,14 +1818,15 @@ module.exports = {
 									if ((!args.length) && !this.__args) {
 										args = null;
 									};
-									return new files.UrlArguments(args, types.clone(this.options));
+									var type = types.getType(this);
+									return new type(args, types.clone(this.options));
 								}),
 							
 							remove: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											names: {
 												type: 'string,arrayof(string)',
@@ -1828,7 +1840,6 @@ module.exports = {
 								//! END_REPLACE()
 								, function remove(names) {
 									if (root.DD_ASSERT) {
-										root.DD_ASSERT(types._instanceof(this, files.UrlArguments), "Invalid url object.");
 										root.DD_ASSERT(types.isNothing(names) || types.isString(names) || types.isArray(names), "Invalid names.");
 									};
 									if (!types.isArray(names)) {
@@ -1853,7 +1864,8 @@ module.exports = {
 									if (args.length === 0) {
 										args = null;
 									};
-									return new files.UrlArguments(args, types.clone(this.options));
+									var type = types.getType(this);
+									return new type(args, types.clone(this.options));
 								}),
 							
 							combine: root.DD_DOC(
@@ -1884,7 +1896,8 @@ module.exports = {
 									options = types.extend({}, this.options, options);
 									var mode = types.get(options, 'argsMode', 'merge');
 									if (types.isString(args) || types.isJsObject(args)) {
-										args = files.UrlArguments.parse(args, options);
+										var type = types.getType(this);
+										args = type.parse(args, options);
 										if (mode === 'replace') {
 											return args;
 										};
@@ -1922,7 +1935,8 @@ module.exports = {
 									} else { // if (mode === 'append')
 										args = (this.__args || args.__args) && types.append([], this.__args, args.__args);
 									};
-									return new files.UrlArguments(args, options);						
+									var type = types.getType(this);
+									return new type(args, options);						
 								}),
 						}
 					))));
@@ -2207,10 +2221,11 @@ module.exports = {
 									};
 									
 									if (types.isNothing(args) || types.isString(args) || types.isJsObject(args)) {
-										args = files.UrlArguments.parse(args, {
+										args = _shared.urlArgumentsParser(args, {
 											noEscapes: noEscapes,
 										});
-									} else if (!types._instanceof(args, files.UrlArguments)) {
+									};
+									if (!types._instanceof(args, files.UrlArguments)) {
 										if (dontThrow) {
 											return null;
 										} else {
@@ -2365,7 +2380,7 @@ module.exports = {
 										extension = null;
 									};
 									
-									url = new files.Url({
+									return new this({
 										protocol: protocol,
 										domain: domain,
 										user: user,
@@ -2380,8 +2395,6 @@ module.exports = {
 										isRelative: !!isRelative,
 										isWindows: !!isWindows,
 									});
-
-									return url;
 								}),
 						},
 						/*instanceProto*/
@@ -2425,7 +2438,8 @@ module.exports = {
 									var newOptions = types.fill(__Internal__.urlOptionsKeys, {}, this);
 									delete newOptions.extension;
 									newOptions = types.fill(__Internal__.urlOptionsKeys, newOptions, options);
-									return files.Url.parse(null, newOptions);
+									var type = types.getType(this);
+									return type.parse(null, newOptions);
 								}),
 							
 							setArgs: root.DD_DOC(
@@ -2478,7 +2492,7 @@ module.exports = {
 										});
 									} else {
 										return this.set({
-											args: files.UrlArguments.parse(),
+											args: _shared.urlArgumentsParser(),
 										});
 									};
 								}),
@@ -2517,7 +2531,8 @@ module.exports = {
 											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
-											options = files.Url.parse(this, options);
+											var type = types.getType(this);
+											options = type.parse(this, options);
 											if (!options) {
 												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
 												//throw new types.ParseError("Invalid url.");
@@ -2609,7 +2624,8 @@ module.exports = {
 									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, files.Url), "Invalid url.");
 									
 									if (types.isString(url)) {
-										url = files.Url.parse(url);
+										var type = types.getType(this);
+										url = type.parse(url);
 									};
 									var result = (this.toString({anchor: null}) === url.toString({anchor: null}));
 									return (result ? ((this.anchor === url.anchor) ? 0 : 1) : -1); // 0=same, 1=different anchor, -1=different
@@ -2639,8 +2655,10 @@ module.exports = {
 								, function combine(url, /*optional*/options) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, [files.Url, files.Path]), "Invalid url.");
 									
+									var type = types.getType(this);
+
 									if (types.isString(url)) {
-										url = files.Url.parse(url, options);
+										url = type.parse(url, options);
 									};
 
 									var dontThrow = types.get(options, 'dontThrow', false);
@@ -2709,9 +2727,7 @@ module.exports = {
 									data.file = types.get(options, 'file', url.file);
 									data.extension = types.get(options, 'extension', url.extension);
 									
-									url = files.Url.parse(null, data);
-
-									return url;
+									return type.parse(null, data);
 								}),
 								
 							moveUp: root.DD_DOC(
@@ -2757,7 +2773,8 @@ module.exports = {
 									} else {
 										path = this.path.slice(0, i + 1);
 									};
-									return files.Url.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {path: path}));
+									var type = types.getType(this);
+									return type.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -2771,10 +2788,11 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function pushFile() {
+									var type = types.getType(this);
 									if (this.file) {
-										return files.Url.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
-										return files.Url.parse(this);
+										return type.parse(this);
 									};
 								}),
 								
