@@ -691,12 +691,15 @@ module.exports = {
 				
 				_shared.invoke = root.DD_DOC(
 								root.GET_DD_DOC(__Internal__.oldInvoke), 
-					function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
+					function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
+						if (!thisObj) {
+							thisObj = obj;
+						};
 						if (types.isCallback(fn)) {
 							if (args) {
-								return fn.apply(obj, args);
+								return fn.apply(thisObj, args);
 							} else {
-								return fn.call(obj);
+								return fn.call(thisObj);
 							};
 						} else {
 							if (secret !== _shared.SECRET) {
@@ -708,12 +711,12 @@ module.exports = {
 								__Internal__.invokedClass = types.getType(obj);
 								try {
 									if (types.isString(fn) || types.isSymbol(fn)) {
-										fn = obj[fn];
+										fn = thisObj[fn];
 									};
 									if (args) {
-										return fn.apply(obj, args);
+										return fn.apply(thisObj, args);
 									} else {
-										return fn.call(obj);
+										return fn.call(thisObj);
 									};
 								} catch(ex) {
 									throw ex;
@@ -6439,7 +6442,7 @@ module.exports = {
 								try {
 									this._super.apply(this, arguments);
 								} catch(ex) {
-									_shared.setAttribute(this, __Internal__.symbolDestroyed, null);
+									_shared.invoke(null, this.$destroy, null, _shared.SECRET, this);
 									throw ex;
 								};
 							})))),
@@ -6512,7 +6515,7 @@ module.exports = {
 								try {
 									this._super.apply(this, arguments);
 								} catch(ex) {
-									_shared.setAttribute(this, __Internal__.symbolDestroyed, null);
+									_shared.invoke(null, this.destroy, null, _shared.SECRET, this);
 									throw ex;
 								};
 							})))),
