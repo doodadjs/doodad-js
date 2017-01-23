@@ -6118,7 +6118,7 @@
 							"throw new ctx.Error(\"Type '\" + ctx.getTypeName(ctx.type) + \"' is not initialized.\");" +
 						"};" +
 						"if (!(this instanceof ctx.type)) {" +
-							"throw new ctx.Error('Wrong constructor.');" +
+							"throw new ctx.Error('Wrong constructor. Did you forget the \\'new\\' operator ?');" +
 						"};" +
 					"};" +
 
