@@ -65,18 +65,29 @@ You can create a shortcut to the namespaces this way :
         ... ;
 ```
 
-If you want to load additional Doodad modules :
+If you want to load some Doodad modules at startup :
 ```js
     const modules = {};
 	require('doodad-js-locale').add(modules);
 	require('doodad-js-dates').add(modules);
 	// ...
     
-    function startup(root, _shared) {
-        // your code here...
-    };
+    require('doodad-js').createRoot(modules)
+		.then(root => ...)
+        .catch(err => {
+            console.error(err);
+        });
+```
+
+If you want to load additional Doodad modules after startup :
+```js
+    const modules = {};
+	require('doodad-js-locale').add(modules);
+	require('doodad-js-dates').add(modules);
+	// ...
     
-    namespaces.load(modules, startup);
+    return namespaces.load(modules)
+		.then(root => ...)
 ```
 
 ## Scopes
