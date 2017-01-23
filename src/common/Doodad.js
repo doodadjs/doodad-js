@@ -2073,10 +2073,12 @@ module.exports = {
 												if (types.isClass(type) && this._implements(mixIns.Events)) {
 													var errorEvent = this.__ERROR_EVENT;
 													if (errorEvent && (attr !== errorEvent)) {
-														var ev = new doodad.ErrorEvent(ex);
-														this[errorEvent](ev);
-														if (ev.prevent) {
-															ex.trapped = true;
+														if (!this._implements(mixIns.Creatable) || (this[__Internal__.symbolDestroyed] === false)) {
+															var ev = new doodad.ErrorEvent(ex);
+															this[errorEvent](ev);
+															if (ev.prevent) {
+																ex.trapped = true;
+															};
 														};
 													};
 												};
@@ -2190,12 +2192,14 @@ module.exports = {
 										
 										// Destroyed objects
 										if (types._implements(this, mixIns.Creatable)) {
-											var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-											if ((destroyed === null) && !forType && (attr !== 'create')) {
-												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
-											};
-											if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											if (!(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
+												var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+												if ((destroyed === null) && !forType) {
+													throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+												};
+												if (destroyed === true) {
+													throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+												};
 											};
 										};
 									};
@@ -6402,7 +6406,8 @@ module.exports = {
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
 
 						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function() {
-							return this[__Internal__.symbolDestroyed];
+							var destroyed = this[__Internal__.symbolDestroyed];
+							return (destroyed !== false); // NOTE: Can be "null" for "not created".
 						}))))),
 
 						
@@ -6410,7 +6415,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: {
 										paramarray: {
 											type: 'any',
@@ -6422,12 +6427,18 @@ module.exports = {
 									description: "Creates the class.",
 							}
 							//! END_REPLACE()
-							, doodad.PUBLIC(function $create(/*paramarray*/) {
+							, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/) {
 								if (this[__Internal__.symbolDestroyed] !== null) {
 									throw new types.Error("Object already created.");
 								};
 								_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
-							})),
+								try {
+									this._super.apply(this, arguments);
+								} catch(ex) {
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, null);
+									throw ex;
+								};
+							})))),
 						
 						$destroy: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6477,7 +6488,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: {
 										paramarray: {
 											type: 'any',
@@ -6489,12 +6500,18 @@ module.exports = {
 									description: "Creates the class object instance.",
 							}
 							//! END_REPLACE()
-							, doodad.PUBLIC(function create(/*paramarray*/) {
+							, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/) {
 								if (this[__Internal__.symbolDestroyed] !== null) {
 									throw new types.Error("Object already created.");
 								};
 								_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
-							})),
+								try {
+									this._super.apply(this, arguments);
+								} catch(ex) {
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, null);
+									throw ex;
+								};
+							})))),
 						
 						fastDestroy: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
