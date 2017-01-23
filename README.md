@@ -87,7 +87,7 @@ If you want to load additional Doodad modules after startup :
 	// ...
     
     return namespaces.load(modules)
-		.then(root => ...)
+		.then(root => ...);
 ```
 
 ## Scopes

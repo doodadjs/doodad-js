@@ -2073,7 +2073,11 @@ module.exports = {
 												if (types.isClass(type) && this._implements(mixIns.Events)) {
 													var errorEvent = this.__ERROR_EVENT;
 													if (errorEvent && (attr !== errorEvent)) {
-														if (!this._implements(mixIns.Creatable) || (this[__Internal__.symbolDestroyed] === false)) {
+														var destroyed = false;
+														if (this._implements(mixIns.Creatable)) {
+															destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+														};
+														if (destroyed === false) { // NOTE: Can be 'null' for "not created".
 															var ev = new doodad.ErrorEvent(ex);
 															this[errorEvent](ev);
 															if (ev.prevent) {
@@ -6556,7 +6560,7 @@ module.exports = {
 					};
 
 				// <FUTURE> Use syntax for variable key in object declaration
-				__Internal__.creatablePrototype[__Internal__.symbolDestroyed] = doodad.PROTECTED(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null)))));
+				__Internal__.creatablePrototype[__Internal__.symbolDestroyed] = doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null)))));
 
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
