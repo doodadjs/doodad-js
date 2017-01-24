@@ -6456,11 +6456,17 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function $destroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									this._super();
+									try {
+										this._super();
 
-									this._delete();
-							
-									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+										this._delete();
+
+									} catch(ex) {
+										throw ex;
+
+									} finally {
+										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+									};
 								};
 							})))),
 
@@ -6529,9 +6535,15 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function fastDestroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									this._super();
-							
-									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+									try {
+										this._super();
+
+									} catch(ex) {
+										throw ex;
+
+									} finally {
+										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+									};
 								};
 							})))),
 						
@@ -6548,11 +6560,17 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function destroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									this._super();
+									try {
+										this._super();
 
-									this._delete();
-							
-									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+										this._delete();
+
+									} catch(ex) {
+										throw ex;
+
+									} finally {
+										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+									};
 								};
 							})))),
 
