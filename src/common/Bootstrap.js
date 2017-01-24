@@ -2739,7 +2739,7 @@
 							},
 						},
 						returns: 'object',
-						description: "Instantiates an object from the specified object type with provided constructor arguments.",
+						description: "Instantiates an object from the specified constructor with provided arguments.",
 			}
 			//! END_REPLACE()
 			, function newInstance(type, /*optional*/args) {
@@ -3452,7 +3452,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -3465,7 +3465,7 @@
 			}
 			//! END_REPLACE()
 			, function isExtensible(obj) {
-					return false;
+					return true;
 				})));
 		
 		__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
@@ -3490,6 +3490,7 @@
 					_shared.Natives.objectPreventExtensions(obj);
 					return obj;
 				} : function preventExtensions(obj) {
+					// Not supported.
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
 				})));
@@ -3515,6 +3516,7 @@
 					obj = _shared.Natives.windowObject(obj);
 					return _shared.Natives.objectSeal(obj);
 				} : function sealObject(obj) {
+					// Not supported.
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
 				})));
@@ -3560,6 +3562,7 @@
 					obj = _shared.Natives.windowObject(obj);
 					return _shared.Natives.objectFreeze(obj);
 				} : function freezeObject(obj) {
+					// Not supported.
 					obj = _shared.Natives.windowObject(obj);
 					return obj;
 				})));
