@@ -1004,13 +1004,9 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var dirChar = options.dirChar,
-									properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
+								var properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									tools.forEach(properties, function(value, key) {
-										//if (((key === 'path') || (key === 'root')) && types.isString(value)) {
-										//	value = value.split(dirChar || '/');
-										//};
 										properties[key] = {
 											configurable: true,
 											enumerable: true,
@@ -2396,8 +2392,7 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var properties = types.fill(__Internal__.urlOptionsKeys, {}, options),
-									self = this;
+								var properties = types.fill(__Internal__.urlOptionsKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									tools.forEach(properties, function(value, key) {
 										properties[key] = {
