@@ -2068,26 +2068,28 @@ module.exports = {
 												return "Internal error";
 											};
 										} else {
-											try {
-												if (types.isClass(type) && this._implements(mixIns.Events)) {
-													var destroyed = false;
-													if (this._implements(mixIns.Creatable)) {
-														destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-													};
-													if (destroyed === false) { // NOTE: Can be 'null' for "not created".
-														var errorEvent = this.__ERROR_EVENT;
-														if (errorEvent && (attr !== errorEvent)) {
-															var ev = new doodad.ErrorEvent(ex);
-															this[errorEvent](ev);
-															if (ev.prevent) {
-																ex.trapped = true;
+											if (!ex.bubble && !ex.trapped) {
+												try {
+													if (types.isClass(type) && this._implements(mixIns.Events)) {
+														var destroyed = false;
+														if (this._implements(mixIns.Creatable)) {
+															destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+														};
+														if (destroyed === false) { // NOTE: Can be 'null' for "not created".
+															var errorEvent = this.__ERROR_EVENT;
+															if (errorEvent && (attr !== errorEvent)) {
+																var ev = new doodad.ErrorEvent(ex);
+																this[errorEvent](ev);
+																if (ev.prevent) {
+																	ex.trapped = true;
+																};
 															};
 														};
 													};
-												};
-											} catch(o) {
-												if (root.getOptions().debug) {
-													debugger;
+												} catch(o) {
+													if (root.getOptions().debug) {
+														debugger;
+													};
 												};
 											};
 
