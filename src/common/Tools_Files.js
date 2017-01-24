@@ -1547,13 +1547,8 @@ module.exports = {
 									root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
 								};
 
-								if (types.hasDefinePropertyEnabled()) {
-									_shared.setAttribute(this, 'options', options, {});
-									_shared.setAttribute(this, '__args', args, {});
-								} else {
-									this.options = options;
-									this.__args = args;
-								};
+								_shared.setAttribute(this, 'options', options, {});
+								_shared.setAttribute(this, '__args', args, {});
 							}),
 							
 							toArray: root.DD_DOC(
