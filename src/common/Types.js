@@ -1890,6 +1890,7 @@ module.exports = {
 					// Bluebird "finally" polyfill
 					if (!types.isFunction(Promise.prototype['finally'])) {
 						Promise.prototype['finally'] = function _finally(callback) {
+							var Promise = this.constructor;
 							var promise = this.then(function(result) {
 									var retval = callback();
 									return Promise.resolve(retval).then(function() {
@@ -1922,26 +1923,41 @@ module.exports = {
 					// Bluebird "map" polyfill
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
+							var Promise = this;
+
+							if (ar.length <= 0) {
+								return Promise.resolve([]);
+							};
+
 							options = types.nullObject({
 								concurrency: Infinity,
 							}, options);
 							
+							var mapFn = function _mapFn(val) {
+								try {
+									return Promise.resolve(fn(val));
+								} catch(ex) {
+									return Promise.reject(ex);
+								};
+							};
+
 							if (options.concurrency >= ar.length) {
-								return Promise.all(tools.map(ar, fn));
+								return Promise.all(tools.map(ar, mapFn));
 							} else {
-								var result = new _shared.Natives.arrayConstructor(ar.length);
+								var result = _shared.Natives.arrayConstructor(ar.length);
 								var createMaps = function createMaps(index, concurrency) {
 									return Promise.try(function tryCreateMapsPromise() {
-										if (index < ar.length) {
-											var promises = tools.map(ar.slice(index, index + concurrency), fn);
-											return Promise.all(tools.map(promises, function(promise, i) {
-												return promise
-													.then(function(res) {
-														result[index + i] = res;
-														return createMaps(index + promises.length + i, 1);
-													});
-											}));
-										};
+										var promises = tools.map(ar.slice(index, index + concurrency), mapFn);
+										return Promise.all(tools.map(promises, function(promise, i) {
+											return promise
+												.then(function(res) {
+													result[index + i] = res;
+													var pos = index + promises.length + i;
+													if (pos < ar.length) {
+														return createMaps(pos, 1);
+													};
+												});
+										}));
 									});
 								};
 								return createMaps(0, options.concurrency)
@@ -2132,6 +2148,7 @@ module.exports = {
 					};
 
 					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
+						var Promise = this.constructor;
 						return this.then(function(result) {
 							return Promise.create(function(resolve, reject) {
 								return callback.call(thisObj, result, resolve, reject);
