@@ -1920,51 +1920,49 @@ module.exports = {
 						};
 					};
 
-					// Bluebird "map" polyfill
+					// Bluebird "map" polyfill + new Doodad options
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
 							var Promise = this;
 
-							if (ar.length <= 0) {
-								return Promise.resolve([]);
-							};
+							return Promise.try(function tryMap() {
+								var len = ar.length;
 
-							options = types.nullObject({
-								concurrency: Infinity,
-							}, options);
+								options = types.nullObject({
+									concurrency: Infinity,
+									thisObj: undefined, // New option added by Doodad
+								}, options);
 							
-							var mapFn = function _mapFn(val) {
-								try {
-									return Promise.resolve(fn(val));
-								} catch(ex) {
-									return Promise.reject(ex);
+								if ((len <= 0) || (options.concurrency <= 0)) {
+									return [];
 								};
-							};
 
-							if (options.concurrency >= ar.length) {
-								return Promise.all(tools.map(ar, mapFn));
-							} else {
-								var result = _shared.Natives.arrayConstructor(ar.length);
-								var createMaps = function createMaps(index, concurrency) {
-									return Promise.try(function tryCreateMapsPromise() {
-										var promises = tools.map(ar.slice(index, index + concurrency), mapFn);
-										return Promise.all(tools.map(promises, function(promise, i) {
-											return promise
-												.then(function(res) {
-													result[index + i] = res;
-													var pos = index + promises.length + i;
-													if (pos < ar.length) {
-														return createMaps(pos, 1);
-													};
-												});
-										}));
-									});
+								var thisObj = options.thisObj;
+
+								if (options.concurrency >= len) {
+									return Promise.all(tools.map(ar, function _mapFn(val, key, obj) {
+										return Promise.resolve(fn.call(thisObj, val, key, obj));
+									}));
+								} else {
+									var result = _shared.Natives.arrayConstructor(len);
+									var state = {start: 0};
+									var mapFn = function _mapFn(val, key, obj) {
+										state.start++;
+										return Promise.resolve(fn.call(thisObj, val, key, obj))
+											.then(function(res) {
+												result[key] = res;
+												var pos = state.start;
+												if (pos < len) {
+													return mapFn(obj[pos], pos, obj);
+												};
+											});
+									};
+									return Promise.all(tools.map(ar, mapFn, null, 0, options.concurrency))
+										.then(function() {
+											return result;
+										});
 								};
-								return createMaps(0, options.concurrency)
-									.then(function() {
-										return result;
-									});
-							};
+							});
 						};
 					};
 				};
