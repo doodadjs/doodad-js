@@ -553,7 +553,7 @@
 			arrayIsArray: (types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
 			arraySplice: global.Array.prototype.splice,
 
-			// "isArray"
+			// "isArray", "map"
 			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
 			
 			// "isBoolean"
@@ -928,7 +928,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						obj: {
 							type: 'arraylike,object,Map,Set',
@@ -949,37 +949,51 @@
 							optional: true,
 							description: "Value of 'this' when calling the function. Default is 'undefined'.",
 						},
+						start: {
+							type: 'integer',
+							optional: true,
+							description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
+						},
+						end: {
+							type: 'integer',
+							optional: true,
+							description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
+						},
 					},
 					returns: 'array,object',
 					description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
 			}
 			//! END_REPLACE()
-			, function map(obj, fn, /*optional*/thisObj) {
+			, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end) {
 				if (!types.isNothing(obj)) {
 					obj = Object(obj);
 					if (types._instanceof(obj, types.Set)) {
-						var len = obj.length,
-							result = new types.Set();
+						var result = new types.Set();
 						obj.forEach(function(value, key, obj) {
 							result.add(fn.call(thisObj, value, key, obj));
 						});
 						return result;
 					} else if (types._instanceof(obj, types.Map)) {
-						var len = obj.length,
-							result = new types.Map();
+						var result = new types.Map();
 						obj.forEach(function(value, key, obj) {
 							result.set(key, fn.call(thisObj, value, key, obj));
 						});
 						return result;
 					} else if (types.isArrayLike(obj)) {
-						if (_shared.Natives.arrayMap) {
+						if (types.isNothing(start) || (start < 0)) {
+							start = 0;
+						};
+						var len = obj.length;
+						if (types.isNothing(end) || (end > len)) {
+							end = len;
+						};
+						if (_shared.Natives.arrayMap && (start === 0) && (end === len)) {
 							return _shared.Natives.arrayMap.call(obj, fn, thisObj);
 						} else {
-							var len = obj.length,
-								result = Array(len);
-							for (var key = 0; key < len; key++) {
+							var result = _shared.Natives.windowArray(end - start);
+							for (var key = start, pos = 0; key < end; key++, pos++) {
 								if (key in obj) {
-									result[key] = fn.call(thisObj, obj[key], key, obj);
+									result[pos] = fn.call(thisObj, obj[key], key, obj);
 								};
 							};
 							return result;
