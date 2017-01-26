@@ -317,19 +317,19 @@ module.exports = {
 				//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
 				
 				__Internal__.pathOptions = {
-						os: null,		// '' = deactivate validation, 'windows', 'unix', 'linux'
-						dirChar: '/',
-						root: null,   // null = auto-detect
-						host: null, // For Windows only. null = auto-detect
-						drive: null,  // For Windows only. null = auto-detect 
-						path: null,
-						file: null,   // null = auto-detect. when set, changes 'extension'.
-						extension: null, // when set, changes 'file'
-						quote: null,  // null = auto-detect
-						isRelative: false,
-						noEscapes: false,
-						shell: null,  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash'
-						forceDrive: false,
+						os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
+						dirChar: types.READ_ONLY( '/' ),
+						root: types.READ_ONLY( null ),   // null = auto-detect
+						host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
+						drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect 
+						path: types.READ_ONLY( null ),
+						file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
+						extension: types.READ_ONLY( null ), // when set, changes 'file'
+						quote: types.READ_ONLY( null ),  // null = auto-detect
+						isRelative: types.READ_ONLY( false ),
+						noEscapes: types.READ_ONLY( false ),
+						shell: types.READ_ONLY( null ),  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash'
+						forceDrive: types.READ_ONLY( false ),
 					};
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 				
@@ -1004,19 +1004,11 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var properties = types.fill(__Internal__.pathOptionsKeys, {}, options);
+								var attrs = types.fill(__Internal__.pathOptionsKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
-									tools.forEach(properties, function(value, key) {
-										properties[key] = {
-											configurable: true,
-											enumerable: true,
-											value: value,
-											writable: false,
-										};
-									});
-									types.defineProperties(this, properties);
+									_shared.setAttributes(this, attrs);
 								} else {
-									types.extend(this, properties);
+									types.extend(this, attrs);
 								};
 							}),
 							
@@ -1933,19 +1925,19 @@ module.exports = {
 					))));
 					
 				__Internal__.urlOptions = {
-					protocol: null,
-					user: null,
-					password: null,
-					domain: null,
-					port: null,
-					path: null,
-					file: null,   // when set, changes 'extension'.
-					extension: null, // when set, changes 'file'
-					args: null,
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
+					protocol: types.READ_ONLY( null ),
+					user: types.READ_ONLY( null ),
+					password: types.READ_ONLY( null ),
+					domain: types.READ_ONLY( null ),
+					port: types.READ_ONLY( null ),
+					path: types.READ_ONLY( null ),
+					file: types.READ_ONLY( null ),   // when set, changes 'extension'.
+					extension: types.READ_ONLY( null ), // when set, changes 'file'
+					args: types.READ_ONLY( null ),
+					anchor: types.READ_ONLY( null ),
+					isRelative: types.READ_ONLY( false ),
+					noEscapes: types.READ_ONLY( false ),
+					isWindows: types.READ_ONLY( false ),
 				};
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
@@ -2392,19 +2384,11 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var properties = types.fill(__Internal__.urlOptionsKeys, {}, options);
+								var attrs = types.fill(__Internal__.urlOptionsKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
-									tools.forEach(properties, function(value, key) {
-										properties[key] = {
-											configurable: true,
-											enumerable: true,
-											value: value,
-											writable: false,
-										};
-									});
-									types.defineProperties(this, properties);
+									_shared.setAttributes(this, attrs);
 								} else {
-									types.extend(this, properties);
+									types.extend(this, attrs);
 								};
 							}),
 							
