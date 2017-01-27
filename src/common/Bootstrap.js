@@ -68,6 +68,9 @@
 
 				// "supportsES6Classes"
 				objectCreate: global.Object.create,
+
+				// "DD_DOC"
+				windowObject: global.Object,
 			},
 		};
 		
@@ -111,7 +114,7 @@
 		//===================================
 		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
 		__Internal__.DD_DOC = function DD_DOC(doc, value) {
-			value = Object(value);
+			value = _shared.Natives.windowObject(value);
 			__Internal__.tempDocs.push([doc, value]);
 			return value;
 		};
@@ -966,7 +969,7 @@
 			//! END_REPLACE()
 			, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end) {
 				if (!types.isNothing(obj)) {
-					obj = Object(obj);
+					obj = _shared.Natives.windowObject(obj);
 					if (types._instanceof(obj, types.Set)) {
 						var result = new types.Set();
 						obj.forEach(function(value, key, obj) {
