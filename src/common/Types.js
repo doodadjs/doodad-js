@@ -53,6 +53,22 @@ module.exports = {
 				};
 
 				//===================================
+				// Options
+				//===================================
+					
+				var __options__ = types.nullObject({
+					toSourceItemsCount: 255,		// Max number of items
+				}, _options);
+
+				__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
+
+				types.freezeObject(__options__);
+
+				types.ADD('getOptions', function() {
+					return __options__;
+				});
+
+				//===================================
 				// Native functions
 				//===================================
 					
@@ -206,7 +222,7 @@ module.exports = {
 						if (types.isNothing(obj)) {
 							throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
 						};
-						obj = Object(obj);
+						obj = _shared.Natives.windowObject(obj);
 						var result,
 							fill = false;
 						if (types.isString(obj)) {
@@ -228,22 +244,6 @@ module.exports = {
 						return result;
 					})));
 				
-				//===================================
-				// Options
-				//===================================
-					
-				var __options__ = types.nullObject({
-					toSourceItemsCount: 255,		// Max number of items
-				}, _options);
-
-				__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
-
-				types.freezeObject(__options__);
-
-				types.ADD('getOptions', function() {
-					return __options__;
-				});
-
 				//===================================
 				// Shared Symbols
 				//===================================
@@ -2759,11 +2759,11 @@ module.exports = {
 					},
 					{
 						__index: 0,
-						__ar: null,
+						__ar: types.READ_ONLY( null ),
 						
 						_new: types.SUPER(function _new(setObj) {
 							this._super();
-							this.__ar = types.clone(setObj.__ar);
+							_shared.setAttribute(this, '__ar', types.clone(setObj.__ar));
 						}),
 					})));
 					
@@ -2817,31 +2817,33 @@ module.exports = {
 					},
 					/*instanceProto*/
 					{
-						size: 0,
-						__ar: null,
+						size: types.CONFIGURABLE(types.READ_ONLY( 0 )),
+						__ar: types.CONFIGURABLE(types.READ_ONLY( null )),
 
 						_new: types.SUPER(function _new(/*optional*/ar) {
 							this._super();
 							
+							var ar;
 							if (types.isNothing(ar)) {
-								this.__ar = [];
+								ar = [];
 							} else if (types._instanceof(ar, types.Set)) {
-								this.__ar = types.clone(ar.__ar);
+								ar = types.clone(ar.__ar);
 							} else if (types._instanceof(ar, types.Map)) {
 								var mapAr = ar.__keys,
 									mapVals = ar.__values,
-									newAr = new _shared.Natives.arrayConstructor(mapAr.length);
-								for (var i = 0; i < mapAr.length; i++) {
-									newAr[i] = [mapAr[i], mapVals[i]];
+									len = mapAr.length,
+									ar = _shared.Natives.arrayConstructor(len);
+								for (var i = 0; i < len; i++) {
+									ar[i] = [mapAr[i], mapVals[i]];
 								};
-								this.__ar = newAr;
 							} else if (types.isArrayLike(ar)) {
-								this.__ar = types.unique(ar);
+								ar = types.unique(ar);
 							} else {
 								throw types.TypeError("Invalid array.");
 							};
 
-							this.size = this.__ar.length;
+							_shared.setAttribute(this, '__ar', ar);
+							_shared.setAttribute(this, 'size', this.__ar.length);
 						}),
 						has: function has(value) {
 							for (var i = 0; i < this.__ar.length; i++) {
@@ -2853,23 +2855,25 @@ module.exports = {
 						},
 						add: function add(value) {
 							if (!this.has(value)) {
-								this.__ar.push(value);
-								this.size++;
+								var ar = this.__ar;
+								ar.push(value);
+								_shared.setAttribute(this, 'size', ar.length);
 							};
 							return this;
 						},
 						'delete': function _delete(value) {
-							for (var i = 0; i < this.__ar.length; i++) {
-								if (this.__ar[i] === value) {
-									this.__ar.splice(i, 1);
-									this.size--;
+							var ar = this.__ar;
+							for (var i = 0; i < ar.length; i++) {
+								if (ar[i] === value) {
+									ar.splice(i, 1);
+									_shared.setAttribute(this, 'size', ar.length);
 									return true;
 								};
 							};
 							return false;
 						},
 						clear: function clear() {
-							this.__ar = [];
+							_shared.setAttribute(this, '__ar', []);
 							this.size = 0;
 						},
 						keys: function keys() {
@@ -2882,36 +2886,47 @@ module.exports = {
 							return new __Internal__.SetEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
-							for (var i = 0; i < this.__ar.length; i++) {
-								var value = this.__ar[i];
+							var ar = this.__ar;
+							for (var i = 0; i < ar.length; i++) {
+								var value = ar[i];
 								callbackFn.call(thisObj, value, value, this);
 							};
 						},
 					}
 				)));
 				
+				if (!_shared.Natives.windowSet && _shared.Natives.symbolIterator) {
+					_shared.setAttribute(types.Set.prototype, _shared.Natives.symbolIterator, function() {
+						return this.entries();
+					}, {});
+				};
+
 				__Internal__.MapIterator = (!_shared.Natives.windowMap && types.INIT(types.Iterator.$inherit(
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'MapIterator',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapIterator')), true) */,
 					},
+					/*instanceProto*/
 					{
 						__index: 0,
-						__keys: null,
-						__values: null,
+						__keys: types.READ_ONLY( null ),
+						__values: types.READ_ONLY( null ),
 						
 						_new: types.SUPER(function _new(mapObj) {
 							this._super();
-							this.__keys = types.clone(mapObj.__keys);
-							this.__values = types.clone(mapObj.__values);
+							_shared.setAttribute(this, '__keys', types.clone(mapObj.__keys));
+							_shared.setAttribute(this, '__values', types.clone(mapObj.__values));
 						}),
 					})));
 					
 				__Internal__.MapKeysIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'MapKeysIterator',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapKeysIterator')), true) */,
 					},
+					/*instanceProto*/
 					{
 						next: function next() {
 							var ar = this.__keys;
@@ -2928,10 +2943,12 @@ module.exports = {
 					})));
 					
 				__Internal__.MapValuesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'MapValuesIterator',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapValuesIterator')), true) */,
 					},
+					/*instanceProto*/
 					{
 						next: function next() {
 							var ar = this.__values;
@@ -2948,10 +2965,12 @@ module.exports = {
 					})));
 					
 				__Internal__.MapEntriesIterator = (!_shared.Natives.windowMap && types.INIT(__Internal__.MapIterator.$inherit(
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'MapEntriesIterator',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MapEntriesIterator')), true) */,
 					},
+					/*instanceProto*/
 					{
 						next: function next() {
 							var ar = this.__keys,
@@ -2977,9 +2996,9 @@ module.exports = {
 					},
 					/*instanceProto*/
 					{
-						size: 0,
-						__keys: null,
-						__values: null,
+						size: types.CONFIGURABLE(types.READ_ONLY( 0 )),
+						__keys: types.CONFIGURABLE(types.READ_ONLY( null )),
+						__values: types.CONFIGURABLE(types.READ_ONLY( null )),
 
 						_new: types.SUPER(function _new(ar) {
 							this._super();
@@ -2987,9 +3006,9 @@ module.exports = {
 							if (types.isNothing(ar)) {
 								// Do nothing
 							} else if (types._instanceof(ar, types.Map)) {
-								this.__keys = types.clone(ar.__keys);
-								this.__values = types.clone(ar.__values);
-								this.size = ar.size;
+								_shared.setAttribute(this, '__keys', types.clone(ar.__keys));
+								_shared.setAttribute(this, '__values', types.clone(ar.__values));
+								_shared.setAttribute(this, 'size', ar.size);
 								return;
 							} else if (types._instanceof(ar, types.Set)) {
 								ar = ar.__ar;
@@ -2999,56 +3018,73 @@ module.exports = {
 								throw types.TypeError("Invalid array.");
 							};
 
-							this.__keys = [];
-							this.__values = [];
+							var keys = _shared.setAttribute(this, '__keys', []);
+							var vals = _shared.setAttribute(this, '__values', []);
 							
 							if (ar) {
-								for (var i = 0; i < ar.length; i++) {
+								var len = ar.length;
+								for (var i = 0; i < len; i++) {
 									var item = ar[i];
-									this.__keys.push(item[0]);
-									this.__values.push(item[1]);
+									keys.push(item[0]);
+									vals.push(item[1]);
 								};
-								this.size = ar.length;
+								_shared.setAttribute(this, 'size', len);
 							};
 						}),
 						has: function has(key) {
-							for (var i = 0; i < this.__keys.length; i++) {
-								if (this.__keys[i] === key) {
+							var keys = this.__keys,
+								len = keys.length;
+							for (var i = 0; i < len; i++) {
+								if (keys[i] === key) {
 									return true;
 								};
 							};
 							return false;
 						},
 						get: function get(key) {
-							for (var i = 0; i < this.__keys.length; i++) {
-								if (this.__keys[i] === key) {
+							var keys = this.__keys,
+								len = keys.length;
+							for (var i = 0; i < len; i++) {
+								if (keys[i] === key) {
 									return this.__values[i];
 								};
 							};
 						},
 						set: function set(key, value) {
-							if (!this.has(key)) {
-								this.__keys.push(key);
+							var found = false,
+								keys = this.__keys,
+								len = keys.length;
+							for (var i = 0; i < len; i++) {
+								if (keys[i] === key) {
+									this.__values[i] = value;
+									found = true;
+									break;
+								};
+							};
+							if (!found) {
+								keys.push(key);
 								this.__values.push(value);
-								this.size++;
+								_shared.setAttribute(this, 'size', this.size + 1);
 							};
 							return this;
 						},
 						'delete': function _delete(key) {
-							for (var i = 0; i < this.__keys.length; i++) {
-								if (this.__keys[i] === key) {
-									this.__keys.splice(i, 1);
+							var keys = this.__keys,
+								len = keys.length;
+							for (var i = 0; i < len; i++) {
+								if (keys[i] === key) {
+									keys.splice(i, 1);
 									this.__values.splice(i, 1);
-									this.size--;
+									_shared.setAttribute(this, 'size', this.size - 1);
 									return true;
 								};
 							};
 							return false;
 						},
 						clear: function clear() {
-							this.__keys = [];
-							this.__values = [];
-							this.size = 0;
+							_shared.setAttribute(this, '__keys', []);
+							_shared.setAttribute(this, '__values', []);
+							_shared.setAttribute(this, 'size', 0);
 						},
 						keys: function keys() {
 							return new __Internal__.MapKeysIterator(this);
@@ -3060,13 +3096,22 @@ module.exports = {
 							return new __Internal__.MapEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
-							for (var i = 0; i < this.__keys.length; i++) {
-								callbackFn.call(thisObj, this.__values[i], this.__keys[i], this);
+							var keys = this.__keys,
+								values = this.__values,
+								len = keys.length;
+							for (var i = 0; i < len; i++) {
+								callbackFn.call(thisObj, values[i], keys[i], this);
 							};
 						},
 					}
 				)));
 				
+				if (!_shared.Natives.windowMap && _shared.Natives.symbolIterator) {
+					_shared.setAttribute(types.Map.prototype, _shared.Natives.symbolIterator, function() {
+						return this.entries();
+					}, {});
+				};
+
 				//===================================
 				// HTTP Status Codes
 				// TODO: Move elsewhere
