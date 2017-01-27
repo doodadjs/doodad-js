@@ -40,7 +40,7 @@ Windows :
 ```dos
     set NODE_ENV=development
 ```
-Linux :
+Linux/Unix :
 ```bash
     export NODE_ENV=development
 ```
