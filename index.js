@@ -37,6 +37,7 @@ module.exports = {
 		
 		DD_MODULES = (DD_MODULES || {});
 		require(sourceDir + "common/Types.js").add(DD_MODULES);
+		require(sourceDir + "common/Types_DDPromise.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_WeakMap.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Files.js").add(DD_MODULES);
