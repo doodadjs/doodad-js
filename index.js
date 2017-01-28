@@ -42,6 +42,7 @@ module.exports = {
 		require(sourceDir + "common/Tools_Files.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Config.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Scripts.js").add(DD_MODULES);
+		require(sourceDir + "common/Tools_Version.js").add(DD_MODULES);
 		require(sourceDir + "common/Namespaces.js").add(DD_MODULES);
 		require(sourceDir + "common/Doodad.js").add(DD_MODULES);
 		require(sourceDir + "server/Modules.js").add(DD_MODULES);
