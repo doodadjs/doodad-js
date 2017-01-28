@@ -88,6 +88,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_Map.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types_DDPromise.js",
       "client": true,
       "server": true,
