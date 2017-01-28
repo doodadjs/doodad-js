@@ -12,8 +12,8 @@ $ npm install doodad-js
 
 ## Features
 
-  -  Real classes (not ES6's ones)
-  -  Inheritance (and Multiple Inheritance)
+  -  Classes (not ES6's ones)
+  -  Inheritance and Composition
   -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
   -  Method and attribute scopes (public, protected and private)
@@ -192,7 +192,7 @@ If you want to load additional Doodad modules after startup :
   - **types.BufferOverflow**: (inherits 'types.Error') Raised on buffer overflow.
   - **types.TimeoutError**: (inherits 'types.Error') Raised on timeout.
   - **types.CanceledError**: (inherits 'types.Error') Raised when an operation has been canceled.
-  - **types.AccessDenied**: (inherits 'types.Error') Raised on access denied or not allowed operation.
+  - **types.AccessDenied**: (inherits 'types.Error') Raised on access denied or not allowed operations.
   
 ## Pre-built Classes
 
@@ -244,7 +244,7 @@ Example 1 (inheritance):
 
     turtle = new Turtle2();
 
-    turtle.talk();
+    console.log(turtle.talk());
 ```
 
 Example 2 (interfaces):
@@ -256,7 +256,7 @@ Example 2 (interfaces):
     })));
 
     const Turtle1 = types.INIT(doodad.Object.$extend(
-                Turtles,
+                Turtles, // Implements "Turtles"
     {
         $TYPE_NAME: 'Turtle1',
 
@@ -266,7 +266,7 @@ Example 2 (interfaces):
     }));
 
     const Turtle2 = types.INIT(doodad.Object.$extend(
-                Turtles,
+                Turtles, // Implements "Turtles"
     {
         $TYPE_NAME: 'Turtle2',
 
@@ -275,7 +275,7 @@ Example 2 (interfaces):
         }),
     }));
 
-    types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles);
+    console.log(types._implements(Turtle1, Turtles) && types._implements(Turtle2, Turtles));
 ```
 
 Example 3 (mix-ins) :
@@ -289,12 +289,12 @@ Example 3 (mix-ins) :
     })));
 
     const Turtle1 = types.INIT(doodad.Object.$extend(
-                Turtles,
+                Turtles, // Composes "Turtles"
     {
         $TYPE_NAME: 'Turtle1',
     }));
     
-    types._implements(Turtle1, Turtles);
+    console.log(types._implements(Turtle1, Turtles));
 ```
 
 Example 4 (traits) :
@@ -310,7 +310,7 @@ Example 4 (traits) :
     })));
 
     const Turtle = types.INIT(doodad.Object.$extend(
-                TAnimals,
+                TAnimals, // Composes "TAnimals"
     {
         $TYPE_NAME: 'Turtles',
 
@@ -347,7 +347,7 @@ Example 5 (expandable objects) :
 	const perrot = new doodad.Object();
 	
 	perrot.extend(
-				IAnimal,
+                IAnimal, // Implements "IAnimal"
 			{
 				phrase: null,
 				create: doodad.OVERRIDE(function(phrase) {
@@ -358,7 +358,8 @@ Example 5 (expandable objects) :
 					return this.phrase;
 				}),
 			}
-		).create("Hello world !");
+		)
+		.create("Hello world !");
 
 	console.log(perrot.makeNoise());
 ```
