@@ -56,7 +56,6 @@ module.exports = {
 					
 				types.complete(_shared.Natives, {
 					windowWeakMap: (types.isNativeFunction(global.WeakMap) && types.isNativeFunction(global.WeakMap.prototype.get) && types.isNativeFunction(global.WeakMap.prototype.set) ? global.WeakMap : undefined),
-					//symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 				
 				types.ADD('WeakMap', (_shared.Natives.windowWeakMap || types.Type.$inherit(

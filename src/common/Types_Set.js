@@ -73,8 +73,8 @@ module.exports = {
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetIterator')), true) */,
 					},
 					{
-						__index: 0,
-						__ar: types.READ_ONLY( null ),
+						__index: types.NOT_ENUMERABLE(0),
+						__ar: types.types.NOT_ENUMERABLE(READ_ONLY( null )),
 						
 						_new: types.SUPER(function _new(setObj) {
 							this._super();
@@ -133,7 +133,7 @@ module.exports = {
 					/*instanceProto*/
 					{
 						size: types.CONFIGURABLE(types.READ_ONLY( 0 )),
-						__ar: types.CONFIGURABLE(types.READ_ONLY( null )),
+						__ar: types.CONFIGURABLE(types.NOT_ENUMERABLE(types.READ_ONLY( null ))),
 
 						_new: types.SUPER(function _new(/*optional*/ar) {
 							this._super();

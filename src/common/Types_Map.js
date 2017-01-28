@@ -74,9 +74,9 @@ module.exports = {
 					},
 					/*instanceProto*/
 					{
-						__index: 0,
-						__keys: types.READ_ONLY( null ),
-						__values: types.READ_ONLY( null ),
+						__index: types.NOT_ENUMERABLE(0),
+						__keys: types.NOT_ENUMERABLE(types.READ_ONLY( null )),
+						__values: types.NOT_ENUMERABLE(types.READ_ONLY( null )),
 						
 						_new: types.SUPER(function _new(mapObj) {
 							this._super();
@@ -162,8 +162,8 @@ module.exports = {
 					/*instanceProto*/
 					{
 						size: types.CONFIGURABLE(types.READ_ONLY( 0 )),
-						__keys: types.CONFIGURABLE(types.READ_ONLY( null )),
-						__values: types.CONFIGURABLE(types.READ_ONLY( null )),
+						__keys: types.CONFIGURABLE(types.NOT_ENUMERABLE(types.READ_ONLY( null ))),
+						__values: types.CONFIGURABLE(types.NOT_ENUMERABLE(types.READ_ONLY( null ))),
 
 						_new: types.SUPER(function _new(ar) {
 							this._super();
