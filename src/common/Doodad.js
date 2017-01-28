@@ -6828,7 +6828,7 @@ module.exports = {
 				// Events classes
 				//==================================
 				
-				doodad.ADD('Event', types.INIT(root.DD_DOC(
+				doodad.ADD('Event', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6884,9 +6884,9 @@ module.exports = {
 							, function() {
 								this.prevent = true;
 							}),
-					}))));
+					})));
 
-				doodad.ADD('CancelEvent', types.INIT(root.DD_DOC(
+				doodad.ADD('CancelEvent', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6907,9 +6907,9 @@ module.exports = {
 					{
 						$TYPE_NAME: 'CancelEvent',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
-					}))));
+					})));
 
-				doodad.ADD('ErrorEvent', types.INIT(root.DD_DOC(
+				doodad.ADD('ErrorEvent', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6949,7 +6949,7 @@ module.exports = {
 								_shared.setAttribute(this, 'error', error);
 							};
 						}),
-					}))));
+					})));
 
 				//==================================
 				// Callbacks objects

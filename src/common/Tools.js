@@ -1995,7 +1995,7 @@ module.exports = {
 							description: "Represents a software version.",
 					}
 					//! END_REPLACE()
-					, types.INIT(types.Type.$inherit(
+					, types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Version',
@@ -2215,7 +2215,7 @@ module.exports = {
 									return result;
 								}),
 						}
-					))));
+					)));
 
 				//====================================
 				// Unhandled errors

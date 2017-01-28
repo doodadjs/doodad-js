@@ -37,10 +37,6 @@
 	};
 	//! END_REMOVE()
 
-	var MODULE_NAME = 'doodad-js';
-	var MODULE_VERSION;
-	//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')) + ";")
-
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
 	if (Error.stackTraceLimit < 50) {
@@ -1179,7 +1175,7 @@
 		// ASSERTS functions
 		//===================================
 			
-		var __ASSERT__ = __Internal__.DD_DOC(
+		__Internal__.ASSERT = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -7088,7 +7084,10 @@
 							modules = {};
 						};
 
-						modules[MODULE_NAME] = {
+						var MODULE_VERSION;
+						//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')) + ";")
+
+						modules['doodad-js'] = {
 							type: 'Package',
 							version: MODULE_VERSION,
 							bootstrap: true,
@@ -7233,7 +7232,7 @@
 						};
 						
 						delete types.Namespace[__Internal__.symbolInitialized];
-						types.REGISTER(types.INIT(types.Namespace));
+						types.REGISTER(types.Namespace);
 
 						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];
@@ -7277,10 +7276,10 @@
 						//! END_REPLACE()
 						, function enableAsserts() {
 							if (types.hasDefinePropertyEnabled()) {
-								__Internal__.DD_ASSERT = __ASSERT__;
+								__Internal__.DD_ASSERT = __Internal__.ASSERT;
 							} else {
 								var root = this;
-								root.DD_ASSERT = __ASSERT__;
+								root.DD_ASSERT = __Internal__.ASSERT;
 							};
 						}),
 					

@@ -1849,7 +1849,7 @@ module.exports = {
 							description: "NodeJS Console with hooks.",
 				}
 				//! END_REPLACE()
-				, types.INIT(types.createType(
+				, types.createType(
 					/*name*/
 					"Console", 
 					
@@ -1993,7 +1993,7 @@ module.exports = {
 							};
 						})),
 					}
-				))));
+				)));
 
 				
 				//===================================

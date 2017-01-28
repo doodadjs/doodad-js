@@ -349,7 +349,7 @@ module.exports = {
 								description: "Represents a system path.",
 					}
 					//! END_REPLACE()
-					, types.INIT(types.Type.$inherit(
+					, types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Path',
@@ -1402,7 +1402,7 @@ module.exports = {
 								return type.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
 							},
 						}, __Internal__.pathOptions)
-					))));
+					)));
 				
 				//===================================
 				// URLs
@@ -1442,7 +1442,7 @@ module.exports = {
 								description: "Represents arguments to an URL.",
 					}
 					//! END_REPLACE()
-					, types.INIT(types.Type.$inherit( 
+					, types.Type.$inherit( 
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'UrlArguments',
@@ -1922,7 +1922,7 @@ module.exports = {
 									return new type(args, options);						
 								}),
 						}
-					))));
+					)));
 					
 				__Internal__.urlOptions = {
 					protocol: types.READ_ONLY( null ),
@@ -1957,7 +1957,7 @@ module.exports = {
 								description: "Represents an URL.",
 					}
 					//! END_REPLACE()
-					, types.INIT(types.Type.$inherit(
+					, types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Url',
@@ -2814,7 +2814,7 @@ module.exports = {
 								}),
 								
 						}, __Internal__.urlOptions)
-					))));
+					)));
 
 
 				//===================================
