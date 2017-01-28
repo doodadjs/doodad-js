@@ -121,8 +121,6 @@ module.exports = {
 					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
 					
 					// ES6
-					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
-					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
 					windowMap: (types.isNativeFunction(global.Map) && types.isNativeFunction(global.Map.prototype.values) && types.isNativeFunction(global.Map.prototype.keys) ? global.Map : undefined),
 
 					// "toArray"
@@ -2203,10 +2201,6 @@ module.exports = {
 					}));
 
 				//=========================
-				// Set / Map
-				//=========================
-					
-				//=========================
 				// Iterator
 				//=========================
 					
@@ -2237,159 +2231,6 @@ module.exports = {
 						},
 					}));
 					
-				//=========================
-				// Set / Map
-				//=========================
-					
-				__Internal__.SetIterator = (!_shared.Natives.windowSet && types.INIT(types.Iterator.$inherit(
-					{
-						$TYPE_NAME: 'SetIterator',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetIterator')), true) */,
-					},
-					{
-						__index: 0,
-						__ar: types.READ_ONLY( null ),
-						
-						_new: types.SUPER(function _new(setObj) {
-							this._super();
-							_shared.setAttribute(this, '__ar', types.clone(setObj.__ar));
-						}),
-					})));
-					
-				__Internal__.SetValuesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
-					{
-						$TYPE_NAME: 'SetValuesIterator',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetValuesIterator')), true) */,
-					},
-					{
-						next: function next() {
-							var ar = this.__ar;
-							if (this.__index < ar.length) {
-								return {
-									value: ar[this.__index++],
-								};
-							} else {
-								return {
-									done: true,
-								};
-							};
-						},
-					})));
-					
-				__Internal__.SetEntriesIterator = (!_shared.Natives.windowSet && types.INIT(__Internal__.SetIterator.$inherit(
-					{
-						$TYPE_NAME: 'SetEntriesIterator',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SetEntriesIterator')), true) */,
-					},
-					{
-						next: function next() {
-							var ar = this.__ar;
-							if (this.__index < ar.length) {
-								var val = ar[this.__index++];
-								return {
-									value: [val, val],
-								};
-							} else {
-								return {
-									done: true,
-								};
-							};
-						},
-					})));
-					
-					
-				types.ADD('Set', (_shared.Natives.windowSet || types.Type.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'Set',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Set')), true) */,
-					},
-					/*instanceProto*/
-					{
-						size: types.CONFIGURABLE(types.READ_ONLY( 0 )),
-						__ar: types.CONFIGURABLE(types.READ_ONLY( null )),
-
-						_new: types.SUPER(function _new(/*optional*/ar) {
-							this._super();
-							
-							var ar;
-							if (types.isNothing(ar)) {
-								ar = [];
-							} else if (types._instanceof(ar, types.Set)) {
-								ar = types.clone(ar.__ar);
-							} else if (types._instanceof(ar, types.Map)) {
-								var mapAr = ar.__keys,
-									mapVals = ar.__values,
-									len = mapAr.length,
-									ar = _shared.Natives.arrayConstructor(len);
-								for (var i = 0; i < len; i++) {
-									ar[i] = [mapAr[i], mapVals[i]];
-								};
-							} else if (types.isArrayLike(ar)) {
-								ar = types.unique(ar);
-							} else {
-								throw types.TypeError("Invalid array.");
-							};
-
-							_shared.setAttribute(this, '__ar', ar);
-							_shared.setAttribute(this, 'size', this.__ar.length);
-						}),
-						has: function has(value) {
-							for (var i = 0; i < this.__ar.length; i++) {
-								if (this.__ar[i] === value) {
-									return true;
-								};
-							};
-							return false;
-						},
-						add: function add(value) {
-							if (!this.has(value)) {
-								var ar = this.__ar;
-								ar.push(value);
-								_shared.setAttribute(this, 'size', ar.length);
-							};
-							return this;
-						},
-						'delete': function _delete(value) {
-							var ar = this.__ar;
-							for (var i = 0; i < ar.length; i++) {
-								if (ar[i] === value) {
-									ar.splice(i, 1);
-									_shared.setAttribute(this, 'size', ar.length);
-									return true;
-								};
-							};
-							return false;
-						},
-						clear: function clear() {
-							_shared.setAttribute(this, '__ar', []);
-							this.size = 0;
-						},
-						keys: function keys() {
-							return new __Internal__.SetValuesIterator(this);
-						},
-						values: function values() {
-							return new __Internal__.SetValuesIterator(this);
-						},
-						entries: function entries() {
-							return new __Internal__.SetEntriesIterator(this);
-						},
-						forEach: function forEach(callbackFn, /*optional*/thisObj) {
-							var ar = this.__ar;
-							for (var i = 0; i < ar.length; i++) {
-								var value = ar[i];
-								callbackFn.call(thisObj, value, value, this);
-							};
-						},
-					}
-				)));
-				
-				if (!_shared.Natives.windowSet && _shared.Natives.symbolIterator) {
-					_shared.setAttribute(types.Set.prototype, _shared.Natives.symbolIterator, function() {
-						return this.entries();
-					}, {});
-				};
-
 				__Internal__.MapIterator = (!_shared.Natives.windowMap && types.INIT(types.Iterator.$inherit(
 					/*typeProto*/
 					{

@@ -82,6 +82,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_Set.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types_DDPromise.js",
       "client": true,
       "server": true,
