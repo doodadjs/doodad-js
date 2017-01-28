@@ -27,7 +27,7 @@
 module.exports = {
 	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Tools.Scripts'] = {
+		DD_MODULES['Doodad.Tools/Scripts'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			dependencies: [
 				'Doodad.Tools',
@@ -53,8 +53,8 @@ module.exports = {
 				//===================================
 					
 				// <FUTURE> Thread context
-				//var __Internal__ = {
-				//};
+				var __Internal__ = {
+				};
 				
 				
 				//===================================
@@ -63,8 +63,14 @@ module.exports = {
 					
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				//types.complete(_shared.Natives, {
-				//});
+				types.complete(_shared.Natives, {
+					// "trapUnhandledErrors"
+					mathAbs: global.Math.abs,
+					windowSetTimeout: global.setTimeout.bind(global),
+
+					// "getCurrentScript"
+					windoError: global.Error,
+				});
 				
 
 				//===================================
@@ -140,7 +146,127 @@ module.exports = {
 						return url;
 					}));
 					
-					
+				
+				//===================================
+				// Abort functions
+				//===================================
+				
+				tools.ADD('abortScript', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								exitCode: {
+									type: 'integer',
+									optional: true,
+									description: "Exit code",
+								},
+							},
+							returns: 'error',
+							description: "Emits \"script aborted\" signal.",
+					}
+					//! END_REPLACE()
+					, function abortScript(/*optional*/exitCode) {
+						throw new types.ScriptAbortedError(exitCode);
+					}));
+
+				//====================================
+				// Unhandled errors
+				//====================================
+
+				tools.ADD('trapUnhandledErrors', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: null,
+							returns: 'undefined',
+							description: "Trap unhandled errors and unhandled Promise rejections.",
+					}
+					//! END_REPLACE()
+					, function trapUnhandledErrors() {
+						if (!__Internal__.unhandledRejections) {
+							__Internal__.unhandledRejections = new types.Map();
+							
+							var options = tools.getOptions();
+
+							types.addAppEventListener('unhandlederror', function(ev) {
+								//if (ev.detail.error.name === 'ScriptAbortedError') {
+								//	_shared.Natives.processExit(ev.detail.error.exitCode || 0);
+								//} else {
+								//	console.error(ev.detail.error.stack || ev.detail.error.message);
+								//	_shared.Natives.processExit(1);
+								//};
+								try {
+									tools.catchAndExit(ev.detail.error);
+								} catch(o) {
+								};
+							});
+							
+							types.addAppEventListener('unhandledrejection', function(ev) {
+								if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
+									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
+										 __Internal__.unhandledRejections.set(ev.detail.promise, {
+											reason: ev.detail.reason,
+											time: (new Date()).valueOf(),
+										 });
+									};
+								};
+							});
+							
+							types.addAppEventListener('rejectionhandled', function(ev) {
+								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
+									__Internal__.unhandledRejections['delete'](ev.detail.promise);
+								};
+							});
+							
+							var dumpRejections = function() {
+								try {
+									var curTime = (new Date()).valueOf(),
+										iter = __Internal__.unhandledRejections.entries(),
+										result;
+										
+									// <FUTURE> for ... of
+									while (result = iter.next()) {
+										if (result.done) {
+											break;
+										};
+										var promise = result.value[0],
+											val = result.value[1];
+										if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
+											var tools = root.Doodad.Tools;
+											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
+											if (val.reason) {
+												tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
+											};
+											__Internal__.unhandledRejections['delete'](promise);
+										};
+									};
+								} catch(o) {
+									__Internal__.unhandledRejections.clear();
+								};
+								
+								var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								//! IF_SET("serverSide")
+									if (types.isObject(timer) && types.isFunction(timer.unref)) {
+										// Node.Js: Allows the process to exit
+										timer.unref();
+									};
+								//! END_IF()
+							};
+							
+							var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							//! IF_SET("serverSide")
+								if (types.isObject(timer) && types.isFunction(timer.unref)) {
+									// Node.Js: Allows the process to exit
+									timer.unref();
+								};
+							//! END_IF()
+						};
+					}));
+
+	
 				//===================================
 				// Init
 				//===================================

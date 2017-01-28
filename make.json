@@ -70,6 +70,12 @@
       "browserify": true
     },
     {
+      "src": "common/Tools_Version.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types.js",
       "client": true,
       "server": true,
