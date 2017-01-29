@@ -49,8 +49,7 @@ module.exports = {
 				
 				var __Internal__ = {
 					Promise: null,
-					symbolIsPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromise')), true) */ '__DD_IS_PROMISE__' /*! END_REPLACE() */, true),
-					symbolIsPromiseExtended: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromiseExtended')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
+					symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromiseExtended')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
 				};
 
 				
@@ -71,11 +70,14 @@ module.exports = {
 				// DDPromise
 				//=================================
 
+				// To allow extending "isPromise".
+				_shared.IsPromiseSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromise')), true) */ '__DD_IS_PROMISE__' /*! END_REPLACE() */, true);
+
 				types.ADD('isPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'object',
@@ -88,13 +90,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isPromise(obj) {
-						if (types.isNothing(obj) || (typeof obj !== 'object')) {
-							return false;
-						};
-						if (types.isFunction(obj.constructor) && obj.constructor[__Internal__.symbolIsPromise]) {
-							return true;
-						};
-						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]);
+						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]) || (types.getIn(obj, _shared.IsPromiseSymbol, false) === true);
 					}));
 				
 				types.ADD('getPromise', root.DD_DOC(
@@ -411,7 +407,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								Promise: {
 									type: 'Promise',
@@ -425,21 +421,18 @@ module.exports = {
 					//! END_REPLACE()
 					, function setPromise(Promise) {
 						if (!types.isFunction(Promise)) {
-							return;
+							throw new types.TypeError("Invalid 'Promise' constructor.");
 						};
 
 						if (Promise === __Internal__.Promise) {
 							// Already set
-							return;
+							return Promise;
 						};
 
-						if (Promise[__Internal__.symbolIsPromise]) {
-							if (Promise[__Internal__.symbolIsPromiseExtended]) {
-								__Internal__.Promise = Promise;
-							} else {
-								throw new types.TypeError("That 'Promise' constructor has been already extended into another constructor. Set that one instead.");
-							};
-							return;
+						if (Promise[__Internal__.symbolIsExtendedPromise]) {
+							// Already extended.
+							__Internal__.Promise = Promise;
+							return Promise;
 						};
 
 						// Make some tests...
@@ -485,15 +478,10 @@ module.exports = {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 
-						_shared.setAttribute(DDPromise, __Internal__.symbolIsPromise, true, {});
-						_shared.setAttribute(DDPromise, __Internal__.symbolIsPromiseExtended, true, {});
-
-						if (Promise !== DDPromise) {
-							_shared.setAttribute(Promise, __Internal__.symbolIsPromise, true, {});
-							_shared.setAttribute(Promise, __Internal__.symbolIsPromiseExtended, false, {});
-						};
+						_shared.setAttribute(DDPromise, __Internal__.symbolIsExtendedPromise, true, {});
 
 						__Internal__.Promise = DDPromise;
+						return DDPromise;
 					}));
 				
 				_shared.PromiseCallback = root.DD_DOC(
