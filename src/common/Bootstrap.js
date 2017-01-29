@@ -3901,8 +3901,8 @@
 			return symbol;
 		};
 
-		__Internal__.symbolInitialized = types.getSymbol('INITIALIZED');
-		__Internal__.symbol$IsSingleton = types.getSymbol('$IS_SINGLETON');
+		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
+		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('$IS_SINGLETON')), true) */ '$IS_SINGLETON' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('baseof', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
