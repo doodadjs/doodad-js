@@ -7005,17 +7005,17 @@ module.exports = {
 							attr = fn;
 							fn = obj[attr];
 						};
-						if (!obj && types.isCallback(fn)) {
+						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						var insideFn = _shared.makeInside(obj, fn, secret);
-						var isCreatable = types._implements(obj, mixIns.Creatable);
+						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
 							callback.lastError = null;
 							try {
-								if (!obj || !isCreatable || !obj.isDestroyed()) {
+								if (!type || types.isInitialized(obj)) {
 									if (args) {
 										return insideFn.apply(obj, types.append([], args, arguments));
 									} else {
@@ -7092,34 +7092,33 @@ module.exports = {
 							attr = fn;
 							fn = obj[attr];
 						};
-						if (!obj && types.isCallback(fn)) {
+						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						var type = types.getType(obj),
 							isClass = (types.isClass(type) || types.isInterfaceClass(type)),
-							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret),
-							isCreatable = isClass && types._implements(obj, mixIns.Creatable);
+							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret);
 						var callback = function callbackHandler(/*paramarray*/) {
 							var args = types.toArray(arguments);
 							return Promise.create(function(resolve, reject) {
 								tools.callAsync(function async(/*paramarray*/) {
 									callback.lastError = null;
 									try {
-										if (isClass) {
-											if (!isCreatable || !obj.isDestroyed()) {
+										if (!type || types.isInitialized(obj)) {
+											if (isClass) {
 												if (args) {
 													resolve(_shared.invoke(obj, fn, types.append([], args, arguments), secret));
 												} else {
 													resolve(_shared.invoke(obj, fn, arguments, secret));
 												};
-											};
-										} else {
-											if (args) {
-												resolve(fn.apply(obj, types.append([], args, arguments)));
 											} else {
-												resolve(fn.apply(obj, arguments));
+												if (args) {
+													resolve(fn.apply(obj, types.append([], args, arguments)));
+												} else {
+													resolve(fn.apply(obj, arguments));
+												};
 											};
 										};
 									} catch(ex) {

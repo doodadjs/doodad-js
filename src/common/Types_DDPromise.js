@@ -527,16 +527,15 @@ module.exports = {
 							attr = fn;
 							fn = obj[attr];
 						};
-						if (!obj && types.isCallback(fn)) {
+						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 						var insideFn = _shared.makeInside(obj, fn, secret);
-						var isCreatable = doodad.MixIns && types._implements(obj, doodad.MixIns.Creatable);
+						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
-							var destroyed = isCreatable && obj.isDestroyed();
-							if (destroyed) {
+							if (type && !types.isInitialized(obj)) {
 								throw new types.NotAvailable("Object has been destroyed.");
 							} else {
 								try {
