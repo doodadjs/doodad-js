@@ -586,6 +586,9 @@
 			// "getSymbolFor", "getSymbolKey"
 			//windowWeakMap: (types.isNativeFunction(global.WeakMap) ? global.WeakMap : undefined),
 			
+			// "createType"
+			symbolHasInstance: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.hasInstance === 'symbol') ? global.Symbol.hasInstance : undefined),
+
 			// "is*"
 			symbolToStringTag: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
 			numberValueOf: global.Number.prototype.valueOf,
@@ -6157,6 +6160,10 @@
 						"if (!forType) {" +
 							"ctx.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
 						"};" +
+
+						// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
+						(_shared.Natives.symbolHasInstance ? "ctx.setAttribute(this, ctx.HasInstanceSymbol, undefined, {});" : "") +
+
 						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
 						(typeProto ? "skipConfigurables = false;" : "") +
@@ -6213,6 +6220,7 @@
 					instanceBase: (base ? base.prototype : null),
 					applyProto: __Internal__.applyProto,
 					type: null, // will be set after type creation
+					HasInstanceSymbol: _shared.Natives.symbolHasInstance,
 				};
 				var type = types.eval(expr, ctx);
 				ctx.type = type;
