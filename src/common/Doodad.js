@@ -3408,7 +3408,7 @@ module.exports = {
 
 						remove: function remove(attr, obj, storage, forType, attribute) {
 								var handler = obj[attr];
-								if (types.baseof(doodad.EventHandler, handler)) {
+								if (types._instanceof(handler, doodad.EventHandler)) {
 									handler.clear();
 								};
 		//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
