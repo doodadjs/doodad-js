@@ -123,7 +123,7 @@ module.exports = {
 									};
 									return retval;
 								}, function(err) {
-									var retval = callback(err);
+									var retval = callback(err, undefined);
 									return retval;
 								});
 							return promise;
@@ -140,13 +140,11 @@ module.exports = {
 						Promise.prototype['finally'] = function _finally(callback) {
 							var Promise = this.constructor;
 							var promise = this.then(function(result) {
-									var retval = callback();
-									return Promise.resolve(retval).then(function() {
+									return Promise.resolve(callback()).then(function() {
 										return result;
 									});
 								}, function(err) {
-									var retval = callback();
-									return Promise.resolve(retval).then(function() {
+									return Promise.resolve(callback()).then(function() {
 										throw err;
 									});
 								});
@@ -205,10 +203,17 @@ module.exports = {
 												};
 											});
 									};
-									return Promise.all(tools.map(ar, mapFn, null, 0, options.concurrency))
-										.then(function() {
-											return result;
-										});
+									if (options.concurrency > 1) {
+										return Promise.all(tools.map(ar, mapFn, null, 0, options.concurrency))
+											.then(function() {
+												return result;
+											});
+									} else {
+										return mapFn(ar[0], 0, ar)
+											.then(function() {
+												return result;
+											});
+									};
 								};
 							});
 						};
@@ -363,6 +368,8 @@ module.exports = {
 						return promise;
 					};
 					
+					// Add "thisObj" argument
+					// Add promise name
 					var oldAsCallback = Promise.prototype.asCallback;
 					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
@@ -378,6 +385,8 @@ module.exports = {
 						return promise;
 					};
 					
+					// Add "thisObj" argument
+					// Add promise name
 					var oldFinally = Promise.prototype['finally'];
 					Promise.prototype['finally'] = function _finally(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
@@ -393,6 +402,7 @@ module.exports = {
 						return promise;
 					};
 
+					// Combines "then" and "create"
 					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
 						var Promise = this.constructor;
 						return this.then(function(result) {
