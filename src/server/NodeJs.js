@@ -195,6 +195,22 @@ module.exports = {
 					return types.isReadableStream(stream) || types.isWritableStream(stream);
 				});
 				
+
+				//===================================
+				// types.DESTROY hook
+				//===================================
+
+				__Internal__.oldDESTROY = _shared.DESTROY;
+				_shared.DESTROY = function(obj) {
+					if (types.isObject(obj) && !types.getType(obj) && types.isFunction(obj.destroy)) {
+						if (!obj.destroyed) {
+							obj.destroy();
+						};
+					} else {
+						__Internal__.oldDESTROY(obj);
+					};
+				};
+
 				//===================================
 				// Application events
 				//===================================
