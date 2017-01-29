@@ -6586,7 +6586,12 @@
 				{
 					_new: types.SUPER(function _new() {
 						this._super();
-						_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {});
+						_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {configurable: true});
+					}),
+
+					_delete: types.SUPER(function _delete() {
+						delete this[__Internal__.symbolEventListeners];
+						this._super();
 					}),
 					
 					addEventListener: __Internal__.DD_DOC(
@@ -6698,7 +6703,7 @@
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 1,
 											params: {
 												event: {
 													type: 'string',
@@ -6775,14 +6780,14 @@
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 1,
 											params: null,
 											returns: 'undefined',
 											description: "Removes every event listeners.",
 								}
 								//! END_REPLACE()
 						, function clearListeners() {
-							this[__Internal__.symbolEventListeners].length = 0;
+							_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject());
 						}),
 				}
 			)));
