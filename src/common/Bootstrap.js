@@ -586,7 +586,7 @@
 			// "getSymbolFor", "getSymbolKey"
 			//windowWeakMap: (types.isNativeFunction(global.WeakMap) ? global.WeakMap : undefined),
 			
-			// "createType"
+			// "createType", "_instanceof"
 			symbolHasInstance: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.hasInstance === 'symbol') ? global.Symbol.hasInstance : undefined),
 
 			// "is*"
@@ -653,6 +653,9 @@
 			// AssertionError
 			consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
 		};
+
+		// "_instanceof"
+		_shared.Natives.functionHasInstance = (_shared.Natives.symbolHasInstance ? global.Function.prototype[_shared.Natives.symbolHasInstance] : undefined);
 
 		//===================================
 		// For old browsers
@@ -4059,12 +4062,12 @@
 						revision: 4,
 						params: {
 							obj: {
-								type: ['object', 'type'],
+								type: 'object,type',
 								optional: false,
 								description: "An object to test for. A type can be provided.",
 							},
 							type: {
-								type: ['type', 'object'],
+								type: 'type,object,arrayof(type,object)',
 								optional: false,
 								description: "A type. If an object is provided, its type will be used.",
 							},
@@ -4143,12 +4146,12 @@
 						revision: 5,
 						params: {
 							obj: {
-								type: ['object', 'type'],
+								type: 'object,type',
 								optional: false,
 								description: "An object to test for. A type can be provided.",
 							},
 							type: {
-								type: ['type', 'object'],
+								type: 'type,object,arrayof(type,object)',
 								optional: false,
 								description: "A Doodad type. If an object is provided, its type will be used.",
 							},
@@ -4158,7 +4161,7 @@
 			}
 			//! END_REPLACE()
 			, function isLike(obj, type) {
-				// "obj" is of or inherits type "types".
+				// "obj" is of or inherits type.
 				if (types.isNothing(obj)) {
 					return false;
 				};
@@ -4238,7 +4241,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							obj: {
 								type: 'object',
@@ -4246,7 +4249,7 @@
 								description: "An object.",
 							},
 							type: {
-								type: 'type',
+								type: 'type,arrayof(type)',
 								optional: false,
 								description: "A type.",
 							},
@@ -4263,17 +4266,20 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				var crossRealm = !(obj instanceof _shared.Natives.windowObject);
-				if (!crossRealm) {
-					if (!types.isArray(type)) {
-						type = [type];
-					};
-					for (var i = 0; i < type.length; i++) {
-						if (i in type) {
-							var t = type[i];
-							if (!types.isNothing(t)) {
+				if (types.isArray(type)) {
+					var i = 0;
+					if (!crossRealm) {
+						for (; i < type.length; i++) {
+							if (i in type) {
+								var t = type[i];
 								if (types.isFunction(t)) {
 									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
-										if (obj instanceof t) {
+										var hasInstance = _shared.Natives.symbolHasInstance && t[_shared.Natives.symbolHasInstance];
+										if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
+											// "hasInstance" has been messed, switch to cross-realm mode
+											crossRealm = true;
+											break;
+										} else if (obj instanceof t) {
 											return true;
 										};
 									} else {
@@ -4285,35 +4291,55 @@
 							};
 						};
 					};
-				};
-				if (crossRealm) {
-					if (types.isArray(type)) {
-						type = types.clone(type);
-					} else {
-						type = [type];
-					};
-					var t = obj.constructor;
-					while (types.isFunction(t)) {
-						var symbol = _shared.getTypeSymbol(t);
-						if (symbol) {
-							for (var i = 0; i < type.length; i++) {
-								if (i in type) {
-									var s = type[i];
-									if (!types.isNothing(s)) {
+					if (crossRealm) {
+						var t = obj.constructor;
+						while (types.isFunction(t)) {
+							var symbol = _shared.getTypeSymbol(t);
+							if (!types.isNothing(symbol)) {
+								for (; i < type.length; i++) {
+									if (i in type) {
+										var s = type[i];
 										if (types.isFunction(s)) {
-											type[i] = s = _shared.getTypeSymbol(s); // optimization
-										};
-										//if (types.isSymbol(s)) {
+											s = _shared.getTypeSymbol(s);
 											if (s === symbol) {
 												return true;
 											};
-										//};
+										};
 									};
 								};
 							};
+							obj = types.getPrototypeOf(obj);
+							t = obj && obj.constructor;
 						};
-						obj = types.getPrototypeOf(obj);
-						t = obj && obj.constructor;
+					};
+				} else if (types.isFunction(type)) {
+					if (!crossRealm) {
+						if (_shared.Natives.windowObject(type) instanceof _shared.Natives.windowFunction) {
+							var hasInstance = _shared.Natives.symbolHasInstance && type[_shared.Natives.symbolHasInstance];
+							if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
+								// "hasInstance" has been messed, switch to cross-realm mode
+								crossRealm = true;
+							} else if (obj instanceof type) {
+								return true;
+							};
+						} else {
+							// Cross-realm
+							crossRealm = true;
+						};
+					};
+					if (crossRealm) {
+						type = _shared.getTypeSymbol(type);
+						if (!types.isNothing(type)) {
+							var t = obj.constructor;
+							while (types.isFunction(t)) {
+								var symbol = _shared.getTypeSymbol(t);
+								if (type === symbol) {
+									return true;
+								};
+								obj = types.getPrototypeOf(obj);
+								t = obj && obj.constructor;
+							};
+						};
 					};
 				};
 				
@@ -5967,7 +5993,35 @@
 					return type;
 				};
 			}));
+		
+		// "types.DESTROY" Hook	
+		_shared.DESTROY = function(obj) {
+			if (types.isInitialized(obj)) {
+				_shared.invoke(obj, '_delete', null, _shared.SECRET);
+			};
+		};
+
+		__Internal__.ADD('DESTROY', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'object,type',
+								optional: false,
+								description: "A Doodad object or type.",
+							},
+						},
+						returns: 'undefined',
+						description: "Destroys a Doodad object or type.",
+			}
+			//! END_REPLACE()
+			, function DESTROY(obj) {
+				_shared.DESTROY(obj);
+			}));
 			
+
 		__Internal__.ADD('isInitialized', function isInitialized(obj) {
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 		});
@@ -6164,7 +6218,7 @@
 						// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
 						(_shared.Natives.symbolHasInstance ? "ctx.setAttribute(this, ctx.HasInstanceSymbol, undefined, {});" : "") +
 
-						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {});" +
+						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {configurable: true});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
 						(typeProto ? "skipConfigurables = false;" : "") +
 					"} else {" +
@@ -6197,7 +6251,7 @@
 						""
 					:
 						"if ((obj !== this) && !ctx.get(obj, ctx.InitializedSymbol)) {" +
-							"ctx.setAttribute(obj, ctx.InitializedSymbol, true, {});" +
+							"ctx.setAttribute(obj, ctx.InitializedSymbol, true, {configurable: true});" +
 						"};"
 					) +
 
@@ -6349,18 +6403,19 @@
 		//	, function _new() {
 		//	});
 		
-		//__Internal__.typeDelete = __Internal__.DD_DOC(
-		//	//! REPLACE_IF(IS_UNSET('debug'), "null")
-		//	{
-		//				author: "Claude Petit",
-		//				revision: 1,
-		//				params: null,
-		//				returns: 'undefined',
-		//				description: "Object or type destructor.",
-		//	}
-		//	//! END_REPLACE()
-		//	, function _delete() {
-		//	});
+		__Internal__.typeDelete = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'undefined',
+						description: "Object or type destructor.",
+			}
+			//! END_REPLACE()
+			, function _delete() {
+				_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+			});
 		
 		__Internal__.typeToString = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6420,7 +6475,7 @@
 			$inherit: __Internal__.typeInherit,
 			
 			_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeDelete,
+			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
 			
 			toString: types.SUPER(__Internal__.typeToString),
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
@@ -6432,7 +6487,7 @@
 			_super: null,
 			
 			_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeDelete,
+			_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
 			
 			toString: types.SUPER(__Internal__.typeToString),
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
