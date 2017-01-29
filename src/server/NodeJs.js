@@ -733,6 +733,66 @@ module.exports = {
 				// Files functions
 				//=====================================
 					
+				files.ADD('rm', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Target folder path.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Removes specified system file.",
+				}
+				//! END_REPLACE()
+				, function rm(path, /*optional*/options) {
+					if (types.isString(path)) {
+						path = files.Path.parse(path);
+					};
+					const name = path.toString({
+						os: null,
+						dirChar: null,
+						shell: 'api',
+					});
+					const async = types.get(options, 'async', false);
+					if (async) {
+						const Promise = types.getPromise();
+						return Promise.create(function rmPromise(resolve, reject) {
+							nodeFs.unlink(name, function(ex) {
+								if (ex) {
+									if (ex.code === 'ENOENT') {
+										resolve(true);
+									} else {
+										reject(ex);
+									};
+								} else {
+									resolve(true);
+								};
+							});
+						});
+					} else {
+						try {
+							nodeFs.unlinkSync(name);
+						} catch(ex) {
+							if (ex.code === 'ENOENT') {
+								// Do nothing
+							} else {
+								throw ex;
+							};
+						};
+						return true;
+					};
+				}));
+					
 				files.ADD('rmdir', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
