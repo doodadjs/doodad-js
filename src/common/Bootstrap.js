@@ -6721,21 +6721,21 @@
 								var	listeners;
 								if (type in this[__Internal__.symbolEventListeners]) {
 									listeners = this[__Internal__.symbolEventListeners][type];
+									if (listeners.__locked) {
+										return res;
+										//throw new types.Error("Listeners locked for event '~0~'.", [type]);
+									};
 								} else {
 									this[__Internal__.symbolEventListeners][type] = listeners = [];
-								};
-								
-								if (listeners.__locked) {
-									return res;
-									//throw new types.Error("Listeners locked for event '~0~'.", [type]);
 								};
 								
 								try {
 									listeners.__locked = true;  // prevents infinite loop
 									
-									var listenersLen = listeners.length;
-									for (var i = 0; i < listenersLen; i++) {
-										var listener = listeners[i];
+									var ar = types.clone(listeners),
+										arLen = ar.length;
+									for (var i = 0; i < arLen; i++) {
+										var listener = ar[i];
 										var retval = listener[0].call(this, event);
 										if (event.canceled) {
 											res = false;
