@@ -879,6 +879,21 @@ module.exports = {
 						return attr;
 					});
 					
+				__Internal__.oldDESTROY = _shared.DESTROY;
+				_shared.DESTROY = function(obj) {
+					if (types._implements(obj, mixIns.Creatable)) {
+						if (!obj.isDestroyed()) {
+							if (types.isType(obj)) {
+								obj.$destroy();
+							} else {
+								obj.destroy();
+							};
+						};
+					} else {
+						__Internal__.oldDESTROY(obj);
+					};
+				};
+
 				//==================================
 				// Namespace object
 				//==================================
@@ -1006,20 +1021,12 @@ module.exports = {
 						};
 						
 						if (isSingleton) {
-							if (types._implements(type, mixIns.Creatable)) {
-								type.destroy();
-							} else {
-								_shared.invoke(type, '_delete', null, _shared.SECRET);
-							};
+							types.DESTROY(type);
 							type = types.getType(type);
 						};
 						
 						if (!isPrivate && !types.isErrorType(type) && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-							if (types._implements(type, mixIns.Creatable)) {
-								type.$destroy();
-							} else if (types.isInitialized(type)) {
-								_shared.invoke(type, '_delete', null, _shared.SECRET);
-							};
+							types.DESTROY(type);
 						};
 						
 						return true;
@@ -5541,7 +5548,7 @@ module.exports = {
 							var cache = this[__Internal__.symbolIsolatedCache];
 							if (cache) {
 								cache.forEach(function(_interface) {
-									_shared.invoke(_interface, _interface._delete, null, _shared.SECRET);
+									types.DESTROY(_interface);
 								});
 							};
 
