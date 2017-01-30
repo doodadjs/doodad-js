@@ -562,7 +562,6 @@ module.exports = {
 						if (!types.isLike(obj, doodad.Class) && !types.isLike(obj, doodad.Interface)) {
 							return false;
 						};
-						var isType = types.isType(obj);
 						var attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
 						if (!(name in attrs)) {
 							return false;
@@ -572,6 +571,7 @@ module.exports = {
 						if (!types.isLike(extender, extenders.Method)) {
 							return false;
 						};
+						var isType = types.isType(obj);
 						if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
 							return false;
 						};
