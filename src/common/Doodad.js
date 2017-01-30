@@ -6456,7 +6456,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: null,
 									returns: 'undefined',
 									description: "Destroys the class.",
@@ -6471,6 +6471,7 @@ module.exports = {
 										this._delete();
 
 									} catch(ex) {
+										types.Type._delete.call(this);
 										throw ex;
 
 									} finally {
@@ -6535,7 +6536,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: null,
 									returns: 'undefined',
 									description: "Rapidly destroys the class object instance.",
@@ -6552,6 +6553,7 @@ module.exports = {
 
 									} finally {
 										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+										types.Type.prototype._delete.call(this);
 									};
 								};
 							})))),
@@ -6560,7 +6562,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: null,
 									returns: 'undefined',
 									description: "Fully destroys the class object instance.",
@@ -6575,6 +6577,7 @@ module.exports = {
 										this._delete();
 
 									} catch(ex) {
+										types.Type.prototype._delete.call(this);
 										throw ex;
 
 									} finally {
