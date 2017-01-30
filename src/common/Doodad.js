@@ -3880,16 +3880,20 @@ module.exports = {
 							for (var i = 0; i < stackClone.length; i++) {
 								var data = stackClone[i];
 									
-								var retval;
-								var count = data[4];
+								var retval = undefined,
+									count = data[4],
+									obj = data[0];
 								if (types.isNothing(count) || (count > 0)) {
-									if (count > 0) {
+									if (types.getType(obj) && !types.isInitialized(obj)) {
+										data[4] = 0;
+										continue;
+									} else if (count > 0) {
 										data[4]--;
 									};
 
 									_shared.setAttribute(ev, 'handlerData', data[3]);
 
-									retval = data[5].call(data[0], ev);
+									retval = data[5].call(obj, ev);
 								};
 
 								if ((retval === false) && cancellable) {
