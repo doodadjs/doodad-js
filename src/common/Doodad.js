@@ -6378,7 +6378,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										objs: {
 											type: 'object,arrayof(object)',
@@ -6407,7 +6407,9 @@ module.exports = {
 										};
 									};
 								} else {
-									this[events[i]].detach(objs);
+									for (var i = 0; i < eventsLen; i++) {
+										this[events[i]].detach(objs);
+									};
 								};
 							}))))),
 					}))));
