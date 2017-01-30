@@ -2095,11 +2095,11 @@ module.exports = {
 					// TODO: Do we need that ?
 					//__NODE_ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 
-					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters, /*optional*/useCapture) {
+					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
 						const events = this.__NODE_EVENTS,
 							eventsLen = events.length;
 						for (let i = 0; i < eventsLen; i++) {
-							this[events[i]].detach(emitters, useCapture);
+							this[events[i]].detach(emitters);
 						};
 					})))),
 					
