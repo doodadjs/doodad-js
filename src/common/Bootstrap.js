@@ -3848,20 +3848,48 @@
 		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
 		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
 
-		_shared.getTypeUUID = function getTypeUUID(type) {
-			if (types.isType(type)) {
-				return types.get(type, __Internal__.symbolTypeUUID);
-			} else if (types.isFunction(type)) {
-				var uuid = types.get(type, _shared.UUIDSymbol);
-				if (uuid) {
-					if (types.isNativeFunction(type) || types.isErrorType(type)) {
-						return uuid;
-					} else {
-						return /*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + uuid;
+		_shared.getUUID = function getUUID(obj) {
+			if (!types.isObjectLike(obj)) {
+				return null;
+			};
+			var type,
+				isType;
+			if (types.isFunction(obj)) {
+				type = obj;
+				isType = types.isType(type);
+			} else {
+				type = types.getType(obj);
+				if (type) {
+					isType = true;
+				} else {
+					type = obj.constructor;
+					if (!types.isFunction(type)) {
+						// Invalid constructor
+						return null;
 					};
+					isType = false;
 				};
 			};
-			return null;
+			var uuid;
+			if (isType) {
+				uuid = types.get(type, __Internal__.symbolTypeUUID);
+				// TODO: Is the following necessary ?
+				//if (uuid && (types.get(type.prototype, __Internal__.symbolTypeUUID) !== uuid)) {
+				//	// Invalid type
+				//	return null;
+				//};
+			} else {
+				uuid = types.get(type, _shared.UUIDSymbol);
+				// TODO: Is the following necessary ?
+				//if (uuid && (types.get(type.prototype, _shared.UUIDSymbol) !== uuid)) {
+				//	// Invalid type
+				//	return null;
+				//};
+			};
+			if (uuid && !isType && !types.isNativeFunction(type) && !types.isErrorType(type)) {
+				uuid = /*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + uuid;
+			};
+			return (uuid || null);
 		};
 
 		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
@@ -3928,14 +3956,14 @@
 						base = [base];
 					};
 					while (types.isFunction(type)) {
-						var uuid = _shared.getTypeUUID(type);
+						var uuid = _shared.getUUID(type);
 						if (uuid) {
 							for (var i = 0; i < base.length; i++) {
 								if (i in base) {
 									var u = base[i];
 									if (!types.isNothing(u)) {
 										if (types.isFunction(u)) {
-											base[i] = u = _shared.getTypeUUID(u); // optimization
+											base[i] = u = _shared.getUUID(u); // optimization
 										};
 										if (u === uuid) {
 											return true;
@@ -4077,7 +4105,7 @@
 					};
 				};
 				if (crossRealm) {
-					var uuid = _shared.getTypeUUID(obj);
+					var uuid = _shared.getUUID(obj);
 					if (uuid) {
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
@@ -4088,7 +4116,7 @@
 										t = t.constructor;
 									};
 									if (types.isFunction(t)) {
-										if (_shared.getTypeUUID(t) === uuid) {
+										if (_shared.getUUID(t) === uuid) {
 											return true;
 										};
 									};
@@ -4168,7 +4196,7 @@
 						type = [type];
 					};
 					while (types.isFunction(obj)) {
-						var uuid = _shared.getTypeUUID(obj);
+						var uuid = _shared.getUUID(obj);
 						if (uuid) {
 							for (var i = 0; i < type.length; i++) {
 								if (i in type) {
@@ -4178,7 +4206,7 @@
 											u = u.constructor;
 										};
 										if (types.isFunction(u)) {
-											type[i] = u = _shared.getTypeUUID(u); // optimization
+											type[i] = u = _shared.getUUID(u); // optimization
 										};
 										if (u === uuid) {
 											return true;
@@ -4200,7 +4228,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 8,
+						revision: 9,
 						params: {
 							obj: {
 								type: 'object',
@@ -4224,6 +4252,7 @@
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
+				// NOTE: "null objects" will appear "cross-realm"
 				var crossRealm = !(obj instanceof _shared.Natives.windowObject);
 				if (types.isArray(type)) {
 					var i = 0;
@@ -4251,16 +4280,14 @@
 						};
 					};
 					if (crossRealm) {
-						var t = obj.constructor;
-						while (types.isFunction(t)) {
-							var uuid = _shared.getTypeUUID(t);
+						do {
+							var uuid = _shared.getUUID(obj);
 							if (uuid) {
 								for (; i < type.length; i++) {
 									if (i in type) {
-										var u = type[i];
-										if (types.isFunction(u)) {
-											u = _shared.getTypeUUID(u);
-											if (u === uuid) {
+										var t = type[i];
+										if (types.isFunction(t)) {
+											if (uuid === _shared.getUUID(t)) {
 												return true;
 											};
 										};
@@ -4268,8 +4295,7 @@
 								};
 							};
 							obj = types.getPrototypeOf(obj);
-							t = obj && obj.constructor;
-						};
+						} while (!types.isNothing(obj));
 					};
 				} else if (types.isFunction(type)) {
 					if (!crossRealm) {
@@ -4287,16 +4313,14 @@
 						};
 					};
 					if (crossRealm) {
-						type = _shared.getTypeUUID(type);
-						if (type) {
-							var t = obj.constructor;
-							while (types.isFunction(t)) {
-								if (type === _shared.getTypeUUID(t)) {
+						var uuid = _shared.getUUID(type);
+						if (uuid) {
+							do {
+								if (uuid === _shared.getUUID(obj)) {
 									return true;
 								};
 								obj = types.getPrototypeOf(obj);
-								t = obj && obj.constructor;
-							};
+							} while (!types.isNothing(obj));
 						};
 					};
 				};
