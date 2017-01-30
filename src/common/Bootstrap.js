@@ -91,8 +91,6 @@
 			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
 			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
 
-			tempTypesSymbol: {},
-
 			DD_ASSERT: null,
 		};
 
@@ -3854,51 +3852,16 @@
 			if (types.isType(type)) {
 				return types.get(type, __Internal__.symbolTypeUUID);
 			} else if (types.isFunction(type)) {
-				return types.get(type, _shared.UUIDSymbol);
-			};
-		};
-
-		_shared.getTypeSymbol = function getTypeSymbol(type) {
-			if (!__Internal__.typesSymbolMap && types.WeakMap) {
-				__Internal__.typesSymbolMap = new types.WeakMap();
-				var symbols = types.append(types.keys(__Internal__.tempTypesSymbol), types.symbols(__Internal__.tempTypesSymbol));
-				for (var i = 0; i < symbols.length; i++) {
-					var symbol = symbols[i];
-					__Internal__.typesSymbolMap.set(__Internal__.tempTypesSymbol[symbol], symbol);
-				};
-				delete __Internal__.tempTypesSymbol;
-			};
-			if (__Internal__.typesSymbolMap && __Internal__.typesSymbolMap.has(type)) {
-				return __Internal__.typesSymbolMap.get(type);
-			};
-			var symbol = undefined,
-				ok = false;
-			if (types.isType(type)) {
-				var uuid = types.get(type, __Internal__.symbolTypeUUID);
-				if (uuid) {
-					symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
-				};
-				ok = true;
-			} else if (types.isFunction(type)) {
 				var uuid = types.get(type, _shared.UUIDSymbol);
 				if (uuid) {
-					if (types.isNativeFunction(type) && !types.isJsClass(type)) {
-						symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
+					if (types.isNativeFunction(type) || types.isErrorType(type)) {
+						return uuid;
 					} else {
-						symbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + '-' + uuid, true);
+						return /*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + uuid;
 					};
 				};
-				ok = true;
 			};
-			if (ok) {
-				if (__Internal__.typesSymbolMap) {
-					__Internal__.typesSymbolMap.set(type, symbol);
-				} else if (symbol) {
-					// Temporary
-					__Internal__.tempTypesSymbol[symbol] = type;
-				};
-			};
-			return symbol;
+			return null;
 		};
 
 		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
@@ -3965,20 +3928,18 @@
 						base = [base];
 					};
 					while (types.isFunction(type)) {
-						var symbol = _shared.getTypeSymbol(type);
-						if (symbol) {
+						var uuid = _shared.getTypeUUID(type);
+						if (uuid) {
 							for (var i = 0; i < base.length; i++) {
 								if (i in base) {
-									var s = base[i];
-									if (!types.isNothing(s)) {
-										if (types.isFunction(s)) {
-											base[i] = s = _shared.getTypeSymbol(s); // optimization
+									var u = base[i];
+									if (!types.isNothing(u)) {
+										if (types.isFunction(u)) {
+											base[i] = u = _shared.getTypeUUID(u); // optimization
 										};
-										//if (types.isSymbol(s)) {
-											if (s === symbol) {
-												return true;
-											};
-										//};
+										if (u === uuid) {
+											return true;
+										};
 									};
 								};
 							};
@@ -4059,7 +4020,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4116,8 +4077,8 @@
 					};
 				};
 				if (crossRealm) {
-					var symbol = _shared.getTypeSymbol(obj);
-					if (symbol) {
+					var uuid = _shared.getTypeUUID(obj);
+					if (uuid) {
 						for (var i = 0; i < type.length; i++) {
 							if (i in type) {
 								var t = type[i];
@@ -4127,7 +4088,7 @@
 										t = t.constructor;
 									};
 									if (types.isFunction(t)) {
-										if (_shared.getTypeSymbol(t) === symbol) {
+										if (_shared.getTypeUUID(t) === uuid) {
 											return true;
 										};
 									};
@@ -4143,7 +4104,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4207,23 +4168,21 @@
 						type = [type];
 					};
 					while (types.isFunction(obj)) {
-						var symbol = _shared.getTypeSymbol(obj);
-						if (symbol) {
+						var uuid = _shared.getTypeUUID(obj);
+						if (uuid) {
 							for (var i = 0; i < type.length; i++) {
 								if (i in type) {
-									var s = type[i];
-									if (!types.isNothing(s)) {
-										if (types.isObjectLike(s)) {
-											s = s.constructor;
+									var u = type[i];
+									if (!types.isNothing(u)) {
+										if (types.isObjectLike(u)) {
+											u = u.constructor;
 										};
-										if (types.isFunction(s)) {
-											type[i] = s = _shared.getTypeSymbol(s); // optimization
+										if (types.isFunction(u)) {
+											type[i] = u = _shared.getTypeUUID(u); // optimization
 										};
-										//if (types.isSymbol(s)) {
-											if (s === symbol) {
-												return true;
-											};
-										//};
+										if (u === uuid) {
+											return true;
+										};
 									};
 								};
 							};
@@ -4241,7 +4200,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 7,
+						revision: 8,
 						params: {
 							obj: {
 								type: 'object',
@@ -4294,14 +4253,14 @@
 					if (crossRealm) {
 						var t = obj.constructor;
 						while (types.isFunction(t)) {
-							var symbol = _shared.getTypeSymbol(t);
-							if (!types.isNothing(symbol)) {
+							var uuid = _shared.getTypeUUID(t);
+							if (uuid) {
 								for (; i < type.length; i++) {
 									if (i in type) {
-										var s = type[i];
-										if (types.isFunction(s)) {
-											s = _shared.getTypeSymbol(s);
-											if (s === symbol) {
+										var u = type[i];
+										if (types.isFunction(u)) {
+											u = _shared.getTypeUUID(u);
+											if (u === uuid) {
 												return true;
 											};
 										};
@@ -4328,12 +4287,11 @@
 						};
 					};
 					if (crossRealm) {
-						type = _shared.getTypeSymbol(type);
-						if (!types.isNothing(type)) {
+						type = _shared.getTypeUUID(type);
+						if (type) {
 							var t = obj.constructor;
 							while (types.isFunction(t)) {
-								var symbol = _shared.getTypeSymbol(t);
-								if (type === symbol) {
+								if (type === _shared.getTypeUUID(t)) {
 									return true;
 								};
 								obj = types.getPrototypeOf(obj);
@@ -4871,7 +4829,10 @@
 				};
 				
 				_shared.setAttribute(type, __Internal__.symbolIsErrorType, undefined, {});
-				_shared.setAttribute(type, _shared.UUIDSymbol, !types.isNothing(uuid) && types.toString(uuid) || '', {});
+				
+				uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('ERROR_TYPE')), true) */ '__ERROR_TYPE__' /*! END_REPLACE() */ + uuid : null);
+				_shared.setAttribute(type, _shared.UUIDSymbol, uuid, {});
+				_shared.setAttribute(type.prototype, _shared.UUIDSymbol, uuid, {});
 
 				return type;
 			}));
@@ -6300,9 +6261,9 @@
 				_shared.setAttribute(type, '$TYPE_NAME', name, {});
 				_shared.setAttribute(type, __Internal__.symbolIsType, undefined, {});
 
-				if (uuid) {
-					_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
-				};
+				uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
+				_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
+				_shared.setAttribute(proto, __Internal__.symbolTypeUUID, uuid, {});
 	
 				if (typeProto) {
 					__Internal__.applyProto(type, base, typeProto, true, false, false);
