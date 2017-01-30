@@ -186,8 +186,9 @@ module.exports = {
 				
 				types.ADD('isTransformStream', function isTransformStream(stream) {
 					// <PRB> Node.Js has no object models, so we must test for functions.
-					// TODO: Find a way to know if it's really a transform stream, not a duplex stream
-					return types.isReadableStream(stream) && types.isWritableStream(stream);
+					return types.isReadableStream(stream) && 
+						types.isWritableStream(stream) &&
+						types.isFunction(stream._transform);
 				});
 				
 				types.ADD('isStream', function isStream(stream) {
