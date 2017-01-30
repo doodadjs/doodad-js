@@ -6,7 +6,7 @@
 	var natives = types.allKeys(window);
 
 	natives = tools.filter(natives, function(k) {
-		return (tools.indexOf(['GLOBAL', 'root'], k) < 0) && /^[A-Z]/.test(k) && !/^[A-Z_]*$/.test(k) && types.isNativeFunction(window[k]);
+		return (tools.indexOf(['GLOBAL', 'root'], k) < 0) && /^[A-Z]/.test(k) && !/^[A-Z_]*$/.test(k) && types.isNativeFunction(window[k]) && types.isObjectLike(window[k].prototype);
 	});
 
 	var knownNatives = [/*! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8') */];
