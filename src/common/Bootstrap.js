@@ -3899,10 +3899,10 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							base: {
-								type: 'type',
+								type: 'type,arrayof(type)',
 								optional: false,
 								description: "A type.",
 							},
@@ -3913,34 +3913,29 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if a type is the derivative base of another type. Returns 'false' otherwise.",
+						description: "Returns 'true' if a type derivates from base. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function baseof(base, type) {
-				// "obj" is a type that inherits "type".
-
 				if (!types.isFunction(type)) {
-					// Use "isLike"
 					return false;
 				};
-
 				type = _shared.Natives.windowObject(type);
 				var crossRealm = !(type instanceof _shared.Natives.windowFunction);
-
-				if (!crossRealm) {
-					if (!types.isArray(base)) {
-						base = [base];
-					};
-					for (var i = 0; i < base.length; i++) {
-						if (i in base) {
-							var b = base[i];
-							if (!types.isNothing(b)) {
+				if (types.isArray(base)) {
+					var i = 0;
+					if (!crossRealm) {
+						for (; i < base.length; i++) {
+							if (i in base) {
+								var b = base[i];
 								if (types.isFunction(b)) {
-									if (_shared.Natives.windowObject(b) instanceof _shared.Natives.windowFunction) {
-										if ((b !== __Internal__.fnProto) && types.isPrototypeOf(b, type)) {
+									b = _shared.Natives.windowObject(b);
+									if (b instanceof _shared.Natives.windowFunction) {
+										if (types.isPrototypeOf(b, type)) {
 											return true;
 										};
 									} else {
+										// Cross-realm
 										crossRealm = true;
 										break;
 									};
@@ -3948,36 +3943,53 @@
 							};
 						};
 					};
-				};
-				if (crossRealm) {
-					if (types.isArray(base)) {
-						base = types.clone(base);
-					} else {
-						base = [base];
-					};
-					while (types.isFunction(type)) {
-						var uuid = _shared.getUUID(type);
-						if (uuid) {
-							for (var i = 0; i < base.length; i++) {
-								if (i in base) {
-									var u = base[i];
-									if (!types.isNothing(u)) {
-										if (types.isFunction(u)) {
-											base[i] = u = _shared.getUUID(u); // optimization
-										};
-										if (u === uuid) {
-											return true;
+					if (crossRealm) {
+						do {
+							var uuid = _shared.getUUID(type);
+							if (uuid) {
+								for (; i < base.length; i++) {
+									if (i in base) {
+										var b = base[i];
+										if (types.isFunction(b)) {
+											if (uuid === _shared.getUUID(b)) {
+												return true;
+											};
 										};
 									};
 								};
 							};
+							//type = types.getPrototypeOf(type);
+								type = types.getPrototypeOf(type.prototype);
+								type = type && type.constructor;
+						} while (!types.isNothing(type));
+					};
+				} else if (types.isFunction(base)) {
+					base = _shared.Natives.windowObject(base);
+					if (!crossRealm) {
+						if (base instanceof _shared.Natives.windowFunction) {
+							if (types.isPrototypeOf(base, type)) {
+								return true;
+							};
+						} else {
+							// Cross-realm
+							crossRealm = true;
 						};
-						type = types.getPrototypeOf(type.prototype);
-						if (type) {
-							type = type.constructor;
+					};
+					if (crossRealm) {
+						var uuid = _shared.getUUID(base);
+						if (uuid) {
+							do {
+								if (uuid === _shared.getUUID(type)) {
+									return true;
+								};
+								//type = types.getPrototypeOf(type);
+									type = types.getPrototypeOf(type.prototype);
+									type = type && type.constructor;
+							} while (!types.isNothing(type));
 						};
 					};
 				};
+				
 				return false;
 			}));
 
@@ -4048,7 +4060,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4071,31 +4083,28 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.getType(obj) || obj.constructor;
 					obj = _shared.Natives.windowObject(obj);
 				};
-				if (!types.isFunction(obj)) {
-					return false;
-				};
-				if (!types.isArray(type)) {
-					type = [type];
-				};
 				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
-				if (!crossRealm) {
-					for (var i = 0; i < type.length; i++) {
-						if (i in type) {
-							var t = type[i];
-							if (!types.isNothing(t)) {
-								if (!types.isFunction(t)) {
+				if (types.isArray(type)) {
+					var i = 0;
+					if (!crossRealm) {
+						for (; i < type.length; i++) {
+							if (i in type) {
+								var t = type[i];
+								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
-									t = t.constructor;
-								};
-								if (types.isFunction(t)) {
-									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
+									if (!types.isFunction(t)) {
+										t = types.getType(t) || t.constructor;
+										t = _shared.Natives.windowObject(t);
+									};
+									if (t instanceof _shared.Natives.windowFunction) {
 										if (obj === t) {
 											return true;
 										};
 									} else {
+										// Cross-realm
 										crossRealm = true;
 										break;
 									};
@@ -4103,20 +4112,21 @@
 							};
 						};
 					};
-				};
-				if (crossRealm) {
-					var uuid = _shared.getUUID(obj);
-					if (uuid) {
-						for (var i = 0; i < type.length; i++) {
-							if (i in type) {
-								var t = type[i];
-								if (!types.isNothing(t)) {
-									if (!types.isFunction(t)) {
+					if (crossRealm) {
+						var uuid = _shared.getUUID(obj);
+						if (uuid) {
+							for (; i < type.length; i++) {
+								if (i in type) {
+									var t = type[i];
+									if (!types.isNothing(t)) {
 										t = _shared.Natives.windowObject(t);
-										t = t.constructor;
-									};
-									if (types.isFunction(t)) {
-										if (_shared.getUUID(t) === uuid) {
+										if (!types.isFunction(t)) {
+											t = types.getType(t) || t.constructor;
+											if (!types.isFunction(t)) {
+												continue;
+											};
+										};
+										if (uuid === _shared.getUUID(t)) {
 											return true;
 										};
 									};
@@ -4124,7 +4134,33 @@
 							};
 						};
 					};
+				} else if (!types.isNothing(type)) {
+					type = _shared.Natives.windowObject(type);
+					if (!types.isFunction(type)) {
+						type = types.getType(type) || type.constructor;
+						if (!types.isFunction(type)) {
+							return false;
+						};
+						type = _shared.Natives.windowObject(type);
+					};
+					if (!crossRealm) {
+						if (type instanceof _shared.Natives.windowFunction) {
+							if (obj === type) {
+								return true;
+							};
+						} else {
+							// Cross-realm
+							crossRealm = true;
+						};
+					};
+					if (crossRealm) {
+						var uuid = _shared.getUUID(type);
+						if (uuid && (uuid === _shared.getUUID(obj))) {
+							return true;
+						};
+					};
 				};
+				
 				return false;
 			}));
 
@@ -4132,7 +4168,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4150,37 +4186,39 @@
 			}
 			//! END_REPLACE()
 			, function isLike(obj, type) {
-				// "obj" is of or inherits type.
 				if (types.isNothing(obj)) {
 					return false;
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+					obj = types.getType(obj) || obj.constructor;
+					if (types.isNothing(obj)) {
+						return false;
+					};
 					obj = _shared.Natives.windowObject(obj);
 				};
-				if (!types.isFunction(obj)) {
-					return false;
-				};
 				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
-				if (!crossRealm) {
-					if (!types.isArray(type)) {
-						type = [type];
-					};
-					for (var i = 0; i < type.length; i++) {
-						if (i in type) {
-							var t = type[i];
-							if (!types.isNothing(t)) {
-								if (!types.isFunction(t)) {
+				if (types.isArray(type)) {
+					var i = 0;
+					if (!crossRealm) {
+						for (; i < type.length; i++) {
+							if (i in type) {
+								var t = type[i];
+								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
-									t = t.constructor;
-								};
-								if (types.isFunction(t)) {
-									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
-										if ((t === obj) || types.isPrototypeOf(t, obj)) {
+									if (!types.isFunction(t)) {
+										t = types.getType(t) || t.constructor;
+										if (!types.isFunction(t)) {
+											continue;
+										};
+										t = _shared.Natives.windowObject(t);
+									};
+									if (t instanceof _shared.Natives.windowFunction) {
+										if ((obj === t) || types.isPrototypeOf(t, obj)) {
 											return true;
 										};
 									} else {
+										// Cross-realm
 										crossRealm = true;
 										break;
 									};
@@ -4188,39 +4226,67 @@
 							};
 						};
 					};
-				};
-				if (crossRealm) {
-					if (types.isArray(type)) {
-						type = types.clone(type);
-					} else {
-						type = [type];
-					};
-					while (types.isFunction(obj)) {
-						var uuid = _shared.getUUID(obj);
-						if (uuid) {
-							for (var i = 0; i < type.length; i++) {
-								if (i in type) {
-									var u = type[i];
-									if (!types.isNothing(u)) {
-										if (types.isObjectLike(u)) {
-											u = u.constructor;
-										};
-										if (types.isFunction(u)) {
-											type[i] = u = _shared.getUUID(u); // optimization
-										};
-										if (u === uuid) {
-											return true;
+					if (crossRealm) {
+						do {
+							var uuid = _shared.getUUID(obj);
+							if (uuid) {
+								for (; i < type.length; i++) {
+									if (i in type) {
+										var t = type[i];
+										if (!types.isNothing(t)) {
+											t = _shared.Natives.windowObject(t);
+											if (!types.isFunction(t)) {
+												t = types.getType(t) || t.constructor;
+												if (!types.isFunction(t)) {
+													continue;
+												};
+											};
+											if (uuid === _shared.getUUID(t)) {
+												return true;
+											};
 										};
 									};
 								};
 							};
+							//obj = types.getPrototypeOf(obj);
+								obj = types.getPrototypeOf(obj.prototype);
+								obj = obj && obj.constructor;
+						} while (!types.isNothing(obj));
+					};
+				} else if (!types.isNothing(type)) {
+					type = _shared.Natives.windowObject(type);
+					if (!types.isFunction(type)) {
+						type = types.getType(type) || type.constructor;
+						if (!types.isFunction(type)) {
+							return false;
 						};
-						obj = types.getPrototypeOf(obj.prototype);
-						if (obj) {
-							obj = obj.constructor;
+						type = _shared.Natives.windowObject(type);
+					};
+					if (!crossRealm) {
+						if (type instanceof _shared.Natives.windowFunction) {
+							if ((obj === type) || types.isPrototypeOf(type, obj)) {
+								return true;
+							};
+						} else {
+							// Cross-realm
+							crossRealm = true;
+						};
+					};
+					if (crossRealm) {
+						var uuid = _shared.getUUID(type);
+						if (uuid) {
+							do {
+								if (uuid === _shared.getUUID(obj)) {
+									return true;
+								};
+								//obj = types.getPrototypeOf(obj);
+									obj = types.getPrototypeOf(obj.prototype);
+									obj = obj && obj.constructor;
+							} while (!types.isNothing(obj));
 						};
 					};
 				};
+				
 				return false;
 			}));
 
