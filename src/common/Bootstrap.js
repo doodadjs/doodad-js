@@ -4000,14 +4000,21 @@
 						};
 					};
 					if (crossRealm) {
-						do {
-							var uuid = _shared.getUUID(type);
-							if (uuid) {
-								for (; i < base.length; i++) {
-									if (i in base) {
-										var b = base[i];
-										if (types.isFunction(b)) {
-											if (uuid === _shared.getUUID(b)) {
+						//type = types.getPrototypeOf(type);
+							type = types.getPrototypeOf(type.prototype);
+							type = type && type.constructor;
+						while (!types.isNothing(type)) {
+							var tuuid = _shared.getUUID(type);
+							for (; i < base.length; i++) {
+								if (i in base) {
+									var b = base[i];
+									if (types.isFunction(b)) {
+										if (tuuid) {
+											if (tuuid === _shared.getUUID(b)) {
+												return true;
+											};
+										} else {
+											if (type === b) {
 												return true;
 											};
 										};
@@ -4017,7 +4024,7 @@
 							//type = types.getPrototypeOf(type);
 								type = types.getPrototypeOf(type.prototype);
 								type = type && type.constructor;
-						} while (!types.isNothing(type));
+						};
 					};
 				} else if (types.isFunction(base)) {
 					base = _shared.Natives.windowObject(base);
@@ -4033,15 +4040,23 @@
 					};
 					if (crossRealm) {
 						var uuid = _shared.getUUID(base);
-						if (uuid) {
-							do {
-								if (uuid === _shared.getUUID(type)) {
+						//type = types.getPrototypeOf(type);
+							type = types.getPrototypeOf(type.prototype);
+							type = type && type.constructor;
+						while (!types.isNothing(type)) {
+							var tuuid = _shared.getUUID(type);
+							if (tuuid) {
+								if (tuuid === uuid) {
 									return true;
 								};
-								//type = types.getPrototypeOf(type);
-									type = types.getPrototypeOf(type.prototype);
-									type = type && type.constructor;
-							} while (!types.isNothing(type));
+							} else {
+								if (type === base) {
+									return true;
+								};
+							};
+							//type = types.getPrototypeOf(type);
+								type = types.getPrototypeOf(type.prototype);
+								type = type && type.constructor;
 						};
 					};
 				};
@@ -4153,9 +4168,15 @@
 						};
 					};
 					if (crossRealm) {
-						var uuid = _shared.getUUID(type);
-						if (uuid && (uuid === _shared.getUUID(obj))) {
-							return true;
+						var tuuid = _shared.getUUID(type);
+						if (tuuid) {
+							if (tuuid === _shared.getUUID(obj)) {
+								return true;
+							};
+						} else {
+							if (type === obj) {
+								return true;
+							};
 						};
 					};
 				};
@@ -4228,19 +4249,24 @@
 					if (crossRealm) {
 						do {
 							var uuid = _shared.getUUID(obj);
-							if (uuid) {
-								for (; i < type.length; i++) {
-									if (i in type) {
-										var t = type[i];
-										if (!types.isNothing(t)) {
-											t = _shared.Natives.windowObject(t);
+							for (; i < type.length; i++) {
+								if (i in type) {
+									var t = type[i];
+									if (!types.isNothing(t)) {
+										t = _shared.Natives.windowObject(t);
+										if (!types.isFunction(t)) {
+											t = t.constructor;
 											if (!types.isFunction(t)) {
-												t = t.constructor;
-												if (!types.isFunction(t)) {
-													continue;
-												};
+												continue;
 											};
-											if (uuid === _shared.getUUID(t)) {
+										};
+										var tuuid = _shared.getUUID(t);
+										if (tuuid) {
+											if (tuuid === uuid) {
+												return true;
+											};
+										} else {
+											if (obj === type) {
 												return true;
 											};
 										};
@@ -4272,17 +4298,21 @@
 						};
 					};
 					if (crossRealm) {
-						var uuid = _shared.getUUID(type);
-						if (uuid) {
-							do {
-								if (uuid === _shared.getUUID(obj)) {
+						var tuuid = _shared.getUUID(type);
+						do {
+							if (tuuid) {
+								if (tuuid === _shared.getUUID(obj)) {
 									return true;
 								};
-								//obj = types.getPrototypeOf(obj);
-									obj = types.getPrototypeOf(obj.prototype);
-									obj = obj && obj.constructor;
-							} while (!types.isNothing(obj));
-						};
+							} else {
+								if (obj === type) {
+									return true;
+								};
+							};
+							//obj = types.getPrototypeOf(obj);
+								obj = types.getPrototypeOf(obj.prototype);
+								obj = obj && obj.constructor;
+						} while (!types.isNothing(obj));
 					};
 				};
 				
@@ -4347,12 +4377,17 @@
 					if (crossRealm) {
 						do {
 							var uuid = _shared.getUUID(obj);
-							if (uuid) {
-								for (; i < type.length; i++) {
-									if (i in type) {
-										var t = type[i];
-										if (types.isFunction(t)) {
-											if (uuid === _shared.getUUID(t)) {
+							for (; i < type.length; i++) {
+								if (i in type) {
+									var t = type[i];
+									if (types.isFunction(t)) {
+										var tuuid = _shared.getUUID(t);
+										if (tuuid) {
+											if (tuuid === uuid) {
+												return true;
+											};
+										} else {
+											if (obj.constructor === type) {
 												return true;
 											};
 										};
@@ -4378,15 +4413,19 @@
 						};
 					};
 					if (crossRealm) {
-						var uuid = _shared.getUUID(type);
-						if (uuid) {
-							do {
-								if (uuid === _shared.getUUID(obj)) {
+						var tuuid = _shared.getUUID(type);
+						do {
+							if (tuuid) {
+								if (tuuid === _shared.getUUID(obj)) {
 									return true;
 								};
-								obj = types.getPrototypeOf(obj);
-							} while (!types.isNothing(obj));
-						};
+							} else {
+								if (obj.constructor === type) {
+									return true;
+								};
+							};
+							obj = types.getPrototypeOf(obj);
+						} while (!types.isNothing(obj));
 					};
 				};
 				
