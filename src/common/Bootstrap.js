@@ -4003,6 +4003,7 @@
 						//type = types.getPrototypeOf(type);
 							type = types.getPrototypeOf(type.prototype);
 							type = type && type.constructor;
+						var start = i;
 						while (!types.isNothing(type)) {
 							var tuuid = _shared.getUUID(type);
 							for (; i < base.length; i++) {
@@ -4024,6 +4025,7 @@
 							//type = types.getPrototypeOf(type);
 								type = types.getPrototypeOf(type.prototype);
 								type = type && type.constructor;
+							i = start;
 						};
 					};
 				} else if (types.isFunction(base)) {
@@ -4247,6 +4249,7 @@
 						};
 					};
 					if (crossRealm) {
+						var start = i;
 						do {
 							var uuid = _shared.getUUID(obj);
 							for (; i < type.length; i++) {
@@ -4276,6 +4279,7 @@
 							//obj = types.getPrototypeOf(obj);
 								obj = types.getPrototypeOf(obj.prototype);
 								obj = obj && obj.constructor;
+							i = start;
 						} while (!types.isNothing(obj));
 					};
 				} else if (!types.isNothing(type)) {
@@ -4323,7 +4327,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 9,
+						revision: 10,
 						params: {
 							obj: {
 								type: 'object',
@@ -4375,6 +4379,7 @@
 						};
 					};
 					if (crossRealm) {
+						var start = i;
 						do {
 							var uuid = _shared.getUUID(obj);
 							for (; i < type.length; i++) {
@@ -4395,6 +4400,7 @@
 								};
 							};
 							obj = types.getPrototypeOf(obj);
+							i = start;
 						} while (!types.isNothing(obj));
 					};
 				} else if (types.isFunction(type)) {
