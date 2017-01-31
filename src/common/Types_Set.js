@@ -74,7 +74,7 @@ module.exports = {
 					},
 					{
 						__index: types.NOT_ENUMERABLE(0),
-						__ar: types.types.NOT_ENUMERABLE(READ_ONLY( null )),
+						__ar: types.NOT_ENUMERABLE(types.READ_ONLY( null )),
 						
 						_new: types.SUPER(function _new(setObj) {
 							this._super();
