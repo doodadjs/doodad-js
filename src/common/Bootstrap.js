@@ -3895,6 +3895,69 @@
 		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
 		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('$IS_SINGLETON')), true) */ '$IS_SINGLETON' /*! END_REPLACE() */, true);
 
+		__Internal__.ADD('isType', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' when object is a Doodad type (created using 'Types.createType'). Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isType(obj) {
+				if (!types.isFunction(obj)) {
+					return false;
+				};
+				return types.has(obj, __Internal__.symbolIsType);
+			}));
+		
+		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 5,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' if object is a function, and not a JS class and not a Doodad type. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isJsFunction(obj) {
+				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj) && !types.isErrorType(obj);
+			}));
+
+		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' if object is a normal Javascript object, so not created from a Doodad type. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isJsObject(obj) {
+				return types.isObject(obj) && !types.getType(obj);
+			}));
+
 		__Internal__.ADD('baseof', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3991,69 +4054,6 @@
 				};
 				
 				return false;
-			}));
-
-		__Internal__.ADD('isType', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' when object is a Doodad type (created using 'Types.createType'). Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isType(obj) {
-				if (!types.isFunction(obj)) {
-					return false;
-				};
-				return types.has(obj, __Internal__.symbolIsType);
-			}));
-		
-		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if object is a function, and not a JS class and not a Doodad type. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isJsFunction(obj) {
-				return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj) && !types.isErrorType(obj);
-			}));
-
-		__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if object is a normal Javascript object, so not created from a Doodad type. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isJsObject(obj) {
-				return types.isObject(obj) && !types.getType(obj);
 			}));
 
 		__Internal__.ADD('is', __Internal__.DD_DOC(
