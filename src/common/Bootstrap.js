@@ -3852,25 +3852,18 @@
 			if (!types.isObjectLike(obj)) {
 				return null;
 			};
-			var type,
-				isType;
+			var type;
 			if (types.isFunction(obj)) {
 				type = obj;
-				isType = types.isType(type);
 			} else {
-				type = types.getType(obj);
-				if (type) {
-					isType = true;
-				} else {
-					type = obj.constructor;
-					if (!types.isFunction(type)) {
-						// Invalid constructor
-						return null;
-					};
-					isType = false;
+				type = obj.constructor;
+				if (!types.isFunction(type)) {
+					// Invalid constructor
+					return null;
 				};
 			};
-			var uuid;
+			var uuid,
+				isType = types.isType(type);
 			if (isType) {
 				uuid = types.get(type, __Internal__.symbolTypeUUID);
 				// TODO: Is the following necessary ?
@@ -4060,7 +4053,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4083,7 +4076,10 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = types.getType(obj) || obj.constructor;
+					obj = obj.constructor;
+					if (!types.isFunction(obj)) {
+						return false;
+					};
 					obj = _shared.Natives.windowObject(obj);
 				};
 				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
@@ -4096,7 +4092,10 @@
 								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
 									if (!types.isFunction(t)) {
-										t = types.getType(t) || t.constructor;
+										t = t.constructor;
+										if (!types.isFunction(t)) {
+											continue;
+										};
 										t = _shared.Natives.windowObject(t);
 									};
 									if (t instanceof _shared.Natives.windowFunction) {
@@ -4121,7 +4120,7 @@
 									if (!types.isNothing(t)) {
 										t = _shared.Natives.windowObject(t);
 										if (!types.isFunction(t)) {
-											t = types.getType(t) || t.constructor;
+											t = t.constructor;
 											if (!types.isFunction(t)) {
 												continue;
 											};
@@ -4137,7 +4136,7 @@
 				} else if (!types.isNothing(type)) {
 					type = _shared.Natives.windowObject(type);
 					if (!types.isFunction(type)) {
-						type = types.getType(type) || type.constructor;
+						type = type.constructor;
 						if (!types.isFunction(type)) {
 							return false;
 						};
@@ -4168,7 +4167,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 7,
+						revision: 8,
 						params: {
 							obj: {
 								type: 'object,type',
@@ -4191,8 +4190,8 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = types.getType(obj) || obj.constructor;
-					if (types.isNothing(obj)) {
+					obj = obj.constructor;
+					if (!types.isFunction(obj)) {
 						return false;
 					};
 					obj = _shared.Natives.windowObject(obj);
@@ -4207,7 +4206,7 @@
 								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
 									if (!types.isFunction(t)) {
-										t = types.getType(t) || t.constructor;
+										t = t.constructor;
 										if (!types.isFunction(t)) {
 											continue;
 										};
@@ -4236,7 +4235,7 @@
 										if (!types.isNothing(t)) {
 											t = _shared.Natives.windowObject(t);
 											if (!types.isFunction(t)) {
-												t = types.getType(t) || t.constructor;
+												t = t.constructor;
 												if (!types.isFunction(t)) {
 													continue;
 												};
@@ -4256,7 +4255,7 @@
 				} else if (!types.isNothing(type)) {
 					type = _shared.Natives.windowObject(type);
 					if (!types.isFunction(type)) {
-						type = types.getType(type) || type.constructor;
+						type = type.constructor;
 						if (!types.isFunction(type)) {
 							return false;
 						};
@@ -4426,7 +4425,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: ['object', 'type'],
@@ -4444,7 +4443,7 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				if (!types.isFunction(obj)) {
-					obj = types.get(obj, 'constructor');
+					obj = obj.constructor;
 				};
 				if (!types.isType(obj)) {
 					return null;
