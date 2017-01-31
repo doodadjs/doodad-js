@@ -1,39 +1,10 @@
 {
-  "homepage": "https://github.com/doodadjs/",
-  "author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
-  "license": "Apache-2.0",
-  "files": [
-    "src",
-    "lib",
-    "build",
-    "dist",
-    "browserify",
-    "test",
-    "index.js",
-    "webpack.config.js",
-    "config.json",
-    "make.json",
-    "LICENSE",
-    "README.md",
-    "tonic.js"
-  ],
-  "scripts": {
-    "build": "node -r \"doodad-js-make/make.js\" . make",
-    "dist": "node -r \"doodad-js-make/make.js\" . install",
-    "browserify": "node -r \"doodad-js-make/make.js\" . custom=browserify",
-    "test": "echo Please install and start package 'doodad-js-test'."
-  },
-  "devDependencies": {
-    "doodad-js-make": "^1.5.0-alpha.0"
-  },
-  "main": "index.js",
-  "browser": "browserify/browserify.js",
-  "engines": {
-    "node": ">=4.2.0"
-  },
   "name": "doodad-js",
   "description": "Object-oriented programming framework for Javascript",
-  "version": "6.0.0",
+  "version": "0.0.0",
+  "files": [
+    "tonic.js"
+  ],
   "config": {
     "startup": {
       "debug": false,
