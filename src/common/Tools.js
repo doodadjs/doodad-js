@@ -69,7 +69,7 @@ module.exports = {
 					
 				var __options__ = types.nullObject({
 					logLevel: tools.LogLevels.Error,
-					unhandledRejectionsTimeout: 1000,
+					unhandledRejectionsTimeout: 5000,
 					unhandledRejectionsMaxSize: 20,
 				}, _options);
 
