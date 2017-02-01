@@ -205,6 +205,10 @@ module.exports = {
 				_shared.DESTROY = function(obj) {
 					if (types.isObject(obj) && !types.getType(obj) && types.isFunction(obj.destroy)) {
 						if (!obj.destroyed) {
+							if (types.isEmitter(obj)) {
+								// <PRB> Events may still occur even after "destroy".
+								obj.removeAllListeners();
+							};
 							obj.destroy();
 						};
 					} else {
