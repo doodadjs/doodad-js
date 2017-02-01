@@ -264,6 +264,7 @@ module.exports = {
 							__Internal__.unhandledErrorEvent.set(listener, handler);
 						};
 					} else if (event === 'unhandledrejection') {
+						// FUTURE: Use new standardized method (with the GC).
 						if (!__Internal__.unhandledRejectionEvent.has(listener)) {
 							var handler = function(ev) {
 								listener(new types.CustomEvent('unhandledrejection', {
@@ -277,6 +278,7 @@ module.exports = {
 							__Internal__.unhandledRejectionEvent.set(listener, handler);
 						};
 					} else if (event === 'rejectionhandled') {
+						// FUTURE: Use new standardized method (with the GC).
 						if (!__Internal__.handledRejectionEvent.has(listener)) {
 							var handler = function(ev) {
 								listener(new types.CustomEvent('rejectionhandled', {
