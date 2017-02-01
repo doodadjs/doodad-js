@@ -96,6 +96,16 @@ module.exports = {
 						'HTMLAudioElement': 'Audio',
 						'Image': 'HTMLImageElement',
 						'HTMLImageElement': 'Image',
+
+						// Safari
+						'AnimationEvent': 'WebKitAnimationEvent',
+						'WebKitAnimationEvent': 'AnimationEvent',
+						'TransitionEvent': 'WebKitTransitionEvent',
+						'WebKitTransitionEvent': 'TransitionEvent',
+
+						// Edge
+						'DOMTokenList': 'DOMSettableTokenList',
+						'DOMSettableTokenList': 'DOMTokenList',
 					});
 
 					for (var i = 0; i < tempNatives.length; i++) {
@@ -106,8 +116,8 @@ module.exports = {
 						if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
 							if (types.has(problematicAliases, name)) {
 								var alias = global[problematicAliases[name]];
-								if (alias && (native !== alias) && (native.prototype === alias.prototype)) {
-									// <PRB> Some natives share the same prototype
+								if (alias && (native !== alias)) {
+									// <PRB> Some natives share the same prototype, or are duplicated.
 									continue;
 								};
 							};
