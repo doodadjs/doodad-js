@@ -28,7 +28,7 @@ Object-oriented programming framework for Javascript.
 
 ## Quick Start
 
-# Browsers
+### Browsers
 
 Download and extract current .zip file from https://github.com/doodadjs/doodad-js/releases.
 
@@ -54,7 +54,7 @@ From Javascript, when the script is loaded, create the root namespace :
         });
 ```
 
-# Node.js
+### Node.js
 
 Download and install Doodad from NPM :
 
