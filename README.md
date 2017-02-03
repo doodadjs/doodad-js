@@ -4,12 +4,6 @@ Object-oriented programming framework for Javascript.
  
 <<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
 
-## Installation
-
-```bash
-$ npm install doodad-js
-```
-
 ## Features
 
   -  Classes (not ES6's ones)
@@ -34,6 +28,40 @@ $ npm install doodad-js
 
 ## Quick Start
 
+# Browsers
+
+Download and extract current .zip file from https://github.com/doodadjs/doodad-js/releases.
+
+In your HTML, load the Doodad package :
+
+```html
+	<script src="doodad-js.js"></script>
+```
+
+or, from source code :
+
+```html
+	<script src="doodad-js_debug.js"></script>
+```
+
+From Javascript, when the script is loaded, create the root namespace :
+
+```js
+	window.createRoot()
+		.then(root => ...)
+        .catch(err => {
+            console.error(err);
+        });
+```
+
+# Node.js
+
+Download and install Doodad from NPM :
+
+```bash
+$ npm install doodad-js --save
+```
+
 By default, Doodad is running in production mode, which disables every validations. You may want to activate the development mode by setting the "NODE_ENV" environment variable :
 
 Windows :
@@ -44,7 +72,8 @@ Linux/Unix :
 ```bash
     export NODE_ENV=development
 ```
-Now create the root namespace :
+
+Now, from Javascript, create the root namespace :
 ```js
     require('doodad-js').createRoot()
 		.then(root => ...)
@@ -52,6 +81,8 @@ Now create the root namespace :
             console.error(err);
         });
 ```
+
+## Usage
 
 You can create a shortcut to the namespaces this way :
 ```js
@@ -63,31 +94,6 @@ You can create a shortcut to the namespaces this way :
         extenders = doodad.Extenders,
         namespaces = doodad.Namespaces,
         ... ;
-```
-
-If you want to load some Doodad modules at startup :
-```js
-    const modules = {};
-	require('doodad-js-locale').add(modules);
-	require('doodad-js-dates').add(modules);
-	// ...
-    
-    require('doodad-js').createRoot(modules)
-		.then(root => ...)
-        .catch(err => {
-            console.error(err);
-        });
-```
-
-If you want to load additional Doodad modules after startup :
-```js
-    const modules = {};
-	require('doodad-js-locale').add(modules);
-	require('doodad-js-dates').add(modules);
-	// ...
-    
-    return namespaces.load(modules)
-		.then(root => ...);
 ```
 
 ## Scopes
