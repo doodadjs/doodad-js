@@ -4107,6 +4107,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function PRIVATE(value) {
+						// <FUTURE> Will not have other choices than transpiling to JS classes to be able to use the incomming private fields and make Doodad's private fields more secure.
 						var extender;
 						if (types._instanceof(value, types.getType(extenders.Extender))) {
 							extender = value;
@@ -4942,16 +4943,32 @@ module.exports = {
 							};
 						};
 						
-						if (!types.isSymbol(attr)) {
+						if (types.isSymbol(attr)) {
+							// <FUTURE> When transpiling "ddclass" to "class"...
+								//if (scope === doodad.Scopes.Private) {
+								//	throw new types.Error("Symbol attributes can't be made private.");
+								//};
+							// </FUTURE>
+						} else {
 							if (root.getOptions().debug || __options__.enforcePolicies) {
+								var pos = 0;
+								// <FUTURE> When transpiling "ddclass" to "class"...
+									//if (scope === doodad.Scopes.Private) {
+									//	// Private fields must start with a stupid vigil...
+									//	if (attr[pos] !== '#') {
+									//		throw new types.Error("Private attribute name must begin with '#'.");
+									//	};
+									//	pos++;
+									//};
+								// </FUTURE>
 								if (!!extender.isType !== !!extender.isInstance) {
-									if (attr[0] === '$') {
+									if (attr[pos] === '$') {
 										if (!extender.isType) {
-											throw new types.Error("Instance attributes must not begin with '$'.");
+											throw new types.Error("Instance attribute name must not begin with '$'.");
 										};
 									} else {
 										if (!extender.isInstance) {
-											throw new types.Error("Type attributes must begin with '$'.");
+											throw new types.Error("Type attribute name must begin with '$'.");
 										};
 									};
 								};
@@ -4998,6 +5015,10 @@ module.exports = {
 									if (types.isNothing(destAttribute[__Internal__.symbolScope])) {
 										var scope = types.get(sourceAttribute, __Internal__.symbolScope);
 										if (types.isNothing(scope)) {
+											// <FUTURE> When transpiling "ddclass" to "class"...
+												//if (!types.isSymbol(attr) && (attr[0] === '#')) {
+												//	destAttribute[__Internal__.symbolScope] = doodad.Scopes.Private;
+											// </FUTURE>
 											if (!types.isSymbol(attr) && ( (attr.slice(0, 2) === '__') || (attr.slice(0, 3) === '$__') )) {
 												destAttribute[__Internal__.symbolScope] = doodad.Scopes.Protected;
 											} else {
