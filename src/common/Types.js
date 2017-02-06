@@ -1640,11 +1640,12 @@ module.exports = {
 						} else {
 							var primitive = types.isPrimitive(obj);
 							obj = _shared.Natives.windowObject(obj);
-							var val;
-							if ('valueOf' in obj) {
-								val = obj.valueOf();
-							} else {
-								val = obj;
+							var val = obj;
+							if (types.isFunction(obj.valueOf)) {
+								try {
+									val = obj.valueOf();
+								} catch(o) {
+								};
 							};
 							if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 								return obj.toSource();
