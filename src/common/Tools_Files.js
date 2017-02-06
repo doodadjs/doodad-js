@@ -1967,7 +1967,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 5,
+										revision: 6,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2203,6 +2203,9 @@ module.exports = {
 										};
 									};
 									
+									if (types._instanceof(args, files.UrlArguments)) {
+										args = (args.toString({noEscapes: noEscapes}) || null);
+									};
 									if (types.isNothing(args) || types.isString(args) || types.isJsObject(args)) {
 										args = _shared.urlArgumentsParser(args, {
 											noEscapes: noEscapes,
