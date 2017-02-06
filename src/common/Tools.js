@@ -176,7 +176,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -217,6 +217,15 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									var iter = obj[_shared.Natives.symbolIterator](),
+										key = 0,
+										result;
+									while ((result = iter.next()) && !result.done) {
+										if (item.call(thisObj, result.value, key++, obj)) {
+											return key;
+										};
+									};
 								} else {
 									var keys = types.keys(obj),
 										len = keys.length, // performance
@@ -237,6 +246,16 @@ module.exports = {
 												return key;
 											};
 										};
+									};
+								} else if (types.isIterable(obj)) {
+									var iter = obj[_shared.Natives.symbolIterator](),
+										key = 0,
+										result;
+									while ((result = iter.next()) && !result.done) {
+										if (result.value === item) {
+											return key;
+										};
+										key++;
 									};
 								} else {
 									var keys = types.keys(obj),
@@ -1159,7 +1178,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1206,9 +1225,10 @@ module.exports = {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var key = 0,
+								var iter = obj[_shared.Natives.symbolIterator](),
+									key = 0,
 									item;
-								while ((item = obj.next()) && !item.done) {
+								while ((item = iter.next()) && !item.done) {
 									fn.call(thisObj, item.value, key++, obj);
 								};
 							} else {
@@ -1230,7 +1250,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1309,8 +1329,9 @@ module.exports = {
 									};
 								} else if (types.isIterable(obj)) {
 									result = [];
-									var item;
-									while ((item = obj.next()) && !item.done) {
+									var iter = obj[_shared.Natives.symbolIterator](),
+										item;
+									while ((item = iter.next()) && !item.done) {
 										if (invert === !items.call(thisObj, item.value, undefined, obj)) {
 											result.push(item.value);
 										};
@@ -1356,8 +1377,9 @@ module.exports = {
 									};
 								} else if (types.isIterable(obj)) {
 									result = [];
-									var item;
-									while ((item = obj.next()) && !item.done) {
+									var iter = obj[_shared.Natives.symbolIterator](),
+										item;
+									while ((item = iter.next()) && !item.done) {
 										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
 											result.push(item.value);
 										};
@@ -1489,7 +1511,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1560,9 +1582,10 @@ module.exports = {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var key = 0,
+								var iter = obj[_shared.Natives.symbolIterator](),
+									key = 0,
 									item;
-								while ((item = obj.next()) && !item.done) {
+								while ((item = iter.next()) && !item.done) {
 									if (invert === !!items.call(thisObj, item.value, key++, obj)) {
 										return false;
 									};
@@ -1603,9 +1626,10 @@ module.exports = {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var key = 0,
+								var iter = obj[_shared.Natives.symbolIterator](),
+									key = 0,
 									item;
-								while ((item = obj.next()) && !item.done) {
+								while ((item = iter.next()) && !item.done) {
 									if (invert === (tools.findItem(items, item.value, undefined, true) !== null)) {
 										return false;
 									};
@@ -1631,7 +1655,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1700,9 +1724,10 @@ module.exports = {
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var key = 0,
+									var iter = obj[_shared.Natives.symbolIterator](),
+										key = 0,
 										item;
-									while ((item = obj.next()) && !item.done) {
+									while ((item = iter.next()) && !item.done) {
 										if (invert === !items.call(thisObj, item.value, key++, obj)) {
 											return true;
 										};
@@ -1745,9 +1770,10 @@ module.exports = {
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var key = 0,
+									var iter = obj[_shared.Natives.symbolIterator](),
+										key = 0,
 										item;
-									while ((item = obj.next()) && !item.done) {
+									while ((item = iter.next()) && !item.done) {
 										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
 											return true;
 										};
