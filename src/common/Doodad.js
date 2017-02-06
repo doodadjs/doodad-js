@@ -840,11 +840,11 @@ module.exports = {
 				};
 
 				__Internal__.oldTypesClone = _shared.clone;
-				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
+				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonable) {
 					if (types._implements(obj, mixIns.Clonable)) {
 						return obj.clone();
 					} else {
-						return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked);
+						return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked, keepNonClonable);
 					};
 				};
 				
