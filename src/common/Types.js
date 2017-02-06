@@ -904,7 +904,7 @@ module.exports = {
 									var len = obj.length;
 									for (var key = 0; key < len; key++) {
 										if (key in obj) {
-											result[key] = types.clone(obj[key], depth, cloneFunctions);
+											result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
 										};
 									};
 								} else {
@@ -996,7 +996,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 6,
+								revision: 7,
 								params: {
 									obj: {
 										type: 'any',
