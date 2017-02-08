@@ -62,8 +62,8 @@
 				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
 				functionToString: global.Function.prototype.toString,
 
-				// "supportsES6Classes"
-				objectCreate: global.Object.create,
+				//// "supportsES6Classes"
+				//objectCreate: global.Object.create,
 
 				// "DD_DOC"
 				windowObject: global.Object,
@@ -158,10 +158,11 @@
 			try {
 				var cls = __Internal__.evals.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
 				__Internal__.hasClasses = (_shared.Natives.functionToString.call(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
-				if (__Internal__.hasClasses) {
-					cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
-					__Internal__.classesNotCallable = false; // in case of !
-				};
+				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
+				//if (__Internal__.hasClasses) {
+				//	cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
+				//	__Internal__.classesNotCallable = false; // in case of !
+				//};
 			} catch(o) {
 			};
 		})();
