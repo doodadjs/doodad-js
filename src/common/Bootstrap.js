@@ -3638,9 +3638,10 @@
 		// UUIDs
 		//===================================
 
+		__Internal__.nodeUUID = null;
 		if (typeof require === 'function') {
 			try {
-				// NOTE: Client-side 'uuid' is browserified
+				// NOTE: Client-side 'uuid' is browserified and made available through "require"
 				__Internal__.nodeUUID = require('uuid');
 			} catch(ex) {
 			};
