@@ -1797,6 +1797,11 @@ module.exports = {
 									optional: false,
 									description: "Callback functions.",
 								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
 							},
 							returns: 'undefined',
 							description: "Creates a file watcher.",

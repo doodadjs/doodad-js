@@ -885,7 +885,7 @@ module.exports = {
 					return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || types._instanceof(obj, types.Map) || types._instanceof(obj, types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
 				};
 
-				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
+				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
 					// NOTE: This function will get replaced when "Doodad.js" is loaded.
 					var result;
 
@@ -904,7 +904,7 @@ module.exports = {
 									var len = obj.length;
 									for (var key = 0; key < len; key++) {
 										if (key in obj) {
-											result[key] = types.clone(obj[key], depth, cloneFunctions);
+											result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
 										};
 									};
 								} else {
@@ -924,6 +924,8 @@ module.exports = {
 							} else {  // if (types.isObject(obj))
 								result = types.createObject(types.getPrototypeOf(obj));
 							};
+						} else if (keepNonClonables) {
+							return obj;
 						} else {
 							throw new types.Error("Object is not clonable.");
 						};
@@ -946,7 +948,7 @@ module.exports = {
 							if (!prop || prop.configurable) {
 								prop = types.getOwnPropertyDescriptor(obj, key);
 								if (types.has(prop, 'value') && (depth >= 0)) {
-									prop.value = types.clone(prop.value, depth, cloneFunctions);
+									prop.value = _shared.clone(prop.value, depth, cloneFunctions, keepUnlocked, keepNonClonables);
 								};
 								props[key] = prop;
 							};
@@ -994,7 +996,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 5,
+								revision: 7,
 								params: {
 									obj: {
 										type: 'any',
@@ -1016,13 +1018,18 @@ module.exports = {
 										optional: true,
 										description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
 									},
+									keepNonClonables: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true', will keep non-clonable values instead of throwing. When 'false', will throw an error on a non-clonable value. Default is 'false'.",
+									},
 								},
 								returns: 'any',
 								description: "Clones a value.",
 					}
 					//! END_REPLACE()
-					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked) {
-						return _shared.clone(obj, depth, cloneFunctions, keepUnlocked);
+					, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
+						return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
 					}));
 				
 
@@ -1633,7 +1640,13 @@ module.exports = {
 						} else {
 							var primitive = types.isPrimitive(obj);
 							obj = _shared.Natives.windowObject(obj);
-							var val = obj.valueOf();
+							var val = obj;
+							if (types.isFunction(obj.valueOf)) {
+								try {
+									val = obj.valueOf();
+								} catch(o) {
+								};
+							};
 							if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 								return obj.toSource();
 							} else {
