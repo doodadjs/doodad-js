@@ -1872,6 +1872,7 @@ module.exports = {
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (this.cloneOnInit) {
 									value = types.clone(value, this.maxDepth, false, this.keepUnlocked);
+									isProto = null;
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -1957,6 +1958,7 @@ module.exports = {
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (!types.isNothing(value)) {
 									value = types.unique(value);
+									isProto = null;
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -2560,7 +2562,11 @@ module.exports = {
 											destCallers.length = 0;
 											types.append(destCallers, callersOrFn);
 										};
-										destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0);
+										if (sourceAttribute) {
+											destAttribute[__Internal__.symbolCallFirstLength] = sourceAttribute[__Internal__.symbolCallFirstLength];
+										} else {
+											destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0);
+										};
 									};
 								};
 
@@ -2730,6 +2736,7 @@ module.exports = {
 
 								if (this.bindMethod && value) {
 									value = types.bind(obj, value);
+									isProto = null;
 								};
 
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
