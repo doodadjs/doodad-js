@@ -961,7 +961,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -983,6 +983,7 @@ module.exports = {
 					if (types.isString(path)) {
 						path = files.Path.parse(path);
 					};
+					path = path.pushFile();
 					const async = types.get(options, 'async', false);
 					const ignoreExists = types.get(options, 'ignoreExists', true);
 					if (types.get(options, 'makeParents', false)) {
@@ -990,7 +991,6 @@ module.exports = {
 							if (index < dir.length) {
 								const name = path.toString({
 									path: dir.slice(0, index + 1),
-									file: null,
 									os: null,
 									dirChar: null,
 									shell: 'api',
@@ -1027,7 +1027,7 @@ module.exports = {
 								};
 							};
 						};
-						return create(path.path, 0);
+						return create(path.toArray({pathOnly: true, trim: true}), 0);
 					} else {
 						const name = path.toString({
 							os: null,
