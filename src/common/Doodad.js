@@ -2562,11 +2562,7 @@ module.exports = {
 											destCallers.length = 0;
 											types.append(destCallers, callersOrFn);
 										};
-										if (sourceAttribute) {
-											destAttribute[__Internal__.symbolCallFirstLength] = sourceAttribute[__Internal__.symbolCallFirstLength];
-										} else {
-											destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0);
-										};
+										destAttribute[__Internal__.symbolCallFirstLength] = (!sourceAttribute || types.isNothing(sourceAttribute[__Internal__.symbolCallFirstLength]) ? ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0) : sourceAttribute[__Internal__.symbolCallFirstLength]);
 									};
 								};
 
