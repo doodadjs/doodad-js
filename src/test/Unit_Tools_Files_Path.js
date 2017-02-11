@@ -140,7 +140,7 @@ module.exports = {
 								quote: '"',
 								isRelative: false,
 								noEscapes: false,
-								shell: 'api',
+								shell: 'dos',
 							}, {depth: 1}, /**/ '"C:\\Temp\\SubFolder\\File.txt"', options);
 							
 						} else {
@@ -211,16 +211,16 @@ module.exports = {
 								quote: '"',
 								isRelative: false,
 								noEscapes: false,
-								shell: 'api',
+								shell: 'bash',
 							}, {depth: 1}, /**/ '"/tmp/subfolder/file.txt"', options);
 							
 							command.run({
 								os: osType,
 								dirChar: '/',
-								root: [],
+								root: ['C:', 'SubFolder'],
 								drive: '',
 								path: [],
-								file: "C:\\SubFolder\\File.txt",
+								file: "File.txt",
 								extension: 'txt',
 								quote: '',
 								isRelative: true,
@@ -280,14 +280,14 @@ module.exports = {
 							command.run("\\Sub Folder\\My File.txt",                     {repetitions: 100}, /**/ "\\Sub Folder\\My File.txt", options);
 							command.run("C:\\Users\\Claude\\SubFolder\\File.txt",        {repetitions: 100}, /**/ "\\SubFolder\\File.txt", types.extend({}, options, {root: "C:\\Users\\Claude"}));
 							command.run("C:\\Users\\Claude\\File.txt",                   {repetitions: 100}, /**/ "\\SubFolder\\..\\File.txt", types.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
-							command.run("C:\\Users\\File.txt",                           {repetitions: 100}, /**/ "\\SubFolder\\..\\..\\File.txt", types.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
+							command.run(files.PathError,		                      {mode: 'isinstance'}, /**/ "\\SubFolder\\..\\..\\File.txt", types.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
 							command.run('"C:\\Temp\\SubFolder\\File.txt"',               {repetitions: 100}, /**/ '"C:\\Temp\\SubFolder\\File.txt"', options);
 							command.run('"\\Temp\\SubFolder\\File.txt"',                 {repetitions: 100}, /**/ '"\\Temp\\SubFolder\\File.txt"', options);
 							command.run('"Temp\\SubFolder\\File.txt"',                   {repetitions: 100}, /**/ '"Temp\\SubFolder\\File.txt"', options);
 							command.run('"File.txt"',                                    {repetitions: 100}, /**/ '"File.txt"', options);
 							command.run('"\\Sub Folder\\My File.txt"',                   {repetitions: 100}, /**/ '"\\Sub Folder\\My File.txt"', options);
 							command.run('\\"Sub Folder"\\"My File.txt"',                 {repetitions: 100}, /**/ '\\"Sub Folder"\\"My File.txt"', options);
-							command.run("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
+							command.run("\\tmp\\subfolder\\file.txt",                    {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
 							
 							command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My Folder\\My File.txt", types.extend({}, options, {shell: 'dos'}));
 							command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My^ Folder\\My^ File.txt", types.extend({}, options, {shell: 'dos'}));
@@ -315,12 +315,13 @@ module.exports = {
 							command.run("/Sub Folder/My File.txt",                       {repetitions: 100}, /**/ "/Sub Folder/My File.txt", options);
 							command.run("/home/claude/subfolder/file.txt",               {repetitions: 100}, /**/ "/subfolder/file.txt", types.extend({}, options, {root: "/home/claude"}));
 							command.run("/home/claude/file.txt",                         {repetitions: 100}, /**/ "/subfolder/../file.txt", types.extend({}, options, {root: "/home/claude", isRelative: false}));
-							command.run("/home/file.txt",                                {repetitions: 100}, /**/ "/subfolder/../../file.txt", types.extend({}, options, {root: "/home/claude", isRelative: false}));
+							command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "/subfolder/../../file.txt", types.extend({}, options, {root: "/home/claude", isRelative: false}));
 							command.run('"/tmp/subfolder/file.txt"',                     {repetitions: 100}, /**/ '"/tmp/subfolder/file.txt"', options);
 							command.run('"tmp/subfolder/file.txt"',                      {repetitions: 100}, /**/ '"tmp/subfolder/file.txt"', options);
 							command.run('"file.txt"',                                    {repetitions: 100}, /**/ '"file.txt"', options);
 							command.run('"/subfolder/My File.txt"',                      {repetitions: 100}, /**/ '"/subfolder/My File.txt"', options);
 							command.run('/"subfolder"/"My File.txt"',                    {repetitions: 100}, /**/ '/"subfolder"/"My File.txt"', options);
+							command.run("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "\\tmp\\subfolder\\file.txt", options);
 
 							command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "/My Folder/My File.txt", types.extend({}, options, {shell: 'bash'}));
 							command.run("/My\\ Folder/My\\ File.txt",                    {repetitions: 100}, /**/ "/My\\ Folder/My\\ File.txt", types.extend({}, options, {shell: 'bash'}));
@@ -364,8 +365,8 @@ module.exports = {
 					command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "File.txt", {os: 'windows'}, {os: 'windows'});
 					command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "\\File.txt", {os: 'windows'}, {os: 'windows'});
 					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
-					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
-					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\SubFolder\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\SubFolder\\", "\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
 					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "SubFolder\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
 					command.run("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
 					command.run("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
@@ -380,8 +381,8 @@ module.exports = {
 					command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "File.txt", {os: 'linux'}, {os: 'linux'});
 					command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "/File.txt", {os: 'linux'}, {os: 'linux'});
 					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "../File.txt", {os: 'linux'}, {os: 'linux'});
-					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "../File.txt", {os: 'linux'}, {os: 'linux'});
-					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "/../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "/../File.txt", {os: 'linux'}, {os: 'linux'});
 					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "SubFolder/../File.txt", {os: 'linux'}, {os: 'linux'});
 					command.run("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
 					command.run("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
@@ -426,8 +427,8 @@ module.exports = {
 					command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "file:///SubFolder/File.txt", {os: 'windows'});
 					command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "file:///File.txt", {os: 'windows'});
 					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "file://../File.txt", {os: 'windows'}, {isRelative: true});
-					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "file://../File.txt", {os: 'windows'}, {isRelative: true});
-					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "file:///../File.txt", {os: 'windows'}, {isRelative: true});
+					command.run(files.PathError,                                         {mode: 'isinstance'},  /**/ "C:\\SubFolder\\", "file://../File.txt", {os: 'windows'}, {isRelative: true});
+					command.run(files.PathError,                                         {mode: 'isinstance'},  /**/ "C:\\SubFolder\\", "file:///../File.txt", {os: 'windows'}, {isRelative: true});
 					command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "file://SubFolder/../File.txt", {os: 'windows'});
 					command.run("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "file:///File2.txt", {os: 'windows'});
 					command.run("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "file:///File2.txt", {os: 'windows'});
@@ -441,15 +442,15 @@ module.exports = {
 					command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "file:///SubFolder/File.txt", {os: 'linux'});
 					command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "file:///File.txt", {os: 'linux'});
 					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "file://../File.txt", {os: 'linux'}, {isRelative: true});
-					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "file://../File.txt", {os: 'linux'}, {isRelative: true});
-					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "file:///../File.txt", {os: 'linux'}, {isRelative: true});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "file://../File.txt", {os: 'linux'}, {isRelative: true});
+					command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "file:///../File.txt", {os: 'linux'}, {isRelative: true});
 					command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "file://SubFolder/../File.txt", {os: 'linux'});
 					command.run("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "file:///File2.txt", {os: 'linux'});
 					command.run("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "file:///File2.txt", {os: 'linux'});
 					command.run("/File1.txt/SubFolder/File2.txt",                        {repetitions: 100}, /**/ "/File1.txt", "file://SubFolder/File2.txt", {os: 'linux'});
 					command.run("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "file://SubFolder2/File2.txt", {os: 'linux'});
 					
-					command.run(types.ParseError,                                     {mode: 'isinstance'}, /**/ "/SubFolder/", "http://www.doodad-js.local/File.txt", {os: 'linux'});
+					command.run(types.ParseError,                                       {mode: 'isinstance'}, /**/ "/SubFolder/", "http://www.doodad-js.local/File.txt", {os: 'linux'});
 
 					command.end();
 					
