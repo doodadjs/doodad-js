@@ -3325,37 +3325,35 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
+							obj: {
+								type: 'arraylike',
+								optional: false,
+								description: "Target array.",
+							},
 							paramarray: {
 								type: 'arrayof(arraylike)',
-								optional: false,
+								optional: true,
 								description: "Arrays to append.",
 							},
 						},
 						returns: 'array',
-						description: "Appends the items of each array to the first array then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
+						description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
 			}
 			//! END_REPLACE()
 			, function append(obj /*paramarray*/) {
-				var result,
-					start = 0;
-				if (types.isArrayLike(obj)) {
-					result = obj;
-					start = 1;
-				} else {
-					result = [];
+				if (!types.isArrayLike(obj)) {
+					return null;
 				};
-				
 				var len = arguments.length;
-				for (var i = start; i < len; i++) {
-					obj = arguments[i];
-					if (!types.isNothing(obj)) {
-						_shared.Natives.arrayPush.apply(result, obj);
+				for (var i = 1; i < len; i++) {
+					var arg = arguments[i];
+					if (!types.isNothing(arg)) {
+						_shared.Natives.arrayPush.apply(obj, arg);
 					};
 				};
-				
-				return result;
+				return obj;
 			}));
 			
 		__Internal__.ADD('unique', __Internal__.DD_DOC(

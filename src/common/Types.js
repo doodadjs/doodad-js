@@ -1559,43 +1559,35 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
-									paramarray: {
-										type: 'array',
+									obj: {
+										type: 'arraylike',
 										optional: false,
+										description: "Target array.",
+									},
+									paramarray: {
+										type: 'arrayof(arraylike)',
+										optional: true,
 										description: "An array.",
 									},
 								},
 								returns: 'array',
-								description: "Prepends the items of each array to the first array than returns that array.",
+								description: "Prepends the items of each array to the first argument than returns that array.",
 					}
 					//! END_REPLACE()
 					, function prepend(obj /*paramarray*/) {
 						if (!types.isArrayLike(obj)) {
 							return null;
 						};
-						
-						var result,
-							start = 0;
-						if (types.isArray(obj)) {
-							result = obj;
-							start = 1;
-						} else {
-							result = [];
-						};
-						
 						var len = arguments.length;
-						for (var i = start; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
+						for (var i = 1; i < len; i++) {
+							var arg = arguments[i];
+							if (!types.isNothing(arg)) {
+								_shared.Natives.arrayUnshift.apply(obj, arg);
 							};
-							obj = _shared.Natives.windowObject(obj);
-							_shared.Natives.arrayUnshift.apply(result, obj);
 						};
-						
-						return result;
+						return obj;
 					}));
 				
 				
