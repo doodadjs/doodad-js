@@ -348,7 +348,7 @@ module.exports = {
 					createArrays();
 					
 					var command = test.prepareCommand(types.append, "Doodad.Types.append");
-					command.run(null,                                           {eval: true}     /**/ );
+					command.run("[]",                                         {eval: true}     /**/ );
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]",       {eval: true},    /**/ "ar1");
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot, 3, 4]", {eval: true},    /**/ "ar1", "[3, 4]");
 					createArrays();
