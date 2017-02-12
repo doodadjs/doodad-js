@@ -2841,9 +2841,9 @@ module.exports = {
 										args = types.get(options, 'args', this.args),
 										anchor = types.get(options, 'anchor', this.anchor),
 										file = types.get(options, 'file', this.file),
-										isPath = types.get(options, 'isPath', false),
+										pathOnly = types.get(options, 'pathOnly', false),
 										trim = types.get(options, 'trim', false);
-									if (isPath) {
+									if (pathOnly) {
 										protocol = null;
 										domain = null;
 										user = null;
