@@ -561,7 +561,7 @@
 			windowDate: (types.isNativeFunction(global.Date) ? global.Date : undefined),
 			
 			// "createErrorType", "isError"
-			windowError: (global.Error || Error), // NOTE: "node.js" does not include "Error" in "global".
+			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
 
 			windowTypeError: (types.isNativeFunction(global.TypeError) ? global.TypeError : undefined),
 			
@@ -596,16 +596,19 @@
 			dateValueOf: global.Date.prototype.valueOf,
 
 			// "isNaN"
-			numberIsNaN: (global.Number && types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
+			numberIsNaN: (types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
 
 			// "isFinite"
-			numberIsFinite: (global.Number && types.isNativeFunction(global.Number.isFinite) ? global.Number.isFinite : undefined),
+			numberIsFinite: (types.isNativeFunction(global.Number.isFinite) ? global.Number.isFinite : undefined),
 			
+			// "concat"
+			arrayConcat: (types.isNativeFunction(global.Array.prototype.concat) ? global.Array.prototype.concat : undefined),
+
 			// "append"
-			arrayPush: (global.Array && global.Array.prototype || []).push,
+			arrayPush: global.Array.prototype.push,
 			
 			// "isInteger"
-			numberIsInteger: (global.Number && types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
+			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
 
 			// "trim"
 			stringTrim: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim : undefined),
@@ -3277,30 +3280,67 @@
 				return result;
 			}));
 		
-		__Internal__.ADD('append', __Internal__.DD_DOC(
+		__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'types.concat'.
+		__Internal__.ADD('concat', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 0,
 						params: {
 							paramarray: {
-								type: 'array',
+								type: 'arrayof(any)',
 								optional: false,
-								description: "An array.",
+								description: "Values or arrays to concatenate.",
 							},
 						},
 						returns: 'array',
-						description: "Appends the items of each array to the first array than returns that array.",
+						description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
+			}
+			//! END_REPLACE()
+			, (_shared.Natives.arrayConcat ? 
+				function concat(/*paramarray*/) {
+					return _shared.Natives.arrayConcat.apply(__Internal__.emptyArray, arguments);
+				}
+			: 
+				function concat(/*paramarray*/) {
+					var result = [];
+				
+					var len = arguments.length;
+					for (var i = 0; i < len; i++) {
+						if (i in arguments) {
+							var obj = arguments[i];
+							if (types.isArray(obj)) {
+								_shared.Natives.arrayPush.apply(result, obj);
+							} else {
+								_shared.Natives.arrayPush.call(result, obj);
+							};
+						};
+					};
+				
+					return result;
+				}
+			)));
+			
+		__Internal__.ADD('append', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							paramarray: {
+								type: 'arrayof(arraylike)',
+								optional: false,
+								description: "Arrays to append.",
+							},
+						},
+						returns: 'array',
+						description: "Appends the items of each array to the first array then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
 			}
 			//! END_REPLACE()
 			, function append(obj /*paramarray*/) {
-				if (!types.isArrayLike(obj)) {
-					return null;
-				};
-				
 				var result,
 					start = 0;
-				if (types.isArray(obj)) {
+				if (types.isArrayLike(obj)) {
 					result = obj;
 					start = 1;
 				} else {
@@ -3310,11 +3350,9 @@
 				var len = arguments.length;
 				for (var i = start; i < len; i++) {
 					obj = arguments[i];
-					if (types.isNothing(obj)) {
-						continue;
+					if (!types.isNothing(obj)) {
+						_shared.Natives.arrayPush.apply(result, obj);
 					};
-					obj = _shared.Natives.windowObject(obj);
-					_shared.Natives.arrayPush.apply(result, obj);
 				};
 				
 				return result;
