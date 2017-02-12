@@ -2483,7 +2483,7 @@ module.exports = {
 								};
 								
 								var replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
-								if (sourceAttribute && sourceAttribute[__Internal__.symbolReplacedCallers]) {
+								if (sourceAttribute[__Internal__.symbolReplacedCallers]) {
 									destAttribute[__Internal__.symbolReplacedCallers] = replacedCallers = types.unique(replacedCallers, sourceAttribute[__Internal__.symbolReplacedCallers]);
 								};
 
@@ -2520,9 +2520,7 @@ module.exports = {
 										};
 										var removed = _shared.Natives.arraySplice.apply(destCallers, types.append([start, toRemove], callersOrFn));
 										destAttribute[__Internal__.symbolReplacedCallers] = types.append(replacedCallers, removed);
-										if (sourceAttribute) {
-											destAttribute[__Internal__.symbolCallFirstLength] = start + sourceAttribute[__Internal__.symbolCallFirstLength];
-										};
+										destAttribute[__Internal__.symbolCallFirstLength] = start + sourceAttribute[__Internal__.symbolCallFirstLength];
 									};
 								} else {
 									// Create
@@ -2562,7 +2560,7 @@ module.exports = {
 											destCallers.length = 0;
 											types.append(destCallers, callersOrFn);
 										};
-										destAttribute[__Internal__.symbolCallFirstLength] = (!sourceAttribute || types.isNothing(sourceAttribute[__Internal__.symbolCallFirstLength]) ? ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : 0) : sourceAttribute[__Internal__.symbolCallFirstLength]);
+										destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[__Internal__.symbolCallFirstLength]);
 									};
 								};
 
