@@ -932,6 +932,7 @@ module.exports = {
 
 						// Copy properties
 						var keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
+							arrayLen = isArray && obj.length,
 							props = {};
 						for (var i = 0; i < keys.length; i++) {
 							var key = keys[i];
@@ -940,7 +941,7 @@ module.exports = {
 									continue;
 								};
 								var tmp = _shared.Natives.windowNumber(key);
-								if (!types.isNaN(tmp) && !types.isInfinite(tmp)) {
+								if ((tmp >= 0) && (tmp < arrayLen)) {
 									continue;
 								};
 							};
