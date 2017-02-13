@@ -166,7 +166,7 @@ module.exports = {
 						};
 					};
 
-					// Bluebird "map" polyfill + new Doodad options
+					// Bluebird "map" polyfill
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
 							var Promise = this;
@@ -176,25 +176,22 @@ module.exports = {
 
 								options = types.nullObject({
 									concurrency: Infinity,
-									thisObj: undefined, // New option added by Doodad
 								}, options);
 							
 								if ((len <= 0) || (options.concurrency <= 0)) {
 									return [];
 								};
 
-								var thisObj = options.thisObj;
-
 								if (options.concurrency >= len) {
 									return Promise.all(tools.map(ar, function _mapFn(val, key, obj) {
-										return Promise.resolve(fn.call(thisObj, val, key, obj));
+										return Promise.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
 									var result = _shared.Natives.arrayConstructor(len);
 									var state = {start: 0};
 									var mapFn = function _mapFn(val, key, obj) {
 										state.start++;
-										return Promise.resolve(fn.call(thisObj, val, key, obj))
+										return Promise.resolve(fn.call(undefined, val, key, obj))
 											.then(function(res) {
 												result[key] = res;
 												var pos = state.start;
@@ -233,7 +230,7 @@ module.exports = {
 					// Add promise name
 					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise = new this(callback);
 						if (callback) {
@@ -247,7 +244,7 @@ module.exports = {
 					var oldTry = Promise['try'];
 					Promise['try'] = function _try(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise = oldTry.call(this, callback);
 						if (callback) {
@@ -263,7 +260,7 @@ module.exports = {
 					Promise.map = function _map(ar, callback, /*optional*/options) {
 						var thisObj = types.get(options, 'thisObj');
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise = oldMap.call(this, ar, callback, options);
 						if (callback) {
@@ -282,10 +279,10 @@ module.exports = {
 							rejectedCb = null;
 						};
 						if (resolvedCb && thisObj) {
-							resolvedCb = new _shared.PromiseCallback(thisObj, resolvedCb);
+							resolvedCb = _shared.PromiseCallback(thisObj, resolvedCb);
 						};
 						if (rejectedCb && thisObj) {
-							rejectedCb = new _shared.PromiseCallback(thisObj, rejectedCb);
+							rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
 						};
 						var promise = oldThen.call(this, resolvedCb, rejectedCb);
 						if (resolvedCb) {
@@ -321,7 +318,7 @@ module.exports = {
 						var callback = arguments[i++];
 						var thisObj = arguments[i++];
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise;
 						if (filters) {
@@ -373,7 +370,7 @@ module.exports = {
 					var oldAsCallback = Promise.prototype.asCallback;
 					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise = oldAsCallback.call(this, callback);
 						if (callback) {
@@ -390,7 +387,7 @@ module.exports = {
 					var oldFinally = Promise.prototype['finally'];
 					Promise.prototype['finally'] = function _finally(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
-							callback = new _shared.PromiseCallback(thisObj, callback);
+							callback = _shared.PromiseCallback(thisObj, callback);
 						};
 						var promise = oldFinally.call(this, callback);
 						if (callback) {
