@@ -5523,50 +5523,43 @@
 		// Clone
 		//===================================
 		
-		// NOTE: These functions will get replaced when "Doodad.js" is loaded.
 		_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
+			// NOTE: This function will get overriden when "Doodad.js" is loaded.
 			return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || types._instanceof(obj, types.Map) || types._instanceof(obj, types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
 		};
 
 		_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
-			// NOTE: This function will get replaced when "Doodad.js" is loaded.
+			// NOTE: This function will get overriden when "Doodad.js" is loaded.
 			var result;
 
 			if (types.isNothing(obj)) {
 				result = obj;
 			} else {
-				var isArray = types.isArrayLike(obj);
+				var isArray = !types.isString(obj) && types.isArrayLike(obj);
 				depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 				cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							
-				if (types.isClonable(obj)) {
-					if (isArray) {
-						obj = _shared.Natives.windowObject(obj);
-						if (depth >= 0) {
-							result = new _shared.Natives.arrayConstructor(obj.length);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
-									result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
-								};
+				if (isArray) {
+					obj = _shared.Natives.windowObject(obj);
+					if (depth >= 0) {
+						result = new _shared.Natives.arrayConstructor(obj.length);
+						var len = obj.length;
+						for (var key = 0; key < len; key++) {
+							if (key in obj) {
+								result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
 							};
-						} else {
-							result = _shared.Natives.arraySlice.call(obj, 0);
 						};
-					} else if (types.isCustomFunction(obj)) {
-						if (cloneFunctions >= 0) {
-							//result = types.eval(_shared.Natives.functionToString.call(obj));
-							result = types.eval(obj.toString());
-						} else {
-							return obj;
-						};
-					} else if (types._instanceof(obj, types.Map)) {
-						result = new types.Map(obj);
-					} else if (types._instanceof(obj, types.Set)) {
-						result = new types.Set(obj);
-					} else {  // if (types.isObject(obj))
-						result = types.createObject(types.getPrototypeOf(obj));
+					} else {
+						result = _shared.Natives.arraySlice.call(obj, 0);
 					};
+				} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
+					result = types.eval(_shared.Natives.functionToString.call(obj));
+				} else if (types._instanceof(obj, types.Map)) {
+					result = new types.Map(obj);
+				} else if (types._instanceof(obj, types.Set)) {
+					result = new types.Set(obj);
+				} else if (types.isObject(obj)) {
+					result = types.createObject(types.getPrototypeOf(obj));
 				} else if (keepNonClonables) {
 					return obj;
 				} else {
@@ -5640,7 +5633,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 7,
+						revision: 8,
 						params: {
 							obj: {
 								type: 'any',
