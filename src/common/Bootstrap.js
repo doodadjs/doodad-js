@@ -834,7 +834,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							str: {
 								type: 'string,array',
@@ -871,8 +871,8 @@
 					count = Infinity;
 				};
 				
-				if (isArray || (arguments.length > 1)) {
-					var strLen = str.length;
+				if (isArray) {
+ 					var strLen = str.length;
 					
 					var start = 0,
 						x = 0;
@@ -897,9 +897,8 @@
 					if (end >= start) {
 						return str.slice(start, end + 1);
 					} else {
-						return (isArray ? [] : '');
+						return [];
 					};
-					
 				} else if (_shared.Natives.stringTrim && (chr === ' ') && !direction && (count === Infinity)) {
 					return _shared.Natives.stringTrim.call(str);
 				} else {
