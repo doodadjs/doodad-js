@@ -1553,8 +1553,7 @@ module.exports = {
 							};
 							const loopAr = function loopAr(base, ar, index) {
 								if (index >= 0) {
-									const name = base.set({path: ar.slice(0, index)}).toApiString();
-									return readdir(name)
+									return readdir(base.set({path: ar.slice(0, index)}))
 										.then(function resolve(names) {
 											const name = ar[index],
 												nameLc = name.toLowerCase();
