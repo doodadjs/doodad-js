@@ -1057,7 +1057,7 @@ module.exports = {
 									var dontValidate = types.get(options, 'dontValidate', false);
 									
 									if (options) {
-										options = types.clone(options);
+										options = types.nullObject(options);
 										if (types.has(options, 'os')) {
 											if (!types.has(options, 'dirChar')) {
 												options.dirChar = null;
@@ -1128,6 +1128,26 @@ module.exports = {
 									};
 									
 									return result;
+								}),
+
+							toApiString: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: {
+												options: {
+													type: 'object',
+													optional: true,
+													description: "Options",
+												},
+											},
+											returns: 'string',
+											description: "Converts to a string for the APIs.",
+								}
+								//! END_REPLACE()
+								, function toApiString(/*optional*/options) {
+									return this.toString(types.extend(options || {}, {os: null, dirChar: null, shell: 'api'}));
 								}),
 							
 							combine: root.DD_DOC(
