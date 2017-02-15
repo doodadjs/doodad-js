@@ -1550,7 +1550,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -1613,6 +1613,7 @@ module.exports = {
 											return loopAr(base, ar, index - 1);
 										});
 								};
+								return Promise.resolve();
 							};
 							const proceed = function proceed(path) {
 								return stat(path)
