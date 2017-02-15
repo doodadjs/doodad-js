@@ -498,10 +498,7 @@ module.exports = {
 							args = args && args.split('&');
 						};
 						
-						url = files.Path.parse(url).toString({
-							os: null,
-							dirChar: null,
-						});
+						url = files.Path.parse(url).toApiString();
 
 						// Remove unwanted "node" args
 						const execArgs = tools.filter(process.execArgv, function(arg) {
@@ -650,10 +647,7 @@ module.exports = {
 						};
 
 						if (types._instanceof(file, files.Path)) {
-							file = file.toString({
-								os: null,
-								dirChar: null,
-							});
+							file = file.toApiString();
 						};
 
 						root.DD_ASSERT && root.DD_ASSERT(types.isString(file), "Invalid file.");
@@ -783,11 +777,7 @@ module.exports = {
 						const Promise = types.getPromise();
 						return Promise.try(function tryRm() {
 							const unlink = function unlink(path) {
-								const name = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								const name = path.toApiString();
 								return Promise.create(function doUnlink(resolve, reject) {
 									nodeFs.unlink(name, function(ex) {
 										if (ex) {
@@ -853,11 +843,7 @@ module.exports = {
 					if (async) {
 						return Promise.try(function tryRmDir() {
 							const rmdir = function rmdir(path) {
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								return Promise.create(function doRmDir(resolve, reject) {
 									nodeFs.rmdir(path, function(err) {
 										if (err) {
@@ -870,11 +856,7 @@ module.exports = {
 							};
 
 							const unlink = function unlink(path) {
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								return Promise.create(function doUnlink(resolve, reject) {
 									nodeFs.unlink(path, function(err) {
 										if (err) {
@@ -887,11 +869,7 @@ module.exports = {
 							};
 
 							const readdir = function readdir(path) {
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								return Promise.create(function doReadDir(resolve, reject) {
 									nodeFs.readdir(path, function readdirCb(err, names) {
 										if (err) {
@@ -966,11 +944,7 @@ module.exports = {
 						if (types.isString(path)) {
 							path = files.Path.parse(path);
 						};
-						const name = path.toString({
-							os: null,
-							dirChar: null,
-							shell: 'api',
-						});
+						const name = path.toApiString();
 						try {
 							nodeFs.rmdirSync(name);
 						} catch(ex) {
@@ -983,11 +957,7 @@ module.exports = {
 									const newPath = path.combine(null, {
 										file: dirFile,
 									});
-									const fname = newPath.toString({
-										os: null,
-										dirChar: null,
-										shell: 'api',
-									});
+									const fname = newPath.toApiString();
 									try {
 										nodeFs.unlinkSync(fname);
 									} catch(ex) {
@@ -1049,11 +1019,8 @@ module.exports = {
 					if (types.get(options, 'makeParents', false)) {
 						const create = function(dir, index) {
 							if (index < dir.length) {
-								const name = path.toString({
+								const name = path.toApiString({
 									path: dir.slice(0, index + 1),
-									os: null,
-									dirChar: null,
-									shell: 'api',
 								});
 								if (async) {
 									return Promise.create(function nodeFsMkdirPromise(resolve, reject) {
@@ -1089,11 +1056,7 @@ module.exports = {
 						};
 						return create(path.toArray({pathOnly: true, trim: true}), 0);
 					} else {
-						const name = path.toString({
-							os: null,
-							dirChar: null,
-							shell: 'api',
-						});
+						const name = path.toApiString();
 						if (async) {
 							return Promise.create(function nodeFsMkdirPromise2(resolve, reject) {
 								nodeFs.mkdir(name, function(ex) {
@@ -1164,7 +1127,7 @@ module.exports = {
 						skipInvalid = types.get(options, 'skipInvalid', false);
 					if (async) {
 						return Promise.create(function copyPromise(resolve, reject) {
-							nodeFs.lstat(source.toString({os: null, dirChar: null, shell: 'api'}), function(ex, stats) {
+							nodeFs.lstat(source.toApiString(), function(ex, stats) {
 								if (ex) {
 									reject(ex);
 								} else {
@@ -1173,11 +1136,11 @@ module.exports = {
 										if (!destination.file) {
 											destination = destination.set({ file: source.file });
 										};
-										nodeFs.readlink(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, linkString) {
+										nodeFs.readlink(source.toApiString(), function(ex, linkString) {
 											if (ex) {
 												reject(ex);
 											} else {
-												const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+												const dest = destination.toApiString();
 												nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
 													if (ex) {
 														reject(ex);
@@ -1200,7 +1163,7 @@ module.exports = {
 										if (!destination.file) {
 											destination = destination.set({ file: source.file });
 										};
-										const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+										const dest = destination.toApiString();
 										const copyFile = function copyFile(buf, sourceFd, destFd) {
 											nodeFs.read(sourceFd, buf, null, buf.length, null, function(ex, bytesRead, _buf) {
 												if (ex) {
@@ -1234,7 +1197,7 @@ module.exports = {
 												};
 											});
 										};
-										nodeFs.open(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r', function(ex, sourceFd) {
+										nodeFs.open(source.toApiString(), 'r', function(ex, sourceFd) {
 											if (ex) {
 												reject(ex);
 											};
@@ -1263,7 +1226,7 @@ module.exports = {
 													});
 											} else if (preserveTimes) {
 												// FIXME: Dates are not correct
-												nodeFs.utimes(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime, function(ex) {
+												nodeFs.utimes(destination.toApiString(), stats.atime, stats.mtime, function(ex) {
 													if (ex) {
 														reject(ex);
 													} else {
@@ -1275,7 +1238,7 @@ module.exports = {
 											};
 										};
 										files.mkdir(destination, options).then(function() {
-											nodeFs.readdir(source.toString({ os: null, dirChar: null, shell: 'api' }), function(ex, dirFiles) {
+											nodeFs.readdir(source.toApiString(), function(ex, dirFiles) {
 												if (ex) {
 													reject(ex);
 												} else {
@@ -1288,9 +1251,9 @@ module.exports = {
 										// Invalid file system object
 										let ex;
 										if (stats.isDirectory()) {
-											ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+											ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
 										} else {
-											ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+											ex = new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
 										};
 										reject(ex);
 									} else {
@@ -1301,14 +1264,14 @@ module.exports = {
 							});
 						});
 					} else {
-						const stats = nodeFs.lstatSync(source.toString({os: null, dirChar: null, shell: 'api'}));
+						const stats = nodeFs.lstatSync(source.toApiString());
 						if (stats.isSymbolicLink()) {
 							// Copy symbolic link
 							if (!destination.file) {
 								destination = destination.set({ file: source.file });
 							};
-							const linkString = nodeFs.readlinkSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
-							const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+							const linkString = nodeFs.readlinkSync(source.toApiString());
+							const dest = destination.toApiString();
 							nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
 							if (preserveTimes) {
 								nodeFs.utimesSync(dest, stats.atime, stats.mtime);
@@ -1319,11 +1282,11 @@ module.exports = {
 							if (!destination.file) {
 								destination = destination.set({ file: source.file });
 							};
-							const dest = destination.toString({ os: null, dirChar: null, shell: 'api' });
+							const dest = destination.toApiString();
 							let sourceFd = null,
 								destFd = null;
 							try {
-								sourceFd = nodeFs.openSync(source.toString({ os: null, dirChar: null, shell: 'api' }), 'r');
+								sourceFd = nodeFs.openSync(source.toApiString(), 'r');
 								destFd = nodeFs.openSync(dest, (override ? 'w' : 'wx'));
 								const buf = new Buffer(bufferLength);
 								let bytesRead = 0;
@@ -1351,23 +1314,23 @@ module.exports = {
 						} else if (stats.isDirectory() && recursive) {
 							// Recurse directory
 							files.mkdir(destination, options);
-							const dirFiles = nodeFs.readdirSync(source.toString({ os: null, dirChar: null, shell: 'api' }));
+							const dirFiles = nodeFs.readdirSync(source.toApiString());
 							for (let i = 0; i < dirFiles.length; i++) {
 								const dirFile = dirFiles[i];
 								files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
 							};
 							if (preserveTimes) {
 								// FIXME: Dates are not correct
-								nodeFs.utimesSync(destination.toString({ os: null, dirChar: null, shell: 'api' }), stats.atime, stats.mtime);
+								nodeFs.utimesSync(destination.toApiString(), stats.atime, stats.mtime);
 							};
 							return true;
 						} else if (!skipInvalid) {
 							// Invalid file system object
 							let ex;
 							if (stats.isDirectory()) {
-								ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+								ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
 							} else {
-								ex = new types.Error("Invalid file or folder : '~0~'.", [source.toString({ os: null, dirChar: null, shell: 'api' })]);
+								ex = new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
 							};
 							throw ex;
 						} else {
@@ -1507,17 +1470,9 @@ module.exports = {
 							let stats = null;
 							try {
 								if (followLinks) {
-									stats = nodeFs.statSync(path.toString({
-										os: null,
-										dirChar: null,
-										shell: 'api',
-									}));
+									stats = nodeFs.statSync(path.toApiString());
 								} else {
-									stats = nodeFs.lstatSync(path.toString({
-										os: null,
-										dirChar: null,
-										shell: 'api',
-									}));
+									stats = nodeFs.lstatSync(path.toApiString());
 								};
 							} catch(ex) {
 								if (!skipOnDeniedPermission || (ex.code !== 'EPERM')) {
@@ -1573,11 +1528,7 @@ module.exports = {
 						const Promise = types.getPromise();
 						return Promise.try(function tryCanonical() {
 							const stat = function stat(path) {
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								return Promise.create(function doCanonical(resolve, reject) {
 									nodeFs.lstat(path, function statCb(err, stats) {
 										if (err) {
@@ -1589,11 +1540,7 @@ module.exports = {
 								});
 							};
 							const readdir = function readdir(path) {
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								return Promise.create(function doReadDir(resolve, reject) {
 									nodeFs.readdir(path, function readdirCb(err, names) {
 										if (err) {
@@ -1606,7 +1553,7 @@ module.exports = {
 							};
 							const loopAr = function loopAr(base, ar, index) {
 								if (index >= 0) {
-									const name = base.set({path: ar.slice(0, index)}).toString({os: null, dirChar: null, shell: 'api'});
+									const name = base.set({path: ar.slice(0, index)}).toApiString();
 									return readdir(name)
 										.then(function resolve(names) {
 											const name = ar[index],
@@ -1645,11 +1592,11 @@ module.exports = {
 						if (types.isString(path)) {
 							path = files.Path.parse(path);
 						};
-						const stats = nodeFs.lstatSync(path.toString({os: null, dirChar: null, shell: 'api'}));
+						const stats = nodeFs.lstatSync(path.toApiString());
 						const ar = path.toArray({pathOnly: true, trim: true}),
 							base = path.set({path: null, file: null});
 						for (let i = ar.length - 1; i >= 0; i--) {
-							const newPath = base.set({path: ar.slice(0, i)}).toString({os: null, dirChar: null, shell: 'api'}),
+							const newPath = base.set({path: ar.slice(0, i)}).toApiString(),
 								names = nodeFs.readdirSync(newPath),
 								name = ar[i],
 								nameLc = name.toLowerCase();
@@ -1694,7 +1641,7 @@ module.exports = {
 							files.mkdir(folder);
 						} catch(ex) {
 						};
-						folder = folder.toString({os: null});
+						folder = folder.toApiString();
 					};
 					const os = tools.getOS();
 					if (folder[folder.length - 1] !== os.dirChar) {
@@ -1748,11 +1695,7 @@ module.exports = {
 								if (types._instanceof(path, files.Url)) {
 									path = files.Path.parse(path);
 								};
-								path = path.toString({
-									os: null,
-									dirChar: null,
-									shell: 'api',
-								});
+								path = path.toApiString();
 								nodeFs.stat(path, function(ex, stats) {
 									if (ex) {
 										reject(ex);
@@ -1926,11 +1869,7 @@ module.exports = {
 							if (types._instanceof(path, files.Url)) {
 								path = files.Path.parse(path);
 							};
-							path = path.toString({
-								os: null,
-								dirChar: null,
-								shell: 'api',
-							});
+							path = path.toApiString();
 							return Promise.create(function statFile(resolve, reject) {
 									nodeFs.stat(path, function(ex, stats) {
 										if (ex) {
@@ -2008,11 +1947,7 @@ module.exports = {
 						if (types._instanceof(path, files.Url)) {
 							path = files.Path.parse(path);
 						};
-						path = path.toString({
-							os: null,
-							dirChar: null,
-							shell: 'api',
-						});
+						path = path.toApiString();
 							
 						let fileCallbacks;
 						if (types.has(__Internal__.watchedFiles, path)) {
