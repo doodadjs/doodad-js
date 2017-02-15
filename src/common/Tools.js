@@ -1802,7 +1802,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set',
@@ -1824,17 +1824,22 @@ module.exports = {
 									optional: true,
 									description: "Initial value. Default is the first item of the array (or object).",
 								},
+								thisObj: {
+									type: 'any',
+									optional: true,
+									description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
+								},
 							},
 							returns: 'any',
 							description: "Reduces every items of an array (or object) to a single value.",
 					}
 					//! END_REPLACE()
-					, function reduce(obj, fn, /*optional*/initialValue) {
+					, function reduce(obj, fn, /*optional*/initialValue, /*optional*/thisObj) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
 
 						if (types.isNothing(obj)) {
 							return initialValue;
-						} else if (types.isArrayLike(obj) && _shared.Natives.arrayReduce) {
+						} else if (types.isArrayLike(obj) && types.isNothing(thisObj) && _shared.Natives.arrayReduce) {
 							// JS 1.8
 							if (arguments.length > 2) {
 								return _shared.Natives.arrayReduce.call(obj, fn, initialValue);
@@ -1854,7 +1859,7 @@ module.exports = {
 									result = val;
 									hasInitial = true;
 								};
-								result = fn(result, val, key, obj);
+								result = fn.call(thisObj, result, val, key, obj);
 							});
 							if (!hasInitial) {
 								throw new types.TypeError("Reduce of empty object with no initial value.");
@@ -1867,7 +1872,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'arraylike,object',
@@ -1889,12 +1894,17 @@ module.exports = {
 									optional: true,
 									description: "Initial value. Default is the last item of the array (or object).",
 								},
+								thisObj: {
+									type: 'any',
+									optional: true,
+									description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
+								},
 							},
 							returns: 'any',
 							description: "Reduces every items of an array (or object) to a single value, starting from the last item.",
 					}
 					//! END_REPLACE()
-					, function reduceRight(obj, fn, /*optional*/initialValue) {
+					, function reduceRight(obj, fn, /*optional*/initialValue, /*optional*/thisObj) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
 
 						if (types.isNothing(obj)) {
@@ -1902,7 +1912,7 @@ module.exports = {
 						} else {
 							root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 
-							if (_shared.Natives.arrayReduceRight) {
+							if (types.isNothing(thisObj) && _shared.Natives.arrayReduceRight) {
 								// JS 1.8
 								if (arguments.length > 2) {
 									return _shared.Natives.arrayReduceRight.call(obj, fn, initialValue);
@@ -1920,7 +1930,7 @@ module.exports = {
 										if (arguments.length < 3) {
 											value = 0;
 										};
-										value = fn(value, obj[key], key, obj);
+										value = fn.call(thisObj, value, obj[key], key, obj);
 										key--;
 										break;
 									};
