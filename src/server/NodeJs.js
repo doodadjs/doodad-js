@@ -1550,7 +1550,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -1609,7 +1609,13 @@ module.exports = {
 									const name = base.set({path: ar.slice(0, index)}).toString({os: null, dirChar: null, shell: 'api'});
 									return readdir(name)
 										.then(function resolve(names) {
-											ar[index] = names.filter(function(n) {return n.toLowerCase() === ar[index].toLowerCase()})[0];
+											const name = ar[index],
+												nameLc = name.toLowerCase();
+											let resolved = names.filter(function(n) {return n === name})[0];
+											if (!resolved) {
+												resolved = names.filter(function(n) {return n.toLowerCase() === nameLc})[0];
+											};
+											ar[index] = resolved;
 											return loopAr(base, ar, index - 1);
 										});
 								};
@@ -1643,8 +1649,15 @@ module.exports = {
 						const ar = path.toArray({pathOnly: true, trim: true}),
 							base = path.set({path: null, file: null});
 						for (let i = ar.length - 1; i >= 0; i--) {
-							const name = base.set({path: ar.slice(0, i)}).toString({os: null, dirChar: null, shell: 'api'});
-							ar[i] = nodeFs.readdirSync(name).filter(function(n) {return n.toLowerCase() === ar[i].toLowerCase()})[0];
+							const newPath = base.set({path: ar.slice(0, i)}).toString({os: null, dirChar: null, shell: 'api'}),
+								names = nodeFs.readdirSync(newPath),
+								name = ar[i],
+								nameLc = name.toLowerCase();
+							let resolved = names.filter(function(n) {return n === name})[0];
+							if (!resolved) {
+								resolved = names.filter(function(n) {return n.toLowerCase() === nameLc})[0];
+							};
+							ar[i] = resolved;
 						};
 						let file = null;
 						if (stats.isFile()) {
