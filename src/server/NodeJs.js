@@ -760,7 +760,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -778,29 +778,36 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function rm(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
-					const name = path.toString({
-						os: null,
-						dirChar: null,
-						shell: 'api',
-					});
 					const async = types.get(options, 'async', false);
 					if (async) {
 						const Promise = types.getPromise();
-						return Promise.create(function rmPromise(resolve, reject) {
-							nodeFs.unlink(name, function(ex) {
-								if (ex) {
-									if (ex.code === 'ENOENT') {
-										resolve(true);
-									} else {
-										reject(ex);
-									};
-								} else {
-									resolve(true);
-								};
-							});
+						return Promise.try(function tryRm() {
+							const unlink = function unlink(path) {
+								const name = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doUnlink(resolve, reject) {
+									nodeFs.unlink(name, function(ex) {
+										if (ex) {
+											if (ex.code === 'ENOENT') {
+												resolve(false);
+											} else {
+												reject(ex);
+											};
+										} else {
+											resolve(true);
+										};
+									});
+								});
+							};
+
+							if (types.isString(path)) {
+								path = files.Path.parse(path);
+							};
+
+							return unlink(path);
 						});
 					} else {
 						try {
@@ -820,7 +827,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -839,85 +846,136 @@ module.exports = {
 				//! END_REPLACE()
 				, function rmdir(path, /*optional*/options) {
 					const Promise = types.getPromise();
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
-					const name = path.toString({
-						os: null,
-						dirChar: null,
-						shell: 'api',
-					});
-					const async = types.get(options, 'async', false);
+
+					const async = types.get(options, 'async', false),
+						force = types.get(options, 'force', false);
+
 					if (async) {
-						return Promise.create(function rmdirPromise(resolve, reject) {
-							nodeFs.rmdir(name, function(ex) {
-								if (ex) {
-									if (ex.code === 'ENOENT') {
-										resolve(true);
-									} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
-										const deleteContent = function deleteContent(dirFiles) {
-											const dirFile = dirFiles.shift();
-											if (dirFile) {
-												const newPath = path.combine(null, {
-													file: dirFile,
-												});
-												const fname = newPath.toString({
-													os: null,
-													dirChar: null,
-													shell: 'api',
-												});
-												nodeFs.unlink(fname, function(ex) {
-													if (ex) {
-														if (ex.code === 'ENOENT') {
-															deleteContent(dirFiles);
-														} else if (ex.code === 'EPERM') {
-															files.rmdir(newPath, options)
-																.then(function() {
-																	deleteContent(dirFiles);
-																});
-														} else {
-															reject(ex);
-														};
-													} else {
-														deleteContent(dirFiles);
-													};
-												});
-											} else {
-												// End
-												nodeFs.rmdir(name, function(ex) {
-													if (ex) {
-														if (ex.code === 'ENOENT') {
-															resolve(true);
-														} else {
-															reject(ex);
-														};
-													} else {
-														resolve(true);
-													};
-												});
-											};
+						return Promise.try(function tryRmDir() {
+							const rmdir = function rmdir(path) {
+								path = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doRmDir(resolve, reject) {
+									nodeFs.rmdir(path, function(err) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve();
 										};
-										nodeFs.readdir(name, function(ex, dirFiles) {
-											if (ex) {
-												reject(ex);
+									});
+								});
+							};
+
+							const unlink = function unlink(path) {
+								path = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doUnlink(resolve, reject) {
+									nodeFs.unlink(path, function(err) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve();
+										};
+									});
+								});
+							};
+
+							const readdir = function readdir(path) {
+								path = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doReadDir(resolve, reject) {
+									nodeFs.readdir(path, function readdirCb(err, names) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(names);
+										};
+									});
+								});
+							};
+
+							const deleteContent = function deleteContent(parent, names, index) {
+								if (index < names.length) {
+									const path = parent.combine(null, {
+										file: names[index],
+									});
+									return unlink(path)
+										.nodeify(function manageUnlinkResult(err, dummy) {
+											if (err) {
+												if (err.code === 'ENOENT') {
+													return deleteContent(parent, names, index + 1);
+												} else if (err.code === 'EPERM') {
+													return proceed(path)
+														.then(function deleteNextFile() {
+															return deleteContent(parent, names, index + 1);
+														});
+												} else {
+													throw err;
+												};
 											} else {
-												deleteContent(dirFiles);
+												return deleteContent(parent, names, index + 1);
 											};
 										});
-									} else {
-										reject(ex);
-									};
-								} else {
-									resolve(true);
 								};
-							});
+							};
+							
+							const proceed = function proceed(path) {
+								return rmdir(path)
+									.catch(function catchNotEmpty(err) {
+										if (force && (err.code === 'ENOTEMPTY')) {
+											return readdir(path)
+												.then(function deletePathContent(names) {
+													return deleteContent(path, names, 0);
+												})
+												.then(function deletePath(dummy) {
+													return rmdir(path);
+												});
+										} else {
+											throw err;
+										};
+									})
+									.nodeify(function returnResult(err, dummy) {
+										if (err) {
+											if (err.code === 'ENOENT') {
+												return false;
+											} else {
+												throw err;
+											};
+										} else {
+											return true;
+										};
+									});
+							};
+
+							if (types.isString(path)) {
+								path = files.Path.parse(path);
+							};
+
+							return proceed(path);
 						});
 					} else {
+						if (types.isString(path)) {
+							path = files.Path.parse(path);
+						};
+						const name = path.toString({
+							os: null,
+							dirChar: null,
+							shell: 'api',
+						});
 						try {
 							nodeFs.rmdirSync(name);
 						} catch(ex) {
 							if (ex.code === 'ENOENT') {
-								// Do nothing
+								return false;
 							} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
 								const dirFiles = nodeFs.readdirSync(name);
 								let dirFile;
@@ -945,7 +1003,9 @@ module.exports = {
 								try {
 									nodeFs.rmdirSync(name);
 								} catch(ex) {
-									if (ex.code !== 'ENOENT') {
+									if (ex.code === 'ENOENT') {
+										return false;
+									} else {
 										throw ex;
 									};
 								};
@@ -1088,6 +1148,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function copy(source, destination, /*optional*/options) {
+					// TODO: Rewrite me
 					const Promise = types.getPromise();
 					if (types.isString(source)) {
 						source = files.Path.parse(source);
@@ -1320,7 +1381,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -1338,148 +1399,153 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function readdir(path, /*optional*/options) {
-					// TODO: Returns just files and folders.
-					// TODO: 'depth' for synchronous
+					// TODO: Synchronous version
 						
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
-
 					const Promise = types.getPromise(),
 						async = types.get(options, 'async', false),
-						depth = (+types.get(options, 'depth') || 0) - 1,  // null|undefined|true|false|NaN|Infinity
+						depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
-						followLinks = types.get(options, 'followLinks', false);
+						followLinks = types.get(options, 'followLinks', false),
+						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
+						solveCanonical = types.get(options, 'solveCanonical', false);
 
-					const result = [];
+					const addFile = function addFile(result, base, name, stats) {
+						const isFolder = stats.isDirectory(),
+							isFile = stats.isFile();
+						if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
+							const file = {
+								name: name,
+								path: (isFolder ? base.combine(name, {file: null}) : base.combine(null, {file: name})),
+								isFolder: isFolder,
+								isFile: isFile,
+								size: stats.size, // bytes
+								// ...
+							};
+							result.push(file);
+							return file;
+						} else {
+							return null;
+						};
+					};
 
-					if (depth >= -1) {
-						const getStats = function getStats(file, parent, parentRel) {
-							let filePath = parent.combine(null, {
-								file: file,
-							});
-							let filePathRel;
-							if (relative) {
-								filePathRel = parentRel.combine(null, {
-									file: file
-								});
+					if (async) {
+						return Promise.try(function tryReadDir() {
+							if (types.isString(path)) {
+								path = files.Path.parse(path);
 							};
-							const addFile = function addFile(stats) {
-								if (stats.isDirectory()) {
-									filePath = filePath.pushFile();
-									if (relative) {
-										filePathRel = filePathRel.pushFile();
-									};
-								};
-								const isFolder = stats.isDirectory(),
-									isFile = stats.isFile();
-										
-								if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
-									const obj = {
-										name: file,
-										path: (relative ? filePathRel : filePath),
-										isFolder: isFolder,
-										isFile: isFile,
-										size: stats.size, // bytes
-										// ...
-									};
-									result.push(obj);
-									return isFolder;
-								} else {
-									return false;
-								};
-							};
-							if (async) {
-								return Promise.create(function nodeFsStatsPromise(resolve, reject) {
-									const callback = function callback(ex, stats) {
-										if (ex) {
-											reject(ex);
+
+							const getStats = function getStats(path) {
+								return Promise.create(function tryStat(resolve, reject) {
+									const statCb = function statCb(err, stats) {
+										if (err) {
+											reject(err);
 										} else {
-											try {
-												resolve(addFile(stats));
-											} catch(ex) {
-												reject(ex);
-											};
+											resolve(stats);
 										};
 									};
 									if (followLinks) {
-										nodeFs.stat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+										nodeFs.stat(path, statCb);
 									} else {
-										nodeFs.lstat(filePath.toString({os: null, dirChar: null, shell: 'api'}), callback);
+										nodeFs.lstat(path, statCb);
 									};
 								});
-							} else {
-								return addFile(nodeFs.statSync(filePath.toString({os: null, dirChar: null, shell: 'api'})));
 							};
-						};
-							
-						if (async) {
-							const readdir = function readdir(name, parent, parentRel, depth) {
-								return Promise.create(function nodeFsReaddirPromise(resolve, reject) {
-									const path = (name ? parent.combine(name) : parent);
-									let pathRel;
-									if (relative) {
-										pathRel = (name ? parentRel.combine(name) : parentRel);
-									};
-									nodeFs.readdir(path.toString({
-										os: null,
-										dirChar: null, 
-										shell: 'api',
-									}), function(ex, files) {
-										if (ex) {
-											reject(ex);
+						
+							const readDir = function readDir(path) {
+								return Promise.create(function tryReaddir(resolve, reject) {
+									nodeFs.readdir(path, function readdirCb(err, names) {
+										if (err) {
+											reject(err);
 										} else {
-											try {
-												resolve(proceed(files, path, pathRel, depth));
-											} catch(ex) {
-												reject(ex);
+											resolve(names);
+										};
+									});
+								});
+							};
+
+							const parseNames = function parseNames(result, parent, base, names, index, depth) {
+								if (index < names.length) {
+									const name = names[index],
+										path = parent.combine(name);
+									return getStats(path.toString())
+										.nodeify(function thenAddAndProceed(err, stats) {
+											if (err) {
+												if (!skipOnDeniedPermission || (err.code !== 'EPERM')) {
+													throw err;
+												};
+											} else {
+												const file = addFile(result, base, name, stats);
+												if (file && file.isFolder) {
+													return proceed(result, path, file.path, depth - 1);
+												};
 											};
-										};
-									});
-								});
+										})
+										.then(function thenParseNames(dummy) {
+											return parseNames(result, parent, base, names, index + 1, depth);
+										});
+								};
+								return result;
 							};
-							const proceed = function proceed(files, parent, parentRel, depth) {
-								const file = files.shift();
-								if (file) {
-									return getStats(file, parent, parentRel).then(function(isFolder) {
-										if (isFolder && (depth >= 0)) {
-											return readdir(file, parent, parentRel, depth - 1)
-												.then(function() {
-													return proceed(files, parent, parentRel, depth);
-												});
-										} else {
-											return proceed(files, parent, parentRel, depth);
-										};
-									});
+	
+							const proceed = function proceed(result, path, base, depth) {
+								if (depth >= 0) {
+									return readDir(path.toString())
+										.then(function thenParseNames(names) {
+											return parseNames(result, path, base, names, 0, depth);
+										});
+								};
+								return result;
+							};
+
+							return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth);
+						});
+
+					} else {
+						if (types.isString(path)) {
+							path = files.Path.parse(path);
+						};
+						
+						const parse = function parse(result, parent, base, name, depth) {
+							const path = parent.combine(name);
+							let stats = null;
+							try {
+								if (followLinks) {
+									stats = nodeFs.statSync(path.toString({
+										os: null,
+										dirChar: null,
+										shell: 'api',
+									}));
 								} else {
-									// End
-									return result;
+									stats = nodeFs.lstatSync(path.toString({
+										os: null,
+										dirChar: null,
+										shell: 'api',
+									}));
+								};
+							} catch(ex) {
+								if (!skipOnDeniedPermission || (ex.code !== 'EPERM')) {
+									throw ex;
 								};
 							};
-							return readdir(null, path, (relative ? files.Path.parse('./', {os: 'linux'}) : null), depth);
-						} else {
+							if (stats) {
+								const file = addFile(result, base, name, stats);
+								if (file && file.isFolder) {
+									return proceed(result, path, file.path, depth - 1);
+								};
+							};
+						};
+
+						const proceed = function proceed(result, path, base, depth) {
 							if (depth >= 0) {
-								throw new types.NotSupported("'depth' is not supported for the synchronous operation.");
-							};
-							const files = nodeFs.readdirSync(path.toString({
-									os: null,
-									dirChar: null, 
-									shell: 'api',
-								}));
-							let pathRel = (relative ? files.Path.parse('./', {os: 'linux'}) : null),
-								file;
-							while (file = files.shift()) {
-								const isFolder = getStats(file, path, pathRel);
-								//...
+								const names = nodeFs.readdirSync(path.toString());
+								for (let i = 0; i < names.length; i++) {
+									parse(result, path, base, names[i], depth);
+								};
 							};
 							return result;
 						};
-					} else {
-						if (async) {
-							return Promise.resolve(result);
-						} else {
-							return result;
-						};
+
+						return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth);
 					};
 				}));
 					
