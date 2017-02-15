@@ -3787,7 +3787,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							key: {
 								type: 'string',
@@ -3815,9 +3815,12 @@
 				return symbol;
 			} : function getSymbol(key, /*optional*/isGlobal) {
 				// Not supported
-				key = _shared.Natives.windowString(key);
-				key += '$' + (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
-				return key;
+				var genKey = (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
+				if (!isGlobal && types.isNothing(key)) {
+					return genKey;
+				} else {
+					return _shared.Natives.windowString(key) + '$' + genKey;
+				};
 			})));
 			
 		__Internal__.ADD('getSymbolKey', __Internal__.DD_DOC(
