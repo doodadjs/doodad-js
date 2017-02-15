@@ -1399,15 +1399,12 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function readdir(path, /*optional*/options) {
-					// TODO: Synchronous version
-						
 					const Promise = types.getPromise(),
 						async = types.get(options, 'async', false),
 						depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
 						followLinks = types.get(options, 'followLinks', false),
-						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
-						solveCanonical = types.get(options, 'solveCanonical', false);
+						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
 
 					const addFile = function addFile(result, base, name, stats) {
 						const isFolder = stats.isDirectory(),
@@ -1549,6 +1546,113 @@ module.exports = {
 					};
 				}));
 					
+				files.ADD('getCanonical', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Path.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'Path',
+							description: "Returns the canonical path of the specified path (for case-insensitive file systems).",
+				}
+				//! END_REPLACE()
+				, function getCanonical(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+					if (async) {
+						const Promise = types.getPromise();
+						return Promise.try(function tryCanonical() {
+							const stat = function stat(path) {
+								path = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doCanonical(resolve, reject) {
+									nodeFs.lstat(path, function statCb(err, stats) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(stats);
+										};
+									});
+								});
+							};
+							const readdir = function readdir(path) {
+								path = path.toString({
+									os: null,
+									dirChar: null,
+									shell: 'api',
+								});
+								return Promise.create(function doReadDir(resolve, reject) {
+									nodeFs.readdir(path, function readdirCb(err, names) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(names);
+										};
+									});
+								});
+							};
+							const loopAr = function loopAr(base, ar, index) {
+								if (index >= 0) {
+									const name = base.set({path: ar.slice(0, index)}).toString({os: null, dirChar: null, shell: 'api'});
+									return readdir(name)
+										.then(function resolve(names) {
+											ar[index] = names.filter(function(n) {return n.toLowerCase() === ar[index].toLowerCase()})[0];
+											return loopAr(base, ar, index - 1);
+										});
+								};
+							};
+							const proceed = function proceed(path) {
+								return stat(path)
+									.then(function startLoop(stats) {
+										const base = path.set({path: null, file: null}),
+											ar = path.toArray({pathOnly: true, trim: true});
+										return loopAr(base, ar, ar.length - 1)
+											.then(function assemble() {
+												let file = null;
+												if (stats.isFile()) {
+													file = ar.pop();
+												};
+												return base.set({path: ar, file: file});
+											});
+									});
+							};
+							if (types.isString(path)) {
+								path = files.Path.parse(path);
+							};
+							return proceed(path);
+						});
+					} else {
+						if (types.isString(path)) {
+							path = files.Path.parse(path);
+						};
+						const stats = nodeFs.lstatSync(path.toString({os: null, dirChar: null, shell: 'api'}));
+						const ar = path.toArray({pathOnly: true, trim: true}),
+							base = path.set({path: null, file: null});
+						for (let i = ar.length - 1; i >= 0; i--) {
+							const name = base.set({path: ar.slice(0, i)}).toString({os: null, dirChar: null, shell: 'api'});
+							ar[i] = nodeFs.readdirSync(name).filter(function(n) {return n.toLowerCase() === ar[i].toLowerCase()})[0];
+						};
+						let file = null;
+						if (stats.isFile()) {
+							file = ar.pop();
+						};
+						return base.set({path: ar, file: file});
+					};
+				}));
+
 				files.ADD('getTempFolder', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
