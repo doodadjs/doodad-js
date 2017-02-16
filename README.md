@@ -54,6 +54,18 @@ From Javascript, when the script is loaded, create the root namespace :
         });
 ```
 
+You can create a shortcut to the namespaces this way :
+```js
+    var doodad = root.Doodad,
+        types = doodad.Types,
+        tools = doodad.Tools,
+        mixins = doodad.MixIns,
+        interfaces = doodad.Interfaces,
+        extenders = doodad.Extenders,
+        namespaces = doodad.Namespaces,
+        ... ;
+```
+
 ### Node.js
 
 Download and install Doodad from NPM :
@@ -82,12 +94,6 @@ Now, from Javascript, create the root namespace :
         });
 ```
 
-### Source code
-
-Doodad must be built using [doodad-js-make][make-url] and its dependencies.
-
-## Usage
-
 You can create a shortcut to the namespaces this way :
 ```js
     const doodad = root.Doodad,
@@ -99,6 +105,10 @@ You can create a shortcut to the namespaces this way :
         namespaces = doodad.Namespaces,
         ... ;
 ```
+
+### Source code
+
+Doodad must be built using [doodad-js-make][make-url] and its dependencies.
 
 ## Scopes
 
