@@ -30,7 +30,7 @@ Object-oriented programming framework for Javascript.
 
 ### Browsers
 
-Download and extract current .zip file from https://github.com/doodadjs/doodad-js/releases.
+Download and extract the .zip file from the [latest release][latest-url].
 
 In your HTML, load the Doodad package :
 
@@ -38,7 +38,7 @@ In your HTML, load the Doodad package :
 	<script src="doodad-js.js"></script>
 ```
 
-or, from source code :
+or its debug version :
 
 ```html
 	<script src="doodad-js_debug.js"></script>
@@ -81,6 +81,10 @@ Now, from Javascript, create the root namespace :
             console.error(err);
         });
 ```
+
+### Source code
+
+Doodad must be built using [doodad-js-make][make-url] and its dependencies.
 
 ## Usage
 
@@ -401,3 +405,5 @@ Example 5 (expandable objects) :
 [npm-image]: https://img.shields.io/npm/v/doodad-js.svg
 [npm-url]: https://npmjs.org/package/doodad-js
 [license-url]: http://opensource.org/licenses/Apache-2.0
+[latest-url]: https://github.com/doodadjs/doodad-js/releases/latest
+[make-url]: https://npmjs.org/package/doodad-js-make
