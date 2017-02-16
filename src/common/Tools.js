@@ -71,11 +71,15 @@ module.exports = {
 					logLevel: tools.LogLevels.Error,
 					unhandledRejectionsTimeout: 5000,
 					unhandledRejectionsMaxSize: 20,
+					caseSensitive: null, // null = auto-detect (not 100 % viable)
 				}, _options);
 
 				__options__.logLevel = types.toInteger(__options__.logLevel);
 				__options__.unhandledRejectionsTimeout = types.toInteger(__options__.unhandledRejectionsTimeout);
 				__options__.unhandledRejectionsMaxSize = types.toInteger(__options__.unhandledRejectionsMaxSize);
+				if (!types.isNothing(__options__.caseSensitive)) {
+					__options__.caseSensitive = types.toBoolean(__options__.caseSensitive);
+				};
 
 				types.freezeObject(__options__);
 

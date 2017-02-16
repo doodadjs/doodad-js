@@ -2612,30 +2612,29 @@ module.exports = {
 
 
 				return function init(/*optional*/options) {
-					// Detect case-sensitive
-					// NOTE: On some systems, the temp folder may have a different file system.
-					const temp = files.getTempFolder(),
-						uuid = tools.generateUUID(),
-						name1 = temp + 'DoOdAd.' + uuid,
-						name2 = temp + 'dOoDaD.' + uuid;
-					try {
+					__Internal__.caseSensitive = tools.getOptions().caseSensitive;
+					if (types.isNothing(__Internal__.caseSensitive)) {
+						// Detect case-sensitive
+						// NOTE: On some systems, the temp folder may have a different file system.
+						const temp = files.getTempFolder(),
+							uuid = tools.generateUUID(),
+							name1 = temp + 'DoOdAd.' + uuid,
+							name2 = temp + 'dOoDaD.' + uuid;
 						files.mkdir(name1, {ignoreExists: false});
 						try {
 							files.mkdir(name2, {ignoreExists: false});
 							__Internal__.caseSensitive = true;
 						} catch(ex) {
 							__Internal__.caseSensitive = false;
-						};
-					} catch(ex) {
-						// Test failed
-					} finally {
-						try {
-							files.rmdir(name1);
-						} catch(ex) {
-						};
-						try {
-							files.rmdir(name2);
-						} catch(ex) {
+						} finally {
+							try {
+								files.rmdir(name1);
+							} catch(ex) {
+							};
+							try {
+								files.rmdir(name2);
+							} catch(ex) {
+							};
 						};
 					};
 				};

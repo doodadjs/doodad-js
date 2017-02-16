@@ -969,7 +969,8 @@ module.exports = {
 							arch = uap && uap.getCPU().architecture || 'other',
 							platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
 							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
-							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix'));
+							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
+							caseSensitive = tools.getOptions().caseSensitive;
 						__Internal__.os = os = types.freezeObject(types.nullObject({
 							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
 							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
@@ -978,7 +979,7 @@ module.exports = {
 							architecture: (arch === 'amd64' ? 'x64' : arch), // 68k, x64, arm, arm64, avr, ia32, ia64, irix, irix64, mips, mips64, pa-risc, ppc, sparc, sparc64 (like Node.js, plus extra ones)
 							dirChar: ((name === 'win32') ? '\\' : '/'),
 							newLine: ((name === 'win32') ? '\r\n' : '\n'),
-							caseSensitive: ((name === 'win32') || (name === 'darwin') ? false : true), // NOTE: Because it is impossible to detect, we give what is the most popular per os
+							caseSensitive: (types.isNothing(caseSensitive) ? ((name === 'win32') || (name === 'darwin') ? false : true) : caseSensitive), // NOTE: Because it is impossible to detect, we give what is the most popular per os
 						}));
 					};
 					return os;
