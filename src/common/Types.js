@@ -118,8 +118,8 @@ module.exports = {
 					objectEntries: (types.isNativeFunction(global.Object.entries) ? global.Object.entries : undefined),
 					
 					// "bind"
-					functionBindCall: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind.call.bind(Function.prototype.bind) : undefined),
-					functionBindApply: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind.apply.bind(Function.prototype.bind) : undefined),
+					functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
+					functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
 					
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
@@ -1955,7 +1955,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'object',
@@ -1983,27 +1983,27 @@ module.exports = {
 							return null;
 						};
 						var newFn;
-						if (_shared.Natives.functionBind) {
+						//if (_shared.Natives.functionBindApply) {
 							if (args) {
 								newFn = _shared.Natives.functionBindApply(fn, types.append([obj], args));
 							} else {
 								newFn = _shared.Natives.functionBindCall(fn, obj);
 							};
-						} else {
-							if (args) {
-								newFn = function(/*paramarray*/) {
-									if (arguments.length > 0) {
-										return fn.apply(obj, types.append([], args, arguments));
-									} else {
-										return fn.apply(obj, args);
-									};
-								};
-							} else {
-								newFn = function(/*paramarray*/) {
-									return fn.apply(obj, arguments);
-								};
-							};
-						};
+						//} else {
+						//	if (args) {
+						//		newFn = function(/*paramarray*/) {
+						//			if (arguments.length > 0) {
+						//				return fn.apply(obj, types.append([], args, arguments));
+						//			} else {
+						//				return fn.apply(obj, args);
+						//			};
+						//		};
+						//	} else {
+						//		newFn = function(/*paramarray*/) {
+						//			return fn.apply(obj, arguments);
+						//		};
+						//	};
+						//};
 						types.extend(newFn, fn);
 						newFn[_shared.BoundObjectSymbol] = obj;
 						newFn[_shared.OriginalValueSymbol] = fn;
