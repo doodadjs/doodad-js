@@ -1512,7 +1512,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											args: {
 												type: 'string,object,array',
@@ -1565,17 +1565,19 @@ module.exports = {
 													name = value.name;
 													value = value.value;
 												};
-												value = types.toString(value);
-												if (!noEscapes) {
-													name = __Internal__.decodeURIComponent(name);
+												if (types.isPrimitive(value)) {
+													value = types.toString(value);
+													if (!noEscapes) {
+														name = __Internal__.decodeURIComponent(name);
+													};
+													if (!noEscapes) {
+														value = __Internal__.decodeURIComponent(value);
+													};
+													result.push({
+														name: name,
+														value: value,
+													});
 												};
-												if (!noEscapes) {
-													value = __Internal__.decodeURIComponent(value);
-												};
-												result.push({
-													name: name,
-													value: value,
-												});
 												return result;
 											}, []);
 										};
@@ -1599,34 +1601,72 @@ module.exports = {
 								_shared.setAttribute(this, '__args', args, {});
 							}),
 							
+							__toDataObject: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: null,
+										returns: 'array',
+										description: "INTERNAL",
+								}
+								//! END_REPLACE()
+								, function __toDataObject() {
+									return tools.reduce(this.__args, function(result, arg) {
+										if (arg.name) {
+											if (arg.name in result) {
+												var item = result[arg.name];
+												if (types.isArray(item)) {
+													item.push(arg.value);
+												} else {
+													result[arg.name] = [item, arg.value];
+												};
+											} else {
+												result[arg.name] = arg.value;
+											};
+										};
+										return result;
+									}, types.nullObject())
+								}),
+
+							toDataObject: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: null,
+										returns: 'array',
+										description: "Converts to a normal Javascript object.",
+								}
+								//! END_REPLACE()
+								, function toDataObject() {
+									const type = types.getType(this);
+
+									const obj = this.__toDataObject();
+
+									obj.toUrlArguments = function toUrlArguments() {
+										return type.parse(null, this);
+									};
+
+									obj.toString = function toString() {
+										return this.toUrlArguments().toString();
+									};
+
+									return obj;
+								}),
+
 							toArray: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: null,
 										returns: 'array',
 										description: "Return arguments in an array of name-value pairs.",
 								}
 								//! END_REPLACE()
 								, function toArray() {
-									return types.entries(
-										tools.reduce(this.__args, function(result, arg) {
-											if (arg.name) {
-												if (arg.name in result) {
-													var item = result[arg.name];
-													if (types.isArray(item)) {
-														item.push(arg.value);
-													} else {
-														result[arg.name] = [item, arg.value];
-													};
-												} else {
-													result[arg.name] = arg.value;
-												};
-											};
-											return result;
-										}, types.nullObject())
-									);
+									return types.entries(this.__toDataObject());
 								}),
 
 							toString: root.DD_DOC(
@@ -1983,8 +2023,8 @@ module.exports = {
 								}),
 						}
 					)));
-					
-				__Internal__.urlOptions = {
+
+				__Internal__.urlData = {
 					protocol: types.READ_ONLY( null ),
 					user: types.READ_ONLY( null ),
 					password: types.READ_ONLY( null ),
@@ -1992,14 +2032,20 @@ module.exports = {
 					port: types.READ_ONLY( null ),
 					path: types.READ_ONLY( null ),
 					file: types.READ_ONLY( null ),   // when set, changes 'extension'.
-					extension: types.READ_ONLY( null ), // when set, changes 'file'
 					args: types.READ_ONLY( null ),
 					anchor: types.READ_ONLY( null ),
+				};
+				__Internal__.urlDataKeys = types.keys(__Internal__.urlData);
+					
+				__Internal__.urlOptions = {
+					extension: types.READ_ONLY( null ), // when set, changes 'file'
 					isRelative: types.READ_ONLY( false ),
 					noEscapes: types.READ_ONLY( false ),
 					isWindows: types.READ_ONLY( false ),
 				};
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
+
+				__Internal__.urlAllKeys = types.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 
 				files.ADD('Url', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2063,7 +2109,7 @@ module.exports = {
 									} else if (types._instanceof(url, files.Url)) {
 										var args = types.get(options, 'args', null);
 										
-										options = types.fill(__Internal__.urlOptionsKeys, {}, url, options);
+										options = types.fill(__Internal__.urlAllKeys, {}, url, options);
 										
 										if (types.isJsObject(args)) {
 											options.args = url.args.combine(args, options);
@@ -2079,7 +2125,7 @@ module.exports = {
 											pathTmp = types.append([], [url.drive + ':'], pathTmp)
 										};
 										
-										options = types.fill(__Internal__.urlOptionsKeys, {
+										options = types.fill(__Internal__.urlAllKeys, {
 											protocol: 'file',
 											path: pathTmp,
 											file: url.file,
@@ -2447,7 +2493,7 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var attrs = types.fill(__Internal__.urlOptionsKeys, {}, options);
+								var attrs = types.fill(__Internal__.urlAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
@@ -2472,9 +2518,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									var newOptions = types.fill(__Internal__.urlOptionsKeys, {}, this);
+									var newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
 									delete newOptions.extension;
-									newOptions = types.fill(__Internal__.urlOptionsKeys, newOptions, options);
+									newOptions = types.fill(__Internal__.urlAllKeys, newOptions, options);
 									var type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
@@ -2700,7 +2746,7 @@ module.exports = {
 
 									var dontThrow = types.get(options, 'dontThrow', false);
 									
-									var data = types.fill(__Internal__.urlOptionsKeys, {}, this);
+									var data = types.fill(__Internal__.urlAllKeys, {}, this);
 
 									var thisPath = tools.trim(this.path, '');
 									if (this.file) {
@@ -2812,7 +2858,7 @@ module.exports = {
 										path = this.path.slice(0, i + 1);
 									};
 									var type = types.getType(this);
-									return type.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {path: path}));
+									return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -2828,7 +2874,7 @@ module.exports = {
 								, function pushFile() {
 									var type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.urlOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
 										return type.parse(this);
 									};
@@ -2944,7 +2990,61 @@ module.exports = {
 									});
 								}),
 								
-						}, __Internal__.urlOptions)
+							toDataObject: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											options: {
+												type: 'object',
+												optional: true,
+												description: "Options.",
+											},
+										},
+										returns: 'UrlArguments',
+										description: "Converts the URL to a normal Javascript object.",
+								}
+								//! END_REPLACE()
+								, function toDataObject(/*optional*/options) {
+									const obj = types.nullObject();
+
+									types.fill(__Internal__.urlDataKeys, obj, this, options);
+
+									if (types.isNothing(obj.domain)) {
+										obj.protocol = null;
+										obj.user = null;
+										obj.password = null;
+										obj.port = null;
+									};
+
+									if (types.isNothing(obj.args)) {
+										obj.args = types.nullObject();
+									} else {
+										if (!types._instanceof(obj.args, files.UrlArguments)) {
+											obj.args = _shared.urlArgumentsParser(obj.args);
+										};
+										obj.args = obj.args.toDataObject();
+									};
+
+									const type = types.getType(this);
+
+									obj.toUrl = function toUrl(/*optional*/options) {
+										if (options) {
+											return type.parse(null, types.extend({}, this, options));
+										} else {
+											return type.parse(null, this);
+										};
+									};
+
+									obj.toString = function toString(/*optional*/options) {
+										return this.toUrl(options).toString()
+									};
+
+									return obj;
+								}),
+
+						}, __Internal__.urlData, __Internal__.urlOptions)
 					)));
 
 
