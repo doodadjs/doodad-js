@@ -74,7 +74,7 @@
 			hasIncompatibleFunctionToStringBug: false,
 
 			// "createObject", "getPrototypeOf", "setPrototypeOf"
-			hasProto: !!({}.__proto__),
+			//hasProto: !!({}.__proto__),
 
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
 			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
@@ -526,10 +526,12 @@
 			objectGetOwnPropertyDescriptor: (types.isNativeFunction(global.Object.getOwnPropertyDescriptor) ? global.Object.getOwnPropertyDescriptor : undefined),
 			
 			// "getPrototypeOf"
-			objectGetPrototypeOf: (types.isNativeFunction(global.Object.getPrototypeOf) ? global.Object.getPrototypeOf : undefined),
+			//objectGetPrototypeOf: (types.isNativeFunction(global.Object.getPrototypeOf) ? global.Object.getPrototypeOf : undefined),
+			objectGetPrototypeOf: global.Object.getPrototypeOf,
 			
 			// "isPrototypeOf"
-			objectIsPrototypeOfCall: (types.isNativeFunction(global.Object.prototype.isPrototypeOf) ? global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf) : undefined),
+			//objectIsPrototypeOfCall: (types.isNativeFunction(global.Object.prototype.isPrototypeOf) ? global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf) : undefined),
+			objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
 			// "keys"
 			objectKeys: (types.isNativeFunction(global.Object.keys) ? global.Object.keys : undefined),
@@ -538,7 +540,8 @@
 			objectPropertyIsEnumerableCall: (types.isNativeFunction(global.Object.prototype.propertyIsEnumerable) ? global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable) : undefined),
 			
 			// "setPrototypeOf"
-			objectSetPrototypeOf: (types.isNativeFunction(global.Object.setPrototypeOf) ? global.Object.setPrototypeOf : undefined),
+			//objectSetPrototypeOf: (types.isNativeFunction(global.Object.setPrototypeOf) ? global.Object.setPrototypeOf : undefined),
+			objectSetPrototypeOf: global.Object.setPrototypeOf,
 			
 			// "isArray", "isObject", "isJsObject", "isCallable"
 			objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
@@ -661,13 +664,13 @@
 		//===================================
 		// For old browsers
 		//===================================
-		
+/*		
 		if (!_shared.Natives.objectGetPrototypeOf || !_shared.Natives.objectSetPrototypeOf) {
 			_shared.Natives.objectGetPrototypeOf = undefined;
 			_shared.Natives.objectSetPrototypeOf = undefined;
 			_shared.Natives.objectIsPrototypeOfCall = undefined;
 		};
-		
+*/		
 //IE8		//===================================
 //IE8		// IE 8 Bug
 //IE8		//===================================
@@ -2685,6 +2688,9 @@
 				return descriptor;
 			}));
 		
+		__Internal__.ADD('createObject', _shared.Natives.objectCreate);
+
+/*
 		__Internal__.ADD('createObject', (_shared.Natives.objectCreate || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2710,7 +2716,7 @@
 					// Enhanced polyfill taken from Mozilla Developer Network. 
 					(function() {
 						var tmp = function Object() {};
-						return (function createObject(proto, /*optional*/properties) {
+						return (function createObject(proto, /*optional* /properties) {
 							tmp.prototype = proto;
 							var obj = new tmp();
 							tmp.prototype = null; // free memory
@@ -2723,7 +2729,7 @@
 						});
 					})()
 				:
-					(function createObject(proto, /*optional*/properties) {
+					(function createObject(proto, /*optional* /properties) {
 						var tmp = function Object() {};
 						tmp.prototype = proto;
 						var obj = new tmp();
@@ -2739,7 +2745,7 @@
 						return obj;
 					})
 			))));
-
+*/
 		__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2793,6 +2799,8 @@
 				return obj;
 			}));
 		
+		__Internal__.ADD('getPrototypeOf', _shared.Natives.objectGetPrototypeOf)
+/*
 		__Internal__.ADD('getPrototypeOf', (_shared.Natives.objectGetPrototypeOf || __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2832,8 +2840,8 @@
 //IE8						};
 //IE8					})
 			))));
-		
-		__Internal__.fnProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf(function(){}) : (function(){}).constructor.prototype);
+*/		
+//		__Internal__.fnProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf(function(){}) : (function(){}).constructor.prototype);
 //IE8		__Internal__.objProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf({}) : (({}).constructor.prototype));
 		
 		__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
@@ -2866,15 +2874,15 @@
 				// NOTE: Functions can't be created using "createObject".
 				// TODO: How to prevent the use of "setPrototypeOf" (which MDN doesn't like) for "functions" ?
 				var enabled = (forceNative || types.isFunction(obj));
-				if (enabled && _shared.Natives.objectSetPrototypeOf) {
+				if (enabled) { // && _shared.Natives.objectSetPrototypeOf) {
 					return _shared.Natives.objectSetPrototypeOf(obj, proto);
-				} else if (enabled && __Internal__.hasProto) {
-					// For browsers implementing "__proto__".
-					if ((obj === undefined) || (obj === null)) {
-						return obj;
-					};
-					obj.__proto__ = proto;
-					return obj; 
+				//} else if (enabled && __Internal__.hasProto) {
+				//	// For browsers implementing "__proto__".
+				//	if ((obj === undefined) || (obj === null)) {
+				//		return obj;
+				//	};
+				//	obj.__proto__ = proto;
+				//	return obj; 
 				} else {
 					if ((obj === undefined) || (obj === null)) {
 						return obj;
@@ -2913,6 +2921,11 @@
 				};
 			}));
 
+		__Internal__.ADD('isPrototypeOf', function isPrototypeOf(protoObj, obj) {
+				// NOTE: Why does this function is part of Object prototype ?
+				return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
+			});
+/*
 		__Internal__.ADD('isPrototypeOf', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2946,7 +2959,7 @@
 				};
 				return false;
 			}))));
-		
+*/		
 		__Internal__.ADD('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
