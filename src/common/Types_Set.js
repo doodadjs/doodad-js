@@ -59,7 +59,7 @@ module.exports = {
 				
 				types.complete(_shared.Natives, {
 					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
-					arrayConstructor: global.Array,
+					windowArray: global.Array,
 					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 
@@ -147,7 +147,7 @@ module.exports = {
 								var mapAr = ar.__keys,
 									mapVals = ar.__values,
 									len = mapAr.length,
-									ar = _shared.Natives.arrayConstructor(len);
+									ar = _shared.Natives.windowArray(len);
 								for (var i = 0; i < len; i++) {
 									ar[i] = [mapAr[i], mapVals[i]];
 								};

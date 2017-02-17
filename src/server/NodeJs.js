@@ -98,8 +98,8 @@ module.exports = {
 					processExit: global.process.exit,
 
 					// "addAppListener", "removeAppListener"
-					processOn: types.bind(global.process, global.process.on),
-					processRemoveListener: types.bind(global.process, global.process.removeListener),
+					processOn: global.process.on.bind(global.process),
+					processRemoveListener: global.process.removeListener.bind(global.process),
 				});
 				
 				//===================================

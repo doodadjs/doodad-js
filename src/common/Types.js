@@ -79,29 +79,29 @@ module.exports = {
 					// No polyfills
 
 					// "toArray"
-					arrayConstructor: global.Array,
+					windowArrayApply: global.Array.apply.bind(global.Array),
 					
 					// "clone", "toArray"
-					arraySlice: global.Array.prototype.slice,
+					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 					
 					// "popAt", "popItem", "popItems"
-					arraySplice: global.Array.prototype.splice,
+					arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
 					
 					// "prepend"
-					arrayUnshift: global.Array.prototype.unshift,
+					arrayUnshiftApply: global.Array.prototype.unshift.apply.bind(global.Array.prototype.unshift),
 					
-					objectToString: global.Object.prototype.toString,
+					objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 
 					windowObject: global.Object,
 					
 					// "toString"
-					windowString: global.String,
+					//windowString: global.String,
 
 					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
-					functionIsGenerator: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator : undefined),
+					functionIsGeneratorCall: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : undefined),
 
 					// "toSource"
-					stringCharCodeAt: global.String.prototype.charCodeAt,
+					stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
 					
 					// "isObjectLikeAndNotEmpty", "hasIndex"
 					windowNumber: global.Number,
@@ -118,7 +118,8 @@ module.exports = {
 					objectEntries: (types.isNativeFunction(global.Object.entries) ? global.Object.entries : undefined),
 					
 					// "bind"
-					functionBind: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind : undefined),
+					functionBindCall: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind.call.bind(Function.prototype.bind) : undefined),
+					functionBindApply: (types.isNativeFunction(Function.prototype.bind) ? Function.prototype.bind.apply.bind(Function.prototype.bind) : undefined),
 					
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
@@ -221,13 +222,13 @@ module.exports = {
 						var result,
 							fill = false;
 						if (types.isString(obj)) {
-							result = _shared.Natives.arraySlice.call(obj);
+							result = _shared.Natives.arraySliceCall(obj);
 						} else { //if (types.isArrayLike(obj)) {
 							if (obj.length === 1) {
 								// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
 								result = [obj[0]];
 							} else {
-								result = _shared.Natives.arrayConstructor.apply(null, obj);
+								result = _shared.Natives.windowArrayApply(null, obj);
 							};
 						};
 						var len = result.length;
@@ -1213,7 +1214,7 @@ module.exports = {
 							if (types.isArray(obj)) {
 								if (key in obj) {
 									var item = obj[key];
-									_shared.Natives.arraySplice.call(obj, key, 1);
+									_shared.Natives.arraySpliceCall(obj, key, 1);
 									return item;
 								};
 							};
@@ -1266,7 +1267,7 @@ module.exports = {
 										if (key in obj) {
 											var val = obj[key];
 											if (item.call(thisObj, val, key, obj)) {
-												_shared.Natives.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySpliceCall(obj, key, 1);
 												return val;
 											};
 										};
@@ -1290,7 +1291,7 @@ module.exports = {
 										if (key in obj) {
 											var val = obj[key];
 											if (val === item) {
-												_shared.Natives.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySpliceCall(obj, key, 1);
 												return val;
 											};
 										};
@@ -1348,7 +1349,7 @@ module.exports = {
 										if (key in obj) {
 											var val = obj[key];
 											if (items.call(thisObj, val, key, obj)) {
-												_shared.Natives.arraySplice.call(obj, key, 1);
+												_shared.Natives.arraySpliceCall(obj, key, 1);
 												result.push(val);
 											};
 										};
@@ -1374,7 +1375,7 @@ module.exports = {
 											for (var j = 0; j < itemsLen; j++) {
 												if (j in items) {
 													if (items[j] === val) {
-														_shared.Natives.arraySplice.call(obj, key, 1);
+														_shared.Natives.arraySpliceCall(obj, key, 1);
 														result.push(val);
 													};
 												};
@@ -1431,7 +1432,7 @@ module.exports = {
 						for (var i = 1; i < len; i++) {
 							var arg = arguments[i];
 							if (!types.isNothing(arg)) {
-								_shared.Natives.arrayUnshift.apply(obj, arg);
+								_shared.Natives.arrayUnshiftApply(obj, arg);
 							};
 						};
 						return obj;
@@ -1498,10 +1499,10 @@ module.exports = {
 									//var allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
 									//for (var i = 0; i < len; ) {
 									for (var i = 0; i < len; i++) {
-										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAt.call(val, i), 1]);
+										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAtCall(val, i), 1]);
 										//var size = code[1];
 										//code = code[0];
-										var code = _shared.Natives.stringCharCodeAt.call(val, i);
+										var code = _shared.Natives.stringCharCodeAtCall(val, i);
 										if (allowNullChar && (code === 0x0000)) { // Null
 											str += '\\0';
 										} else if (code === 0x0008) { // Backspace
@@ -1620,7 +1621,7 @@ module.exports = {
 									} while (inherited && (obj = types.getPrototypeOf(obj)));
 									return '{' + str.slice(0, -2) + '}';
 								} else if (types.isObjectLike(obj)) {
-									return types.toSource(_shared.Natives.objectToString.call(obj));
+									return types.toSource(_shared.Natives.objectToStringCall(obj));
 								} else {
 									return obj.toString();
 								};
@@ -1789,8 +1790,8 @@ module.exports = {
 								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
 					}
 					//! END_REPLACE()
-					, (_shared.Natives.functionIsGenerator ? function isGeneratorFunction(obj) {
-						return _shared.Natives.functionIsGenerator.call(obj);
+					, (_shared.Natives.functionIsGeneratorCall ? function isGeneratorFunction(obj) {
+						return _shared.Natives.functionIsGeneratorCall(obj);
 					} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
 						return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
 					} : function isGeneratorFunction(obj) {
@@ -1984,9 +1985,9 @@ module.exports = {
 						var newFn;
 						if (_shared.Natives.functionBind) {
 							if (args) {
-								newFn = _shared.Natives.functionBind.apply(fn, types.append([obj], args));
+								newFn = _shared.Natives.functionBindApply(fn, types.append([obj], args));
 							} else {
-								newFn = _shared.Natives.functionBind.call(fn, obj);
+								newFn = _shared.Natives.functionBindCall(fn, obj);
 							};
 						} else {
 							if (args) {

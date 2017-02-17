@@ -138,17 +138,14 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
 				types.complete(_shared.Natives, {
-					windowXMLHttpRequest: global.XMLHttpRequest,
-
 					// Prototype functions
-					stringIndexOf: global.String.prototype.indexOf,
-					stringLastIndexOf: global.String.prototype.lastIndexOf,
-					stringReplace: global.String.prototype.replace,
-					stringSearch: global.String.prototype.search,
+					stringIndexOfCall: global.String.prototype.indexOf.call.bind(global.String.prototype.indexOf),
+					stringLastIndexOfCall: global.String.prototype.lastIndexOf.call.bind(global.String.prototype.lastIndexOf),
+					stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+					//stringSearchCall: global.String.prototype.search.call.bind(global.String.prototype.search),
 				
-					//windowError: global.Error,
 					windowRegExp: global.RegExp,
-					//windowObject: global.Object,
+					windowObject: global.Object,
 
 					// Polyfills
 
@@ -157,16 +154,16 @@ module.exports = {
 					//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
 					
 					// ES5
-					stringRepeat: (types.isNativeFunction(global.String.prototype.repeat) ? global.String.prototype.repeat : undefined),
-					arrayIndexOf: (types.isNativeFunction(global.Array.prototype.indexOf) ? global.Array.prototype.indexOf : undefined),
-					arrayLastIndexOf: (types.isNativeFunction(global.Array.prototype.lastIndexOf) ? global.Array.prototype.lastIndexOf : undefined),
-					arrayForEach: (types.isNativeFunction(global.Array.prototype.forEach) ? global.Array.prototype.forEach : undefined),
-					arrayMap: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map : undefined),
-					arrayFilter: (types.isNativeFunction(global.Array.prototype.filter) ? global.Array.prototype.filter : undefined),
-					arrayEvery: (types.isNativeFunction(global.Array.prototype.every) ? global.Array.prototype.every : undefined),
-					arraySome: (types.isNativeFunction(global.Array.prototype.some) ? global.Array.prototype.some : undefined),
-					arrayReduce: (types.isNativeFunction(global.Array.prototype.reduce) ? global.Array.prototype.reduce : undefined),
-					arrayReduceRight: (types.isNativeFunction(global.Array.prototype.reduceRight) ? global.Array.prototype.reduceRight : undefined),
+					stringRepeatCall: (types.isNativeFunction(global.String.prototype.repeat) ? global.String.prototype.repeat.call.bind(global.String.prototype.repeat) : undefined),
+					arrayIndexOfCall: (types.isNativeFunction(global.Array.prototype.indexOf) ? global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf) : undefined),
+					arrayLastIndexOfCall: (types.isNativeFunction(global.Array.prototype.lastIndexOf) ? global.Array.prototype.lastIndexOf.call.bind(global.Array.prototype.lastIndexOf) : undefined),
+					arrayForEachCall: (types.isNativeFunction(global.Array.prototype.forEach) ? global.Array.prototype.forEach.call.bind(global.Array.prototype.forEach) : undefined),
+					//arrayMap: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map : undefined),
+					arrayFilterCall: (types.isNativeFunction(global.Array.prototype.filter) ? global.Array.prototype.filter.call.bind(global.Array.prototype.filter) : undefined),
+					arrayEveryCall: (types.isNativeFunction(global.Array.prototype.every) ? global.Array.prototype.every.call.bind(global.Array.prototype.every) : undefined),
+					arraySomeCall: (types.isNativeFunction(global.Array.prototype.some) ? global.Array.prototype.some.call.bind(global.Array.prototype.some) : undefined),
+					arrayReduceCall: (types.isNativeFunction(global.Array.prototype.reduce) ? global.Array.prototype.reduce.call.bind(global.Array.prototype.reduce) : undefined),
+					arrayReduceRightCall: (types.isNativeFunction(global.Array.prototype.reduceRight) ? global.Array.prototype.reduceRight.call.bind(global.Array.prototype.reduceRight) : undefined),
 					
 					// ES7
 					regExpEscape: (types.isNativeFunction(global.RegExp.escape) ? global.RegExp.escape : undefined),
@@ -553,8 +550,8 @@ module.exports = {
 							root.DD_ASSERT(types.isString(str), "Invalid string.");
 							root.DD_ASSERT(types.isInteger(n), "Invalid number.");
 						};
-						if (_shared.Natives.stringRepeat) {
-							return _shared.Natives.stringRepeat.call(str, n);
+						if (_shared.Natives.stringRepeatCall) {
+							return _shared.Natives.stringRepeatCall(str, n);
 						} else {
 							// Source: Stackoverflow
 							// TODO: Optimize me (join is slow)
@@ -611,10 +608,10 @@ module.exports = {
 							from = new _shared.Natives.windowRegExp(regexp, options);
 						};
 						if (types.isString(text)) {
-							return _shared.Natives.stringReplace.call(text, from, to);
+							return _shared.Natives.stringReplaceCall(text, from, to);
 						} else {
 							for (var i = 0; i < text.length; i++) {
-								text[i] = _shared.Natives.stringReplace.call(text[i], from, to);
+								text[i] = _shared.Natives.stringReplaceCall(text[i], from, to);
 							};
 							return text;
 						};
@@ -682,7 +679,7 @@ module.exports = {
 							posText = str.indexOf(text, start);
 						} else {
 							text.lastIndex = start;
-							//var posText = _shared.Natives.stringSearch.call(str, text);
+							//var posText = _shared.Natives.stringSearchCall(str, text);
 							posText = text.exec(str);
 							if (!text.global && (start > 0)) {
 								throw new types.TypeError("Regular expression must have the global flag set.");
@@ -700,7 +697,7 @@ module.exports = {
 								posStopStr = str.indexOf(stopStr, start);
 							} else {
 								stopStr.lastIndex = start;
-								//posStopStr = _shared.Natives.stringSearch.call(str, stopStr);
+								//posStopStr = _shared.Natives.stringSearchCall(str, stopStr);
 								var posStopStr = stopStr.exec(str);
 								if (!stopStr.global && (start > 0)) {
 									throw new types.TypeError("Regular expression must have the global flag set.");
@@ -1104,11 +1101,11 @@ module.exports = {
 						if (types.isArrayLike(obj)) {
 							from = (+from || 0);
 							if (types.isString(obj)) {
-								return _shared.Natives.stringIndexOf.call(obj, item, from);
+								return _shared.Natives.stringIndexOfCall(obj, item, from);
 							} else {
-								if (_shared.Natives.arrayIndexOf) {
+								if (_shared.Natives.arrayIndexOfCall) {
 									// JS 1.6
-									return _shared.Natives.arrayIndexOf.call(obj, item, from);
+									return _shared.Natives.arrayIndexOfCall(obj, item, from);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1157,11 +1154,11 @@ module.exports = {
 							var len = obj.length;
 							from = (+from || (len - 1));
 							if (types.isString(obj)) {
-								return _shared.Natives.stringLastIndexOf.call(obj, item, from);
+								return _shared.Natives.stringLastIndexOfCall(obj, item, from);
 							} else {
-								if (_shared.Natives.arrayLastIndexOf) {
+								if (_shared.Natives.arrayLastIndexOfCall) {
 									// JS 1.6
-									return _shared.Natives.arrayLastIndexOf.call(obj, item, from);
+									return _shared.Natives.arrayLastIndexOfCall(obj, item, from);
 								} else {
 									obj = Object(obj);
 									from = Math.min(from >= 0 ? from : len - Math.abs(from), len - 1);
@@ -1216,9 +1213,9 @@ module.exports = {
 								// "Map" and "Set" have their own "forEach" method.
 								return obj.forEach.call(obj, fn, thisObj);
 							} else if (types.isArrayLike(obj)) {
-								if (_shared.Natives.arrayForEach) {
+								if (_shared.Natives.arrayForEachCall) {
 									// JS 1.6
-									return _shared.Natives.arrayForEach.call(obj, fn, thisObj);
+									return _shared.Natives.arrayForEachCall(obj, fn, thisObj);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1316,9 +1313,9 @@ module.exports = {
 										};
 									});
 								} else if (types.isArrayLike(obj)) {
-									if (_shared.Natives.arrayFilter && !invert) {
+									if (_shared.Natives.arrayFilterCall && !invert) {
 										// JS 1.6
-										result = _shared.Natives.arrayFilter.call(obj, items, thisObj);
+										result = _shared.Natives.arrayFilterCall(obj, items, thisObj);
 									} else {
 										result = [];
 										len = obj.length;
@@ -1559,9 +1556,9 @@ module.exports = {
 						invert = !!invert;
 						if (!includeFunctions && types.isFunction(items)) {
 							if (types.isArrayLike(obj)) {
-								if (_shared.Natives.arrayEvery && !invert) {
+								if (_shared.Natives.arrayEveryCall && !invert) {
 									// JS 1.6
-									return _shared.Natives.arrayEvery.call(obj, items, thisObj);
+									return _shared.Natives.arrayEveryCall(obj, items, thisObj);
 								} else {
 									obj = Object(obj);
 									var len = obj.length;
@@ -1701,9 +1698,9 @@ module.exports = {
 							invert = !!invert;
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
-									if (_shared.Natives.arraySome && !invert) {
+									if (_shared.Natives.arraySomeCall && !invert) {
 										// JS 1.6
-										return _shared.Natives.arraySome.call(obj, items, thisObj);
+										return _shared.Natives.arraySomeCall(obj, items, thisObj);
 									} else {
 										obj = Object(obj);
 										var len = obj.length;
@@ -1843,12 +1840,12 @@ module.exports = {
 
 						if (types.isNothing(obj)) {
 							return initialValue;
-						} else if (types.isArrayLike(obj) && types.isNothing(thisObj) && _shared.Natives.arrayReduce) {
+						} else if (types.isArrayLike(obj) && types.isNothing(thisObj) && _shared.Natives.arrayReduceCall) {
 							// JS 1.8
 							if (arguments.length > 2) {
-								return _shared.Natives.arrayReduce.call(obj, fn, initialValue);
+								return _shared.Natives.arrayReduceCall(obj, fn, initialValue);
 							} else {
-								return _shared.Natives.arrayReduce.call(obj, fn);
+								return _shared.Natives.arrayReduceCall(obj, fn);
 							};
 						} else {
 							obj = Object(obj);
@@ -1916,12 +1913,12 @@ module.exports = {
 						} else {
 							root.DD_ASSERT && root.DD_ASSERT(types.isArrayLike(obj), "Invalid array.");
 
-							if (types.isNothing(thisObj) && _shared.Natives.arrayReduceRight) {
+							if (types.isNothing(thisObj) && _shared.Natives.arrayReduceRightCall) {
 								// JS 1.8
 								if (arguments.length > 2) {
-									return _shared.Natives.arrayReduceRight.call(obj, fn, initialValue);
+									return _shared.Natives.arrayReduceRightCall(obj, fn, initialValue);
 								} else {
-									return _shared.Natives.arrayReduceRight.call(obj, fn);
+									return _shared.Natives.arrayReduceRightCall(obj, fn);
 								};
 							} else {
 								obj = Object(obj);

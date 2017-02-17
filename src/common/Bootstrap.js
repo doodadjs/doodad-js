@@ -53,17 +53,14 @@
 			// NOTE: Preload of immediatly needed natives.
 			Natives: {
 				// General
-				stringReplace: global.String.prototype.replace,
-				numberToString: global.Number.prototype.toString,
+				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
 
 				// "has", "isCustomFunction", "isNativeFunction"
-				objectHasOwnProperty: global.Object.prototype.hasOwnProperty,
+				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 				
 				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
-				functionToString: global.Function.prototype.toString,
-
-				//// "supportsES6Classes"
-				//objectCreate: global.Object.create,
+				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 
 				// "DD_DOC"
 				windowObject: global.Object,
@@ -80,7 +77,7 @@
 			hasProto: !!({}.__proto__),
 
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
-			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplace.call(_shared.Natives.numberToString.call(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
+			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
 
 			MIN_BITWISE_INTEGER: 0,
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
@@ -157,7 +154,7 @@
 		(function() {
 			try {
 				var cls = __Internal__.evals.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
-				__Internal__.hasClasses = (_shared.Natives.functionToString.call(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
+				__Internal__.hasClasses = (_shared.Natives.functionToStringCall(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
 				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
 				//if (__Internal__.hasClasses) {
 				//	cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
@@ -239,7 +236,7 @@
 		// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 		try {
 			if (typeof global.Event === 'function') {
-				_shared.Natives.functionToString.call(global.Event);
+				_shared.Natives.functionToStringCall(global.Event);
 			};
 		} catch(ex) {
 			__Internal__.hasIncompatibleFunctionToStringBug = true;
@@ -283,7 +280,7 @@
 			//! END_REPLACE()
 			, __Internal__.hasClasses ? function isJsClass(obj) {
 				if (types.isFunction(obj)) {
-					return (_shared.Natives.functionToString.call(obj).slice(0, 6) === 'class ');
+					return (_shared.Natives.functionToStringCall(obj).slice(0, 6) === 'class ');
 				};
 				return false;
 			} : function isJsClass(obj) {
@@ -311,10 +308,10 @@
 					return true;
 				} else if (types.isFunction(obj)) {
 					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && _shared.Natives.objectHasOwnProperty.call(obj, 'toString') && types.isNativeFunction(obj.toString)) {
+					if (__Internal__.hasIncompatibleFunctionToStringBug && _shared.Natives.objectHasOwnPropertyCall(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = _shared.Natives.functionToString.call(obj);
+						str = _shared.Natives.functionToStringCall(obj);
 					};
 					var index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
@@ -357,7 +354,7 @@
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = _shared.Natives.functionToString.call(obj);
+						str = _shared.Natives.functionToStringCall(obj);
 					};
 					var index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
@@ -396,7 +393,7 @@
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = _shared.Natives.functionToString.call(obj);
+						str = _shared.Natives.functionToStringCall(obj);
 					};
 					return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
 				};
@@ -427,7 +424,7 @@
 					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 						str = obj.toString();
 					} else {
-						str = _shared.Natives.functionToString.call(obj);
+						str = _shared.Natives.functionToStringCall(obj);
 					};
 					return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
 				};
@@ -462,7 +459,7 @@
 						if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
 							str = obj.toString();
 						} else {
-							str = _shared.Natives.functionToString.call(obj);
+							str = _shared.Natives.functionToStringCall(obj);
 						};
 						var result = str.match(/function\s+([^(\s]*)[^(]*\(/);
 						return result && result[1] || null;
@@ -497,19 +494,18 @@
 			// General
 			windowFunction: global.Function,
 			windowObject: global.Object,
-			stringReplace: global.String.prototype.replace,
-			//numberToString: global.Number.prototype.toString,
+			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 
 			// "hasInherited"
 			objectPrototype: global.Object.prototype,
 			
 			// "has", "isCustomFunction", "isNativeFunction"
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
-			objectHasOwnProperty: global.Object.prototype.hasOwnProperty,
+			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 			
 			// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
-			functionToString: global.Function.prototype.toString,
+			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 				
 			// "extend"
 			objectAssign: (types.isNativeFunction(global.Object.assign) ? global.Object.assign : undefined),
@@ -533,32 +529,34 @@
 			objectGetPrototypeOf: (types.isNativeFunction(global.Object.getPrototypeOf) ? global.Object.getPrototypeOf : undefined),
 			
 			// "isPrototypeOf"
-			objectIsPrototypeOf: (types.isNativeFunction(global.Object.prototype.isPrototypeOf) ? global.Object.prototype.isPrototypeOf : undefined),
-			
+			objectIsPrototypeOfCall: (types.isNativeFunction(global.Object.prototype.isPrototypeOf) ? global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf) : undefined),
+
 			// "keys"
 			objectKeys: (types.isNativeFunction(global.Object.keys) ? global.Object.keys : undefined),
 			
 			// "isEnumerable", "symbols"
-			objectPropertyIsEnumerable: (types.isNativeFunction(global.Object.prototype.propertyIsEnumerable) ? global.Object.prototype.propertyIsEnumerable : undefined),
+			objectPropertyIsEnumerableCall: (types.isNativeFunction(global.Object.prototype.propertyIsEnumerable) ? global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable) : undefined),
 			
 			// "setPrototypeOf"
 			objectSetPrototypeOf: (types.isNativeFunction(global.Object.setPrototypeOf) ? global.Object.setPrototypeOf : undefined),
 			
 			// "isArray", "isObject", "isJsObject", "isCallable"
-			objectToString: global.Object.prototype.toString,
+			objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 			
 			// "isArray"
 			arrayIsArray: (types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
-			arraySplice: global.Array.prototype.splice,
+			arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+
+			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 
 			// "isArray", "map"
 			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
 			
 			// "isBoolean"
-			windowBoolean: (types.isNativeFunction(global.Boolean) ? global.Boolean : undefined),
+			//windowBoolean: (types.isNativeFunction(global.Boolean) ? global.Boolean : undefined),
 			
 			// "isDate"
-			windowDate: (types.isNativeFunction(global.Date) ? global.Date : undefined),
+			//windowDate: (types.isNativeFunction(global.Date) ? global.Date : undefined),
 			
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
@@ -578,8 +576,8 @@
 			symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol['for']) ? global.Symbol['for'] : undefined),
 			
 			// "getSymbolKey", "symbolIsGlobal"
-			symbolToString: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString : undefined),
-			symbolValueOf: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.valueOf) ? global.Symbol.prototype.valueOf : undefined),
+			symbolToStringCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString) : undefined),
+			symbolValueOfCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.valueOf) ? global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf) : undefined),
 			symbolKeyFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.keyFor) ? global.Symbol.keyFor : undefined),
 			
 			// "getSymbolFor", "getSymbolKey"
@@ -590,10 +588,10 @@
 
 			// "is*"
 			symbolToStringTag: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
-			numberValueOf: global.Number.prototype.valueOf,
-			booleanValueOf: global.Boolean.prototype.valueOf,
-			stringValueOf: global.String.prototype.valueOf,
-			dateValueOf: global.Date.prototype.valueOf,
+			numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
+			booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
+			stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
+			dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
 
 			// "isNaN"
 			numberIsNaN: (types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
@@ -602,19 +600,20 @@
 			numberIsFinite: (types.isNativeFunction(global.Number.isFinite) ? global.Number.isFinite : undefined),
 			
 			// "concat"
-			arrayConcat: (types.isNativeFunction(global.Array.prototype.concat) ? global.Array.prototype.concat : undefined),
+			arrayConcatApply: (types.isNativeFunction(global.Array.prototype.concat) ? global.Array.prototype.concat.apply.bind(global.Array.prototype.concat) : undefined),
 
 			// "append"
-			arrayPush: global.Array.prototype.push,
+			arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
+			arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
 			
 			// "isInteger"
 			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
 
 			// "trim"
-			stringTrim: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim : undefined),
+			stringTrimCall: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim.call.bind(global.String.prototype.trim) : undefined),
 			
 			// "depthExtend"
-			functionBind: global.Function.prototype.bind,
+			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
 			
 			// "isSafeInteger"
 			numberIsSafeInteger: (types.isNativeFunction(global.Number.isSafeInteger) ? global.Number.isSafeInteger : undefined),
@@ -653,7 +652,7 @@
 			mathRandom: global.Math.random,
 
 			// AssertionError
-			consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
+			//consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
 		};
 
 		// "_instanceof"
@@ -666,7 +665,7 @@
 		if (!_shared.Natives.objectGetPrototypeOf || !_shared.Natives.objectSetPrototypeOf) {
 			_shared.Natives.objectGetPrototypeOf = undefined;
 			_shared.Natives.objectSetPrototypeOf = undefined;
-			_shared.Natives.objectIsPrototypeOf = undefined;
+			_shared.Natives.objectIsPrototypeOfCall = undefined;
 		};
 		
 //IE8		//===================================
@@ -899,8 +898,8 @@
 					} else {
 						return [];
 					};
-				} else if (_shared.Natives.stringTrim && (chr === ' ') && !direction && (count === Infinity)) {
-					return _shared.Natives.stringTrim.call(str);
+				} else if (_shared.Natives.stringTrimCall && (chr === ' ') && !direction && (count === Infinity)) {
+					return _shared.Natives.stringTrimCall(str);
 				} else {
 					var i = 0,
 						x = 0,
@@ -1275,14 +1274,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1314,14 +1313,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1365,14 +1364,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1457,14 +1456,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1509,14 +1508,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				return (obj === Infinity) || (obj === -Infinity);
@@ -1545,14 +1544,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1592,14 +1591,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Boolean')) {
 						try {
-							obj = _shared.Natives.booleanValueOf.call(obj);
+							obj = _shared.Natives.booleanValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Boolean]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Boolean]') {
 						return false;
 					} else {
-						obj = _shared.Natives.booleanValueOf.call(obj);
+						obj = _shared.Natives.booleanValueOfCall(obj);
 					};
 				};
 				return (typeof obj === 'boolean');
@@ -1629,14 +1628,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'String')) {
 						try {
-							obj = _shared.Natives.stringValueOf.call(obj);
+							obj = _shared.Natives.stringValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object String]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object String]') {
 						return false;
 					} else {
-						obj = _shared.Natives.stringValueOf.call(obj);
+						obj = _shared.Natives.stringValueOfCall(obj);
 					};
 				};
 				return (typeof obj === 'string');
@@ -1668,13 +1667,13 @@
 				};
 				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Date')) {
 					try {
-						_shared.Natives.dateValueOf.call(obj);
+						_shared.Natives.dateValueOfCall(obj);
 						return true;
 					} catch(o) {
 						return false;
 					};
 				} else {
-					return (_shared.Natives.objectToString.call(obj) === '[object Date]');
+					return (_shared.Natives.objectToStringCall(obj) === '[object Date]');
 				};
 			}));
 		
@@ -1703,12 +1702,12 @@
 				};
 				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Array')) {
 					try {
-						_shared.Natives.arraySplice.call(obj, 0, 0);
+						_shared.Natives.arraySpliceCall(obj, 0, 0);
 					} catch(o) {
 						return false;
 					};
 				};
-				return (_shared.Natives.objectToString.call(obj) === '[object Array]');
+				return (_shared.Natives.objectToStringCall(obj) === '[object Array]');
 			})));
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
@@ -1770,7 +1769,7 @@
 				//	????
 				//};
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
-				return (_shared.Natives.objectToString.call(obj) === '[object Error]') || types.isErrorType(obj.constructor);
+				return (_shared.Natives.objectToStringCall(obj) === '[object Error]') || types.isErrorType(obj.constructor);
 			}));
 		
 		__Internal__.ADD('isNaN', __Internal__.DD_DOC(
@@ -1797,14 +1796,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
 						try {
-							obj = _shared.Natives.numberValueOf.call(obj);
+							obj = _shared.Natives.numberValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Number]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Number]') {
 						return false;
 					} else {
-						obj = _shared.Natives.numberValueOf.call(obj);
+						obj = _shared.Natives.numberValueOfCall(obj);
 					};
 				};
 				if (typeof obj !== 'number') {
@@ -1846,12 +1845,12 @@
 				};
 				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Function')) {
 					try {
-						_shared.Natives.functionToString.call(obj);
+						_shared.Natives.functionToStringCall(obj);
 					} catch(o) {
 						return false;
 					};
 				} else {
-					return (_shared.Natives.objectToString.call(obj) === '[object Function]');
+					return (_shared.Natives.objectToStringCall(obj) === '[object Function]');
 				};
 			}));
 			
@@ -2077,7 +2076,7 @@
 				if (!types.isNothing(obj)) {
 					obj = _shared.Natives.windowObject(obj);
 					if (!types.isArray(keys)) {
-						return _shared.Natives.objectHasOwnProperty.call(obj, keys);
+						return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
 					};
 					var len = keys.length;
 					if (!len) {
@@ -2086,7 +2085,7 @@
 					for (var i = 0; i < len; i++) {
 						if (i in keys) {
 							var key = keys[i];
-							if (_shared.Natives.objectHasOwnProperty.call(obj, key)) {
+							if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
 								return true;
 							};
 						};
@@ -2212,8 +2211,8 @@
 						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectPropertyIsEnumerable ? function isEnumerable(obj, key) {
-				return _shared.Natives.objectPropertyIsEnumerable.call(obj, key);
+			, (_shared.Natives.objectPropertyIsEnumerableCall ? function isEnumerable(obj, key) {
+				return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
 			} : function isEnumerable(obj, key) {
 				return true;
 			})));
@@ -2935,9 +2934,9 @@
 						description: "Returns 'true' if the prototype is the prototype of the object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectIsPrototypeOf ? (function isPrototypeOf(protoObj, obj) {
+			, (_shared.Natives.objectIsPrototypeOfCall ? (function isPrototypeOf(protoObj, obj) {
 				// NOTE: Why does this function is part of Object prototype ?
-				return _shared.Natives.objectIsPrototypeOf.call(protoObj, obj);
+				return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 			}) : (function isPrototypeOf(protoObj, obj) {
 				obj = _shared.Natives.windowObject(obj);
 				while (obj = types.getPrototypeOf(obj)) {
@@ -3170,7 +3169,7 @@
 								keysLen = keys.length; // performance
 							for (var j = 0; j < keysLen; j++) {
 								var key = keys[j];
-								extender(result, obj[key], key, _shared.Natives.functionBind.call(types.depthExtend, types, extender));
+								extender(result, obj[key], key, _shared.Natives.functionBindCall(types.depthExtend, types, extender));
 							};
 						};
 					};
@@ -3296,9 +3295,9 @@
 						description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.arrayConcat ? 
+			, (_shared.Natives.arrayConcatApply ? 
 				function concat(/*paramarray*/) {
-					return _shared.Natives.arrayConcat.apply(__Internal__.emptyArray, arguments);
+					return _shared.Natives.arrayConcatApply(__Internal__.emptyArray, arguments);
 				}
 			: 
 				function concat(/*paramarray*/) {
@@ -3309,9 +3308,9 @@
 						if (i in arguments) {
 							var obj = arguments[i];
 							if (types.isArray(obj)) {
-								_shared.Natives.arrayPush.apply(result, obj);
+								_shared.Natives.arrayPushApply(result, obj);
 							} else {
-								_shared.Natives.arrayPush.call(result, obj);
+								_shared.Natives.arrayPushCall(result, obj);
 							};
 						};
 					};
@@ -3349,7 +3348,7 @@
 				for (var i = 1; i < len; i++) {
 					var arg = arguments[i];
 					if (!types.isNothing(arg)) {
-						_shared.Natives.arrayPush.apply(obj, arg);
+						_shared.Natives.arrayPushApply(obj, arg);
 					};
 				};
 				return obj;
@@ -3475,7 +3474,7 @@
 				//if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
 				//	????
 				//};
-				return (_shared.Natives.objectToString.call(obj) === '[object Object]');
+				return (_shared.Natives.objectToStringCall(obj) === '[object Object]');
 			}));
 			
 		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
@@ -3763,14 +3762,14 @@
 				if (typeof obj === 'object') {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Symbol')) {
 						try {
-							obj = _shared.Natives.symbolValueOf.call(obj);
+							obj = _shared.Natives.symbolValueOfCall(obj);
 						} catch(o) {
 							return false;
 						};
-					} else if (_shared.Natives.objectToString.call(obj) !== '[object Symbol]') {
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object Symbol]') {
 						return false;
 					} else {
-						obj = _shared.Natives.symbolValueOf.call(obj);
+						obj = _shared.Natives.symbolValueOfCall(obj);
 					};
 				};
 				return (typeof obj === 'symbol');
@@ -3844,7 +3843,7 @@
 				};
 				var key = _shared.Natives.symbolKeyFor(symbol.valueOf());
 				if (types.isNothing(key)) {
-					key = _shared.Natives.symbolToString.call(symbol);
+					key = _shared.Natives.symbolToStringCall(symbol);
 					key = /^Symbol[(]((.|\n)*)[)]$/gm.exec(key) || undefined;
 					key = key && key[1];
 				};
@@ -4844,7 +4843,7 @@
 				if (types.isNothing(base)) {
 					base = _shared.Natives.windowError;
 				};
-				name = _shared.Natives.stringReplace.call(name, /[.]/g, '_');
+				name = _shared.Natives.stringReplaceCall(name, /[.]/g, '_');
 				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
 				if (__Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
@@ -5552,10 +5551,10 @@
 							};
 						};
 					} else {
-						result = _shared.Natives.arraySlice.call(obj, 0);
+						result = _shared.Natives.arraySliceCall(obj, 0);
 					};
 				} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
-					result = types.eval(_shared.Natives.functionToString.call(obj));
+					result = types.eval(_shared.Natives.functionToStringCall(obj));
 				} else if (types._instanceof(obj, types.Map)) {
 					result = new types.Map(obj);
 				} else if (types._instanceof(obj, types.Set)) {
@@ -6460,7 +6459,7 @@
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-				var expr = "function " + _shared.Natives.stringReplace.call(name, /[.]/g, "_") + "(/*paramarray*/) {" + 
+				var expr = "function " + _shared.Natives.stringReplaceCall(name, /[.]/g, "_") + "(/*paramarray*/) {" + 
 					//"if (ctx.get(this, ctx.InitializedSymbol)) {" +
 					//	"throw new ctx.Error('Object is already initialized.');" +
 					//"};" +

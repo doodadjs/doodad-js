@@ -62,8 +62,8 @@ module.exports = {
 				
 				types.complete(_shared.Natives, {
 					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
-					arrayConstructor: global.Array,
-					arraySlice: global.Array.prototype.slice,
+					windowArray: global.Array,
+					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 				});
 				
 				//=================================
@@ -187,7 +187,7 @@ module.exports = {
 										return Promise.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
-									var result = _shared.Natives.arrayConstructor(len);
+									var result = _shared.Natives.windowArray(len);
 									var state = {start: 0};
 									var mapFn = function _mapFn(val, key, obj) {
 										state.start++;
@@ -310,7 +310,7 @@ module.exports = {
 							var filter = arguments[i];
 							if (!types.isErrorType(filter) && !types.isJsObject(filter)) {
 								if (i > 0) {
-									filters = _shared.Natives.arraySlice.call(arguments, 0, i);
+									filters = _shared.Natives.arraySliceCall(arguments, 0, i);
 								};
 								break forEachArgument;
 							};

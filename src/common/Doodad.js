@@ -130,10 +130,13 @@ module.exports = {
 				};
 
 				types.complete(_shared.Natives, {
-					arraySlice: global.Array.prototype.slice,
-					arraySplice: global.Array.prototype.splice,
-					arrayUnshift: global.Array.prototype.unshift,
-					functionPrototype: global.Function.prototype,
+					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+					arraySpliceApply: global.Array.prototype.splice.apply.bind(global.Array.prototype.splice),
+					arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+					arrayUnshiftApply: global.Array.prototype.unshift.apply.bind(global.Array.prototype.unshift),
+					functionApply: global.Function.prototype.apply,
+					functionCall: global.Function.prototype.call,
+					functionBind: global.Function.prototype.bind,
 					windowObject: global.Object,
 				});
 				
@@ -2518,7 +2521,7 @@ module.exports = {
 											// Replace non "call firsts"
 											toRemove = destCallers.length - start;
 										};
-										var removed = _shared.Natives.arraySplice.apply(destCallers, types.append([start, toRemove], callersOrFn));
+										var removed = _shared.Natives.arraySpliceApply(destCallers, types.append([start, toRemove], callersOrFn));
 										destAttribute[__Internal__.symbolReplacedCallers] = types.append(replacedCallers, removed);
 										destAttribute[__Internal__.symbolCallFirstLength] = start + sourceAttribute[__Internal__.symbolCallFirstLength];
 									};
@@ -2654,7 +2657,7 @@ module.exports = {
 										j = i - 1;
 										while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
 											if (callers[j][__Internal__.symbolPrototype] === proto) {
-												_shared.Natives.arraySplice.call(callers, j, 1);
+												_shared.Natives.arraySpliceCall(callers, j, 1);
 												i--;
 											};
 											j--;
@@ -2682,14 +2685,14 @@ module.exports = {
 												if (position.position === 0) {
 													toRemove = 1;
 												};
-												_shared.Natives.arraySplice.call(callers, i, 1);
+												_shared.Natives.arraySpliceCall(callers, i, 1);
 												if (i < destAttribute[__Internal__.symbolCallFirstLength]) {
 													destAttribute[__Internal__.symbolCallFirstLength]--;
 												};
 												if (pos > i) {
 													pos--;
 												};
-												_shared.Natives.arraySplice.call(callers, pos, toRemove, callerI);
+												_shared.Natives.arraySpliceCall(callers, pos, toRemove, callerI);
 												if (pos < destAttribute[__Internal__.symbolCallFirstLength]) {
 													destAttribute[__Internal__.symbolCallFirstLength]++;
 												};
@@ -2885,7 +2888,7 @@ module.exports = {
 									callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 								};
 								
-								_shared.Natives.arrayUnshift.apply(destCallers, callersOrFn);
+								_shared.Natives.arrayUnshiftApply(destCallers, callersOrFn);
 								
 								return destAttribute;
 							},
@@ -2930,7 +2933,7 @@ module.exports = {
 									var j = i - 1;
 									while (j >= 0) {
 										if (callers[j][__Internal__.symbolPrototype] === proto) {
-											_shared.Natives.arraySplice.call(callers, j, 1);
+											_shared.Natives.arraySpliceCall(callers, j, 1);
 											i--;
 										};
 										j--;
@@ -3072,9 +3075,9 @@ module.exports = {
 							_shared.setAttributes(this, values);
 						}),
 
-						apply: _shared.Natives.functionPrototype.apply,
-						call: _shared.Natives.functionPrototype.call,
-						bind: _shared.Natives.functionPrototype.bind,
+						apply: _shared.Natives.functionApply,
+						call: _shared.Natives.functionCall,
+						bind: _shared.Natives.functionBind,
 
 						attach: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -5808,7 +5811,7 @@ module.exports = {
 							if (!isBase) {
 								if (this._implements(mixIns.Creatable)) {
 									if (forType) {
-										this.$create.apply(this, _shared.Natives.arraySlice.call(arguments, 3));
+										this.$create.apply(this, _shared.Natives.arraySliceCall(arguments, 3));
 									} else {
 										this.create.apply(this, arguments);
 									};
