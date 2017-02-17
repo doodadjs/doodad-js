@@ -2084,6 +2084,7 @@ module.exports = {
 				//===================================
 				// HTTP Status Codes
 				// TODO: Move elsewhere
+				// TODO: Add other non-standard or strange status ?
 				//===================================
 				
 				types.ADD('HttpStatus', types.freezeObject(types.nullObject({
