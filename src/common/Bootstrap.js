@@ -514,33 +514,30 @@
 			objectCreate: global.Object.create,
 			
 			// "hasDefinePropertyEnabled" and "defineProperty"
-			objectDefineProperty: (types.isNativeFunction(global.Object.defineProperty) ? global.Object.defineProperty : undefined),
+			objectDefineProperty: global.Object.defineProperty,
 			
 			// "defineProperties"
-			objectDefineProperties: (types.isNativeFunction(global.Object.defineProperties) ? global.Object.defineProperties : undefined),
+			objectDefineProperties: global.Object.defineProperties,
 			
 			// "allKeys"
-			objectGetOwnPropertyNames: (types.isNativeFunction(global.Object.getOwnPropertyNames) ? global.Object.getOwnPropertyNames : undefined),
+			objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
 			
 			// "getOwnPropertyDescriptor"
-			objectGetOwnPropertyDescriptor: (types.isNativeFunction(global.Object.getOwnPropertyDescriptor) ? global.Object.getOwnPropertyDescriptor : undefined),
+			objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
 			
 			// "getPrototypeOf"
-			//objectGetPrototypeOf: (types.isNativeFunction(global.Object.getPrototypeOf) ? global.Object.getPrototypeOf : undefined),
 			objectGetPrototypeOf: global.Object.getPrototypeOf,
 			
 			// "isPrototypeOf"
-			//objectIsPrototypeOfCall: (types.isNativeFunction(global.Object.prototype.isPrototypeOf) ? global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf) : undefined),
 			objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
 			// "keys"
-			objectKeys: (types.isNativeFunction(global.Object.keys) ? global.Object.keys : undefined),
+			objectKeys: global.Object.keys,
 			
 			// "isEnumerable", "symbols"
 			objectPropertyIsEnumerableCall: (types.isNativeFunction(global.Object.prototype.propertyIsEnumerable) ? global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable) : undefined),
 			
 			// "setPrototypeOf"
-			//objectSetPrototypeOf: (types.isNativeFunction(global.Object.setPrototypeOf) ? global.Object.setPrototypeOf : undefined),
 			objectSetPrototypeOf: global.Object.setPrototypeOf,
 			
 			// "isArray", "isObject", "isJsObject", "isCallable"
@@ -554,12 +551,6 @@
 
 			// "isArray", "map"
 			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
-			
-			// "isBoolean"
-			//windowBoolean: (types.isNativeFunction(global.Boolean) ? global.Boolean : undefined),
-			
-			// "isDate"
-			//windowDate: (types.isNativeFunction(global.Date) ? global.Date : undefined),
 			
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
@@ -582,9 +573,6 @@
 			symbolToStringCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString) : undefined),
 			symbolValueOfCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.valueOf) ? global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf) : undefined),
 			symbolKeyFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.keyFor) ? global.Symbol.keyFor : undefined),
-			
-			// "getSymbolFor", "getSymbolKey"
-			//windowWeakMap: (types.isNativeFunction(global.WeakMap) ? global.WeakMap : undefined),
 			
 			// "createType", "_instanceof"
 			symbolHasInstance: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.hasInstance === 'symbol') ? global.Symbol.hasInstance : undefined),
@@ -660,28 +648,6 @@
 
 		// "_instanceof"
 		_shared.Natives.functionHasInstance = (_shared.Natives.symbolHasInstance ? global.Function.prototype[_shared.Natives.symbolHasInstance] : undefined);
-
-		//===================================
-		// For old browsers
-		//===================================
-/*		
-		if (!_shared.Natives.objectGetPrototypeOf || !_shared.Natives.objectSetPrototypeOf) {
-			_shared.Natives.objectGetPrototypeOf = undefined;
-			_shared.Natives.objectSetPrototypeOf = undefined;
-			_shared.Natives.objectIsPrototypeOfCall = undefined;
-		};
-*/		
-//IE8		//===================================
-//IE8		// IE 8 Bug
-//IE8		//===================================
-//IE8		
-//IE8		try {
-//IE8			_shared.Natives.objectDefineProperty({}, 'test', {value: 1});
-//IE8		} catch(ex) {
-//IE8			_shared.Natives.objectDefineProperty = undefined;
-//IE8			_shared.Natives.objectDefineProperties = undefined;
-//IE8			_shared.Natives.objectGetOwnPropertyDescriptor = undefined;
-//IE8		};
 
 		//===================================
 		// Eval
@@ -2220,20 +2186,6 @@
 				return true;
 			})));
 		
-//IE8		// "Object.keys" Polyfill from Mozilla Developer Network.
-//IE8		// NOTE: "hasDontEnumBug" is "true" when a property in "defaultNonEnumerables" is still non-enumerable with "for (... in ...)" while being changed to an own property.
-//IE8		__Internal__.hasDontEnumBug = !types.isEnumerable({ toString: null }, 'toString');
-//IE8		__Internal__.defaultNonEnumerables = [
-//IE8		  'toString',
-//IE8		  'toLocaleString',
-//IE8		  'valueOf',
-//IE8		  'hasOwnProperty',
-//IE8		  'isPrototypeOf',
-//IE8		  'propertyIsEnumerable',
-//IE8		  'constructor',
-//IE8		  'length',
-//IE8		];
-		
 		__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
 
 		__Internal__.ADD('keys', __Internal__.DD_DOC(
@@ -2271,60 +2223,14 @@
 							result.push(key);
 						};
 					};
-				} else if (_shared.Natives.objectKeys) {
-					 result = _shared.Natives.objectKeys(obj);
 				} else {
-					// Polyfill from Mozilla Developer Network.
-					result = [];
-					for (key in obj) {
-						if (types.has(obj, key)) {
-							result.push(key);
-						};
-					};
+					 result = _shared.Natives.objectKeys(obj);
 				};
 				
-//IE8				if (__Internal__.hasDontEnumBug) {
-//IE8					for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
-//IE8						key = __Internal__.defaultNonEnumerables[i];
-//IE8						if (types.has(obj, key)) {
-//IE8							result.push(key);
-//IE8						};
-//IE8					};
-//IE8				};
-
 				return result;
 			}));
 		
-		__Internal__.ADD('allKeys', (_shared.Natives.objectGetOwnPropertyNames || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'arrayof(string)',
-						description: "Returns every own property of an object.",
-			}
-			//! END_REPLACE()
-			, (function allKeys(obj) {
-				// NOTE: Can't get non-enumerables from the polyfill
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				obj = _shared.Natives.windowObject(obj);
-				var result = [];
-				for (var key in obj) {
-					if (types.has(obj, key)) {
-						result.push(key);
-					};
-				};
-				return result;
-			}))));
+		__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
 
 		__Internal__.ADD('allKeysInherited', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2474,19 +2380,6 @@
 				return result;
 			})));
 			
-		__Internal__.hasDefinePropertyBug = (function() {
-			// Safari 5
-			if (_shared.Natives.objectDefineProperty) {
-				var o = {};
-				delete o.doodad; // in case of "doodad" is in "Object.prototype"
-				_shared.Natives.objectDefineProperty(o, 'doodad', {value: 1, configurable: true});
-				_shared.Natives.objectDefineProperty(o, 'doodad', {value: 2, configurable: true});
-				return (o.doodad !== 2);
-			} else {
-				return false;
-			};
-		})();
-		
 		__Internal__.hasGetOwnPropertyRestrictionOnCaller = false;
 		(function() {
 			// Edge
@@ -2504,27 +2397,26 @@
 			};
 		})();
 
+		// TODO: Remove me
 		__Internal__.ADD('hasProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'boolean',
-						description: "Returns 'true' if properties are available. Returns 'false' otherwise.",
+						description: "OBSOLETE... Returns 'true' if properties are available. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperty ? (function hasProperties() {
+			, function hasProperties() {
 				return true;
-			}) : (function hasProperties() {
-				return false;
-			}))));
+			}));
 		
 		__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'any',
@@ -2546,7 +2438,7 @@
 						description: "Defines a property of the object.",
 			}
 			//! END_REPLACE()
-			, (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperty ? (function defineProperty(obj, name, descriptor) {
+			, function defineProperty(obj, name, descriptor) {
 				// <PRB> "Object.defineProperty" stupidly takes inherited properties instead of just own properties. So we fix that because of "Object.prototype".
 				descriptor = types.extend(types.createObject(null), descriptor);
 				types.getDefault(descriptor, 'configurable', false);
@@ -2555,58 +2447,18 @@
 					types.getDefault(descriptor, 'writable', false);
 				};
 				return _shared.Natives.objectDefineProperty(obj, name, descriptor);
-			}) : (function defineProperty(obj, name, descriptor) {
-				descriptor = types.extend(types.createObject(null), descriptor);
-				if (descriptor.get || descriptor.set || !descriptor.enumerable || !descriptor.writable || !descriptor.configurable) {
-					throw new global.Error("Properties are not supported.");
-				} else {
-					if (!types.isObjectLike(obj)) {
-						throw new global.Error("Not an object.");
-					};
-					obj[name] = descriptor.value;
-				};
-			})))),
+			}));
 
-		__Internal__.ADD('defineProperties', (!__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperties ? _shared.Natives.objectDefineProperties : __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-							props: {
-								type: 'object',
-								optional: false,
-								description: "An object of properties with their descriptor.",
-							},
-						},
-						returns: 'undefined',
-						description: "Defines properties of the object.",
-			}
-			//! END_REPLACE()
-			, (function defineProperties(obj, props) {
-				if (!types.isObject(props)) {
-					throw new types.TypeError("Invalid properties.");
-				};
-				var keys = types.append(types.keys(props), types.symbols(props));
-				for (var i = 0; i < keys.length; i++) {
-					var key = keys[i];
-					types.defineProperty(obj, key, props[key]);
-				};
-			}))));
+		__Internal__.ADD('defineProperties', _shared.Natives.objectDefineProperties);
 
-		if (_shared.Natives.objectGetOwnPropertyDescriptor && !__Internal__.hasDefinePropertyBug && !__Internal__.hasGetOwnPropertyRestrictionOnCaller) {
+		if (!__Internal__.hasGetOwnPropertyRestrictionOnCaller) {
 			__Internal__.ADD('getOwnPropertyDescriptor', _shared.Natives.objectGetOwnPropertyDescriptor);
 		} else {
 			__Internal__.ADD('getOwnPropertyDescriptor', __Internal__.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -2623,9 +2475,9 @@
 							description: "Returns the descriptor of an own property of an object.",
 				}
 				//! END_REPLACE()
-				, (_shared.Natives.objectGetOwnPropertyDescriptor ? function getOwnPropertyDescriptor(obj, key) {
+				, function getOwnPropertyDescriptor(obj, key) {
 					var desc;
-					if (__Internal__.hasGetOwnPropertyRestrictionOnCaller && (key === 'caller')) {
+					if (key === 'caller') {
 						desc = {
 							configurable: false,
 							enumerable: false,
@@ -2634,25 +2486,9 @@
 						};
 					} else {
 						desc = _shared.Natives.objectGetOwnPropertyDescriptor(obj, key);
-						if (__Internal__.hasDefinePropertyBug) {
-							if (desc && !desc.writable && !desc.get && !desc.set) {
-								desc.configurable = false;
-							};
-						};
 					};
 					return desc;
-				} : function getOwnPropertyDescriptor(obj, key) {
-					if (types.has(obj, key)) {
-						return {
-							writable: true,
-							configurable: true,
-							enumerable: true,
-							value: obj[key],
-						};
-					} else {
-						return undefined;
-					};
-				})));
+				}));
 		};
 		
 		__Internal__.ADD('getPropertyDescriptor', __Internal__.DD_DOC(
@@ -2690,62 +2526,6 @@
 		
 		__Internal__.ADD('createObject', _shared.Natives.objectCreate);
 
-/*
-		__Internal__.ADD('createObject', (_shared.Natives.objectCreate || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							proto: {
-								type: 'object',
-								optional: false,
-								description: "An object defining the prototype of the new object.",
-							},
-							properties: {
-								type: 'object',
-								optional: true,
-								description: "Properties, with their descriptor, to append to the new object.",
-							},
-						},
-						returns: 'object',
-						description: "Creates an object with the specified prototype. Optionally appends properties.",
-			}
-			//! END_REPLACE()
-			, (__Internal__.hasProto ? 
-					// Enhanced polyfill taken from Mozilla Developer Network. 
-					(function() {
-						var tmp = function Object() {};
-						return (function createObject(proto, /*optional* /properties) {
-							tmp.prototype = proto;
-							var obj = new tmp();
-							tmp.prototype = null; // free memory
-
-							if (properties) {
-								types.defineProperties(obj, properties);
-							};
-							
-							return obj;
-						});
-					})()
-				:
-					(function createObject(proto, /*optional* /properties) {
-						var tmp = function Object() {};
-						tmp.prototype = proto;
-						var obj = new tmp();
-
-						if (properties) {
-							types.defineProperties(obj, properties);
-						};
-
-//IE8						if (!_shared.Natives.objectGetPrototypeOf) {
-//IE8							types.defineProperty(obj, '__dd_proto__', {value: proto, configurable: true, enumerable: true, writable: true});
-//IE8						};
-						
-						return obj;
-					})
-			))));
-*/
 		__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2800,49 +2580,6 @@
 			}));
 		
 		__Internal__.ADD('getPrototypeOf', _shared.Natives.objectGetPrototypeOf)
-/*
-		__Internal__.ADD('getPrototypeOf', (_shared.Natives.objectGetPrototypeOf || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'object',
-						description: "Returns the prototype of an object.",
-			}
-			//! END_REPLACE()
-			, (__Internal__.hasProto ? 
-					// For browsers implementing "__proto__".
-					(function getPrototypeOf(obj) {
-						return _shared.Natives.windowObject(obj).__proto__;
-					})
-				:
-					(function getPrototypeOf(obj) {
-						throw new global.Error("Browser not supported.");
-					})
-//IE8					// For very old browsers.
-//IE8					(function getPrototypeOf(obj) {
-//IE8						if ((obj === __Internal__.fnProto) || (obj === __Internal__.objProto)) {
-//IE8							return null;
-//IE8						};
-//IE8						// "__dd_proto__" is injected by "types.createObject" and "types.setPrototypeOf"
-//IE8						if (types.isFunction(obj)) {
-//IE8							return types.get(obj, '__dd_proto__') || __Internal__.fnProto;
-//IE8						} else {
-//IE8							obj = _shared.Natives.windowObject(obj);
-//IE8							return types.get(obj, '__dd_proto__') || (obj.constructor && obj.constructor.prototype) || __Internal__.objProto;
-//IE8						};
-//IE8					})
-			))));
-*/		
-//		__Internal__.fnProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf(function(){}) : (function(){}).constructor.prototype);
-//IE8		__Internal__.objProto = (_shared.Natives.objectGetPrototypeOf ? types.getPrototypeOf({}) : (({}).constructor.prototype));
 		
 		__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2874,15 +2611,8 @@
 				// NOTE: Functions can't be created using "createObject".
 				// TODO: How to prevent the use of "setPrototypeOf" (which MDN doesn't like) for "functions" ?
 				var enabled = (forceNative || types.isFunction(obj));
-				if (enabled) { // && _shared.Natives.objectSetPrototypeOf) {
+				if (enabled) {
 					return _shared.Natives.objectSetPrototypeOf(obj, proto);
-				//} else if (enabled && __Internal__.hasProto) {
-				//	// For browsers implementing "__proto__".
-				//	if ((obj === undefined) || (obj === null)) {
-				//		return obj;
-				//	};
-				//	obj.__proto__ = proto;
-				//	return obj; 
 				} else {
 					if ((obj === undefined) || (obj === null)) {
 						return obj;
@@ -2891,17 +2621,6 @@
 					var tmp;
 					if (types.isFunction(obj)) {
 						throw new global.Error("Browser not supported.");
-//IE8						// Impossible to change the prototype of the function !
-//IE8						var p = proto;
-//IE8						while (p) {
-//IE8							for (var key in p) {
-//IE8								if (!types.has(obj, key) && types.has(p, key)) {
-//IE8									obj[key] = p[key];
-//IE8								};
-//IE8							};
-//IE8							p = types.getPrototypeOf(p);
-//IE8						};
-//IE8						tmp = obj;
 					} else {
 						tmp = types.createObject(proto, {
 							constructor: {
@@ -2913,10 +2632,6 @@
 						types.extend(tmp, obj);
 					};
 					
-//IE8					if (!_shared.Natives.objectSetPrototypeOf && !__Internal__.hasProto) {
-//IE8						types.defineProperty(tmp, '__dd_proto__', {value: proto, configurable: true, enumerable: true, writable: true});
-//IE8					};
-					
 					return tmp;
 				};
 			}));
@@ -2925,41 +2640,7 @@
 				// NOTE: Why does this function is part of Object prototype ?
 				return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 			});
-/*
-		__Internal__.ADD('isPrototypeOf', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							protoObj: {
-								type: 'object',
-								optional: false,
-								description: "An object defining a prototype.",
-							},
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if the prototype is the prototype of the object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.objectIsPrototypeOfCall ? (function isPrototypeOf(protoObj, obj) {
-				// NOTE: Why does this function is part of Object prototype ?
-				return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
-			}) : (function isPrototypeOf(protoObj, obj) {
-				obj = _shared.Natives.windowObject(obj);
-				while (obj = types.getPrototypeOf(obj)) {
-					if (obj === protoObj) {
-						return true;
-					};
-				};
-				return false;
-			}))));
-*/		
+
 		__Internal__.ADD('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3669,13 +3350,13 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: null,
 						returns: 'boolean',
 						description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableProperties && !__Internal__.hasDefinePropertyBug && _shared.Natives.objectDefineProperty ? function hasDefinePropertyEnabled() {
+			, (__options__.enableProperties ? function hasDefinePropertyEnabled() {
 				return true;
 			} : function hasDefinePropertyEnabled() {
 				return false;
@@ -6595,9 +6276,6 @@
 					type = types.INHERIT(base, type);
 					proto = type.prototype;
 				} else {
-//IE8					// IE 8
-//IE8					proto = types.createObject({});
-//IE8					type.prototype = proto;
 					proto = type.prototype;
 					_shared.setAttribute(proto, 'constructor', type, {});
 				};
@@ -7715,71 +7393,30 @@
 
 	// getEvals
 	(function() {
-//IE8	return ((typeof eval("(function(){})") === 'function') ?
-		return (
-		
-			// Recent engines
-			{
-				eval: function(/*expr*/) {
-					// <PRB> "{...}" and "function ..." need parentheses.
-					return eval('(' + arguments[0] + ')');
-				},
-				evalStrict: function(/*expr*/) {
-					"use strict";
-					// <PRB> "{...}" and "function ..." need parentheses.
-					return eval('(' + arguments[0] + ')');
+		return {
+			eval: function(/*expr*/) {
+				// <PRB> "{...}" and "function ..." need parentheses.
+				return eval('(' + arguments[0] + ')');
+			},
+			evalStrict: function(/*expr*/) {
+				"use strict";
+				// <PRB> "{...}" and "function ..." need parentheses.
+				return eval('(' + arguments[0] + ')');
 					
-				},
-				evalWithCtx: function(ctx /*, expr*/) {
-					// NOTE: "ctx" is to be used by the expression
-					ctx = ctx || {}; // force variable to be preserved
-					// <PRB> "{...}" and "function ..." need parentheses.
-					return eval('(' + arguments[1] + ')');
-				},
-				evalWithCtxStrict: function(ctx /*, expr*/) {
-					"use strict";
-					// NOTE: "ctx" is to be used by the expression
-					ctx = ctx || {}; // force variable to be preserved
-					// <PRB> "{...}" and "function ..." need parentheses.
-					return eval('(' + arguments[1] + ')');
-				},
-			}
-//IE8			:
-//IE8			// Old engines
-//IE8			{
-//IE8				eval: function(/*expr*/) {
-//IE8					var result;
-//IE8					// <PRB> "{...}" and "function ..." need parentheses.
-//IE8					eval('result=(' + arguments[0] + ')');
-//IE8					return result;
-//IE8				},
-//IE8				evalStrict: function(/*expr*/) {
-//IE8					"use strict";
-//IE8					var result;
-//IE8					// <PRB> "{...}" and "function ..." need parentheses.
-//IE8					eval('result=(' + arguments[0] + ')');
-//IE8					return result;
-//IE8				},
-//IE8				evalWithCtx: function(ctx /*, expr*/) {
-//IE8					// NOTE: "ctx" is to be used by the expression
-//IE8					ctx = ctx || {}; // force variable to be preserved
-//IE8					var result;
-//IE8					// <PRB> "{...}" and "function ..." need parentheses.
-//IE8					eval('result=(' + arguments[1] + ')');
-//IE8					return result;
-//IE8				},
-//IE8				evalWithCtxStrict: function(ctx /*, expr*/) {
-//IE8					"use strict";
-//IE8					// NOTE: "ctx" is to be used by the expression
-//IE8					ctx = ctx || {}; // force variable to be preserved
-//IE8					var result;
-//IE8					// <PRB> "{...}" and "function ..." need parentheses.
-//IE8					eval('result=(' + arguments[1] + ')');
-//IE8					return result;
-//IE8				},
-//IE8			}
-			
-		);
+			},
+			evalWithCtx: function(ctx /*, expr*/) {
+				// NOTE: "ctx" is to be used by the expression
+				ctx = ctx || {}; // force variable to be preserved
+				// <PRB> "{...}" and "function ..." need parentheses.
+				return eval('(' + arguments[1] + ')');
+			},
+			evalWithCtxStrict: function(ctx /*, expr*/) {
+				"use strict";
+				// NOTE: "ctx" is to be used by the expression
+				ctx = ctx || {}; // force variable to be preserved
+				// <PRB> "{...}" and "function ..." need parentheses.
+				return eval('(' + arguments[1] + ')');
+			},
+		}
 	})
-	
 );
