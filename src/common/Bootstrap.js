@@ -4376,7 +4376,7 @@
 				return result;
 			});
 			
-		_shared.setAttribute = __Internal__.DD_DOC(
+		__Internal__.setAttribute = _shared.setAttribute = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -4458,7 +4458,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'object',
@@ -4485,7 +4485,7 @@
 					keysLen = keys.length;
 				for (var i = 0; i < keysLen; i++) {
 					var key = keys[i];
-					_shared.setAttribute(obj, key, values[key], options);
+					__Internal__.setAttribute(obj, key, values[key], options);
 				};
 				return values;
 			});
@@ -6858,6 +6858,15 @@
 					obj = types.INIT(obj, args);
 				};
 
+				if (protect && types.isFunction(obj)) {
+					var values = {
+						apply: obj.apply,
+						call: obj.call,
+						bind: obj.bind,
+					};
+					_shared.setAttributes(obj, values, {ignoreWhenReadOnly: true});
+				};
+
 				_shared.setAttribute(this, name, obj, {
 					configurable: !protect,
 					enumerable: true,
@@ -6872,6 +6881,16 @@
 				delete this[name];
 			};
 				
+		// NOTE: Will get overriden by Doodad.js
+		_shared.REGISTER = function(/*<<< optional*/args, /*optional*/protect, type) {
+				throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
+			};
+
+		// NOTE: Will get overriden by Doodad.js
+		_shared.UNREGISTER = function(type) {
+				throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
+			};
+
 		// Temporary, and not for registering classes.
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
 				// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
