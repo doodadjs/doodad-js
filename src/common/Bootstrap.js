@@ -549,8 +549,8 @@
 
 			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 
-			// "isArray", "map"
-			windowArray: (types.isNativeFunction(global.Array) ? global.Array : undefined),
+			// "clone", "map"
+			windowArray: global.Array,
 			
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
@@ -5237,7 +5237,7 @@
 				if (isArray) {
 					obj = _shared.Natives.windowObject(obj);
 					if (depth >= 0) {
-						result = new _shared.Natives.arrayConstructor(obj.length);
+						result = new _shared.Natives.windowArray(obj.length);
 						var len = obj.length;
 						for (var key = 0; key < len; key++) {
 							if (key in obj) {
