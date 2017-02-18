@@ -590,7 +590,7 @@ module.exports = {
 					if (types.isNothing(obj)) {
 						_insider = function insider(/*paramarray*/) {
 							var type = types.getType(this);
-							if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+							if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
 								throw new types.Error("Invalid secret.");
 							};
 							var oldInvokedClass = __Internal__.invokedClass;
@@ -605,7 +605,7 @@ module.exports = {
 						};
 					} else {
 						var type = types.getType(obj);
-						if ((type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+						if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
 							throw new types.Error("Invalid secret.");
 						};
 						_insider = function insider(/*paramarray*/) {
@@ -1846,12 +1846,14 @@ module.exports = {
 									cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
 								});
 							}),
+
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + types.get(options, 'maxDepth', this.maxDepth) +
 									',' + (types.get(options, 'keepUnlocked', this.keepUnlocked) ? '1' : '0') +
 									',' + (types.get(options, 'cloneOnInit', this.cloneOnInit) ? '1' : '0');
 							}),
+
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
@@ -1867,15 +1869,18 @@ module.exports = {
 						getValue: types.SUPER(function getValue(attr, attribute, forType) {
 								var val = types.unbox(attribute);
 								if (types.isClonable(val)) {
-									val = types.clone(val, this.maxDepth, false, this.keepUnlocked);
+									val = types.clone(val, this.maxDepth, false, this.keepUnlocked, true);
 									attribute = attribute.setValue(val);
 								};
 								return attribute;
 							}),
+
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (this.cloneOnInit) {
-									value = types.clone(value, this.maxDepth, false, this.keepUnlocked);
-									isProto = null;
+									if (types.isClonable(value)) {
+										value = types.clone(value, this.maxDepth, false, this.keepUnlocked, true);
+										isProto = null;
+									};
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -2721,6 +2726,7 @@ module.exports = {
 								
 								return destAttribute;
 							})),
+
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								value = this.createDispatch(attr, obj, attribute, value);
 
@@ -2736,8 +2742,17 @@ module.exports = {
 									isProto = null;
 								};
 
+								if (types.hasDefinePropertyEnabled()) {
+									types.defineProperties(value, {
+										apply: {value: value.apply},
+										call: {value: value.call},
+										bind: {value: value.bind},
+									});
+								};
+
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
+
 						remove: types.READ_ONLY(null),
 					})));
 
@@ -2946,7 +2961,7 @@ module.exports = {
 								return destAttribute;
 							}),
 					})));
-				
+
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -3063,8 +3078,8 @@ module.exports = {
 					})));
 				
 				__Internal__.eventHandlerInstanceProto = {
-						//stackSize: types.READ_ONLY(10),
-						stackSize: types.WRITABLE(10), // TODO: Make a function to set it and protect this field from the external with a getter/setter
+						//stackSize: types.NOT_CONFIGURABLE(types.READ_ONLY(10)),
+						stackSize: types.NOT_CONFIGURABLE(types.WRITABLE(10)), // TODO: Make a function to set it and protect this field from the external with a getter/setter
 						
 						_new: types.SUPER(function _new(obj, extender) {
 							this._super();
@@ -3075,9 +3090,9 @@ module.exports = {
 							_shared.setAttributes(this, values);
 						}),
 
-						apply: _shared.Natives.functionApply,
-						call: _shared.Natives.functionCall,
-						bind: _shared.Natives.functionBind,
+						apply: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionApply)),
+						call: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionCall)),
+						bind: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionBind)),
 
 						attach: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3310,10 +3325,10 @@ module.exports = {
 
 				// FUTURE: Syntax for variable keys in object declaration
 				// TODO: Protect these variables from the outside
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.READ_ONLY(null);
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.READ_ONLY(null);
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.READ_ONLY(null);
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.WRITABLE(true);
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(true));
 					
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3450,7 +3465,7 @@ module.exports = {
 
 						var oldExtender = value[__Internal__.symbolExtender];
 						if (!oldExtender) {
-							oldExtender = extenders.ClonedAttribute;
+							oldExtender = extenders.Attribute;
 						};
 
 						if (extender) {
