@@ -4506,7 +4506,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							name: {
 								type: 'string',
@@ -4537,7 +4537,7 @@
 				if (types.isNothing(base)) {
 					base = _shared.Natives.windowError;
 				};
-				name = _shared.Natives.stringReplaceCall(name, /[.]/g, '_');
+				name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
 				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
 				if (__Internal__.hasClasses) {
 					var expr = "class " + name + " extends ctx.base {" +
@@ -6097,7 +6097,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 7,
+						revision: 8,
 						params: {
 							name: {
 								type: 'string',
@@ -6143,6 +6143,8 @@
 				if (types.isNothing(name)) {
 					name = '';
 				};
+
+				name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
 				
 				var baseIsType = types.isType(base);
 				if (baseIsType) {
@@ -6164,7 +6166,7 @@
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-				var expr = "function " + _shared.Natives.stringReplaceCall(name, /[.]/g, "_") + "(/*paramarray*/) {" + 
+				var expr = "function " + name + "(/*paramarray*/) {" + 
 					//"if (ctx.get(this, ctx.InitializedSymbol)) {" +
 					//	"throw new ctx.Error('Object is already initialized.');" +
 					//"};" +
@@ -7388,11 +7390,10 @@
 	//! 	INJECT("window")
 	//! END_IF()
 ,
-	// WARNING: It is for compatibility purpose only. It is NOT to be used with arbitrary expressions.
-	// WARNING: Do not declare any variable and parameter inside these functions.
-
 	// getEvals
 	(function() {
+		// WARNING: It is NOT to be used with arbitrary expressions.
+		// WARNING: Do not declare any variable and parameter inside these functions.
 		return {
 			eval: function(/*expr*/) {
 				// <PRB> "{...}" and "function ..." need parentheses.
