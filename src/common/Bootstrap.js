@@ -6361,7 +6361,18 @@
 
 					var createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
 					if (createSuper) {
-						value = __Internal__.createCaller(key, value, base && _shared.getAttribute(base, key));
+						var _super = base && _shared.getAttribute(base, key);
+						value = __Internal__.createCaller(key, value, _super);
+					};
+
+					if (isFunction) {
+						if (types.hasDefinePropertyEnabled()) {
+							types.defineProperties(value, {
+								apply: {value: value.apply},
+								call: {value: value.call},
+								bind: {value: value.bind},
+							});
+						};
 					};
 
 					if (preApply) {
