@@ -107,6 +107,7 @@ module.exports = {
 					
 					// Callers
 					symbolOk: types.getSymbol('__OK__'),
+					symbolFunction: types.getSymbol('__FUNCTION__'),
 
 					// Callers & AttributeBox
 					symbolCalled: types.getSymbol('__CALLED__'),
@@ -587,6 +588,7 @@ module.exports = {
 					fn = types.unbind(fn);
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					var _insider = null;
+					var fnApply = fn.apply.bind(fn);
 					if (types.isNothing(obj)) {
 						_insider = function insider(/*paramarray*/) {
 							var type = types.getType(this);
@@ -596,7 +598,7 @@ module.exports = {
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								return fn.apply(this, arguments);
+								return fnApply(this, arguments);
 							} catch(ex) {
 								throw ex;
 							} finally {
@@ -612,7 +614,7 @@ module.exports = {
 							var oldInvokedClass = __Internal__.invokedClass;
 							__Internal__.invokedClass = type;
 							try {
-								return fn.apply(obj, arguments);
+								return fnApply(obj, arguments);
 							} catch(ex) {
 								throw ex;
 							} finally {
@@ -905,7 +907,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 6,
+								revision: 7,
 								paramsDirection: 'rightToLeft',
 								params: {
 									type: {
@@ -982,6 +984,15 @@ module.exports = {
 							namespaces.add(fullName, entry, {secret: _shared.SECRET});
 						};
 						
+						if (protect) {
+							var values = {
+								apply: type.apply,
+								call: type.call,
+								bind: type.bind,
+							};
+							_shared.setAttributes(type, values, {ignoreWhenReadOnly: true});
+						};
+
 						return type;
 					});
 				
@@ -2030,6 +2041,18 @@ module.exports = {
 							, function callerTemplate(attr, sourceAttribute, /*optional*/destAttribute) {
 								var extender = this;
 								var fn = types.unbox(sourceAttribute);
+
+								if (root.DD_ASSERT) {
+									root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
+								};
+
+								var values = {
+									apply: fn.apply,
+									call: fn.call,
+									bind: fn.bind,
+								};
+								_shared.setAttributes(fn, values, {ignoreWhenReadOnly: true});
+
 								var _caller = function caller(/*paramarray*/) {
 									var oldSuper,
 										currentCaller,
@@ -2130,8 +2153,17 @@ module.exports = {
 										};
 									};
 								};
+
+								var values = {
+									apply: _caller.apply,
+									call: _caller.call,
+									bind: _caller.bind,
+								};
+								_shared.setAttributes(_caller, values, {});
+
 								return _caller;
 							}),
+
 						dispatchTemplate: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2336,8 +2368,17 @@ module.exports = {
 										};
 									};
 								};
+
+								var values = {
+									apply: _dispatch.apply,
+									call: _dispatch.call,
+									bind: _dispatch.bind,
+								};
+								_shared.setAttributes(_dispatch, values, {});
+
 								return _dispatch;
 							}),
+
 						createCaller: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2382,6 +2423,7 @@ module.exports = {
 								
 								return caller;
 							}),
+
 						createDispatch: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2420,13 +2462,14 @@ module.exports = {
 								
 								// Create dispatch function
 								var dispatch = this.dispatchTemplate(attr, attribute, callers);
+
 								_shared.setAttribute(dispatch, _shared.NameSymbol, attr, {});
 								_shared.setAttribute(dispatch, __Internal__.symbolCallers, callers, {});
 								
 								var modifiers = attribute[__Internal__.symbolModifiers];
 
 								// Clear "MustOverride" if method has been overriden
-								var caller = callers.length && callers[0];
+								var caller = callers[0];
 								if (caller && !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
 									caller = (callers.length > attribute[__Internal__.symbolCallFirstLength]) && callers[attribute[__Internal__.symbolCallFirstLength]];
 									if (!caller || !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
@@ -2448,6 +2491,7 @@ module.exports = {
 									isExternal: types.get(options, 'isExternal', this.isExternal),
 								});
 							}),
+
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'bindMethod', this.bindMethod) ? '1' : '0') +
@@ -2455,6 +2499,7 @@ module.exports = {
 									',' + (types.get(options, 'byReference', this.byReference) ? '1' : '0') +
 									',' + (types.get(options, 'isExternal', this.isExternal) ? '1' : '0');
 							}),
+
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
@@ -2581,6 +2626,7 @@ module.exports = {
 								
 								return destAttribute;
 							}),
+
 						postExtend: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2742,14 +2788,6 @@ module.exports = {
 									isProto = null;
 								};
 
-								if (types.hasDefinePropertyEnabled()) {
-									types.defineProperties(value, {
-										apply: {value: value.apply},
-										call: {value: value.call},
-										bind: {value: value.bind},
-									});
-								};
-
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							}),
 
@@ -2784,10 +2822,12 @@ module.exports = {
 									dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
 								});
 							}),
+
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'dontSetSuper', this.dontSetSuper) ? '1' : '0');
 							}),
+
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
@@ -2800,12 +2840,25 @@ module.exports = {
 						
 						callerTemplate: function callerTemplate(attr, sourceAttribute, destAttribute) {
 								var fn = types.unbox(sourceAttribute);
+
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 								};
-								//return [/*0*/ sourceAttribute];
-								return {};
+
+								var _caller = types.nullObject();
+
+								var values = {
+									apply: fn.apply,
+									call: fn.call,
+									bind: fn.bind,
+								};
+								_shared.setAttributes(fn, values, {ignoreWhenReadOnly: true});
+
+								_caller[__Internal__.symbolFunction] = fn;
+
+								return _caller;
 							},
+
 						jsCallerTemplate: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2819,8 +2872,8 @@ module.exports = {
 										},
 										fn: {
 											type: 'function',
-											optional: true,
-											description: "Method function. Default is taken from 'PROTOTYPE[attr]'.",
+											optional: false,
+											description: "Method function.",
 										},
 										_super: {
 											type: 'function',
@@ -2832,14 +2885,16 @@ module.exports = {
 									description: "Template to create a caller for a JS method.",
 							}
 							//! END_REPLACE()
-							, function jsCallerTemplate(attr, /*optional*/fn, /*optional*/_super) {
+							, function jsCallerTemplate(attr, fn, /*optional*/_super) {
 								var _caller;
+
+								var fnApply = fn.apply.bind(fn);
+
 								if (this.dontSetSuper) {
 									_caller = function caller(/*paramarray*/) {
 										var oldSuper = _shared.getAttribute(this, '_super');
 										try {
-											var target = (fn || types.unbox(_caller[__Internal__.symbolPrototype][attr]));
-											return target.apply(this, arguments);
+											return fnApply(this, arguments);
 										} catch(ex) {
 											throw ex;
 										} finally {
@@ -2852,8 +2907,7 @@ module.exports = {
 										var oldSuper = _shared.getAttribute(this, '_super');
 										_shared.setAttribute(this, '_super', _super);
 										try {
-											var target = (fn || types.unbox(_caller[__Internal__.symbolPrototype][attr]));
-											return target.apply(this, arguments);
+											return fnApply(this, arguments);
 										} catch(ex) {
 											throw ex;
 										} finally {
@@ -2861,16 +2915,29 @@ module.exports = {
 										};
 									};
 								};
+
+								var values = {
+									apply: _caller.apply,
+									call: _caller.call,
+									bind: _caller.bind,
+								};
+								_shared.setAttributes(_caller, values, {});
+
 								return _caller;
 							}),
+
 						dispatchTemplate: function dispatchTemplate(attr, attribute, callers) {
 								var callersLen = callers.length,
 									_super = null;
+
 								for (var i = callersLen - 1; i >= 0; i--) {
 									var caller = callers[i];
-									_super = this.jsCallerTemplate(attr, caller.FUNCTION, _super);
-									_super[__Internal__.symbolPrototype] = caller[__Internal__.symbolPrototype];
+
+									_super = this.jsCallerTemplate(attr, caller[__Internal__.symbolFunction], _super);
+
+									_shared.setAttribute(_super, __Internal__.symbolPrototype, caller[__Internal__.symbolPrototype], {});
 								};
+
 								return __Internal__.makeInside(null, _super, _shared.SECRET);
 							},
 						
@@ -5712,11 +5779,12 @@ module.exports = {
 						//! END_REPLACE()
 						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
 						function superAsync() {
-							if (this._super) {
+							var _super = this._super;
+
+							if (_super) {
 								var obj = this,
 									type = types.getType(obj),
-									forType = types.isType(obj),
-									_super = this._super;
+									forType = types.isType(obj);
 
 								_super[__Internal__.symbolCalled] = true;
 								
@@ -5724,6 +5792,8 @@ module.exports = {
 									index = this[__Internal__.symbolCurrentCallerIndex],
 									modifiers = dispatch[__Internal__.symbolModifiers];
 								
+								var _superApply = _super.apply.bind(_super);
+
 								return function superAsync(/*paramarray*/) {
 									if (this._implements(mixIns.Creatable)) {
 										var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
@@ -5746,7 +5816,7 @@ module.exports = {
 										attrs[__Internal__.symbolCurrentCallerIndex] = index;
 										_shared.setAttributes(obj, attrs);
 										
-										return _super.apply(obj, arguments);
+										return _superApply(obj, arguments);
 										
 									} finally {
 										_shared.setAttribute(obj, '_super', oldSuper);
@@ -7060,15 +7130,16 @@ module.exports = {
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						var insideFn = _shared.makeInside(obj, fn, secret);
+						var insideFnApply = insideFn.apply.bind(insideFn);
 						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
 							callback.lastError = null;
 							try {
 								if (!type || types.isInitialized(obj)) {
 									if (args) {
-										return insideFn.apply(obj, types.append([], args, arguments));
+										return insideFnApply(obj, types.append([], args, arguments));
 									} else {
-										return insideFn.apply(obj, arguments);
+										return insideFnApply(obj, arguments);
 									};
 								};
 							} catch(ex) {
@@ -7149,6 +7220,7 @@ module.exports = {
 						var type = types.getType(obj),
 							isClass = (types.isClass(type) || types.isInterfaceClass(type)),
 							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret);
+						var fnApply = fn.apply.bind(fn);
 						var callback = function callbackHandler(/*paramarray*/) {
 							var args = types.toArray(arguments);
 							return Promise.create(function(resolve, reject) {
@@ -7164,9 +7236,9 @@ module.exports = {
 												};
 											} else {
 												if (args) {
-													resolve(fn.apply(obj, types.append([], args, arguments)));
+													resolve(fnApply(obj, types.append([], args, arguments)));
 												} else {
-													resolve(fn.apply(obj, arguments));
+													resolve(fnApply(obj, arguments));
 												};
 											};
 										};
