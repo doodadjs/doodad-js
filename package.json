@@ -56,7 +56,7 @@
     "objects",
     "inherit",
     "extend",
-    "multiple inheritance",
+    "composition",
     "framework",
     "doodad-js"
   ],
