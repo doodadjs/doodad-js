@@ -592,19 +592,19 @@
 			mathPow: global.Math.pow,
 			
 			// "sealObject"
-			objectSeal: (types.isNativeFunction(global.Object.seal) ? global.Object.seal : undefined),
+			objectSeal: global.Object.seal,
 			
 			// "isFrozen"
-			objectIsFrozen: (types.isNativeFunction(global.Object.isFrozen) ? global.Object.isFrozen : undefined),
+			objectIsFrozen: global.Object.isFrozen,
 			
 			// "freezeObject"
-			objectFreeze: (types.isNativeFunction(global.Object.freeze) ? global.Object.freeze : undefined),
+			objectFreeze: global.Object.freeze,
 			
 			// "isExtensible"
-			objectIsExtensible: (types.isNativeFunction(global.Object.isExtensible) ? global.Object.isExtensible : undefined),
+			objectIsExtensible: global.Object.isExtensible,
 
 			// "preventExtensions"
-			objectPreventExtensions: (types.isNativeFunction(global.Object.preventExtensions) ? global.Object.preventExtensions : undefined),
+			objectPreventExtensions: global.Object.preventExtensions,
 			
 			// "allSymbols", "symbols"
 			objectGetOwnPropertySymbols: (types.isNativeFunction(global.Object.getOwnPropertySymbols) ? global.Object.getOwnPropertySymbols : undefined),
@@ -3171,25 +3171,7 @@
 				return (typeof obj === 'object') || (typeof obj === 'function');
 			}));
 		
-		__Internal__.ADD('isExtensible', (_shared.Natives.objectIsExtensible || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if an object is extensible. Otherwise, returns 'false'.",
-			}
-			//! END_REPLACE()
-			, function isExtensible(obj) {
-					return true;
-				})));
+		__Internal__.ADD('isExtensible', _shared.Natives.objectIsExtensible);
 		
 		__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3207,16 +3189,11 @@
 						description: "Prevent extensions of the object when supported and returns that same object. Otherwise, returns that object untouched. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectPreventExtensions ? 
-				function preventExtensions(obj) {
+			, function preventExtensions(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					_shared.Natives.objectPreventExtensions(obj);
 					return obj;
-				} : function preventExtensions(obj) {
-					// Not supported.
-					obj = _shared.Natives.windowObject(obj);
-					return obj;
-				})));
+				}));
 		
 		__Internal__.ADD('sealObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3234,35 +3211,12 @@
 						description: "Seals the object when supported and returns that same object. Otherwise returns the object untouched.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectSeal ? 
-				function sealObject(obj) {
+			,function sealObject(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					return _shared.Natives.objectSeal(obj);
-				} : function sealObject(obj) {
-					// Not supported.
-					obj = _shared.Natives.windowObject(obj);
-					return obj;
-				})));
+				}));
 		
-		__Internal__.ADD('isFrozen', (_shared.Natives.objectIsFrozen || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if an object is frozen. Otherwise, returns 'false'.",
-			}
-			//! END_REPLACE()
-			, function isFrozen(obj) {
-					return false;
-				})));
+		__Internal__.ADD('isFrozen', _shared.Natives.objectIsFrozen);
 		
 		__Internal__.ADD('freezeObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3280,15 +3234,10 @@
 						description: "Freezes the object when supported and returns that same object. Otherwise returns the object untouched. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectFreeze ? 
-				function freezeObject(obj) {
+			, function freezeObject(obj) {
 					obj = _shared.Natives.windowObject(obj);
 					return _shared.Natives.objectFreeze(obj);
-				} : function freezeObject(obj) {
-					// Not supported.
-					obj = _shared.Natives.windowObject(obj);
-					return obj;
-				})));
+				}));
 		
 		//==============
 		// Options
