@@ -5127,70 +5127,101 @@
 				return (types._instanceof(value, types.box) ? value.valueOf() : value);
 			}));
 					
+
+		//===================================
+		// Reserved attributes
+		//===================================
+		
+		// TODO: Find another way
+		_shared.reservedAttributes = types.nullObject({
+			//name: null, 
+			//apply: null, 
+			//call: null, 
+			//bind: null, 
+			arguments: null, 
+			caller: null, 
+			length: null, 
+			prototype: null,
+			
+			//__proto__: null,   must be handled conditionally
+			constructor: null, 
+			
+			__defineGetter__: null,
+			__lookupGetter__: null,
+			__defineSetter__: null,
+			__lookupSetter__: null,
+			
+			_super: null,
+
+			$TYPE_NAME: null,
+			$TYPE_UUID: null,
+		});
+
 		//===================================
 		// DD_DOC
 		//===================================
 		
-		__Internal__.symbolDD_DOC = types.getSymbol('__DD_DOC__');
+		//! REPLACE_IF(IS_UNSET('debug'), "__Internal__.DD_DOC = function(d,v) {return v;}; __Internal__.GET_DD_DOC = function(v) {return null;}")
+
+			__Internal__.symbolDD_DOC = types.getSymbol('__DD_DOC__');
+
+			_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
 		
-		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
-		__Internal__.DD_DOC = __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						doc: {
-							type: 'object',
-							optional: false,
-							description: "Document to apply.",
+			__Internal__.DD_DOC = __Internal__.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							doc: {
+								type: 'object',
+								optional: false,
+								description: "Document to apply.",
+							},
+							value: {
+								type: 'any',
+								optional: false,
+								description: "Target value",
+							},
 						},
-						value: {
-							type: 'any',
-							optional: false,
-							description: "Target value",
-						},
-					},
-					returns: 'object',
-					description: "Applies a document to an object and returns that object.",
-			}
-			//! END_REPLACE()
-			, function DD_DOC(doc, value) {
-				value = _shared.Natives.windowObject(value);
-				if (types.hasDefinePropertyEnabled()) {
-					types.defineProperty(value, __Internal__.symbolDD_DOC, {
-						value: doc && types.freezeObject(doc),
-					});
-				} else {
-					value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
+						returns: 'object',
+						description: "Applies a document to an object and returns that object.",
+				}
+				//! END_REPLACE()
+				, function DD_DOC(doc, value) {
+					value = _shared.Natives.windowObject(value);
+					if (types.hasDefinePropertyEnabled()) {
+						types.defineProperty(value, __Internal__.symbolDD_DOC, {
+							value: doc && types.freezeObject(doc),
+						});
+					} else {
+						value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
+					};
+					return value;
+				});
+
+			__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'object',
+						description: "Gets the document applied to an object.",
+				}
+				//! END_REPLACE()
+				, function GET_DD_DOC(value) {
+					return value[__Internal__.symbolDD_DOC];
+				});
+		
+			(function() {
+				for (var i = 0; i < __Internal__.tempDocs.length; i++) {
+					__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
 				};
-				return value;
-			});
+				delete __Internal__.tempDocs;
+			})();
+
 		//! END_REPLACE()
-
-		__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'object',
-					description: "Gets the document applied to an object.",
-			}
-			//! END_REPLACE()
-			, function GET_DD_DOC(value) {
-				return value[__Internal__.symbolDD_DOC];
-			});
-		
-
-		//! IF_SET('debug')
-		(function() {
-			for (var i = 0; i < __Internal__.tempDocs.length; i++) {
-				__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
-			};
-			delete __Internal__.tempDocs;
-		})();
-		//! END_IF()
 
 		//===================================
 		// Clone
@@ -5774,34 +5805,8 @@
 			};
 		})();
 			
-		// TODO: Find another way
-		_shared.reservedAttributes = types.nullObject({
-			//name: null, 
-			//apply: null, 
-			//call: null, 
-			//bind: null, 
-			arguments: null, 
-			caller: null, 
-			length: null, 
-			prototype: null,
-			
-			//__proto__: null,   must be handled conditionally
-			constructor: null, 
-			
-			__defineGetter__: null,
-			__lookupGetter__: null,
-			__defineSetter__: null,
-			__lookupSetter__: null,
-			
-			_super: null,
-
-			$TYPE_NAME: null,
-			$TYPE_UUID: null,
-		});
-		
 		_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
 		_shared.reservedAttributes[__Internal__.symbol$IsSingleton] = null;
-		_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
 		
 		// <PRB> Proxy checks existence of the property in the target AFTER the handler instead of BEFORE. That prevents us to force non-configurable and non-writable on a NEW NON-EXISTING property with a different value.
 		//       Error given is "TypeError: 'set' on proxy: trap returned truish for property 'doodad' which exists in the proxy target as a non-configurable and non-writable data property with a different value"
