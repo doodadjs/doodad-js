@@ -166,7 +166,7 @@
 			};
 		})();
 
-		__Internal__.ADD('supportsES6Classes', __Internal__.DD_DOC(
+		__Internal__.ADD('hasClasses', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -176,7 +176,7 @@
 					description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function supportsES6Classes() {
+			, function hasClasses() {
 				return __Internal__.hasClasses;
 			}));
 
@@ -191,8 +191,7 @@
 		} catch(ex) {
 		};
 
-		// FUTURE: Remove "supportsArrowFunctions"
-		__Internal__.ADD('hasArrows', __Internal__.ADD('supportsArrowFunctions', __Internal__.DD_DOC(
+		__Internal__.ADD('hasArrows', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -204,7 +203,7 @@
 			//! END_REPLACE()
 			, function hasArrows() {
 				return __Internal__.hasArrows;
-			})));
+			}));
 
 		//===================================
 		// ES7 async/await
@@ -217,8 +216,7 @@
 		} catch(ex) {
 		};
 
-		// FUTURE: Remove "supportsAsyncAwait"
-		__Internal__.ADD('hasAsyncAwait', __Internal__.ADD('supportsAsyncAwait', __Internal__.DD_DOC(
+		__Internal__.ADD('hasAsyncAwait', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -230,7 +228,7 @@
 			//! END_REPLACE()
 			, function hasAsyncAwait() {
 				return __Internal__.hasAsyncAwait;
-			})));
+			}));
 
 		//===================================
 		// Native functions
