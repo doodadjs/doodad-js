@@ -5975,13 +5975,11 @@
 					};
 
 					if (isFunction) {
-						if (types.hasDefinePropertyEnabled()) {
-							types.defineProperties(value, {
-								apply: {value: value.apply},
-								call: {value: value.call},
-								bind: {value: value.bind},
-							});
-						};
+						_shared.setAttributes(value, {
+							apply: value.apply,
+							call: value.call,
+							bind: value.bind,
+						}, {ignoreWhenReadOnly: true});
 					};
 
 					if (preApply) {
@@ -6152,7 +6150,7 @@
 						""
 					) +
 
-					(instanceProto ?
+					(instanceProto && types.hasDefinePropertyEnabled() ?
 						"if (!forType) {" +
 							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
 						"};"
