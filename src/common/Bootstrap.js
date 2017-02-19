@@ -70,9 +70,6 @@
 		var __Internal__ = {
 			evals: getEvals(),
 
-			// "isNativeFunction", "isCustomFunction"
-			hasIncompatibleFunctionToStringBug: false,
-
 			// "createObject", "getPrototypeOf", "setPrototypeOf"
 			//hasProto: !!({}.__proto__),
 
@@ -239,7 +236,7 @@
 				_shared.Natives.functionToStringCall(global.Event);
 			};
 		} catch(ex) {
-			__Internal__.hasIncompatibleFunctionToStringBug = true;
+			throw new global.Error("Browser version not supported.");
 		};
 		
 		__Internal__.ADD('isFunction', __Internal__.DD_DOC(
@@ -307,13 +304,8 @@
 				if (types.isJsClass(obj)) {
 					return true;
 				} else if (types.isFunction(obj)) {
-					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && _shared.Natives.objectHasOwnPropertyCall(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-						str = obj.toString();
-					} else {
-						str = _shared.Natives.functionToStringCall(obj);
-					};
-					var index1 = str.indexOf('{') + 1,
+					var str = _shared.Natives.functionToStringCall(obj),
+						index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
 					if (index2 < 0) {
 						return false;
@@ -350,13 +342,8 @@
 				if (types.isJsClass(obj)) {
 					return false;
 				} else if (types.isFunction(obj)) {
-					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-						str = obj.toString();
-					} else {
-						str = _shared.Natives.functionToStringCall(obj);
-					};
-					var index1 = str.indexOf('{') + 1,
+					var str = _shared.Natives.functionToStringCall(obj),
+						index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
 					if (index2 < 0) {
 						return true;
@@ -389,12 +376,7 @@
 			//! END_REPLACE()
 			, __Internal__.hasArrows ? function isArrowFunction(obj) {
 				if (types.isFunction(obj)) {
-					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-						str = obj.toString();
-					} else {
-						str = _shared.Natives.functionToStringCall(obj);
-					};
+					var str = _shared.Natives.functionToStringCall(obj);
 					return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
 				};
 				return false;
@@ -420,12 +402,7 @@
 			//! END_REPLACE()
 			, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
 				if (types.isFunction(obj)) {
-					var str;
-					if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-						str = obj.toString();
-					} else {
-						str = _shared.Natives.functionToStringCall(obj);
-					};
+					var str = _shared.Natives.functionToStringCall(obj);
 					return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
 				};
 				return false;
@@ -455,12 +432,7 @@
 						return obj.name;
 					} else {
 						// Internet Explorer
-						var str;
-						if (__Internal__.hasIncompatibleFunctionToStringBug && types.has(obj, 'toString') && types.isNativeFunction(obj.toString)) {
-							str = obj.toString();
-						} else {
-							str = _shared.Natives.functionToStringCall(obj);
-						};
+						var str = _shared.Natives.functionToStringCall(obj);
 						var result = str.match(/function\s+([^(\s]*)[^(]*\(/);
 						return result && result[1] || null;
 					};
