@@ -1382,6 +1382,7 @@ module.exports = {
 							getValue: types.READ_ONLY(null), // function getValue(attr, attribute, forType)
 							extend: types.READ_ONLY(null),   // function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName)
 							postExtend: types.READ_ONLY(null), // function postExtend(attr, destAttributes, destAttribute)
+							preInit: types.READ_ONLY(null), // function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto)
 							init: types.READ_ONLY(null), // function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto)
 							remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 						}
@@ -1679,6 +1680,13 @@ module.exports = {
 										) 
 								);
 						},
+						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+							if (!this.__isFromStorage(attribute)) {
+								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));
+							};
+							return retVal; // 'true' === Cancel init
+						}),
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1773,14 +1781,14 @@ module.exports = {
 										};
 									};
 								} else {
-									if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
+									//DONE IN preInit   if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
 										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
 										_shared.setAttribute(obj, attr, value, {
 											configurable: cf,
 											enumerable: this.isEnumerable, 
 											writable: !this.isReadOnly
 										});
-									};
+									//};
 								};
 							}),
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
@@ -5411,10 +5419,16 @@ module.exports = {
 							if ((forType && extender.isType) || (!forType && extender.isInstance)) {
 								if (extender.preExtend) {
 									var value = types.get(values, attr, types.unbox(attribute));
-									extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-									if (extender.isPreserved && !types.isSymbol(attr)) {
-										var presAttr = '__' + attr + '_preserved__';
-										extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+									var cancelInit = extender.preInit && extender.preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+									if (!cancelInit) {
+										extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+										if (extender.isPreserved && !types.isSymbol(attr)) {
+											var presAttr = '__' + attr + '_preserved__';
+											var cancelInit = extender.preInit && extender.preInit(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+											if (!cancelInit) {
+												extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+											};
+										};
 									};
 									delete attrs[i]; //attrs.splice(i, 1);
 								};
@@ -5435,10 +5449,16 @@ module.exports = {
 							if (extender) {
 								// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice()".
 								var value = types.get(values, attr, types.unbox(attribute));
-								extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-								if (extender.isPreserved && !types.isSymbol(attr)) {
-									var presAttr = '__' + attr + '_preserved__';
-									extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+								var cancelInit = extender.preInit && extender.preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+								if (!cancelInit) {
+									extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+									if (extender.isPreserved && !types.isSymbol(attr)) {
+										var presAttr = '__' + attr + '_preserved__';
+										var cancelInit = extender.preInit && extender.preInit(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+										if (!cancelInit) {
+											extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+										};
+									};
 								};
 							};
 						};
