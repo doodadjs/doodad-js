@@ -1682,10 +1682,11 @@ module.exports = {
 						},
 						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-							if (!this.__isFromStorage(attribute)) {
-								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));
+							if (this.__isFromStorage(attribute)) {
+								return retVal || !((this.isProto === null) || !isProto);   // 'true' === Cancel init
+							} else {
+								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
 							};
-							return retVal; // 'true' === Cancel init
 						}),
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1753,7 +1754,7 @@ module.exports = {
 								if (this.__isFromStorage(attribute)) {
 									storage[attr] = value; // stored regardless of "isProto"
 
-									if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
+									//DONE IN preInit   if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
 										if (attr !== __Internal__.symbolAttributesStorage) {
 											storage = null;
 										};
@@ -1779,7 +1780,7 @@ module.exports = {
 
 											types.defineProperty(obj, attr, descriptor);
 										};
-									};
+									//};
 								} else {
 									//DONE IN preInit   if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
 										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
