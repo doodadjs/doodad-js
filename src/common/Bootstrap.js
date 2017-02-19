@@ -66,12 +66,10 @@
 				windowObject: global.Object,
 			},
 		};
+
 		
 		var __Internal__ = {
 			evals: getEvals(),
-
-			// "createObject", "getPrototypeOf", "setPrototypeOf"
-			//hasProto: !!({}.__proto__),
 
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
 			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
@@ -79,16 +77,14 @@
 			MIN_BITWISE_INTEGER: 0,
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
 			
-			tempDocs: [],
-			tempTypesAdded: [],  // types to ADD into Doodad.Types
-			tempTypesRegistered: [],  // types to REGISTER into Doodad.Types
-			tempRegisteredOthers: [],  // objects to REGISTER into other namespaces
-			tempToolsAdded: [],  // tools to ADD into Doodad.Tools
-
 			DD_ASSERT: null,
 		};
 
+		getEvals = null; // free memory
+
+
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
+
 
 		// Temporary. Will get replaced.
 		var types = {
@@ -96,11 +92,14 @@
 			
 			tools = {
 			};
+
 			
 		//===================================
 		// Temporary DD_DOC
 		//===================================
-		//! REPLACE_BY("__Internal__.DD_DOC = function(d,v) {return v;}")
+		//! REPLACE_IF(IS_UNSET('debug'), "__Internal__.DD_DOC = function(d,v) {return v;}")
+		__Internal__.tempDocs = [];
+
 		__Internal__.DD_DOC = function DD_DOC(doc, value) {
 			value = _shared.Natives.windowObject(value);
 			__Internal__.tempDocs.push([doc, value]);
@@ -111,6 +110,8 @@
 		//===================================
 		// Temporary ADD (for Doodad.Types)
 		//===================================
+		__Internal__.tempTypesAdded = [];
+
 		__Internal__.ADD = function ADD(name, obj) {
 			if (types.isType && types.isType(obj)) {
 				obj = types.INIT(obj);
@@ -123,6 +124,8 @@
 		//===================================
 		// Temporary REGISTER (for Doodad.Types)
 		//===================================
+		__Internal__.tempTypesRegistered = [];
+
 		__Internal__.REGISTER = function REGISTER(type) {
 			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
 			if (types.isType && types.isType(type)) {
@@ -136,6 +139,8 @@
 		//===================================
 		// Temporary ADD (for Doodad.Tools)
 		//===================================
+		__Internal__.tempToolsAdded = [];
+
 		__Internal__.ADD_TOOL = function ADD_TOOL(name, obj) {
 			tools[name] = obj;
 			__Internal__.tempToolsAdded.push([name, obj]);
@@ -5179,12 +5184,15 @@
 				return value[__Internal__.symbolDD_DOC];
 			});
 		
+
+		//! IF_SET('debug')
 		(function() {
 			for (var i = 0; i < __Internal__.tempDocs.length; i++) {
 				__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
 			};
 			delete __Internal__.tempDocs;
 		})();
+		//! END_IF()
 
 		//===================================
 		// Clone
@@ -6864,6 +6872,7 @@
 			};
 
 		// Temporary, and not for registering classes.
+		__Internal__.tempRegisteredOthers = [];
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
 				// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
 				var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
