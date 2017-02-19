@@ -512,7 +512,7 @@
 			objectKeys: global.Object.keys,
 			
 			// "isEnumerable", "symbols"
-			objectPropertyIsEnumerableCall: (types.isNativeFunction(global.Object.prototype.propertyIsEnumerable) ? global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable) : undefined),
+			objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
 			
 			// "setPrototypeOf"
 			objectSetPrototypeOf: global.Object.setPrototypeOf,
@@ -578,7 +578,7 @@
 			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
 
 			// "trim"
-			stringTrimCall: (types.isNativeFunction(global.String.prototype.trim) ? global.String.prototype.trim.call.bind(global.String.prototype.trim) : undefined),
+			stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
 			
 			// "depthExtend"
 			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
@@ -844,7 +844,7 @@
 					} else {
 						return [];
 					};
-				} else if (_shared.Natives.stringTrimCall && (chr === ' ') && !direction && (count === Infinity)) {
+				} else if ((chr === ' ') && !direction && (count === Infinity)) {
 					return _shared.Natives.stringTrimCall(str);
 				} else {
 					var i = 0,
@@ -2157,11 +2157,9 @@
 						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.objectPropertyIsEnumerableCall ? function isEnumerable(obj, key) {
+			, function isEnumerable(obj, key) {
 				return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
-			} : function isEnumerable(obj, key) {
-				return true;
-			})));
+			}));
 		
 		__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
 
