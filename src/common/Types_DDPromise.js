@@ -457,7 +457,7 @@ module.exports = {
 						
 						var DDPromise = null;
 						if (types.isNativeFunction(Promise)) {
-							if (types.supportsES6Classes()) {
+							if (types.hasClasses()) {
 								// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
 								DDPromise = types.eval("class DDPromise extends ctx.Promise {}", {Promise: Promise});
 							} else {
