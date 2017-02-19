@@ -216,6 +216,25 @@ module.exports = {
 					}, {});
 				};
 
+				__Internal__.oldTypesIsClonable = _shared.isClonable;
+				_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
+					return types._instanceof(obj, types.Set) || __Internal__.oldTypesIsClonable.call(this, obj, cloneFunctions);
+				};
+
+				__Internal__.oldTypesClone = _shared.clone;
+				_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonable) {
+					if (types._instanceof(obj, types.Set)) {
+						// TODO: Depth cloning
+						depth = +depth || 0;  // null|undefined|true|false|NaN|Infinity
+						if (depth > 0) {
+							throw new types.NotSupported("Depth cloning a Set is not supported.");
+						};
+						return new types.Set(obj);
+					} else {
+						return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked, keepNonClonable);
+					};
+				};
+
 				//===================================
 				// Init
 				//===================================

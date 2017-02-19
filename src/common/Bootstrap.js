@@ -46,6 +46,7 @@
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 		"use strict";
 		
+		// FUTURE: const
 		var _shared = {
 			// Secret value used to load modules, ...
 			SECRET: null,
@@ -68,6 +69,7 @@
 		};
 
 		
+		// FUTURE: const
 		var __Internal__ = {
 			evals: getEvals(),
 
@@ -86,7 +88,7 @@
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 
-		// Temporary. Will get replaced.
+		// FUTURE: const
 		var types = {
 			},
 			
@@ -160,7 +162,7 @@
 				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
 				//if (__Internal__.hasClasses) {
 				//	cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
-				//	__Internal__.classesNotCallable = false; // in case of !
+				//	__Internal__.classesNotCallable = false;
 				//};
 			} catch(o) {
 			};
@@ -5229,7 +5231,7 @@
 		
 		_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
 			// NOTE: This function will get overriden when "Doodad.js" is loaded.
-			return !types.isString(obj) && (types.isArrayLike(obj) || types.isObject(obj) || types._instanceof(obj, types.Map) || types._instanceof(obj, types.Set) || (!!cloneFunctions && types.isCustomFunction(val)));
+			return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(val));
 		};
 
 		_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
@@ -5258,10 +5260,6 @@
 					};
 				} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
 					result = types.eval(_shared.Natives.functionToStringCall(obj));
-				} else if (types._instanceof(obj, types.Map)) {
-					result = new types.Map(obj);
-				} else if (types._instanceof(obj, types.Set)) {
-					result = new types.Set(obj);
 				} else if (types.isObject(obj)) {
 					result = types.createObject(types.getPrototypeOf(obj));
 				} else if (keepNonClonables) {
@@ -7122,9 +7120,6 @@
 							'Doodad.Tools': root.Doodad.Tools,
 						});
 
-						types = root.Doodad.Types;
-						tools = root.Doodad.Tools;
-
 						if (types.hasDefinePropertyEnabled()) {
 							types.defineProperty(root, 'DD_ASSERT', {
 								get: function() {
@@ -7291,11 +7286,11 @@
 						};
 						
 						delete types.Namespace[__Internal__.symbolInitialized];
-						types.REGISTER(types.Namespace);
+						_shared.REGISTER.call(root.Doodad.Types, null, true, types.Namespace);
 
 						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];
-							types.REGISTER(type);
+							_shared.REGISTER.call(root.Doodad.Types, null, true, type);
 						};
 						delete __Internal__.tempTypesRegistered;
 
@@ -7367,7 +7362,7 @@
 				}
 			))), [modules, _options]);
 
-		types.REGISTER(root);
+		_shared.REGISTER.call(root.Doodad.Types, null, true, root);
 
 		return root.Doodad.Namespaces.load(modules, _options, startup)
 			['catch'](root.Doodad.Tools.catchAndExit);
