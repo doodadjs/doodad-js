@@ -1484,6 +1484,7 @@ module.exports = {
 									};
 								}, doodad.AttributeGetter);
 							}),
+
 						setterTemplate: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1567,6 +1568,7 @@ module.exports = {
 									isProto: types.get(options, 'isProto', this.isProto),
 								});
 							}),
+
 						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 								return this._super(options) + 
 									',' + (types.get(options, 'isReadOnly', this.isReadOnly) ? '1' : '0') +
@@ -1574,6 +1576,7 @@ module.exports = {
 									',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0') +
 									',' + (types.get(options, 'isProto', this.isProto) ? '1' : '0');
 							}),
+
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
@@ -1661,6 +1664,7 @@ module.exports = {
 
 								return sourceAttribute;
 							}),
+
 						__isFromStorage: function __isFromStorage(destAttribute) {
 								return (
 										types.hasDefinePropertyEnabled()
@@ -1680,6 +1684,7 @@ module.exports = {
 										) 
 								);
 						},
+
 						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							if (this.__isFromStorage(attribute)) {
@@ -1688,6 +1693,7 @@ module.exports = {
 								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
 							};
 						}),
+
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1754,44 +1760,41 @@ module.exports = {
 								if (this.__isFromStorage(attribute)) {
 									storage[attr] = value; // stored regardless of "isProto"
 
-									//DONE IN preInit   if ((this.isProto === null) || !isProto) { // getters/setters must be only created on Class instances, excepted when "this.isProto" or "isProto" is null.
-										if (attr !== __Internal__.symbolAttributesStorage) {
-											storage = null;
-										};
+									if (attr !== __Internal__.symbolAttributesStorage) {
+										storage = null;
+									};
 								
-										var descriptor = types.getOwnPropertyDescriptor(obj, attr);
+									var descriptor = types.getOwnPropertyDescriptor(obj, attr);
 
-										if (
-											storage ||
-											!descriptor ||
-											descriptor.configurable ||
-											!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
-											(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
-										) {
-											var descriptor = {
-												configurable: false,
-												enumerable: this.isEnumerable,
-												get: this.getterTemplate(attr, attribute, forType, storage),
-											};
-
-											if (!this.isReadOnly) {
-												descriptor.set = this.setterTemplate(attr, attribute, forType, storage);
-											};
-
-											types.defineProperty(obj, attr, descriptor);
+									if (
+										storage ||
+										!descriptor ||
+										descriptor.configurable ||
+										!types.isPrototypeOf(doodad.AttributeGetter, descriptor.get) ||
+										(!types.isNothing(descriptor.set) && !types.isPrototypeOf(doodad.AttributeSetter, descriptor.set))
+									) {
+										var descriptor = {
+											configurable: false,
+											enumerable: this.isEnumerable,
+											get: this.getterTemplate(attr, attribute, forType, storage),
 										};
-									//};
+
+										if (!this.isReadOnly) {
+											descriptor.set = this.setterTemplate(attr, attribute, forType, storage);
+										};
+
+										types.defineProperty(obj, attr, descriptor);
+									};
 								} else {
-									//DONE IN preInit   if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
-										var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
-										_shared.setAttribute(obj, attr, value, {
-											configurable: cf,
-											enumerable: this.isEnumerable, 
-											writable: !this.isReadOnly
-										});
-									//};
+									var cf = (this.isReadOnly || !this.isPersistent); // to be able to change value when read-only with "setAttribute" or be able to remove the property when not persistent
+									_shared.setAttribute(obj, attr, value, {
+										configurable: cf,
+										enumerable: this.isEnumerable, 
+										writable: !this.isReadOnly
+									});
 								};
 							}),
+
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
 									if (this.__isFromStorage(attribute)) {
@@ -1895,12 +1898,18 @@ module.exports = {
 								return attribute;
 							}),
 
+						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+							if (retVal && !isProto && this.isProto && this.cloneOnInit && types.isClonable(value)) {
+								return false; // Must be initialized
+							} else {
+								return retVal;
+							};
+						}),
+
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
-								if (this.cloneOnInit) {
-									if (types.isClonable(value)) {
-										value = types.clone(value, this.maxDepth, false, this.keepUnlocked, true);
-										isProto = null;
-									};
+								if (this.cloneOnInit && types.isClonable(value)) {
+									value = types.clone(value, this.maxDepth, false, this.keepUnlocked, true);
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -1983,10 +1992,19 @@ module.exports = {
 								
 								return sourceAttribute;
 							}),
+
+						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+							if (retVal && !isProto && this.isProto && !types.isNothing(value)) {
+								return false; // Must be initialized
+							} else {
+								return retVal;
+							};
+						}),
+
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								if (!types.isNothing(value)) {
 									value = types.unique(value);
-									isProto = null;
 								};
 								
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -2782,6 +2800,15 @@ module.exports = {
 								return destAttribute;
 							})),
 
+						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+							if (retVal && !isProto && this.isProto && this.bindMethod && !types.isNothing(value)) {
+								return false; // Must be initialized
+							} else {
+								return retVal;
+							};
+						}),
+
 						init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 								value = this.createDispatch(attr, obj, attribute, value);
 
@@ -2792,9 +2819,8 @@ module.exports = {
 									};
 								};
 
-								if (this.bindMethod && value) {
+								if (this.bindMethod && !types.isNothing(value)) {
 									value = types.bind(obj, value);
-									isProto = null;
 								};
 
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -3112,45 +3138,47 @@ module.exports = {
 							}),
 
 						preInit: function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
-							return !(value && (this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
+							var retVal = !(!types.isNothing(value) && (this.isProto === null) || (isProto === null) || (isProto === this.isProto));
+							if (retVal && !isProto && this.isProto && this.bindMethod && !types.isNothing(value)) {
+								return false; // Must be initialized
+							} else {
+								return retVal;   // 'true' === Cancel init
+							};
 						},
+
 						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
-								// DONE IN preInit     if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
-									//DONE IN preInit      if (value) {
-										var attribute = attributes[attr];
+								var attribute = attributes[attr];
 									
-										var descriptor = types.extend({}, value);
+								var descriptor = types.extend({}, value);
 									
-										var value = types.get(descriptor, 'get');
-										if (value) {
-											value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
-											if (this.bindMethod && !isProto) {
-												value = types.bind(obj, value);
-											};
-											descriptor.get = value;
-										};
+								var value = types.get(descriptor, 'get');
+								if (value) {
+									value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
+									if (this.bindMethod && !isProto) {
+										value = types.bind(obj, value);
+									};
+									descriptor.get = value;
+								};
 									
-										value = types.get(descriptor, 'set');
-										if (value) {
-											value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
-											if (this.bindMethod && !isProto) {
-												value = types.bind(obj, value);
-											};
-											descriptor.set = value;
-										};
+								value = types.get(descriptor, 'set');
+								if (value) {
+									value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
+									if (this.bindMethod && !isProto) {
+										value = types.bind(obj, value);
+									};
+									descriptor.set = value;
+								};
 									
-										descriptor.enumerable = this.isEnumerable;
+								descriptor.enumerable = this.isEnumerable;
 									
-										if (types.has(descriptor, 'get') || types.has(descriptor, 'set')) {
-											descriptor.configurable = false;
-										} else {
-											descriptor.configurable = this.isReadOnly;
-											descriptor.writable = !this.isReadOnly;
-										};
+								if (types.has(descriptor, 'get') || types.has(descriptor, 'set')) {
+									descriptor.configurable = false;
+								} else {
+									descriptor.configurable = this.isReadOnly;
+									descriptor.writable = !this.isReadOnly;
+								};
 									
-										types.defineProperty(obj, attr, descriptor);
-									//};
-								//};
+								types.defineProperty(obj, attr, descriptor);
 							},
 
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
