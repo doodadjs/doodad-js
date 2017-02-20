@@ -532,7 +532,7 @@
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
 
-			windowTypeError: (types.isNativeFunction(global.TypeError) ? global.TypeError : undefined),
+			windowTypeError: (global.TypeError || TypeError),
 			
 			// "isNumber", "toInteger"
 			windowNumber: global.Number,
@@ -4645,10 +4645,8 @@
 						description: "Raised on invalid value type.",
 			}
 			//! END_REPLACE()
-			, (_shared.Natives.windowTypeError
-				? types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
-				: types.createErrorType("TypeError", _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
-			)));
+			, types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
+			));
 		
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4673,64 +4671,87 @@
 			//! END_REPLACE()
 			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
 
-		//! IF_SET('serverSide')
+
+			//! IF_SET('serverSide')
+			__Internal__.AssertionError = null;
+			//! END_IF()
+
+			//! BEGIN_REMOVE()
 			if (typeof require === 'function') {
+			//! END_REMOVE()
+			//! IF_SET('serverSide')
 				try {
 					__Internal__.AssertionError = require('assert').AssertionError;
 				} catch(ex) {
 				};
+			//! END_IF()
+			//! BEGIN_REMOVE()
 			};
+			//! END_REMOVE()
+
+			__Internal__.AssertionErrorDD_DOC = 
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								message: {
+									type: 'string',
+									optional: false,
+									description: "A message explaining the assertion.",
+								},
+								params: {
+									type: 'arrayof(any),objectof(any)',
+									optional: true,
+									description: "Parameters of the error message",
+								},
+							},
+							returns: 'error',
+							description: "Raised when an assertion fail.",
+				}
+				//! END_REPLACE()
+
+		//! IF_SET('serverSide')
+		if (__Internal__.AssertionError) {
+			__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
+				__Internal__.AssertionErrorDD_DOC
+				, types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
+						if (message) {
+							this.superArgs = [{
+								actual: false,
+								expected: true,
+								operator: '==',
+								message: tools.format("Assertion failed: " + message, params),
+							}];
+						} else {
+							this.superArgs = [{
+								actual: false,
+								expected: true,
+								operator: '==',
+								message: "Assertion failed.",
+							}];
+						};
+					}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
+		};
 		//! END_IF()
 
-		// <FUTURE> Remove "AssertionFailed" alias
-		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							message: {
-								type: 'string',
-								optional: false,
-								description: "A message explaining the assertion.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Raised when an assertion fail.",
-			}
-			//! END_REPLACE()
-			, (__Internal__.AssertionError ? 
-				types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
-					if (message) {
-						this.superArgs = [{
-							actual: false,
-							expected: true,
-							operator: '==',
-							message: tools.format("Assertion failed: " + message, params),
-						}];
-					} else {
-						this.superArgs = [{
-							actual: false,
-							expected: true,
-							operator: '==',
-							message: "Assertion failed.",
-						}];
-					};
-				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
-			:
-				types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
+		//! IF_SET('serverSide')
+		if (!__Internal__.AssertionError) {
+		//! END_IF()
+			__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
+				__Internal__.AssertionErrorDD_DOC
+				, types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
 					if (message) {
 						this.superArgs = ["Assertion failed: " + message, params];
 					} else {
 						this.superArgs = ["Assertion failed."];
 					};
-				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */)
-			))));
+				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
+		//! IF_SET('serverSide')
+		};
+		//! END_IF()
+
+		delete __Internal__.AssertionErrorDD_DOC;
 
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
