@@ -98,19 +98,9 @@ module.exports = {
 				})));
 				
 				if (_shared.Natives.symbolIterator) {
-					namespaces.ADD(_shared.Natives.symbolIterator, root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 1,
-									params: null,
-									returns: 'RegistryIterator',
-									description: "Returns an iterator of the registry namespaces.",
-							}
-							//! END_REPLACE()
-					, function symbolIterator() {
+					_shared.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
 						return __Internal__.DD_REGISTRY.iter();
-					}));
+					}, {});
 				};
 
 				namespaces.ADD('iter', root.DD_DOC(
@@ -958,7 +948,7 @@ module.exports = {
 								ok = false,
 								entry;
 							while (!ok) {
-								if ((this.index < 0) || (this.__index >= len)) {
+								if ((this.__index < 0) || (this.__index >= len)) {
 									break;
 								};
 								entry = ar[this.__index++];
@@ -966,7 +956,7 @@ module.exports = {
 							};
 							if (ok) { 
 								return {
-									value: entry,
+									value: types.clone(entry), // FUTURE: freeze entries in the registry
 								};
 							} else {
 								return {
