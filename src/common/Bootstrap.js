@@ -4619,7 +4619,7 @@
 					type.prototype[_shared.Natives.symbolToStringTag] = 'Error';
 				};
 				
-				_shared.setAttribute(type, __Internal__.symbolIsErrorType, undefined, {});
+				_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
 				
 				uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('ERROR_TYPE')), true) */ '__ERROR_TYPE__' /*! END_REPLACE() */ + uuid : null);
 				_shared.setAttribute(type, _shared.UUIDSymbol, uuid, {});
@@ -5126,6 +5126,10 @@
 			$TYPE_NAME: null,
 			$TYPE_UUID: null,
 		});
+
+		if (_shared.Natives.symbolToStringTag) {
+			_shared.reservedAttributes[_shared.Natives.symbolToStringTag] = null;
+		};
 
 		//===================================
 		// DD_DOC
@@ -6114,22 +6118,22 @@
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
 				var expr = "function " + name + "(/*paramarray*/) {" + 
-					//"if (ctx.get(this, ctx.InitializedSymbol)) {" +
-					//	"throw new ctx.Error('Object is already initialized.');" +
+					//"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
+					//	"throw new ctx.types.Error('Object is already initialized.');" +
 					//"};" +
 
-					"var forType = ctx.isFunction(this);" +
+					"var forType = ctx.types.isFunction(this);" +
 
 					"if (forType) {" +
-						"if ((this !== ctx.type) && (!ctx.baseof(ctx.type, this))) {" +
-							"throw new ctx.Error('Wrong constructor.');" +
+						"if ((this !== ctx.type) && (!ctx.types.baseof(ctx.type, this))) {" +
+							"throw new ctx.types.Error('Wrong constructor.');" +
 						"};" +
 					"} else {" +
-						"if (!ctx.get(ctx.type, ctx.InitializedSymbol)) {" +
-							"throw new ctx.Error(\"Type '\" + ctx.getTypeName(ctx.type) + \"' is not initialized.\");" +
+						"if (!ctx.types.get(ctx.type, ctx.__Internal__.symbolInitialized)) {" +
+							"throw new ctx.types.Error(\"Type '\" + ctx.types.getTypeName(ctx.type) + \"' is not initialized.\");" +
 						"};" +
 						"if (!(this instanceof ctx.type)) {" +
-							"throw new ctx.Error('Wrong constructor. Did you forget the \\'new\\' operator ?');" +
+							"throw new ctx.types.Error('Wrong constructor. Did you forget the \\'new\\' operator ?');" +
 						"};" +
 					"};" +
 
@@ -6139,7 +6143,7 @@
 							"if (ctx.type.prototype !== ctx.proto) {" +
 								// Something has changed the prototype. Set it back to original and recreate the object.
 								"ctx.type.prototype = ctx.proto;" +
-								"return ctx.newInstance(ctx.type, arguments);" +
+								"return ctx.types.newInstance(ctx.type, arguments);" +
 							"};" +
 						"};"
 					:
@@ -6148,24 +6152,39 @@
 
 					"var " + (typeProto ? "skipConfigurables = true," : "") +
 						"obj;" +
-					"if (!ctx.get(this, ctx.InitializedSymbol)) {" +
+					"if (!ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 						"if (!forType) {" +
-							"ctx.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
+							"ctx._shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
+
+							(_shared.Natives.symbolToStringTag ?
+								// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
+								"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolToStringTag, 'Object', {});"
+							:
+								""
+							) +
 						"};" +
 
 						// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-						(_shared.Natives.symbolHasInstance ? "ctx.setAttribute(this, ctx.HasInstanceSymbol, undefined, {});" : "") +
+						(_shared.Natives.symbolHasInstance ? 
+							"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolHasInstance, undefined, {});" 
+						: 
+							""
+						) +
 
-						"ctx.setAttribute(this, ctx.InitializedSymbol, true, {configurable: true});" +
+						"ctx._shared.setAttribute(this, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
-						(typeProto ? "skipConfigurables = false;" : "") +
+						(typeProto ? 
+							"skipConfigurables = false;" 
+						: 
+							""
+						) +
 					"} else {" +
 						"obj = this;" +
 					"};" +
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
+							"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
 						"};"
 					: 
 						""
@@ -6173,7 +6192,7 @@
 
 					(instanceProto && types.hasDefinePropertyEnabled() ?
 						"if (!forType) {" +
-							"ctx.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
+							"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
 						"};"
 					: 
 						""
@@ -6188,32 +6207,26 @@
 					(baseIsType ? 
 						""
 					:
-						"if ((obj !== this) && !ctx.get(obj, ctx.InitializedSymbol)) {" +
-							"ctx.setAttribute(obj, ctx.InitializedSymbol, true, {configurable: true});" +
+						"if ((obj !== this) && !ctx.types.get(obj, ctx.__Internal__.symbolInitialized)) {" +
+							"ctx._shared.setAttribute(obj, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
 						"};"
 					) +
 
 					"return obj;" +
 				"}";
 				
-				var ctx = {
+				var ctx = types.nullObject({
 					base: base,
 					constructor: constructor,
-					Error: _shared.Natives.windowError,
-					isFunction: types.isFunction,
-					baseof: types.baseof,
-					newInstance: types.newInstance,
-					get: types.get,
-					setAttribute: _shared.setAttribute,
-					InitializedSymbol: __Internal__.symbolInitialized,
-					getTypeName: types.getTypeName,
 					typeProto: typeProto, 
 					instanceProto: instanceProto,
 					instanceBase: (base ? base.prototype : null),
-					applyProto: __Internal__.applyProto,
 					type: null, // will be set after type creation
-					HasInstanceSymbol: _shared.Natives.symbolHasInstance,
-				};
+					proto: null, // will be set after type creation
+					_shared: _shared,
+					__Internal__: __Internal__,
+					types: types,
+				});
 				var type = types.eval(expr, ctx);
 				ctx.type = type;
 				
@@ -6246,7 +6259,7 @@
 				if (instanceProto) {
 					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto, false, false, false);
 				};
-				
+
 				// Return type
 				return type;
 			}));
