@@ -1683,7 +1683,7 @@ module.exports = {
 						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 							var retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 							if (this.__isFromStorage(attribute)) {
-								return retVal || !((this.isProto === null) || !isProto);   // 'true' === Cancel init
+								return retVal || !((this.isProto === null) || !isProto || (isProto === this.isProto));   // 'true' === Cancel init
 							} else {
 								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
 							};
@@ -3110,17 +3110,21 @@ module.exports = {
 								
 								return sourceAttribute.setValue(srcDesc);  // copy attribute flags of "sourceAttribute"
 							}),
-						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, value, isProto) {
-								if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
-									if (value) {
+
+						preInit: function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+							return !(value && (this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
+						},
+						init: function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+								// DONE IN preInit     if ((this.isProto === null) || (isProto === null) || (isProto === this.isProto)) {
+									//DONE IN preInit      if (value) {
 										var attribute = attributes[attr];
 									
 										var descriptor = types.extend({}, value);
 									
 										var value = types.get(descriptor, 'get');
 										if (value) {
-											value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
-											if (this.bindMethod) {
+											value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
+											if (this.bindMethod && !isProto) {
 												value = types.bind(obj, value);
 											};
 											descriptor.get = value;
@@ -3128,8 +3132,8 @@ module.exports = {
 									
 										value = types.get(descriptor, 'set');
 										if (value) {
-											value = this.createDispatch(attr, obj, attribute, value);  // copy attribute flags of "boxed"
-											if (this.bindMethod) {
+											value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
+											if (this.bindMethod && !isProto) {
 												value = types.bind(obj, value);
 											};
 											descriptor.set = value;
@@ -3145,11 +3149,12 @@ module.exports = {
 										};
 									
 										types.defineProperty(obj, attr, descriptor);
-									};
-								};
+									//};
+								//};
 							},
+
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
-							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
+							extenders.ClonedAttribute.remove.call(this, attr, obj, storage, forType, attribute);
 						}),
 					})));
 				
@@ -5742,8 +5747,8 @@ module.exports = {
 						//! END_REPLACE()
 						, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function _superFrom(cls) {
-							var thisType = types.getType(this),
-								dispatch = this[__Internal__.symbolCurrentDispatch];
+							var dispatch = this && this[__Internal__.symbolCurrentDispatch];
+
 							if (!dispatch) {
 								throw new types.TypeError("Invalid call to '_superFrom'.");
 							};
@@ -5756,19 +5761,20 @@ module.exports = {
 								throw new types.TypeError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || __Internal__.ANONYMOUS, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 							};
 							
+							var proto = cls;
 							if (!types.isType(this)) {
-								cls = cls.prototype;
+								proto = cls.prototype;
 							};
 							
 							var name = dispatch[_shared.NameSymbol];
 
-							if (!types.isMethod(cls, name)) {
+							if (!types.isMethod(proto, name)) {
 								throw new types.TypeError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
 							};
 
 							this.overrideSuper();
 							
-							return _shared.getAttribute(cls, name).bind(this);
+							return _shared.getAttribute(proto, name).bind(this);
 						}))))))));
 				
 				__Internal__.overrideSuper = root.DD_DOC(
