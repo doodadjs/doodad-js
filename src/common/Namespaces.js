@@ -339,7 +339,7 @@ module.exports = {
 							} else {
 								val = entryType;
 							};
-							if (val && (val === entries.Object) || types.baseof(entries.Object, val)) {
+							if (val && types.baseof(entries.Entry, val)) {
 								entryType = val;
 							} else {
 								throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
@@ -1028,11 +1028,11 @@ module.exports = {
 								return null;
 							};
 							if (type) {
-								if (!types.baseof(entries.Object, type)) {
+								if (!types.baseof(entries.Entry, type)) {
 									return null;
 								};
 							} else {
-								type = entries.Object;
+								type = entries.Entry;
 							};
 							var entry = this.registry[name];
 							if (!types._instanceof(entry, type)) {
@@ -1066,7 +1066,7 @@ module.exports = {
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Object, type)) {
+								if (!types.baseof(entries.Entry, type)) {
 									return false;
 								};
 							} else {
@@ -1110,11 +1110,11 @@ module.exports = {
 								return false;
 							};
 							if (type) {
-								if (!types.baseof(entries.Object, type)) {
+								if (!types.baseof(entries.Entry, type)) {
 									return false;
 								};
 							} else {
-								type = entries.Object;
+								type = entries.Entry;
 							};
 							var entry = this.registry[name];
 							if (!types._instanceof(entry, type)) {
@@ -1170,7 +1170,7 @@ module.exports = {
 							if (name in this.registry) {
 								return false;
 							};
-							if (!types._instanceof(entry, entries.Object)) {
+							if (!types._instanceof(entry, entries.Entry)) {
 								return false;
 							};
 							if (types.get(entry.spec, 'name') !== name) {
@@ -1181,13 +1181,13 @@ module.exports = {
 							types.freezeObject(entry.spec);
 							//types.freezeObject(entry);
 							this.registry[name] = entry;
-							if (!types._instanceof(entry, entries.Package)) {
+							if (!types._instanceof(entry, entries.Special)) {
 								var namespace = entry.namespace;
 								if (namespace) {
-									var type = (types.isSingleton(namespace) ? types.getType(namespace) : namespace);
-									var parent = type.DD_PARENT;
-									if (parent && type.DD_NAME) {
-										parent.ADD(type.DD_NAME, namespace, entry.options.protect);
+									var parent = namespace.DD_PARENT,
+										name = namespace.DD_NAME;
+									if (parent && name) {
+										parent.ADD(name, namespace, entry.options.protect);
 									};
 								};
 							};
@@ -1203,14 +1203,14 @@ module.exports = {
 				__Internal__.DD_REGISTRY = new __Internal__.Registry();
 				
 				//-----------------------------------
-				// Object entry
+				// Entry
 				//-----------------------------------
 
 				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									root: {
 										type: 'Root',
@@ -1235,8 +1235,8 @@ module.exports = {
 				, types.Type.$inherit(
 					/*typeProto*/
 					{
-						$TYPE_NAME: 'Object',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ObjectEntry')), true) */,
+						$TYPE_NAME: 'Entry',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Entry')), true) */,
 					},
 					
 					/*instanceProto*/
@@ -1292,7 +1292,45 @@ module.exports = {
 				)));
 
 				//-----------------------------------
-				// Namespace entry
+				// Object Entry
+				//-----------------------------------
+
+				entries.REGISTER(root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									root: {
+										type: 'Root',
+										optional: false,
+										description: "Root namespace object",
+									},
+									spec: {
+										type: 'object',
+										optional: false,
+										description: "Namespace specifications",
+									},
+									namespace: {
+										type: 'Namespace',
+										optional: false,
+										description: "Namespace object",
+									},
+								},
+								returns: 'Type',
+								description: "Namespace object entry.",
+						}
+						//! END_REPLACE()
+				, entries.Entry.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'Object',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ObjectEntry')), true) */,
+					}
+				)));
+
+				//-----------------------------------
+				// Namespace Entry
 				//-----------------------------------
 
 				entries.REGISTER(root.DD_DOC(
@@ -1321,7 +1359,7 @@ module.exports = {
 								description: "Namespace registry entry.",
 						}
 						//! END_REPLACE()
-				, entries.Object.$inherit(
+				, entries.Entry.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Namespace',
@@ -1330,7 +1368,7 @@ module.exports = {
 				)));
 
 				//-----------------------------------
-				// Module entry object
+				// Module Entry
 				//-----------------------------------
 				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1366,9 +1404,46 @@ module.exports = {
 					}
 				)));
 				
+				//-----------------------------------
+				// Special Entry
+				//-----------------------------------
+				entries.REGISTER(root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									root: {
+										type: 'Root',
+										optional: false,
+										description: "Root namespace object",
+									},
+									spec: {
+										type: 'object',
+										optional: false,
+										description: "Namespace specifications",
+									},
+									namespace: {
+										type: 'Namespace',
+										optional: false,
+										description: "Namespace object",
+									},
+								},
+								returns: 'Type',
+								description: "Special registry entry.",
+						}
+						//! END_REPLACE()
+				, entries.Entry.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'Special',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SpecialEntry')), true) */,
+					}
+				)));
+				
 				
 				//-----------------------------------
-				// Package entry object
+				// Package Entry
 				//-----------------------------------
 				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1396,7 +1471,7 @@ module.exports = {
 								description: "Package registry entry.",
 						}
 						//! END_REPLACE()
-				, entries.Namespace.$inherit(
+				, entries.Special.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Package',
@@ -1406,7 +1481,7 @@ module.exports = {
 				
 				
 				//-----------------------------------
-				// Application entry object
+				// Application Entry
 				//-----------------------------------
 				entries.REGISTER(root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1434,7 +1509,7 @@ module.exports = {
 								description: "Application registry entry.",
 						}
 						//! END_REPLACE()
-				, entries.Namespace.$inherit(
+				, entries.Special.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Application',

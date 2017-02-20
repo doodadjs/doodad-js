@@ -820,7 +820,7 @@ module.exports = {
 					}
 				)));
 				
-				extenders.REGISTER(root.DD_DOC(
+				extenders.REGISTER([], root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",

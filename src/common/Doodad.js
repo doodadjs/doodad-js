@@ -233,7 +233,7 @@ module.exports = {
 							description: "Type registry entry.",
 					}
 					//! END_REPLACE()
-					, entries.Namespace.$inherit(
+					, entries.Entry.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'Type',
@@ -908,65 +908,79 @@ module.exports = {
 					{
 								author: "Claude Petit",
 								revision: 7,
-								paramsDirection: 'rightToLeft',
 								params: {
 									type: {
 										type: 'Type',
 										optional: false,
 										description: "Type to register.",
 									}, 
-									protect: {
-										type: 'bool',
-										optional: true,
-										description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
-									},
 									args: {
 										type: 'arrayof(any)',
 										optional: true,
 										description: "Arguments of the constructor.",
 									}, 
+									protect: {
+										type: 'bool',
+										optional: true,
+										description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
+									},
 								},
 								returns: 'Type',
 								description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
 					}
 					//! END_REPLACE()
-					, function REGISTER(args, protect, type) {
-						//root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
+					, function REGISTER(type, args, protect) {
+						root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
 						
-						var isSingleton = types.isSingleton(type),
-							isType = types.isType(type),
-							isErrorType = types.isErrorType(type),
-							isClass = types.isClass(type),
+						var isType = types.isType(type),
+							isErrorType = !isType && types.isErrorType(type),
+							isClass = isType && types.isClass(type),
 							name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 							fullName = (name ? (types._instanceof(this, types.Namespace) && !types.is(this, root) ? this.DD_FULL_NAME + '.' : '') + name : null),
-							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
+							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__')),
+							newType = type;
 						
-						if ((isType || isErrorType || isSingleton)) {
-							if (!types.isInitialized(type)) {
-								if ((root.getOptions().debug || __options__.enforcePolicies)) {
-									if (isClass && !isSingleton && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-										var mustOverride = type[__Internal__.symbolMustOverride];
-										if (mustOverride) {
-											throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
-										};
-									};
+						if ((root.getOptions().debug || __options__.enforcePolicies)) {
+							if (isClass && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
+								var mustOverride = type[__Internal__.symbolMustOverride];
+								if (mustOverride) {
+									throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
 								};
-
-								if (!isErrorType) {
-									type = types.INIT(type, args);
-								};
-							};
-
-							var t = (isSingleton ? types.getType(type) : type);
-							if (!types.get(t, 'DD_FULL_NAME')) {
-								_shared.setAttributes(t, {
-									DD_PARENT: this,
-									DD_NAME: name,
-									DD_FULL_NAME: fullName,
-								}, {});
 							};
 						};
-						
+
+						if (isType && !types.isInitialized(type)) {
+							newType = types.INIT(type);
+						};
+
+						if (newType !== type) {
+							isType = types.isType(newType);
+							isErrorType = !isType && types.isErrorType(newType);
+						};
+
+						if (isType || isErrorType) {
+							var values = {
+								apply: type.apply,
+								call: type.call,
+								bind: type.bind,
+							};
+							_shared.setAttributes(type, values, {ignoreWhenReadOnly: true});
+
+							if (args) {
+								newType = types.newInstance(newType, args);
+								isType = false;
+								isErrorType = false;
+							};
+						};
+
+						if (!types.get(newType, 'DD_FULL_NAME')) {
+							_shared.setAttributes(newType, {
+								DD_PARENT: this,
+								DD_NAME: name,
+								DD_FULL_NAME: fullName,
+							}, {});
+						};
+
 						if (!isPrivate) {
 							// Public type
 							var regNamespace = namespaces.get(fullName);
@@ -977,23 +991,14 @@ module.exports = {
 								};
 							};
 							
-							var entryType = (isType || isErrorType || isSingleton ? entries.Type : entries.Object);
-							var entry = new entryType(root, null, type, {protect: protect});
+							var entryType = (isType || isErrorType ? entries.Type : entries.Object);
+							var entry = new entryType(root, null, newType, {protect: protect});
 							entry.init();
 
 							namespaces.add(fullName, entry, {secret: _shared.SECRET});
 						};
 						
-						if (protect) {
-							var values = {
-								apply: type.apply,
-								call: type.call,
-								bind: type.bind,
-							};
-							_shared.setAttributes(type, values, {ignoreWhenReadOnly: true});
-						};
-
-						return type;
+						return newType;
 					});
 				
 				// TODO: Review and test
@@ -1168,7 +1173,7 @@ module.exports = {
 							description: "Base of every attribute extenders. Not to be used directly.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(types.SINGLETON(types.Type.$inherit(
+					, extenders.REGISTER(types.Type.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: "Extender",
@@ -1386,7 +1391,7 @@ module.exports = {
 							init: types.READ_ONLY(null), // function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto)
 							remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 						}
-					))));
+					)));
 				
 				doodad.ADD('AttributeGetter', function() {});
 				doodad.ADD('AttributeSetter', function() {});
@@ -1407,7 +1412,7 @@ module.exports = {
 							description: "Attribute extender.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Extender.$inherit({
+					, extenders.REGISTER([], extenders.Extender.$inherit({
 						$TYPE_NAME: "Attribute",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('AttributeExtender')), true) */,
 						
@@ -1826,7 +1831,7 @@ module.exports = {
 							description: "Attribute extender where the value will be always 'null'.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Attribute.$inherit({
+					, extenders.REGISTER([], extenders.Attribute.$inherit({
 						$TYPE_NAME: "Null",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
 						
@@ -1853,7 +1858,7 @@ module.exports = {
 							description: "Attribute extender where the value will get cloned if possible. Additionally, the attribute itself can get cloned.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Attribute.$inherit({
+					, extenders.REGISTER([], extenders.Attribute.$inherit({
 						$TYPE_NAME: "ClonedAttribute",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ClonedAttributeExtender')), true) */,
 						
@@ -1932,7 +1937,7 @@ module.exports = {
 							description: "Attribute extender which extends an object.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
+					, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "ExtendObject",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
 						
@@ -1971,7 +1976,7 @@ module.exports = {
 							description: "Attribute extender which extends an array with unique items.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
+					, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "UniqueArray",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
 						
@@ -2027,7 +2032,7 @@ module.exports = {
 							description: "Attribute extender which extends a method.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.ClonedAttribute.$inherit({
+					, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 						$TYPE_NAME: "Method",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('MethodExtender')), true) */,
 						
@@ -2845,7 +2850,7 @@ module.exports = {
 							description: "Attribute extender which extends a JS method.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Method.$inherit({
+					, extenders.REGISTER([], extenders.Method.$inherit({
 						$TYPE_NAME: "JsMethod",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('JsMethodExtender')), true) */,
 						
@@ -3080,7 +3085,7 @@ module.exports = {
 							description: "Attribute extender which extends a property.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Method.$inherit({
+					, extenders.REGISTER([], extenders.Method.$inherit({
 						$TYPE_NAME: "Property",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('PropertyExtender')), true) */,
 						
@@ -3475,7 +3480,7 @@ module.exports = {
 							description: "Attribute extender which extends an event.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER(extenders.Method.$inherit({
+					, extenders.REGISTER([], extenders.Method.$inherit({
 						$TYPE_NAME: "Event",
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
 

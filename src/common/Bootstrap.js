@@ -3544,6 +3544,7 @@
 
 		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
 		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('$IS_SINGLETON')), true) */ '$IS_SINGLETON' /*! END_REPLACE() */, true);
+		__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SINGLETON')), true) */ 'SINGLETON' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('isType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -5886,7 +5887,7 @@
 					//_shared.setAttribute(type.prototype, '$inherit', val, {all: true});
 
 
-					_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {});
+					_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
 				};
 				
 				return type;
@@ -6048,7 +6049,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 8,
+						revision: 10,
 						params: {
 							name: {
 								type: 'string',
@@ -6152,8 +6153,14 @@
 
 					"var " + (typeProto ? "skipConfigurables = true," : "") +
 						"obj;" +
-					"if (!ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
+					"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
+						"obj = this;" +
+					"} else {" +
 						"if (!forType) {" +
+							"if (ctx.types.get(ctx.type, ctx.__Internal__.symbolSingleton)) {" +
+								"throw new ctx.types.Error('Singleton object has already been created.');" +
+							"};" +
+
 							"ctx._shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
 
 							(_shared.Natives.symbolToStringTag ?
@@ -6178,8 +6185,16 @@
 						: 
 							""
 						) +
-					"} else {" +
-						"obj = this;" +
+
+						"var isSingleton = ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
+						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, !!isSingleton, {});" +
+						"if (isSingleton) {" +
+							"if (!forType) {" +
+								"ctx._shared.setAttribute(ctx.type, ctx.__Internal__.symbolSingleton, obj, {});" +
+							"};" +
+						"} else {" +
+							"ctx._shared.setAttribute(obj, ctx.__Internal__.symbolSingleton, null, {});" +
+						"};" +
 					"};" +
 
 					(typeProto ?
@@ -6428,8 +6443,9 @@
 			toString: types.SUPER(__Internal__.typeToString),
 			toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
 		};
-		
+
 		 __Internal__.typeTypeProto[__Internal__.symbol$IsSingleton] = types.READ_ONLY(false),
+		 __Internal__.typeTypeProto[__Internal__.symbolSingleton] = types.READ_ONLY(null),
 
 		__Internal__.typeInstanceProto = {
 			_super: null,
@@ -6841,19 +6857,9 @@
 				delete this[name];
 			};
 				
-		// NOTE: Will get overriden by Doodad.js
-		_shared.REGISTER = function(/*<<< optional*/args, /*optional*/protect, type) {
-				throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
-			};
-
-		// NOTE: Will get overriden by Doodad.js
-		_shared.UNREGISTER = function(type) {
-				throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
-			};
-
 		// Temporary, and not for registering classes.
 		__Internal__.tempRegisteredOthers = [];
-		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(args, protect, type) {
+		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(type, args, protect) {
 				// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
 				var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 					fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
@@ -6875,9 +6881,14 @@
 					configurable: true,
 				});
 
-				__Internal__.tempRegisteredOthers.push([this, [args, protect, type]]);
+				__Internal__.tempRegisteredOthers.push([this, [type, args, protect]]);
 			};
 	
+		// NOTE: Will get overriden by Doodad.js
+		_shared.UNREGISTER = function(type) {
+				throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
+			};
+
 		types.Namespace = __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -6971,18 +6982,16 @@
 						return _shared.REMOVE.apply(this, arguments);
 					}),
 					
-					REGISTER: function REGISTER(/*<<< optional*/args, /*optional*/protect, type) {
-						var args;
-						if (arguments.length <= 1) {
-							type = args;
-							protect = true;
-							args = undefined;
-						} else if (arguments.length <= 2) {
+					REGISTER: function REGISTER(/*<<< optional*/protect, /*optional*/args, type) {
+						if (arguments.length < 2) {
 							type = protect;
-							protect = args;
-							args = undefined;
+							protect = true;
+						} else if (arguments.length < 3) {
+							type = args;
+							args = protect;
+							protect = true;
 						};
-						return _shared.REGISTER.call(this, args, protect, type);
+						return _shared.REGISTER.call(this, type, args, protect);
 					},
 					
 					UNREGISTER: function UNREGISTER(type) {
@@ -7265,11 +7274,11 @@
 						};
 						
 						delete types.Namespace[__Internal__.symbolInitialized];
-						_shared.REGISTER.call(root.Doodad.Types, null, true, types.Namespace);
+						_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
 
 						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							var type = __Internal__.tempTypesRegistered[i];
-							_shared.REGISTER.call(root.Doodad.Types, null, true, type);
+							_shared.REGISTER.call(root.Doodad.Types, type, null, true);
 						};
 						delete __Internal__.tempTypesRegistered;
 
@@ -7289,12 +7298,12 @@
 					}),
 					
 					//! BEGIN_REMOVE()
-						serverSide: types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null)),
+						serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null))),
 					//! END_REMOVE()
 					//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
-					//!		INJECT("serverSide: types.READ_ONLY(true),")
+					//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),")
 					//! ELSE()
-					//!		INJECT("serverSide: types.READ_ONLY(false),")
+					//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),")
 					//! END_IF()
 
 					enableAsserts: __Internal__.DD_DOC(
@@ -7341,7 +7350,7 @@
 				}
 			))), [modules, _options]);
 
-		_shared.REGISTER.call(root.Doodad.Types, null, true, root);
+		_shared.REGISTER.call(root.Doodad.Types, types.getType(root), null, true);
 
 		return root.Doodad.Namespaces.load(modules, _options, startup)
 			['catch'](root.Doodad.Tools.catchAndExit);
