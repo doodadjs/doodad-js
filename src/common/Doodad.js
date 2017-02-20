@@ -2819,7 +2819,7 @@ module.exports = {
 									};
 								};
 
-								if (this.bindMethod && !types.isNothing(value)) {
+								if (this.bindMethod && !isProto && !types.isNothing(value)) {
 									value = types.bind(obj, value);
 								};
 
