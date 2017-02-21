@@ -29,7 +29,8 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types/Bind'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			
+			bootstrap: true,
+
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
@@ -51,17 +52,14 @@ module.exports = {
 				// Options
 				//===================================
 					
-				var __options__ = types.nullObject({
-					toSourceItemsCount: 255,		// Max number of items
-				}, _options);
+				//var __options__ = types.nullObject({
+				//}, _options);
 
-				__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
+				//types.freezeObject(__options__);
 
-				types.freezeObject(__options__);
-
-				types.ADD('getOptions', function() {
-					return __options__;
-				});
+				//types.ADD('getOptions', function() {
+				//	return __options__;
+				//});
 
 				//===================================
 				// Native functions
