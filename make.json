@@ -94,6 +94,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_Generators.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types_HttpStatus.js",
       "client": true,
       "server": true,

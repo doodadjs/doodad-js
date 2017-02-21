@@ -38,6 +38,7 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 		require(sourceDir + "common/Types.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Bind.js").add(DD_MODULES);
+		require(sourceDir + "common/Types_Generators.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Iterators.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_HttpStatus.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_DDPromise.js").add(DD_MODULES);
