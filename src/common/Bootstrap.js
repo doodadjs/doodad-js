@@ -37,11 +37,13 @@
 	};
 	//! END_REMOVE()
 
+	//! IF_SET('debug')
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
 	if (Error.stackTraceLimit < 50) {
 		Error.stackTraceLimit = 50;
 	};
+	//! END_IF()
 	
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 		"use strict";
