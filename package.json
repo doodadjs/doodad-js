@@ -12,7 +12,6 @@
       "nodeEnvDevValues": "development,dev",
       "enableSymbols": true,
       "enableProperties": false,
-      "enableProxies": false,
       "enableAsserts": false
     },
     "Doodad__Types": {
