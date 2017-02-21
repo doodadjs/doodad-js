@@ -109,8 +109,12 @@ module.exports = {
 					// "keysInherited", "symbolsInherited"
 					objectPrototype: global.Object.prototype,
 					
-					// Polyfills
-					
+					// "isArrowFunction", "isAsyncFunction"
+					functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
+
+					//// "hasProxies", "hasProxyEnabled", "createProxy"
+					//windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+
 					// "values"
 					objectValues: (types.isNativeFunction(global.Object.values) ? global.Object.values : undefined),
 					
@@ -246,6 +250,141 @@ module.exports = {
 				
 				_shared.NameSymbol = types.getSymbol('__NAME__');
 
+
+				//===================================
+				// ES6 Arrow functions support
+				//===================================
+
+				__Internal__.hasArrows = false;
+				try {
+					types.eval("a => a");
+					__Internal__.hasArrows = true;
+				} catch(ex) {
+				};
+
+				types.ADD('hasArrows', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'bool',
+							description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function hasArrows() {
+						return __Internal__.hasArrows;
+					}));
+
+				types.ADD('isArrowFunction', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, __Internal__.hasArrows ? function isArrowFunction(obj) {
+						if (types.isFunction(obj)) {
+							var str = _shared.Natives.functionToStringCall(obj);
+							return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
+						};
+						return false;
+					} : function isArrowFunction(obj) {
+						return false;
+					}));
+		
+				//===================================
+				// ES7 async/await
+				//===================================
+			
+				__Internal__.hasAsyncAwait = false;
+				try {
+					types.eval("async function test() {}");
+					__Internal__.hasAsyncAwait = true;
+				} catch(ex) {
+				};
+
+				types.ADD('hasAsyncAwait', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'bool',
+							description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function hasAsyncAwait() {
+						return __Internal__.hasAsyncAwait;
+					}));
+
+				types.ADD('isAsyncFunction', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is an async function, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
+						if (types.isFunction(obj)) {
+							var str = _shared.Natives.functionToStringCall(obj);
+							return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
+						};
+						return false;
+					} : function isAsyncFunction(obj) {
+						return false;
+					}));
+		
+				//===================================
+				// ES6 Proxy
+				//===================================
+/*	NOT USED		
+				types.ADD('hasProxies', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'bool',
+								description: "Returns 'true' when ES6 Proxy is available. Returns 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, (_shared.Natives.windowProxy ? (function hasProxies() {
+						return true;
+					}) : (function hasProxies() {
+						return false;
+					}))));
+
+		/ * AS USUAL, NO DETECTION AVAILABLE !!! AND WORSE, THIS TIME THERE IS NO WAY AT ALL TO IMPLEMENT ONE
+				types.ADD('isProxy', (_shared.Natives.windowProxy ? (function isProxy(obj) {
+					return (obj instanceof _shared.Natives.windowProxy);
+				}) : (function isProxy(obj) {
+					if (types.isNothing(obj)) {
+						return false;
+					};
+					obj = _shared.Natives.windowObject(obj);
+					return !!obj.__isProxy__;
+				})));
+*/
+		
 				//===================================
 				// is*
 				//===================================

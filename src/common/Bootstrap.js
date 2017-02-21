@@ -62,7 +62,7 @@
 				// "has", "isCustomFunction", "isNativeFunction"
 				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 				
-				// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
+				// "isNativeFunction"
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 
 				// "DD_DOC"
@@ -126,21 +126,6 @@
 		};
 
 		//===================================
-		// Temporary REGISTER (for Doodad.Types)
-		//===================================
-		__Internal__.tempTypesRegistered = [];
-
-		__Internal__.REGISTER = function REGISTER(type) {
-			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
-			if (types.isType && types.isType(type)) {
-				type = types.INIT(type);
-			};
-			types[name] = type;
-			__Internal__.tempTypesRegistered.push(type);
-			return type;
-		};
-
-		//===================================
 		// Temporary ADD (for Doodad.Tools)
 		//===================================
 		__Internal__.tempToolsAdded = [];
@@ -182,56 +167,6 @@
 			//! END_REPLACE()
 			, function hasClasses() {
 				return __Internal__.hasClasses;
-			}));
-
-		//===================================
-		// ES6 Arrow functions support
-		//===================================
-
-		__Internal__.hasArrows = false;
-		try {
-			__Internal__.evals.eval("a => a");
-			__Internal__.hasArrows = true;
-		} catch(ex) {
-		};
-
-		__Internal__.ADD('hasArrows', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'bool',
-					description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function hasArrows() {
-				return __Internal__.hasArrows;
-			}));
-
-		//===================================
-		// ES7 async/await
-		//===================================
-			
-		__Internal__.hasAsyncAwait = false;
-		try {
-			__Internal__.evals.eval("async function test() {}");
-			__Internal__.hasAsyncAwait = true;
-		} catch(ex) {
-		};
-
-		__Internal__.ADD('hasAsyncAwait', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'bool',
-					description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function hasAsyncAwait() {
-				return __Internal__.hasAsyncAwait;
 			}));
 
 		//===================================
@@ -329,145 +264,6 @@
 				};
 			}));
 		
-		__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isCustomFunction(obj) {
-				if (types.isJsClass(obj)) {
-					return false;
-				} else if (types.isFunction(obj)) {
-					var str = _shared.Natives.functionToStringCall(obj),
-						index1 = str.indexOf('{') + 1,
-						index2 = str.indexOf('[native code]', index1);
-					if (index2 < 0) {
-						return true;
-					};
-					for (var i = index1; i < index2; i++) {
-						var chr = str[i];
-						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
-							return true;
-						};
-					};
-				};
-				return false;
-			}));
-		
-		__Internal__.ADD('isArrowFunction', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, __Internal__.hasArrows ? function isArrowFunction(obj) {
-				if (types.isFunction(obj)) {
-					var str = _shared.Natives.functionToStringCall(obj);
-					return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
-				};
-				return false;
-			} : function isArrowFunction(obj) {
-				return false;
-			}));
-		
-		__Internal__.ADD('isAsyncFunction', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is an async function, 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
-				if (types.isFunction(obj)) {
-					var str = _shared.Natives.functionToStringCall(obj);
-					return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
-				};
-				return false;
-			} : function isAsyncFunction(obj) {
-				return false;
-			}));
-		
-		__Internal__.ADD('getFunctionName', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'function',
-								optional: false,
-								description: "A function.",
-							},
-						},
-						returns: 'string',
-						description: "Returns function name.",
-			}
-			//! END_REPLACE()
-			, function getFunctionName(obj) {
-				if (types.isFunction(obj)) {
-					if ('name' in obj) {
-						return obj.name;
-					} else {
-						// Internet Explorer
-						var str = _shared.Natives.functionToStringCall(obj);
-						var result = str.match(/function\s+([^(\s]*)[^(]*\(/);
-						return result && result[1] || null;
-					};
-				} else {
-					return null;
-				};
-			}));
-		
-		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isNothing(obj) {
-				return (obj == null);
-			}));
-		
 		// FUTURE: "types.extend(_shared.Natives, {...})" when "Object.assign" will be accessible on every engine
 		_shared.Natives = {
 			// General
@@ -482,7 +278,7 @@
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
 			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 			
-			// "isCustomFunction", "isNativeFunction", "isArrowFunction", "getFunctionName"
+			// "isCustomFunction", "isNativeFunction", getFunctionName"
 			// FUTURE: Remove when "Natives" will be "types.extend"ed
 			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 				
@@ -528,7 +324,7 @@
 
 			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 
-			// "clone", "map"
+			// "clone"
 			windowArray: global.Array,
 			
 			// "createErrorType", "isError"
@@ -581,7 +377,7 @@
 
 			// "trim"
 			stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
-			
+
 			// "depthExtend"
 			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
 			
@@ -615,9 +411,6 @@
 			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER || global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1,
 			numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER || -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1,
 			
-			//// "hasProxies", "hasProxyEnabled", "createProxy"
-			//windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
-
 			// generateUUID
 			mathRandom: global.Math.random,
 
@@ -693,90 +486,70 @@
 				};
 			}));
 
-		//===================================
-		// String Tools
-		//===================================
+		//==================================
+		// is*
+		//==================================
 		
-		__Internal__.ADD_TOOL('split', __Internal__.DD_DOC(
+		__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
 						revision: 2,
 						params: {
-							str: {
-								type: 'string',
+							obj: {
+								type: 'any',
 								optional: false,
-								description: "String to split",
-							},
-							separator: {
-								type: 'string,RegExp',
-								optional: true,
-								description: "Separator",
-							},
-							limit: {
-								type: 'integer',
-								optional: true,
-								description: "Number of items.",
+								description: "An object to test for.",
 							},
 						},
-						returns: 'arrayof(string)',
-						description: "Proper 'limit' argument for the 'String.prototype.split' function.",
+						returns: 'bool',
+						description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, function split(str, /*optional*/separator, /*optional*/limit) {
-				// TODO: Unit tests
-				if (types.isNothing(str) || (limit === 0)) {
-					return [];
-				};
-				if (types.isNothing(separator) || (limit === 1)) {
-					return [str];
-				};
-				if (types.isNothing(limit)) {
-					return str.split(separator);
-				};
-				var result;
-				if (separator === '') {
-					// Char array
-					limit--;
-					result = str.slice(0, limit).split('');
-					if (result.length < str.length) {
-						// Remaining
-						result[result.length] = str.slice(limit);
+			, function isCustomFunction(obj) {
+				if (types.isJsClass(obj)) {
+					return false;
+				} else if (types.isFunction(obj)) {
+					var str = _shared.Natives.functionToStringCall(obj),
+						index1 = str.indexOf('{') + 1,
+						index2 = str.indexOf('[native code]', index1);
+					if (index2 < 0) {
+						return true;
 					};
-				} else if (types.isString(separator)) {
-					var last = 0,
-						sepLen = separator.length,
-						index;
-					result = [];
-					while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
-						result[result.length] = str.slice(last, index);
-						last = index + sepLen;
-						limit--;
-					};
-					if ((limit > 0) && (last <= str.length)) {
-						// Remaining
-						result[result.length] = str.slice(last);
-					};
-				} else { // RegExp
-					var matches,
-						strLen = str.length;
-					result = [];
-					separator.lastIndex = 0;
-					while ((limit > 1) && (matches = separator.exec(str))) {
-						var index = matches.index;
-						result[result.length] = str.slice(0, index);
-						str = str.slice(index + matches[0].length);
-						limit--;
-						separator.lastIndex = 0;
-					};
-					if ((limit > 0) && (str.length <= strLen)) {
-						// Remaining
-						result[result.length] = str;
+					for (var i = index1; i < index2; i++) {
+						var chr = str[i];
+						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
+							return true;
+						};
 					};
 				};
-				return result;
+				return false;
 			}));
-
+		
+		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isNothing(obj) {
+				return (obj == null);
+			}));
+		
+		//==================================
+		// String Tools
+		//==================================
+		
 		__Internal__.ADD_TOOL('trim', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -870,99 +643,6 @@
 						};
 					};
 					return str.slice(i, j + chrLen);
-				};
-			}));
-
-		//===================================
-		// Array Tools
-		//===================================
-	
-		__Internal__.ADD_TOOL('map', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'arraylike,object,Map,Set',
-							optional: false,
-							description: "An object to scan.",
-						},
-						fn: {
-							type: 'function',
-							optional: false,
-							description: 
-								"A function to call. Arguments passed to the function are : \n" +
-								"  value (any): The current value\n" +
-								"  key (integer,string): The current index or attribute name\n" +
-								"  obj (arraylike,object,Map,Set): A reference to the object"
-						},
-						thisObj: {
-							type: 'any',
-							optional: true,
-							description: "Value of 'this' when calling the function. Default is 'undefined'.",
-						},
-						start: {
-							type: 'integer',
-							optional: true,
-							description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
-						},
-						end: {
-							type: 'integer',
-							optional: true,
-							description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
-						},
-					},
-					returns: 'array,object',
-					description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
-			}
-			//! END_REPLACE()
-			, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end) {
-				if (!types.isNothing(obj)) {
-					obj = _shared.Natives.windowObject(obj);
-					if (types._instanceof(obj, types.Set)) {
-						var result = new types.Set();
-						obj.forEach(function(value, key, obj) {
-							result.add(fn.call(thisObj, value, key, obj));
-						});
-						return result;
-					} else if (types._instanceof(obj, types.Map)) {
-						var result = new types.Map();
-						obj.forEach(function(value, key, obj) {
-							result.set(key, fn.call(thisObj, value, key, obj));
-						});
-						return result;
-					} else if (types.isArrayLike(obj)) {
-						if (types.isNothing(start) || (start < 0)) {
-							start = 0;
-						};
-						var len = obj.length;
-						if (types.isNothing(end) || (end > len)) {
-							end = len;
-						};
-						if (_shared.Natives.arrayMap && (start === 0) && (end === len)) {
-							return _shared.Natives.arrayMap.call(obj, fn, thisObj);
-						} else {
-							var result = _shared.Natives.windowArray(end - start);
-							for (var key = start, pos = 0; key < end; key++, pos++) {
-								if (key in obj) {
-									result[pos] = fn.call(thisObj, obj[key], key, obj);
-								};
-							};
-							return result;
-						};
-					} else {
-						var result = types.createObject(types.getPrototypeOf(obj));
-						var keys = types.keys(obj),
-							len = keys.length, // performance
-							i, 
-							key;
-						for (i = 0; i < len; i++) {
-							key = keys[i];
-							result[key] = fn.call(thisObj, obj[key], key, obj);
-						};
-						return result;
-					};
 				};
 			}));
 
@@ -3500,6 +3180,41 @@
 			})));
 			
 		//===================================
+		// Functions
+		//===================================
+		
+		__Internal__.ADD('getFunctionName', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'function',
+								optional: false,
+								description: "A function.",
+							},
+						},
+						returns: 'string',
+						description: "Returns function name.",
+			}
+			//! END_REPLACE()
+			, function getFunctionName(obj) {
+				if (types.isFunction(obj)) {
+					if ('name' in obj) {
+						return obj.name;
+					} else {
+						// Internet Explorer
+						var str = _shared.Natives.functionToStringCall(obj);
+						var result = str.match(/function\s+([^(\s]*)[^(]*\(/);
+						return result && result[1] || null;
+					};
+				} else {
+					return null;
+				};
+			}));
+		
+		//===================================
 		// Type functions
 		//===================================
 		
@@ -4416,6 +4131,21 @@
 				};
 				return values;
 			});
+
+		//===================================
+		// Temporary REGISTER (for Doodad.Types)
+		//===================================
+		__Internal__.tempTypesRegistered = [];
+
+		__Internal__.REGISTER = function REGISTER(type) {
+			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
+			if (types.isType && types.isType(type)) {
+				type = types.INIT(type);
+			};
+			types[name] = type;
+			__Internal__.tempTypesRegistered.push(type);
+			return type;
+		};
 
 		//===================================
 		// Errors
@@ -5346,100 +5076,6 @@
 				return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
 			}));
 				
-		//===================================
-		// ES6 Proxy
-		//===================================
-/*	NOT USED		
-		__Internal__.ADD('hasProxies', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'bool',
-						description: "Returns 'true' when ES6 Proxy is available. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.windowProxy ? (function hasProxies() {
-				return true;
-			}) : (function hasProxies() {
-				return false;
-			}))));
-
-		__Internal__.ADD('hasProxyEnabled', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'bool',
-						description: "Returns 'true' when ES6 Proxy is available and if it's enabled. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, (__options__.enableProxies && _shared.Natives.windowProxy ? (function hasProxyEnabled() {
-				return true;
-			}) : (function hasProxyEnabled() {
-				return false;
-			}))));
-
-/ * AS USUAL, NO DETECTION AVAILABLE !!! AND WORSE, THIS TIME THERE IS NO WAY AT ALL TO IMPLEMENT ONE
-		__Internal__.ADD('isProxy', (_shared.Natives.windowProxy ? (function isProxy(obj) {
-			return (obj instanceof _shared.Natives.windowProxy);
-		}) : (function isProxy(obj) {
-			if (types.isNothing(obj)) {
-				return false;
-			};
-			obj = _shared.Natives.windowObject(obj);
-			return !!obj.__isProxy__;
-		})));
-* /
-		
-		__Internal__.ADD('createProxy', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object.",
-							},
-							handler: {
-								type: 'object',
-								optional: false,
-								description: "Handler.",
-							},
-						},
-						returns: 'object',
-						description: "Helper function to create a ES6 Proxy for an object. When ES6 Proxy is not available, attempts to reproduce it when possible.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.windowProxy ? (function createProxy(target, handler) {
-				return new _shared.Natives.windowProxy(target, handler);
-				
-			}) : (function createProxy(target, handler) {
-				var keys = types.allKeys(handler);
-				for (var i = 0; i < keys.length; i++) {
-					var key = keys[i];
-					if (key !== 'apply') {
-						throw new types.TypeError("Proxies not available.");
-					};
-				};
-				
-				if (handler.apply) {
-					var _caller = function caller(/*paramarray* /) {
-						return handler.apply.call(handler, target, this, arguments);
-					};
-					//types.defineProperty(_caller, '__isProxy__', {value: true});
-					return _caller;
-				} else {
-					// "Invisible proxy"
-					//return types.createObject(target, {__isProxy__: {value: true}});
-					return types.createObject(target);
-				};
-			}))));
-*/
 		//===================================
 		// Type
 		//===================================

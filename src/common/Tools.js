@@ -149,6 +149,10 @@ module.exports = {
 
 					// Polyfills
 
+					// "map"
+					windowArray: global.Array,
+
+					// "sign"
 					mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
 
 					//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
@@ -158,7 +162,7 @@ module.exports = {
 					arrayIndexOfCall: (types.isNativeFunction(global.Array.prototype.indexOf) ? global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf) : undefined),
 					arrayLastIndexOfCall: (types.isNativeFunction(global.Array.prototype.lastIndexOf) ? global.Array.prototype.lastIndexOf.call.bind(global.Array.prototype.lastIndexOf) : undefined),
 					arrayForEachCall: (types.isNativeFunction(global.Array.prototype.forEach) ? global.Array.prototype.forEach.call.bind(global.Array.prototype.forEach) : undefined),
-					//arrayMap: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map : undefined),
+					arrayMapCall: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map.call.bind(global.Array.prototype.map) : undefined),
 					arrayFilterCall: (types.isNativeFunction(global.Array.prototype.filter) ? global.Array.prototype.filter.call.bind(global.Array.prototype.filter) : undefined),
 					arrayEveryCall: (types.isNativeFunction(global.Array.prototype.every) ? global.Array.prototype.every.call.bind(global.Array.prototype.every) : undefined),
 					arraySomeCall: (types.isNativeFunction(global.Array.prototype.some) ? global.Array.prototype.some.call.bind(global.Array.prototype.some) : undefined),
@@ -169,6 +173,183 @@ module.exports = {
 					regExpEscape: (types.isNativeFunction(global.RegExp.escape) ? global.RegExp.escape : undefined),
 				});
 				
+				//===================================
+				// String Tools
+				//===================================
+		
+				tools.ADD('split', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									str: {
+										type: 'string',
+										optional: false,
+										description: "String to split",
+									},
+									separator: {
+										type: 'string,RegExp',
+										optional: true,
+										description: "Separator",
+									},
+									limit: {
+										type: 'integer',
+										optional: true,
+										description: "Number of items.",
+									},
+								},
+								returns: 'arrayof(string)',
+								description: "Proper 'limit' argument for the 'String.prototype.split' function.",
+					}
+					//! END_REPLACE()
+					, function split(str, /*optional*/separator, /*optional*/limit) {
+						// TODO: Unit tests
+						if (types.isNothing(str) || (limit === 0)) {
+							return [];
+						};
+						if (types.isNothing(separator) || (limit === 1)) {
+							return [str];
+						};
+						if (types.isNothing(limit)) {
+							return str.split(separator);
+						};
+						var result;
+						if (separator === '') {
+							// Char array
+							limit--;
+							result = str.slice(0, limit).split('');
+							if (result.length < str.length) {
+								// Remaining
+								result[result.length] = str.slice(limit);
+							};
+						} else if (types.isString(separator)) {
+							var last = 0,
+								sepLen = separator.length,
+								index;
+							result = [];
+							while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
+								result[result.length] = str.slice(last, index);
+								last = index + sepLen;
+								limit--;
+							};
+							if ((limit > 0) && (last <= str.length)) {
+								// Remaining
+								result[result.length] = str.slice(last);
+							};
+						} else { // RegExp
+							var matches,
+								strLen = str.length;
+							result = [];
+							separator.lastIndex = 0;
+							while ((limit > 1) && (matches = separator.exec(str))) {
+								var index = matches.index;
+								result[result.length] = str.slice(0, index);
+								str = str.slice(index + matches[0].length);
+								limit--;
+								separator.lastIndex = 0;
+							};
+							if ((limit > 0) && (str.length <= strLen)) {
+								// Remaining
+								result[result.length] = str;
+							};
+						};
+						return result;
+					}));
+
+				//===================================
+				// Array Tools
+				//===================================
+	
+				tools.ADD('map', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								obj: {
+									type: 'arraylike,object,Map,Set',
+									optional: false,
+									description: "An object to scan.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: 
+										"A function to call. Arguments passed to the function are : \n" +
+										"  value (any): The current value\n" +
+										"  key (integer,string): The current index or attribute name\n" +
+										"  obj (arraylike,object,Map,Set): A reference to the object"
+								},
+								thisObj: {
+									type: 'any',
+									optional: true,
+									description: "Value of 'this' when calling the function. Default is 'undefined'.",
+								},
+								start: {
+									type: 'integer',
+									optional: true,
+									description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
+								},
+								end: {
+									type: 'integer',
+									optional: true,
+									description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
+								},
+							},
+							returns: 'array,object',
+							description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
+					}
+					//! END_REPLACE()
+					, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end) {
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (types._instanceof(obj, types.Set)) {
+								var result = new types.Set();
+								obj.forEach(function(value, key, obj) {
+									result.add(fn.call(thisObj, value, key, obj));
+								});
+								return result;
+							} else if (types._instanceof(obj, types.Map)) {
+								var result = new types.Map();
+								obj.forEach(function(value, key, obj) {
+									result.set(key, fn.call(thisObj, value, key, obj));
+								});
+								return result;
+							} else if (types.isArrayLike(obj)) {
+								if (types.isNothing(start) || (start < 0)) {
+									start = 0;
+								};
+								var len = obj.length;
+								if (types.isNothing(end) || (end > len)) {
+									end = len;
+								};
+								if (_shared.Natives.arrayMapCall && (start === 0) && (end >= len)) {
+									return _shared.Natives.arrayMapCall(obj, fn, thisObj);
+								} else {
+									var result = _shared.Natives.windowArray(end - start);
+									for (var key = start, pos = 0; key < end; key++, pos++) {
+										if (key in obj) {
+											result[pos] = fn.call(thisObj, obj[key], key, obj);
+										};
+									};
+									return result;
+								};
+							} else {
+								var result = types.createObject(types.getPrototypeOf(obj));
+								var keys = types.keys(obj),
+									len = keys.length, // performance
+									i, 
+									key;
+								for (i = 0; i < len; i++) {
+									key = keys[i];
+									result[key] = fn.call(thisObj, obj[key], key, obj);
+								};
+								return result;
+							};
+						};
+					}));
+
 				//===================================
 				// Search functions
 				//===================================
