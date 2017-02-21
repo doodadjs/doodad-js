@@ -49,19 +49,6 @@ module.exports = {
 				//};
 
 				//===================================
-				// Options
-				//===================================
-					
-				//var __options__ = types.nullObject({
-				//}, _options);
-
-				//types.freezeObject(__options__);
-
-				//types.ADD('getOptions', function() {
-				//	return __options__;
-				//});
-
-				//===================================
 				// Native functions
 				//===================================
 					

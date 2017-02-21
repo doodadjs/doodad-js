@@ -48,19 +48,6 @@ module.exports = {
 				//};
 
 				//===================================
-				// Options
-				//===================================
-					
-				//var __options__ = types.nullObject({
-				//}, _options);
-
-				//types.freezeObject(__options__);
-
-				//types.ADD('getOptions', function() {
-				//	return __options__;
-				//});
-
-				//===================================
 				// HTTP Status Codes
 				// TODO: Add other non-standard or strange status ?
 				//===================================
