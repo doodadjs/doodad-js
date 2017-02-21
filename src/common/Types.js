@@ -121,10 +121,6 @@ module.exports = {
 					// "entries"
 					objectEntries: (types.isNativeFunction(global.Object.entries) ? global.Object.entries : undefined),
 					
-					// "bind"
-					functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
-					functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
-					
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
 					
@@ -382,6 +378,40 @@ module.exports = {
 				})));
 */
 		
+				//===================================
+				// Bindable
+				//===================================
+
+				_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
+				
+				// Test for my dream to realize !
+				__Internal__.arrowIsBindable = false;
+				try {
+					__Internal__.arrowIsBindable = (types.eval("() => this.doodad").bind({doodad: 1})() === 1);
+				} catch(ex) {
+				};
+				
+				types.ADD('isBindable', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "An object to test for.",
+									},
+								},
+								returns: 'bool',
+								description: "Returns 'true' if object is a bindable function, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isBindable(obj) {
+						// NOTE: Native functions may or may not be bindable and there is no way to know it !!!
+						return types.isCustomFunction(obj) && !types.has(obj, _shared.BoundObjectSymbol) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
+					}));
+				
 				//===================================
 				// is*
 				//===================================
@@ -1983,139 +2013,6 @@ module.exports = {
 						return false;
 						
 					})))));
-
-				//===================================
-				// Bind/Unbind
-				//===================================
-
-				_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
-				
-				// Test for my dream to realize !
-				__Internal__.arrowIsBindable = false;
-				try {
-					__Internal__.arrowIsBindable = (types.eval("() => this.doodad").bind({doodad: 1})() === 1);
-				} catch(ex) {
-				};
-				
-				types.ADD('isBindable', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object is a bindable function, 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, function isBindable(obj) {
-						// NOTE: Native functions may or may not be bindable and there is no way to know it !!!
-						return types.isCustomFunction(obj) && !types.has(obj, _shared.BoundObjectSymbol) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
-					}));
-				
-				types.ADD('bind', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									obj: {
-										type: 'object',
-										optional: false,
-										description: "An object.",
-									},
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "A function.",
-									},
-									args: {
-										type: 'arrayof(any)',
-										optional: true,
-										description: "Function arguments.",
-									},
-								},
-								returns: 'object',
-								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
-					}
-					//! END_REPLACE()
-					, function bind(obj, fn, /*optional*/args) {
-						fn = types.unbind(fn);
-						if (!types.isBindable(fn)) {
-							return null;
-						};
-						var newFn;
-						//if (_shared.Natives.functionBindApply) {
-							if (args) {
-								newFn = _shared.Natives.functionBindApply(fn, types.append([obj], args));
-							} else {
-								newFn = _shared.Natives.functionBindCall(fn, obj);
-							};
-						//} else {
-						//	if (args) {
-						//		newFn = function(/*paramarray*/) {
-						//			if (arguments.length > 0) {
-						//				return fn.apply(obj, types.append([], args, arguments));
-						//			} else {
-						//				return fn.apply(obj, args);
-						//			};
-						//		};
-						//	} else {
-						//		newFn = function(/*paramarray*/) {
-						//			return fn.apply(obj, arguments);
-						//		};
-						//	};
-						//};
-						types.extend(newFn, fn);
-						newFn[_shared.BoundObjectSymbol] = obj;
-						newFn[_shared.OriginalValueSymbol] = fn;
-						return newFn;
-					}));
-				
-				types.ADD('unbind', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "A function.",
-									},
-								},
-								returns: 'object',
-								description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
-					}
-					//! END_REPLACE()
-					, function unbind(fn) {
-						if (!types.isFunction(fn)) {
-							return null;
-						};
-						if (types.has(fn, _shared.BoundObjectSymbol)) {
-							var oldFn = types.get(fn, _shared.OriginalValueSymbol);
-							if (!types.isBindable(oldFn)) {
-								return null;
-							};
-							var keys = types.append(types.keys(fn), types.symbols(fn));
-							for (var i = 0; i < keys.length; i++) {
-								var key = keys[i];
-								if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
-									if (types.has(oldFn, key)) {
-										oldFn[key] = fn[key];
-									};
-								};
-							};
-							return oldFn;
-						} else {
-							return fn;
-						};
-					}));
 
 
 				//===================================
