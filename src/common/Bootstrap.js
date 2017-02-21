@@ -4754,7 +4754,7 @@
 		// Box/Unbox
 		//===================================
 		
-		_shared.OriginalValueSymbol = types.getSymbol('__ORIGINAL_VALUE__');
+		_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('ORIGINAL_VALUE')), true) */ '__ORIGINAL_VALUE__' /*! END_REPLACE() */, true);
 		
 		__Internal__.ADD('box', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
