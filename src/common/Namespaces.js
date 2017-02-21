@@ -653,7 +653,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 11,
+								revision: 12,
 								params: {
 									modules: {
 										type: 'object',
@@ -677,6 +677,7 @@ module.exports = {
 						//! END_REPLACE()
 				, function load(modules, /*optional*/options, /*optional*/callback) {
 					var Promise = types.getPromise();
+					var dontThrow = types.get(options, 'dontThrow');
 					return Promise.try(function() {
 						if (types.isArray(options)) {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
@@ -686,11 +687,33 @@ module.exports = {
 							throw new types.AccessDenied("Secrets mismatch.");
 						};
 
-						var dontThrow = types.get(options, 'dontThrow');
+						tools.forEach(modules, function(mod) {
+							if (mod) {
+								var modType = types.get(mod, 'type') || entries.Module;
+								if (types.isString(modType)) {
+									modType = types.get(entries, modType);
+								};
+								mod.type = modType;
+							};
+						});
 					
 						var names = types.keys(modules),
 							toInit = [];
 						
+						names.sort(function(name1, name2) {
+							var mod1 = modules[name1],
+								mod2 = modules[name2],
+								mod1IsModule = mod1 && !((mod1.type === entries.Special) || types.baseof(entries.Special, mod1.type)),
+								mod2IsModule = mod2 && !((mod2.type === entries.Special) || types.baseof(entries.Special, mod2.type));
+							if (mod1IsModule && mod2IsModule) {
+								return 0;
+							} else if (mod1IsModule) {
+								return -1;
+							} else {
+								return 1;
+							};
+						});
+
 						var doCallback = function _doCallback() {
 							// Create Promise for callback result
 							var cbPromise = null;
