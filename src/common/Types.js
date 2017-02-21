@@ -130,9 +130,6 @@ module.exports = {
 					
 					// "isArrayBuffer"
 					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
-					
-					// "hasIterators", "isIterable"
-					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 				
 				//===================================
@@ -1799,75 +1796,6 @@ module.exports = {
 				
 				
 				//===================================
-				// Iterators
-				//===================================
-
-				types.ADD('hasIterators', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'bool',
-								description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.symbolIterator ? function hasIterators(obj) {
-						return true;
-					} : function hasIterators(obj) {
-						return false;
-					})));
-				
-				
-				types.ADD('isIterable', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.symbolIterator ? function isIterable(obj) {
-						if (types.isNothing(obj)) {
-							return false;
-						};
-						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
-					} : function isIterable(obj) {
-						return false;
-					})));
-				
-				
-				// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
-				types.ADD('isIteratorLike', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, function isIteratorLike(obj) {
-						return types.isObjectLike(obj) && types.isFunction(obj.next);
-					}));
-				
-				
-				//===================================
 				// Generators
 				//===================================
 				
@@ -2189,120 +2117,6 @@ module.exports = {
 						};
 					}));
 
-				//=========================
-				// Iterator
-				//=========================
-					
-				types.ADD('Iterator', types.Type.$inherit(
-					{
-						$TYPE_NAME: 'Iterator',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Iterator')), true) */,
-					},
-					{
-						_new: types.SUPER(function _new() {
-							this._super();
-
-							// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
-							if (_shared.Natives.symbolIterator) {
-								var self = this;
-								_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
-									return self;
-								}, {});
-							};
-						}),
-
-						close: null, // function()
-						
-						next: function next() {
-							return {
-								done: true,
-							};
-						},
-					}));
-					
-
-				//===================================
-				// HTTP Status Codes
-				// TODO: Move elsewhere
-				// TODO: Add other non-standard or strange status ?
-				//===================================
-				
-				types.ADD('HttpStatus', types.freezeObject(types.nullObject({
-					// Information
-					Continue: 100,
-					SwitchingProtocol: 101,
-					
-					// Success
-					OK: 200,
-					Created: 201,
-					Accepted: 202,
-					NonAuthoritativeInformation: 203,
-					NoContent: 204,
-					ResetContent: 205,
-					PartialContent: 206,
-					
-					// Redirect
-					MultipleChoices: 300,
-					MovedPermanently: 301,
-					Found: 302,
-					SeeOther : 303,
-					NotModified: 304,
-					UseProxy: 305,
-					TemporaryRedirect: 307,
-					
-					// Client errors
-					BadRequest: 400,
-					Unauthorized: 401,
-					Forbidden: 403,
-					NotFound: 404,
-					MethodNotAllowed: 405,
-					NotAcceptable: 406,
-					ProxyAuthenticationRequired: 407,
-					RequestTimeout: 408,
-					Conflict: 409,
-					Gone: 410,
-					LengthRequired: 411,
-					PreconditionFailed: 412,
-					EntityTooLarge: 413,
-					UrlTooLong: 414,
-					UnsupportedMediaType: 415,
-					RangeNotSatisfiable: 416,
-					ExpectationFailed: 417,
-
-					// Server errors
-					InternalError: 500,
-					NotImplemented: 501,
-					BadGateway: 502,
-					ServiceUnavailable: 503,
-					GatewayTimeout: 504,
-					VersionNotSupported: 505,
-
-					// Utilities
-					isInformative: function isInformative(status) {
-						return (status >= 100) && (status < 200);
-					},
-					
-					isSuccessful: function isSuccessful(status) {
-						return (status >= 200) && (status < 300);
-					},
-					
-					isRedirect: function isRedirect(status) {
-						return (status >= 300) && (status < 400);
-					},
-					
-					isClientError: function isClientError(status) {
-						return (status >= 400) && (status < 500);
-					},
-					
-					isServerError: function isServerError(status) {
-						return (status >= 500);
-					},
-					
-					isError: function isError(status) {
-						return (status >= 400);
-					},
-				})));
-				
 
 				//===================================
 				// Init
