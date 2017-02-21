@@ -37,6 +37,7 @@ module.exports = {
 		
 		DD_MODULES = (DD_MODULES || {});
 		require(sourceDir + "common/Types.js").add(DD_MODULES);
+		require(sourceDir + "common/Types_HttpStatus.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_DDPromise.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Set.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Map.js").add(DD_MODULES);
@@ -57,3 +58,17 @@ module.exports = {
 		return bootstrap.createRoot(DD_MODULES, options, startup);
 	},
 };
+
+
+		if (!__Internal__.AssertionError) {
+			__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
+				__Internal__.AssertionErrorDD_DOC
+				, types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
+				types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
+					if (message) {
+						this.superArgs = ["Assertion failed: " + message, params];
+					} else {
+						this.superArgs = ["Assertion failed."];
+					};
+				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */);
+		};
