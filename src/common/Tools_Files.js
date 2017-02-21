@@ -330,6 +330,7 @@ module.exports = {
 						noEscapes: types.READ_ONLY( false ),
 						shell: types.READ_ONLY( null ),  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash', 'sh'
 						forceDrive: types.READ_ONLY( false ),
+						allowTraverse: types.READ_ONLY( false ),
 					};
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 				
@@ -443,6 +444,7 @@ module.exports = {
 										file = types.get(options, 'file', null),  // Default is Auto-detect
 										extension = types.get(options, 'extension', null), // Default is "file" 's extension
 										forceDrive = types.get(options, 'forceDrive', false),  // Default is False
+										allowTraverse = types.get(options, 'allowTraverse', false),  // Default is False
 										host = types.get(options, 'host', null); // Default is Auto-detect
 
 									path = types.get(options, 'path', path);
@@ -843,16 +845,29 @@ module.exports = {
 
 									// Resolve path
 									if (path) {
-										// NOTE: Path must not traverse root
-										var abs = __Internal__.relativeToAbsolute(path, [], {
-											dirChar: dirChar,
-											dontThrow: dontThrow,
-											trailing: false,
-										});
-										if (!abs) {
-											return null;
+										if (allowTraverse) {
+											var abs = __Internal__.relativeToAbsolute(path, dirRoot, {
+												dirChar: dirChar,
+												dontThrow: dontThrow,
+												trailing: false,
+											});
+											if (!abs) {
+												return null;
+											};
+											dirRoot = abs.dirRoot;
+											path = abs.path;
+										} else {
+											// NOTE: Path must not traverse root
+											var abs = __Internal__.relativeToAbsolute(path, [], {
+												dirChar: dirChar,
+												dontThrow: dontThrow,
+												trailing: false,
+											});
+											if (!abs) {
+												return null;
+											};
+											path = abs.path;
 										};
-										path = abs.path;
 									};
 
 									// Resolve file
@@ -1175,7 +1190,8 @@ module.exports = {
 									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(path) || types.isString(path) || types._instanceof(path, [files.Path, files.Url]), "Invalid path.");
 
 									var type = types.getType(this);
-									var dontThrow = types.get(options, 'dontThrow', false);
+									var dontThrow = types.get(options, 'dontThrow', false),
+										allowTraverse = types.get(options, 'allowTraverse', false);
 									
 									if (types.isNothing(path) || types.isString(path)) {
 										path = type.parse(path, options);
@@ -1243,6 +1259,7 @@ module.exports = {
 									};
 									
 									data.dontThrow = dontThrow;
+									data.allowTraverse = allowTraverse;
 
 									if (types.isString(dirRoot)) {
 										dirRoot = dirRoot.split(data.dirChar);
