@@ -2060,7 +2060,7 @@ module.exports = {
 				// Bind/Unbind
 				//===================================
 
-				_shared.BoundObjectSymbol = types.getSymbol('__BOUND_OBJECT__');
+				_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
 				
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;
