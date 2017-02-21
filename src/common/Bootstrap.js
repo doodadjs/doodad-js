@@ -613,8 +613,8 @@
 			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER || global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1,
 			numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER || -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1,
 			
-			// "hasProxies", "hasProxyEnabled", "createProxy"
-			windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+			//// "hasProxies", "hasProxyEnabled", "createProxy"
+			//windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
 
 			// generateUUID
 			mathRandom: global.Math.random,
@@ -3262,7 +3262,7 @@
 		__options__.fromSource = types.toBoolean(__options__.fromSource);
 		__options__.enableProperties = types.toBoolean(__options__.enableProperties);
 		__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
-		__options__.enableProxies = types.toBoolean(__options__.enableProxies);
+		//__options__.enableProxies = types.toBoolean(__options__.enableProxies);
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
 		_shared.SECRET = types.get(__options__, 'secret');
@@ -5347,7 +5347,7 @@
 		//===================================
 		// ES6 Proxy
 		//===================================
-			
+/*	NOT USED		
 		__Internal__.ADD('hasProxies', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -5380,7 +5380,7 @@
 				return false;
 			}))));
 
-/* AS USUAL, NO DETECTION AVAILABLE !!! AND WORSE, THIS TIME THERE IS NO WAY AT ALL TO IMPLEMENT ONE
+/ * AS USUAL, NO DETECTION AVAILABLE !!! AND WORSE, THIS TIME THERE IS NO WAY AT ALL TO IMPLEMENT ONE
 		__Internal__.ADD('isProxy', (_shared.Natives.windowProxy ? (function isProxy(obj) {
 			return (obj instanceof _shared.Natives.windowProxy);
 		}) : (function isProxy(obj) {
@@ -5390,7 +5390,7 @@
 			obj = _shared.Natives.windowObject(obj);
 			return !!obj.__isProxy__;
 		})));
-*/
+* /
 		
 		__Internal__.ADD('createProxy', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -5426,7 +5426,7 @@
 				};
 				
 				if (handler.apply) {
-					var _caller = function caller(/*paramarray*/) {
+					var _caller = function caller(/*paramarray* /) {
 						return handler.apply.call(handler, target, this, arguments);
 					};
 					//types.defineProperty(_caller, '__isProxy__', {value: true});
@@ -5437,7 +5437,7 @@
 					return types.createObject(target);
 				};
 			}))));
-
+*/
 		//===================================
 		// Type
 		//===================================
