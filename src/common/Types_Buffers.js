@@ -54,6 +54,9 @@ module.exports = {
 				types.complete(_shared.Natives, {
 					// "isArrayBuffer"
 					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
+
+					// "isTypesArray"
+					windowTypedArray: undefined,
 				});
 				
 				//===================================
@@ -87,6 +90,7 @@ module.exports = {
 				// Typed Arrays
 				//===================================
 				
+				__Internal__.TypedArrays = null;
 				if (global.Int8Array) {
 					try {
 						_shared.Natives.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
