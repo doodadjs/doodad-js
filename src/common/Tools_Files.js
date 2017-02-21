@@ -610,7 +610,7 @@ module.exports = {
 												if (dontThrow) {
 													return null;
 												} else {
-													throw new types.ParseError("Invalid char: " + types.toSource(state.invalid) + ".");
+													throw new types.ParseError("Invalid char: '~0~'.", [state.invalid]);
 												};
 											};
 										};
@@ -940,7 +940,7 @@ module.exports = {
 												if (dontThrow) {
 													return null;
 												} else {
-													throw new types.ParseError("Invalid path or file name: " + types.toSource(state.invalid) + ".");
+													throw new types.ParseError("Invalid path or file name: '~0~.", [state.invalid]);
 												};
 											};
 										};
@@ -2433,7 +2433,7 @@ module.exports = {
 											if (dontThrow) {
 												return null;
 											} else {
-												throw new types.ParseError("Invalid path or file name: " + types.toSource(state.invalid) + ".");
+												throw new types.ParseError("Invalid path or file name: ~0~.", [state.invalid]);
 											};
 										};
 									};
