@@ -6186,8 +6186,8 @@
 							""
 						) +
 
-						"var isSingleton = ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
-						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, !!isSingleton, {});" +
+						"var isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
+						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
 						"if (isSingleton) {" +
 							"if (!forType) {" +
 								"ctx._shared.setAttribute(ctx.type, ctx.__Internal__.symbolSingleton, obj, {});" +
@@ -6242,8 +6242,8 @@
 					__Internal__: __Internal__,
 					types: types,
 				});
+
 				var type = types.eval(expr, ctx);
-				ctx.type = type;
 				
 				// Inherit base
 				var proto;
