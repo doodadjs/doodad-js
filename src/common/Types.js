@@ -120,9 +120,6 @@ module.exports = {
 					
 					// "toArray"
 					arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
-					
-					// "isArrayBuffer"
-					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
 				});
 				
 				//===================================
@@ -1820,92 +1817,8 @@ module.exports = {
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
 				};
-				
-				//===================================
-				// Buffers
-				//===================================
 
-				types.ADD('isArrayBuffer', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
-						return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
-					}) : (function isArrayBuffer(obj) {
-						// ArrayBuffer is not implemented.
-						return false;
-					}))));
 				
-				//===================================
-				// Typed Arrays
-				//===================================
-				
-				if (global.Int8Array) {
-					try {
-						_shared.Natives.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
-						
-						if (_shared.Natives.windowTypedArray === global.Object) {
-							// <PRB> NodeJs has no TypedArray constructor.
-							delete _shared.Natives.windowTypedArray;
-							__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
-													global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
-													global.Float64Array];
-						} else {
-							// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-							_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */ ;
-						};
-					} catch(ex) {
-					};
-				};
-					
-				types.ADD('isTypedArray', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {
-						return types._instanceof(obj, _shared.Natives.windowTypedArray);
-						
-					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
-						// <PRB> NodeJs has no TypedArray constructor.
-						for (var i = 0; i < __Internal__.TypedArrays.length; i++) {
-							var type = __Internal__.TypedArrays[i];
-							if (type && types._instanceof(obj, type)) {
-								return true;
-							};
-						};
-						return false;
-						
-					}) : (function isTypedArray(obj) {
-						// Typed arrays are not implemented.
-						return false;
-						
-					})))));
-
-
 				//===================================
 				// Init
 				//===================================

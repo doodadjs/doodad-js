@@ -106,6 +106,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_Buffers.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types_Set.js",
       "client": true,
       "server": true,
