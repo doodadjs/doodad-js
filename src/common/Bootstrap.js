@@ -1493,7 +1493,7 @@
 
 		// NOTE: It removes native functions from the stack
 		// <FUTURE> thread level
-		__Internal__.parseStackRegEx = / at ([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([\/][^\/]+[\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
+		__Internal__.parseStackRegEx = /( at )?([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([\/][^\/]+[\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
 
 		__Internal__.ADD_TOOL('parseStack', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1546,12 +1546,12 @@
 				};
 				
 				do {
-					functionName = call[1] || '';
+					functionName = call[2] || '';
 					pos = functionName.indexOf(' at '); // Not Firefox beginning of function name
 					if (pos >= 0) {
 						functionName = functionName.slice(pos + 4);
 					};
-					rawFunctionName = functionName + (call[2] || '');
+					rawFunctionName = functionName + (call[3] || '');
 					pos = functionName.lastIndexOf('@'); // Firefox beginning of file name
 					if (pos >= 0) {
 						functionName = functionName.slice(0, pos);
@@ -1577,23 +1577,23 @@
 					if (functionName.slice(0, 4) === 'new ') { // Chrome "new" operator
 						functionName = functionName.slice(4);
 					};
-					var path = call[4],
+					var path = call[5],
 						url,
 						isSystemPath = false;
 					if (!path) {
 						// File system path
 						isSystemPath = true;
-						path = call[5];
+						path = call[6];
 						if (!path) {
-							path = call[6];
+							path = call[7];
 						};
 					};
 					calls.push({
 						rawFunctionName: rawFunctionName,
 						functionName: ((functionName === "eval code") ? '' : functionName),
 						path: (path || ''),
-						lineNumber: types.toInteger(call[8] || call[11] || -1),
-						columnNumber: types.toInteger(call[13] || -1),
+						lineNumber: types.toInteger(call[9] || call[12] || -1),
+						columnNumber: types.toInteger(call[14] || -1),
 						isSystemPath: isSystemPath,
 					});
 					
@@ -1604,6 +1604,17 @@
 				
 				return calls;
 			}));
+
+		// <PRB> Internet Explorer doesn't fill the stack on Error creation.
+		(function() {
+			// 'stack' is a property under Firefox.
+			var desc = _shared.Natives.objectGetOwnPropertyDescriptor(_shared.Natives.windowError.prototype, 'stack');
+			__Internal__.ieStack = !desc || !_shared.Natives.objectHasOwnPropertyCall(desc, 'get');
+			if (__Internal__.ieStack) {
+				var ex = new _shared.Natives.windowError("");
+				__Internal__.ieStack = !_shared.Natives.objectHasOwnPropertyCall(ex, 'stack');
+			};
+		})();
 
 		__Internal__.ADD_TOOL('getStackTrace', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1616,18 +1627,19 @@
 			}
 			//! END_REPLACE()
 			, function getStackTrace() {
-				try {
-					throw new _shared.Natives.windowError("");
-				} catch(ex) {
-					var stack = null;
-					if (ex.stack) {
-						stack = tools.parseStack(ex.stack);
-						if (stack) {
-							stack.splice(0, 1);  // remove "getStackTrace" call entry
-						};
+				var ex = new _shared.Natives.windowError("");
+				if (__Internal__.ieStack) {
+					try {
+						throw ex;
+					} catch(o) {
+						ex = o;
 					};
-					return stack;
 				};
+				var stack = tools.parseStack(ex.stack);
+				if (stack) {
+					stack.splice(0, 1);  // remove "getStackTrace" call entry
+				};
+				return stack;
 			}));
 		
 		//===================================
