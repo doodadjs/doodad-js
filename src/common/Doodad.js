@@ -4008,7 +4008,8 @@ module.exports = {
 							
 							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
-							var stackClone = types.clone(stack);
+							var stackClone = types.clone(stack),
+								ok = false;
 
 							for (var i = 0; i < stackClone.length; i++) {
 								var data = stackClone[i];
@@ -4027,6 +4028,8 @@ module.exports = {
 									_shared.setAttribute(ev, 'handlerData', data[3]);
 
 									retval = data[5].call(obj, ev);
+
+									ok = true;
 								};
 
 								if ((retval === false) && cancellable) {
@@ -4043,8 +4046,17 @@ module.exports = {
 							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
 								return (data[4] <= 0);
 							});
+
+							if (errorEvent && ok) {
+								ev.error.trapped = true;
+							};
 						};
 						
+						if (errorEvent && !ev.error.trapped) {
+							tools.catchAndExit(ev.error);
+							return;
+						};
+
 						return cancelled;
 					});
 				};
@@ -7113,7 +7125,7 @@ module.exports = {
 								},
 							},
 							returns: 'ErrorEvent',
-							description: "Canceled event object.",
+							description: "Error event object.",
 					}
 					//! END_REPLACE()
 					, doodad.Event.$inherit(
