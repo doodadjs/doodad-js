@@ -1505,7 +1505,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -1530,7 +1530,7 @@ module.exports = {
 							const stat = function stat(path) {
 								path = path.toApiString();
 								return Promise.create(function doCanonical(resolve, reject) {
-									nodeFs.lstat(path, function statCb(err, stats) {
+									nodeFs.stat(path, function statCb(err, stats) {
 										if (err) {
 											reject(err);
 										} else {
