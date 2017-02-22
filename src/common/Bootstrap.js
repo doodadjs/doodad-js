@@ -59,14 +59,8 @@
 				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
 
-				// "has", "isCustomFunction", "isNativeFunction"
-				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
-				
 				// "isNativeFunction"
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
-
-				// "DD_DOC"
-				windowObject: global.Object,
 			},
 		};
 
@@ -105,7 +99,6 @@
 		__Internal__.tempDocs = [];
 
 		__Internal__.DD_DOC = function DD_DOC(doc, value) {
-			value = _shared.Natives.windowObject(value);
 			__Internal__.tempDocs.push([doc, value]);
 			return value;
 		};
