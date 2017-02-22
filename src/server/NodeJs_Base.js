@@ -58,7 +58,7 @@ module.exports = {
 				//===================================
 
 				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
-					return nodeUtil.inspect.custom || 'inspect';
+					return ((typeof nodeUtil.inspect.custom === 'symbol') ? nodeUtil.inspect.custom : 'inspect');
 				});
 
 
