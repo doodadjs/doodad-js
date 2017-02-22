@@ -1505,7 +1505,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								path: {
 									type: 'string,Path',
@@ -1591,7 +1591,7 @@ module.exports = {
 						if (types.isString(path)) {
 							path = files.Path.parse(path);
 						};
-						const stats = nodeFs.lstatSync(path.toApiString());
+						const stats = nodeFs.statSync(path.toApiString());
 						const ar = path.toArray({pathOnly: true, trim: true}),
 							base = path.set({path: null, file: null});
 						for (let i = ar.length - 1; i >= 0; i--) {
