@@ -46,19 +46,23 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				// <FUTURE> Thread context
-				//const __Internal__ = {
-				//};
+				const __Internal__ = {
+					customInspectSymbol: ((typeof nodeUtil.inspect.custom === 'symbol') ? nodeUtil.inspect.custom : 'inspect'),
+				};
 				
-		//		types.complete(_shared.Natives, {
-		//		});
+				//===================================
+				// Natives
+				//===================================
+				
+				//types.complete(_shared.Natives, {
+				//});
 				
 				//===================================
 				// Util Extension
 				//===================================
 
 				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
-					return ((typeof nodeUtil.inspect.custom === 'symbol') ? nodeUtil.inspect.custom : 'inspect');
+					return __Internal__.customInspectSymbol;
 				});
 
 
