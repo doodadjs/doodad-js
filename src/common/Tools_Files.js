@@ -360,7 +360,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 5,
+											revision: 6,
 											params: {
 												path: {
 													type: 'string,array',
@@ -818,6 +818,49 @@ module.exports = {
 										path = null;
 									};
 
+									// Resolve file
+									if (file) {
+										// File can traverse path but not root.
+										var abs = __Internal__.relativeToAbsolute(file, path || [], {
+											dirChar: dirChar,
+											dontThrow: dontThrow,
+											trailing: false,
+										});
+										if (!abs) {
+											return null;
+										};
+										path = abs.dirRoot;
+										file = abs.path;
+									};
+									
+									// Resolve path
+									if (path) {
+										if (allowTraverse) {
+											// Path can traverse root
+											var abs = __Internal__.relativeToAbsolute(path, dirRoot || [], {
+												dirChar: dirChar,
+												dontThrow: dontThrow,
+												trailing: false,
+											});
+											if (!abs) {
+												return null;
+											};
+											dirRoot = abs.dirRoot;
+											path = abs.path;
+										} else {
+											// Path must not traverse root
+											var abs = __Internal__.relativeToAbsolute(path, [], {
+												dirChar: dirChar,
+												dontThrow: dontThrow,
+												trailing: false,
+											});
+											if (!abs) {
+												return null;
+											};
+											path = abs.path;
+										};
+									};
+
 									// Resolve root
 									if (dirRoot) {									
 										if (isRelative) {
@@ -843,48 +886,6 @@ module.exports = {
 										};
 									};
 
-									// Resolve path
-									if (path) {
-										if (allowTraverse) {
-											var abs = __Internal__.relativeToAbsolute(path, dirRoot, {
-												dirChar: dirChar,
-												dontThrow: dontThrow,
-												trailing: false,
-											});
-											if (!abs) {
-												return null;
-											};
-											dirRoot = abs.dirRoot;
-											path = abs.path;
-										} else {
-											// NOTE: Path must not traverse root
-											var abs = __Internal__.relativeToAbsolute(path, [], {
-												dirChar: dirChar,
-												dontThrow: dontThrow,
-												trailing: false,
-											});
-											if (!abs) {
-												return null;
-											};
-											path = abs.path;
-										};
-									};
-
-									// Resolve file
-									if (file) {
-										// File may traverse path but not root
-										var abs = __Internal__.relativeToAbsolute(file, path || [], {
-											dirChar: dirChar,
-											dontThrow: dontThrow,
-											trailing: false,
-										});
-										if (!abs) {
-											return null;
-										};
-										path = abs.dirRoot;
-										file = abs.path;
-									};
-									
 									// Validate file names
 									if (shell) {
 										var validatePath = null,
@@ -1169,7 +1170,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 8,
+											revision: 9,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1187,17 +1188,17 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(/*optional*/path, /*optional*/options) {
-									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(path) || types.isString(path) || types._instanceof(path, [files.Path, files.Url]), "Invalid path.");
-
 									var type = types.getType(this);
 									var dontThrow = types.get(options, 'dontThrow', false),
 										allowTraverse = types.get(options, 'allowTraverse', false);
 									
-									if (types.isNothing(path) || types.isString(path)) {
+									if (!types._instanceof(path, [files.Path, files.Url])) {
 										path = type.parse(path, options);
 										options = null;
 									};
 									
+									var data = types.fill(__Internal__.pathOptionsKeys, {}, this);
+
 									var thisRoot = tools.trim(this.root || [], '');
 									
 									var thisPath = tools.trim(this.path || [], '');
@@ -1218,8 +1219,6 @@ module.exports = {
 									if (dir) {
 										dir = tools.trim(dir, '');
 									};
-
-									var data = types.fill(__Internal__.pathOptionsKeys, {}, this);
 
 									if (types._instanceof(path, files.Path)) {
 										var drive = types.get(options, 'drive', path.drive);
@@ -1260,13 +1259,6 @@ module.exports = {
 									
 									data.dontThrow = dontThrow;
 									data.allowTraverse = allowTraverse;
-
-									if (types.isString(dirRoot)) {
-										dirRoot = dirRoot.split(data.dirChar);
-									};
-									if (dirRoot) {
-										dirRoot = tools.trim(dirRoot, '');
-									};
 
 									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || path.file)) {
 										thisPath.push(thisFile);
@@ -1338,7 +1330,7 @@ module.exports = {
 											revision: 2,
 											params: null,
 											returns: 'Path',
-											description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
+											description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
 								}
 								//! END_REPLACE()
 								, function pushFile() {
@@ -1421,7 +1413,7 @@ module.exports = {
 								
 							relative: function relative(to, /*optional*/options) {
 								if (this.isRelative) {
-									throw new types.ParseError("'this' must be an absolute path.");
+									throw new types.ParseError("Path is not absolute.");
 								};
 
 								var type = types.getType(this);
@@ -1430,7 +1422,7 @@ module.exports = {
 									to = type.parse(to, options);
 								};
 								if (to.isRelative) {
-									throw new types.ParseError("'to' must be an absolute path.");
+									throw new types.ParseError("Target must be an absolute path.");
 								};
 								
 								if ((this.os === 'windows') && (to.os !== 'windows')) {
@@ -1438,7 +1430,7 @@ module.exports = {
 								};
 								
 								if ((this.os === 'windows') && ((this.host !== to.host) || (this.drive !== to.drive))) {
-									throw new types.ParseError("'this' and 'to' must be from the same network share or the same drive.");
+									throw new types.ParseError("Paths must be from the same network share or the same drive.");
 								};
 								
 								var os = tools.getOS(),
@@ -1642,7 +1634,9 @@ module.exports = {
 												result[arg.name] = arg.value;
 											};
 										};
+
 										return result;
+
 									}, types.nullObject())
 								}),
 
@@ -1706,13 +1700,17 @@ module.exports = {
 									if (types.isNothing(this.__args)) {
 										return '';
 									};
+
 									options = types.extend({}, this.options, options);
+
 									var result = '',
 										len = this.__args.length,
 										arg,
 										name, 
 										val;
+
 									var noEscapes = types.get(options, 'noEscapes', false);
+
 									for (var i = 0; i < len; i++) {
 										arg = this.__args[i];
 										name = arg.name;
@@ -1722,17 +1720,22 @@ module.exports = {
 												if (!noEscapes) {
 													name = _shared.Natives.windowEncodeURIComponent(name);
 												};
+
 												result += name;
 											};
+
 											if (!types.isNothing(val)) {
 												if (!noEscapes) {
 													val = _shared.Natives.windowEncodeURIComponent(val);
 												};
+
 												result += '=' + val;
 											};
+
 											result += '&';
 										};
 									};
+
 									return result.slice(0, result.length - 1);
 								}),
 							
@@ -1766,6 +1769,7 @@ module.exports = {
 									};
 									return false;
 								}),
+
 							get: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
@@ -1791,26 +1795,33 @@ module.exports = {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
+
 									var result = undefined,
 										isArray = false,
 										isNothing = true;
+
 									if (types.isNothing(this.__args)) {
 										return result;
 									};
+
 									for (var i = this.__args.length - 1; i >= 0; i--) {
 										var arg = this.__args[i];
 										if (arg.name === name) {
 											if (isArray) {
 												result.push(arg.value);
+
 											} else if (isNothing) {
 												result = arg.value;
 												isNothing = false;
+
 												if (singleValue) {
 													break;
 												};
+
 											} else {
 												result = [value, arg.value];
 												isArray = true;
+
 											};
 										};
 									};
@@ -1848,23 +1859,29 @@ module.exports = {
 										root.DD_ASSERT(types.isString(name) || types.isArray(name) || types.isJsObject(name), "Invalid name.");
 										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || types.isArray(value), "Invalid value.");
 									};
+
 									var isObj = types.isObject(name);
 									var noEscapes = types.get(this.options, 'noEscapes', false);
+
 									if (!types.isArray(name) && !isObj) {
 										name = [name];
 									};
+
 									if (types.isNothing(replace)) {
 										replace = true;
 									};
+
 									if (!types.isNothing(value) && !types.isArray(value)) {
 										value = [value];
 									};
+
 									var args;
 									if (types.isNothing(this.__args)) {
 										args = [];
 									} else {
 										args = types.clone(this.__args, 1);
 									};
+
 									tools.forEach(name, function(v, n) {
 										if (isObj) {
 											if (!types.isArray(v)) {
@@ -1890,6 +1907,7 @@ module.exports = {
 												v = [v];
 											};
 										};
+
 										if (replace) {
 											for (var i = 0; i < args.length;) {
 												var arg = args[i];
@@ -1908,6 +1926,7 @@ module.exports = {
 												i++;
 											};
 										};
+
 										for (var i = 0; i < v.length; i++) {
 											args.push({
 												name: n,
@@ -1915,10 +1934,13 @@ module.exports = {
 											});
 										};
 									});
+
 									if ((!args.length) && !this.__args) {
 										args = null;
 									};
+
 									var type = types.getType(this);
+
 									return new type(args, types.clone(this.options));
 								}),
 							
@@ -1942,10 +1964,13 @@ module.exports = {
 									if (root.DD_ASSERT) {
 										root.DD_ASSERT(types.isNothing(names) || types.isString(names) || types.isArray(names), "Invalid names.");
 									};
+
 									if (!types.isArray(names)) {
 										names = [names || ''];
 									};
+
 									var args = [];
+
 									if (!types.isNothing(this.__args)) {
 										for (var i = 0; i < this.__args.length; i++) {
 											var arg = this.__args[i],
@@ -1961,10 +1986,13 @@ module.exports = {
 											};
 										};
 									};
+
 									if (args.length === 0) {
 										args = null;
 									};
+
 									var type = types.getType(this);
+
 									return new type(args, types.clone(this.options));
 								}),
 							
@@ -1972,7 +2000,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											args: {
 												type: 'string,UrlArguments,object',
@@ -1990,37 +2018,46 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(args, /*optional*/options) {
-									if (root.DD_ASSERT) {
-										root.DD_ASSERT((types.isString(args)) || types._instanceof(args, files.UrlArguments) || (types.isJsObject(args)), "Invalid arguments.");
-									};
+									var type = types.getType(this);
+
 									options = types.extend({}, this.options, options);
+
 									var mode = types.get(options, 'argsMode', 'merge');
-									if (types.isString(args) || types.isJsObject(args)) {
-										var type = types.getType(this);
+
+									if (!types._instanceof(args, files.UrlArguments)) {
 										args = type.parse(args, options);
 										if (mode === 'replace') {
 											return args;
 										};
+										options = null;
 									};
+
 									if (mode === 'replace') {
-										args = args.__args && types.clone(args.__args);
+										args = args.__args;
+
 									} else if (mode === 'merge') {
 										var tmp = {},
 											ar1 = this.__args,
 											ar1Len = ar1 && ar1.length;
+
 										for (var i = 0; i < ar1Len; i++) {
 											var item = ar1[i];
 											item.order = i;
 											tmp[item.name] = item;
 										};
+
 										var ar2 = args.__args,
 											ar2Len = ar2 && ar2.length;
+
 										for (var i = 0; i < ar2Len; i++) {
 											var item = ar2[i];
 											item.order = i + ar1Len;
 											tmp[item.name] = item;
 										};
-										args = types.values(tmp).sort(function(item1, item2) {
+
+										args = types.values(tmp);
+
+										args.sort(function(item1, item2) {
 											if (item1.order < item2.order) {
 												return -1;
 											} else if (item1.order > item2.order) {
@@ -2029,13 +2066,16 @@ module.exports = {
 												return 0;
 											};
 										});
+
 										if (!args.length) {
 											args = null;
 										};
+
 									} else { // if (mode === 'append')
-										args = (this.__args || args.__args) && types.append([], this.__args, args.__args);
+										args = types.append([], this.__args, args.__args);
+
 									};
-									var type = types.getType(this);
+
 									return new type(args, options);						
 								}),
 						}
@@ -2735,7 +2775,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 4,
+										revision: 5,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2753,16 +2793,15 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(url, /*optional*/options) {
-									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, [files.Url, files.Path]), "Invalid url.");
-									
 									var type = types.getType(this);
-
-									if (types.isString(url)) {
-										url = type.parse(url, options);
-									};
 
 									var dontThrow = types.get(options, 'dontThrow', false);
 									
+									if (!types._instanceof(url, [files.Url, files.Path])) {
+										url = type.parse(url, options);
+										options = null;
+									};
+
 									var data = types.fill(__Internal__.urlAllKeys, {}, this);
 
 									var thisPath = tools.trim(this.path, '');
@@ -2825,7 +2864,9 @@ module.exports = {
 									} else {
 										data.path = types.append([], pathRoot, path);
 									};
+
 									data.file = types.get(options, 'file', url.file);
+
 									data.extension = types.get(options, 'extension', url.extension);
 									
 									return type.parse(null, data);
