@@ -316,14 +316,18 @@ module.exports = {
 
 				//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
 				
+				__Internal__.pathData = {
+						drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect 
+						host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
+						root: types.READ_ONLY( null ),   // null = auto-detect
+						path: types.READ_ONLY( null ),
+						file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
+					};
+				__Internal__.pathDataKeys = types.keys(__Internal__.pathData);
+
 				__Internal__.pathOptions = {
 						os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
 						dirChar: types.READ_ONLY( '/' ),
-						root: types.READ_ONLY( null ),   // null = auto-detect
-						host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
-						drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect 
-						path: types.READ_ONLY( null ),
-						file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
 						extension: types.READ_ONLY( null ), // when set, changes 'file'
 						quote: types.READ_ONLY( null ),  // null = auto-detect
 						isRelative: types.READ_ONLY( false ),
@@ -333,6 +337,8 @@ module.exports = {
 						allowTraverse: types.READ_ONLY( false ),
 					};
 				__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
+
+				__Internal__.pathAllKeys = types.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
 				
 				files.ADD('Path', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -386,7 +392,7 @@ module.exports = {
 										pathWasPath = false;
 									
 									if (types._instanceof(path, files.Path)) {
-										options = types.fill(__Internal__.pathOptionsKeys, {}, path, options);
+										options = types.fill(__Internal__.pathAllKeys, {}, path, options);
 										path = options.path;
 										pathWasPath = true;
 										
@@ -403,14 +409,14 @@ module.exports = {
 										var pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
 										
 										if (path.isWindows) {
-											options = types.fill(__Internal__.pathOptionsKeys, {
+											options = types.fill(__Internal__.pathAllKeys, {
 												os: 'windows',
 												drive: pathTmp.shift()[0],
 												file: path.file,
 												extension: path.extension,
 											}, options);
 										} else {
-											options = types.fill(__Internal__.pathOptionsKeys, {
+											options = types.fill(__Internal__.pathAllKeys, {
 												os: 'linux',
 												file: path.file,
 												extension: path.extension,
@@ -1016,7 +1022,7 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var attrs = types.fill(__Internal__.pathOptionsKeys, {}, options);
+								var attrs = types.fill(__Internal__.pathAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
@@ -1041,9 +1047,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									var newOptions = types.fill(__Internal__.pathOptionsKeys, {}, this);
+									var newOptions = types.fill(__Internal__.pathAllKeys, {}, this);
 									delete newOptions.extension;
-									newOptions = types.fill(__Internal__.pathOptionsKeys, newOptions, options);
+									newOptions = types.fill(__Internal__.pathAllKeys, newOptions, options);
 									var type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
@@ -1197,7 +1203,7 @@ module.exports = {
 										options = null;
 									};
 									
-									var data = types.fill(__Internal__.pathOptionsKeys, {}, this);
+									var data = types.fill(__Internal__.pathAllKeys, {}, this);
 
 									var thisRoot = tools.trim(this.root || [], '');
 									
@@ -1320,7 +1326,7 @@ module.exports = {
 										path = this.path.slice(0, i + 1);
 									};
 									var type = types.getType(this);
-									return type.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {path: path}));
+									return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -1336,7 +1342,7 @@ module.exports = {
 								, function pushFile() {
 									var type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.pathOptionsKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
 										return type.parse(this);
 									};
@@ -1470,6 +1476,49 @@ module.exports = {
 								
 								return type.parse(pathAr, types.fill(__Internal__.pathOptions, {}, this, {isRelative: true}));
 							},
+
+							toDataObject: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											options: {
+												type: 'object',
+												optional: true,
+												description: "Options.",
+											},
+										},
+										returns: 'object',
+										description: "Converts the Path to a normal Javascript object.",
+								}
+								//! END_REPLACE()
+								, function toDataObject(/*optional*/options) {
+									const obj = types.nullObject();
+
+									types.fill(__Internal__.pathDataKeys, obj, this, options);
+
+									const type = types.getType(this);
+
+									obj.toPath = function toPath(/*optional*/options) {
+										if (options) {
+											return type.parse(null, types.extend({}, this, options));
+										} else {
+											return type.parse(null, this);
+										};
+									};
+
+									obj.toString = function toString(/*optional*/options) {
+										return this.toPath(options).toString()
+									};
+
+									obj.toApiString = function toString(/*optional*/options) {
+										return this.toPath(options).toApiString()
+									};
+
+									return obj;
+								}),
+
 						}, __Internal__.pathOptions)
 					)));
 				
@@ -1616,7 +1665,7 @@ module.exports = {
 										author: "Claude Petit",
 										revision: 0,
 										params: null,
-										returns: 'array',
+										returns: 'object',
 										description: "INTERNAL",
 								}
 								//! END_REPLACE()
@@ -1646,7 +1695,7 @@ module.exports = {
 										author: "Claude Petit",
 										revision: 0,
 										params: null,
-										returns: 'array',
+										returns: 'object',
 										description: "Converts to a normal Javascript object.",
 								}
 								//! END_REPLACE()
@@ -3060,7 +3109,7 @@ module.exports = {
 												description: "Options.",
 											},
 										},
-										returns: 'UrlArguments',
+										returns: 'object',
 										description: "Converts the URL to a normal Javascript object.",
 								}
 								//! END_REPLACE()
