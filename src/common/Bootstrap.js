@@ -67,7 +67,7 @@
 		
 		// FUTURE: const
 		var __Internal__ = {
-			evals: getEvals(),
+			evals: getEvals(global.eval),
 
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
 			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
@@ -7016,7 +7016,7 @@
 	//! END_IF()
 ,
 	// getEvals
-	(function() {
+	(function(eval) {
 		// WARNING: It is NOT to be used with arbitrary expressions.
 		// WARNING: Do not declare any variable and parameter inside these functions.
 		return {
