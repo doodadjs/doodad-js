@@ -105,6 +105,9 @@ module.exports = {
 					symbolStack: types.getSymbol('__STACK__'),
 					symbolSorted: types.getSymbol('__SORTED__'),
 					
+					// Methods (Dispatches)
+					symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
+
 					// Callers
 					symbolOk: types.getSymbol('__OK__'),
 					symbolFunction: types.getSymbol('__FUNCTION__'),
@@ -2206,7 +2209,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2230,6 +2233,7 @@ module.exports = {
 							//! END_REPLACE()
 							, function(attr, attribute, callers) {
 								var extender = this;
+
 								var _dispatch = function dispatch(/*paramarray*/) {
 									var type = types.getType(this),
 										forType = types.isType(this),
@@ -2254,10 +2258,22 @@ module.exports = {
 										};
 									};
 									
-									var oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
+									var modifiers = _dispatch[__Internal__.symbolModifiers],
+										notReentrant = extender.notReentrant || (attr === 'toString'),
+										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async), // NOTE: "toString" can't be async
+										asyncNotReentrant = async && extender.notReentrant,
+										oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
+
+									if (asyncNotReentrant) {
+										if (!oldDispatchCalled) {
+											// NOTE: We create a WeakMap just when needed.
+											_dispatch[__Internal__.symbolCalled] = oldDispatchCalled = new types.WeakMap();
+										};
+										oldDispatchCalled = !!oldDispatchCalled.get(this);
+									}; 
 
 									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-									if ((extender.notReentrant || (attr === 'toString')) && oldDispatchCalled) {
+									if (notReentrant && oldDispatchCalled) {
 										if (attr === 'toString') {
 											return "Error: 'toString' is not reentrant.";
 										} else {
@@ -2265,17 +2281,15 @@ module.exports = {
 										};
 									};
 									
-									var modifiers = _dispatch[__Internal__.symbolModifiers];
-
 									// Not implemented methods
 									if (modifiers & doodad.MethodModifiers.NotImplemented) {
 										throw new types.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 									};
 									
 									// Obsolete methods
-									if (modifiers & doodad.MethodModifiers.Obsolete) {
+									if ((modifiers & doodad.MethodModifiers.Obsolete) && !_dispatch[__Internal__.symbolObsoleteWarned]) {
 										tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS, attribute[__Internal__.symbolUsageMessage] || '']);
-										_dispatch[__Internal__.symbolModifiers] = (modifiers ^ doodad.MethodModifiers.Obsolete);
+										_dispatch[__Internal__.symbolObsoleteWarned] = true;
 									};
 
 									if (root.getOptions().debug || __options__.enforcePolicies) {
@@ -2299,18 +2313,18 @@ module.exports = {
 									};
 
 									var validateResult = function validateResult(result) {
-										if (modifiers & doodad.MethodModifiers.Async) {
+										if (async) {
 											// Asynchronous methods must always return a Promise
 											var Promise = types.getPromise();
 											result = Promise.resolve(result);
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												var validator = attribute[__Internal__.symbolReturns];
 												if (validator) {
-													result = result.then(function(result) {
-														if (!validator.call(this, result)) {
+													result = result.then(function(val) {
+														if (!validator.call(this, val)) {
 															throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 														};
-														return result;
+														return val;
 													});
 												};
 											};
@@ -2371,7 +2385,12 @@ module.exports = {
 									var retVal = undefined;
 
 									try {
-										_dispatch[__Internal__.symbolCalled] = true;
+										if (asyncNotReentrant) {
+											_dispatch[__Internal__.symbolCalled].set(this, true);
+										} else {
+											_dispatch[__Internal__.symbolCalled] = true;
+										};
+
 										caller[__Internal__.symbolCalled] = false;
 										
 										retVal = validateResult(caller.apply(this, arguments));
@@ -2384,7 +2403,7 @@ module.exports = {
 											} catch(o) {
 												retVal = "Internal error";
 											};
-										} else if (modifiers & doodad.MethodModifiers.Async) {
+										} else if (async) {
 											// Asynchronous methods must always return a Promise
 											var Promise = types.getPromise();
 											retVal = Promise.reject(ex);
@@ -2393,16 +2412,16 @@ module.exports = {
 										};
 										
 									} finally {
-										if (extender.notReentrant && (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async)) {
+										if (asyncNotReentrant) {
 											retVal = retVal.nodeify(function resetCalled(err, result) {
-												_dispatch[__Internal__.symbolCalled] = oldDispatchCalled;
+												_dispatch[__Internal__.symbolCalled].set(this, oldDispatchCalled);
 
 												if (err) {
 													throw err;
 												} else {
 													return result;
 												};
-											});
+											}, this);
 										} else {
 											_dispatch[__Internal__.symbolCalled] = oldDispatchCalled;
 										};
