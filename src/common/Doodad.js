@@ -2048,7 +2048,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2096,8 +2096,14 @@ module.exports = {
 										var type = types.getType(this);
 										
 										var result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]),
-											currentDispatch = result[__Internal__.symbolCurrentDispatch],
-											modifiers = currentDispatch[__Internal__.symbolModifiers],
+											currentDispatch = result[__Internal__.symbolCurrentDispatch];
+
+										// TODO: Find a better way because of RENAME_OVERRIDE and RENAME_REPLACE
+										//if (!currentDispatch || (currentDispatch[_shared.NameSymbol] !== attr)) {
+										//	throw new types.Error("Current dispatch and caller don't match together.");
+										//};
+
+										var modifiers = currentDispatch[__Internal__.symbolModifiers],
 											callers = currentDispatch[__Internal__.symbolCallers];
 
 										currentCaller = result[__Internal__.symbolCurrentCallerIndex] + 1;
@@ -2813,6 +2819,7 @@ module.exports = {
 										i++;
 									};
 								};
+
 								for (var i = 0; i < callers.length; i++) {
 									var callerI = callers[i],
 										position = callerI[__Internal__.symbolPosition];
@@ -5839,7 +5846,7 @@ module.exports = {
 							};
 
 							this.overrideSuper();
-							
+
 							return _shared.getAttribute(proto, name).bind(this);
 						}))))))));
 				
@@ -5859,7 +5866,7 @@ module.exports = {
 								this._super[__Internal__.symbolCalled] = true;
 							};
 						}))))));
-
+/* TODO: Test and debug, don't forget ASYNC functions
 				__Internal__.superAsync = root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -5887,7 +5894,7 @@ module.exports = {
 								
 								var _superApply = _super.apply.bind(_super);
 
-								return function superAsync(/*paramarray*/) {
+								return function superAsync(/*paramarray* /) {
 									if (this._implements(mixIns.Creatable)) {
 										var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
 										var attr = dispatch[_shared.NameSymbol];
@@ -5920,7 +5927,7 @@ module.exports = {
 								return function() {};
 							};
 						}))))));
-
+*/
 				__Internal__.classProto = {
 					$TYPE_NAME: "Class",
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
@@ -6200,7 +6207,7 @@ module.exports = {
 
 					overrideSuper: __Internal__.overrideSuper,
 					_superFrom: __Internal__._superFrom,
-					superAsync: __Internal__.superAsync,
+//TODO: Test and debug					superAsync: __Internal__.superAsync,
 				
 					_implements: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
