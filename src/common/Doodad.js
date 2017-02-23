@@ -2200,7 +2200,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2248,8 +2248,10 @@ module.exports = {
 										};
 									};
 									
+									var oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
+
 									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-									if ((extender.notReentrant || (attr === 'toString')) && oldDispatch && (_dispatch === oldDispatch)) {
+									if ((extender.notReentrant || (attr === 'toString')) && oldDispatchCalled) {
 										if (attr === 'toString') {
 											return "Error: 'toString' is not reentrant.";
 										} else {
@@ -2290,15 +2292,15 @@ module.exports = {
 										};
 									};
 
-									var validateRetVal = function validateRetVal(retval) {
+									var validateResult = function validateResult(result) {
 										if (modifiers & doodad.MethodModifiers.Async) {
 											// Asynchronous methods must always return a Promise
 											var Promise = types.getPromise();
-											retVal = Promise.resolve(retVal);
+											result = Promise.resolve(result);
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												var validator = attribute[__Internal__.symbolReturns];
 												if (validator) {
-													retVal = retVal.then(function(result) {
+													result = result.then(function(result) {
 														if (!validator.call(this, result)) {
 															throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 														};
@@ -2310,22 +2312,22 @@ module.exports = {
 											if (root.getOptions().debug || __options__.enforcePolicies) {
 												var validator = attribute[__Internal__.symbolReturns];
 												// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-												if (validator && !validator.call(this, retVal)) {
+												if (validator && !validator.call(this, result)) {
 													if (attr === 'toString') {
-														retVal = tools.format("Invalid returned value from method '~0~'.", [attr]);
+														result = tools.format("Invalid returned value from method '~0~'.", [attr]);
 													} else {
 														throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 													};
 												};
 											};
 										};
-										return retVal;
+										return result;
 									};
 
 									var caller = _dispatch[__Internal__.symbolCallers][0];
 									if (!caller) {
 										// No caller
-										return validateRetVal(undefined);
+										return validateResult(undefined);
 									};
 									
 									var oldCallerCalled = caller[__Internal__.symbolCalled];
@@ -2360,33 +2362,48 @@ module.exports = {
 									
 									__Internal__.invokedClass = type;
 									
+									var retVal = undefined;
+
 									try {
+										_dispatch[__Internal__.symbolCalled] = true;
 										caller[__Internal__.symbolCalled] = false;
 										
-										var retVal = caller.apply(this, arguments);
+										retVal = validateResult(caller.apply(this, arguments));
 
-										return validateRetVal(retVal);
-										
 									} catch(ex) {
 										if (attr === 'toString') {
 											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 											try {
-												return "Error: " + ex.toString();
+												retVal = "Error: " + types.toString(ex);
 											} catch(o) {
-												return "Internal error";
+												retVal = "Internal error";
 											};
 										} else if (modifiers & doodad.MethodModifiers.Async) {
 											// Asynchronous methods must always return a Promise
 											var Promise = types.getPromise();
-											return Promise.reject(ex);
+											retVal = Promise.reject(ex);
 										} else {
 											throw ex;
 										};
 										
 									} finally {
+										if (extender.notReentrant && (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async)) {
+											retVal = retVal.nodeify(function resetCalled(err, result) {
+												_dispatch[__Internal__.symbolCalled] = oldDispatchCalled;
+
+												if (err) {
+													throw err;
+												} else {
+													return result;
+												};
+											});
+										} else {
+											_dispatch[__Internal__.symbolCalled] = oldDispatchCalled;
+										};
+
 										__Internal__.invokedClass = oldInvokedClass;
 										caller[__Internal__.symbolCalled] = oldCallerCalled;
-										
+
 										var values = {};										
 										values[__Internal__.symbolCurrentDispatch] = oldDispatch;
 										values[__Internal__.symbolCurrentCallerIndex] = oldCaller;
@@ -2399,6 +2416,8 @@ module.exports = {
 											_shared.setAttributes(host, values);
 										};
 									};
+
+									return retVal;
 								};
 
 								var values = {
@@ -2407,6 +2426,8 @@ module.exports = {
 									bind: _dispatch.bind,
 								};
 								_shared.setAttributes(_dispatch, values, {});
+
+								_dispatch[__Internal__.symbolCalled] = false;
 
 								return _dispatch;
 							}),
