@@ -1493,7 +1493,7 @@
 
 		// NOTE: It removes native functions from the stack
 		// <FUTURE> thread level
-		__Internal__.parseStackRegEx = /( at )?([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|([A-Z][:][\\][^\\]+[\\][^:]+)|([\/][^\/]+[\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
+		__Internal__.parseStackRegEx = /( at )?([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|(([A-Z][:]|[\\])[\\][^:]+)|([\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
 
 		__Internal__.ADD_TOOL('parseStack', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1525,25 +1525,19 @@
 					return null;
 				};
 				
-				// Google Chrome 39: "Error\n    at Object.Doodad.Tools.getCurrentScript (file:///F:/Doodad/test.html:38:72)\n    at file:///F:/Doodad/debug.js:17:25"
-				// Firefox 34: "Doodad.Tools.getCurrentScript<@file:///F:/Doodad/test.html:38:72@file:///F:/Doodad/debug.js:17:18"
-				// IE 11: "Error\n   at Doodad.Tools.getCurrentScript (file:///F:/Doodad/test.html:38:66)\n   at Global code (file:///F:/Doodad/debug.js:7:1)"
-				// Opera 26: "Error: file:///F:/Doodad/debug.js\n    at Object.Doodad.Tools.getCurrentScript (file:///F:/Doodad/test.html:37:78)\n    at file:///F:/Doodad/debug.js:33:21"
-				// Safari 5 (win): undefined
-				
 				// NOTE: Internet Explorer 11 doesn't return more than 10 call levels.
 				
-				var rawFunctionName,
-					functionName, 
-					pos,
-					calls = [];
-				//stack = 'Error\n    at D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:83:122\n    at D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:83:160\n    at D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1866:18\n    at Function._try (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1864:15)\n    at Function._try [as try] (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Types.js:1933:28)\n    at Object.locate (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:81:28)\n    at Namespace.loadTypes (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:153:42)\n    at ModuleEntry.init [as objectInit] (D:\\Doodad\\node_modules\\doodad-js-mime\\src\\common\\Tools_Mime.js:184:18)\n    at Object.initNamespace (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:567:28)\n    at loopInitModules (D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:767:33)\n    at D:\\Doodad\\node_modules\\doodad-js\\src\\common\\Namespaces.js:773:17'
 				__Internal__.parseStackRegEx.lastIndex = 0;
 				var call = __Internal__.parseStackRegEx.exec(stack);
 				
 				if (!call) {
 					return null;
 				};
+				
+				var rawFunctionName,
+					functionName, 
+					pos,
+					calls = [];
 				
 				do {
 					functionName = call[2] || '';
@@ -1582,18 +1576,20 @@
 						isSystemPath = false;
 					if (!path) {
 						// File system path
-						isSystemPath = true;
 						path = call[6];
 						if (!path) {
-							path = call[7];
+							path = call[8];
+						};
+						if (path) {
+							isSystemPath = true;
 						};
 					};
 					calls.push({
 						rawFunctionName: rawFunctionName,
 						functionName: ((functionName === "eval code") ? '' : functionName),
 						path: (path || ''),
-						lineNumber: types.toInteger(call[9] || call[12] || -1),
-						columnNumber: types.toInteger(call[14] || -1),
+						lineNumber: types.toInteger(call[10] || call[13] || -1),
+						columnNumber: types.toInteger(call[15] || -1),
 						isSystemPath: isSystemPath,
 					});
 					
