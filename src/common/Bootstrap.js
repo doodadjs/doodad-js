@@ -67,8 +67,6 @@
 		
 		// FUTURE: const
 		var __Internal__ = {
-			evals: getEvals(global.eval),
-
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
 			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
 
@@ -77,9 +75,6 @@
 			
 			DD_ASSERT: null,
 		};
-
-		getEvals = null; // free memory
-
 
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
@@ -137,7 +132,7 @@
 		__Internal__.classesNotCallable = true;
 		(function() {
 			try {
-				var cls = __Internal__.evals.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
+				var cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
 				__Internal__.hasClasses = (_shared.Natives.functionToStringCall(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
 				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
 				//if (__Internal__.hasClasses) {
@@ -263,6 +258,9 @@
 			windowFunction: global.Function,
 			windowObject: global.Object,
 			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+
+			// "eval"
+			windowEval: global.eval,
 
 			// "hasInherited"
 			objectPrototype: global.Object.prototype,
@@ -419,6 +417,9 @@
 		//===================================
 		
 		// WARNING: NOT to be used with arbitrary expressions.
+
+		__Internal__.evals = getEvals(_shared.Natives.windowEval);
+		getEvals = null; // free memory
 		
 		__Internal__.ADD('eval', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
