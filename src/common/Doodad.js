@@ -131,6 +131,8 @@ module.exports = {
 					symbolDestroyed: types.getSymbol('__destroyed'),
 
 					ANONYMOUS: '<anonymous>',
+
+					notReentrantMap: new types.WeakMap(),
 				};
 
 				types.complete(_shared.Natives, {
@@ -2209,7 +2211,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 5,
+									revision: 6,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2261,16 +2263,21 @@ module.exports = {
 									var modifiers = _dispatch[__Internal__.symbolModifiers],
 										notReentrant = extender.notReentrant || (attr === 'toString'),
 										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async), // NOTE: "toString" can't be async
-										asyncNotReentrant = async && extender.notReentrant,
-										oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
+										asyncNotReentrant = async && extender.notReentrant;
 
+									var oldDispatchCalled,
+										notReentrantMap;
 									if (asyncNotReentrant) {
-										if (!oldDispatchCalled) {
-											// NOTE: We create a WeakMap just when needed.
-											_dispatch[__Internal__.symbolCalled] = oldDispatchCalled = new types.WeakMap();
+										notReentrantMap = __Internal__.notReentrantMap.get(this);
+										if (!notReentrantMap) {
+											// NOTE: We create a Map just when needed.
+											notReentrantMap = new types.Map();
+											__Internal__.notReentrantMap.set(this, notReentrantMap);
 										};
-										oldDispatchCalled = !!oldDispatchCalled.get(this);
-									}; 
+										oldDispatchCalled = !!notReentrantMap.get(attr);
+									} else {
+										oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
+									};
 
 									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 									if (notReentrant && oldDispatchCalled) {
@@ -2386,7 +2393,7 @@ module.exports = {
 
 									try {
 										if (asyncNotReentrant) {
-											_dispatch[__Internal__.symbolCalled].set(this, true);
+											notReentrantMap.set(attr, true);
 										} else {
 											_dispatch[__Internal__.symbolCalled] = true;
 										};
@@ -2414,7 +2421,7 @@ module.exports = {
 									} finally {
 										if (asyncNotReentrant) {
 											retVal = retVal.nodeify(function resetCalled(err, result) {
-												_dispatch[__Internal__.symbolCalled].set(this, oldDispatchCalled);
+												notReentrantMap.set(attr, oldDispatchCalled);
 
 												if (err) {
 													throw err;
@@ -5825,7 +5832,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										cls: {
 											type: 'Class',
@@ -5838,7 +5845,7 @@ module.exports = {
 						}
 						//! END_REPLACE()
 						, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-						function _superFrom(cls) {
+						function superFrom(cls) {
 							var dispatch = this && this[__Internal__.symbolCurrentDispatch];
 
 							if (!dispatch) {
@@ -5864,9 +5871,43 @@ module.exports = {
 								throw new types.TypeError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
 							};
 
-							this.overrideSuper();
+							var modifiers = dispatch[__Internal__.symbolModifiers],
+								async = (name !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
 
-							return _shared.getAttribute(proto, name).bind(this);
+							var notReentrantMap = null;
+							if (async) {
+								notReentrantMap = __Internal__.notReentrantMap.get(this);
+							};
+
+							var newDispatch = _shared.getAttribute(proto, name),
+								self = this; // NOTE: That prevents to do "return _superFrom.bind(this)"
+
+							return function _superFrom(/*paramarray*/) {
+								// NOTE: We now override super only when "_superFrom" is called.
+								// NOTE: Will throw if "_superFrom" called from the outside, that's what we expect.
+								self.overrideSuper();
+
+								var oldCalled = false;
+								if (notReentrantMap) {
+									oldCalled = notReentrantMap.get(name);
+									if (oldCalled) {
+										notReentrantMap.set(name, false);
+									};
+								};
+
+								try {
+									return newDispatch.apply(self, arguments);
+
+								} catch(ex) {
+									throw ex;
+
+								} finally {
+									if (oldCalled) {
+										notReentrantMap.set(name, true);
+									};
+
+								};
+							};
 						}))))))));
 				
 				__Internal__.overrideSuper = root.DD_DOC(
