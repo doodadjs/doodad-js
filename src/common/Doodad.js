@@ -2211,7 +2211,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 6,
+									revision: 7,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2262,32 +2262,27 @@ module.exports = {
 									
 									var modifiers = _dispatch[__Internal__.symbolModifiers],
 										notReentrant = extender.notReentrant || (attr === 'toString'),
-										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async), // NOTE: "toString" can't be async
-										asyncNotReentrant = async && extender.notReentrant;
+										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
 
-									var oldDispatchCalled,
-										notReentrantMap;
-									if (asyncNotReentrant) {
+									var notReentrantMap = null;
+									if (notReentrant) {
 										notReentrantMap = __Internal__.notReentrantMap.get(this);
 										if (!notReentrantMap) {
 											// NOTE: We create a Map just when needed.
 											notReentrantMap = new types.Map();
 											__Internal__.notReentrantMap.set(this, notReentrantMap);
 										};
-										oldDispatchCalled = !!notReentrantMap.get(attr);
-									} else {
-										oldDispatchCalled = _dispatch[__Internal__.symbolCalled];
-									};
 
-									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-									if (notReentrant && oldDispatchCalled) {
-										if (attr === 'toString') {
-											return "Error: 'toString' is not reentrant.";
-										} else {
-											throw new types.Error("'~0~' is not reentrant.", [attr]);
+										if (notReentrantMap.get(attr)) {
+											if (attr === 'toString') {
+												// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+												return "Error: 'toString' is not reentrant.";
+											} else {
+												throw new types.Error("'~0~' is not reentrant.", [attr]);
+											};
 										};
 									};
-									
+
 									// Not implemented methods
 									if (modifiers & doodad.MethodModifiers.NotImplemented) {
 										throw new types.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
@@ -2392,10 +2387,8 @@ module.exports = {
 									var retVal = undefined;
 
 									try {
-										if (asyncNotReentrant) {
+										if (notReentrant) {
 											notReentrantMap.set(attr, true);
-										} else {
-											_dispatch[__Internal__.symbolCalled] = true;
 										};
 
 										caller[__Internal__.symbolCalled] = false;
@@ -2419,18 +2412,20 @@ module.exports = {
 										};
 										
 									} finally {
-										if (asyncNotReentrant) {
-											retVal = retVal.nodeify(function resetCalled(err, result) {
-												notReentrantMap.set(attr, oldDispatchCalled);
+										if (notReentrant) {
+											if (async) {
+												retVal = retVal.nodeify(function resetCalled(err, result) {
+													notReentrantMap.set(attr, false);
 
-												if (err) {
-													throw err;
-												} else {
-													return result;
-												};
-											}, this);
-										} else {
-											_dispatch[__Internal__.symbolCalled] = oldDispatchCalled;
+													if (err) {
+														throw err;
+													} else {
+														return result;
+													};
+												}, this);
+											} else {
+												notReentrantMap.set(attr, false);
+											};
 										};
 
 										__Internal__.invokedClass = oldInvokedClass;
@@ -5832,7 +5827,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										cls: {
 											type: 'Class',
@@ -5871,15 +5866,8 @@ module.exports = {
 								throw new types.TypeError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
 							};
 
-							var modifiers = dispatch[__Internal__.symbolModifiers],
-								async = (name !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
-
-							var notReentrantMap = null;
-							if (async) {
-								notReentrantMap = __Internal__.notReentrantMap.get(this);
-							};
-
 							var newDispatch = _shared.getAttribute(proto, name),
+								notReentrantMap = __Internal__.notReentrantMap.get(this),
 								self = this; // NOTE: That prevents to do "return _superFrom.bind(this)"
 
 							return function _superFrom(/*paramarray*/) {
@@ -5887,12 +5875,9 @@ module.exports = {
 								// NOTE: Will throw if "_superFrom" called from the outside, that's what we expect.
 								self.overrideSuper();
 
-								var oldCalled = false;
-								if (notReentrantMap) {
-									oldCalled = notReentrantMap.get(name);
-									if (oldCalled) {
-										notReentrantMap.set(name, false);
-									};
+								var oldCalled = notReentrantMap && notReentrantMap.get(name);
+								if (oldCalled) {
+									notReentrantMap.set(name, false);
 								};
 
 								try {
