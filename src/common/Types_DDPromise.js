@@ -156,7 +156,7 @@ module.exports = {
 					// Bluebird "try" polyfill
 					if (!types.isFunction(Promise['try'])) {
 						Promise['try'] = function _try(callback) {
-							return new this(function(resolve, reject) {
+							return new this(function _try(resolve, reject) {
 								try {
 									resolve(callback());
 								} catch(ex) {
