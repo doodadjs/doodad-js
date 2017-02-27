@@ -2327,7 +2327,7 @@ module.exports = {
 															throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 														};
 														return val;
-													});
+													}, null, this);
 												};
 											};
 										} else {
@@ -4035,13 +4035,13 @@ module.exports = {
 						cancellable = (types.isNothing(cancellable) ? true : cancellable);
 					};
 					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
-					return doodad.PROTECTED(function handleEvent(/*optional*/ev) {
-						root.DD_ASSERT && root.DD_ASSERT(types.isNothing(ev) || types._instanceof(ev, eventType), "Invalid event object.");
-						
-						if (types.isNothing(ev)) {
+					return doodad.PROTECTED(doodad.CALL_FIRST(function handleEvent(/*optional*/ev) {
+						if (!errorEvent && types.isNothing(ev)) {
 							ev = new eventType();
+						} else if (!types._instanceof(ev, eventType)) {
+							throw new types.Error("Invalid or missing event object.");
 						};
-
+						
 						var cancelled = false,
 							type = types.getType(this),
 							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
@@ -4057,8 +4057,7 @@ module.exports = {
 							
 							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
-							var stackClone = types.clone(stack),
-								ok = false;
+							var stackClone = types.clone(stack);
 
 							for (var i = 0; i < stackClone.length; i++) {
 								var data = stackClone[i];
@@ -4077,17 +4076,19 @@ module.exports = {
 									_shared.setAttribute(ev, 'handlerData', data[3]);
 
 									retval = data[5].call(obj, ev);
-
-									ok = true;
 								};
 
 								if ((retval === false) && cancellable) {
 									ev = new doodad.CancelEvent({
 										event: ev,
 									});
+
 									_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
+
 									this.onEventCancelled(ev);
+
 									cancelled = true;
+
 									break;
 								};
 							};
@@ -4095,27 +4096,31 @@ module.exports = {
 							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
 								return (data[4] <= 0);
 							});
-
-							if (errorEvent && ok) {
-								ev.error.trapped = true;
-							};
 						};
 						
-						if (errorEvent && !ev.error.trapped) {
-							tools.catchAndExit(ev.error);
-							return;
+						if (cancelled) {
+							this.overrideSuper();
+
+						} else {
+							cancelled = !!this._super(ev) && cancellable;
+
+							if (errorEvent && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
+								tools.catchAndExit(ev.error);
+							};
 						};
 
 						return cancelled;
-					});
+					}));
 				};
 				
 				__Internal__.RAW_EVENT = function RAW_EVENT() {
-					return doodad.PROTECTED(function handleEvent(/*paramarray*/) {
+					return doodad.PROTECTED(doodad.CALL_FIRST(function handleEvent(/*paramarray*/) {
 						var type = types.getType(this),
 							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
 							stack = dispatch[__Internal__.symbolStack];
 						
+						var emitted = false;
+
 						if (stack) {
 							if (!dispatch[__Internal__.symbolSorted]) {
 								stack.sort(function(value1, value2) {
@@ -4140,13 +4145,14 @@ module.exports = {
 								};
 							};
 							
-							return !!stack.length; // event emitted if stack not empty
-							
-						} else {
-							return false; // no event emitted
+							emitted = !!stack.length; // event emitted if stack not empty
 							
 						};
-					});
+
+						emitted = !!this._super.apply(this, arguments) || emitted;
+
+						return emitted;
+					}));
 				};
 				
 				doodad.ADD('EVENT', root.DD_DOC(
