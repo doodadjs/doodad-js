@@ -404,9 +404,10 @@ module.exports = {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
-					if (!__Internal__.catchAndExitCalled) {
-						__Internal__.catchAndExitCalled = true;
-						
+					if (__Internal__.catchAndExitCalled) {
+						__Internal__.catchAndExitCalled = false;
+
+					} else {
 						var exitCode = 1; // 1 = General error
 
 						try {
@@ -422,7 +423,7 @@ module.exports = {
 						};
 						
 						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: exitCode}})); // sync
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}})); // sync
 						} catch(o) {
 							if (root.getOptions().debug) {
 								debugger;
@@ -432,15 +433,16 @@ module.exports = {
 						try {
 							global.console.log("Page exited with code : " + types.toString(exitCode));
 						} catch(o) {
+							if (root.getOptions().debug) {
+								debugger;
+							};
 						};
 						
 						if (!__Internal__.setCurrentLocationPending) {
-							var reload = false;
-							var url = _shared.Natives.windowLocation.href;
-							
 							try {
-								url = files.Url.parse(url);
-								
+								var reload = false;
+								var url = files.Url.parse(_shared.Natives.windowLocation.href);
+							
 								// TODO: Better user message, with translation
 								_shared.Natives.windowDocument.open('text/plain', false);
 								if (exitCode !== 0) {
@@ -452,25 +454,39 @@ module.exports = {
 									};
 								};
 								_shared.Natives.windowDocument.close();
+							
+								if (reload) {
+									url = url.setArgs({crashReport: true})
+									tools.setCurrentLocation(url, true);
+								};
+
+								__Internal__.catchAndExitCalled = true;
+
 							} catch(o) {
 								if (root.getOptions().debug) {
 									debugger;
 								};
 							};
-							
-							if (reload) {
-								try {
-									url = url.setArgs({crashReport: true})
-									tools.setCurrentLocation(url, true);
-								} catch(o) {
-									if (root.getOptions().debug) {
-										debugger;
-									};
-								};
-							};
 						};
 					};
 					
+					if (!__Internal__.catchAndExitCalled) {
+						__Internal__.catchAndExitCalled = true;
+
+						// TODO: Better handle that case
+						if (root.getOptions().debug) {
+							debugger;
+						};
+
+						try {
+							// Try to blank the page.
+							_shared.Natives.windowDocument.open('text/plain', false);
+							_shared.Natives.windowDocument.write("");
+							_shared.Natives.windowDocument.close();
+						} catch(o) {
+						};
+					};
+
 					throw err;
 				});
 				

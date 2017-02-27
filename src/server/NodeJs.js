@@ -393,7 +393,15 @@ module.exports = {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
-					if (!__Internal__.catchAndExitCalled) {
+					if (__Internal__.catchAndExitCalled) {
+						// Process didn't exit before another error happens !!! Something is wrong.
+						if (root.getOptions().debug) {
+							debugger;
+						};
+
+						_shared.Natives.processExit(_shared.Natives.process.exitCode || 1);
+
+					} else {
 						__Internal__.catchAndExitCalled = true;
 						
 						_shared.Natives.process.exitCode = 1; // 1 = General error
@@ -411,13 +419,14 @@ module.exports = {
 						};
 						
 						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {exitCode: _shared.Natives.process.exitCode}})); // sync
+							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: _shared.Natives.process.exitCode}})); // sync
 						} catch(o) {
 							if (root.getOptions().debug) {
 								debugger;
 							};
 						};
 						
+						// Give time to error to propagate then exit.
 						tools.callAsync(_shared.Natives.processExit, 0);
 					};
 					
