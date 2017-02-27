@@ -4041,78 +4041,74 @@ module.exports = {
 						} else if (!types._instanceof(ev, eventType)) {
 							throw new types.Error("Invalid or missing event object.");
 						};
-						
-						var cancelled = false,
-							type = types.getType(this),
-							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
-							stack = dispatch[__Internal__.symbolStack],
-							evObj = ev.obj,
+
+						var evObj = ev.obj,
 							evName = ev.name;
+						
+						var cancelled = !!this._super(ev) && cancellable;
 
-						if (stack) {
-							if (!dispatch[__Internal__.symbolSorted]) {
-								stack.sort(function(value1, value2) {
-									return tools.compareNumbers(value1[2], value2[2]);
-								});
-								dispatch[__Internal__.symbolSorted] = true;
-							};
-							
-							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
-							
-							var stackClone = types.clone(stack);
+						if (!cancelled) {
+							var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
+								stack = dispatch[__Internal__.symbolStack];
 
-							for (var i = 0; i < stackClone.length; i++) {
-								var data = stackClone[i];
+							if (stack) {
+								if (!dispatch[__Internal__.symbolSorted]) {
+									stack.sort(function(value1, value2) {
+										return tools.compareNumbers(value1[2], value2[2]);
+									});
+									dispatch[__Internal__.symbolSorted] = true;
+								};
+							
+								_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							
+								var stackClone = types.clone(stack);
+
+								for (var i = 0; i < stackClone.length; i++) {
+									var data = stackClone[i];
 									
-								var retval = undefined,
-									count = data[4],
-									obj = data[0];
-								if (types.isNothing(count) || (count > 0)) {
-									if (types.getType(obj) && !types.isInitialized(obj)) {
-										data[4] = 0;
-										continue;
-									} else if (count > 0) {
-										data[4]--;
+									var retval = undefined,
+										count = data[4],
+										obj = data[0];
+									if (types.isNothing(count) || (count > 0)) {
+										if (types.getType(obj) && !types.isInitialized(obj)) {
+											data[4] = 0;
+											continue;
+										} else if (count > 0) {
+											data[4]--;
+										};
+
+										_shared.setAttribute(ev, 'handlerData', data[3]);
+
+										retval = data[5].call(obj, ev);
 									};
 
-									_shared.setAttribute(ev, 'handlerData', data[3]);
+									if ((retval === false) && cancellable) {
+										ev = new doodad.CancelEvent({
+											event: ev,
+										});
 
-									retval = data[5].call(obj, ev);
+										_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
+
+										this.onEventCancelled(ev);
+
+										cancelled = true;
+
+										break;
+									};
 								};
 
-								if ((retval === false) && cancellable) {
-									ev = new doodad.CancelEvent({
-										event: ev,
-									});
+								types.popItems(dispatch[__Internal__.symbolStack], function(data) {
+									return (data[4] <= 0);
+								});
 
-									_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
-
-									this.onEventCancelled(ev);
-
-									cancelled = true;
-
-									break;
+								if (evObj) {
+									_shared.setAttributes(ev, {obj: evObj, name: evName});
 								};
-							};
-
-							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
-								return (data[4] <= 0);
-							});
-
-							if (evObj) {
-								_shared.setAttributes(ev, {obj: evObj, name: evName});
 							};
 						};
-						
-						if (cancelled) {
-							this.overrideSuper();
 
-						} else {
-							cancelled = !!this._super(ev) && cancellable;
-
-							if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
-								tools.catchAndExit(ev.error);
-							};
+						if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
+							tools.catchAndExit(ev.error);
 						};
 
 						return cancelled;
