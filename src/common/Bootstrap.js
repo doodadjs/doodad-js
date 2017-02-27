@@ -1011,8 +1011,7 @@
 				};
 			}));
 		
-		// <FUTURE> Remove "getSafeIntegerLen".
-		__Internal__.ADD('getSafeIntegerBounds', __Internal__.ADD('getSafeIntegerLen', __Internal__.DD_DOC(
+		__Internal__.ADD('getSafeIntegerBounds', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1031,10 +1030,9 @@
 					}));
 				};
 				return __Internal__.safeIntegerLen;
-			})));
+			}));
 		
-		// <FUTURE> Remove "getBitwiseIntegerLen".
-		__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.ADD('getBitwiseIntegerLen', __Internal__.DD_DOC(
+		__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1053,7 +1051,7 @@
 					}));
 				};
 				return __Internal__.bitwiseIntegerLen;
-			})));
+			}));
 		
 		__Internal__.ADD('isFinite', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4407,44 +4405,44 @@
 			, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
 
 
-			//! IF_SET('serverSide')
-			__Internal__.AssertionError = null;
-			//! END_IF()
+		//! IF_SET('serverSide')
+		__Internal__.AssertionError = null;
+		//! END_IF()
 
-			//! BEGIN_REMOVE()
-			if (typeof require === 'function') {
-			//! END_REMOVE()
-			//! IF_SET('serverSide')
-				try {
-					__Internal__.AssertionError = require('assert').AssertionError;
-				} catch(ex) {
-				};
-			//! END_IF()
-			//! BEGIN_REMOVE()
+		//! BEGIN_REMOVE()
+		if (typeof require === 'function') {
+		//! END_REMOVE()
+		//! IF_SET('serverSide')
+			try {
+				__Internal__.AssertionError = require('assert').AssertionError;
+			} catch(ex) {
 			};
-			//! END_REMOVE()
+		//! END_IF()
+		//! BEGIN_REMOVE()
+		};
+		//! END_REMOVE()
 
-			__Internal__.AssertionErrorDD_DOC = 
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								message: {
-									type: 'string',
-									optional: false,
-									description: "A message explaining the assertion.",
-								},
-								params: {
-									type: 'arrayof(any),objectof(any)',
-									optional: true,
-									description: "Parameters of the error message",
-								},
+		__Internal__.AssertionErrorDD_DOC = 
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							message: {
+								type: 'string',
+								optional: false,
+								description: "A message explaining the assertion.",
 							},
-							returns: 'error',
-							description: "Raised when an assertion fail.",
-				}
-				//! END_REPLACE()
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
+						},
+						returns: 'error',
+						description: "Raised when an assertion fail.",
+			}
+			//! END_REPLACE()
 
 		//! IF_SET('serverSide')
 		if (__Internal__.AssertionError) {
@@ -4787,6 +4785,7 @@
 					return new types.box(value);
 				};
 			}));
+
 		types.extend(types.box.prototype, {
 			setAttributes: function setAttributes(dest, /*optional*/override) {
 				var keys = types.append(types.keys(this), types.symbols(this));
