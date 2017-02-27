@@ -4045,8 +4045,10 @@ module.exports = {
 						var cancelled = false,
 							type = types.getType(this),
 							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
-							stack = dispatch[__Internal__.symbolStack];
-						
+							stack = dispatch[__Internal__.symbolStack],
+							evObj = ev.obj,
+							evName = ev.name;
+
 						if (stack) {
 							if (!dispatch[__Internal__.symbolSorted]) {
 								stack.sort(function(value1, value2) {
@@ -4096,6 +4098,10 @@ module.exports = {
 							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
 								return (data[4] <= 0);
 							});
+
+							if (evObj) {
+								_shared.setAttributes(ev, {obj: evObj, name: evName});
+							};
 						};
 						
 						if (cancelled) {
@@ -4104,7 +4110,7 @@ module.exports = {
 						} else {
 							cancelled = !!this._super(ev) && cancellable;
 
-							if (errorEvent && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
+							if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
 								tools.catchAndExit(ev.error);
 							};
 						};
