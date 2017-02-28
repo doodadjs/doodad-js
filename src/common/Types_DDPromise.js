@@ -464,7 +464,9 @@ module.exports = {
 								DDPromise = Promise;
 							};
 						} else {
-							var DDPromise = function() {};
+							var DDPromise = function(/*paramarray*/) {
+								return Promise.apply(this, arguments) || this;
+							};
 							DDPromise = types.setPrototypeOf(DDPromise, Promise);
 							DDPromise.prototype = types.createObject(Promise.prototype, {
 								constructor: {value: DDPromise},
