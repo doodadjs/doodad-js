@@ -464,7 +464,7 @@ module.exports = {
 								DDPromise = Promise;
 							};
 						} else {
-							var DDPromise = function(/*paramarray*/) {
+							var DDPromise = function DDPromise(/*paramarray*/) {
 								return Promise.apply(this, arguments) || this;
 							};
 							DDPromise = types.setPrototypeOf(DDPromise, Promise);
