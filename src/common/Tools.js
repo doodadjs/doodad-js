@@ -623,7 +623,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -689,7 +689,7 @@ module.exports = {
 									var keys = types.keys(obj),
 										len = keys.length; // performance
 									for (var i = 0; i < len; i++) {
-										key = keys[i];
+										var key = keys[i];
 										if (obj[key] === item) {
 											return item;
 										};
@@ -698,6 +698,106 @@ module.exports = {
 							};
 						};
 						return null;
+					}));
+				
+				
+				tools.ADD('getItems', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									obj: {
+										type: 'any',
+										optional: false,
+										description: "Object to scan",
+									},
+									items: {
+										type: 'any,arrayof(any)',
+										optional: false,
+										description: "Values to find. If items is a function, call this function to find items.",
+									},
+									thisObj: {
+										type: 'any',
+										optional: true,
+										description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+									},
+									includeFunctions: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+									},
+								},
+								returns: 'any',
+								description: "Returns the found items.",
+					}
+					//! END_REPLACE()
+					, function getItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
+						var result = [];
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (!includeFunctions && types.isFunction(items)) {
+								if (types.isArrayLike(obj)) {
+									var len = obj.length;
+									for (var key = 0; key < len; key++) {
+										if (key in obj) {
+											var val = obj[key];
+											if (items.call(thisObj, val, key, obj)) {
+												result.push(val);
+											};
+										};
+									};
+								} else {
+									var keys = types.keys(obj),
+										len = keys.length; // performance
+									for (var i = 0; i < len; i++) {
+										var key = keys[i],
+											val = obj[key];
+										if (items.call(thisObj, val, key, obj)) {
+											result.push(val);
+										};
+									};
+								};
+							} else {
+								if (!types.isArrayLike(items)) {
+									items = [items];
+								};
+								if (types.isArrayLike(obj)) {
+									var objLen = obj.length,
+										itemsLen = items.length;
+									for (var key = 0; key < objLen; key++) {
+										if (key in obj) {
+											var valObj = obj[key];
+											for (var i = 0; i < itemsLen; i++) {
+												if (i in items) {
+													var valItems = items[i];
+													if (valObj === valItems) {
+														result.push(valItems);
+													};
+												};
+											};
+										};
+									};
+								} else {
+									var keys = types.keys(obj),
+										keysLen = keys.length,
+										itemsLen = items.length;
+									for (var i = 0; i < keysLen; i++) {
+										var key = keys[i];
+										var valObj = obj[key];
+										for (var j = 0; j < itemsLen; j++) {
+											if (j in items) {
+												var valItems = items[j];
+												if (valObj === valItems) {
+													result.push(valItems);
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+						return result;
 					}));
 				
 				
