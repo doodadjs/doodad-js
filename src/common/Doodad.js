@@ -104,7 +104,6 @@ module.exports = {
 					symbolObject: types.getSymbol('__OBJECT__'),
 					symbolStack: types.getSymbol('__STACK__'),
 					symbolSorted: types.getSymbol('__SORTED__'),
-					//symbolInEvent: types.getSymbol('__IN_EVENT__'),
 					symbolClonedStack: types.getSymbol('__CLONED_STACK__'),
 
 					// Methods (Dispatches)
@@ -158,7 +157,6 @@ module.exports = {
 				_shared.ObjectSymbol = __Internal__.symbolObject;
 				_shared.StackSymbol = __Internal__.symbolStack;
 				_shared.SortedSymbol = __Internal__.symbolSorted;
-				//_shared.InEventSymbol = __Internal__.symbolInEvent;
 
 				//=====================
 				// Options
@@ -3244,8 +3242,7 @@ module.exports = {
 					})));
 				
 				__Internal__.eventHandlerInstanceProto = {
-						//stackSize: types.NOT_CONFIGURABLE(types.READ_ONLY(10)),
-						stackSize: types.NOT_CONFIGURABLE(types.WRITABLE(10)), // TODO: Make a function to set it and protect this field from the external with a getter/setter
+						stackSize: types.NOT_CONFIGURABLE(types.WRITABLE(10)),
 						
 						_new: types.SUPER(function _new(obj, extender) {
 							this._super();
@@ -3507,7 +3504,6 @@ module.exports = {
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
-				//__Internal__.eventHandlerInstanceProto[__Internal__.symbolInEvent] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolClonedStack] = types.NOT_CONFIGURABLE(types.WRITABLE(null));
 
 					
@@ -4053,7 +4049,7 @@ module.exports = {
 						cancellable = (types.isNothing(cancellable) ? true : cancellable);
 					};
 					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
-					return doodad.PROTECTED(doodad.CALL_FIRST(function handleEvent(/*optional*/ev) {
+					return doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*optional*/ev) {
 						if (!errorEvent && types.isNothing(ev)) {
 							ev = new eventType();
 						} else if (!types._instanceof(ev, eventType)) {
@@ -4083,8 +4079,6 @@ module.exports = {
 							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
 							var stackLen = clonedStack.length;
-
-							//dispatch[__Internal__.symbolInEvent] = true;
 
 							try {
 								for (var i = 0; i < stackLen; i++) {
@@ -4125,8 +4119,6 @@ module.exports = {
 								throw ex;
 
 							} finally {
-								//dispatch[__Internal__.symbolInEvent] = false;
-
 								types.popItems(stack, function(data) {
 									return (data[4] <= 0);
 								});
@@ -4142,11 +4134,11 @@ module.exports = {
 						};
 
 						return cancelled;
-					}));
+					})));
 				};
 				
 				__Internal__.RAW_EVENT = function RAW_EVENT() {
-					return doodad.PROTECTED(doodad.CALL_FIRST(function handleEvent(/*paramarray*/) {
+					return doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*paramarray*/) {
 						var emitted = !!this._super.apply(this, arguments);
 
 						var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
@@ -4164,8 +4156,6 @@ module.exports = {
 						};
 							
 						var stackLen = clonedStack.length;
-
-						//dispatch[__Internal__.symbolInEvent] = true;
 
 						try {
 							for (var i = 0; i < stackLen; i++) {
@@ -4186,8 +4176,6 @@ module.exports = {
 							throw ex;
 
 						} finally {
-							//dispatch[__Internal__.symbolInEvent] = false;
-
 							types.popItems(stack, function(data) {
 								return (data[4] <= 0);
 							});
@@ -4195,7 +4183,7 @@ module.exports = {
 						};
 						
 						return emitted;
-					}));
+					})));
 				};
 				
 				doodad.ADD('EVENT', root.DD_DOC(
