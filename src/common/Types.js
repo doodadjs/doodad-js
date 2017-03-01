@@ -465,7 +465,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -474,22 +474,25 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' when the object is nothing (is 'undefined' or 'null') or empty (has no own properties). Returns 'false' otherwise.",
+								description: "Returns 'true' when the object is nothing (is 'undefined' or 'null') or empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, function isNothingOrEmpty(obj) {
 						if (types.isNothing(obj)) {
 							return true;
+						} else if (typeof obj === 'string') {
+							return !obj;
 						} else if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+								if (types.has(obj, key)) {
 									return false;
 								};
 							};
 							return true;
-						} else if (types.isObjectLike(obj)) {
+						};
+						if (types.isObjectLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							for (var key in obj) {
 								if (types.has(obj, key)) {
@@ -500,15 +503,16 @@ module.exports = {
 								return false;
 							};
 							return true;
+						} else {
+							return false;
 						};
-						return false;
 					}));
 				
 				types.ADD('isEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -517,20 +521,22 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' when the object is empty (has no own properties). Returns 'false' otherwise.",
+								description: "Returns 'true' when the object is empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, function isEmpty(obj) {
-						if (types.isArrayLike(obj)) {
+						if (typeof obj === 'string') {
+							return !obj;
+						} else if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							var len = obj.length;
 							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+								if (types.has(obj, key)) {
 									return false;
 								};
 							};
-							return true;
-						} else if (types.isObjectLike(obj)) {
+						};
+						if (types.isObjectLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							for (var key in obj) {
 								if (types.has(obj, key)) {
@@ -541,8 +547,9 @@ module.exports = {
 								return false;
 							};
 							return true;
+						} else {
+							return false;
 						};
-						return false;
 					}));
 				
 				types.ADD('isStringAndNotEmpty', root.DD_DOC(
@@ -569,7 +576,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -582,14 +589,14 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isStringAndNotEmptyTrim(obj) {
-						return types.isString(obj) && !!root.Doodad.Tools.trim(obj).length;
+						return types.isString(obj) && !!tools.trim(obj).length;
 					}));
 				
 				types.ADD('isObjectAndNotEmpty', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -609,14 +616,6 @@ module.exports = {
 									return true;
 								};
 							};
-							//IE8 if (__Internal__.hasDontEnumBug) {
-							//IE8 	for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
-							//IE8 		var key = __Internal__.defaultNonEnumerables[i];
-							//IE8 		if (types.has(obj, key)) {
-							//IE8 			return true;
-							//IE8 		};
-							//IE8 	};
-							//IE8 };
 							if (types.symbols(obj).length) {
 								return true;
 							};

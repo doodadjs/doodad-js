@@ -1165,8 +1165,8 @@ module.exports = {
 					command.run(true, {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
 					//command.run(true, {eval: true, repetitions: 100},        /**/ "Object");
 					global.document && command.run(true, {eval: true, repetitions: 100, note: "May fail under Chrome, Opera and Safari because properties are owned properties."},        /**/ "document.body");
-					command.run(true, {eval: true, repetitions: 100},        /**/ "a");
-					command.run(false, {eval: true, repetitions: 100},        /**/"b");
+					command.run(false, {eval: true, repetitions: 100},       /**/ "a");
+					command.run(false, {eval: true, repetitions: 100},       /**/ "b");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "c");
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
