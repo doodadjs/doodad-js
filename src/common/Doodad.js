@@ -4042,14 +4042,26 @@ module.exports = {
 						return doodad.ATTRIBUTE(descriptor, extenders.Property, {isEnumerable: enumerable});
 					}));
 				
+				__Internal__.EVENT_CACHE = types.nullObject();
+
 				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/errorEvent) {
+					errorEvent = !!errorEvent;
+
 					if (errorEvent) {
 						cancellable = false;
 					} else {
-						cancellable = (types.isNothing(cancellable) ? true : cancellable);
+						cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
 					};
+
+					var key = (cancellable ? 'y' : 'n') + (errorEvent ? 'y' : 'n');
+
+					if (key in __Internal__.EVENT_CACHE) {
+						return __Internal__.EVENT_CACHE[key];
+					};
+
 					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
-					return doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*optional*/ev) {
+
+					var event = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*optional*/ev) {
 						if (!errorEvent && types.isNothing(ev)) {
 							ev = new eventType();
 						} else if (!types._instanceof(ev, eventType)) {
@@ -4135,10 +4147,20 @@ module.exports = {
 
 						return cancelled;
 					})));
+
+					__Internal__.EVENT_CACHE[key] = event;
+
+					return event;
 				};
 				
+				__Internal__.RAW_EVENT_CACHE = null; // types.nullObject();
+
 				__Internal__.RAW_EVENT = function RAW_EVENT() {
-					return doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*paramarray*/) {
+					if (__Internal__.RAW_EVENT_CACHE) {
+						return __Internal__.RAW_EVENT_CACHE;
+					};
+
+					var event = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*paramarray*/) {
 						var emitted = !!this._super.apply(this, arguments);
 
 						var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
@@ -4184,6 +4206,10 @@ module.exports = {
 						
 						return emitted;
 					})));
+
+					__Internal__.RAW_EVENT_CACHE = event;
+
+					return event;
 				};
 				
 				doodad.ADD('EVENT', root.DD_DOC(
@@ -6614,6 +6640,133 @@ module.exports = {
 					}))));
 
 				//==================================
+				// Events classes
+				//==================================
+				
+				doodad.ADD('Event', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								data: {
+									type: 'any',
+									optional: true,
+									description: "Custom event data.",
+								},
+							},
+							returns: 'Event',
+							description: "Event object.",
+					}
+					//! END_REPLACE()
+					, types.Type.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: "Event",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
+					},
+					/*instanceProto*/
+					{
+						data: types.READ_ONLY(null),
+						
+						// dynamic
+						obj: null,
+						name: null,
+						handlerData: null,
+
+						prevent: false,
+						
+						_new: types.SUPER(function(/*optional*/data) {
+							//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
+
+							this._super();
+							
+							if (!types.isType(this)) {
+								_shared.setAttribute(this, 'data', data || {});
+							};
+						}),
+						
+						preventDefault: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 0,
+									params: null,
+									returns: 'undefined',
+									description: "Prevents default behavior.",
+							}
+							//! END_REPLACE()
+							, function() {
+								this.prevent = true;
+							}),
+					})));
+
+				doodad.ADD('CancelEvent', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								data: {
+									type: 'any',
+									optional: true,
+									description: "Custom event data.",
+								},
+							},
+							returns: 'CancelEvent',
+							description: "Canceled event object.",
+					}
+					//! END_REPLACE()
+					, doodad.Event.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'CancelEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
+					})));
+
+				doodad.ADD('ErrorEvent', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								error: {
+									type: 'error',
+									optional: true,
+									description: "Error object.",
+								},
+								data: {
+									type: 'any',
+									optional: true,
+									description: "Custom event data.",
+								},
+							},
+							returns: 'ErrorEvent',
+							description: "Error event object.",
+					}
+					//! END_REPLACE()
+					, doodad.Event.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'ErrorEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,
+					},
+					/*instanceProto*/
+					{
+						error: types.READ_ONLY(null),
+						
+						_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
+							this._super(data);
+
+							if (!types.isType(this)) {
+								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
+								
+								_shared.setAttribute(this, 'error', error);
+							};
+						}),
+					})));
+
+				//==================================
 				// Mix-ins
 				//==================================
 				
@@ -7132,133 +7285,6 @@ module.exports = {
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
 					}))));
 				
-				//==================================
-				// Events classes
-				//==================================
-				
-				doodad.ADD('Event', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								data: {
-									type: 'any',
-									optional: true,
-									description: "Custom event data.",
-								},
-							},
-							returns: 'Event',
-							description: "Event object.",
-					}
-					//! END_REPLACE()
-					, types.Type.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: "Event",
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
-					},
-					/*instanceProto*/
-					{
-						data: types.READ_ONLY(null),
-						
-						// dynamic
-						obj: null,
-						name: null,
-						handlerData: null,
-
-						prevent: false,
-						
-						_new: types.SUPER(function(/*optional*/data) {
-							//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
-
-							this._super();
-							
-							if (!types.isType(this)) {
-								_shared.setAttribute(this, 'data', data || {});
-							};
-						}),
-						
-						preventDefault: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: null,
-									returns: 'undefined',
-									description: "Prevents default behavior.",
-							}
-							//! END_REPLACE()
-							, function() {
-								this.prevent = true;
-							}),
-					})));
-
-				doodad.ADD('CancelEvent', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								data: {
-									type: 'any',
-									optional: true,
-									description: "Custom event data.",
-								},
-							},
-							returns: 'CancelEvent',
-							description: "Canceled event object.",
-					}
-					//! END_REPLACE()
-					, doodad.Event.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'CancelEvent',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
-					})));
-
-				doodad.ADD('ErrorEvent', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								error: {
-									type: 'error',
-									optional: true,
-									description: "Error object.",
-								},
-								data: {
-									type: 'any',
-									optional: true,
-									description: "Custom event data.",
-								},
-							},
-							returns: 'ErrorEvent',
-							description: "Error event object.",
-					}
-					//! END_REPLACE()
-					, doodad.Event.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'ErrorEvent',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,
-					},
-					/*instanceProto*/
-					{
-						error: types.READ_ONLY(null),
-						
-						_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
-							this._super(data);
-
-							if (!types.isType(this)) {
-								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
-								
-								_shared.setAttribute(this, 'error', error);
-							};
-						}),
-					})));
-
 				//==================================
 				// Callbacks objects
 				//==================================
