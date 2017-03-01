@@ -4044,39 +4044,136 @@ module.exports = {
 				
 				__Internal__.EVENT_CACHE = types.nullObject();
 
-				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/errorEvent) {
-					errorEvent = !!errorEvent;
+				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/eventTypeName, /*optional*/fn) {
+					cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
 
-					if (errorEvent) {
-						cancellable = false;
-					} else {
-						cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
-					};
+					var key = (cancellable ? 'y' : 'n') + '|' + eventTypeName;
 
-					var key = (cancellable ? 'y' : 'n') + (errorEvent ? 'y' : 'n');
+					var event = null;
 
 					if (key in __Internal__.EVENT_CACHE) {
-						return __Internal__.EVENT_CACHE[key];
+						event = __Internal__.EVENT_CACHE[key];
+
+					} else {
+						var eventType = namespaces.get(eventTypeName);
+
+						root.DD_ASSERT && root.DD_ASSERT((eventType === doodad.Event) || types.baseof(doodad.Event, eventType), "Invalid 'eventTypeName' argument.");
+
+						var errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
+
+						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*optional*/ev) {
+							if (!errorEvent && types.isNothing(ev)) {
+								ev = new eventType();
+							} else if (!types._instanceof(ev, eventType)) {
+								throw new types.Error("Invalid or missing event object.");
+							};
+
+							var evObj = ev.obj,
+								evName = ev.name;
+						
+							var cancelled = !!this._super(ev) && cancellable;
+
+							if (!cancelled) {
+								var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
+									stack = dispatch[__Internal__.symbolStack];
+
+								var clonedStack;
+								if (dispatch[__Internal__.symbolSorted]) {
+									clonedStack = dispatch[__Internal__.symbolClonedStack];
+								} else {
+									stack.sort(function(value1, value2) {
+										return tools.compareNumbers(value1[2], value2[2]);
+									});
+									dispatch[__Internal__.symbolSorted] = true;
+									dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
+								};
+							
+								_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							
+								var stackLen = clonedStack.length;
+
+								try {
+									for (var i = 0; i < stackLen; i++) {
+										var data = clonedStack[i];
+									
+										var retval = undefined,
+											obj = data[0];
+
+										if (data[4] > 0) {
+											if (types.getType(obj) && !types.isInitialized(obj)) {
+												data[4] = 0;
+												continue;
+											};
+
+											data[4]--;
+
+											_shared.setAttribute(ev, 'handlerData', data[3]);
+
+											retval = data[5].call(obj, ev);
+										};
+
+										if ((retval === false) && cancellable) {
+											ev = new doodad.CancelEvent({
+												event: ev,
+											});
+
+											_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
+
+											this.onEventCancelled(ev);
+
+											cancelled = true;
+
+											break;
+										};
+									};
+
+								} catch(ex) {
+									throw ex;
+
+								} finally {
+									types.popItems(stack, function(data) {
+										return (data[4] <= 0);
+									});
+
+									if (evObj) {
+										_shared.setAttributes(ev, {obj: evObj, name: evName});
+									};
+								};
+							};
+
+							if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
+								tools.catchAndExit(ev.error);
+							};
+
+							return cancelled;
+						}, extenders.Event, {enableScopes: false, errorEvent: errorEvent})))));
+
+						__Internal__.EVENT_CACHE[key] = event;
 					};
 
-					var eventType = (errorEvent ? doodad.ErrorEvent : doodad.Event);
+					if (fn) {
+						event = event.clone();
+						event[__Internal__.symbolOverrideWith] = fn;
+					};
 
-					var event = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*optional*/ev) {
-						if (!errorEvent && types.isNothing(ev)) {
-							ev = new eventType();
-						} else if (!types._instanceof(ev, eventType)) {
-							throw new types.Error("Invalid or missing event object.");
-						};
+					return event;
+				};
+				
+				__Internal__.RAW_EVENT_CACHE = null; // types.nullObject();
 
-						var evObj = ev.obj,
-							evName = ev.name;
-						
-						var cancelled = !!this._super(ev) && cancellable;
+				__Internal__.RAW_EVENT = function RAW_EVENT(/*optional*/fn) {
+					var event = null;
 
-						if (!cancelled) {
+					if (__Internal__.RAW_EVENT_CACHE) {
+						event = __Internal__.RAW_EVENT_CACHE;
+
+					} else {
+						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*paramarray*/) {
+							var emitted = !!this._super.apply(this, arguments);
+
 							var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
 								stack = dispatch[__Internal__.symbolStack];
-
+						
 							var clonedStack;
 							if (dispatch[__Internal__.symbolSorted]) {
 								clonedStack = dispatch[__Internal__.symbolClonedStack];
@@ -4088,42 +4185,20 @@ module.exports = {
 								dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
 							};
 							
-							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
-							
 							var stackLen = clonedStack.length;
 
 							try {
 								for (var i = 0; i < stackLen; i++) {
-									var data = clonedStack[i];
+									var data = clonedStack[i],
+										obj = data[0],
+										fn = data[1];
 									
-									var retval = undefined,
-										obj = data[0];
-
 									if (data[4] > 0) {
-										if (types.getType(obj) && !types.isInitialized(obj)) {
-											data[4] = 0;
-											continue;
-										};
-
 										data[4]--;
 
-										_shared.setAttribute(ev, 'handlerData', data[3]);
+										_shared.invoke(obj, fn, arguments, _shared.SECRET);
 
-										retval = data[5].call(obj, ev);
-									};
-
-									if ((retval === false) && cancellable) {
-										ev = new doodad.CancelEvent({
-											event: ev,
-										});
-
-										_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
-
-										this.onEventCancelled(ev);
-
-										cancelled = true;
-
-										break;
+										emitted = true;
 									};
 								};
 
@@ -4135,79 +4210,18 @@ module.exports = {
 									return (data[4] <= 0);
 								});
 
-								if (evObj) {
-									_shared.setAttributes(ev, {obj: evObj, name: evName});
-								};
 							};
-						};
+						
+							return emitted;
+						}, extenders.Event, {enableScopes: false})))));
 
-						if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
-							tools.catchAndExit(ev.error);
-						};
-
-						return cancelled;
-					})));
-
-					__Internal__.EVENT_CACHE[key] = event;
-
-					return event;
-				};
-				
-				__Internal__.RAW_EVENT_CACHE = null; // types.nullObject();
-
-				__Internal__.RAW_EVENT = function RAW_EVENT() {
-					if (__Internal__.RAW_EVENT_CACHE) {
-						return __Internal__.RAW_EVENT_CACHE;
+						__Internal__.RAW_EVENT_CACHE = event;
 					};
 
-					var event = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(function handleEvent(/*paramarray*/) {
-						var emitted = !!this._super.apply(this, arguments);
-
-						var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
-							stack = dispatch[__Internal__.symbolStack];
-						
-						var clonedStack;
-						if (dispatch[__Internal__.symbolSorted]) {
-							clonedStack = dispatch[__Internal__.symbolClonedStack];
-						} else {
-							stack.sort(function(value1, value2) {
-								return tools.compareNumbers(value1[2], value2[2]);
-							});
-							dispatch[__Internal__.symbolSorted] = true;
-							dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
-						};
-							
-						var stackLen = clonedStack.length;
-
-						try {
-							for (var i = 0; i < stackLen; i++) {
-								var data = clonedStack[i],
-									obj = data[0],
-									fn = data[1];
-									
-								if (data[4] > 0) {
-									data[4]--;
-
-									_shared.invoke(obj, fn, arguments, _shared.SECRET);
-
-									emitted = true;
-								};
-							};
-
-						} catch(ex) {
-							throw ex;
-
-						} finally {
-							types.popItems(stack, function(data) {
-								return (data[4] <= 0);
-							});
-
-						};
-						
-						return emitted;
-					})));
-
-					__Internal__.RAW_EVENT_CACHE = event;
+					if (fn) {
+						event = event.clone();
+						event[__Internal__.symbolOverrideWith] = fn;
+					};
 
 					return event;
 				};
@@ -4234,8 +4248,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function EVENT(/*optional*/cancellable, /*optional*/fn) {
-						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(cancellable), extenders.Event, {enableScopes: false}));
-						boxed[__Internal__.symbolOverrideWith] = fn;
+						var boxed = __Internal__.EVENT(cancellable, 'Doodad.Event', fn);
 						return boxed;
 					}));
 
@@ -4256,9 +4269,8 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function ERROR_EVENT(/*optional*/fn) {
-						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.EVENT(false, true), extenders.Event, {enableScopes: false}));
-						boxed[__Internal__.symbolOverrideWith] = fn;
-						return doodad.OPTIONS({errorEvent: true}, boxed);
+						var boxed = __Internal__.EVENT(false, 'Doodad.ErrorEvent', fn);
+						return boxed;
 					}));
 
 				doodad.ADD('RAW_EVENT', root.DD_DOC(
@@ -4272,10 +4284,30 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function RAW_EVENT(/*optional*/fn) {
-						var boxed = doodad.PROTECTED(doodad.ATTRIBUTE(__Internal__.RAW_EVENT(), extenders.Event, {enableScopes: false}));
-						boxed[__Internal__.symbolOverrideWith] = fn;
+						var boxed = __Internal__.RAW_EVENT(fn);
 						return boxed;
 					}));
+
+				__Internal__.CANCEL_EVENT = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates an 'event cancelled' event.",
+					}
+					//! END_REPLACE()
+					, function CANCEL_EVENT(/*optional*/fn) {
+						var boxed = __Internal__.EVENT(false, 'Doodad.CancelEvent', fn);
+						return boxed;
+					});
 
 				//==================================
 				// Scopes
@@ -5073,6 +5105,13 @@ module.exports = {
 						fn[__Internal__.symbolRenamedTo] = name;
 						return fn;
 					}));
+				
+
+					__Internal__.LOCKED = function LOCKED(attr) {
+						//attr[__Internal__.symbolModifiers] = (attr[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Locked;
+						//return attr;
+						return types.freezeObject(attr);
+					};
 				
 
 				//==================================
@@ -6643,7 +6682,7 @@ module.exports = {
 				// Events classes
 				//==================================
 				
-				doodad.ADD('Event', root.DD_DOC(
+				doodad.REGISTER(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6701,7 +6740,7 @@ module.exports = {
 							}),
 					})));
 
-				doodad.ADD('CancelEvent', root.DD_DOC(
+				doodad.REGISTER(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6724,7 +6763,7 @@ module.exports = {
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
 					})));
 
-				doodad.ADD('ErrorEvent', root.DD_DOC(
+				doodad.REGISTER(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -6787,7 +6826,7 @@ module.exports = {
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
 						__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
-						onEventCancelled: doodad.EVENT(false), // function onEventCancelled(ev)
+						onEventCancelled: __Internal__.CANCEL_EVENT(), // function onEventCancelled(ev)
 							
 						detachEvents: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
