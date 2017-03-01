@@ -104,7 +104,9 @@ module.exports = {
 					symbolObject: types.getSymbol('__OBJECT__'),
 					symbolStack: types.getSymbol('__STACK__'),
 					symbolSorted: types.getSymbol('__SORTED__'),
-					
+					//symbolInEvent: types.getSymbol('__IN_EVENT__'),
+					symbolClonedStack: types.getSymbol('__CLONED_STACK__'),
+
 					// Methods (Dispatches)
 					symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
 
@@ -156,6 +158,7 @@ module.exports = {
 				_shared.ObjectSymbol = __Internal__.symbolObject;
 				_shared.StackSymbol = __Internal__.symbolStack;
 				_shared.SortedSymbol = __Internal__.symbolSorted;
+				//_shared.InEventSymbol = __Internal__.symbolInEvent;
 
 				//=====================
 				// Options
@@ -3246,6 +3249,7 @@ module.exports = {
 						
 						_new: types.SUPER(function _new(obj, extender) {
 							this._super();
+							
 							var values = {};
 							values[__Internal__.symbolStack] = [];
 							values[__Internal__.symbolObject] = obj;
@@ -3261,7 +3265,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										obj: {
 											type: 'object',
@@ -3314,44 +3318,47 @@ module.exports = {
 									root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
 								};
 								
-								var cb = fn;
-								if (obj) {
-									cb = doodad.Callback(obj, fn);
-								};
+								var stack = this[__Internal__.symbolStack];
 
-								var indexes = [];
-								if (this[__Internal__.symbolStack].length) {
-									indexes = tools.findItems(this[__Internal__.symbolStack], function(ev) {
-										var evData = ev[3];
-										return (ev[0] === obj) && (ev[1] === fn) && tools.every(datas, function(data, key) {
-											return types.hasIndex(evData, key) && (evData[key] === data);
-										});
+								var indexes = tools.findItems(stack, function(ev) {
+									var evData = ev[3];
+									return (ev[0] === obj) && (ev[1] === fn) && tools.every(datas, function(data, key) {
+										return types.hasIndex(evData, key) && (evData[key] === data);
 									});
-								};
+								});
 								
 								var indexesLen = indexes.length;
 								if (indexesLen) {
+									var clearSorted = false;
 									for (var i = 0; i < indexesLen; i++) {
-										var ev = this[__Internal__.symbolStack][indexes[i]];
+										var ev = stack[indexes[i]];
 										if (ev[2] !== priority) {
 											ev[2] = priority;
-											this[__Internal__.symbolSorted] = false;
+											clearSorted = true;
 										};
 									};
+									if (clearSorted) {
+										this[__Internal__.symbolSorted] = false;
+									};
 									return false;
-								} else if (this[__Internal__.symbolStack].length < this.stackSize) {
-									this[__Internal__.symbolStack].push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
+								} else if (stack.length < this.stackSize) {
+									var cb = fn;
+									if (obj) {
+										cb = doodad.Callback(obj, fn);
+									};
+									stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 									this[__Internal__.symbolSorted] = false;
 									return true;
 								} else {
 									throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
 								};
 							}),
+
 						detach: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										obj: {
 											type: 'object',
@@ -3374,28 +3381,28 @@ module.exports = {
 							}
 							//! END_REPLACE()
 							, function detach(obj, fn, /*optional*/datas) {
+								if (types.isNothing(datas)) {
+									datas = [];
+								};
+
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
 									root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
-									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+									root.DD_ASSERT(types.isArray(datas), "Invalid datas.");
 								};
 
-								datas = datas || [];
+								var stack = this[__Internal__.symbolStack];
 
-								var evs = null;
-								if (this[__Internal__.symbolStack]) {
-									if (this[__Internal__.symbolStack].length) {
-										evs = types.popItems(this[__Internal__.symbolStack], function(ev) {
-											var evData = ev[3];
-											return (ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
-												return types.hasIndex(evData, key) && (evData[key] === value);
-											});
-										});
-									};
-								};
+								var evs = types.popItems(stack, function(ev) {
+									var evData = ev[3];
+									return (ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+										return types.hasIndex(evData, key) && (evData[key] === value);
+									});
+								});
 
 								return evs;
 							}),
+
 						clear: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3409,6 +3416,7 @@ module.exports = {
 							, function clear() {
 								this[__Internal__.symbolStack].length = 0;
 							}),
+
 						attachOnce: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3443,6 +3451,7 @@ module.exports = {
 							, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
 								return this.attach(obj, fn, priority, datas, 1);
 							}),
+
 						promise: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3497,7 +3506,10 @@ module.exports = {
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
 				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(true));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
+				//__Internal__.eventHandlerInstanceProto[__Internal__.symbolInEvent] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolClonedStack] = types.NOT_CONFIGURABLE(types.WRITABLE(null));
+
 					
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4057,20 +4069,26 @@ module.exports = {
 							var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
 								stack = dispatch[__Internal__.symbolStack];
 
-							if (stack) {
-								if (!dispatch[__Internal__.symbolSorted]) {
-									stack.sort(function(value1, value2) {
-										return tools.compareNumbers(value1[2], value2[2]);
-									});
-									dispatch[__Internal__.symbolSorted] = true;
-								};
+							var clonedStack;
+							if (dispatch[__Internal__.symbolSorted]) {
+								clonedStack = dispatch[__Internal__.symbolClonedStack];
+							} else {
+								stack.sort(function(value1, value2) {
+									return tools.compareNumbers(value1[2], value2[2]);
+								});
+								dispatch[__Internal__.symbolSorted] = true;
+								dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
+							};
 							
-								_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
-								var stackClone = types.clone(stack);
+							var stackLen = clonedStack.length;
 
-								for (var i = 0; i < stackClone.length; i++) {
-									var data = stackClone[i];
+							//dispatch[__Internal__.symbolInEvent] = true;
+
+							try {
+								for (var i = 0; i < stackLen; i++) {
+									var data = clonedStack[i];
 									
 									var retval = undefined,
 										obj = data[0];
@@ -4103,7 +4121,13 @@ module.exports = {
 									};
 								};
 
-								types.popItems(dispatch[__Internal__.symbolStack], function(data) {
+							} catch(ex) {
+								throw ex;
+
+							} finally {
+								//dispatch[__Internal__.symbolInEvent] = false;
+
+								types.popItems(stack, function(data) {
 									return (data[4] <= 0);
 								});
 
@@ -4123,23 +4147,28 @@ module.exports = {
 				
 				__Internal__.RAW_EVENT = function RAW_EVENT() {
 					return doodad.PROTECTED(doodad.CALL_FIRST(function handleEvent(/*paramarray*/) {
-						var type = types.getType(this),
-							dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
+						var emitted = !!this._super.apply(this, arguments);
+
+						var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
 							stack = dispatch[__Internal__.symbolStack];
 						
-						var emitted = false;
-
-						if (stack) {
-							if (!dispatch[__Internal__.symbolSorted]) {
-								stack.sort(function(value1, value2) {
-									return tools.compareNumbers(value1[2], value2[2]);
-								});
-								dispatch[__Internal__.symbolSorted] = true;
-							};
+						var clonedStack;
+						if (dispatch[__Internal__.symbolSorted]) {
+							clonedStack = dispatch[__Internal__.symbolClonedStack];
+						} else {
+							stack.sort(function(value1, value2) {
+								return tools.compareNumbers(value1[2], value2[2]);
+							});
+							dispatch[__Internal__.symbolSorted] = true;
+							dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
+						};
 							
-							var clonedStack = types.clone(stack);
+						var stackLen = clonedStack.length;
 
-							for (var i = 0; i < clonedStack.length; i++) {
+						//dispatch[__Internal__.symbolInEvent] = true;
+
+						try {
+							for (var i = 0; i < stackLen; i++) {
 								var data = clonedStack[i],
 									obj = data[0],
 									fn = data[1];
@@ -4148,18 +4177,23 @@ module.exports = {
 									data[4]--;
 
 									_shared.invoke(obj, fn, arguments, _shared.SECRET);
+
+									emitted = true;
 								};
 							};
-							
-							emitted = !!clonedStack.length; // event emitted if stack not empty
 
-							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
+						} catch(ex) {
+							throw ex;
+
+						} finally {
+							//dispatch[__Internal__.symbolInEvent] = false;
+
+							types.popItems(stack, function(data) {
 								return (data[4] <= 0);
 							});
+
 						};
-
-						emitted = !!this._super.apply(this, arguments) || emitted;
-
+						
 						return emitted;
 					}));
 				};
