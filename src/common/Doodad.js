@@ -3261,7 +3261,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										obj: {
 											type: 'object',
@@ -3298,20 +3298,26 @@ module.exports = {
 									priority = 20;
 								};
 
+								if (types.isNothing(count)) {
+									count = Infinity;
+								};
+
+								if (types.isNothing(datas)) {
+									datas = [];
+								};
+
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
 									root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
 									root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
-									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
-									root.DD_ASSERT(types.isNothing(count) || types.isInteger(count), "Invalid count.");
+									root.DD_ASSERT(types.isArray(datas), "Invalid datas.");
+									root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
 								};
 								
 								var cb = fn;
 								if (obj) {
 									cb = doodad.Callback(obj, fn);
 								};
-
-								datas = datas || [];
 
 								var indexes = [];
 								if (this[__Internal__.symbolStack].length) {
@@ -4067,15 +4073,15 @@ module.exports = {
 									var data = stackClone[i];
 									
 									var retval = undefined,
-										count = data[4],
 										obj = data[0];
-									if (types.isNothing(count) || (count > 0)) {
+
+									if (data[4] > 0) {
 										if (types.getType(obj) && !types.isInitialized(obj)) {
 											data[4] = 0;
 											continue;
-										} else if (count > 0) {
-											data[4]--;
 										};
+
+										data[4]--;
 
 										_shared.setAttribute(ev, 'handlerData', data[3]);
 
@@ -4131,24 +4137,25 @@ module.exports = {
 								dispatch[__Internal__.symbolSorted] = true;
 							};
 							
-							var i = 0;
-							while (i < stack.length) {
-								var data = stack[i],
+							var clonedStack = types.clone(stack);
+
+							for (var i = 0; i < clonedStack.length; i++) {
+								var data = clonedStack[i],
 									obj = data[0],
 									fn = data[1];
 									
-								_shared.invoke(obj, fn, arguments, _shared.SECRET);
-								
-								data[4]--;
-								if (data[4] === 0) {
-									stack.splice(i, 1);
-								} else {
-									i++;
+								if (data[4] > 0) {
+									data[4]--;
+
+									_shared.invoke(obj, fn, arguments, _shared.SECRET);
 								};
 							};
 							
-							emitted = !!stack.length; // event emitted if stack not empty
-							
+							emitted = !!clonedStack.length; // event emitted if stack not empty
+
+							types.popItems(dispatch[__Internal__.symbolStack], function(data) {
+								return (data[4] <= 0);
+							});
 						};
 
 						emitted = !!this._super.apply(this, arguments) || emitted;
