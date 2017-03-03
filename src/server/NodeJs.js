@@ -2544,7 +2544,7 @@ module.exports = {
 					emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
 						// <PRB> Readable stream re-emits "onerror" with its own error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
 						const oldCurrentlyEmitted = this.__currentlyEmitted;
-						if (oldCurrentlyEmitted !== event) {
+						if ((event !== 'error') || (oldCurrentlyEmitted !== event)) {
 							this.__currentlyEmitted = event;
 							try {
 								const name = 'on' + event;
