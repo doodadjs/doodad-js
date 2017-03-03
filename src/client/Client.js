@@ -61,8 +61,6 @@ module.exports = {
 				var __Internal__ = {
 					//documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
-					UAParser: global.UAParser,
-
 					loadedScripts: types.nullObject(),   // <FUTURE> global to every thread
 				};
 
@@ -981,9 +979,7 @@ module.exports = {
 					// NOTE: Macintosh older than OS/X not supported
 					var os = __Internal__.os;
 					if (!os) {
-						var uap = types.isFunction(__Internal__.UAParser) && (new __Internal__.UAParser()),
-							arch = uap && uap.getCPU().architecture || 'other',
-							platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
+						var platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
 							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
 							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
 							caseSensitive = tools.getOptions().caseSensitive;
@@ -991,8 +987,7 @@ module.exports = {
 							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
 							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
 							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
-							// TODO: Validate "architecture"
-							architecture: (arch === 'amd64' ? 'x64' : arch), // 68k, x64, arm, arm64, avr, ia32, ia64, irix, irix64, mips, mips64, pa-risc, ppc, sparc, sparc64 (like Node.js, plus extra ones)
+							//architecture: ...,
 							dirChar: ((name === 'win32') ? '\\' : '/'),
 							newLine: ((name === 'win32') ? '\r\n' : '\n'),
 							caseSensitive: (types.isNothing(caseSensitive) ? ((name === 'win32') || (name === 'darwin') ? false : true) : caseSensitive), // NOTE: Because it is impossible to detect, we give what is the most popular per os

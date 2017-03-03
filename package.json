@@ -68,9 +68,6 @@
     "email": "doodadjs@gmail.com"
   },
   "tonicExampleFilename": "tonic.js",
-  "devDependencies": {
-    "ua-parser-js": "^0.7.12"
-  },
   "dependencies": {
     "uuid": "^3.0.0"
   }

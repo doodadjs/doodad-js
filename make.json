@@ -358,20 +358,6 @@
           "class": "Make.File.Copy",
           "source": "~uuid/README.md",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/README.md"
-        },
-        {
-          "class": "Make.Folder.Create",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/ua-parser"
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~ua-parser-js/readme.md",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/ua-parser/README.md"
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~ua-parser-js/dist/ua-parser.min.js",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/ua-parser/ua-parser.min.js"
         }
       ]
     },
