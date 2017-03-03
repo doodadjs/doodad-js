@@ -2511,6 +2511,8 @@ module.exports = {
 					onnewListener: doodad.RAW_EVENT(),
 					onremoveListener: doodad.RAW_EVENT(),
 
+					__currentlyEmitted: doodad.PROTECTED(null),
+
 					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
 						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 						const name = 'on' + event;
@@ -2540,9 +2542,20 @@ module.exports = {
 					}),
 					
 					emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
-						const name = 'on' + event;
-						if (tools.indexOf(this.__EVENTS, name) >= 0) {
-							return this[name].apply(this, types.toArray(arguments).slice(1));
+						// <PRB> Readable stream re-emits "onerror" with its own error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
+						const oldCurrentlyEmitted = this.__currentlyEmitted;
+						if (oldCurrentlyEmitted !== event) {
+							this.__currentlyEmitted = event;
+							try {
+								const name = 'on' + event;
+								if (tools.indexOf(this.__EVENTS, name) >= 0) {
+									return this[name].apply(this, types.toArray(arguments).slice(1));
+								};
+							} catch(ex) {
+								throw ex;
+							} finally {
+								this.__currentlyEmitted = oldCurrentlyEmitted;
+							};
 						};
 						return false;
 					}),
@@ -2561,6 +2574,7 @@ module.exports = {
 							const stack = this[name][_shared.StackSymbol];
 							return stack && stack.length || 0;
 						};
+						return 0;
 					}),
 					
 					listeners: doodad.PUBLIC(function listeners(event) {
@@ -2571,6 +2585,7 @@ module.exports = {
 								return ev[1]; // fn
 							}) || [];
 						};
+						return [];
 					}),
 					
 					on: doodad.PUBLIC(function on(event, listener) {
