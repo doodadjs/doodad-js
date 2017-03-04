@@ -123,8 +123,8 @@ module.exports = {
 					mathMax: global.Math.max,
 					windowSetTimeout: global.setTimeout.bind(global),
 					windowClearTimeout: global.clearTimeout.bind(global),
-					windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate : undefined), // IE 10
-					windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate : undefined), // IE 10
+					windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate.bind(global) : undefined), // IE 10
+					windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate.bind(global) : undefined), // IE 10
 					windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) || 
                                                 (types.isNativeFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) || 
                                                 (types.isNativeFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) || 
