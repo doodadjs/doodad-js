@@ -125,13 +125,13 @@ module.exports = {
 					windowClearTimeout: global.clearTimeout.bind(global),
 					windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate : undefined), // IE 10
 					windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate : undefined), // IE 10
-					windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame) || 
-												(types.isNativeFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame) || 
-												(types.isNativeFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame) || 
-												(types.isNativeFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame) ||
+					windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) || 
+                                                (types.isNativeFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) || 
+                                                (types.isNativeFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) || 
+                                                (types.isNativeFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
 												undefined,
-					windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame) ||
-												(types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame) ||
+                    windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
+                                                (types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
 												undefined,
 
 					// setCurrentLocation
@@ -360,7 +360,7 @@ module.exports = {
 						if (types.isNothing(delay)) {
 							delay = -1;
 						};
-						fn = doodad.Callback(thisObj, fn, null, args, secret);
+						fn = doodad.Callback(thisObj, fn, null, args || [], secret);
 						if ((delay <= 0) && _shared.Natives.windowSetImmediate) { // IE 10
 							// Raised after events queue process
 							var id = _shared.Natives.windowSetImmediate(fn);
