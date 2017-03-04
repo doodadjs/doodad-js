@@ -7332,7 +7332,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 6,
+							revision: 7,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -7384,7 +7384,7 @@ module.exports = {
 							try {
 								if (!type || types.isInitialized(obj)) {
 									if (args) {
-										return insideFnApply(obj, types.append([], args, arguments));
+										return insideFnApply(obj, args);
 									} else {
 										return insideFnApply(obj, arguments);
 									};
@@ -7419,7 +7419,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 6,
+							revision: 7,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -7477,13 +7477,13 @@ module.exports = {
 										if (!type || types.isInitialized(obj)) {
 											if (isClass) {
 												if (args) {
-													resolve(_shared.invoke(obj, fn, types.append([], args, arguments), secret));
+													resolve(_shared.invoke(obj, fn, args, secret));
 												} else {
 													resolve(_shared.invoke(obj, fn, arguments, secret));
 												};
 											} else {
 												if (args) {
-													resolve(fnApply(obj, types.append([], args, arguments)));
+													resolve(fnApply(obj, args));
 												} else {
 													resolve(fnApply(obj, arguments));
 												};
