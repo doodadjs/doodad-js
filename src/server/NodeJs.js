@@ -92,10 +92,11 @@ module.exports = {
 					windowSetImmediate: global.setImmediate,
 					windowClearImmediate: global.clearImmediate,
 					processNextTick: global.process.nextTick,
-					
+
 					// "catchAndExit"
 					process: global.process,
 					processExit: global.process.exit,
+					processStdErrWrite: (global.process.stderr ? global.process.stderr.write.bind(global.process.stderr) : (global.process.stdout ? global.process.stdout.write.bind(global.process.stdout) : function _void() { })),
 
 					// "addAppListener", "removeAppListener"
 					processOn: global.process.on.bind(global.process),
@@ -394,7 +395,7 @@ module.exports = {
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
 					if (__Internal__.catchAndExitCalled) {
-						// Process didn't exit before another error happens !!! Something is wrong.
+						// Process didn't exit before another error happened !!! Something is wrong.
 						if (root.getOptions().debug) {
 							debugger;
 						};
@@ -402,6 +403,8 @@ module.exports = {
 						_shared.Natives.processExit(_shared.Natives.process.exitCode || 1);
 
 					} else {
+						err.trapped = true;
+
 						__Internal__.catchAndExitCalled = true;
 						
 						_shared.Natives.process.exitCode = 1; // 1 = General error
@@ -410,7 +413,7 @@ module.exports = {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
 								_shared.Natives.process.exitCode = err.exitCode;
 							} else {
-								doodad.trapException(err);
+								_shared.Natives.processStdErrWrite("<FATAL ERROR> " + err.message + '\n' + err.stack + '\n');
 							};
 						} catch(o) {
 							if (root.getOptions().debug) {
@@ -426,7 +429,7 @@ module.exports = {
 							};
 						};
 						
-						// Give time to error to propagate then exit.
+						// Give time to the error to propagate then exit.
 						tools.callAsync(_shared.Natives.processExit, 0);
 					};
 					
@@ -2511,7 +2514,7 @@ module.exports = {
 					onnewListener: doodad.RAW_EVENT(),
 					onremoveListener: doodad.RAW_EVENT(),
 
-					__currentlyEmitted: doodad.PROTECTED(null),
+					__currentlyEmitted: doodad.PRIVATE(null),
 
 					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
 						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
@@ -2543,18 +2546,24 @@ module.exports = {
 					
 					emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
 						// <PRB> Readable stream re-emits "onerror" with its own error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
-						const oldCurrentlyEmitted = this.__currentlyEmitted;
-						if ((event !== 'error') || (oldCurrentlyEmitted !== event)) {
-							this.__currentlyEmitted = event;
-							try {
-								const name = 'on' + event;
-								if (tools.indexOf(this.__EVENTS, name) >= 0) {
+						const name = 'on' + event;
+						if (tools.indexOf(this.__EVENTS, name) >= 0) {
+							const oldCurrentlyEmitted = this.__currentlyEmitted;
+							const isOnError = (event === 'error');
+							if (!isOnError || (oldCurrentlyEmitted !== event)) {
+								this.__currentlyEmitted = event;
+								try {
 									return this[name].apply(this, types.toArray(arguments).slice(1));
+								} catch(ex) {
+									throw ex;
+								} finally {
+									this.__currentlyEmitted = oldCurrentlyEmitted;
 								};
-							} catch(ex) {
-								throw ex;
-							} finally {
-								this.__currentlyEmitted = oldCurrentlyEmitted;
+							} else if (isOnError && (this.listenerCount(event) === 0)) {
+								const ex = arguments[1];
+								if (!ex.trapped) {
+									tools.catchAndExit(ex);
+								};
 							};
 						};
 						return false;
@@ -2572,7 +2581,12 @@ module.exports = {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
 							const stack = this[name][_shared.StackSymbol];
-							return stack && stack.length || 0;
+							return (stack ? tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result++;
+								};
+								return result;
+							}, 0) : 0);
 						};
 						return 0;
 					}),
@@ -2581,9 +2595,12 @@ module.exports = {
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
 							const stack = this[name][_shared.StackSymbol];
-							return stack && tools.map(stack, function(ev) {
-								return ev[1]; // fn
-							}) || [];
+							return (stack ? tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result.push(data[1]);
+								};
+								return result;
+							}, []) : []);
 						};
 						return [];
 					}),
