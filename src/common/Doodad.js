@@ -7447,7 +7447,7 @@ module.exports = {
 						var insideFn = _shared.makeInside(obj, fn, secret);
 						var insideFnApply = insideFn.apply.bind(insideFn);
 						var callBubble = types.isFunction(bubbleError);
-						if (callBubble) {
+						if (callBubble && types.isBindable(bubbleError)) {
 							bubbleError = _shared.makeInside(obj, bubbleError, secret);
 						};
 						var type = types.getType(obj);
@@ -7539,7 +7539,7 @@ module.exports = {
 							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret);
 						var fnApply = fn.apply.bind(fn);
 						var callBubble = types.isFunction(bubbleError);
-						if (callBubble) {
+						if (callBubble && types.isBindable(bubbleError)) {
 							bubbleError = _shared.makeInside(obj, bubbleError, secret);
 						};
 						var callback = function callbackHandler(/*paramarray*/) {
