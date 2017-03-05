@@ -524,7 +524,7 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if method exists. Returns 'false' otherwise. Throws an error when not of public scope.",
+								description: "Returns 'true' if method exists. Returns 'false' otherwise. Note: That doesn't validate if method is implemented. Please use 'types.isImplemented' instead if you need that information.",
 					}
 					//! END_REPLACE()
 					, function isMethod(obj, name) {
@@ -565,7 +565,7 @@ module.exports = {
 									},
 								},
 								returns: 'bool',
-								description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
+								description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise. Note: That doesn't validate if the method is entrant. If you need that information, please combine with 'types.isEntrant'.",
 					}
 					//! END_REPLACE()
 					, function isImplemented(obj, name) {
@@ -589,6 +589,32 @@ module.exports = {
 						return !((method[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.NotImplemented);
 					}));
 				
+				types.ADD('isEntrant', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
+							name: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Method name.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if method is entrant. Returns 'false' otherwise. Note: That doesn't validate if 'name' is a really method and if it has been implemented. If you need that information, please combine with 'types.isImplemented'.",
+					}
+					//! END_REPLACE()
+					, function isEntrant(obj, name) {
+						var notReentrantMap = __Internal__.notReentrantMap.get(obj);
+						return !notReentrantMap || !notReentrantMap.get(name);
+					}));
+
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
 					fn = types.unbind(fn);
@@ -699,7 +725,7 @@ module.exports = {
 				_shared.invoke = root.DD_DOC(
 								root.GET_DD_DOC(__Internal__.oldInvoke), 
 					function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
-						if (!thisObj) {
+						if (types.isNothing(thisObj)) {
 							thisObj = obj;
 						};
 						if (types.isCallback(fn)) {
@@ -2152,31 +2178,6 @@ module.exports = {
 												return "Internal error";
 											};
 										} else {
-											if (!ex.bubble && !ex.trapped) {
-												try {
-													if (types.isClass(type) && this._implements(mixIns.Events)) {
-														var destroyed = false;
-														if (this._implements(mixIns.Creatable)) {
-															destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-														};
-														if (destroyed === false) { // NOTE: Can be 'null' for "not created".
-															var errorEvent = this.__ERROR_EVENT;
-															if (errorEvent && (attr !== errorEvent)) {
-																var ev = new doodad.ErrorEvent(ex);
-																this[errorEvent](ev);
-																if (ev.prevent) {
-																	ex.trapped = true;
-																};
-															};
-														};
-													};
-												} catch(o) {
-													if (root.getOptions().debug) {
-														debugger;
-													};
-												};
-											};
-
 											if (modifiers & doodad.MethodModifiers.Async) {
 												var Promise = types.getPromise();
 												return Promise.reject(ex);
@@ -2212,7 +2213,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 7,
+									revision: 8,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2265,9 +2266,8 @@ module.exports = {
 										notReentrant = extender.notReentrant || (attr === 'toString'),
 										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
 
-									var notReentrantMap = null;
+									var notReentrantMap = __Internal__.notReentrantMap.get(this);
 									if (notReentrant) {
-										notReentrantMap = __Internal__.notReentrantMap.get(this);
 										if (!notReentrantMap) {
 											// NOTE: We create a Map just when needed.
 											notReentrantMap = new types.Map();
@@ -2314,6 +2314,28 @@ module.exports = {
 											};
 										};
 									};
+
+									var handleError = function handleError(ex) {
+										if (!ex.bubble /*&& !ex.trapped*/) {
+											if (types.isClass(type) && this._implements(mixIns.Events)) {
+												var destroyed = false;
+												if (this._implements(mixIns.Creatable)) {
+													destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+												};
+												if (destroyed === false) { // NOTE: Can be 'null' for "not created".
+													var errorEvent = this[extender.errorEventAttr];
+													if (errorEvent && (attr !== errorEvent) && !notReentrantMap.get(errorEvent)) {
+														var ev = new doodad.ErrorEvent(ex);
+														this[errorEvent](ev);
+														if (ev.prevent) {
+															ex.trapped = true;
+														};
+													};
+												};
+											};
+										};
+										throw ex;
+									}
 
 									var validateResult = function validateResult(result) {
 										if (async) {
@@ -2401,15 +2423,17 @@ module.exports = {
 											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 											try {
 												retVal = "Error: " + types.toString(ex);
-											} catch(o) {
+											} catch (o) {
 												retVal = "Internal error";
 											};
-										} else if (async) {
-											// Asynchronous methods must always return a Promise
-											var Promise = types.getPromise();
-											retVal = Promise.reject(ex);
 										} else {
-											throw ex;
+											if (async) {
+												// Asynchronous methods must always return a Promise
+												var Promise = types.getPromise();
+												retVal = Promise.reject(ex);
+											} else {
+												handleError.call(this, ex);
+											};
 										};
 										
 									} finally {
@@ -2417,9 +2441,8 @@ module.exports = {
 											if (async) {
 												retVal = retVal.nodeify(function resetCalled(err, result) {
 													notReentrantMap.set(attr, false);
-
 													if (err) {
-														throw err;
+														handleError.call(this, err);
 													} else {
 														return result;
 													};
@@ -2427,7 +2450,9 @@ module.exports = {
 											} else {
 												notReentrantMap.set(attr, false);
 											};
-										};
+										} else if (async) {
+											retVal = retVal['catch'](handleError, this);
+										}
 
 										__Internal__.invokedClass = oldInvokedClass;
 										caller[__Internal__.symbolCalled] = oldCallerCalled;
@@ -4051,7 +4076,7 @@ module.exports = {
 
 					var event = null;
 
-					if (key in __Internal__.EVENT_CACHE) {
+					if (types.has(__Internal__.EVENT_CACHE, key)) {
 						event = __Internal__.EVENT_CACHE[key];
 
 					} else {
@@ -4062,10 +4087,14 @@ module.exports = {
 						var errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
 
 						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*optional*/ev) {
-							if (!errorEvent && types.isNothing(ev)) {
-								ev = new eventType();
-							} else if (!types._instanceof(ev, eventType)) {
-								throw new types.Error("Invalid or missing event object.");
+							if (!types._instanceof(ev, eventType)) {
+								if (!errorEvent && types.isNothing(ev)) {
+									ev = new eventType();
+								} else if (errorEvent && types.isError(ev)) {
+									ev = new eventType(ev);
+								} else {
+									throw new types.Error("Invalid or missing event object.");
+								};
 							};
 
 							var evObj = ev.obj,
@@ -4141,8 +4170,10 @@ module.exports = {
 								};
 							};
 
-							if (errorEvent && !evObj && (ev.error.critical || (!cancelled && !ev.prevent && !ev.error.trapped))) {
-								tools.catchAndExit(ev.error);
+							if (errorEvent) {
+								if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
+									tools.catchAndExit(ev.error);
+								};
 							};
 
 							return cancelled;
@@ -4159,13 +4190,17 @@ module.exports = {
 					return event;
 				};
 				
-				__Internal__.RAW_EVENT_CACHE = null; // types.nullObject();
+				__Internal__.RAW_EVENT_CACHE = types.nullObject();
 
-				__Internal__.RAW_EVENT = function RAW_EVENT(/*optional*/fn) {
+				__Internal__.RAW_EVENT = function RAW_EVENT(errorEvent, /*optional*/fn) {
 					var event = null;
 
-					if (__Internal__.RAW_EVENT_CACHE) {
-						event = __Internal__.RAW_EVENT_CACHE;
+					var key = (errorEvent ? 'y' : 'n');
+
+					var event = null;
+
+					if (types.has(__Internal__.RAW_EVENT_CACHE, key)) {
+						event = __Internal__.RAW_EVENT_CACHE[key];
 
 					} else {
 						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*paramarray*/) {
@@ -4211,11 +4246,23 @@ module.exports = {
 								});
 
 							};
-						
-							return emitted;
-						}, extenders.Event, {enableScopes: false})))));
 
-						__Internal__.RAW_EVENT_CACHE = event;
+							if (errorEvent) {
+								const ex = arguments[0];
+
+								if (emitted) {
+									ex.trapped = true;
+								};
+
+								if (!ex.trapped) {
+									tools.catchAndExit(ex);
+								};
+							};
+
+							return emitted;
+						}, extenders.Event, {enableScopes: false, errorEvent: errorEvent})))));
+
+						__Internal__.RAW_EVENT_CACHE[key] = event;
 					};
 
 					if (fn) {
@@ -4284,7 +4331,22 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function RAW_EVENT(/*optional*/fn) {
-						var boxed = __Internal__.RAW_EVENT(fn);
+						var boxed = __Internal__.RAW_EVENT(false, fn);
+						return boxed;
+					}));
+
+				doodad.ADD('RAW_ERROR_EVENT', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'AttributeBox,Extender',
+						description: "Creates a special error event.",
+					}
+					//! END_REPLACE()
+					, function RAW_ERROR_EVENT(/*optional*/fn) {
+						var boxed = __Internal__.RAW_EVENT(true, fn);
 						return boxed;
 					}));
 
@@ -5462,7 +5524,7 @@ module.exports = {
 						var overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 						if (overrideWith) {
 							overrideWith = doodad.OVERRIDE(overrideWith);
-							result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, proto, protoName);
+							result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, true, proto, protoName);
 							destAttribute = destAttribute.setValue(result);
 						};
 						destAttributes[attr] = destAttribute;
@@ -6715,7 +6777,7 @@ module.exports = {
 
 						prevent: false,
 						
-						_new: types.SUPER(function(/*optional*/data) {
+						_new: types.SUPER(function _new(/*optional*/data) {
 							//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
 
 							this._super();
@@ -6735,7 +6797,7 @@ module.exports = {
 									description: "Prevents default behavior.",
 							}
 							//! END_REPLACE()
-							, function() {
+							, function preventDefault() {
 								this.prevent = true;
 							}),
 					})));
@@ -6767,7 +6829,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								error: {
 									type: 'error',
@@ -6802,6 +6864,12 @@ module.exports = {
 								
 								_shared.setAttribute(this, 'error', error);
 							};
+						}),
+
+						preventDefault: doodad.SUPER(function preventDefault() {
+							this._super();
+
+							this.error.trapped = true;
 						}),
 					})));
 
@@ -7378,6 +7446,10 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						var insideFn = _shared.makeInside(obj, fn, secret);
 						var insideFnApply = insideFn.apply.bind(insideFn);
+						var callBubble = types.isFunction(bubbleError);
+						if (callBubble) {
+							bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						};
 						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
 							callback.lastError = null;
@@ -7390,16 +7462,14 @@ module.exports = {
 									};
 								};
 							} catch(ex) {
-								if (bubbleError || ex.bubble) {
-									callback.lastError = ex;
-									if (types.isFunction(bubbleError)) {
-										return bubbleError(ex); // call error handler
-									} else {
-										throw ex; // bubble the error
-									};
+								callback.lastError = ex;
+								if (callBubble && !ex.bubble) {
+									return bubbleError(ex); // call error handler
+								} else if (bubbleError || ex.critical) {
+									throw ex;
 								} else {
 									try {
-										callback.lastError = doodad.trapException(ex, obj, attr);
+										doodad.trapException(ex, obj, attr);
 									} catch(o) {
 										if (root.getOptions().debug) {
 											debugger;
@@ -7451,10 +7521,10 @@ module.exports = {
 							description: "Creates an asynchronous callback handler.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+					, types.setPrototypeOf(function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						var Promise = types.getPromise();
-						var attr;
+						var attr = null;
 						if (types.isString(fn) || types.isSymbol(fn)) {
 							attr = fn;
 							fn = obj[attr];
@@ -7468,56 +7538,47 @@ module.exports = {
 							isClass = (types.isClass(type) || types.isInterfaceClass(type)),
 							secret = (isClass && (type === __Internal__.invokedClass) ? _shared.SECRET : secret);
 						var fnApply = fn.apply.bind(fn);
+						var callBubble = types.isFunction(bubbleError);
+						if (callBubble) {
+							bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						};
 						var callback = function callbackHandler(/*paramarray*/) {
 							var args = types.toArray(arguments);
-							return Promise.create(function(resolve, reject) {
-								tools.callAsync(function async(/*paramarray*/) {
-									callback.lastError = null;
-									try {
-										if (!type || types.isInitialized(obj)) {
-											if (isClass) {
-												if (args) {
-													resolve(_shared.invoke(obj, fn, args, secret));
-												} else {
-													resolve(_shared.invoke(obj, fn, arguments, secret));
-												};
+							callback.lastError = null;
+							tools.callAsync(function async(/*paramarray*/) {
+								try {
+									if (!type || types.isInitialized(obj)) {
+										if (isClass) {
+											if (args) {
+												_shared.invoke(obj, fn, args, secret);
 											} else {
-												if (args) {
-													resolve(fnApply(obj, args));
-												} else {
-													resolve(fnApply(obj, arguments));
-												};
-											};
-										};
-									} catch(ex) {
-										if (bubbleError || ex.bubble) {
-											callback.lastError = ex;
-											if (types.isFunction(bubbleError)) {
-												try {
-													resolve(bubbleError(ex)); // call error handler
-												} catch(o) {
-													reject(o); // error handler failed
-												};
-											} else {
-												reject(ex); // must reject
-												if (ex.critical) {
-													throw ex; // bubble error, the application should halt because there is no other try...catch outside
-												};
+												_shared.invoke(obj, fn, arguments, secret);
 											};
 										} else {
-											try {
-												callback.lastError = doodad.trapException(ex, obj, attr);
-												reject(callback.lastError);
-											} catch(o) {
-												if (root.getOptions().debug) {
-													debugger;
-												};
-												reject(ex);
+											if (args) {
+												fnApply(obj, args);
+											} else {
+												fnApply(obj, arguments);
 											};
 										};
 									};
-								}, 0, null, args);
-							});
+								} catch(ex) {
+									callback.lastError = ex;
+									if (callBubble && !ex.bubble) {
+										bubbleError(ex); // call error handler
+									} else if (bubbleError || ex.critical) {
+										throw ex;
+									} else {
+										try {
+											doodad.trapException(ex, obj, attr);
+										} catch (o) {
+											if (root.getOptions().debug) {
+												debugger;
+											};
+										};
+									};
+								};
+							}, 0, null, args);
 						};
 						callback = types.setPrototypeOf(callback, doodad.AsyncCallback);
 						callback[_shared.BoundObjectSymbol] = obj;

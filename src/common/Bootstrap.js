@@ -3929,12 +3929,12 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 2,
+						revision: 3,
 						params: {
 							obj: {
 								type: 'object',
 								optional: false,
-								description: "An object.",
+								description: "The object from where comes 'fn'.",
 							},
 							fn: {
 								type: 'string,Symbol,function',
@@ -3946,19 +3946,32 @@
 								optional: true,
 								description: "Method or function arguments.",
 							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "The secret.",
+							},
+							thisObj: {
+								type: 'any',
+								optional: true,
+								description: "The value to pass to 'this'. Default is the 'obj' argument.",
+							},
 						},
 						returns: 'any',
 						description: "Invoke a method or a function as from inside the object.",
 			}
 			//! END_REPLACE()
-			, function invoke(obj, fn, /*optional*/args) {
+			, function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
 				if (types.isString(fn) || types.isSymbol(fn)) {
 					fn = _shared.getAttribute(obj, fn);
 				};
+				if (types.isNothing(thisObj)) {
+					thisObj = obj;
+				};
 				if (args) {
-					return fn.apply(obj, args);
+					return fn.apply(thisObj, args);
 				} else {
-					return fn.call(obj);
+					return fn.call(thisObj);
 				};
 			});
 			
@@ -4150,7 +4163,11 @@
 		//===================================
 		// Errors
 		//===================================
-		
+
+		global.Error.prototype.bubble = false;
+		global.Error.prototype.critical = false;
+		global.Error.prototype.trapped = false;
+
 		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsErrorType')), true) */ '__DD_IS_ERROR_TYPE__' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('isErrorType', function isErrorType(type) {
