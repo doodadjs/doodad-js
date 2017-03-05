@@ -133,11 +133,15 @@ module.exports = {
                     windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
                                                 (types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
 												undefined,
+					windowMutationObserver: (types.isNativeFunction(global.MutationObserver) ? global.MutationObserver : undefined),
 
 					// setCurrentLocation
 					//historyPushState: (global.history && types.isNativeFunction(global.history.pushState) ? global.history.pushState.bind(global.history) : undefined),
 
 					windowLocation: global.location,
+
+					// catchAndExit
+					consoleError: (types.isNativeFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
 				});
 				
 				
@@ -315,45 +319,69 @@ module.exports = {
 				// Asynchronous functions
 				//===================================
 				
+				if (_shared.Natives.windowMutationObserver) {
+					__Internal__.nextTickQueue = [];
+					__Internal__.nextTickDone = true;
+					__Internal__.nextTickValue = false;
+					__Internal__.nextTickDiv = _shared.Natives.windowDocument.createElement("div");
+					__Internal__.nextTickObserver = new _shared.Natives.windowMutationObserver(function () {
+						try {
+							var queueLen = __Internal__.nextTickQueue.length;
+							for (var i = 0; i < queueLen; i++) {
+								var frame = __Internal__.nextTickQueue[i];
+								if (!frame.cancelled) {
+									frame.callback();
+								};
+							};
+						} catch (ex) {
+							tools.catchAndExit(ex);
+						} finally {
+							__Internal__.nextTickDone = true;
+							__Internal__.nextTickQueue.length = 0;
+						};
+					});
+					__Internal__.nextTickObserver.observe(__Internal__.nextTickDiv, {attributes: true});
+				};
+
 				tools.ADD('callAsync', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "Callback function",
-									},
-									delay: {
-										type: 'integer',
-										optional: true,
-										description: "Time to wait in milliseconds. Values less than or equal to 0 are reserved. Default is the minimal possible value.",
-									},
-									thisObj: {
-										type: 'any',
-										optional: true,
-										description: "Value of 'this' when calling the function. Default is 'undefined'.",
-									},
-									args: {
-										type: 'arrayof(any)',
-										optional: true,
-										description: "Function arguments.",
-									},
-									cancelable: {
-										type: 'bool',
-										optional: true,
-										description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
-									},
-									secret: {
-										type: 'any',
-										optional: true,
-										description: "Secret.",
-									},
-								},
-								returns: 'undefined,object',
-								description: "Asynchronously calls a function.",
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function",
+							},
+							delay: {
+								type: 'integer',
+								optional: true,
+								description: "Time to wait in milliseconds. Values less than or equal to 0 are reserved. Default is the minimal possible value.",
+							},
+							thisObj: {
+								type: 'any',
+								optional: true,
+								description: "Value of 'this' when calling the function. Default is 'undefined'.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Function arguments.",
+							},
+							cancelable: {
+								type: 'bool',
+								optional: true,
+								description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
+						},
+						returns: 'undefined,object',
+						description: "Asynchronously calls a function.",
 					}
 					//! END_REPLACE()
 					, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
@@ -361,34 +389,49 @@ module.exports = {
 							delay = -1;
 						};
 						fn = doodad.Callback(thisObj, fn, null, args || [], secret);
-						if ((delay <= 0) && _shared.Natives.windowSetImmediate) { // IE 10
+						if (_shared.Natives.windowMutationObserver && (delay < 0)) {
+							// Next tick
+							var frame = { callback: fn, cancelled: false };
+							__Internal__.nextTickQueue.push(frame);
+							if (__Internal__.nextTickDone) {
+								__Internal__.nextTickDone = false;
+								__Internal__.nextTickValue = !__Internal__.nextTickValue;
+								__Internal__.nextTickDiv.setAttribute("value", __Internal__.nextTickValue)
+							};
+							return (cancelable ? {
+								cancel: function cancel() {
+									frame.cancelled = true;
+									frame = null;
+								},
+							} : undefined);
+						} else if (_shared.Natives.windowSetImmediate && (delay <= 0)) { // IE 10
 							// Raised after events queue process
 							var id = _shared.Natives.windowSetImmediate(fn);
-							return (cancelable && {
+							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowClearImmediate(id);
 									id = null;
 								},
-							} || undefined);
-						} else if ((delay <= 0) && _shared.Natives.windowRequestAnimationFrame) {
-							// Raised at page re-paint
+							} : undefined);
+						} else if (_shared.Natives.windowRequestAnimationFrame && (delay <= 0)) {
+							// Raised just before page re-paint
 							var id = _shared.Natives.windowRequestAnimationFrame(fn);
-							return (cancelable && {
+							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowCancelAnimationFrame(id);
 									id = null;
 								},
-							} || undefined);
+							} : undefined);
 						} else {
 							// Raised after X ms
 							delay = _shared.Natives.mathMax(delay, 0);
 							var id = _shared.Natives.windowSetTimeout(fn, delay);
-							return (cancelable && {
+							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowClearTimeout(id);
 									id = null;
 								},
-							} || undefined);
+							} : undefined);
 						};
 					}));
 				
@@ -406,13 +449,15 @@ module.exports = {
 						__Internal__.catchAndExitCalled = false;
 
 					} else {
+						err.trapped = true;
+
 						var exitCode = 1; // 1 = General error
 
 						try {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
 								exitCode = err.exitCode;
 							} else {
-								doodad.trapException(err);
+								_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
 							};
 						} catch(o) {
 							if (root.getOptions().debug) {
