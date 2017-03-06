@@ -234,6 +234,7 @@ module.exports = {
 						};
 						var promise = new this(callback);
 						if (callback) {
+							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
 						};
 						return promise;
@@ -298,15 +299,20 @@ module.exports = {
 							rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
 						};
 						var promise = oldThen.call(this, resolvedCb, rejectedCb);
+						var name = this[_shared.NameSymbol];
 						if (resolvedCb) {
 							resolvedCb.promise = promise;
-							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(resolvedCb);
-						} else if (rejectedCb) {
-							rejectedCb.promise = promise;
-							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(rejectedCb);
-						} else {
-							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
+							if (!name) {
+								name = getPromiseName(resolvedCb);
+							};
 						};
+						if (rejectedCb) {
+							rejectedCb.promise = promise;
+							if (!name) {
+								name = getPromiseName(rejectedCb);
+							};
+						};
+						promise[_shared.NameSymbol] = name;
 						return promise;
 					};
 					
@@ -537,16 +543,19 @@ module.exports = {
 						var attr;
 						if (types.isString(fn) || types.isSymbol(fn)) {
 							attr = fn;
-							fn = obj[attr];
+							fn = obj[attr]; // must throw on invalid scope
 						};
 						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
+						var mustBeInitialized = types.getType(obj) && !types._instanceof(fn, doodad.DispatchFunction);
 						var insideFn = _shared.makeInside(obj, fn, secret);
-						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
+							if (mustBeInitialized && !types.isInitialized(obj)) {
+								throw new types.NotAvailable("Target object is no longer available because it has been destroyed.");
+							};
 							try {
 								return insideFn.apply(obj, arguments);
 							} catch(ex) {
