@@ -534,31 +534,26 @@ module.exports = {
 						var insideFn = _shared.makeInside(obj, fn, secret);
 						var type = types.getType(obj);
 						var callback = function callbackHandler(/*paramarray*/) {
-							if (type && !types.isInitialized(obj)) {
-								throw new types.NotAvailable("Object has been destroyed.");
-							} else {
-								try {
-									return insideFn.apply(obj, arguments);
-								} catch(ex) {
-									if (ex.bubble) {
-										throw ex;
-									} else {
-										if (!ex.trapped) {
-											ex.trapped = true;
-											try {
-												var tools = root.Doodad.Tools;
-												tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
-												if (ex.stack) {
-													tools.log(tools.LogLevels.Error, ex.stack);
-												} else {
-													tools.log(tools.LogLevels.Error, ex);
-												};
-												//tools.log(tools.LogLevels.Debug, fn.toString().slice(0, 500));
-											} catch(o) {
+							try {
+								return insideFn.apply(obj, arguments);
+							} catch(ex) {
+								if (ex.bubble) {
+									throw ex;
+								} else {
+									if (!ex.trapped) {
+										ex.trapped = true;
+										try {
+											var tools = root.Doodad.Tools;
+											tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
+											if (ex.stack) {
+												tools.log(tools.LogLevels.Error, ex.stack);
+											} else {
+												tools.log(tools.LogLevels.Error, ex);
 											};
+										} catch(o) {
 										};
-										throw ex;
 									};
+									throw ex;
 								};
 							};
 						};
