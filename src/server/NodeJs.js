@@ -204,14 +204,28 @@ module.exports = {
 
 				__Internal__.oldDESTROY = _shared.DESTROY;
 				_shared.DESTROY = function(obj) {
-					if (types.isObject(obj) && !types.getType(obj) && types.isFunction(obj.destroy)) {
-						if (!obj.destroyed) {
+					if (types.isObject(obj) && !types.getType(obj)) {
+						if (!types.get(obj, 'destroyed', false)) {
 							if (types.isEmitter(obj)) {
-								// <PRB> Events may still occur even after "destroy".
+								// <PRB> Events could still occur even after a destroy/close.
 								obj.removeAllListeners();
+
+								// <PRB> The 'error' event could raise even after a destroy/close.
+								obj.on('error', function noop() {})
 							};
-							obj.destroy();
+
+							if (types.isFunction(obj.destroy)) {
+								obj.destroy();
+							} else if (types.isFunction(obj.close) && !obj._closed) {
+								obj.close();
+							};
+
+							// <PRB> Not every NodeJs destroyable object has/maintains the "destroyed" flag.
+							// <PRB> Not every NodeJs closable object has/maintains the "_closed" flag.
+							// <PRB> The "_closed" flag can be a read-only property. So we use "destroyed" instead.
+							obj.destroyed = true;
 						};
+
 					} else {
 						__Internal__.oldDESTROY(obj);
 					};
