@@ -716,8 +716,6 @@ module.exports = {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 					
 					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
-					// TODO: Do we need that ?
-					//__JS_ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 						var events = this.__JS_EVENTS,
@@ -894,8 +892,6 @@ module.exports = {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
 					
 					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
-					// TODO: Do we need that ?
-					//errorEventAttr: types.READ_ONLY('__JS_ERROR_EVENT'),
 					errorEventAttr: types.READ_ONLY(null),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
 					
@@ -975,33 +971,6 @@ module.exports = {
 					}));
 				}));
 				
-/* TODO: Do we need that ?				
-				doodad.ADD('JS_ERROR_EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								eventTypes: {
-									type: 'arrayof(string),string',
-									optional: false,
-									description: "List of event names.",
-								},
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Event handler.",
-								},
-							},
-							returns: 'AttributeBox,Extender',
-							description: "Creates a node error event ('onerror').",
-					}
-					//! END_REPLACE()
-					, function JS_ERROR_EVENT(eventTypes, /*optional* /fn) {
-						return doodad.OPTIONS({errorEvent: true}, doodad.JS_EVENT(eventTypes, fn));
-					}));
-*/
-
 				//===================================
 				// System functions
 				//===================================
