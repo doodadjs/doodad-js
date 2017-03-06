@@ -194,7 +194,7 @@ module.exports = {
 					if (ex.stack) {
 						tools.log(tools.LogLevels.Error, ex.stack);
 					} else {
-						types.Error.prototype.parse.apply(ex);
+						types.Error.prototype.parse.call(ex);
 						tools.log(tools.LogLevels.Error, "[~0~] in '~1~.~2~' at '~3~:~4~:~5~'.", [
 							/*0*/ ex.toString(), 
 							/*1*/ types.getTypeName(obj) || '<unknown>',
@@ -2323,7 +2323,7 @@ module.exports = {
 													destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
 												};
 												if (destroyed === false) { // NOTE: Can be 'null' for "not created".
-													var errorEvent = this[extender.errorEventAttr];
+													var errorEvent = this.__ERROR_EVENT;
 													if (errorEvent && (attr !== errorEvent) && !notReentrantMap.get(errorEvent)) {
 														var ev = new doodad.ErrorEvent(ex);
 														this[errorEvent](ev);
@@ -3495,8 +3495,7 @@ module.exports = {
 											obj = this[__Internal__.symbolObject],
 											fn = null,
 											errorFn = null,
-											errorEventAttr = this[__Internal__.symbolExtender].errorEventAttr,
-											errorEvent = errorEventAttr && obj[errorEventAttr];
+											errorEvent = obj.__ERROR_EVENT;
 										this.attach(null, fn = function onSuccess(ev) {
 											var retval = undefined;
 											if (callback) {
@@ -3573,7 +3572,6 @@ module.exports = {
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
 
 						eventsAttr: types.READ_ONLY('__EVENTS'),
-						errorEventAttr: types.READ_ONLY('__ERROR_EVENT'),
 						eventsImplementation: types.READ_ONLY('Doodad.MixIns.Events'),
 						eventProto: types.READ_ONLY(doodad.EventHandler),
 
@@ -3615,8 +3613,8 @@ module.exports = {
 								events = types.unbox(events);
 								events.push(attr);
 								
-								if (this.errorEvent && this.errorEventAttr) {
-									destAttributes[this.errorEventAttr] = destAttributes[this.errorEventAttr].setValue(attr);
+								if (this.errorEvent) {
+									destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
 								};
 
 								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
