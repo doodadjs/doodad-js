@@ -2233,8 +2233,6 @@ module.exports = {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
 					
 					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
-					// TODO: Do we need that ?
-					//__NODE_ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 
 					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
 						const events = this.__NODE_EVENTS,
@@ -2302,10 +2300,10 @@ module.exports = {
 								const eventTypes = this[_shared.ExtenderSymbol].types;
 									
 								for (let i = 0; i < eventTypes.length; i++) {
-									if (types.hasIndex(eventTypes, i)) {
+									if (types.has(eventTypes, i)) {
 										const type = eventTypes[i];
 										for (let j = 0; j < emitters.length; j++) {
-											if (types.hasIndex(emitters, j)) {
+											if (types.has(emitters, j)) {
 												const emitter = emitters[j],
 													handler = createHandler(emitter, type);
 												if (this._super(this[_shared.ObjectSymbol], this, null, [emitter, type, handler])) {
@@ -2400,9 +2398,6 @@ module.exports = {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
 					
 					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
-					// TODO: Do we need that ?
-					//errorEventAttr: types.READ_ONLY('__NODE_ERROR_EVENT'),
-					errorEventAttr: types.READ_ONLY(null),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
 					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
 
@@ -2475,32 +2470,6 @@ module.exports = {
 					}));
 				}));
 				
-/* TODO: Do we need that ?				
-				doodad.ADD('NODE_ERROR_EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								eventTypes: {
-									type: 'arrayof(string),string',
-									optional: false,
-									description: "List of event names.",
-								},
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Event handler.",
-								},
-							},
-							returns: 'AttributeBox,Extender',
-							description: "Creates a node error event ('onerror').",
-					}
-					//! END_REPLACE()
-					, function NODE_ERROR_EVENT(eventTypes, /*optional* /fn) {
-						return doodad.OPTIONS({errorEvent: true}, doodad.NODE_EVENT(eventTypes, fn));
-					}));
-*/
 				//*********************************************
 				// Emitter
 				//*********************************************
