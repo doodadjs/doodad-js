@@ -5153,6 +5153,13 @@
 					},
 				});
 
+				var values = {
+					apply: type.apply,
+					call: type.call,
+					bind: type.bind,
+				};
+				_shared.setAttributes(type, values, {});
+
 				return type;
 			}));
 
@@ -5910,6 +5917,12 @@
 					proto = type.prototype;
 				} else {
 					proto = type.prototype;
+					var values = {
+						call: type.call,
+						apply: type.apply,
+						bind: type.bind,
+					};
+					_shared.setAttributes(type, values, {});
 					_shared.setAttribute(proto, 'constructor', type, {});
 				};
 			
