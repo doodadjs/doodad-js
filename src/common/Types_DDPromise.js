@@ -239,6 +239,19 @@ module.exports = {
 						return promise;
 					};
 
+					Promise.createRacer = function createRacer() {
+						var resolve, reject;
+						var promise = this.create(function tryRacer(res, rej) {
+							resolve = res;
+							reject = rej;
+						});
+						return {
+							resolve: resolve,
+							reject: reject,
+							promise: promise,
+						};
+					};
+
 					// Add "thisObj" argument
 					// Add promise name
 					var oldTry = Promise['try'];
