@@ -2892,7 +2892,7 @@ module.exports = {
 								};
 
 								if (this.bindMethod && !isProto && !types.isNothing(value)) {
-									value = types.bind(obj, value);
+									value = types.INHERIT(value, types.bind(obj, value));
 								};
 
 								this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
@@ -3220,7 +3220,7 @@ module.exports = {
 								if (value) {
 									value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
 									if (this.bindMethod && !isProto) {
-										value = types.bind(obj, value);
+										value = types.INHERIT(value, types.bind(obj, value));
 									};
 									descriptor.get = value;
 								};
@@ -3229,7 +3229,7 @@ module.exports = {
 								if (value) {
 									value = this.createDispatch(attr, obj, attribute, types.unbox(value));  // copy attribute flags of "boxed"
 									if (this.bindMethod && !isProto) {
-										value = types.bind(obj, value);
+										value = types.INHERIT(value, types.bind(obj, value));
 									};
 									descriptor.set = value;
 								};
