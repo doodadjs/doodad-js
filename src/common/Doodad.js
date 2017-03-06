@@ -3505,7 +3505,14 @@ module.exports = {
 											obj = this[__Internal__.symbolObject],
 											fn = null,
 											errorFn = null,
-											errorEvent = obj.__ERROR_EVENT;
+											errorEvent = obj.__ERROR_EVENT,
+											destroyFn = null,
+											destroy = types.isImplemented(obj, 'onDestroy');
+										var cleanup = function cleanup() {
+											self.detach(null, fn);
+											errorEvent && obj[errorEvent].detach(null, errorFn);
+											destroy && obj.onDestroy.detach(null, destroyFn);
+										};
 										this.attach(null, fn = function onSuccess(ev) {
 											var retval = undefined;
 											if (callback) {
@@ -3517,15 +3524,20 @@ module.exports = {
 												};
 											};
 											if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
-												self.detach(null, fn);
-												errorEvent && obj[errorEvent].detach(null, errorFn);
+												cleanup();
 												resolve(retval);
 											};
 										});
 										if (errorEvent) {
 											obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
-												self.detach(null, fn);
+												cleanup();
 												reject(ev.error);
+											});
+										};
+										if (destroy) {
+											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
+												cleanup();
+												reject(new types.Error("Target object is about to be destroyed."));
 											});
 										};
 									}, this);
@@ -6982,6 +6994,9 @@ module.exports = {
 				__Internal__.creatablePrototype = {
 						$TYPE_NAME: 'Creatable',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
+
+						// TODO: Been able to do something like :
+						// onDestroy: doodad.IF_IMPLEMENTS(doodad.Events, doodad.EVENT(false)),
 
 						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function() {
 							var destroyed = this[__Internal__.symbolDestroyed];
