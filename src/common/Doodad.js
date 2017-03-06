@@ -3283,6 +3283,16 @@ module.exports = {
 						call: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionCall)),
 						bind: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionBind)),
 
+						getCount: function getCount() {
+							var stack = this[__Internal__.symbolStack];
+							return tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result++;
+								};
+								return result;
+							}, 0)
+						},
+
 						attach: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
