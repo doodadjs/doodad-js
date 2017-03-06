@@ -550,7 +550,7 @@ module.exports = {
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-						var mustBeInitialized = types.getType(obj) && !types._instanceof(fn, doodad.DispatchFunction);
+						var mustBeInitialized = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
 						var insideFn = _shared.makeInside(obj, fn, secret);
 						var callback = function callbackHandler(/*paramarray*/) {
 							if (mustBeInitialized && !types.isInitialized(obj)) {
