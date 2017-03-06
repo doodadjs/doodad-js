@@ -1425,8 +1425,11 @@ module.exports = {
 						}
 					)));
 				
-				doodad.ADD('AttributeGetter', function() {});
-				doodad.ADD('AttributeSetter', function() {});
+				doodad.ADD('CallerFunction', function CallerFunction() {});
+				doodad.ADD('DispatchFunction', function DispatchFunction() {});
+
+				doodad.ADD('AttributeGetter', function AttributeGetter() {});
+				doodad.ADD('AttributeSetter', function AttributeSetter() {});
 
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1490,7 +1493,7 @@ module.exports = {
 									obj: null,
 									storage: null,
 								};
-								return types.setPrototypeOf(function getter() {
+								return types.INHERIT(doodad.AttributeGetter, function getter() {
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
@@ -1519,7 +1522,7 @@ module.exports = {
 										};
 										return cache.storage[attr];
 									};
-								}, doodad.AttributeGetter);
+								});
 							}),
 
 						setterTemplate: root.DD_DOC(
@@ -1559,7 +1562,7 @@ module.exports = {
 									obj: null,
 									storage: null,
 								};
-								return types.setPrototypeOf(function setter(value) {
+								return types.INHERIT(doodad.AttributeSetter, function setter(value) {
 									if (root.getOptions().debug || __options__.enforceScopes) {
 										if (extender.enableScopes) {
 											var type = types.getType(this);
@@ -1593,7 +1596,7 @@ module.exports = {
 										};
 									};
 									return value;
-								}, doodad.AttributeSetter);
+								});
 							}),
 						
 						_new: types.SUPER(function _new(/*optional*/options) {
@@ -2199,12 +2202,7 @@ module.exports = {
 									};
 								};
 
-								var values = {
-									apply: _caller.apply,
-									call: _caller.call,
-									bind: _caller.bind,
-								};
-								_shared.setAttributes(_caller, values, {});
+								_caller = types.INHERIT(doodad.CallerFunction, _caller);
 
 								return _caller;
 							}),
@@ -2473,13 +2471,7 @@ module.exports = {
 									return retVal;
 								};
 
-								var values = {
-									apply: _dispatch.apply,
-									call: _dispatch.call,
-									bind: _dispatch.bind,
-								};
-								_shared.setAttributes(_dispatch, values, {});
-
+								_dispatch = types.INHERIT(doodad.DispatchFunction, _dispatch);
 								_dispatch[__Internal__.symbolCalled] = false;
 
 								return _dispatch;
@@ -2962,13 +2954,7 @@ module.exports = {
 
 								var _caller = types.nullObject();
 
-								var values = {
-									apply: fn.apply,
-									call: fn.call,
-									bind: fn.bind,
-								};
-								_shared.setAttributes(fn, values, {ignoreWhenReadOnly: true});
-
+								fn = types.INHERIT(doodad.CallerFunction, fn);
 								_caller[__Internal__.symbolFunction] = fn;
 
 								return _caller;
@@ -3031,12 +3017,7 @@ module.exports = {
 									};
 								};
 
-								var values = {
-									apply: _caller.apply,
-									call: _caller.call,
-									bind: _caller.bind,
-								};
-								_shared.setAttributes(_caller, values, {});
+								_caller = types.INHERIT(doodad.CallerFunction, _caller);
 
 								return _caller;
 							}),
@@ -3053,7 +3034,11 @@ module.exports = {
 									_shared.setAttribute(_super, __Internal__.symbolPrototype, caller[__Internal__.symbolPrototype], {});
 								};
 
-								return __Internal__.makeInside(null, _super, _shared.SECRET);
+								var _dispatch = __Internal__.makeInside(null, _super, _shared.SECRET);
+
+								_dispatch = types.INHERIT(doodad.DispatchFunction, _dispatch);
+
+								return _dispatch;
 							},
 						
 						extend: function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
