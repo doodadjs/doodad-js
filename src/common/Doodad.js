@@ -3537,7 +3537,7 @@ module.exports = {
 										if (destroy) {
 											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
 												cleanup();
-												reject(new types.Error("Target object is about to be destroyed."));
+												reject(new types.NotAvailable("Target object is about to be destroyed."));
 											});
 										};
 									}, this);
