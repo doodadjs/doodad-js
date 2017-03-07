@@ -156,7 +156,8 @@ module.exports = {
 					// Bluebird "try" polyfill
 					if (!types.isFunction(Promise['try'])) {
 						Promise['try'] = function _try(callback) {
-							return new this(function _try(resolve, reject) {
+							var Promise = this;
+							return new Promise(function _try(resolve, reject) {
 								try {
 									resolve(callback());
 								} catch(ex) {
@@ -229,10 +230,11 @@ module.exports = {
 					// Add "thisObj" argument
 					// Add promise name
 					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
+						var Promise = this;
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = new this(callback);
+						var promise = new Promise(callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
@@ -240,27 +242,56 @@ module.exports = {
 						return promise;
 					};
 
+					// NOTE: Experimental
 					Promise.createRacer = function createRacer() {
-						var resolve, reject;
-						var promise = this.create(function tryRacer(res, rej) {
-							resolve = res;
-							reject = rej;
+						var Promise = this;
+						var state = {res: null, rej: null};
+						var racer = Promise.create(function Racer(res, rej) {
+							state.res = res;
+							state.rej = rej;
 						});
-						return {
-							resolve: resolve,
-							reject: reject,
-							promise: promise,
+						racer.resolve = function resolve(value) {
+							var res = state.res;
+							if (!res) {
+								throw new types.Error("Racer has already been resolved or rejected.");
+							};
+							state.res = null;
+							state.rej = null;
+							res(value);
 						};
+						racer.reject = function reject(err) {
+							var rej = state.rej;
+							if (!rej) {
+								throw new types.Error("Racer has already been resolved or rejected.");
+							};
+							state.res = null;
+							state.rej = null;
+							rej(err);
+						};
+						racer.race = function race(promise) {
+							if (types.isNothing(promise)) {
+								return this;
+							};
+							var promises;
+							if (types.isArrayLike(promise)) {
+								promises = types.append([this], promise);
+							} else {
+								promises = [this, promise];
+							}
+							return Promise.race(promises);
+						};
+						return racer;
 					};
 
 					// Add "thisObj" argument
 					// Add promise name
 					var oldTry = Promise['try'];
 					Promise['try'] = function _try(/*optional*/callback, /*optional*/thisObj) {
+						var Promise = this;
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldTry.call(this, callback);
+						var promise = oldTry.call(Promise, callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
@@ -272,11 +303,12 @@ module.exports = {
 					// Add promise name
 					var oldMap = Promise.map;
 					Promise.map = function _map(ar, callback, /*optional*/options) {
+						var Promise = this;
 						var thisObj = types.get(options, 'thisObj');
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldMap.call(this, ar, callback, options);
+						var promise = oldMap.call(Promise, ar, callback, options);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
