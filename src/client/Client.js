@@ -333,7 +333,7 @@ module.exports = {
 									frame.callback();
 								};
 							};
-						} catch (ex) {
+						} catch(ex) {
 							tools.catchAndExit(ex);
 						} finally {
 							__Internal__.nextTickDone = true;
@@ -442,11 +442,26 @@ module.exports = {
 				__Internal__.catchAndExitCalled = false;
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
+					if (!err.critical && err.bubble) {
+						// Ignore errors like "ScriptInterruptedError".
+						return;
+					};
+
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
 					if (__Internal__.catchAndExitCalled) {
-						__Internal__.catchAndExitCalled = false;
+						// Process didn't exit before another error happened !!! Something is wrong.
+						if (root.getOptions().debug) {
+							debugger;
+						};
+
+						try {
+							_shared.Natives.windowDocument.open('text/plain', false);
+							_shared.Natives.windowDocument.write("");
+							_shared.Natives.windowDocument.close();
+						} catch(o) {
+						};
 
 					} else {
 						err.trapped = true;
