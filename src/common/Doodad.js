@@ -4079,19 +4079,22 @@ module.exports = {
 
 					var key = (cancellable ? 'y' : 'n') + '|' + eventTypeName;
 
-					var event = null;
+					var eventFn = null,
+						errorEvent = false;
 
 					if (types.has(__Internal__.EVENT_CACHE, key)) {
-						event = __Internal__.EVENT_CACHE[key];
+						eventFn = __Internal__.EVENT_CACHE[key];
+						errorEvent = eventFn[1];
+						eventFn = eventFn[0];
 
 					} else {
 						var eventType = namespaces.get(eventTypeName);
 
 						root.DD_ASSERT && root.DD_ASSERT((eventType === doodad.Event) || types.baseof(doodad.Event, eventType), "Invalid 'eventTypeName' argument.");
 
-						var errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
+						errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
 
-						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*optional*/ev) {
+						eventFn = function handleEvent(/*optional*/ev) {
 							if (!types._instanceof(ev, eventType)) {
 								if (!errorEvent && types.isNothing(ev)) {
 									ev = new eventType();
@@ -4182,17 +4185,18 @@ module.exports = {
 							};
 
 							return cancelled;
-						}, extenders.Event, {enableScopes: false, errorEvent: errorEvent})))));
+						};
 
-						__Internal__.EVENT_CACHE[key] = event;
+						__Internal__.EVENT_CACHE[key] = [eventFn, errorEvent];
 					};
+
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
 
 					if (fn) {
-						event = event.clone();
-						event[__Internal__.symbolOverrideWith] = fn;
+						eventFn[__Internal__.symbolOverrideWith] = fn;
 					};
 
-					return event;
+					return eventFn;
 				};
 				
 				__Internal__.RAW_EVENT_CACHE = types.nullObject();
@@ -4202,13 +4206,13 @@ module.exports = {
 
 					var key = (errorEvent ? 'y' : 'n');
 
-					var event = null;
+					var eventFn = null;
 
 					if (types.has(__Internal__.RAW_EVENT_CACHE, key)) {
-						event = __Internal__.RAW_EVENT_CACHE[key];
+						eventFn = __Internal__.RAW_EVENT_CACHE[key];
 
 					} else {
-						event = __Internal__.LOCKED(doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function handleEvent(/*paramarray*/) {
+						eventFn = function handleEvent(/*paramarray*/) {
 							var emitted = !!this._super.apply(this, arguments);
 
 							var dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
@@ -4265,17 +4269,18 @@ module.exports = {
 							};
 
 							return emitted;
-						}, extenders.Event, {enableScopes: false, errorEvent: errorEvent})))));
+						};
 
-						__Internal__.RAW_EVENT_CACHE[key] = event;
+						__Internal__.RAW_EVENT_CACHE[key] = eventFn;
 					};
+
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
 
 					if (fn) {
-						event = event.clone();
-						event[__Internal__.symbolOverrideWith] = fn;
+						eventFn[__Internal__.symbolOverrideWith] = fn;
 					};
 
-					return event;
+					return eventFn;
 				};
 				
 				doodad.ADD('EVENT', root.DD_DOC(
@@ -5172,13 +5177,6 @@ module.exports = {
 						fn[__Internal__.symbolRenamedTo] = name;
 						return fn;
 					}));
-				
-
-					__Internal__.LOCKED = function LOCKED(attr) {
-						//attr[__Internal__.symbolModifiers] = (attr[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Locked;
-						//return attr;
-						return types.freezeObject(attr);
-					};
 				
 
 				//==================================
