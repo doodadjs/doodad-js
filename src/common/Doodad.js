@@ -2078,7 +2078,7 @@ module.exports = {
 						bindMethod: types.READ_ONLY(false),
 						notReentrant: types.READ_ONLY(false),
 						isReadOnly: types.READ_ONLY(true),
-						byReference: types.READ_ONLY(false),
+						byReference: types.READ_ONLY(true),
 						isExternal: types.READ_ONLY(false),
 						
 						callerTemplate: root.DD_DOC(
