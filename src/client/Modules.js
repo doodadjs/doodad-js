@@ -46,7 +46,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					tools = doodad.Tools,
 					files = tools.Files,
 					config = tools.Config,
@@ -56,7 +56,7 @@ module.exports = {
 				
 
 
-				var __options__ = types.extend({
+				const __options__ = types.extend({
 					modulesUri: './',
 				}, _options);
 
@@ -68,7 +68,7 @@ module.exports = {
 				
 
 				
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 			
 				
@@ -100,9 +100,9 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function locate(module, /*optional*/path, /*optional*/options) {
-						var Promise = types.getPromise();
-						return Promise['try'](function() {
-							var location = tools.getCurrentLocation()
+						const Promise = types.getPromise();
+						return Promise.try(function() {
+							let location = tools.getCurrentLocation()
 								.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
 								.set({file: null})
 								.combine(types.get(options, 'modulesUri', __options__.modulesUri))
@@ -121,7 +121,7 @@ module.exports = {
 					}));
 				
 				modules.ADD('loadFiles', function loadFiles(module, files, /*optional*/options) {
-					var Promise = types.getPromise();
+					const Promise = types.getPromise();
 
 					// Convert to array of objects for Promise.map
 					files = tools.reduce(files, function(files, fileOptions, name) {
@@ -150,7 +150,7 @@ module.exports = {
 										});
 								} else {
 									return Promise.create(function startScriptLoader(resolve, reject) {
-										var scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+										const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 										scriptLoader.addEventListener('load', function() {
 											file.exports = null; // <PRB> unable to get a reference to the loaded script and its exports
 											resolve(file);
@@ -173,7 +173,7 @@ module.exports = {
 										});
 								};
 							})
-							['catch'](function(err) {
+							.catch(function(err) {
 								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
 							});
 					}, options);
@@ -201,8 +201,8 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function load(_modules, /*optional*/options) {
-						var Promise = types.getPromise();
-						var fromSource = root.getOptions().fromSource;
+						const Promise = types.getPromise();
+						const fromSource = root.getOptions().fromSource;
 						global.DD_MODULES = {};
 
 						if (types.isArray(options)) {
@@ -233,7 +233,7 @@ module.exports = {
 								return modules.loadFiles(module.name, module.files, options);
 							})
 							.then(function(_modules) {
-								var retval = namespaces.load(global.DD_MODULES, options);
+								const retval = namespaces.load(global.DD_MODULES, options);
 								delete global.DD_MODULES;
 								return retval;
 							});

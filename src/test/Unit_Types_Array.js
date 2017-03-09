@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -53,7 +53,7 @@ module.exports = {
 					};
 
 					
-					var createArrays = function createArrays() {
+					const createArrays = function createArrays() {
 						global.ar1 = [1, 2, 9, 10];
 						global.ar1.a = 3;
 						delete global.ar1[2];
@@ -65,8 +65,11 @@ module.exports = {
 					
 					createArrays();
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
+					command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "ar1");
@@ -80,7 +83,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
+					command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "ar1");
@@ -94,7 +97,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.get, "Doodad.Types.get");
+					command = test.prepareCommand(types.get, "Doodad.Types.get");
 					
 					command.run("undefined", {eval: true}     /**/ );
 					command.run("undefined", {eval: true},    /**/ "ar1");
@@ -116,7 +119,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.gets, "Doodad.Types.gets");
+					command = test.prepareCommand(types.gets, "Doodad.Types.gets");
 					
 					command.run("{}",        {eval: true}     /**/ );
 					command.run("{}",        {eval: true},    /**/ "ar1");
@@ -147,7 +150,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.set, "Doodad.Types.set");
+					command = test.prepareCommand(types.set, "Doodad.Types.set");
 					
 					command.run(4,           {eval: true},    /**/ "ar1", "0", "4");
 					command.run(5,           {eval: true},    /**/ "ar1", "1", "5");
@@ -159,7 +162,7 @@ module.exports = {
 					createArrays();
 					
 					
-					var command = test.prepareCommand(types.sets, "Doodad.Types.sets");
+					command = test.prepareCommand(types.sets, "Doodad.Types.sets");
 					
 					command.run("{'0': 4}",  {eval: true},    /**/ "ar1", "{'0': 4}");
 					command.run("{'1': 5}",  {eval: true},    /**/ "ar1", "{'1': 5}");
@@ -177,7 +180,7 @@ module.exports = {
 					createArrays();
 
 
-					var command = test.prepareCommand(types.getDefault, "Doodad.Types.getDefault");
+					command = test.prepareCommand(types.getDefault, "Doodad.Types.getDefault");
 					
 					command.run("undefined", {eval: true}     /**/ );
 					command.run("undefined", {eval: true},    /**/ "ar1");
@@ -199,7 +202,7 @@ module.exports = {
 					createArrays();
 
 					
-					var command = test.prepareCommand(types.getsDefault, "Doodad.Types.getsDefault");
+					command = test.prepareCommand(types.getsDefault, "Doodad.Types.getsDefault");
 					
 					command.run("{}",        {eval: true}     /**/ );
 					command.run("{}",        {eval: true},    /**/ "ar1");
@@ -232,31 +235,31 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.keys, "Doodad.Types.keys");
+					command = test.prepareCommand(types.keys, "Doodad.Types.keys");
 					command.run("[]",                    {eval: true}     /**/ );
 					command.run("['a']",                 {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.keysInherited, "Doodad.Types.keysInherited");
+					command = test.prepareCommand(types.keysInherited, "Doodad.Types.keysInherited");
 					command.run("[]",                    {eval: true}     /**/ );
 					command.run("['a']",                 {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.values, "Doodad.Types.values");
+					command = test.prepareCommand(types.values, "Doodad.Types.values");
 					command.run("[]",                    {eval: true}     /**/ );
 					command.run("[3]",                   {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.items, "Doodad.Types.items");
+					command = test.prepareCommand(types.items, "Doodad.Types.items");
 					command.run("[]",                    {eval: true, depth: 1}     /**/ );
 					command.run("[[0, 1], [1, 2]]",      {eval: true, depth: 1},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.hasIndex, "Doodad.Types.hasIndex");
+					command = test.prepareCommand(types.hasIndex, "Doodad.Types.hasIndex");
 					command.run(false, {eval: true}     /**/ );
 					command.run(false, {eval: true},    /**/ "ar1");
 					command.run(true,  {eval: true},    /**/ "ar1", "0");
@@ -268,13 +271,13 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.indexes, "Doodad.Types.indexes");
+					command = test.prepareCommand(types.indexes, "Doodad.Types.indexes");
 					command.run("[]",                    {eval: true}     /**/ );
 					command.run("[0, 1]",                {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.available, "Doodad.Types.available");
+					command = test.prepareCommand(types.available, "Doodad.Types.available");
 					command.run(-1,    {eval: true}     /**/ );
 					command.run(-1,     {eval: true},   /**/ "[]");
 					command.run(-1,     {eval: true},   /**/ "[0, 1]");
@@ -282,26 +285,26 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.availables, "Doodad.Types.availables");
+					command = test.prepareCommand(types.availables, "Doodad.Types.availables");
 					command.run("[]",                    {eval: true}     /**/ );
 					command.run("[2, 3]",                {eval: true},    /**/ "ar1");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.getFirstIndex, "Doodad.Types.getFirstIndex");
+					command = test.prepareCommand(types.getFirstIndex, "Doodad.Types.getFirstIndex");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(0,          {eval: true},    /**/ "ar1");
 					command.run(1,          {eval: true},    /**/ "ar2");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.getFirstValue, "Doodad.Types.getFirstValue");
+					command = test.prepareCommand(types.getFirstValue, "Doodad.Types.getFirstValue");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(1,          {eval: true},    /**/ "ar1");
 					command.run(2,          {eval: true},    /**/ "ar2");
 					command.end();
 					
-					var command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
+					command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "ar1");
 					createArrays();
@@ -321,7 +324,7 @@ module.exports = {
 					command.end();
 					createArrays();
 
-					var command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
+					command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "ar1");
 					command.run(undefined,  {eval: true},    /**/  "ar1", 0);
@@ -334,7 +337,7 @@ module.exports = {
 					command.end();
 					createArrays();
 
-					var command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
+					command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
 					command.run("[]",       {eval: true, contains: true}  /**/ );
 					command.run("[]",       {eval: true, contains: true}, /**/  "ar1");
 					command.run("[]",       {eval: true, contains: true}, /**/  "ar1", "[0]");
@@ -347,7 +350,7 @@ module.exports = {
 					command.end();
 					createArrays();
 					
-					var command = test.prepareCommand(types.append, "Doodad.Types.append");
+					command = test.prepareCommand(types.append, "Doodad.Types.append");
 					command.run(null,                                           {eval: true}     /**/ );
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]",       {eval: true},    /**/ "ar1");
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot, 3, 4]", {eval: true},    /**/ "ar1", "[3, 4]");
@@ -358,7 +361,7 @@ module.exports = {
 					command.end();
 					createArrays();
 					
-					var command = test.prepareCommand(types.prepend, "Doodad.Types.prepend");
+					command = test.prepareCommand(types.prepend, "Doodad.Types.prepend");
 					command.run(null,                                           {eval: true}     /**/ );
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]",       {eval: true},    /**/ "ar1");
 					command.run("[3, 4, 1, 2, ctx.EmptySlot, ctx.EmptySlot]", {eval: true},    /**/ "ar1", "[3, 4]");
@@ -369,7 +372,7 @@ module.exports = {
 					command.end();
 					createArrays();
 					
-					var command = test.prepareCommand(types.unique, "Doodad.Types.unique");
+					command = test.prepareCommand(types.unique, "Doodad.Types.unique");
 					command.run([],                                               {repetitions: 100}     /**/);
 					command.run(['a', 'b', 'c'],                                  {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"]);
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"], ["d", "e", "f", "d", "e", "f"]);
@@ -377,12 +380,12 @@ module.exports = {
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100},    /**/ "abcabc", "defdef");
 					command.end();
 
-					var command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
+					command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
 					command.run(false,      {eval: true}     /**/ );
 					command.run(true,       {eval: true},    /**/  "ar1");
 					command.end();
 
-					var command = test.prepareCommand(types.clone, "Doodad.Types.clone");
+					command = test.prepareCommand(types.clone, "Doodad.Types.clone");
 					command.run("undefined",  {eval: true}                               /**/ );
 					command.run("ar1", {eval: true, not: true, mode: 'compare'},    /**/  "ar1");
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]", {eval: true},  /**/  "ar1");

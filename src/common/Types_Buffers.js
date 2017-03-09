@@ -37,14 +37,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 
 				//===================================
@@ -130,8 +130,8 @@ module.exports = {
 						
 					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
 						// <PRB> NodeJs has no TypedArray constructor.
-						for (var i = 0; i < __Internal__.TypedArrays.length; i++) {
-							var type = __Internal__.TypedArrays[i];
+						for (let i = 0; i < __Internal__.TypedArrays.length; i++) {
+							const type = __Internal__.TypedArrays[i];
 							if (type && types._instanceof(obj, type)) {
 								return true;
 							};

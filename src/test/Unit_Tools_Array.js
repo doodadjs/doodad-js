@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -52,33 +52,29 @@ module.exports = {
 						options = {};
 					};
 					
+					let command;
 					
-					var command = test.prepareCommand(tools.findItem, "Doodad.Tools.findItem");
-					
+					command = test.prepareCommand(tools.findItem, "Doodad.Tools.findItem");
 					command.run(null,                                             {repetitions: 100}  /**/);
 					command.run(null,                                             {repetitions: 100}, /**/ ["there", "hi", "there"]);
 					command.run(null,                                             {repetitions: 100}, /**/ ["there", "hi", "there"], "zzz");
 					command.run(1,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], "hi");
 					command.run(0,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], "there");
 					command.run(0,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], function(val, key, obj) {return val === "there"});
-					
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.findLastItem, "Doodad.Tools.findLastItem");
-					
+					command = test.prepareCommand(tools.findLastItem, "Doodad.Tools.findLastItem");
 					command.run(null,                                             {repetitions: 100}  /**/);
 					command.run(null,                                             {repetitions: 100}, /**/ ["there", "hi", "there"]);
 					command.run(null,                                             {repetitions: 100}, /**/ ["there", "hi", "there"], "zzz");
 					command.run(1,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], "hi");
 					command.run(2,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], "there");
 					command.run(2,                                                {repetitions: 100}, /**/ ["there", "hi", "there"], function(val, key, obj) {return val === "there"});
-					
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.findItems, "Doodad.Tools.findItems");
-					
+					command = test.prepareCommand(tools.findItems, "Doodad.Tools.findItems");
 					command.run([],                                               {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ ["there", "hi", "there"]);
 					command.run([],                                               {repetitions: 100}, /**/ ["there", "hi", "there"], "zzz");
@@ -86,12 +82,10 @@ module.exports = {
 					command.run([0, 2],                                           {contains: true, repetitions: 100}, /**/ ["there", "hi", "there"], "there");
 					command.run([0, 2],                                           {contains: true, repetitions: 100}, /**/ ["there", "hi", "there"], function(val, key, obj) {return val === "there"});
 					command.run([0, 1, 2],                                        {contains: true, repetitions: 100}, /**/ ["there", "hi", "there"], ["hi", "there"]);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.trim, "Doodad.Tools.trim");
-					
+					command = test.prepareCommand(tools.trim, "Doodad.Tools.trim");
 					command.run([" ", " ", "a", " ", " "],                        {repetitions: 100}, /**/ [" ", " ", "a", " ", " "], 0);
 					command.run(["a"],                                            {repetitions: 100}, /**/ [" ", " ", "a", " ", " "]);
 					command.run(["a"],                                            {repetitions: 100}, /**/ [" ", " ", "a", " ", " "], " ");
@@ -101,68 +95,56 @@ module.exports = {
 					command.run([" ", "a", " "],                                  {repetitions: 100}, /**/ [" ", " ", "a", " ", " "], " ", 0, 1);
 					command.run([" ", " ", "a", " ", " "],                        {repetitions: 100}, /**/ [" ", " ", "a", " ", " "], "_");
 					command.run([" ", "a", " "],                                  {repetitions: 100}, /**/ ["_", " ", "a", " ", "_"], "_");
-					
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.join, "Doodad.Tools.join");
-					
+					command = test.prepareCommand(tools.join, "Doodad.Tools.join");
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "");
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ ['a', 'b', 'c'], 0);
 					command.run("abc",                                            {repetitions: 100}, /**/ ['a', 'b', 'c']);
 					command.run("a,b,c",                                          {repetitions: 100}, /**/ ['a', 'b', 'c'], ",");
 					command.run("1,2,3",                                          {repetitions: 100}, /**/ [1, 2, 3], ",");
-					
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.indexOf, "Doodad.Tools.indexOf");
-					
+					command = test.prepareCommand(tools.indexOf, "Doodad.Tools.indexOf");
 					command.run(-1,                                               {repetitions: 100}  /**/);
 					command.run(-1,                                               {repetitions: 100}, /**/ ["hi", "there", "hi"]);
 					command.run(-1,                                               {repetitions: 100}, /**/ ["hi", "there", "hi"], "zzz");
 					command.run(1,                                                {repetitions: 100}, /**/ ["hi", "there", "hi"], "there");
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.lastIndexOf, "Doodad.Tools.lastIndexOf");
-					
+					command = test.prepareCommand(tools.lastIndexOf, "Doodad.Tools.lastIndexOf");
 					command.run(-1,                                               {repetitions: 100}  /**/);
 					command.run(-1,                                               {repetitions: 100}, /**/ ["hi", "there", "hi"]);
 					command.run(-1,                                               {repetitions: 100}, /**/ ["hi", "there", "hi"], "zzz");
 					command.run(2,                                                {repetitions: 100}, /**/ ["hi", "there", "hi"], "hi");
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.map, "Doodad.Tools.map");
-					
+					command = test.prepareCommand(tools.map, "Doodad.Tools.map");
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ ["a", "b", "c", "d", "e", "f"]);
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ ["a", "b", "c", "d", "e", "f"], "");
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],             {repetitions: 100},   /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return val});
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(function(obj) {
-						var result = [];
+					command = test.prepareCommand(function(obj) {
+						const result = [];
 						tools.forEach(obj, function(val, key, obj) {
 							result.push(val);
 						});
 						return result;
 					}, "Doodad.Tools.forEach");
-					
 					command.run([],                                               {repetitions: 100}  /**/ );
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"]);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.filter, "Doodad.Tools.filter");
-					
+					command = test.prepareCommand(tools.filter, "Doodad.Tools.filter");
 					command.run(undefined,                                        {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"]);
 					command.run(['a'],                                            {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], "a");
@@ -171,12 +153,10 @@ module.exports = {
 					command.run(['a'],                                            {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return val === 'a'});
 					command.run(['c', 'd', 'e', 'f'],                             {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], ['a', 'b'], null, true);
 					command.run(['c', 'd', 'e', 'f'],                             {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return val === 'a' || val === 'b'}, null, true);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.filterKeys, "Doodad.Tools.filterKeys");
-					
+					command = test.prepareCommand(tools.filterKeys, "Doodad.Tools.filterKeys");
 					command.run(undefined,                                        {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"]);
 					command.run(['a'],                                            {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], [0]);
@@ -184,12 +164,10 @@ module.exports = {
 					command.run(['a'],                                            {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return key === 0});
 					command.run(['c', 'd', 'e', 'f'],                             {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], [0, 1], null, true);
 					command.run(['c', 'd', 'e', 'f'],                             {repetitions: 100}, /**/ ["a", "b", "c", "d", "e", "f"], function(val, key, obj) {return key === 0 || key === 1}, null, true);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.every, "Doodad.Tools.every");
-					
+					command = test.prepareCommand(tools.every, "Doodad.Tools.every");
 					command.run(false,                                            {repetitions: 100}  /**/);
 					command.run(true,                                             {repetitions: 100}, /**/ []);
 					command.run(true,                                             {repetitions: 100}, /**/ [], "a");
@@ -207,12 +185,10 @@ module.exports = {
 					command.run(true,                                             {repetitions: 100}, /**/ ["a", "a", "a", "a", "a"], "b", null, true);
 					command.run(true,                                             {repetitions: 100}, /**/ ["a", "a", "a", "a", "a"], function(val, key, obj) {return val === "a"});
 					command.run(false,                                            {repetitions: 100}, /**/ ["a", "a", "a", "a", "a"], function(val, key, obj) {return val === "a"}, null, true);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.some, "Doodad.Tools.some");
-					
+					command = test.prepareCommand(tools.some, "Doodad.Tools.some");
 					command.run(false,                                            {repetitions: 100}  /**/);
 					command.run(false,                                            {repetitions: 100}, /**/ []);
 					command.run(false,                                            {repetitions: 100}, /**/ [], "b");
@@ -227,12 +203,10 @@ module.exports = {
 					command.run(false,                                            {repetitions: 100}, /**/ ["a", "a", "a", "b", "a"], ["a", "b"], null, true);
 					command.run(true,                                             {repetitions: 100}, /**/ ["a", "a", "a", "b", "a"], function(val, key, obj) {return val === "b"});
 					command.run(false,                                            {repetitions: 100}, /**/ ["a", "a", "a", "b", "a"], function(val, key, obj) {return val === "a" || val === "b"}, null, true);
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.reduce, "Doodad.Tools.reduce");
-					
+					command = test.prepareCommand(tools.reduce, "Doodad.Tools.reduce");
 					//command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 					//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ []);
 					//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ [], 1);
@@ -240,12 +214,10 @@ module.exports = {
 					command.run(0,                                                {repetitions: 100}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run(6,                                                {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run("123",                                            {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val}, "");
-
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.reduceRight, "Doodad.Tools.reduceRight");
-					
+					command = test.prepareCommand(tools.reduceRight, "Doodad.Tools.reduceRight");
 					//command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 					//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ []);
 					//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ [], 1);
@@ -253,7 +225,6 @@ module.exports = {
 					command.run(0,                                                {repetitions: 100}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run(6,                                                {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 					command.run("321",                                            {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val}, "");
-
 					command.end();
 
 					

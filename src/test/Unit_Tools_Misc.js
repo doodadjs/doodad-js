@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -52,8 +52,11 @@ module.exports = {
 						options = {};
 					};
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
+					command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
 					
 					command.run(undefined,                                       {repetitions: 100}  /**/);
 					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
@@ -63,7 +66,7 @@ module.exports = {
 					command.end();
 					
 				
-					var command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
+					command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
 					
 					command.run(undefined,                                       {repetitions: 100}  /**/);
 					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
@@ -73,7 +76,7 @@ module.exports = {
 					command.end();
 					
 				
-					var command = test.prepareCommand(tools.sign, "Doodad.Tools.sign");
+					command = test.prepareCommand(tools.sign, "Doodad.Tools.sign");
 					
 					command.run(NaN,                                             {repetitions: 100}  /**/);
 					command.run(0,                                               {repetitions: 100}, /**/ null);

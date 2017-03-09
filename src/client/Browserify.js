@@ -42,7 +42,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					nodejs = doodad.NodeJs;
@@ -66,15 +66,15 @@ module.exports = {
 					try {
 						types.getPromise();
 					} catch(ex) {
-						var Promise = null;
+						let Promise = null;
 						try {
-							var mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
+							const mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
 							Promise = require(mod); // tiny Promise/A+ implementation
 						} catch(o) {
 						};
 						if (!types.isFunction(Promise)) {
 							try {
-								var mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
+								const mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
 								Promise = require(mod); // subset of RSVP
 							} catch(o) {
 							};

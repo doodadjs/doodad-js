@@ -37,14 +37,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 					// "toSource"
 					supportsVerticalTabEscape: ('\v' !== 'v'),
 					supportsNullCharEscape: ('\0' !== '0'),
@@ -99,32 +99,32 @@ module.exports = {
 						} else if (types.isNaN(obj)) {
 							return "NaN";
 						} else {
-							var primitive = types.isPrimitive(obj);
+							const primitive = types.isPrimitive(obj);
 							obj = _shared.Natives.windowObject(obj);
-							var val = obj;
+							let val = obj;
 							if (types.isFunction(obj.valueOf)) {
 								try {
 									val = obj.valueOf();
 								} catch(o) {
 								};
 							};
-							var toSourceItemsCount = types.getOptions().toSourceItemsCount;
+							const toSourceItemsCount = types.getOptions().toSourceItemsCount;
 							if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 								return obj.toSource();
 							} else {
 								depth = (+depth || 0);  // null|undefined|true|false|NaN|Infinity
 								if (types.isString(obj)) {
-									var str = '',
-										len = val.length;
-									var allowNullChar = types.get(options, 'allowNullChar', __Internal__.supportsNullCharEscape);
-									var allowVerticalTab = types.get(options, 'allowVerticalTab', __Internal__.supportsVerticalTabEscape);
-									//var allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
-									//for (var i = 0; i < len; ) {
-									for (var i = 0; i < len; i++) {
-										//var code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAtCall(val, i), 1]);
-										//var size = code[1];
+									let str = '';
+									const len = val.length,
+										allowNullChar = types.get(options, 'allowNullChar', __Internal__.supportsNullCharEscape),
+										allowVerticalTab = types.get(options, 'allowVerticalTab', __Internal__.supportsVerticalTabEscape);
+									//const allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
+									//for (let i = 0; i < len; ) {
+									for (let i = 0; i < len; i++) {
+										//let code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAtCall(val, i), 1]);
+										//const size = code[1];
 										//code = code[0];
-										var code = _shared.Natives.stringCharCodeAtCall(val, i);
+										const code = _shared.Natives.stringCharCodeAtCall(val, i);
 										if (allowNullChar && (code === 0x0000)) { // Null
 											str += '\\0';
 										} else if (code === 0x0008) { // Backspace
@@ -181,7 +181,7 @@ module.exports = {
 								} else if (types.isDate(obj)) {
 									return '(new Date(' + obj.getFullYear() + ', ' + obj.getMonth() + ', ' + obj.getDate() + ', ' + obj.getHours() + ', ' + obj.getMinutes() + ', ' + obj.getSeconds() + ', ' + obj.getMilliseconds() + '))';
 								} else if (types.isSymbol(obj)) {
-									var key = types.getSymbolKey(obj);
+									const key = types.getSymbolKey(obj);
 									return (types.symbolIsGlobal(obj) && !types.isNothing(key) ? "Symbol.for(" + types.toSource(key, null, options) + ")" : (types.isNothing(key) ? "Symbol()" : "Symbol(" + types.toSource(key, null, options) + ")"));
 								} else if (types.isError(obj)) {
 									return '(new Error(' + types.toSource(obj.message || obj.description, null, options) + '))';
@@ -192,21 +192,21 @@ module.exports = {
 										return '(new Function())';
 									};
 								} else if (types.isArray(obj)) {
-									var includeFunctions = types.get(options, 'includeFunctions', true);
+									const includeFunctions = types.get(options, 'includeFunctions', true);
 									if (depth < 0) {
 										return '(new Array(' + obj.length + '))';
 									};
-									var str = '',
-										len = val.length,
+									let len = val.length,
+										str = '',
 										continued = '';
 									depth--;
 									if (len > toSourceItemsCount) {
 										len = toSourceItemsCount;
 										continued = ', ...';
 									};
-									for (var key = 0; key < len; key++) {
-										if (key in val) {
-											var item = val[key];
+									for (let key = 0; key < len; key++) {
+										if (types.has(val, key)) {
+											const item = val[key];
 											if (includeFunctions || !types.isFunction(item)) {
 												str += types.toSource(item, depth, options) + ', ';
 											};
@@ -216,23 +216,23 @@ module.exports = {
 									};
 									return '[' + str.slice(0, -2) + continued + ']';
 								} else if (types.isObject(obj)) {
-									var includeFunctions = types.get(options, 'includeFunctions', true);
+									const includeFunctions = types.get(options, 'includeFunctions', true);
 									if (depth < 0) {
 										return '{}';
 									};
-									var str = '',
+									let str = '',
 										len = 0;
 									depth--;
-									var inherited = types.get(options, 'inherited', false);
+									const inherited = types.get(options, 'inherited', false);
 									do {
-										var keys = types.append(types.keys(obj), types.symbols(obj));
-										for (var i = 0; i < keys.length; i++) {
+										const keys = types.append(types.keys(obj), types.symbols(obj));
+										for (let i = 0; i < keys.length; i++) {
 											if (len >= toSourceItemsCount) {
 												str += '..., ';
 												break;
 											};
-											var key = keys[i];
-											var item = obj[key];
+											const key = keys[i];
+											const item = obj[key];
 											if (includeFunctions || !types.isFunction(item)) {
 												str += types.toSource(key) + ': ' + types.toSource(item, depth, options) + ', ';
 											};

@@ -37,14 +37,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 
 				//===================================

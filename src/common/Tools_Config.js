@@ -43,7 +43,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files,
@@ -54,7 +54,7 @@ module.exports = {
 				//===================================
 					
 				// <FUTURE> Thread context
-				var __Internal__ = {
+				const __Internal__ = {
 					loadedConfigFiles: new types.Map(),
 				};
 				
@@ -63,7 +63,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				var __options__ = types.nullObject({
+				const __options__ = types.nullObject({
 					configPath: null,
 				}, _options);
 
@@ -92,7 +92,7 @@ module.exports = {
 				_shared.loadConfig = function load(url, /*optional*/options, /*optional*/callbacks) {
 					root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url) || types._instanceof(url, files.Path), "Invalid 'url' argument.");
 						
-					var Promise = types.getPromise();
+					const Promise = types.getPromise();
 						
 					options = types.nullObject(options);
 
@@ -109,20 +109,20 @@ module.exports = {
 						callbacks = [];
 					};
 						
-					var configPath = types.getIn(options, 'configPath', __options__.configPath);
+					const configPath = types.getIn(options, 'configPath', __options__.configPath);
 					if (configPath) {
 						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(configPath, files.Url) || types._instanceof(configPath, files.Path), "Invalid 'configPath' option.");
 						url = configPath.combine(url);
 					};
 						
-					var encoding = types.getDefault(options, 'encoding', 'utf-8');
+					const encoding = types.getDefault(options, 'encoding', 'utf-8');
 
-					var key = url.toString();
+					const key = url.toString();
 						
-					var promise;
+					let promise;
 						
 					if (__Internal__.loadedConfigFiles.has(key)) {
-						var def = __Internal__.loadedConfigFiles.get(key);
+						const def = __Internal__.loadedConfigFiles.get(key);
 						def.callbacks = types.unique(def.callbacks, callbacks);
 						if (options.force) {
 							promise = def.read();
@@ -148,19 +148,19 @@ module.exports = {
 							options.headers = {};
 						};
 						options.headers['Accept'] = 'application/json';
-						var def = {
+						const def = {
 							callbacks: callbacks,
 							data: null,
 							ready: false,
 							read: function read() {
 								return files.readFile(url, options)
 									.nodeify(function proceed(err, data) {
-										var promise;
+										let promise;
 										try {
 											if (err) {
 												def.data = err;
 												def.ready = true;
-												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
+												const callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
 												promise = Promise.reject(err);
 												tools.forEach(callbacks, function(callback) {
 													promise = promise.nodeify(callback)
@@ -177,7 +177,7 @@ module.exports = {
 												data = _shared.Natives.windowJSON.parse(data);
 												def.data = data;
 												def.ready = true;
-												var callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
+												const callbacks = __Internal__.loadedConfigFiles.get(key).callbacks;
 												promise = Promise.resolve(data);
 												tools.forEach(callbacks, function(callback) {
 													promise = promise.nodeify(callback);

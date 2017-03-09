@@ -37,14 +37,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 
 				//===================================
@@ -149,7 +149,7 @@ module.exports = {
 						if (typeof obj !== 'object') {
 							return false;
 						};
-						var proto = types.getPrototypeOf(obj);
+						let proto = types.getPrototypeOf(obj);
 						if (proto) {
 							proto = types.getPrototypeOf(proto);
 						};

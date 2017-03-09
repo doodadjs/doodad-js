@@ -224,6 +224,13 @@ module.exports = {
 							// <PRB> Not every NodeJs closable object has/maintains the "_closed" flag.
 							// <PRB> The "_closed" flag can be a read-only property. So we use "destroyed" instead.
 							obj.destroyed = true;
+
+							// <PRB> ZLib may have a callback that crashes when the stream is closed (Node.Js v7.7.1) :
+							// TypeError: Cannot read property 'write' of null
+							//	at Zlib.callback (zlib.js:609:32)
+							if ((typeof obj.constructor === 'function') && (obj.constructor.name === 'Gzip')) {
+								obj._hadError = true;
+							};
 						};
 
 					} else {

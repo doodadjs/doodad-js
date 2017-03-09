@@ -38,7 +38,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,  // pre-defined from Bootstrap.js
+				const doodad = root.Doodad,  // pre-defined from Bootstrap.js
 					types = doodad.Types,  // pre-defined from Bootstrap.js
 					tools = doodad.Tools;  // pre-defined from Bootstrap.js
 				
@@ -46,14 +46,14 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 
 				//===================================
 				// Options
 				//===================================
 					
-				var __options__ = types.nullObject({
+				const __options__ = types.nullObject({
 					toSourceItemsCount: 255,		// Max number of items
 				}, _options);
 
@@ -204,7 +204,7 @@ module.exports = {
 							throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
 						};
 						obj = _shared.Natives.windowObject(obj);
-						var result,
+						let result,
 							fill = false;
 						if (types.isString(obj)) {
 							result = _shared.Natives.arraySliceCall(obj);
@@ -216,9 +216,9 @@ module.exports = {
 								result = _shared.Natives.windowArrayApply(null, obj);
 							};
 						};
-						var len = result.length;
+						const len = result.length;
 						if (mapFn) {
-							for (var key = 0; key < len; key++) {
+							for (let key = 0; key < len; key++) {
 								result[key] = mapFn.call(thisObj, result[key], key);
 							};
 						};
@@ -275,7 +275,7 @@ module.exports = {
 					//! END_REPLACE()
 					, __Internal__.hasArrows ? function isArrowFunction(obj) {
 						if (types.isFunction(obj)) {
-							var str = _shared.Natives.functionToStringCall(obj);
+							const str = _shared.Natives.functionToStringCall(obj);
 							return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
 						};
 						return false;
@@ -326,7 +326,7 @@ module.exports = {
 					//! END_REPLACE()
 					, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
 						if (types.isFunction(obj)) {
-							var str = _shared.Natives.functionToStringCall(obj);
+							const str = _shared.Natives.functionToStringCall(obj);
 							return /^(async function(\s*[(]|\s+[^\s()]*[(])|async(\s*[(][^()=]*[)]|\s+[(]?[^ ()=]+[)]?)\s*[=][>])/.test(str);
 						};
 						return false;
@@ -408,7 +408,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -422,9 +422,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function isArrayAndNotEmpty(obj) {
 						if (types.isArray(obj)) {
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
 									return true;
 								};
 							};
@@ -436,7 +436,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -451,9 +451,9 @@ module.exports = {
 					, function isArrayLikeAndNotEmpty(obj) {
 						if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
 									return true;
 								};
 							};
@@ -484,8 +484,8 @@ module.exports = {
 							return !obj;
 						} else if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
 								if (types.has(obj, key)) {
 									return false;
 								};
@@ -494,7 +494,7 @@ module.exports = {
 						};
 						if (types.isObjectLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							for (var key in obj) {
+							for (let key in obj) {
 								if (types.has(obj, key)) {
 									return false;
 								};
@@ -529,8 +529,8 @@ module.exports = {
 							return !obj;
 						} else if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
 								if (types.has(obj, key)) {
 									return false;
 								};
@@ -538,7 +538,7 @@ module.exports = {
 						};
 						if (types.isObjectLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							for (var key in obj) {
+							for (let key in obj) {
 								if (types.has(obj, key)) {
 									return false;
 								};
@@ -609,9 +609,8 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isObjectAndNotEmpty(obj) {
-						// "Object.keys" Polyfill from Mozilla Developer Network.
 						if (types.isObject(obj)) {
-							for (var key in obj) {
+							for (let key in obj) {
 								if (types.has(obj, key)) {
 									return true;
 								};
@@ -643,16 +642,15 @@ module.exports = {
 						if (types.isObjectLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							if (types.isArrayLike(obj)) {
-								var len = obj.length;
-								for (var key in obj) {
-									var number = _shared.Natives.windowNumber(key);
+								const len = obj.length;
+								for (let key in obj) {
+									const number = _shared.Natives.windowNumber(key);
 									if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
 										return true;
 									};
 								};
 							} else {
-								// "Object.keys" Polyfill from Mozilla Developer Network.
-								for (key in obj) {
+								for (let key in obj) {
 									if (types.has(obj, key)) {
 										return true;
 									};
@@ -661,14 +659,6 @@ module.exports = {
 									return true;
 								};
 							};
-							//IE8 if (__Internal__.hasDontEnumBug) {
-							//IE8 	for (var i = 0; i < __Internal__.defaultNonEnumerables.length; i++) {
-							//IE8 		var key = __Internal__.defaultNonEnumerables[i];
-							//IE8 		if (types.has(obj, key)) {
-							//IE8 			return true;
-							//IE8 		};
-							//IE8 	};
-							//IE8 };
 						};
 						return false;
 					}));
@@ -681,7 +671,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'object',
@@ -712,19 +702,21 @@ module.exports = {
 						if (types.isNothing(keys)) {
 							keys = [];
 						};
-						var result = {};
+						const result = {};
 						obj = _shared.Natives.windowObject(obj);
 						if (!types.isArray(keys)) {
 							keys = [keys];
 						};
-						var keysLen = keys.length,
+						const keysLen = keys.length,
 							hasKey = (inherited ? types.hasInherited : types.has);
-						for (var i = 0; i < keysLen; i++) {
-							var key = keys[i];
-							if (obj && hasKey(obj, key)) {
-								result[key] = obj[key];
-							} else if (_defaults && types.has(_defaults, key)) {
-								result[key] = _defaults[key];
+						for (let i = 0; i < keysLen; i++) {
+							if (types.has(keys, i)) {
+								const key = keys[i];
+								if (obj && hasKey(obj, key)) {
+									result[key] = obj[key];
+								} else if (_defaults && types.has(_defaults, key)) {
+									result[key] = _defaults[key];
+								};
 							};
 						};
 						return result;
@@ -766,7 +758,7 @@ module.exports = {
 							return;
 						};
 						obj = _shared.Natives.windowObject(obj);
-						var hasKey = (inherited ? types.hasInherited : types.has);
+						const hasKey = (inherited ? types.hasInherited : types.has);
 						if (hasKey(obj, key)) {
 							return obj[key] = value;
 						};
@@ -799,16 +791,16 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function sets(obj, values, /*optional*/inherited) {
-						var result = {};
+						const result = {};
 						if (types.isNothing(obj)) {
 							return result;
 						};
 						obj = _shared.Natives.windowObject(obj);
-						var keys = types.append(types.keys(values), types.symbols(values)),
+						const keys = types.append(types.keys(values), types.symbols(values)),
 							keysLen = keys.length,
 							hasKey = (inherited ? types.hasInherited : types.has);
-						for (var i = 0; i < keysLen; i++) {
-							var key = keys[i];
+						for (let i = 0; i < keysLen; i++) {
+							const key = keys[i];
 							if (hasKey(obj, key)) {
 								result[key] = obj[key] = values[key];
 							};
@@ -820,7 +812,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'object',
@@ -851,21 +843,23 @@ module.exports = {
 						if (types.isNothing(keys)) {
 							keys = [];
 						};
-						var result = {};
+						const result = {};
 						obj = _shared.Natives.windowObject(obj);
 						if (!types.isArray(keys)) {
 							keys = [keys];
 						};
-						var keysLen = keys.length,
+						const keysLen = keys.length,
 							hasKey = (inherited ? types.hasInherited : types.has);
-						for (var i = 0; i < keysLen; i++) {
-							var key = keys[i];
-							if (obj && hasKey(obj, key)) {
-								result[key] = obj[key];
-							} else if (types.has(_defaults, key)) {
-								var val = _defaults[key];
-								if (obj) {
-									result[key] = obj[key] = val;
+						for (let i = 0; i < keysLen; i++) {
+							if (types.has(keys, i)) {
+								const key = keys[i];
+								if (obj && hasKey(obj, key)) {
+									result[key] = obj[key];
+								} else if (types.has(_defaults, key)) {
+									const val = _defaults[key];
+									if (obj) {
+										result[key] = obj[key] = val;
+									};
 								};
 							};
 						};
@@ -948,26 +942,26 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function depthComplete(depth, /*paramarray*/obj) {
-						var result;
+						let result;
 						if (!types.isNothing(obj)) {
 							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							if (depth >= -1) {
 								result = _shared.Natives.windowObject(obj);
-								var len = arguments.length;
-								for (var i = 2; i < len; i++) {
+								const len = arguments.length;
+								for (let i = 2; i < len; i++) {
 									obj = arguments[i];
 									if (types.isNothing(obj)) {
 										continue;
 									};
 									// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 									obj = _shared.Natives.windowObject(obj);
-									var keys = types.append(types.keys(obj), types.symbols(obj)),
+									const keys = types.append(types.keys(obj), types.symbols(obj)),
 										keysLen = keys.length; // performance
-									for (var j = 0; j < keysLen; j++) {
-										var key = keys[j];
-										var objVal = obj[key];
+									for (let j = 0; j < keysLen; j++) {
+										const key = keys[j];
+										const objVal = obj[key];
 										if ((depth >= 0) && types.isObjectLike(objVal)) {
-											var resultVal = result[key];
+											const resultVal = result[key];
 											if (types.isNothing(resultVal)) {
 												result[key] = types.depthComplete(depth, {}, objVal);
 											} else if (types.isObjectLike(resultVal)) {
@@ -988,7 +982,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									keys: {
 										type: 'arrayof(string,symbol),string,symbol',
@@ -1006,7 +1000,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function fill(keys, /*paramarray*/obj) {
-						var result;
+						let result;
 						if (!types.isNothing(obj)) {
 							if (types.isNothing(keys)) {
 								keys = [];
@@ -1014,15 +1008,15 @@ module.exports = {
 								keys = [keys];
 							};
 							result = _shared.Natives.windowObject(obj);
-							var argumentsLen = arguments.length,
+							const argumentsLen = arguments.length,
 								keysLen = keys.length;
-							for (var i = 1; i < argumentsLen; i++) {
+							for (let i = 1; i < argumentsLen; i++) {
 								obj = arguments[i];
 								if (!types.isNothing(obj)) {
 									obj = _shared.Natives.windowObject(obj);
-									for (var k = 0; k < keysLen; k++) {
-										if (k in keys) {
-											var key = keys[k];
+									for (let k = 0; k < keysLen; k++) {
+										if (types.has(keys, k)) {
+											const key = keys[k];
 											if (types.has(obj, key)) {
 												result[key] = obj[key];
 											};
@@ -1042,7 +1036,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1064,15 +1058,15 @@ module.exports = {
 							if (!types.isArray(indexes)) {
 								indexes = [indexes];
 							};
-							var len = indexes.length;
+							const len = indexes.length;
 							if (!len) {
 								return false;
 							};
-							for (var i = 0; i < len; i++) {
-								if (i in indexes) {
-									var index = indexes[i],
+							for (let i = 0; i < len; i++) {
+								if (types.has(indexes, i)) {
+									const index = indexes[i],
 										number = _shared.Natives.windowNumber(index);
-									if (types.isNaN(number) || !types.isFinite(number) || !(index in obj)) {
+									if (types.isNaN(number) || !types.isFinite(number) || !types.has(obj, index)) {
 										return false;
 									};
 								};
@@ -1087,7 +1081,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1100,12 +1094,12 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function indexes(obj) {
-						var result = [];
+						const result = [];
 						if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
 									result.push(key);
 								};
 							};
@@ -1137,10 +1131,10 @@ module.exports = {
 								return _shared.Natives.objectValues(obj);
 							} else {
 								obj = _shared.Natives.windowObject(obj);
-								var result = [];
-								var keys = types.keys(obj),
+								const result = [];
+								const keys = types.keys(obj),
 									len = keys.length; // performance
-								for (var i = 0; i < len; i++) {
+								for (let i = 0; i < len; i++) {
 									result.push(obj[keys[i]]);
 								};
 								return result;
@@ -1172,8 +1166,8 @@ module.exports = {
 							if (_shared.Natives.objectEntries) {
 								return _shared.Natives.objectEntries(obj);
 							} else {
-								var result = [];
-								for (var key in obj) {
+								const result = [];
+								for (let key in obj) {
 									if (types.has(obj, key)) {
 										result.push([key, obj[key]]);
 									};
@@ -1205,9 +1199,9 @@ module.exports = {
 						} else {
 							obj = _shared.Natives.windowObject(obj);
 							if (types.isArrayLike(obj)) {
-								var result = [];
-								var len = obj.length;
-								for (var key = 0; key < len; key++) {
+								const result = [];
+								const len = obj.length;
+								for (let key = 0; key < len; key++) {
 									if (types.has(obj, key)) {
 										result.push([key, obj[key]]);
 									};
@@ -1216,8 +1210,8 @@ module.exports = {
 							} else if (_shared.Natives.objectEntries) {
 								return _shared.Natives.objectEntries(obj);
 							} else {
-								var result = [];
-								for (var key in obj) {
+								const result = [];
+								for (let key in obj) {
 									if (types.has(obj, key)) {
 										result.push([key, obj[key]]);
 									};
@@ -1231,7 +1225,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1246,9 +1240,9 @@ module.exports = {
 					, function available(obj) {
 						if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (!(key in obj)) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (!types.has(obj, key)) {
 									return key;
 								};
 							};
@@ -1260,7 +1254,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1273,12 +1267,12 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function availables(obj) {
-						var keys = [];
+						const keys = [];
 						if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (!(key in obj)) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (!types.has(obj, key)) {
 									keys.push(key);
 								};
 							};
@@ -1290,7 +1284,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1304,9 +1298,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function getFirstIndex(obj) {
 						if (types.isArrayLike(obj)) {
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
 									return key;
 								};
 							};
@@ -1317,7 +1311,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'arraylike',
@@ -1331,9 +1325,9 @@ module.exports = {
 					//! END_REPLACE()
 					, function getFirstValue(obj) {
 						if (types.isArrayLike(obj)) {
-							var len = obj.length;
-							for (var key = 0; key < len; key++) {
-								if (key in obj) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
 									return obj[key];
 								};
 							};
@@ -1344,7 +1338,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1362,28 +1356,33 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function popAt(obj, key) {
+						let item;
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							if (types.isArray(obj)) {
-								if (key in obj) {
-									var item = obj[key];
-									_shared.Natives.arraySpliceCall(obj, key, 1);
-									return item;
+							if (types.has(obj, key)) {
+								if (types.isArray(obj)) {
+									const number = _shared.Natives.windowNumber(key);
+									if ((number >= 0) && (number < obj.length)) {
+										item = obj[key];
+										_shared.Natives.arraySpliceCall(obj, key, 1);
+									} else {
+										item = obj[key];
+										delete obj[key];
+									};
+								} else {
+									item = obj[key];
+									delete obj[key];
 								};
 							};
-							if (types.has(obj, key)) {
-								var item = obj[key];
-								delete obj[key];
-								return item;
-							};
 						};
+						return item;
 					}));
 				
 				types.ADD('popItem', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1415,10 +1414,10 @@ module.exports = {
 							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArray(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (item.call(thisObj, val, key, obj)) {
 												_shared.Natives.arraySpliceCall(obj, key, 1);
 												return val;
@@ -1426,11 +1425,11 @@ module.exports = {
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i];
-										var val = obj[key];
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (item.call(thisObj, val, key, obj)) {
 											delete obj[key];
 											return val;
@@ -1439,10 +1438,10 @@ module.exports = {
 								};
 							} else {
 								if (types.isArray(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (val === item) {
 												_shared.Natives.arraySpliceCall(obj, key, 1);
 												return val;
@@ -1450,11 +1449,11 @@ module.exports = {
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i];
-										var val = obj[key];
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (val === item) {
 											delete obj[key];
 											return val;
@@ -1469,7 +1468,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1492,15 +1491,15 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function popItems(obj, items, /*optional*/thisObj) {
-						var result = [];
+						const result = [];
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 								
 							if (types.isFunction(items)) {
 								if (types.isArray(obj)) {
-									for (var key = obj.length - 1; key >= 0; key--) {
-										if (key in obj) {
-											var val = obj[key];
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (items.call(thisObj, val, key, obj)) {
 												_shared.Natives.arraySpliceCall(obj, key, 1);
 												result.push(val);
@@ -1508,11 +1507,11 @@ module.exports = {
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i];
-										var val = obj[key];
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (items.call(thisObj, val, key, obj)) {
 											delete obj[key];
 											result.push(val);
@@ -1520,13 +1519,13 @@ module.exports = {
 									};
 								};
 							} else if (types.isArray(items)) {
-								var itemsLen = items.length;
+								const itemsLen = items.length;
 								if (types.isArray(obj)) {
-									for (var key = obj.length - 1; key >= 0; key--) {
-										if (key in obj) {
-											var val = obj[key];
-											for (var j = 0; j < itemsLen; j++) {
-												if (j in items) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											for (let j = 0; j < itemsLen; j++) {
+												if (types.has(items, j)) {
 													if (items[j] === val) {
 														_shared.Natives.arraySpliceCall(obj, key, 1);
 														result.push(val);
@@ -1536,13 +1535,13 @@ module.exports = {
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i];
-										var val = obj[key];
-										for (var j = 0; j < itemsLen; j++) {
-											if (j in items) {
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										for (let j = 0; j < itemsLen; j++) {
+											if (types.has(items, j)) {
 												if (items[j] === val) {
 													delete obj[key];
 													result.push(val);
@@ -1581,9 +1580,9 @@ module.exports = {
 						if (!types.isArrayLike(obj)) {
 							return null;
 						};
-						var len = arguments.length;
-						for (var i = 1; i < len; i++) {
-							var arg = arguments[i];
+						const len = arguments.length;
+						for (let i = 1; i < len; i++) {
+							const arg = arguments[i];
 							if (!types.isNothing(arg)) {
 								_shared.Natives.arrayUnshiftApply(obj, arg);
 							};

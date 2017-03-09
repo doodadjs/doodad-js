@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -55,7 +55,7 @@ module.exports = {
 					global.symbol1 = types.hasGetSymbolEnabled() && types.getSymbol("symbol1") || undefined;
 					global.symbol2 = types.hasGetSymbolEnabled() && types.getSymbol("symbol2") || undefined;
 					
-					var createDicts = function createDicts() {
+					const createDicts = function createDicts() {
 						global.dict1 = {
 							a: 1,
 							b: 2,
@@ -64,13 +64,13 @@ module.exports = {
 							global.dict1[global.symbol1] = 10;
 						};
 						
-						var typeDict2 = function() {};
+						const typeDict2 = function() {};
 						typeDict2.prototype = types.setPrototypeOf(typeDict2.prototype, global.dict1);
 						typeDict2.prototype.c = 3;
 						typeDict2.prototype.d = 4;
 						global.dict2 = new typeDict2();
 						
-						var typeDict3 = function() {};
+						const typeDict3 = function() {};
 						typeDict3.prototype = types.setPrototypeOf(typeDict3.prototype, global.dict2);
 						global.dict3 = new typeDict3();
 						global.dict3.e = 5;
@@ -82,8 +82,11 @@ module.exports = {
 					
 					createDicts();
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
+					command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "undefined", "'a'");
@@ -125,7 +128,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
+					command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
 					
 					command.run(false,       {eval: true}     /**/ );
 					command.run(false,       {eval: true},    /**/ "undefined", "'a'");
@@ -167,7 +170,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.get, "Doodad.Types.get");
+					command = test.prepareCommand(types.get, "Doodad.Types.get");
 					
 					command.run(undefined,   {eval: true}     /**/ );
 					command.run(undefined,   {eval: true},    /**/ "undefined", "'a'");
@@ -362,7 +365,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.gets, "Doodad.Types.gets");
+					command = test.prepareCommand(types.gets, "Doodad.Types.gets");
 					
 					command.run("{}",                     {eval: true}     /**/ );
 					command.run("{}",                     {eval: true},    /**/ "undefined", "'a'");
@@ -412,7 +415,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.set, "Doodad.Types.set");
+					command = test.prepareCommand(types.set, "Doodad.Types.set");
 					
 					command.run(undefined,   {eval: true}     /**/ );
 					command.run(undefined,   {eval: true},    /**/ "undefined", "'a'");
@@ -512,7 +515,7 @@ module.exports = {
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.sets, "Doodad.Types.sets");
+					command = test.prepareCommand(types.sets, "Doodad.Types.sets");
 					
 					command.run("{}",                                   {eval: true}     /**/ );
 					command.run("{}",                                   {eval: true},    /**/ "undefined", "'a'");
@@ -568,7 +571,7 @@ module.exports = {
 					createDicts();
 
 
-					var command = test.prepareCommand(types.getDefault, "Doodad.Types.getDefault");
+					command = test.prepareCommand(types.getDefault, "Doodad.Types.getDefault");
 					
 					command.run(undefined,   {eval: true}     /**/ );
 					command.run(undefined,   {eval: true},    /**/ "undefined", "'a'");
@@ -715,7 +718,7 @@ module.exports = {
 					createDicts();
 
 					
-					var command = test.prepareCommand(types.getsDefault, "Doodad.Types.getsDefault");
+					command = test.prepareCommand(types.getsDefault, "Doodad.Types.getsDefault");
 					
 					command.run("{}",                     {eval: true}     /**/ );
 					command.run("{}",                     {eval: true},    /**/ "undefined", "'a'");
@@ -766,7 +769,7 @@ module.exports = {
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.keys, "Doodad.Types.keys");
+					command = test.prepareCommand(types.keys, "Doodad.Types.keys");
 					command.run("[]",                    {eval: true, contains: true}     /**/ );
 					command.run("['a', 'b']",            {eval: true, contains: true},    /**/ "dict1");
 					command.run("[]",                    {eval: true, contains: true},    /**/ "dict2");
@@ -774,7 +777,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.keysInherited, "Doodad.Types.keysInherited");
+					command = test.prepareCommand(types.keysInherited, "Doodad.Types.keysInherited");
 					command.run("[]",                             {eval: true, contains: true}     /**/ );
 					command.run("['a', 'b']",                     {eval: true, contains: true},    /**/ "dict1");
 					command.run("['a', 'b', 'c', 'd']",           {eval: true, contains: true},    /**/ "dict2");
@@ -782,27 +785,27 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.complete, "Doodad.Types.complete");
+					command = test.prepareCommand(types.complete, "Doodad.Types.complete");
 					command.run("undefined",                      {eval: true}     /**/ );
 					command.run("{a: 1, b: 2, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 					command.end();
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.depthComplete, "Doodad.Types.depthComplete");
+					command = test.prepareCommand(types.depthComplete, "Doodad.Types.depthComplete");
 					command.run("undefined",                               {eval: true}     /**/ );
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}",         {eval: true, depth: 2},    /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}, ee: 5}}",  {eval: true, depth: 2},    /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.extend, "Doodad.Types.extend");
+					command = test.prepareCommand(types.extend, "Doodad.Types.extend");
 					command.run("{a: 2, b: 3, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 					command.end();
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.depthExtend, "Doodad.Types.depthExtend");
+					command = test.prepareCommand(types.depthExtend, "Doodad.Types.depthExtend");
 					command.run("undefined",                                              {eval: true}            /**/ );
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
@@ -811,7 +814,7 @@ module.exports = {
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.fill, "Doodad.Types.fill");
+					command = test.prepareCommand(types.fill, "Doodad.Types.fill");
 					command.run("undefined",                        {eval: true}     /**/ );
 					command.run("{a: 1, b: 2}",                     {eval: true},    /**/ "undefined", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 
@@ -825,7 +828,7 @@ module.exports = {
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.values, "Doodad.Types.values");
+					command = test.prepareCommand(types.values, "Doodad.Types.values");
 					command.run("[]",                    {eval: true, contains: true}     /**/ );
 					command.run("[1, 2]",                {eval: true, contains: true},    /**/ "dict1");
 					command.run("[]",                    {eval: true, contains: true},    /**/ "dict2");
@@ -833,7 +836,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.items, "Doodad.Types.items");
+					command = test.prepareCommand(types.items, "Doodad.Types.items");
 					command.run("[]",                    {eval: true, contains: true, depth: 1}     /**/ );
 					command.run("[['a', 1], ['b', 2]]",  {eval: true, contains: true, depth: 1},    /**/ "dict1");
 					command.run("[]",                    {eval: true, contains: true, depth: 1},    /**/ "dict2");
@@ -841,7 +844,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
+					command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "dict1");
 					createDicts();
@@ -853,7 +856,7 @@ module.exports = {
 					command.end();
 					createDicts();
 
-					var command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
+					command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "dict1");
 					command.run(undefined,  {eval: true},    /**/  "dict1", 0);
@@ -868,7 +871,7 @@ module.exports = {
 					command.end();
 					createDicts();
 
-					var command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
+					command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
 					command.run("[]",       {eval: true, contains: true}  /**/ );
 					command.run("[]",       {eval: true, contains: true}, /**/  "dict1");
 					command.run("[]",       {eval: true, contains: true}, /**/  "dict1", "[0]");
@@ -882,12 +885,12 @@ module.exports = {
 					createDicts();
 					
 					
-					var command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
+					command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
 					command.run(false,      {eval: true}     /**/ );
 					command.run(true,       {eval: true},    /**/  "dict1");
 					command.end();
 					
-					var command = test.prepareCommand(types.clone, "Doodad.Types.clone");
+					command = test.prepareCommand(types.clone, "Doodad.Types.clone");
 					command.run("undefined",                                {eval: true}     /**/ );
 					command.run("dict1",                                    {eval: true, not: true, mode: 'compare'},  /**/  "dict1");
 					if (global.symbol1) {

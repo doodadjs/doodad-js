@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -134,7 +134,11 @@ module.exports = {
 					
 					global.objTest3 = new global.Test3();
 
-					var command = test.prepareCommand(types.isType, "Doodad.Types.isType");
+
+					let command;
+
+
+					command = test.prepareCommand(types.isType, "Doodad.Types.isType");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -164,7 +168,7 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3");
 					command.end();
 
-					var command = test.prepareCommand(types.isJsFunction, "Doodad.Types.isJsFunction");
+					command = test.prepareCommand(types.isJsFunction, "Doodad.Types.isJsFunction");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -194,7 +198,7 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3");
 					command.end();
 
-					var command = test.prepareCommand(types.isJsObject, "Doodad.Types.isJsObject");
+					command = test.prepareCommand(types.isJsObject, "Doodad.Types.isJsObject");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -226,7 +230,7 @@ module.exports = {
 
 					
 					
-					var command = test.prepareCommand(function(obj, type) {
+					command = test.prepareCommand(function(obj, type) {
 						return obj instanceof type;
 					}, "obj instanceof type");
 					
@@ -254,7 +258,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types._instanceof, "Doodad.Types._instanceof");
+					command = test.prepareCommand(types._instanceof, "Doodad.Types._instanceof");
 					
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Type");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
@@ -287,7 +291,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.baseof, "Doodad.Types.baseof");
+					command = test.prepareCommand(types.baseof, "Doodad.Types.baseof");
 					
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Type");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
@@ -320,7 +324,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.is, "Doodad.Types.is");
+					command = test.prepareCommand(types.is, "Doodad.Types.is");
 					
 					command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Type");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
@@ -353,7 +357,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.isLike, "Doodad.Types.isLike");
+					command = test.prepareCommand(types.isLike, "Doodad.Types.isLike");
 					
 					command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Type");
 					command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1", "Type");
@@ -386,7 +390,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(function(obj, attr) {
+					command = test.prepareCommand(function(obj, attr) {
 						return obj[attr];
 					}, "obj[attr]");
 					
@@ -407,8 +411,8 @@ module.exports = {
 					
 					command.end();
 
-					var command = test.prepareCommand(function(obj, attr) {
-						var fn = obj[attr];
+					command = test.prepareCommand(function(obj, attr) {
+						const fn = obj[attr];
 						return fn && fn.apply(obj);
 					}, "obj[attr]()");
 					
@@ -446,7 +450,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.getType, "Doodad.Types.getType");
+					command = test.prepareCommand(types.getType, "Doodad.Types.getType");
 					
 					command.run("Type",   {eval: true, repetitions: 100},        /**/ "Type");
 					command.run("Test1",  {eval: true, repetitions: 100},        /**/ "Test1");
@@ -458,7 +462,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.getTypeName, "Doodad.Types.getTypeName");
+					command = test.prepareCommand(types.getTypeName, "Doodad.Types.getTypeName");
 					
 					command.run("'Type'",   {eval: true, repetitions: 100},        /**/ "Type");
 					command.run("'Test1'",  {eval: true, repetitions: 100},        /**/ "Test1");
@@ -470,7 +474,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.getBase, "Doodad.Types.getBase");
+					command = test.prepareCommand(types.getBase, "Doodad.Types.getBase");
 					
 		////			command.run("???",        {eval: true, repetitions: 100},        /**/ "Type");
 					command.run("Type",     {eval: true, repetitions: 100},        /**/ "Test1");
@@ -482,7 +486,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(function (obj) {
+					command = test.prepareCommand(function (obj) {
 						return obj.toString();
 					}, "obj.toString()");
 
@@ -496,7 +500,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(function (obj) {
+					command = test.prepareCommand(function (obj) {
 						return obj.toLocaleString();
 					}, "obj.toLocaleString()");
 
@@ -510,7 +514,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(function (obj) {
+					command = test.prepareCommand(function (obj) {
 						return (types instanceof types.Namespace) && (types instanceof types.Type);
 					}, "(Doodad.Types instanceof Doodad.Types.Namespace) && (Doodad.Types instanceof Doodad.Types.Type)");
 					command.run(true);

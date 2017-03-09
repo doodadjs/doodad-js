@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -53,7 +53,11 @@ module.exports = {
 						options = {};
 					};
 
-					var command = test.prepareCommand(function(/*paramarray*/) {
+
+					let command;
+
+
+					command = test.prepareCommand(function(/*paramarray*/) {
 						return files.Path.parse.apply(files.Path, arguments);
 					}, "Doodad.Tools.Files.Path.parse.test1");
 						
@@ -237,8 +241,8 @@ module.exports = {
 					command.end();
 					
 			
-					var command = test.prepareCommand(function(path, /*optional*/options) {
-						var res = files.Path.parse(path, options);
+					command = test.prepareCommand(function(path, /*optional*/options) {
+						let res = files.Path.parse(path, options);
 						if (res) {
 							res = res.toString();
 						};
@@ -246,7 +250,7 @@ module.exports = {
 					}, "Doodad.Tools.Files.Path.parse.test2");
 					
 					function test2(osType, /*optional*/forceOs) {
-						var options;
+						let options = null;
 						if (forceOs) {
 							options = {os: osType};
 						};
@@ -338,7 +342,7 @@ module.exports = {
 					command.end();
 					
 
-					var command = test.prepareCommand(function(path1, path2, /*optional*/optionsPath1, /*optional*/optionsPath2, /*optional*/setPath2, /*optional*/combineOptions, /*optional*/toStringOptions) {
+					command = test.prepareCommand(function(path1, path2, /*optional*/optionsPath1, /*optional*/optionsPath2, /*optional*/setPath2, /*optional*/combineOptions, /*optional*/toStringOptions) {
 						path1 = files.Path.parse(path1, optionsPath1);
 						if (!path1) {
 							return undefined;
@@ -400,7 +404,7 @@ module.exports = {
 					
 					
 					
-					var command = test.prepareCommand(function(path, url, /*optional*/optionsPath, /*optional*/optionsUrl, /*optional*/setUrl, /*optional*/combineOptions, /*optional*/toStringOptions) {
+					command = test.prepareCommand(function(path, url, /*optional*/optionsPath, /*optional*/optionsUrl, /*optional*/setUrl, /*optional*/combineOptions, /*optional*/toStringOptions) {
 						path = files.Path.parse(path, optionsPath);
 						if (!path) {
 							return undefined;

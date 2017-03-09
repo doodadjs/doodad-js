@@ -45,7 +45,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files,
@@ -58,7 +58,7 @@ module.exports = {
 				// Internals
 				//=============================
 					
-				var __Internal__ = {
+				const __Internal__ = {
 					//documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
 					loadedScripts: types.nullObject(),   // <FUTURE> global to every thread
@@ -68,7 +68,7 @@ module.exports = {
 				// Options
 				//=====================
 				
-				var __options__ = types.extend({
+				const __options__ = types.extend({
 					enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 					defaultScriptTimeout: 10000,		// milliseconds
 				}, _options);
@@ -149,103 +149,26 @@ module.exports = {
 				// Events
 				//===================================
 				
-				__Internal__.hasAddEventListener = types.isNativeFunction(global.addEventListener);
+				client.ADD('addListener', function addListener(element, name, handler, /*optional*/capture) {
+					element.addEventListener(name, handler, !!capture);
+				});
 				
-				client.ADD('addListener', (__Internal__.hasAddEventListener ? 
-						function addListener(element, name, handler, /*optional*/capture) {
-							element.addEventListener(name, handler, !!capture);
-						} 
-						
-					:
-						function addListener(element, name, handler, /*optional*/capture) {
-							name = 'on' + name;
-							var handlersName = types.getSymbol('__DD_EVENT_HANDLERS__' + name, true);
-							var handlers = types.get(element, handlersName);
-							//if (types.isNativeFunction(element.attachEvent)) {
-							if (element.attachEvent) {
-								// IE
-								var caller = function(ev) {
-									ev = ev || global.event;
-									return handler.call(this, ev);
-								};
-								if (!handlers) {
-									element[handlersName] = handlers = new types.Map();
-								};
-								handlers.set(handler, caller);
-								element.attachEvent(name, caller);
-							} else {
-								if (!handlers) {
-									element[handlersName] = handlers = [];
-									var caller = function _caller(ev) {
-										ev = ev || global.event;
-										var handlers = types.get(element, handlersName, []),
-											retval;
-										for (var i = handlers.length - 1; i >= 0; i--) {
-											var handler = handlers[i];
-											retval = handler.call(this, ev);
-											if (retval === false) {
-												break;
-											};
-										};
-										return retval;
-									};
-									var oldHandler = element[name];
-									if (oldHandler) {
-										handlers.push(oldHandler);
-									};
-									element[name] = caller;
-								};
-								if (tools.indexOf(handlers, handler) < 0) {
-									handlers.push(handler);
-								};
-							};
-						}
-						
-					));
-				
-				client.ADD('removeListener', (__Internal__.hasAddEventListener ? 
-						function removeListener(element, name, handler, /*optional*/capture) {
-							element.removeEventListener(name, handler, !!capture);
-						}
-						
-					: 
-						function removeListener(element, name, handler, /*optional*/capture) {
-							name = 'on' + name;
-							var handlersName = types.getSymbol('__DD_EVENT_HANDLERS__' + name, true);
-							var handlers = types.get(element, handlersName);
-							//if (types.isNativeFunction(element.attachEvent)) {
-							if (element.attachEvent) {
-								// IE
-								var caller;
-								if (handlers) {
-									caller = handlers.get(handler);
-								};
-								element.detachEvent(name, caller || handler);
-							} else {
-								if (handlers) {
-									for (var i = handlers.length - 1; i >= 0; i--) {
-										if (handlers[i] === handler) {
-											handlers.splice(i, 1);
-										};
-									};
-								};
-							};
-						}
-
-					));
+				client.ADD('removeListener', function removeListener(element, name, handler, /*optional*/capture) {
+					element.removeEventListener(name, handler, !!capture);
+				});
 				
 				//===================================
 				// Promise events
 				//===================================
 
-				__Internal__.unhandledErrorEvent = new types.Map();
-				__Internal__.unhandledRejectionEvent = new types.Map();
-				__Internal__.handledRejectionEvent = new types.Map();
+				__Internal__.unhandledErrorEvent = new types.WeakMap();
+				__Internal__.unhandledRejectionEvent = new types.WeakMap();
+				__Internal__.handledRejectionEvent = new types.WeakMap();
 				
 				types.ADD('addAppEventListener', function addAppEventListener(event, listener) {
 					if (event === 'unhandlederror') {
 						if (!__Internal__.unhandledErrorEvent.has(listener)) {
-							var handler = function(msg, url, lineNo, columnNo, error) {
+							const handler = function(msg, url, lineNo, columnNo, error) {
 								if (!error) {
 									// <PRB> Not every browsers supports the "error" argument
 									error = new types.Error(msg);
@@ -262,13 +185,13 @@ module.exports = {
 									}
 								}));
 							};
-							global.addEventListener('error', handler);
+							client.addListener(global, 'error', handler);
 							__Internal__.unhandledErrorEvent.set(listener, handler);
 						};
 					} else if (event === 'unhandledrejection') {
 						// FUTURE: Use new standardized method (with the GC).
 						if (!__Internal__.unhandledRejectionEvent.has(listener)) {
-							var handler = function(ev) {
+							const handler = function(ev) {
 								listener(new types.CustomEvent('unhandledrejection', {
 									detail: {
 										reason: ev.reason || ev.detail.reason,
@@ -276,20 +199,20 @@ module.exports = {
 									}
 								}));
 							};
-							global.addEventListener(event, handler);
+							client.addListener(global, event, handler);
 							__Internal__.unhandledRejectionEvent.set(listener, handler);
 						};
 					} else if (event === 'rejectionhandled') {
 						// FUTURE: Use new standardized method (with the GC).
 						if (!__Internal__.handledRejectionEvent.has(listener)) {
-							var handler = function(ev) {
+							const handler = function(ev) {
 								listener(new types.CustomEvent('rejectionhandled', {
 									detail: {
 										promise: ev.promise || ev.detail.promise,
 									}
 								}));
 							};
-							global.addEventListener(event, handler);
+							client.addListener(global, event, handler);
 							__Internal__.handledRejectionEvent.set(listener, handler);
 						};
 					} else {
@@ -300,14 +223,14 @@ module.exports = {
 				types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
 					if (event === 'unhandledrejection') {
 						if (__Internal__.unhandledRejectionEvent.has(listener)) {
-							var handler = __Internal__.unhandledRejectionEvent.get(listener);
-							global.removeEventListener(event, handler);
+							const handler = __Internal__.unhandledRejectionEvent.get(listener);
+							client.removeListener(global, event, handler);
 							__Internal__.unhandledRejectionEvent.delete(listener);
 						};
 					} else if (event === 'rejectionhandled') {
 						if (__Internal__.handledRejectionEvent.has(listener)) {
-							var handler = __Internal__.handledRejectionEvent.get(listener);
-							global.removeEventListener(event, handler);
+							const handler = __Internal__.handledRejectionEvent.get(listener);
+							client.removeListener(global, event, handler);
 							__Internal__.handledRejectionEvent.delete(listener);
 						};
 					} else {
@@ -326,9 +249,9 @@ module.exports = {
 					__Internal__.nextTickDiv = _shared.Natives.windowDocument.createElement("div");
 					__Internal__.nextTickObserver = new _shared.Natives.windowMutationObserver(function () {
 						try {
-							var queueLen = __Internal__.nextTickQueue.length;
-							for (var i = 0; i < queueLen; i++) {
-								var frame = __Internal__.nextTickQueue[i];
+							const queueLen = __Internal__.nextTickQueue.length;
+							for (let i = 0; i < queueLen; i++) {
+								const frame = __Internal__.nextTickQueue[i];
 								if (!frame.cancelled) {
 									frame.callback();
 								};
@@ -391,7 +314,7 @@ module.exports = {
 						fn = doodad.Callback(thisObj, fn, null, args || [], secret);
 						if (_shared.Natives.windowMutationObserver && (delay < 0)) {
 							// Next tick
-							var frame = { callback: fn, cancelled: false };
+							let frame = {callback: fn, cancelled: false};
 							__Internal__.nextTickQueue.push(frame);
 							if (__Internal__.nextTickDone) {
 								__Internal__.nextTickDone = false;
@@ -406,7 +329,7 @@ module.exports = {
 							} : undefined);
 						} else if (_shared.Natives.windowSetImmediate && (delay <= 0)) { // IE 10
 							// Raised after events queue process
-							var id = _shared.Natives.windowSetImmediate(fn);
+							let id = _shared.Natives.windowSetImmediate(fn);
 							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowClearImmediate(id);
@@ -415,7 +338,7 @@ module.exports = {
 							} : undefined);
 						} else if (_shared.Natives.windowRequestAnimationFrame && (delay <= 0)) {
 							// Raised just before page re-paint
-							var id = _shared.Natives.windowRequestAnimationFrame(fn);
+							let id = _shared.Natives.windowRequestAnimationFrame(fn);
 							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowCancelAnimationFrame(id);
@@ -425,7 +348,7 @@ module.exports = {
 						} else {
 							// Raised after X ms
 							delay = _shared.Natives.mathMax(delay, 0);
-							var id = _shared.Natives.windowSetTimeout(fn, delay);
+							let id = _shared.Natives.windowSetTimeout(fn, delay);
 							return (cancelable ? {
 								cancel: function cancel() {
 									_shared.Natives.windowClearTimeout(id);
@@ -466,7 +389,7 @@ module.exports = {
 					} else {
 						err.trapped = true;
 
-						var exitCode = 1; // 1 = General error
+						let exitCode = 1; // 1 = General error
 
 						try {
 							if (types._instanceof(err, types.ScriptAbortedError)) {
@@ -498,8 +421,8 @@ module.exports = {
 						
 						if (!__Internal__.setCurrentLocationPending) {
 							try {
-								var reload = false;
-								var url = files.Url.parse(_shared.Natives.windowLocation.href);
+								let reload = false;
+								let url = files.Url.parse(_shared.Natives.windowLocation.href);
 							
 								// TODO: Better user message, with translation
 								_shared.Natives.windowDocument.open('text/plain', false);
@@ -733,17 +656,17 @@ module.exports = {
 					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
 						
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
-						var events = this.__JS_EVENTS,
+						const events = this.__JS_EVENTS,
 							eventsLen = events.length;
-						for (var i = 0; i < eventsLen; i++) {
+						for (let i = 0; i < eventsLen; i++) {
 							this[events[i]].detach(elements, useCapture);
 						};
 					})))),
 					
 					clearJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearJsEvents() {
-						var events = this.__JS_EVENTS,
+						const events = this.__JS_EVENTS,
 							eventsLen = events.length;
-						for (var i = 0; i < eventsLen; i++) {
+						for (let i = 0; i < eventsLen; i++) {
 							this[events[i]].clear();
 						};
 					})))),
@@ -776,11 +699,12 @@ module.exports = {
 
 							useCapture = !!useCapture;
 							
-							//var handler	= types.bind(this[_shared.ObjectSymbol], this),
-							var self = this,
-								ignore = false;
+							//const handler = types.bind(this[_shared.ObjectSymbol], this),
+							const self = this;
+
+							let ignore = false;
 							
-							var createHandler = function(element) {
+							const createHandler = function(element) {
 								return function jsEventHandler(ev) {
 									if (!ignore) {
 										if (once) {
@@ -798,16 +722,16 @@ module.exports = {
 								};
 							};
 							
-							var eventTypes = this[_shared.ExtenderSymbol].types,
+							const eventTypes = this[_shared.ExtenderSymbol].types,
 								eventTypesLen = eventTypes.length;
 								
-							for (var i = 0; i < eventTypesLen; i++) {
-								if (types.hasIndex(eventTypes, i)) {
-									var type = eventTypes[i],
+							for (let i = 0; i < eventTypesLen; i++) {
+								if (types.has(eventTypes, i)) {
+									const type = eventTypes[i],
 										elementsLen = elements.length;
-									for (var j = 0; j < elementsLen; j++) {
-										if (types.hasIndex(elements, j)) {
-											var element = elements[j],
+									for (let j = 0; j < elementsLen; j++) {
+										if (types.has(elements, j)) {
+											const element = elements[j],
 												handler = createHandler(element);
 											if (this._super(this[_shared.ObjectSymbol], this, null, [useCapture, element, type, handler])) {
 												client.addListener(element, type, handler, useCapture);
@@ -822,16 +746,16 @@ module.exports = {
 						},
 						detach: types.SUPER(function detach(/*optional*/elements, /*optional*/useCapture) {
 							if (types.isNothing(elements)) {
-								var evs = null;
+								let evs = null;
 								if (types.isNothing(useCapture)) {
 									evs = this._super(this[_shared.ObjectSymbol], this);
 								} else {
 									evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture]);
 								};
 								if (evs) {
-									var evsLen = evs.length;
-									for (var j = 0; j < evsLen; j++) {
-										var evData = evs[j][3],
+									const evsLen = evs.length;
+									for (let j = 0; j < evsLen; j++) {
+										const evData = evs[j][3],
 											capture = evData[0],
 											element = evData[1],
 											type = evData[2],
@@ -848,9 +772,9 @@ module.exports = {
 									return client.isEventTarget(element);
 								}), "Invalid elements.");
 								
-								var elementsLen = elements.length;
-								for (var i = 0; i < elementsLen; i++) {
-									var evs = null;
+								const elementsLen = elements.length;
+								for (let i = 0; i < elementsLen; i++) {
+									let evs = null;
 									if (types.isNothing(useCapture)) {
 										evs = this._super(this[_shared.ObjectSymbol], this, [false, elements[i]]);
 										types.append(evs, this._super(this[_shared.ObjectSymbol], this, [true, elements[i]]));
@@ -858,9 +782,9 @@ module.exports = {
 										evs = this._super(this[_shared.ObjectSymbol], this, [!!useCapture, elements[i]]);
 									};
 									if (evs) {
-										var evsLen = evs.length;
-										for (var j = 0; j < evsLen; j++) {
-											var evData = evs[j][3],
+										const evsLen = evs.length;
+										for (let j = 0; j < evsLen; j++) {
+											const evData = evs[j][3],
 												capture = evData[0],
 												element = evData[1],
 												type = evData[2],
@@ -876,9 +800,9 @@ module.exports = {
 						},
 						promise: function promise(elements, /*optional*/context, /*optional*/useCapture) {
 							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							var canReject = this[_shared.ExtenderSymbol].canReject;
-							var self = this;
-							var Promise = types.getPromise();
+							const canReject = this[_shared.ExtenderSymbol].canReject;
+							const self = this;
+							const Promise = types.getPromise();
 							return Promise.create(function eventPromise(resolve, reject) {
 								self.attachOnce(elements, context, useCapture, function(ev) {
 									if (canReject && types._instanceof(ev, doodad.ErrorEvent)) {
@@ -915,7 +839,7 @@ module.exports = {
 					
 					getUnified: types.READ_ONLY(function getUnified() {
 						if (!this.__unified) {
-							var self = this;
+							const self = this;
 							this.__unified = {
 								// TODO: Unify event properties between browsers
 								which: (types.isNothing(self.which) ? self.keyCode : ((self.which != 0) && (self.charCode != 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
@@ -978,7 +902,7 @@ module.exports = {
 						if (eventTypes) {
 							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
 						};
-						var val = types.unbox(fn);
+						const val = types.unbox(fn);
 						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 					};
 					return doodad.PROTECTED(doodad.ATTRIBUTE(fn, extenders.JsEvent, {
@@ -1006,9 +930,9 @@ module.exports = {
 					// NOTE: Why it's never simple like this ?
 					// NOTE: Windows older than Windows NT not supported
 					// NOTE: Macintosh older than OS/X not supported
-					var os = __Internal__.os;
+					let os = __Internal__.os;
 					if (!os) {
-						var platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
+						const platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
 							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
 							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
 							caseSensitive = tools.getOptions().caseSensitive;
@@ -1043,8 +967,8 @@ module.exports = {
 				//! END_REPLACE()
 				, function getDefaultLanguage(/*optional*/alt) {
 					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
-					var navigator = _shared.Natives.windowNavigator;
-					var tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
+					const navigator = _shared.Natives.windowNavigator;
+					const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
 					tmp[1] = tmp[1].toUpperCase();
 					return tmp.join('_');
 				}));
@@ -1095,7 +1019,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function getCurrentLocation(/*optional*/_window) {
-					var _location = _shared.Natives.windowLocation;
+					let _location = _shared.Natives.windowLocation;
 					if (_window) {
 						_location = _window.location;
 					};
@@ -1147,14 +1071,14 @@ module.exports = {
 							url = files.Url.parse(url);
 						};
 						
-						var _location = _shared.Natives.windowLocation;
+						let _location = _shared.Natives.windowLocation;
 						if (_window) {
 							_location = _window.location;
 						} else {
 							_window = global;
 						};
 
-						var result = url.compare(_location.href);
+						const result = url.compare(_location.href);
 						if (!noReload && (result === 0)) {
 							_location.reload();
 							__Internal__.setCurrentLocationPending = true;
@@ -1169,7 +1093,8 @@ module.exports = {
 									};
 								});
 							} else if ('onunload' in _window) {
-								var __unloadHandler = function() {
+								// NOTE: Only the presence of the handler forces the page to reload.
+								const __unloadHandler = function() {
 									//client.removeListener(_window, 'unload', __unloadHandler);
 								};
 								client.addListener(_window, 'unload', __unloadHandler);
@@ -1280,7 +1205,7 @@ module.exports = {
 									this.loadEv = 'load';
 								};
 								
-								var self = this;
+								const self = this;
 								
 								// NOTE: Safari: "onload" doesn't raise for the 'link' tag
 								client.addListener(this.element, this.loadEv, function scriptOnSuccess(ev) {
@@ -1301,10 +1226,10 @@ module.exports = {
 
 								//if (this.async) {
 								//	// Workaround for asynchronous script loading
-								//	var appendElement = function appendElement() {
+								//	const appendElement = function appendElement() {
 								//		self.target.appendChild(self.element);
 								//	};
-								//	setTimeout(appendElement, 1);
+								//	_shared.Natives.windowSetTimeout(appendElement, 1);
 								//} else {
 									this.target.appendChild(this.element);
 								//};
@@ -1318,12 +1243,12 @@ module.exports = {
 
 								// <PRB> Safari: "onload" doesn't raise with the 'link' tag
 								if (this.tag === 'link') {
-									var url = (this.element.src || this.element.href);
+									let url = (this.element.src || this.element.href);
 									if (url) {
 										url = files.Url.parse(url);
 									};
 									if (url) {
-										var waitDownload = this.target.ownerDocument.createElement('img');
+										const waitDownload = this.target.ownerDocument.createElement('img');
 										client.addListener(waitDownload, 'error', function handleWaitDownload(ev) {
 											if (waitDownload.parentNode) {
 												waitDownload.parentNode.removeChild(waitDownload);
@@ -1399,7 +1324,7 @@ module.exports = {
 						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
 
-					var loader = null;
+					let loader = null;
 					
 					if (types._instanceof(url, files.Path)) {
 						url = files.Url.parse(url);
@@ -1414,7 +1339,7 @@ module.exports = {
 					if (url in __Internal__.loadedScripts) {
 						loader = __Internal__.loadedScripts[url];
 					};
-					if (reload) {
+					if (reload && loader) {
 						if (loader.element && loader.element.parentNode) {
 							loader.element.parentNode.removeChild(loader.element);
 							loader.element = null;
@@ -1479,7 +1404,7 @@ module.exports = {
 						_document = _shared.Natives.windowDocument;
 					};
 					
-					var loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
+					const loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
 					
 					loader.addEventListener('init', function() {
 						this.element.type = 'text/javascript';
@@ -1555,7 +1480,7 @@ module.exports = {
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
 					
-					var loader = null;
+					let loader = null;
 					if (url in __Internal__.loadedScripts) {
 						loader = __Internal__.loadedScripts[url];
 					};
@@ -1633,7 +1558,7 @@ module.exports = {
 						_document = _shared.Natives.windowDocument;
 					};
 
-					var loader;
+					let loader;
 					
 					if (async && _shared.Natives.windowBlob && global.URL) {
 						// Firefox
@@ -1710,15 +1635,15 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function readFile(url, /*optional*/options) {
-					var Promise = types.getPromise();
+					const Promise = types.getPromise();
 					options = types.nullObject(options);
-					return Promise['try'](function readFilePromise() {
+					return Promise.try(function readFilePromise() {
 						if (types.isString(url)) {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
 						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
-						var async = options.async,
-							encoding = options.encoding;
+						const async = options.async;
+						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
 							// Fix for some browsers
 							encoding = 'iso-8859-1';
@@ -1730,7 +1655,7 @@ module.exports = {
 							url = url.toString({
 								noEscapes: true,
 							});
-							var headers = new _shared.Natives.windowHeaders(options.headers);
+							const headers = new _shared.Natives.windowHeaders(options.headers);
 							if (!headers.has('Accept')) {
 								if (encoding) {
 									headers.set('Accept', 'text/plain');
@@ -1738,7 +1663,7 @@ module.exports = {
 									headers.set('Accept', '*/*');
 								};
 							};
-							var init = {
+							const init = {
 								method: 'GET',
 								headers: headers,
 							};
@@ -1752,8 +1677,8 @@ module.exports = {
 							return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
 								if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
-										var reader = new _shared.Natives.windowFileReader();
-										var promise = Promise.create(function readerPromise(resolve, reject) {
+										const reader = new _shared.Natives.windowFileReader();
+										const promise = Promise.create(function readerPromise(resolve, reject) {
 											reader.onloadend = function(ev) {
 												if (reader.error) {
 													reject(reader.error);
@@ -1774,12 +1699,12 @@ module.exports = {
 								};
 							});
 						} else {
-							var xhr = new _shared.Natives.windowXMLHttpRequest();
+							const xhr = new _shared.Natives.windowXMLHttpRequest();
 							if (!('response' in xhr) && !('responseBody' in xhr)) {
 								throw new types.NotSupported("Incompatible browser.");
 							};
-							var rootUrl = tools.getCurrentLocation();
-							var args = url.args;
+							const rootUrl = tools.getCurrentLocation();
+							let args = url.args;
 							if ((rootUrl.protocol !== 'file') && !options.enableCache) {
 								args = url.args.set('XHR_DISABLE_CACHE', tools.generateUUID(), true);
 							};
@@ -1787,12 +1712,12 @@ module.exports = {
 								args: args,
 								noEscapes: true,
 							});
-							var state = {
+							const state = {
 								timeoutId: null,
 								ready: false,
 							};
 							xhr.open('GET', url, async);
-							var headers = options.headers;
+							const headers = options.headers;
 							if (headers) {
 								tools.forEach(headers, function(value, name) {
 									xhr.setRequestHeader(name, value);
@@ -1811,12 +1736,12 @@ module.exports = {
 							if ('responseType' in xhr) { // IE 10+ and other browsera
 								xhr.responseType = (encoding ? 'text' : 'blob');
 							};
-							var loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
+							const loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
 							return Promise.create(function readerPromise(resolve, reject) {
 								client.addListener(xhr, loadEv, function(ev) {
 									if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
 										if (state.timeoutId) {
-											clearTimeout(state.timeoutId);
+											_shared.Natives.windowClearTimeout(state.timeoutId);
 											state.timeoutId = null;
 										};
 										if (!this.ready) {
@@ -1830,9 +1755,9 @@ module.exports = {
 										};
 									};
 								});
-								var handleError = function(ex) {
+								const handleError = function handleError(ex) {
 									if (state.timeoutId) {
-										clearTimeout(state.timeoutId);
+										_shared.Natives.windowClearTimeout(state.timeoutId);
 										state.timeoutId = null;
 									};
 									if (!state.ready) {
@@ -1843,11 +1768,11 @@ module.exports = {
 								client.addListener(xhr, 'error', function(ev) {
 									handleError(new types.HttpError(xhr.status, xhr.statusText));
 								});
-								var timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
+								const timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
 								if ('timeout' in xhr) {
 									xhr.timeout = timeout;
 								} else {
-									state.timeoutId = setTimeout(function(ev) {
+									state.timeoutId = _shared.Natives.windowSetTimeout(function(ev) {
 										state.timeoutId = null;
 										if (!state.ready) {
 											xhr.abort();
@@ -1904,7 +1829,7 @@ module.exports = {
 					try {
 						types.getPromise();
 					} catch(ex) {
-						var Promise = 
+						const Promise = 
 							(types.isObject(global.RSVP) && global.RSVP.Promise) || // tiny Promise/A+ implementation
 							(types.isObject(global.ES6Promise) && global.ES6Promise.Promise); // subset of RSVP
 						if (types.isFunction(Promise)) {

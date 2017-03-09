@@ -41,14 +41,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				var __Internal__ = {};
+				const __Internal__ = {};
 
 				//===================================
 				// Native functions
@@ -76,13 +76,12 @@ module.exports = {
 							if (types.isNothing(ar)) {
 								// Do nothing
 							} else if (types._instanceof(ar, types.Map) || types._instanceof(ar, types.Set)) {
-								var self = this;
 								ar.forEach(function(val, key) {
-									self.set(key, val);
-								});
+									this.set(key, val);
+								}, this);
 							} else if (types.isArrayLike(ar)) {
-								for (var i = 0; i < ar.length; i++) {
-									var item = ar[i];
+								for (let i = 0; i < ar.length; i++) {
+									const item = ar[i];
 									this.set(item[0], item[1]);
 								};
 							} else {

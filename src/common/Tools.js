@@ -41,7 +41,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					config = tools.Config;
@@ -51,7 +51,7 @@ module.exports = {
 				//===================================
 					
 				// <FUTURE> Thread context
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 				
 
@@ -67,7 +67,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				var __options__ = types.nullObject({
+				const __options__ = types.nullObject({
 					logLevel: tools.LogLevels.Error,
 					unhandledRejectionsTimeout: 5000,
 					unhandledRejectionsMaxSize: 20,
@@ -93,7 +93,7 @@ module.exports = {
 				
 				_shared.consoleHook = function consoleHook(level, message) {
 					if (global.console) {
-						var fn;
+						let fn;
 						if ((level === tools.LogLevels.Info) && global.console.info) {
 							//! BEGIN_REMOVE()
 								if ((typeof process === 'object') && (typeof module === 'object')) {
@@ -143,6 +143,7 @@ module.exports = {
 					stringLastIndexOfCall: global.String.prototype.lastIndexOf.call.bind(global.String.prototype.lastIndexOf),
 					stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 					//stringSearchCall: global.String.prototype.search.call.bind(global.String.prototype.search),
+					stringSplitCall: global.String.prototype.split.call.bind(global.String.prototype.split),
 				
 					windowRegExp: global.RegExp,
 					windowObject: global.Object,
@@ -181,7 +182,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									str: {
 										type: 'string',
@@ -212,9 +213,9 @@ module.exports = {
 							return [str];
 						};
 						if (types.isNothing(limit)) {
-							return str.split(separator);
+							return _shared.Natives.stringSplitCall(str, separator);
 						};
-						var result;
+						let result;
 						if (separator === '') {
 							// Char array
 							limit--;
@@ -224,9 +225,9 @@ module.exports = {
 								result[result.length] = str.slice(limit);
 							};
 						} else if (types.isString(separator)) {
-							var last = 0,
-								sepLen = separator.length,
+							let last = 0,
 								index;
+							const sepLen = separator.length;
 							result = [];
 							while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
 								result[result.length] = str.slice(last, index);
@@ -238,12 +239,12 @@ module.exports = {
 								result[result.length] = str.slice(last);
 							};
 						} else { // RegExp
-							var matches,
-								strLen = str.length;
+							let matches;
+							const strLen = str.length;
 							result = [];
 							separator.lastIndex = 0;
 							while ((limit > 1) && (matches = separator.exec(str))) {
-								var index = matches.index;
+								const index = matches.index;
 								result[result.length] = str.slice(0, index);
 								str = str.slice(index + matches[0].length);
 								limit--;
@@ -305,13 +306,13 @@ module.exports = {
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							if (types._instanceof(obj, types.Set)) {
-								var result = new types.Set();
+								const result = new types.Set();
 								obj.forEach(function(value, key, obj) {
 									result.add(fn.call(thisObj, value, key, obj));
 								});
 								return result;
 							} else if (types._instanceof(obj, types.Map)) {
-								var result = new types.Map();
+								const result = new types.Map();
 								obj.forEach(function(value, key, obj) {
 									result.set(key, fn.call(thisObj, value, key, obj));
 								});
@@ -320,29 +321,27 @@ module.exports = {
 								if (types.isNothing(start) || (start < 0)) {
 									start = 0;
 								};
-								var len = obj.length;
+								const len = obj.length;
 								if (types.isNothing(end) || (end > len)) {
 									end = len;
 								};
 								if (_shared.Natives.arrayMapCall && (start === 0) && (end >= len)) {
 									return _shared.Natives.arrayMapCall(obj, fn, thisObj);
 								} else {
-									var result = _shared.Natives.windowArray(end - start);
-									for (var key = start, pos = 0; key < end; key++, pos++) {
-										if (key in obj) {
+									const result = _shared.Natives.windowArray(end - start);
+									for (let key = start, pos = 0; key < end; key++, pos++) {
+										if (types.has(obj, key)) {
 											result[pos] = fn.call(thisObj, obj[key], key, obj);
 										};
 									};
 									return result;
 								};
 							} else {
-								var result = types.createObject(types.getPrototypeOf(obj));
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i, 
-									key;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
+								const result = types.createObject(types.getPrototypeOf(obj));
+								const keys = types.keys(obj),
+									len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
 									result[key] = fn.call(thisObj, obj[key], key, obj);
 								};
 								return result;
@@ -358,7 +357,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -388,32 +387,31 @@ module.exports = {
 					, function findItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
-							var key;
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (key = 0; key < len; key++) {
-										if (key in obj) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (item.call(thisObj, obj[key], key, obj)) {
 												return key;
 											};
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var iter = obj[_shared.Natives.symbolIterator](),
-										key = 0,
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
 										result;
 									while ((result = iter.next()) && !result.done) {
-										if (item.call(thisObj, result.value, key++, obj)) {
+										if (item.call(thisObj, result.value, key, obj)) {
 											return key;
 										};
+										key++;
 									};
 								} else {
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
 										if (item.call(thisObj, obj[key], key, obj)) {
 											return key;
 										};
@@ -421,17 +419,17 @@ module.exports = {
 								};
 							} else {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (key = 0; key < len; key++) {
-										if (key in obj) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (obj[key] === item) {
 												return key;
 											};
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var iter = obj[_shared.Natives.symbolIterator](),
-										key = 0,
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
 										result;
 									while ((result = iter.next()) && !result.done) {
 										if (result.value === item) {
@@ -440,11 +438,10 @@ module.exports = {
 										key++;
 									};
 								} else {
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
 										if (obj[key] === item) {
 											return key;
 										};
@@ -459,7 +456,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -488,22 +485,20 @@ module.exports = {
 					//! END_REPLACE()
 					, function findLastItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
-							obj = Object(obj);
-							var key;
+							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArrayLike(obj)) {
-									for (key = obj.length - 1; key >= 0; key--) {
-										if (key in obj) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
 											if (item.call(thisObj, obj[key], key, obj)) {
 												return key;
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
-										i;
-									for (i = keys.length - 1; i >= 0; i--) {
-										key = keys[i];
+									const keys = types.keys(obj);
+									for (let i = keys.length - 1; i >= 0; i--) {
+										const key = keys[i];
 										if (item.call(thisObj, obj[key], key, obj)) {
 											return key;
 										};
@@ -511,18 +506,17 @@ module.exports = {
 								};
 							} else {
 								if (types.isArrayLike(obj)) {
-									for (key = obj.length - 1; key >= 0; key--) {
-										if (key in obj) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
 											if (obj[key] === item) {
 												return key;
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
-										i;
-									for (i = keys.length - 1; i >= 0; i--) {
-										key = keys[i];
+									const keys = types.keys(obj);
+									for (let i = keys.length - 1; i >= 0; i--) {
+										const key = keys[i];
 										if (obj[key] === item) {
 											return key;
 										};
@@ -537,7 +531,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -565,26 +559,24 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function findItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
-						var result = [];
+						const result = [];
 						if (!types.isNothing(obj)) {
-							obj = Object(obj);
-							var key;
+							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (key = 0; key < len; key++) {
-										if (key in obj) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (items.call(thisObj, obj[key], key, obj)) {
 												result.push(key);
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
 										if (items.call(thisObj, obj[key], key, obj)) {
 											result.push(key);
 										};
@@ -595,20 +587,19 @@ module.exports = {
 									items = [items];
 								};
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (key = 0; key < len; key++) {
-										if (key in obj) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (tools.findItem(items, obj[key], undefined, true) !== null) {
 												result.push(key);
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
 										if (tools.findItem(items, obj[key], undefined, true) !== null) {
 											result.push(key);
 										};
@@ -623,7 +614,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 1,
+								revision: 2,
 								params: {
 									obj: {
 										type: 'any',
@@ -655,20 +646,20 @@ module.exports = {
 							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(item)) {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (item.call(thisObj, val, key, obj)) {
 												return val;
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i],
+									for (let i = 0; i < len; i++) {
+										const key = keys[i],
 											val = obj[key];
 										if (item.call(thisObj, val, key, obj)) {
 											return val;
@@ -677,19 +668,19 @@ module.exports = {
 								};
 							} else {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (obj[key] === item) {
 												return item;
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i];
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
 										if (obj[key] === item) {
 											return item;
 										};
@@ -705,7 +696,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									obj: {
 										type: 'any',
@@ -733,25 +724,25 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function getItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions) {
-						var result = [];
+						const result = [];
 						if (!types.isNothing(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (items.call(thisObj, val, key, obj)) {
 												result.push(val);
 											};
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										len = keys.length; // performance
-									for (var i = 0; i < len; i++) {
-										var key = keys[i],
+									for (let i = 0; i < len; i++) {
+										const key = keys[i],
 											val = obj[key];
 										if (items.call(thisObj, val, key, obj)) {
 											result.push(val);
@@ -763,14 +754,14 @@ module.exports = {
 									items = [items];
 								};
 								if (types.isArrayLike(obj)) {
-									var objLen = obj.length,
+									const objLen = obj.length,
 										itemsLen = items.length;
-									for (var key = 0; key < objLen; key++) {
-										if (key in obj) {
-											var valObj = obj[key];
-											for (var i = 0; i < itemsLen; i++) {
-												if (i in items) {
-													var valItems = items[i];
+									for (let key = 0; key < objLen; key++) {
+										if (types.has(obj, key)) {
+											const valObj = obj[key];
+											for (let i = 0; i < itemsLen; i++) {
+												if (types.has(items, i)) {
+													const valItems = items[i];
 													if (valObj === valItems) {
 														result.push(valItems);
 													};
@@ -779,15 +770,15 @@ module.exports = {
 										};
 									};
 								} else {
-									var keys = types.keys(obj),
+									const keys = types.keys(obj),
 										keysLen = keys.length,
 										itemsLen = items.length;
-									for (var i = 0; i < keysLen; i++) {
-										var key = keys[i];
-										var valObj = obj[key];
-										for (var j = 0; j < itemsLen; j++) {
-											if (j in items) {
-												var valItems = items[j];
+									for (let i = 0; i < keysLen; i++) {
+										const key = keys[i];
+										const valObj = obj[key];
+										for (let j = 0; j < itemsLen; j++) {
+											if (types.has(items, j)) {
+												const valItems = items[j];
 												if (valObj === valItems) {
 													result.push(valItems);
 												};
@@ -885,13 +876,13 @@ module.exports = {
 							root.DD_ASSERT(types.isNothing(options) || types.isString(options), "Invalid options.");
 						};
 						if (options) {
-							var regexp = tools.escapeRegExp(from);
+							const regexp = tools.escapeRegExp(from);
 							from = new _shared.Natives.windowRegExp(regexp, options);
 						};
 						if (types.isString(text)) {
 							return _shared.Natives.stringReplaceCall(text, from, to);
 						} else {
-							for (var i = 0; i < text.length; i++) {
+							for (let i = 0; i < text.length; i++) {
 								text[i] = _shared.Natives.stringReplaceCall(text[i], from, to);
 							};
 							return text;
@@ -955,12 +946,12 @@ module.exports = {
 							end = str.length;
 						};
 						
-						var posText;
+						let posText;
 						if (types.isString(text)) {
 							posText = str.indexOf(text, start);
 						} else {
 							text.lastIndex = start;
-							//var posText = _shared.Natives.stringSearchCall(str, text);
+							//posText = _shared.Natives.stringSearchCall(str, text);
 							posText = text.exec(str);
 							if (!text.global && (start > 0)) {
 								throw new types.TypeError("Regular expression must have the global flag set.");
@@ -972,14 +963,14 @@ module.exports = {
 							};
 						};
 
-						var posStopStr = -1;
+						let posStopStr = -1;
 						if (stopStr) {
 							if (types.isString(stopStr)) {
 								posStopStr = str.indexOf(stopStr, start);
 							} else {
 								stopStr.lastIndex = start;
 								//posStopStr = _shared.Natives.stringSearchCall(str, stopStr);
-								var posStopStr = stopStr.exec(str);
+								posStopStr = stopStr.exec(str);
 								if (!stopStr.global && (start > 0)) {
 									throw new types.TypeError("Regular expression must have the global flag set.");
 								};
@@ -1023,7 +1014,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									ar: {
 										type: 'array',
@@ -1045,11 +1036,11 @@ module.exports = {
 							root.DD_ASSERT(types.isArray(ar), "Invalid array.");
 							root.DD_ASSERT(types.isNothing(str) || types.isString(str), "Invalid string.");
 						};
-						var result = '',
-							arLen = ar.length,
+						const arLen = ar.length;
+						let result = '',
 							count = 0;
-						for (var i = 0; i < arLen; i++) {
-							if (i in ar) {
+						for (let i = 0; i < arLen; i++) {
+							if (types.has(ar, i)) {
 								if (str && (count > 0)) {
 									result += str;
 								};
@@ -1086,14 +1077,14 @@ module.exports = {
 							root.DD_ASSERT(types.isString(str), "Invalid string.");
 							root.DD_ASSERT(types.isNothing(separator) || types.isString(separator), "Invalid separator.");
 						};
-						var retval = '';
+						let retval = '';
 						if (!separator) {
 							separator = ' ';
 						};
 						str = str.split(separator);
-						var len = str.length;
-						for (var i = 0; i < len; i++) {
-							var word = str[i];
+						const len = str.length;
+						for (let i = 0; i < len; i++) {
+							const word = str[i];
 							if (i > 0) {
 								retval += separator;
 							};
@@ -1108,7 +1099,7 @@ module.exports = {
 				// Log functions
 				//===================================
 					
-				var __logLevelsName__ = [
+				__Internal__.logLevelsName = [
 					'debug',
 					'info',
 					'warning',
@@ -1119,7 +1110,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									leval: {
 										type: 'integer',
@@ -1147,10 +1138,10 @@ module.exports = {
 							if (params) {
 								message = tools.format(types.toString(message), params);
 							};
-							if (types.isString(message) && types.hasIndex(__logLevelsName__, level)) {
-								message = __logLevelsName__[level] + ': ' + message;
+							if (types.isString(message) && types.hasIndex(__Internal__.logLevelsName, level)) {
+								message = __Internal__.logLevelsName[level] + ': ' + message;
 							};
-							var hook = _shared.consoleHook;
+							const hook = _shared.consoleHook;
 							if (types.isFunction(hook)) {
 								hook(level, message);
 							};
@@ -1200,13 +1191,13 @@ module.exports = {
 						if (!text || !reserved) {
 							return text;
 						};
-						var result = '',
-							textLen = text.length,
-							lastPos = 0,
+						const textLen = text.length,
 							reservedLen = reserved.length;
-						for (var i = 0; i < textLen; i++) {
-							var chr = text[i];
-							for (var j = 0; j < reservedLen; j++) {
+						let result = '',
+							lastPos = 0;
+						for (let i = 0; i < textLen; i++) {
+							const chr = text[i];
+							for (let j = 0; j < reservedLen; j++) {
 								if (chr === reserved[j]) {
 									result += text.slice(lastPos, i) + substitutions[j];
 									lastPos = (i + 1);
@@ -1356,7 +1347,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'arraylike',
@@ -1388,11 +1379,11 @@ module.exports = {
 									// JS 1.6
 									return _shared.Natives.arrayIndexOfCall(obj, item, from);
 								} else {
-									obj = Object(obj);
-									var len = obj.length;
+									obj = _shared.Natives.windowObject(obj);
+									const len = obj.length;
 									from = Math.max(from >= 0 ? from : len - Math.abs(from), 0);
-									for (var key = from; key < len; key++) {
-										if (key in obj) {
+									for (let key = from; key < len; key++) {
+										if (types.has(obj, key)) {
 											if (obj[key] === item) {
 												return key;
 											};
@@ -1408,7 +1399,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'arraylike',
@@ -1432,7 +1423,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function lastIndexOf(obj, item, /*optional*/from) {
 						if (types.isArrayLike(obj)) {
-							var len = obj.length;
+							const len = obj.length;
 							from = (+from || (len - 1));
 							if (types.isString(obj)) {
 								return _shared.Natives.stringLastIndexOfCall(obj, item, from);
@@ -1441,10 +1432,10 @@ module.exports = {
 									// JS 1.6
 									return _shared.Natives.arrayLastIndexOfCall(obj, item, from);
 								} else {
-									obj = Object(obj);
+									obj = _shared.Natives.windowObject(obj);
 									from = Math.min(from >= 0 ? from : len - Math.abs(from), len - 1);
-									for (var key = len - 1; key >= from; key--) {
-										if (key in obj) {
+									for (let key = len - 1; key >= from; key--) {
+										if (types.has(obj, key)) {
 											if (obj[key] === item) {
 												return key;
 											};
@@ -1498,30 +1489,27 @@ module.exports = {
 									// JS 1.6
 									return _shared.Natives.arrayForEachCall(obj, fn, thisObj);
 								} else {
-									obj = Object(obj);
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
+									obj = _shared.Natives.windowObject(obj);
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
 											fn.call(thisObj, obj[key], key, obj);
 										};
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var iter = obj[_shared.Natives.symbolIterator](),
-									key = 0,
+								const iter = obj[_shared.Natives.symbolIterator]();
+								let key = 0,
 									item;
 								while ((item = iter.next()) && !item.done) {
 									fn.call(thisObj, item.value, key++, obj);
 								};
 							} else {
-								// "Object.assign" Polyfill from Mozilla Developer Network.
-								obj = Object(obj);
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i, 
-									key;
-								for (i = 0; i < len; i++) {
-									key = keys[i];
+								obj = _shared.Natives.windowObject(obj);
+								const keys = types.keys(obj),
+									len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
 									fn.call(thisObj, obj[key], key, obj);
 								};
 							};
@@ -1532,7 +1520,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1569,15 +1557,10 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function filter(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions) {
-						var result;
+						let result;
 						if (!types.isNothing(obj)) {
-							obj = Object(obj);
+							obj = _shared.Natives.windowObject(obj);
 							invert = !!invert;
-							var keys,
-								len,
-								i, 
-								key,
-								val;
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types._instanceof(obj, types.Map)) {
 									result = new types.Map();
@@ -1599,10 +1582,10 @@ module.exports = {
 										result = _shared.Natives.arrayFilterCall(obj, items, thisObj);
 									} else {
 										result = [];
-										len = obj.length;
-										for (var key = 0; key < len; key++) {
-											if (key in obj) {
-												var val = obj[key];
+										const len = obj.length;
+										for (let key = 0; key < len; key++) {
+											if (types.has(obj, key)) {
+												const val = obj[key];
 												if (invert === !items.call(thisObj, val, key, obj)) {
 													result.push(val);
 												};
@@ -1611,21 +1594,20 @@ module.exports = {
 									};
 								} else if (types.isIterable(obj)) {
 									result = [];
-									var iter = obj[_shared.Natives.symbolIterator](),
-										item;
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let item;
 									while ((item = iter.next()) && !item.done) {
 										if (invert === !items.call(thisObj, item.value, undefined, obj)) {
 											result.push(item.value);
 										};
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
-									keys = types.keys(obj);
-									len = keys.length;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert === !items.call(thisObj, val, key, obj)) {
 											result[key] = val;
 										};
@@ -1648,10 +1630,10 @@ module.exports = {
 									});
 								} else if (types.isArrayLike(obj)) {
 									result = [];
-									len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (invert === (tools.findItem(items, val, undefined, true) === null)) {
 												result.push(val);
 											};
@@ -1659,21 +1641,20 @@ module.exports = {
 									};
 								} else if (types.isIterable(obj)) {
 									result = [];
-									var iter = obj[_shared.Natives.symbolIterator](),
-										item;
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let item;
 									while ((item = iter.next()) && !item.done) {
 										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
 											result.push(item.value);
 										};
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
-									keys = types.keys(obj);
-									len = keys.length;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert === (tools.findItem(items, val, undefined, true) === null)) {
 											result[key] = val;
 										};
@@ -1725,35 +1706,29 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function filterKeys(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions) {
-						var result;
+						let result;
 						if (!types.isNothing(obj)) {
-							obj = Object(obj);
+							obj = _shared.Natives.windowObject(obj);
 							invert = !!invert;
-							var keys,
-								len,
-								i, 
-								key,
-								val;
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
 									result = [];
-									len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (invert === !items.call(thisObj, val, key, obj)) {
 												result.push(val);
 											};
 										};
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
-									keys = types.keys(obj);
-									len = keys.length;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert === !items.call(thisObj, val, key, obj)) {
 											result[key] = val;
 										};
@@ -1762,23 +1737,22 @@ module.exports = {
 							} else {
 								if (types.isArrayLike(obj)) {
 									result = [];
-									len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (invert === (tools.findItem(items, key, undefined, true) === null)) {
 												result.push(val);
 											};
 										};
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
 									result = {};
-									keys = types.keys(obj);
-									len = keys.length;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert === (tools.findItem(items, key, undefined, true) === null)) {
 											result[key] = val;
 										};
@@ -1793,7 +1767,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1833,7 +1807,7 @@ module.exports = {
 						if (types.isNothing(obj)) {
 							return false;
 						};
-						obj = Object(obj);
+						obj = _shared.Natives.windowObject(obj);
 						invert = !!invert;
 						if (!includeFunctions && types.isFunction(items)) {
 							if (types.isArrayLike(obj)) {
@@ -1841,11 +1815,10 @@ module.exports = {
 									// JS 1.6
 									return _shared.Natives.arrayEveryCall(obj, items, thisObj);
 								} else {
-									obj = Object(obj);
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var value = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const value = obj[key];
 											if (invert === !!items.call(thisObj, value, key, obj)) {
 												return false;
 											};
@@ -1853,8 +1826,8 @@ module.exports = {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								var entries = obj.entries(),
-									entry;
+								const entries = obj.entries();
+								let entry;
 								while (entry = entries.next()) {
 									if (entry.done) {
 										break;
@@ -1864,22 +1837,20 @@ module.exports = {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var iter = obj[_shared.Natives.symbolIterator](),
-									key = 0,
+								const iter = obj[_shared.Natives.symbolIterator]();
+								let key = 0,
 									item;
 								while ((item = iter.next()) && !item.done) {
-									if (invert === !!items.call(thisObj, item.value, key++, obj)) {
+									if (invert === !!items.call(thisObj, item.value, key, obj)) {
 										return false;
 									};
+									key++;
 								};
 							} else {
-								// "Object.assign" Polyfill from Mozilla Developer Network.
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i; 
-									key; 
-								for (i = 0; i < len; i++) {
-									key = keys[i];
+								const keys = types.keys(obj),
+									len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
 									if (invert === !!items.call(thisObj, obj[key], key, obj)) {
 										return false;
 									};
@@ -1887,18 +1858,18 @@ module.exports = {
 							};
 						} else {
 							if (types.isArrayLike(obj)) {
-								var len = obj.length;
-								for (var key = 0; key < len; key++) {
-									if (key in obj) {
-										var val = obj[key];
+								const len = obj.length;
+								for (let key = 0; key < len; key++) {
+									if (types.has(obj, key)) {
+										const val = obj[key];
 										if (invert === (tools.findItem(items, val, undefined, true) !== null)) {
 											return false;
 										};
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								var entries = obj.entries(),
-									entry;
+								const entries = obj.entries();
+								let entry;
 								while (entry = entries.next()) {
 									if (entry.done) {
 										break;
@@ -1908,22 +1879,18 @@ module.exports = {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								var iter = obj[_shared.Natives.symbolIterator](),
-									key = 0,
-									item;
+								const iter = obj[_shared.Natives.symbolIterator]();
+								let item;
 								while ((item = iter.next()) && !item.done) {
 									if (invert === (tools.findItem(items, item.value, undefined, true) !== null)) {
 										return false;
 									};
 								};
 							} else {
-								// "Object.assign" Polyfill from Mozilla Developer Network.
-								var keys = types.keys(obj),
-									len = keys.length, // performance
-									i, 
-									key; 
-								for (i = 0; i < len; i++) {
-									key = keys[i];
+								const keys = types.keys(obj),
+									len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
 									if (invert === (tools.findItem(items, obj[key], undefined, true) !== null)) {
 										return false;
 									};
@@ -1937,7 +1904,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1975,7 +1942,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function some(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions) {
 						if (!types.isNothing(obj)) {
-							obj = Object(obj);
+							obj = _shared.Natives.windowObject(obj);
 							invert = !!invert;
 							if (!includeFunctions && types.isFunction(items)) {
 								if (types.isArrayLike(obj)) {
@@ -1983,11 +1950,11 @@ module.exports = {
 										// JS 1.6
 										return _shared.Natives.arraySomeCall(obj, items, thisObj);
 									} else {
-										obj = Object(obj);
-										var len = obj.length;
-										for (var key = 0; key < len; key++) {
-											if (key in obj) {
-												var val = obj[key];
+										obj =_shared.Natives.windowObject(obj);
+										const len = obj.length;
+										for (let key = 0; key < len; key++) {
+											if (types.has(obj, key)) {
+												const val = obj[key];
 												if (invert === !items.call(thisObj, val, key, obj)) {
 													return true;
 												};
@@ -1995,8 +1962,8 @@ module.exports = {
 										};
 									};
 								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-									var entries = obj.entries(),
-										entry;
+									const entries = obj.entries();
+									let entry;
 									while (entry = entries.next()) {
 										if (entry.done) {
 											break;
@@ -2006,24 +1973,21 @@ module.exports = {
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var iter = obj[_shared.Natives.symbolIterator](),
-										key = 0,
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
 										item;
 									while ((item = iter.next()) && !item.done) {
-										if (invert === !items.call(thisObj, item.value, key++, obj)) {
+										if (invert === !items.call(thisObj, item.value, key, obj)) {
 											return true;
 										};
+										key++;
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i, 
-										key, 
-										val;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert === !items.call(thisObj, val, key, obj)) {
 											return true;
 										};
@@ -2031,18 +1995,18 @@ module.exports = {
 								};
 							} else {
 								if (types.isArrayLike(obj)) {
-									var len = obj.length;
-									for (var key = 0; key < len; key++) {
-										if (key in obj) {
-											var val = obj[key];
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
 											if (invert === (tools.findItem(items, val, undefined, true) === null)) {
 												return true;
 											};
 										};
 									};
 								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-									var entries = obj.entries(),
-										entry;
+									const entries = obj.entries();
+									let entry;
 									while (entry = entries.next()) {
 										if (entry.done) {
 											break;
@@ -2052,8 +2016,8 @@ module.exports = {
 										};
 									};
 								} else if (types.isIterable(obj)) {
-									var iter = obj[_shared.Natives.symbolIterator](),
-										key = 0,
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
 										item;
 									while ((item = iter.next()) && !item.done) {
 										if (invert === (tools.findItem(items, item.value, undefined, true) === null)) {
@@ -2061,15 +2025,11 @@ module.exports = {
 										};
 									};
 								} else {
-									// "Object.assign" Polyfill from Mozilla Developer Network.
-									var keys = types.keys(obj),
-										len = keys.length, // performance
-										i, 
-										key, 
-										val;
-									for (i = 0; i < len; i++) {
-										key = keys[i];
-										val = obj[key];
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
 										if (invert == (tools.findItem(items, val, undefined, true) === null)) {
 											return true;
 										};
@@ -2084,7 +2044,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set',
@@ -2129,8 +2089,8 @@ module.exports = {
 								return _shared.Natives.arrayReduceCall(obj, fn);
 							};
 						} else {
-							obj = Object(obj);
-							var result,
+							obj = _shared.Natives.windowObject(obj);
+							let result,
 								hasInitial = false;
 							if (arguments.length > 2) {
 								result = initialValue;
@@ -2202,12 +2162,12 @@ module.exports = {
 									return _shared.Natives.arrayReduceRightCall(obj, fn);
 								};
 							} else {
-								obj = Object(obj);
-								var value = initialValue,
+								obj = _shared.Natives.windowObject(obj);
+								let value = initialValue,
 									hasItem = false,
 									key = obj.length - 1;
 								for (; key >= 0; key--) {
-									if (key in obj) {
+									if (types.has(obj, key)) {
 										hasItem = true;
 										if (arguments.length < 3) {
 											value = 0;
@@ -2221,7 +2181,7 @@ module.exports = {
 									throw new types.TypeError("Reduce of empty array with no initial value.");
 								};
 								for (; key >= 0; key--) {
-									if (key in obj) {
+									if (types.has(obj, key)) {
 										value = fn(value, obj[key], key, obj);
 									};
 								};

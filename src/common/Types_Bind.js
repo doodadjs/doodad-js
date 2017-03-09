@@ -38,14 +38,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 
 				//===================================
@@ -93,7 +93,7 @@ module.exports = {
 						if (!types.isBindable(fn)) {
 							return null;
 						};
-						var newFn;
+						let newFn;
 						if (args) {
 							newFn = _shared.Natives.functionBindApply(fn, types.append([obj], args));
 						} else {
@@ -126,13 +126,14 @@ module.exports = {
 							return null;
 						};
 						if (types.has(fn, _shared.BoundObjectSymbol)) {
-							var oldFn = types.get(fn, _shared.OriginalValueSymbol);
+							const oldFn = types.get(fn, _shared.OriginalValueSymbol);
 							if (!types.isBindable(oldFn)) {
 								return null;
 							};
-							var keys = types.append(types.keys(fn), types.symbols(fn));
-							for (var i = 0; i < keys.length; i++) {
-								var key = keys[i];
+							const keys = types.append(types.keys(fn), types.symbols(fn)),
+								keysLen = keys.length;
+							for (let i = 0; i < keysLen; i++) {
+								const key = keys[i];
 								if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
 									if (types.has(oldFn, key)) {
 										oldFn[key] = fn[key];

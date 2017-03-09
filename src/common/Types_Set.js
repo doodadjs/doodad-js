@@ -39,7 +39,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools;
 				
@@ -47,7 +47,7 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 
 				//===================================
@@ -89,7 +89,7 @@ module.exports = {
 					},
 					{
 						next: function next() {
-							var ar = this.__ar;
+							const ar = this.__ar;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -109,9 +109,9 @@ module.exports = {
 					},
 					{
 						next: function next() {
-							var ar = this.__ar;
+							const ar = this.__ar;
 							if (this.__index < ar.length) {
-								var val = ar[this.__index++];
+								const val = ar[this.__index++];
 								return {
 									value: [val, val],
 								};
@@ -138,17 +138,16 @@ module.exports = {
 						_new: types.SUPER(function _new(/*optional*/ar) {
 							this._super();
 							
-							var ar;
 							if (types.isNothing(ar)) {
 								ar = [];
 							} else if (types._instanceof(ar, types.Set)) {
 								ar = types.clone(ar.__ar);
 							} else if (types._instanceof(ar, types.Map)) {
-								var mapAr = ar.__keys,
+								const mapAr = ar.__keys,
 									mapVals = ar.__values,
-									len = mapAr.length,
-									ar = _shared.Natives.windowArray(len);
-								for (var i = 0; i < len; i++) {
+									len = mapAr.length;
+								ar = _shared.Natives.windowArray(len);
+								for (let i = 0; i < len; i++) {
 									ar[i] = [mapAr[i], mapVals[i]];
 								};
 							} else if (types.isArrayLike(ar)) {
@@ -161,7 +160,7 @@ module.exports = {
 							_shared.setAttribute(this, 'size', this.__ar.length);
 						}),
 						has: function has(value) {
-							for (var i = 0; i < this.__ar.length; i++) {
+							for (let i = 0; i < this.__ar.length; i++) {
 								if (this.__ar[i] === value) {
 									return true;
 								};
@@ -170,15 +169,15 @@ module.exports = {
 						},
 						add: function add(value) {
 							if (!this.has(value)) {
-								var ar = this.__ar;
+								const ar = this.__ar;
 								ar.push(value);
 								_shared.setAttribute(this, 'size', ar.length);
 							};
 							return this;
 						},
-						'delete': function _delete(value) {
-							var ar = this.__ar;
-							for (var i = 0; i < ar.length; i++) {
+						delete: function _delete(value) {
+							const ar = this.__ar;
+							for (let i = 0; i < ar.length; i++) {
 								if (ar[i] === value) {
 									ar.splice(i, 1);
 									_shared.setAttribute(this, 'size', ar.length);
@@ -189,7 +188,7 @@ module.exports = {
 						},
 						clear: function clear() {
 							_shared.setAttribute(this, '__ar', []);
-							this.size = 0;
+							_shared.setAttribute(this, 'size', 0);
 						},
 						keys: function keys() {
 							return new __Internal__.SetValuesIterator(this);
@@ -201,9 +200,9 @@ module.exports = {
 							return new __Internal__.SetEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
-							var ar = this.__ar;
-							for (var i = 0; i < ar.length; i++) {
-								var value = ar[i];
+							const ar = this.__ar;
+							for (let i = 0; i < ar.length; i++) {
+								const value = ar[i];
 								callbackFn.call(thisObj, value, value, this);
 							};
 						},

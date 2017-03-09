@@ -34,7 +34,7 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools;
 
@@ -71,12 +71,11 @@ module.exports = {
 							$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Version')), true) */,
 							
 							__parse: function __parse(val, identifiers, trimSpaces) {
-								var ar = [];
-								var valLen = val.length;
-								var regexps = [/([^0-9]|[ ])/g, /([0-9]|[ ])/g],
-									alt = false;
-								var result = [];
-								var start = 0,
+								const ar = [];
+								const valLen = val.length;
+								const regexps = [/([^0-9]|[ ])/g, /([0-9]|[ ])/g];
+								let alt = false;
+								let start = 0,
 									end;
 								do {
 									end = tools.search(val, regexps[alt + 0], start);
@@ -93,9 +92,9 @@ module.exports = {
 											};
 										};
 									};
-									var subval = val.slice(start, (end >= 0 ? end: undefined));
-									var subvalTrim = tools.trim(subval);
-									var subvalNumber;
+									const subval = val.slice(start, (end >= 0 ? end: undefined));
+									const subvalTrim = tools.trim(subval);
+									let subvalNumber;
 									if (identifiers && types.has(identifiers, subvalTrim)) {
 										subvalNumber = _shared.Natives.windowParseInt(identifiers[subvalTrim]);
 									} else {
@@ -138,19 +137,19 @@ module.exports = {
 									
 									options = types.nullObject(options);
 									
-									//var dontThrow = types.getDefault(options, 'dontThrow', false);
+									//const dontThrow = types.getDefault(options, 'dontThrow', false);
 
 									// Force to string
 									str += '';
 									
-									var identifiers = types.getDefault(options, 'identifiers', {});
-									var trimSpaces = types.getDefault(options, 'trimSpaces', false);
+									const identifiers = types.getDefault(options, 'identifiers', {}),
+										trimSpaces = types.getDefault(options, 'trimSpaces', false);
 
 									// Doodad.Tools.Version.parse('1.1.23 beta', {identifiers: {alpha: 0, beta: 1, release: 2}}) --> [1, 1, 23, 1]
 									// Doodad.Tools.Version.parse('1.1.23 build 1324') --> [1, 1, 23, 1324]
 									// Doodad.Tools.Version.parse('major: 1, minor: 1, revision: 23 beta', {identifiers: {beta: 1}}) --> [1, 1, 23, 1]
 										
-									var ar = this.__parse(str, identifiers, trimSpaces);
+									const ar = this.__parse(str, identifiers, trimSpaces);
 									
 									return new this(ar, options);
 								}),
@@ -227,24 +226,24 @@ module.exports = {
 									if (!types._instanceof(version, tools.Version)) {
 										version = types.getType(this).parse(version, options);
 									};
-									var data1 = this.data,
+									const data1 = this.data,
 										data1Len = data1.length,
 										data2 = version.data,
 										data2Len = data2.length,
-										count = types.getIn(options, 'count', (Math.max(data1Len, data2Len) / 2)),
-										j = 0,
-										k = 0;
-									for (var i = 0; i < count; i++) {
-										var number1 = NaN;
+										count = types.getIn(options, 'count', (Math.max(data1Len, data2Len) / 2));
+									for (let i = 0; i < count; i++) {
+										let number1 = NaN,
+											j = 0;
 										while (_shared.Natives.windowIsNaN(number1) && (j < data1Len)) {
-											if ((j in data1) && ((j + 1) in data1)) {
+											if (types.has(data1, j) && types.has(data1, j + 1)) {
 												number1 = data1[j];
 											};
 											j += 2;
 										};
-										var number2 = NaN;
+										let number2 = NaN,
+											k = 0;
 										while (_shared.Natives.windowIsNaN(number2) && (k < data2Len)) {
-											if ((k in data2) && ((k + 1) in data2)) {
+											if (types.has(data2, k) && types.has(data2, k + 1)) {
 												number2 = data2[k];
 											};
 											k += 2;
@@ -272,12 +271,12 @@ module.exports = {
 								//! END_REPLACE()
 								, function toString(/*optional*/options) {
 									//options = types.nullObject(options);
-									//var identifiers = types.getIn(options, 'identifiers', this.options.identifiers);
-									var result = '';
-									var data = this.data,
+									//const identifiers = types.getIn(options, 'identifiers', this.options.identifiers);
+									let result = '';
+									const data = this.data,
 										dataLen = data.length;
-									for (var i = 1; i < dataLen; i += 2) {
-										if (((i - 1) in data) && (i in data)) {
+									for (let i = 1; i < dataLen; i += 2) {
+										if (types.has(data, i - 1) && types.has(data, i)) {
 											result += data[i];
 										};
 									};

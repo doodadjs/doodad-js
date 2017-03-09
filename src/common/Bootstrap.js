@@ -23,9 +23,9 @@
 //! END_REPLACE()
 
 (function(getEvals) {
-	var global = this;
+	const global = this;
 
-	var exports = {};
+	const exports = {};
 	
 	//! BEGIN_REMOVE()
 	if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
@@ -48,8 +48,7 @@
 	exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 		"use strict";
 		
-		// FUTURE: const
-		var _shared = {
+		const _shared = {
 			// Secret value used to load modules, ...
 			SECRET: null,
 
@@ -65,8 +64,7 @@
 		};
 
 		
-		// FUTURE: const
-		var __Internal__ = {
+		const __Internal__ = {
 			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
 			SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
 
@@ -79,8 +77,7 @@
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 
-		// FUTURE: const
-		var types = {
+		const types = {
 			},
 			
 			tools = {
@@ -132,7 +129,7 @@
 		__Internal__.classesNotCallable = true;
 		(function() {
 			try {
-				var cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
+				const cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
 				__Internal__.hasClasses = (_shared.Natives.functionToStringCall(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
 				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
 				//if (__Internal__.hasClasses) {
@@ -234,14 +231,14 @@
 				if (types.isJsClass(obj)) {
 					return true;
 				} else if (types.isFunction(obj)) {
-					var str = _shared.Natives.functionToStringCall(obj),
+					const str = _shared.Natives.functionToStringCall(obj),
 						index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
 					if (index2 < 0) {
 						return false;
 					};
-					for (var i = index1; i < index2; i++) {
-						var chr = str[i];
+					for (let i = index1; i < index2; i++) {
+						const chr = str[i];
 						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
 							return false;
 						};
@@ -333,7 +330,7 @@
 			windowSymbol: (types.isNativeFunction(global.Symbol) ? global.Symbol : undefined),
 			
 			// "getSymbolFor"
-			symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol['for']) ? global.Symbol['for'] : undefined),
+			symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.for) ? global.Symbol.for : undefined),
 			
 			// "getSymbolKey", "symbolIsGlobal"
 			symbolToStringCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString) : undefined),
@@ -504,14 +501,14 @@
 				if (types.isJsClass(obj)) {
 					return false;
 				} else if (types.isFunction(obj)) {
-					var str = _shared.Natives.functionToStringCall(obj),
+					const str = _shared.Natives.functionToStringCall(obj),
 						index1 = str.indexOf('{') + 1,
 						index2 = str.indexOf('[native code]', index1);
 					if (index2 < 0) {
 						return true;
 					};
-					for (var i = index1; i < index2; i++) {
-						var chr = str[i];
+					for (let i = index1; i < index2; i++) {
+						const chr = str[i];
 						if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
 							return true;
 						};
@@ -576,7 +573,7 @@
 			}
 			//! END_REPLACE()
 			, function trim(str, /*optional*/chr, /*optional*/direction, /*optional*/count) {
-				var isArray = types.isArray(str);
+				const isArray = types.isArray(str);
 
 				if (types.isNothing(chr)) {
 					chr = ' ';
@@ -586,9 +583,9 @@
 				};
 				
 				if (isArray) {
- 					var strLen = str.length;
+ 					const strLen = str.length;
 					
-					var start = 0,
+					let start = 0,
 						x = 0;
 					if (!direction || direction > 0) {
 						for (; start < strLen; start++, x++) {
@@ -598,7 +595,7 @@
 						};
 					};
 
-					var end = strLen - 1;
+					let end = strLen - 1;
 					x = 0;
 					if (!direction || direction < 0) {
 						for (; end >= 0; end--, x++) {
@@ -616,9 +613,9 @@
 				} else if ((chr === ' ') && !direction && (count === Infinity)) {
 					return _shared.Natives.stringTrimCall(str);
 				} else {
-					var i = 0,
-						x = 0,
-						chrLen = chr.length;
+					let i = 0,
+						x = 0;
+					let chrLen = chr.length;
 					if (chrLen <= 0) {
 						chrLen = 1;
 					};
@@ -628,8 +625,8 @@
 							x++;
 						};
 					};
-					var j = str.length - chrLen,
-						x = 0;
+					let j = str.length - chrLen;
+					x = 0;
 					if (!direction || (direction < 0)) {
 						while ((x < count) && (j > i) && (j >= 0) && (str.slice(j, j + chrLen) === chr)) {
 							j -= chrLen;
@@ -682,7 +679,7 @@
 			//! END_REPLACE()
 			, function toInteger(obj) {
 				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-				var number = _shared.Natives.windowNumber(obj);
+				const number = _shared.Natives.windowNumber(obj);
 				if (types.isNaN(number)) {
 					return 0;
 				};
@@ -714,7 +711,7 @@
 			}
 			//! END_REPLACE()
 			, function toFloat(obj, /*optional*/precision) {
-				var number = _shared.Natives.windowNumber(obj);
+				let number = _shared.Natives.windowNumber(obj);
 				if (types.isNaN(number)) {
 					return 0.0;
 				} else {
@@ -777,12 +774,12 @@
 					// Invalid parameters. DO NOT CALL root.DD_ASSERT
 					return '';
 				};
-				var result = '',
+				let result = '',
 					pos,
 					lastPos = 0,
 					isKey = false;
 				while ((pos = message.indexOf('~', lastPos)) >= 0) {
-					var key = message.slice(lastPos, pos);
+					const key = message.slice(lastPos, pos);
 					if (isKey) {
 						if (params && key.length) {
 							result += types.toString(params[key]);
@@ -869,7 +866,7 @@
 					return true;
 				};
 				// Source: http://cwestblog.com/2011/08/02/javascript-isprimitive-function/
-				var type = (typeof obj);
+				const type = (typeof obj);
 				return (type !== "object") && (type !== "function");
 			}));
 		
@@ -1352,7 +1349,7 @@
 					return false;
 				};
 				if (typeof obj === 'object') {
-					var len = obj.length;
+					const len = obj.length;
 					return (typeof len === 'number') && ((len >>> 0) === len);
 				} else if (types.isString(obj)) {
 					return true;
@@ -1481,10 +1478,10 @@
 		// <PRB> JS has no official stack trace. They are non-standardized strings.
 		
 		__Internal__.stackToString = function stackToString() {
-			var str = '';
-			var len = this.length;
-			for (var i = 0; i < len; i++) {
-				var trace = this[i];
+			let str = '';
+			const len = this.length;
+			for (let i = 0; i < len; i++) {
+				const trace = this[i];
 				str += (i + ': function "' + (trace.functionName || '<unknown>') + '" in file "' + (trace.path || '<unknown>') + '" at line ' + (trace.lineNumber < 0 ? '<unknown>' : trace.lineNumber) + ', column ' + (trace.columnNumber < 0 ? '<unknown>' : trace.columnNumber) + '\n');
 			};
 			return str;
@@ -1515,7 +1512,7 @@
 					throw new types.ParseError("Invalid error object or stack trace.");
 				};
 				
-				var stack = ex;
+				let stack = ex;
 				if (types.isError(ex)) {
 					stack = ex.stack || null;
 				};
@@ -1527,18 +1524,19 @@
 				// NOTE: Internet Explorer 11 doesn't return more than 10 call levels.
 				
 				__Internal__.parseStackRegEx.lastIndex = 0;
-				var call = __Internal__.parseStackRegEx.exec(stack);
+				let call = __Internal__.parseStackRegEx.exec(stack);
 				
 				if (!call) {
 					return null;
 				};
 				
-				var rawFunctionName,
-					functionName, 
-					pos,
-					calls = [];
+				const calls = [];
 				
 				do {
+					let rawFunctionName,
+						functionName, 
+						pos;
+				
 					functionName = call[2] || '';
 					pos = functionName.indexOf(' at '); // Not Firefox beginning of function name
 					if (pos >= 0) {
@@ -1570,7 +1568,7 @@
 					if (functionName.slice(0, 4) === 'new ') { // Chrome "new" operator
 						functionName = functionName.slice(4);
 					};
-					var path = call[5],
+					let path = call[5],
 						url,
 						isSystemPath = false;
 					if (!path) {
@@ -1603,10 +1601,10 @@
 		// <PRB> Internet Explorer doesn't fill the stack on Error creation.
 		(function() {
 			// 'stack' is a property under Firefox.
-			var desc = _shared.Natives.objectGetOwnPropertyDescriptor(_shared.Natives.windowError.prototype, 'stack');
+			const desc = _shared.Natives.objectGetOwnPropertyDescriptor(_shared.Natives.windowError.prototype, 'stack');
 			__Internal__.ieStack = !desc || !_shared.Natives.objectHasOwnPropertyCall(desc, 'get');
 			if (__Internal__.ieStack) {
-				var ex = new _shared.Natives.windowError("");
+				const ex = new _shared.Natives.windowError("");
 				__Internal__.ieStack = !_shared.Natives.objectHasOwnPropertyCall(ex, 'stack');
 			};
 		})();
@@ -1622,7 +1620,7 @@
 			}
 			//! END_REPLACE()
 			, function getStackTrace() {
-				var ex = new _shared.Natives.windowError("");
+				let ex = new _shared.Natives.windowError("");
 				if (__Internal__.ieStack) {
 					try {
 						throw ex;
@@ -1630,7 +1628,7 @@
 						ex = o;
 					};
 				};
-				var stack = tools.parseStack(ex.stack);
+				const stack = tools.parseStack(ex.stack);
 				if (stack) {
 					stack.splice(0, 1);  // remove "getStackTrace" call entry
 				};
@@ -1706,13 +1704,13 @@
 					if (!types.isArray(keys)) {
 						return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
 					};
-					var len = keys.length;
+					const len = keys.length;
 					if (!len) {
 						return false;
 					};
-					for (var i = 0; i < len; i++) {
-						if (i in keys) {
-							var key = keys[i];
+					for (let i = 0; i < len; i++) {
+						if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
+							const key = keys[i];
 							if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
 								return true;
 							};
@@ -1758,7 +1756,7 @@
 					return _default;
 				};
 				obj = _shared.Natives.windowObject(obj);
-				var hasKey = (inherited ? types.hasInherited : types.has);
+				const hasKey = (inherited ? types.hasInherited : types.has);
 				if (hasKey(obj, key)) {
 					return obj[key];
 				} else {
@@ -1802,11 +1800,11 @@
 					return _default;
 				};
 				obj = _shared.Natives.windowObject(obj);
-				var hasKey = (inherited ? types.hasInherited : types.has);
+				const hasKey = (inherited ? types.hasInherited : types.has);
 				if (hasKey(obj, key)) {
 					return obj[key];
 				} else {
-					var descriptor = types.getPropertyDescriptor(obj, key);
+					const descriptor = types.getPropertyDescriptor(obj, key);
 					if (descriptor && !types.get(descriptor, 'writable') && !types.get(descriptor, 'get') && !types.get(descriptor, 'set') && types.get(descriptor, 'configurable')) {
 						descriptor.value = _default;
 						types.defineProperty(obj, key, descriptor);
@@ -1870,12 +1868,11 @@
 				
 				obj = _shared.Natives.windowObject(obj);
 
-				var result,
-					key;
-					
+				let result;
+				
 				if (types.isArrayLike(obj)) {
 					result = [];
-					for (key in obj) {
+					for (let key in obj) {
 						if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
 							result.push(key);
 						};
@@ -1935,10 +1932,10 @@
 				if (types.isNothing(obj)) {
 					return [];
 				};
-				var all = types.allSymbols(obj);
-				var symbols = [];
-				for (var i = 0; i < all.length; i++) {
-					var symbol = all[i];
+				const all = types.allSymbols(obj);
+				const symbols = [];
+				for (let i = 0; i < all.length; i++) {
+					const symbol = all[i];
 					if (types.isEnumerable(obj, symbol)) {
 						symbols.push(symbol);
 					};
@@ -2016,20 +2013,20 @@
 			}
 			//! END_REPLACE()
 			, function extend(/*paramarray*/obj) {
-				var result;
+				let result;
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
-					var len = arguments.length;
-					for (var i = 1; i < len; i++) {
+					const len = arguments.length;
+					for (let i = 1; i < len; i++) {
 						obj = arguments[i];
 						if (types.isNothing(obj)) {
 							continue;
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 						obj = _shared.Natives.windowObject(obj);
-						var keys = types.append(types.keys(obj), types.symbols(obj));
-						for (var j = 0; j < keys.length; j++) {
-							var key = keys[j];
+						const keys = types.append(types.keys(obj), types.symbols(obj));
+						for (let j = 0; j < keys.length; j++) {
+							const key = keys[j];
 							result[key] = obj[key];
 						};
 					};
@@ -2040,7 +2037,7 @@
 		__Internal__.hasGetOwnPropertyRestrictionOnCaller = false;
 		(function() {
 			// Edge
-			var ctx = {
+			const ctx = {
 				getOwnPropertyDescriptor: _shared.Natives.objectGetOwnPropertyDescriptor,
 			};
 			ctx.f = types.eval(
@@ -2133,7 +2130,7 @@
 				}
 				//! END_REPLACE()
 				, function getOwnPropertyDescriptor(obj, key) {
-					var desc;
+					let desc;
 					if (key === 'caller') {
 						desc = {
 							configurable: false,
@@ -2171,7 +2168,7 @@
 			//! END_REPLACE()
 			, function getPropertyDescriptor(obj, key) {
 				obj = _shared.Natives.windowObject(obj);
-				var proto = obj,
+				let proto = obj,
 					descriptor = undefined;
 				if (key in obj) {
 					do {
@@ -2218,7 +2215,7 @@
 						type.prototype = {};
 					};
 				};
-				var obj;
+				let obj;
 				if (args && args.length) {
 					if (__Internal__.classesNotCallable && types.isJsClass(type)) {
 						obj = types.eval("new ctx.type(...ctx.args)", {type: type, args: args});
@@ -2267,7 +2264,7 @@
 			, function setPrototypeOf(obj, proto, /*optional*/forceNative) {
 				// NOTE: Functions can't be created using "createObject".
 				// TODO: How to prevent the use of "setPrototypeOf" (which MDN doesn't like) for "functions" ?
-				var enabled = (forceNative || types.isFunction(obj));
+				const enabled = (forceNative || types.isFunction(obj));
 				if (enabled) {
 					return _shared.Natives.objectSetPrototypeOf(obj, proto);
 				} else {
@@ -2275,7 +2272,7 @@
 						return obj;
 					};
 
-					var tmp;
+					let tmp;
 					if (types.isFunction(obj)) {
 						throw new global.Error("Browser not supported.");
 					} else {
@@ -2383,13 +2380,13 @@
 					if (!types.isArray(keys)) {
 						return (keys in obj);
 					};
-					var len = keys.length;
+					const len = keys.length;
 					if (!len) {
 						return false;
 					};
-					for (var i = 0; i < len; i++) {
-						if (i in keys) {
-							var key = keys[i];
+					for (let i = 0; i < len; i++) {
+						if (types.has(keys, i)) {
+							const key = keys[i];
 							if (key in obj) {
 								return true;
 							};
@@ -2416,36 +2413,36 @@
 			}
 			//! END_REPLACE()
 			, function extendProperties(/*paramarray*/obj) {
-				var result;
+				let result;
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
-					var len = arguments.length;
+					const len = arguments.length;
 					if (types.hasProperties()) {
-						for (var i = 1; i < len; i++) {
+						for (let i = 1; i < len; i++) {
 							obj = arguments[i];
 							if (types.isNothing(obj)) {
 								continue;
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							var keys = types.append(types.keys(obj), types.symbols(obj));
-							for (var j = 0; j < keys.length; j++) {
-								var key = keys[j];
-								var descriptor = types.getOwnPropertyDescriptor(obj, key);
+							const keys = types.append(types.keys(obj), types.symbols(obj));
+							for (let j = 0; j < keys.length; j++) {
+								const key = keys[j];
+								const descriptor = types.getOwnPropertyDescriptor(obj, key);
 								types.defineProperty(result, key, descriptor);
 							};
 						};
 					} else {
-						for (var i = 1; i < len; i++) {
+						for (let i = 1; i < len; i++) {
 							obj = arguments[i];
 							if (types.isNothing(obj)) {
 								continue;
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							var keys = types.append(types.keys(obj), types.symbols(obj));
-							for (var j = 0; j < keys.length; j++) {
-								var key = keys[j];
+							const keys = types.append(types.keys(obj), types.symbols(obj));
+							for (let j = 0; j < keys.length; j++) {
+								const key = keys[j];
 								result[key] = obj[key];
 							};
 						};
@@ -2476,9 +2473,9 @@
 			}
 			//! END_REPLACE()
 			, function depthExtend(depth, /*paramarray*/obj) {
-				var result;
+				let result;
 				if (!types.isNothing(obj)) {
-					var extender;
+					let extender;
 					if (types.isFunction(depth)) {
 						extender = depth;
 						depth = Infinity;
@@ -2486,7 +2483,7 @@
 						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 						extender = function(result, val, key, extend) {
 							if ((extender.depth >= 0) && types.isObject(val)) {
-								var resultVal = result[key];
+								const resultVal = result[key];
 								if (types.isNothing(resultVal)) {
 									extender.depth--;
 									if (extender.depth >= -1) {
@@ -2500,7 +2497,7 @@
 								} else if (resultVal !== val) {
 									result[key] = val;
 								};
-							} else if (resultVal !== val) {
+							} else {
 								result[key] = val;
 							};
 						};
@@ -2508,18 +2505,18 @@
 					};
 					if (depth >= -1) {
 						result = _shared.Natives.windowObject(obj);
-						var len = arguments.length;
-						for (var i = 2; i < len; i++) {
+						const len = arguments.length;
+						for (let i = 2; i < len; i++) {
 							obj = arguments[i];
 							if (types.isNothing(obj)) {
 								continue;
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							var keys = types.append(types.keys(obj), types.symbols(obj)),
+							const keys = types.append(types.keys(obj), types.symbols(obj)),
 								keysLen = keys.length; // performance
-							for (var j = 0; j < keysLen; j++) {
-								var key = keys[j];
+							for (let j = 0; j < keysLen; j++) {
+								const key = keys[j];
 								extender(result, obj[key], key, _shared.Natives.functionBindCall(types.depthExtend, types, extender));
 							};
 						};
@@ -2545,20 +2542,20 @@
 			}
 			//! END_REPLACE()
 			, function complete(/*paramarray*/obj) {
-				var result;
+				let result;
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
-					var len = arguments.length;
-					for (var i = 1; i < len; i++) {
+					const len = arguments.length;
+					for (let i = 1; i < len; i++) {
 						obj = arguments[i];
 						if (types.isNothing(obj)) {
 							continue;
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 						obj = _shared.Natives.windowObject(obj);
-						var keys = types.append(types.keys(obj), types.symbols(obj));
-						for (var j = 0; j < keys.length; j++) {
-							var key = keys[j];
+						const keys = types.append(types.keys(obj), types.symbols(obj));
+						for (let j = 0; j < keys.length; j++) {
+							const key = keys[j];
 							if (!types.has(result, key)) {
 								result[key] = obj[key];
 							};
@@ -2586,38 +2583,39 @@
 			}
 			//! END_REPLACE()
 			, function completeProperties(/*paramarray*/obj) {
-				var result;
+				let result;
+
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
-					var len = arguments.length;
+					const len = arguments.length;
 					if (types.hasProperties()) {
-						for (var i = 1; i < len; i++) {
+						for (let i = 1; i < len; i++) {
 							obj = arguments[i];
 							if (types.isNothing(obj)) {
 								continue;
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							var keys = types.append(types.keys(obj), types.symbols(obj));
-							for (var j = 0; j < keys.length; j++) {
-								var key = keys[j];
+							const keys = types.append(types.keys(obj), types.symbols(obj));
+							for (let j = 0; j < keys.length; j++) {
+								const key = keys[j];
 								if (!types.has(result, key)) {
-									var descriptor = types.getOwnPropertyDescriptor(obj, key);
+									const descriptor = types.getOwnPropertyDescriptor(obj, key);
 									types.defineProperty(result, key, descriptor);
 								};
 							};
 						};
 					} else {
-						for (var i = 1; i < len; i++) {
+						for (let i = 1; i < len; i++) {
 							obj = arguments[i];
 							if (types.isNothing(obj)) {
 								continue;
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							var keys = types.append(types.keys(obj), types.symbols(obj));
-							for (var j = 0; j < keys.length; j++) {
-								var key = keys[j];
+							const keys = types.append(types.keys(obj), types.symbols(obj));
+							for (let j = 0; j < keys.length; j++) {
+								const key = keys[j];
 								if (!types.has(result, key)) {
 									result[key] = obj[key];
 								};
@@ -2652,17 +2650,15 @@
 				}
 			: 
 				function concat(/*paramarray*/) {
-					var result = [];
+					const result = [];
 				
-					var len = arguments.length;
-					for (var i = 0; i < len; i++) {
-						if (i in arguments) {
-							var obj = arguments[i];
-							if (types.isArray(obj)) {
-								_shared.Natives.arrayPushApply(result, obj);
-							} else {
-								_shared.Natives.arrayPushCall(result, obj);
-							};
+					const len = arguments.length;
+					for (let i = 0; i < len; i++) {
+						const obj = arguments[i];
+						if (types.isArray(obj)) {
+							_shared.Natives.arrayPushApply(result, obj);
+						} else {
+							_shared.Natives.arrayPushCall(result, obj);
 						};
 					};
 				
@@ -2695,9 +2691,9 @@
 				if (!types.isArrayLike(obj)) {
 					return null;
 				};
-				var len = arguments.length;
-				for (var i = 1; i < len; i++) {
-					var arg = arguments[i];
+				const len = arguments.length;
+				for (let i = 1; i < len; i++) {
+					const arg = arguments[i];
 					if (!types.isNothing(arg)) {
 						_shared.Natives.arrayPushApply(obj, arg);
 					};
@@ -2731,31 +2727,32 @@
 			}
 			//! END_REPLACE()
 			, function unique(/*optional*/comparer, /*paramarray*/obj) {
-				var start = 1;
-				var comparerFn = comparer;
+				let start = 1;
+				let comparerFn = comparer;
 				if (!types.isFunction(comparerFn)) {
 					comparerFn = null;
 					start = 0;
 				};
 				
-				var result = [];
+				const result = [];
+
+				const len = arguments.length;
 				
 				if (comparerFn) {
-					var len = arguments.length;
-					for (var i = start; i < len; i++) {
+					for (let i = start; i < len; i++) {
 						obj = arguments[i];
 						if (types.isNothing(obj)) {
 							continue;
 						};
 						obj = _shared.Natives.windowObject(obj);
-						var objLen = obj.length;
-						for (var key1 = 0; key1 < objLen; key1++) {
-							if (key1 in obj) {
-								var value1 = obj[key1],
-									found = false,
-									resultLen = result.length;
-								for (var key2 = 0; key2 < resultLen; key2++) {
-									var res = comparerFn(value1, result[key2]);
+						const objLen = obj.length;
+						for (let key1 = 0; key1 < objLen; key1++) {
+							if (types.has(obj, key1)) {
+								const value1 = obj[key1];
+								const resultLen = result.length;
+								let found = false;
+								for (let key2 = 0; key2 < resultLen; key2++) {
+									const res = comparerFn(value1, result[key2]);
 									if ((res === true) || (res === 0)) {
 										found = true;
 										break;
@@ -2768,20 +2765,19 @@
 						};
 					};
 				} else {
-					var len = arguments.length;
-					for (var i = start; i < len; i++) {
+					for (let i = start; i < len; i++) {
 						obj = arguments[i];
 						if (types.isNothing(obj)) {
 							continue;
 						};
 						obj = _shared.Natives.windowObject(obj);
-						var objLen = obj.length;
-						for (var key1 = 0; key1 < objLen; key1++) {
-							if (key1 in obj) {
-								var value1 = obj[key1],
-									found = false,
-									resultLen = result.length;
-								for (var key2 = 0; key2 < resultLen; key2++) {
+						const objLen = obj.length;
+						for (let key1 = 0; key1 < objLen; key1++) {
+							if (types.has(obj, key1)) {
+								const value1 = obj[key1];
+								const resultLen = result.length;
+								let found = false;
+								for (let key2 = 0; key2 < resultLen; key2++) {
 									if (value1 === result[key2]) {
 										found = true;
 										break;
@@ -2927,7 +2923,7 @@
 			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
 		};
 
-		var __options__ = types.depthExtend(15, {
+		const __options__ = types.depthExtend(15, {
 			//! IF(IS_SET('debug'))
 				// Starting from source code...
 				debug: true,					// When 'true', will be in 'debug mode'.
@@ -2996,7 +2992,7 @@
 					return __Internal__.nodeUUID();
 				} else {
 					// Source: https://gist.github.com/LeverOne
-					var a, b;
+					let a, b;
 					for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
 					return b
 				};
@@ -3104,7 +3100,7 @@
 			//! END_REPLACE()
 			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function getSymbol(key, /*optional*/isGlobal) {
 				key = _shared.Natives.windowString(key);
-				var symbol;
+				let symbol;
 				if (isGlobal) {
 					symbol = _shared.Natives.symbolFor(key);
 				} else {
@@ -3113,7 +3109,7 @@
 				return symbol;
 			} : function getSymbol(key, /*optional*/isGlobal) {
 				// Not supported
-				var genKey = (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
+				const genKey = (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
 				if (!isGlobal && types.isNothing(key)) {
 					return genKey;
 				} else {
@@ -3141,7 +3137,7 @@
 				if (!types.isSymbol(symbol)) {
 					return undefined;
 				};
-				var key = _shared.Natives.symbolKeyFor(symbol.valueOf());
+				let key = _shared.Natives.symbolKeyFor(symbol.valueOf());
 				if (types.isNothing(key)) {
 					key = _shared.Natives.symbolToStringCall(symbol);
 					key = /^Symbol[(]((.|\n)*)[)]$/gm.exec(key) || undefined;
@@ -3205,8 +3201,8 @@
 						return obj.name;
 					} else {
 						// Internet Explorer
-						var str = _shared.Natives.functionToStringCall(obj);
-						var result = str.match(/function\s+([^(\s]*)[^(]*\(/);
+						const str = _shared.Natives.functionToStringCall(obj);
+						const result = str.match(/function\s+([^(\s]*)[^(]*\(/);
 						return result && result[1] || null;
 					};
 				} else {
@@ -3226,7 +3222,7 @@
 			if (!types.isObjectLike(obj)) {
 				return null;
 			};
-			var type;
+			let type;
 			if (types.isFunction(obj)) {
 				type = obj;
 			} else {
@@ -3236,8 +3232,8 @@
 					return null;
 				};
 			};
-			var uuid,
-				isType = types.isType(type);
+			let uuid;
+			const isType = types.isType(type);
 			if (isType) {
 				uuid = types.get(type, __Internal__.symbolTypeUUID);
 				// TODO: Is the following necessary ?
@@ -3352,13 +3348,13 @@
 					return false;
 				};
 				type = _shared.Natives.windowObject(type);
-				var crossRealm = !(type instanceof _shared.Natives.windowFunction);
+				let crossRealm = !(type instanceof _shared.Natives.windowFunction);
 				if (types.isArray(base)) {
-					var i = 0;
+					let i = 0;
 					if (!crossRealm) {
 						for (; i < base.length; i++) {
-							if (i in base) {
-								var b = base[i];
+							if (types.has(base, i)) {
+								let b = base[i];
 								if (types.isFunction(b)) {
 									b = _shared.Natives.windowObject(b);
 									if (b instanceof _shared.Natives.windowFunction) {
@@ -3378,12 +3374,12 @@
 						//type = types.getPrototypeOf(type);
 							type = types.getPrototypeOf(type.prototype);
 							type = type && type.constructor;
-						var start = i;
+						let start = i;
 						while (!types.isNothing(type)) {
-							var tuuid = _shared.getUUID(type);
+							const tuuid = _shared.getUUID(type);
 							for (; i < base.length; i++) {
-								if (i in base) {
-									var b = base[i];
+								if (types.has(base, i)) {
+									const b = base[i];
 									if (types.isFunction(b)) {
 										if (tuuid) {
 											if (tuuid === _shared.getUUID(b)) {
@@ -3416,12 +3412,12 @@
 						};
 					};
 					if (crossRealm) {
-						var uuid = _shared.getUUID(base);
+						const uuid = _shared.getUUID(base);
 						//type = types.getPrototypeOf(type);
 							type = types.getPrototypeOf(type.prototype);
 							type = type && type.constructor;
 						while (!types.isNothing(type)) {
-							var tuuid = _shared.getUUID(type);
+							const tuuid = _shared.getUUID(type);
 							if (tuuid) {
 								if (tuuid === uuid) {
 									return true;
@@ -3474,13 +3470,13 @@
 					};
 					obj = _shared.Natives.windowObject(obj);
 				};
-				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
+				let crossRealm = !(obj instanceof _shared.Natives.windowFunction);
 				if (types.isArray(type)) {
-					var i = 0;
+					let i = 0;
 					if (!crossRealm) {
 						for (; i < type.length; i++) {
-							if (i in type) {
-								var t = type[i];
+							if (types.has(type, i)) {
+								let t = type[i];
 								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
 									if (!types.isFunction(t)) {
@@ -3504,11 +3500,11 @@
 						};
 					};
 					if (crossRealm) {
-						var uuid = _shared.getUUID(obj);
+						const uuid = _shared.getUUID(obj);
 						if (uuid) {
 							for (; i < type.length; i++) {
-								if (i in type) {
-									var t = type[i];
+								if (types.has(type, i)) {
+									let t = type[i];
 									if (!types.isNothing(t)) {
 										t = _shared.Natives.windowObject(t);
 										if (!types.isFunction(t)) {
@@ -3545,7 +3541,7 @@
 						};
 					};
 					if (crossRealm) {
-						var tuuid = _shared.getUUID(type);
+						const tuuid = _shared.getUUID(type);
 						if (tuuid) {
 							if (tuuid === _shared.getUUID(obj)) {
 								return true;
@@ -3594,13 +3590,13 @@
 					};
 					obj = _shared.Natives.windowObject(obj);
 				};
-				var crossRealm = !(obj instanceof _shared.Natives.windowFunction);
+				let crossRealm = !(obj instanceof _shared.Natives.windowFunction);
 				if (types.isArray(type)) {
-					var i = 0;
+					let i = 0;
 					if (!crossRealm) {
 						for (; i < type.length; i++) {
-							if (i in type) {
-								var t = type[i];
+							if (types.has(type, i)) {
+								let t = type[i];
 								if (!types.isNothing(t)) {
 									t = _shared.Natives.windowObject(t);
 									if (!types.isFunction(t)) {
@@ -3624,12 +3620,12 @@
 						};
 					};
 					if (crossRealm) {
-						var start = i;
+						const start = i;
 						do {
-							var uuid = _shared.getUUID(obj);
+							const uuid = _shared.getUUID(obj);
 							for (; i < type.length; i++) {
-								if (i in type) {
-									var t = type[i];
+								if (types.has(type, i)) {
+									let t = type[i];
 									if (!types.isNothing(t)) {
 										t = _shared.Natives.windowObject(t);
 										if (!types.isFunction(t)) {
@@ -3638,7 +3634,7 @@
 												continue;
 											};
 										};
-										var tuuid = _shared.getUUID(t);
+										const tuuid = _shared.getUUID(t);
 										if (tuuid) {
 											if (tuuid === uuid) {
 												return true;
@@ -3677,7 +3673,7 @@
 						};
 					};
 					if (crossRealm) {
-						var tuuid = _shared.getUUID(type);
+						const tuuid = _shared.getUUID(type);
 						do {
 							if (tuuid) {
 								if (tuuid === _shared.getUUID(obj)) {
@@ -3727,16 +3723,16 @@
 				};
 				obj = _shared.Natives.windowObject(obj);
 				// NOTE: "null objects" will appear "cross-realm"
-				var crossRealm = !(obj instanceof _shared.Natives.windowObject);
+				let crossRealm = !(obj instanceof _shared.Natives.windowObject);
 				if (types.isArray(type)) {
-					var i = 0;
+					let i = 0;
 					if (!crossRealm) {
 						for (; i < type.length; i++) {
-							if (i in type) {
-								var t = type[i];
+							if (types.has(type, i)) {
+								const t = type[i];
 								if (types.isFunction(t)) {
 									if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
-										var hasInstance = _shared.Natives.symbolHasInstance && t[_shared.Natives.symbolHasInstance];
+										const hasInstance = _shared.Natives.symbolHasInstance && t[_shared.Natives.symbolHasInstance];
 										if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
 											// "hasInstance" has been messed, switch to cross-realm mode
 											crossRealm = true;
@@ -3754,14 +3750,14 @@
 						};
 					};
 					if (crossRealm) {
-						var start = i;
+						const start = i;
 						do {
-							var uuid = _shared.getUUID(obj);
+							const uuid = _shared.getUUID(obj);
 							for (; i < type.length; i++) {
-								if (i in type) {
-									var t = type[i];
+								if (types.has(type, i)) {
+									const t = type[i];
 									if (types.isFunction(t)) {
-										var tuuid = _shared.getUUID(t);
+										const tuuid = _shared.getUUID(t);
 										if (tuuid) {
 											if (tuuid === uuid) {
 												return true;
@@ -3781,7 +3777,7 @@
 				} else if (types.isFunction(type)) {
 					if (!crossRealm) {
 						if (_shared.Natives.windowObject(type) instanceof _shared.Natives.windowFunction) {
-							var hasInstance = _shared.Natives.symbolHasInstance && type[_shared.Natives.symbolHasInstance];
+							const hasInstance = _shared.Natives.symbolHasInstance && type[_shared.Natives.symbolHasInstance];
 							if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
 								// "hasInstance" has been messed, switch to cross-realm mode
 								crossRealm = true;
@@ -3794,7 +3790,7 @@
 						};
 					};
 					if (crossRealm) {
-						var tuuid = _shared.getUUID(type);
+						const tuuid = _shared.getUUID(type);
 						do {
 							if (tuuid) {
 								if (tuuid === _shared.getUUID(obj)) {
@@ -4004,7 +4000,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'object',
@@ -4022,11 +4018,13 @@
 			}
 			//! END_REPLACE()
 			, function getAttributes(obj, attrs) {
-				var attrsLen = attrs.length,
+				const attrsLen = attrs.length,
 					result = {};
-				for (var i = 0; i < attrsLen; i++) {
-					var attr = attrs[i];
-					result[attr] = _shared.getAttribute(obj, attr);
+				for (let i = 0; i < attrsLen; i++) {
+					if (types.has(attrs, i)) {
+						const attr = attrs[i];
+						result[attr] = _shared.getAttribute(obj, attr);
+					};
 				};
 				return result;
 			});
@@ -4065,9 +4063,9 @@
 			, function setAttribute(obj, attr, value, /*optional*/options) {
 				options = options && types.nullObject(options);
 				if (types.hasProperties()) {
-					var hasOwn = types.has(obj, attr),
-						descriptor = types.getPropertyDescriptor(obj, attr),
-						descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
+					const hasOwn = types.has(obj, attr);
+					let descriptor = types.getPropertyDescriptor(obj, attr);
+					const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
 						descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
 						descWritable = !descriptor || types.get(descriptor, 'writable', false),
 						descGet = types.get(descriptor, 'get'),
@@ -4136,10 +4134,10 @@
 			}
 			//! END_REPLACE()
 			, function setAttributes(obj, values, /*optional*/options) {
-				var keys = types.append(types.keys(values), types.symbols(values)),
+				const keys = types.append(types.keys(values), types.symbols(values)),
 					keysLen = keys.length;
-				for (var i = 0; i < keysLen; i++) {
-					var key = keys[i];
+				for (let i = 0; i < keysLen; i++) {
+					const key = keys[i];
 					__Internal__.setAttribute(obj, key, values[key], options);
 				};
 				return values;
@@ -4151,7 +4149,7 @@
 		__Internal__.tempTypesRegistered = [];
 
 		__Internal__.REGISTER = function REGISTER(type) {
-			var name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
+			const name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
 			if (types.isType && types.isType(type)) {
 				type = types.INIT(type);
 			};
@@ -4213,8 +4211,9 @@
 				};
 				name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
 				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
+				let type;
 				if (__Internal__.hasClasses) {
-					var expr = "class " + name + " extends ctx.base {" +
+					const expr = "class " + name + " extends ctx.base {" +
 						"constructor(/*paramarray*/...args) {" +
 							"const context = {_this: {}, superArgs: null};" +
 							(constructor ? (
@@ -4230,7 +4229,7 @@
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
-					var type = types.evalStrict(expr, {
+					type = types.evalStrict(expr, {
 						base: base,
 						constructor: constructor,
 						name: name,
@@ -4238,22 +4237,22 @@
 					});
 
 				} else {
-					var expr = "function " + name + "(/*paramarray*/) {" +
-						"var context = {_this: {}, superArgs: null};" +
+					const expr = "function " + name + "(/*paramarray*/) {" +
+						"const context = {_this: {}, superArgs: null};" +
 						(constructor ? (
-							"var error = ctx.constructor.apply(context, arguments) || this;" +
+							"ctx.constructor.apply(context, arguments);" +
 							"ctx.extend(this, context._this);" +
 							"this.throwLevel++;"
 						) : (
 							""
 						)) +
-						"var error = ctx.base.apply(this, (context.superArgs || arguments)) || this;" +
+						"const error = ctx.base.apply(this, (context.superArgs || arguments)) || this;" +
 						"if (error !== this) {" +
 							// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
 							//
 							//       Proof of concept :
-							//          var a = new Error("hello");
-							//          var b = Error.call(a, "bye");
+							//          let a = new Error("hello");
+							//          let b = Error.call(a, "bye");
 							//          a === b  // always returns "false"
 							//          a.constructor === b.constructor  // returns "true"
 							//          a.constructor === Error  // returns "true"
@@ -4277,7 +4276,7 @@
 					"}";
 				
 					// NOTE: Use of "eval" to give the name to the function				
-					var type = types.eval(expr, {
+					type = types.eval(expr, {
 						base: base,
 						constructor: constructor,
 						name: name,
@@ -4308,7 +4307,7 @@
 					parse: function parse() {
 						// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
 						if (!this.parsed) {
-							var stack;
+							let stack;
 							if (this.stack) {
 								stack = tools.parseStack(this.stack);
 								if (stack) {
@@ -4321,7 +4320,7 @@
 								this.parsedStack = stack;
 							};
 							
-							var fileName,
+							let fileName,
 								lineNumber,
 								columnNumber,
 								functionName;
@@ -4342,7 +4341,7 @@
 								// Other browsers
 								// Set attributes from the stack.
 								if (stack) {
-									var trace = stack[0];
+									const trace = stack[0];
 									fileName = trace.path;
 									columnNumber = trace.columnNumber;
 									lineNumber = trace.lineNumber;
@@ -4805,9 +4804,9 @@
 
 		types.extend(types.box.prototype, {
 			setAttributes: function setAttributes(dest, /*optional*/override) {
-				var keys = types.append(types.keys(this), types.symbols(this));
-				for (var i = 0; i < keys.length; i++) {
-					var key = keys[i];
+				const keys = types.append(types.keys(this), types.symbols(this));
+				for (let i = 0; i < keys.length; i++) {
+					const key = keys[i];
 					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
 						dest[key] = this[key];
 					};
@@ -4819,8 +4818,8 @@
 			},
 			setValue: function setValue(value, /*optional*/override) {
 				// NOTE: "OriginalValueSymbol" is immutable
-				var type = this.constructor;
-				var newBox = new type(value);
+				const type = this.constructor;
+				const newBox = new type(value);
 				return this.setAttributes(newBox, override);
 			},
 			clone: function clone() {
@@ -4940,7 +4939,7 @@
 				});
 		
 			(function() {
-				for (var i = 0; i < __Internal__.tempDocs.length; i++) {
+				for (let i = 0; i < __Internal__.tempDocs.length; i++) {
 					__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
 				};
 				delete __Internal__.tempDocs;
@@ -4959,12 +4958,12 @@
 
 		_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
 			// NOTE: This function will get overriden when "Doodad.js" is loaded.
-			var result;
+			let result;
 
 			if (types.isNothing(obj)) {
 				result = obj;
 			} else {
-				var isArray = !types.isString(obj) && types.isArrayLike(obj);
+				const isArray = !types.isString(obj) && types.isArrayLike(obj);
 				depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 				cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							
@@ -4972,9 +4971,9 @@
 					obj = _shared.Natives.windowObject(obj);
 					if (depth >= 0) {
 						result = new _shared.Natives.windowArray(obj.length);
-						var len = obj.length;
-						for (var key = 0; key < len; key++) {
-							if (key in obj) {
+						const len = obj.length;
+						for (let key = 0; key < len; key++) {
+							if (types.has(obj, key)) {
 								result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
 							};
 						};
@@ -4992,21 +4991,21 @@
 				};
 
 				// Copy properties
-				var keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
+				const keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
 					arrayLen = isArray && obj.length,
 					props = {};
-				for (var i = 0; i < keys.length; i++) {
-					var key = keys[i];
+				for (let i = 0; i < keys.length; i++) {
+					const key = keys[i];
 					if (isArray) {
 						if (key === 'length') {
 							continue;
 						};
-						var tmp = _shared.Natives.windowNumber(key);
+						const tmp = _shared.Natives.windowNumber(key);
 						if ((tmp >= 0) && (tmp < arrayLen)) {
 							continue;
 						};
 					};
-					var prop = types.getOwnPropertyDescriptor(result, key);
+					let prop = types.getOwnPropertyDescriptor(result, key);
 					if (!prop || prop.configurable) {
 						prop = types.getOwnPropertyDescriptor(obj, key);
 						if (types.has(prop, 'value') && (depth >= 0)) {
@@ -5134,13 +5133,13 @@
 				
 				// console.log(Object.prototype.isPrototypeOf.call(Error.prototype, TypeError.prototype));
 				// >>> true
-				// var t1 = function(){};
-				// var t2 = function(){};
+				// let t1 = function(){};
+				// let t2 = function(){};
 				// t2.prototype = t1.prototype;
 				// console.log(Object.prototype.isPrototypeOf.call(t1.prototype, t2.prototype));
 				// >>> false   // BAD
-				// var t1 = function(){};
-				// var t2 = function(){};
+				// t1 = function(){};
+				// t2 = function(){};
 				// t2.prototype = Object.setPrototypeOf(t2.prototype, t1.prototype);
 				// console.log(Object.prototype.isPrototypeOf.call(t1.prototype, t2.prototype));
 				// >>> true    // OK
@@ -5153,7 +5152,7 @@
 					},
 				});
 
-				var values = {
+				const values = {
 					apply: type.apply,
 					call: type.call,
 					bind: type.bind,
@@ -5433,8 +5432,8 @@
 		__Internal__.prototypeIsConfigurable = false;
 		(function() {
 			if (types.hasProperties()) {
-				var f = function() {};
-				var desc = types.getOwnPropertyDescriptor(f, 'prototype');
+				const f = function() {};
+				const desc = types.getOwnPropertyDescriptor(f, 'prototype');
 				__Internal__.prototypeIsConfigurable = desc.configurable;
 			};
 		})();
@@ -5448,7 +5447,7 @@
 		_shared.proxyHasSetHandlerBug = false;
 		(function() {
 			if (types.hasProxies()) {
-				var proxy = types.createProxy(types.createObject(null), {
+				const proxy = types.createProxy(types.createObject(null), {
 					set: function(target, prop, val) {
 						// Should set NEW NON-EXISTING property as non-configurable and non-writable with a different value.
 						types.defineProperty(target, prop, {
@@ -5495,9 +5494,9 @@
 			}
 			//! END_REPLACE()
 			, function createCaller(attr, fn, /*optional*/superFn) {
-				var superFn = superFn || __Internal__.emptyFunction;
-				var _caller = function caller(/*paramarray*/) {
-					var oldSuper = _shared.getAttribute(this, '_super');
+				superFn = superFn || __Internal__.emptyFunction;
+				let _caller = function caller(/*paramarray*/) {
+					const oldSuper = _shared.getAttribute(this, '_super');
 					_shared.setAttribute(this, '_super', superFn);
 					try {
 						return fn.apply(this, arguments);
@@ -5534,22 +5533,6 @@
 				};
 
 				if (!types.isSingleton(type)) {
-					//var val = __Internal__.createCaller('$inherit', function $inherit(/*paramarray*/) {
-					//		var obj = this._super.apply(this, arguments) || this;
-					//		var type = types.getType(obj);
-					//		return types.newInstance(type, args);
-					//	}, type.$inherit);
-					//_shared.setAttribute(type, '$inherit', val, {all: true});
-
-
-					//var val = __Internal__.createCaller('$inherit', function $inherit(/*paramarray*/) {
-					//		var type = this._super.apply(this, arguments) || this;
-					//		type = types.getType(type);
-					//		return type.$inherit.apply(type, arguments);
-					//	}, type.prototype.$inherit);
-					//_shared.setAttribute(type.prototype, '$inherit', val, {all: true});
-
-
 					_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
 				};
 				
@@ -5622,22 +5605,22 @@
 		});
 		
 		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables) {
-			var forType = types.isType(target),
+			const forType = types.isType(target),
 				keys = types.append(types.keys(proto), types.symbols(proto));
 
-			for (var i = 0; i < keys.length; i++) {
-				var key = keys[i];
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
 
-				var hasKey = types.has(target, key);
+				const hasKey = types.has(target, key);
 				if (hasKey && skipExisting) {
 					continue;
 				};
 
 				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
-					var attr = types.AttributeBox(proto[key]),
+					const attr = types.AttributeBox(proto[key]),
 						g = types.get(attr, __Internal__.symbolGetter),
-						s = types.get(attr, __Internal__.symbolSetter),
-						value = attr,
+						s = types.get(attr, __Internal__.symbolSetter);
+					let value = attr,
 						isFunction = false;
 
 					if (!g && !s) {
@@ -5648,7 +5631,7 @@
 						isFunction = types.isJsFunction(value);
 					};
 
-					var cf = types.get(attr, _shared.ConfigurableSymbol);
+					let cf = types.get(attr, _shared.ConfigurableSymbol);
 					if (types.isNothing(cf)) {
 						cf = !isFunction;
 					};
@@ -5657,9 +5640,9 @@
 						continue;
 					};
 
-					var createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
+					const createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
 					if (createSuper) {
-						var _super = base && _shared.getAttribute(base, key);
+						const _super = base && _shared.getAttribute(base, key);
 						value = __Internal__.createCaller(key, value, _super);
 					};
 
@@ -5675,7 +5658,7 @@
 						_shared.setAttribute(target, key, value, {all: true});
 
 					} else {
-						var enu = types.get(attr, _shared.EnumerableSymbol);
+						let enu = types.get(attr, _shared.EnumerableSymbol);
 						if (types.isNothing(enu)) {
 							enu = true;
 						};
@@ -5689,7 +5672,7 @@
 								set: s || undefined,
 							});
 						} else {
-							var ro = types.get(attr, _shared.ReadOnlySymbol);
+							let ro = types.get(attr, _shared.ReadOnlySymbol);
 							if (types.isNothing(ro)) {
 								ro = isFunction;
 							};
@@ -5761,7 +5744,7 @@
 
 				name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
 				
-				var baseIsType = types.isType(base);
+				const baseIsType = types.isType(base);
 				if (baseIsType) {
 					if (!types.get(base, __Internal__.symbolInitialized)) {
 						throw new _shared.Natives.windowError("Base type '" + (types.getTypeName(base) || types.getFunctionName(base)) + "' is not initialized.");
@@ -5781,12 +5764,12 @@
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-				var expr = "function " + name + "(/*paramarray*/) {" + 
+				const expr = "function " + name + "(/*paramarray*/) {" + 
 					//"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 					//	"throw new ctx.types.Error('Object is already initialized.');" +
 					//"};" +
 
-					"var forType = ctx.types.isFunction(this);" +
+					"const forType = ctx.types.isFunction(this);" +
 
 					"if (forType) {" +
 						"if ((this !== ctx.type) && (!ctx.types.baseof(ctx.type, this))) {" +
@@ -5814,7 +5797,7 @@
 						""
 					) +
 
-					"var " + (typeProto ? "skipConfigurables = true," : "") +
+					"let " + (typeProto ? "skipConfigurables = true," : "") +
 						"obj;" +
 					"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 						"obj = this;" +
@@ -5849,7 +5832,7 @@
 							""
 						) +
 
-						"var isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
+						"const isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
 						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
 						"if (isSingleton) {" +
 							"if (!forType) {" +
@@ -5893,7 +5876,7 @@
 					"return obj;" +
 				"}";
 				
-				var ctx = types.nullObject({
+				const ctx = types.nullObject({
 					base: base,
 					constructor: constructor,
 					typeProto: typeProto, 
@@ -5906,18 +5889,16 @@
 					types: types,
 				});
 
-				var type = types.eval(expr, ctx);
+				let type = types.eval(expr, ctx);
 				
 				// Inherit base
-				var proto;
-				var baseIsType = false;
+				let proto;
 				if (base) {
-					baseIsType = types.isType(base);
 					type = types.INHERIT(base, type);
 					proto = type.prototype;
 				} else {
 					proto = type.prototype;
-					var values = {
+					const values = {
 						call: type.call,
 						apply: type.apply,
 						bind: type.bind,
@@ -5982,9 +5963,9 @@
 			//! END_REPLACE()
 			, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructor, /*optional*/constructorContext) {
 				// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
-				var base = ((this === global) ? undefined: this);
+				const base = ((this === global) ? undefined: this);
 				
-				var name = null,
+				let name = null,
 					uuid = null;
 
 				if (typeProto) {
@@ -5996,7 +5977,7 @@
 					uuid = !types.isNothing(uuid) && types.toString(uuid) || '';
 				};
 	
-				var type = types.createType(
+				const type = types.createType(
 						/*name*/
 						name,
 						
@@ -6069,7 +6050,7 @@
 				if (types.isType(this)) {
 					return '[type ' + types.getTypeName(this) + ']';
 				} else {
-					var name = types.getTypeName(this);
+					const name = types.getTypeName(this);
 					if (name) {
 						return '[object ' + name + ']';
 					} else {
@@ -6318,13 +6299,13 @@
 							useCapture = !!useCapture;
 							wantsUntrusted = (types.isNothing(wantsUntrusted) ? true : !!wantsUntrusted);
 							
-							var listeners = this[__Internal__.symbolEventListeners][type];
+							let listeners = this[__Internal__.symbolEventListeners][type];
 							if (!types.isArray(listeners)) {
 								this[__Internal__.symbolEventListeners][type] = listeners = [];
 							};
-							var found = false;
-							for (var i = 0; i < listeners.length; i++) {
-								var value = listeners[i];
+							let found = false;
+							for (let i = 0; i < listeners.length; i++) {
+								const value = listeners[i];
 								if ((value[0] === handler) && (value[1] === useCapture)) {
 									found = true;
 									break;
@@ -6365,19 +6346,19 @@
 							type = type.toLowerCase();
 							
 							if (type in this[__Internal__.symbolEventListeners]) {
-								var listeners = this[__Internal__.symbolEventListeners][type];
+								const listeners = this[__Internal__.symbolEventListeners][type];
 								if (types.isArray(listeners)) {
 									if (types.isNothing(useCapture)) {
-										for (var i = listeners.length - 1; i >= 0; i--) {
-											var value = listeners[i];
+										for (let i = listeners.length - 1; i >= 0; i--) {
+											const value = listeners[i];
 											if (!handler || (value[0] === handler)) {
 												listeners.splice(i, 1);
 											};
 										};
 									} else {
 										useCapture = !!useCapture;
-										for (var i = listeners.length - 1; i >= 0; i--) {
-											var value = listeners[i];
+										for (let i = listeners.length - 1; i >= 0; i--) {
+											const value = listeners[i];
 											if ((!handler || (value[0] === handler)) && (value[1] === useCapture)) {
 												listeners.splice(i, 1);
 											};
@@ -6406,9 +6387,9 @@
 						, function dispatchEvent(event) {
 							// TODO: What should I do with "useCapture" ???
 							// TODO: Implement "wantsUntrusted" ?
-							var type = event.type.toLowerCase();
+							let type = event.type.toLowerCase();
 							
-							var res = true;
+							let res = true;
 							
 							if (!event.stopped) {
 								var	listeners;
@@ -6425,11 +6406,11 @@
 								try {
 									listeners.__locked = true;  // prevents infinite loop
 									
-									var ar = types.clone(listeners),
+									const ar = types.clone(listeners),
 										arLen = ar.length;
-									for (var i = 0; i < arLen; i++) {
-										var listener = ar[i];
-										var retval = listener[0].call(this, event);
+									for (let i = 0; i < arLen; i++) {
+										const listener = ar[i];
+										const retval = listener[0].call(this, event);
 										if (event.canceled) {
 											res = false;
 										};
@@ -6443,9 +6424,9 @@
 									
 									type = 'on' + type;
 									if (!event.stopped && types.has(this, type)) {
-										var fn = this[type];
+										const fn = this[type];
 										if (types.isFunction(fn)) {
-											var retval = fn.call(this, event);
+											const retval = fn.call(this, event);
 											if (event.canceled) {
 												res = false;
 											};
@@ -6504,7 +6485,7 @@
 				};
 
 				if (protect && types.isFunction(obj)) {
-					var values = {
+					const values = {
 						apply: obj.apply,
 						call: obj.call,
 						bind: obj.bind,
@@ -6530,7 +6511,7 @@
 		__Internal__.tempRegisteredOthers = [];
 		__Internal__.registerOthers = _shared.REGISTER = function REGISTER(type, args, protect) {
 				// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
-				var name = (types.getTypeName(type) || types.getFunctionName(type) || null),
+				const name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 					fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
 
 				if (!types.has(type, 'DD_FULL_NAME') && types.isExtensible(type)) {
@@ -6692,7 +6673,7 @@
 			};
 		//! END_IF()
 
-		var root = types.INIT(__Internal__.DD_DOC(
+		const root = types.INIT(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -6732,7 +6713,7 @@
 
 						options = types.nullObject(options);
 						
-						var root = this;
+						const root = this;
 
 						// Prebuild "Doodad", "Doodad.Types" and "Doodad.Tools"
 						// NOTE: 'Doodad' is the parent of 'Types', 'Tools' and 'Namespaces', but it depends on them. I should have put these namespaces at Root, but it's too late now.
@@ -6740,7 +6721,7 @@
 						root.Doodad.Tools = new types.Namespace(root.Doodad, 'Tools', 'Doodad.Tools');
 
 						// NOTE: "types" replaces "toString". It's too late to rename it.
-						var __typesTmp = types.INIT(types.Namespace.$inherit({
+						const __typesTmp = types.INIT(types.Namespace.$inherit({
 								$TYPE_NAME: '__TypesNamespace',
 							},
 							{
@@ -6748,19 +6729,19 @@
 							}));
 						root.Doodad.Types = new __typesTmp(root.Doodad, 'Types', 'Doodad.Types');
 
-						for (var i = 0; i < __Internal__.tempTypesAdded.length; i++) {
-							var type = __Internal__.tempTypesAdded[i],
+						for (let i = 0; i < __Internal__.tempTypesAdded.length; i++) {
+							const type = __Internal__.tempTypesAdded[i],
 								name = type[0],
 								obj = type[1];
 							root.Doodad.Types.ADD(name, obj);
 						};
-						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
-							var type = __Internal__.tempTypesRegistered[i];
+						for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
+							const type = __Internal__.tempTypesRegistered[i];
 							// Temporary... will get registered later.
 							root.Doodad.Types.ADD(types.getTypeName(type) || types.getFunctionName(type), type, false);
 						};
-						for (var i = 0; i < __Internal__.tempToolsAdded.length; i++) {
-							var tool = __Internal__.tempToolsAdded[i],
+						for (let i = 0; i < __Internal__.tempToolsAdded.length; i++) {
+							const tool = __Internal__.tempToolsAdded[i],
 								name = tool[0],
 								obj = tool[1];
 							root.Doodad.Tools.ADD(name, obj);
@@ -6771,7 +6752,7 @@
 						delete __Internal__.REGISTER;
 						delete __Internal__.ADD_TOOL;
 
-						var nsObjs = types.nullObject({
+						const nsObjs = types.nullObject({
 							'Doodad': root.Doodad,
 							'Doodad.Types': root.Doodad.Types,
 							'Doodad.Tools': root.Doodad.Tools,
@@ -6795,7 +6776,7 @@
 							modules = {};
 						};
 
-						var MODULE_VERSION;
+						let MODULE_VERSION;
 						//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')) + ";")
 
 						modules['doodad-js'] = {
@@ -6804,26 +6785,27 @@
 							bootstrap: true,
 						};
 						
-						var names = types.keys(modules),
-							inits = types.nullObject(),
-							namespaces = null,
+						const names = types.keys(modules),
+							inits = types.nullObject();
+
+						let namespaces = null,
 							entries = null,
 							name;
 							
 						whileName: while (name = names.shift()) {
-							var spec = modules[name];
+							const spec = modules[name];
 							spec.name = name;
 							if (spec.bootstrap) {
-								var deps = (types.get(spec, 'dependencies') || []);
-								for (var i = 0; i < deps.length; i++) {
-									if (i in deps) {
-										var dep = deps[i],
+								const deps = (types.get(spec, 'dependencies') || []);
+								for (let i = 0; i < deps.length; i++) {
+									if (types.has(deps, i)) {
+										let dep = deps[i],
 											optional = false;
 										if (types.isObject(dep)) {
 											optional = dep.optional;
 											dep = dep.name;
 										};
-										var loading = (dep in inits);
+										let loading = (dep in inits);
 										if (!types.has(modules, dep) && !loading) {
 											if (optional) {
 												loading = true;
@@ -6838,36 +6820,38 @@
 									};
 								};
 								
-								var baseName = name.split('/', 2)[0],
+								const baseName = name.split('/', 2)[0],
 									shortNames = baseName.split('.'),
-									proto = types.get(spec, 'proto'),
-									nsObj = null,
+									proto = types.get(spec, 'proto');
+
+								let nsObj = null,
 									parent = root,
 									fullName = '';
 									
-								for (var k = 0; k < shortNames.length; k++) {
-									var shortName = shortNames[k];
+								for (let k = 0; k < shortNames.length; k++) {
+									const shortName = shortNames[k];
 									fullName += '.' + shortName;
-									var fn = fullName.slice(1);
-									var prevNsObj = types.get(parent, shortName);
+									const fn = fullName.slice(1);
+									const prevNsObj = types.get(parent, shortName);
 									if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !(prevNsObj instanceof types.Namespace)))) {
-										var nsType = types.getType(prevNsObj) || types.Namespace;
+										let nsType = types.getType(prevNsObj) || types.Namespace;
 										if (proto) {
+											let args = proto;
 											// Extend namespace object
-											if (types.isFunction(proto)) {
-												proto = proto(root);
+											if (types.isFunction(args)) {
+												args = args(root);
 											};
-											if (!types.isArray(proto)) {
-												proto = [
+											if (!types.isArray(args)) {
+												args = [
 													/*typeProto*/
 													{
 														$TYPE_NAME: types.getTypeName(nsType),
 													},
 													/*instanceProto*/
-													proto
+													args
 												];
 											};
-											nsType = types.INIT(nsType.$inherit.apply(nsType, proto));
+											nsType = types.INIT(nsType.$inherit.apply(nsType, args));
 										};
 										nsObj = new nsType(parent, shortName, fn);
 									} else if (!prevNsObj) {
@@ -6884,15 +6868,15 @@
 								
 								nsObjs[name] = nsObj;
 
-								var nsList = (types.get(spec, 'namespaces') || []);
-								for (var j = 0; j < nsList.length; j++) {
-									if (j in nsList) {
-										shortNames = nsList[j].split('.');
-										var fullName = '.' + baseName;
-										for (var k = 0; k < shortNames.length; k++) {
-											var shortName = shortNames[k];
-											fullName += '.' + shortName;
-											var fn = fullName.slice(1);
+								const nsList = (types.get(spec, 'namespaces') || []);
+								for (let j = 0; j < nsList.length; j++) {
+									if (types.has(nsList, j)) {
+										const shortNames = nsList[j].split('.');
+										let name = '.' + baseName;
+										for (let k = 0; k < shortNames.length; k++) {
+											const shortName = shortNames[k];
+											name += '.' + shortName;
+											const fn = name.slice(1);
 											if (!(fn in nsObjs)) {
 												nsObjs[fn] = parent[shortName] = new types.Namespace(parent, shortName, fn);
 											};
@@ -6902,8 +6886,8 @@
 									};
 								};
 
-								var opts = options[name];
-								var create = types.get(spec, 'create');
+								const opts = options[name];
+								const create = types.get(spec, 'create');
 								inits[name] = create && create(root, opts, _shared);
 
 								if (!namespaces && (name === 'Doodad.Namespaces')) {
@@ -6913,16 +6897,16 @@
 							};
 						};
 
-						var names = types.keys(inits),
+						const initsNames = types.keys(inits),
 							nsOptions = {secret: _shared.SECRET};
 
-						for (var i = 0; i < names.length; i++) {
-							var name = names[i];
-							var spec = modules[name];
-							var baseName = name.split('/', 2)[0];
-							var entryType = entries[spec.type || 'Module'];
-							var entry = new entryType(root, spec, nsObjs[name]);
-							var opts = options[baseName];
+						for (let i = 0; i < initsNames.length; i++) {
+							const name = initsNames[i];
+							const spec = modules[name];
+							const baseName = name.split('/', 2)[0];
+							const entryType = entries[spec.type || 'Module'];
+							const entry = new entryType(root, spec, nsObjs[name]);
+							const opts = options[baseName];
 							entry.objectCreated = true;
 							entry.objectInit = inits[name];
 							entry.objectInit && entry.objectInit(opts)
@@ -6931,13 +6915,13 @@
 							delete nsObjs[name];
 						};
 						
-						var names = types.keys(nsObjs);
-						for (var i = 0; i < names.length; i++) {
-							var name = names[i];
-							var namespace = nsObjs[name];
-							var baseName = name.split('/', 2)[0];
-							var entry = new entries.Namespace(root, null, namespace);
-							var opts = options[baseName];
+						const nsNames = types.keys(nsObjs);
+						for (let i = 0; i < nsNames.length; i++) {
+							const name = nsNames[i];
+							const namespace = nsObjs[name];
+							const baseName = name.split('/', 2)[0];
+							const entry = new entries.Namespace(root, null, namespace);
+							const opts = options[baseName];
 							entry.init(opts);
 							namespaces.add(name, entry, nsOptions);
 						};
@@ -6945,15 +6929,15 @@
 						delete types.Namespace[__Internal__.symbolInitialized];
 						_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
 
-						for (var i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
-							var type = __Internal__.tempTypesRegistered[i];
+						for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
+							const type = __Internal__.tempTypesRegistered[i];
 							_shared.REGISTER.call(root.Doodad.Types, type, null, true);
 						};
 						delete __Internal__.tempTypesRegistered;
 
 						if (_shared.REGISTER !== __Internal__.registerOthers) { 
-							for (var i = 0; i < __Internal__.tempRegisteredOthers.length; i++) {
-								var type = __Internal__.tempRegisteredOthers[i],
+							for (let i = 0; i < __Internal__.tempRegisteredOthers.length; i++) {
+								const type = __Internal__.tempRegisteredOthers[i],
 									namespace = type[0],
 									args = type[1];
 								_shared.REGISTER.apply(namespace, args);
@@ -6989,7 +6973,7 @@
 							if (types.hasDefinePropertyEnabled()) {
 								__Internal__.DD_ASSERT = __Internal__.ASSERT;
 							} else {
-								var root = this;
+								const root = this;
 								root.DD_ASSERT = __Internal__.ASSERT;
 							};
 						}),
@@ -7008,7 +6992,7 @@
 							if (types.hasDefinePropertyEnabled()) {
 								__Internal__.DD_ASSERT = null;
 							} else {
-								var root = this;
+								const root = this;
 								root.DD_ASSERT = null;
 							};
 						}),
@@ -7022,7 +7006,7 @@
 		_shared.REGISTER.call(root.Doodad.Types, types.getType(root), null, true);
 
 		return root.Doodad.Namespaces.load(modules, _options, startup)
-			['catch'](root.Doodad.Tools.catchAndExit);
+			.catch(root.Doodad.Tools.catchAndExit);
 	};
 	
 	//! BEGIN_REMOVE()

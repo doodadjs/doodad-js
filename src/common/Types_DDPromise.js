@@ -39,7 +39,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools;
 				
@@ -47,7 +47,7 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 					Promise: null,
 					symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsPromiseExtended')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
 				};
@@ -104,7 +104,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function getPromise() {
-						var Promise = __Internal__.Promise;
+						const Promise = __Internal__.Promise;
 						if (!Promise) {
 							throw new types.NotSupported("ES6 Promises are not supported. You must include the polyfill 'es6-promise' or 'rsvp' in your project. You can also use another polyfill (see 'types.setPromise').");
 						};
@@ -116,14 +116,14 @@ module.exports = {
 					// Bluebird "asCallback" polyfill. NOTE: "spread" option has not been implemented.
 					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 						Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
-							var promise = this.then(function(result) {
-									var retval = callback(null, result);
+							const promise = this.then(function(result) {
+									let retval = callback(null, result);
 									if (retval === undefined) {
 										retval = result;
 									};
 									return retval;
 								}, function(err) {
-									var retval = callback(err, undefined);
+									const retval = callback(err, undefined);
 									return retval;
 								});
 							return promise;
@@ -136,10 +136,10 @@ module.exports = {
 					
 					
 					// Bluebird "finally" polyfill
-					if (!types.isFunction(Promise.prototype['finally'])) {
-						Promise.prototype['finally'] = function _finally(callback) {
-							var Promise = this.constructor;
-							var promise = this.then(function(result) {
+					if (!types.isFunction(Promise.prototype.finally)) {
+						Promise.prototype.finally = function _finally(callback) {
+							const Promise = this.constructor;
+							const promise = this.then(function(result) {
 									return Promise.resolve(callback()).then(function() {
 										return result;
 									});
@@ -154,9 +154,9 @@ module.exports = {
 					
 					
 					// Bluebird "try" polyfill
-					if (!types.isFunction(Promise['try'])) {
-						Promise['try'] = function _try(callback) {
-							var Promise = this;
+					if (!types.isFunction(Promise.try)) {
+						Promise.try = function _try(callback) {
+							const Promise = this;
 							return new Promise(function _try(resolve, reject) {
 								try {
 									resolve(callback());
@@ -170,10 +170,10 @@ module.exports = {
 					// Bluebird "map" polyfill
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
-							var Promise = this;
+							const Promise = this;
 
 							return Promise.try(function tryMap() {
-								var len = ar.length;
+								const len = ar.length;
 
 								options = types.nullObject({
 									concurrency: Infinity,
@@ -188,14 +188,14 @@ module.exports = {
 										return Promise.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
-									var result = _shared.Natives.windowArray(len);
-									var state = {start: 0};
-									var mapFn = function _mapFn(val, key, obj) {
+									const result = _shared.Natives.windowArray(len);
+									const state = {start: 0};
+									const mapFn = function _mapFn(val, key, obj) {
 										state.start++;
 										return Promise.resolve(fn.call(undefined, val, key, obj))
 											.then(function(res) {
 												result[key] = res;
-												var pos = state.start;
+												const pos = state.start;
 												if (pos < len) {
 													return mapFn(obj[pos], pos, obj);
 												};
@@ -220,7 +220,7 @@ module.exports = {
 
 				__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
 					function getPromiseName(callback) {
-						var original;
+						let original;
 						while (original = types.get(callback, _shared.OriginalValueSymbol)) {
 							callback = original;
 						};
@@ -230,11 +230,11 @@ module.exports = {
 					// Add "thisObj" argument
 					// Add promise name
 					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
-						var Promise = this;
+						const Promise = this;
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = new Promise(callback);
+						const promise = new Promise(callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
@@ -244,14 +244,14 @@ module.exports = {
 
 					// NOTE: Experimental
 					Promise.createRacer = function createRacer() {
-						var Promise = this;
-						var state = {res: null, rej: null};
-						var racer = Promise.create(function Racer(res, rej) {
+						const Promise = this,
+							state = {res: null, rej: null};
+						const racer = Promise.create(function Racer(res, rej) {
 							state.res = res;
 							state.rej = rej;
 						});
 						racer.resolve = function resolve(value) {
-							var res = state.res;
+							const res = state.res;
 							if (!res) {
 								throw new types.Error("Racer has already been resolved or rejected.");
 							};
@@ -260,7 +260,7 @@ module.exports = {
 							res(value);
 						};
 						racer.reject = function reject(err) {
-							var rej = state.rej;
+							const rej = state.rej;
 							if (!rej) {
 								throw new types.Error("Racer has already been resolved or rejected.");
 							};
@@ -272,7 +272,7 @@ module.exports = {
 							if (types.isNothing(promise)) {
 								return this;
 							};
-							var promises;
+							let promises;
 							if (types.isArrayLike(promise)) {
 								promises = types.append([this], promise);
 							} else {
@@ -285,13 +285,13 @@ module.exports = {
 
 					// Add "thisObj" argument
 					// Add promise name
-					var oldTry = Promise['try'];
-					Promise['try'] = function _try(/*optional*/callback, /*optional*/thisObj) {
-						var Promise = this;
+					const oldTry = Promise.try;
+					Promise.try = function _try(/*optional*/callback, /*optional*/thisObj) {
+						const Promise = this;
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldTry.call(Promise, callback);
+						const promise = oldTry.call(Promise, callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
@@ -301,14 +301,14 @@ module.exports = {
 					
 					// Add "thisObj" argument
 					// Add promise name
-					var oldMap = Promise.map;
+					const oldMap = Promise.map;
 					Promise.map = function _map(ar, callback, /*optional*/options) {
-						var Promise = this;
-						var thisObj = types.get(options, 'thisObj');
+						const Promise = this,
+							thisObj = types.get(options, 'thisObj');
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldMap.call(Promise, ar, callback, options);
+						const promise = oldMap.call(Promise, ar, callback, options);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = getPromiseName(callback);
@@ -318,7 +318,7 @@ module.exports = {
 
 					// Add "thisObj" argument
 					// Add promise name
-					var oldThen = Promise.prototype.then;
+					const oldThen = Promise.prototype.then;
 					Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 						if (!thisObj && !types.isFunction(rejectedCb)) {
 							thisObj = rejectedCb;
@@ -330,8 +330,8 @@ module.exports = {
 						if (rejectedCb && thisObj) {
 							rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
 						};
-						var promise = oldThen.call(this, resolvedCb, rejectedCb);
-						var name = this[_shared.NameSymbol];
+						const promise = oldThen.call(this, resolvedCb, rejectedCb);
+						let name = this[_shared.NameSymbol];
 						if (resolvedCb) {
 							resolvedCb.promise = promise;
 							if (!name) {
@@ -353,12 +353,12 @@ module.exports = {
 					// Add Bluebird polyfill for catch (must be done there).
 					// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 					// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
-					var oldCatch = Promise.prototype['catch'];
-					Promise.prototype['catch'] = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/) {
-						var filters = null;
-						var i = 0;
+					const oldCatch = Promise.prototype.catch;
+					Promise.prototype.catch = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/) {
+						let filters = null;
+						let i = 0;
 						forEachArgument: for (; i < arguments.length; i++) {
-							var filter = arguments[i];
+							const filter = arguments[i];
 							if (!types.isErrorType(filter) && !types.isJsObject(filter)) {
 								if (i > 0) {
 									filters = _shared.Natives.arraySliceCall(arguments, 0, i);
@@ -366,18 +366,18 @@ module.exports = {
 								break forEachArgument;
 							};
 						};
-						var callback = arguments[i++];
-						var thisObj = arguments[i++];
+						let callback = arguments[i++];
+						const thisObj = arguments[i++];
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise;
+						let promise;
 						if (filters) {
 							// Usage: .catch(IOError, NetworkError, {code: 'ENOENTITY'}, ..., function(err){...}, this)
 							promise = oldCatch.call(this, function filterCatch(ex) {
-								var ok = false;
-								forEachType: for (var i = 0; i < filters.length; i++) {
-									var type = filters[i];
+								let ok = false;
+								forEachType: for (let i = 0; i < filters.length; i++) {
+									const type = filters[i];
 									if (types.isFunction(type)) { // isErrorType
 										if (types._instanceof(ex, type)) {
 											ok = true;
@@ -385,9 +385,9 @@ module.exports = {
 										};
 									} else { // isJsObject
 										ok = true;
-										var keys = types.keys(type);
-										forEachKey: for (var j = 0; j < keys.length; j++) {
-											var key = keys[j];
+										const keys = types.keys(type);
+										forEachKey: for (let j = 0; j < keys.length; j++) {
+											const key = keys[j];
 											if (ex[key] !== type[key]) {
 												ok = false;
 												break forEachKey;
@@ -418,12 +418,12 @@ module.exports = {
 					
 					// Add "thisObj" argument
 					// Add promise name
-					var oldAsCallback = Promise.prototype.asCallback;
+					const oldAsCallback = Promise.prototype.asCallback;
 					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldAsCallback.call(this, callback);
+						const promise = oldAsCallback.call(this, callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
@@ -435,12 +435,12 @@ module.exports = {
 					
 					// Add "thisObj" argument
 					// Add promise name
-					var oldFinally = Promise.prototype['finally'];
-					Promise.prototype['finally'] = function _finally(/*optional*/callback, /*optional*/thisObj) {
+					const oldFinally = Promise.prototype.finally;
+					Promise.prototype.finally = function _finally(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						var promise = oldFinally.call(this, callback);
+						const promise = oldFinally.call(this, callback);
 						if (callback) {
 							callback.promise = promise;
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol] || getPromiseName(callback);
@@ -452,7 +452,7 @@ module.exports = {
 
 					// Combines "then" and "create"
 					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
-						var Promise = this.constructor;
+						const Promise = this.constructor;
 						return this.then(function(result) {
 							return Promise.create(function(resolve, reject) {
 								return callback.call(thisObj, result, resolve, reject);
@@ -501,13 +501,14 @@ module.exports = {
 								!types.isFunction(Promise.all) ||
 								!types.isFunction(Promise.race) ||
 								!types.isFunction(Promise.prototype.then) ||
-								!types.isFunction(Promise.prototype['catch'])
+								!types.isFunction(Promise.prototype.catch)
 						) {
 							throw new types.TypeError("Invalid 'Promise' polyfill. It must implement: 'resolve', 'reject', 'all', 'race', 'prototype.then' and 'prototype.catch'.");
 						};
 						
-						var DDPromise = null;
+						let DDPromise;
 						if (types.isNativeFunction(Promise)) {
+							// ES6 Promise
 							if (types.hasClasses()) {
 								// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
 								DDPromise = types.eval("class DDPromise extends ctx.Promise {}", {Promise: Promise});
@@ -515,18 +516,16 @@ module.exports = {
 								DDPromise = Promise;
 							};
 						} else {
-							var DDPromise = function DDPromise(/*paramarray*/) {
-								return Promise.apply(this, arguments) || this;
-							};
-							DDPromise = types.setPrototypeOf(DDPromise, Promise);
-							DDPromise.prototype = types.createObject(Promise.prototype, {
-								constructor: {value: DDPromise},
+							// Librairies
+							const promiseApply = Promise.apply.bind(Promise);
+							DDPromise = types.INHERIT(Promise, function DDPromise(/*paramarray*/) {
+								return promiseApply(this, arguments) || this;
 							});
 						};
 
-						var isStillDDPromise = false;
+						let isStillDDPromise = false;
 						try {
-							isStillDDPromise = (DDPromise.resolve(0).then(function() {})['catch'](function() {}) instanceof DDPromise);
+							isStillDDPromise = (DDPromise.resolve(0).then(function() {}).catch(function() {}) instanceof DDPromise);
 						} catch(ex) {
 						};
 
@@ -548,7 +547,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -570,9 +569,9 @@ module.exports = {
 							description: "Creates a callback handler for DDPromise.",
 					}
 					//! END_REPLACE()
-					, types.setPrototypeOf(function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
+					, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
-						var attr;
+						let attr = null;
 						if (types.isString(fn) || types.isSymbol(fn)) {
 							attr = fn;
 							fn = obj[attr]; // must throw on invalid scope
@@ -582,9 +581,9 @@ module.exports = {
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-						var mustBeInitialized = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
-						var insideFn = _shared.makeInside(obj, fn, secret);
-						var callback = function callbackHandler(/*paramarray*/) {
+						const mustBeInitialized = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
+						const insideFn = _shared.makeInside(obj, fn, secret);
+						const callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
 							if (mustBeInitialized && !types.isInitialized(obj)) {
 								throw new types.NotAvailable("Target object is no longer available because it has been destroyed.");
 							};
@@ -597,7 +596,6 @@ module.exports = {
 									if (!ex.trapped) {
 										ex.trapped = true;
 										try {
-											var tools = root.Doodad.Tools;
 											tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
 											if (ex.stack) {
 												tools.log(tools.LogLevels.Error, ex.stack);
@@ -610,13 +608,12 @@ module.exports = {
 									throw ex;
 								};
 							};
-						};
-						callback = types.setPrototypeOf(callback, _shared.PromiseCallback);
+						});
 						callback[_shared.BoundObjectSymbol] = obj;
 						callback[_shared.OriginalValueSymbol] = fn;
 						callback.promise = null; // will be provided later
 						return callback;
-					}, types.Callback));
+					});
 				
 					
 

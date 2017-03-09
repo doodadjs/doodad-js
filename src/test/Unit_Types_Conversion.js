@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -52,8 +52,11 @@ module.exports = {
 						options = {};
 					};
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(types.toObject, "Doodad.Types.toObject");
+					command = test.prepareCommand(types.toObject, "Doodad.Types.toObject");
 					command.run(types.Undefined, {eval: true, mode: 'is'}, /**/ "undefined");
 					command.run(types.Null, {eval: true, mode: 'is'},      /**/ "null");
 					command.run("String", {eval: true, mode: 'is'},        /**/ "''");
@@ -83,7 +86,7 @@ module.exports = {
 					global.testError = new Error;
 					global.testFunction = (function(){});
 					
-					var command = test.prepareCommand(types.toArray, "Doodad.Types.toArray");
+					command = test.prepareCommand(types.toArray, "Doodad.Types.toArray");
 					command.run(global.TypeError || types.TypeError, {eval: true, mode: 'isinstance'}, /**/ "undefined");
 					command.run(global.TypeError || types.TypeError, {eval: true, mode: 'isinstance'}, /**/ "null");
 					command.run("[]",    {eval: true},                            /**/ "''");
@@ -112,7 +115,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.toBoolean, "Doodad.Types.toBoolean");
+					command = test.prepareCommand(types.toBoolean, "Doodad.Types.toBoolean");
 					command.run(false, {eval: true},        /**/ "undefined");
 					command.run(false, {eval: true},        /**/ "null");
 					command.run(false, {eval: true},        /**/ "''");
@@ -138,7 +141,7 @@ module.exports = {
 					command.end();
 
 					
-					var command = test.prepareCommand(types.toString, "Doodad.Types.toString");
+					command = test.prepareCommand(types.toString, "Doodad.Types.toString");
 					command.run("'undefined'", {eval: true},        /**/ "undefined");
 					command.run("'null'", {eval: true},             /**/ "null");
 					command.run("''", {eval: true},                 /**/ "''");

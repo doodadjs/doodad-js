@@ -26,17 +26,17 @@
 
 module.exports = {
 	createRoot: function(/*optional*/DD_MODULES, /*optional*/options, /*optional*/startup) {
-		var has = function(obj, key) {
+		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
-		var get = function(obj, key, /*optional*/_default) {
+		const get = function(obj, key, /*optional*/_default) {
 			return (obj && has(obj, key) ? obj[key] : _default);
 		};
-		var bool = function(val) {
+		const bool = function(val) {
 			return (val === "true") || !!(+val);
 		};
 
-		var config = null;
+		let config = null;
 		try {
 			// Generated from 'doodad-js-make'
 			config = require('../config.json');
@@ -48,11 +48,11 @@ module.exports = {
 		
 		DD_MODULES = (DD_MODULES || {});
 
-		var dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 
-		var dev = false;
-		for (var i = 0; i < dev_values.length; i++) {
+		let dev = false;
+		for (let i = 0; i < dev_values.length; i++) {
 			if (dev_values[i] === env) {
 				dev = true;
 				break;
@@ -90,7 +90,7 @@ module.exports = {
 			//! END_IF()
 		//! END_FOR()
 
-		var bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
+		const bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
 
 		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
 	},

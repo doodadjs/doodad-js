@@ -43,7 +43,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files;
@@ -53,7 +53,7 @@ module.exports = {
 				//===================================
 					
 				// <FUTURE> Thread context
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 				
 				
@@ -98,7 +98,7 @@ module.exports = {
 						}
 						//! END_REPLACE()
 					, function getCurrentScript(/*optional*/currentScript) {
-						var url,
+						let url,
 							ex,
 							exLevel = 0;
 					
@@ -131,9 +131,9 @@ module.exports = {
 										ex = o;
 									};
 								};
-								var stack = tools.parseStack(ex);
+								const stack = tools.parseStack(ex);
 								if (stack && (stack.length > exLevel)) {
-									var trace = stack[exLevel];
+									const trace = stack[exLevel];
 									if (trace.isSystemPath) {
 										url = files.Path.parse(trace.path);
 									} else {
@@ -189,7 +189,7 @@ module.exports = {
 						if (!__Internal__.unhandledRejections) {
 							__Internal__.unhandledRejections = new types.Map();
 							
-							var options = tools.getOptions();
+							const options = tools.getOptions();
 
 							types.addAppEventListener('unhandlederror', function(ev) {
 								//if (ev.detail.error.name === 'ScriptAbortedError') {
@@ -217,37 +217,37 @@ module.exports = {
 							
 							types.addAppEventListener('rejectionhandled', function(ev) {
 								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
-									__Internal__.unhandledRejections['delete'](ev.detail.promise);
+									__Internal__.unhandledRejections.delete(ev.detail.promise);
 								};
 							});
 							
-							var dumpRejections = function() {
+							const dumpRejections = function dumpRejections() {
 								try {
-									var curTime = (new Date()).valueOf(),
-										iter = __Internal__.unhandledRejections.entries(),
-										result;
-										
+									const curTime = (new Date()).valueOf(),
+										iter = __Internal__.unhandledRejections.entries();
+									
+									let result;
+									
 									// <FUTURE> for ... of
 									while (result = iter.next()) {
 										if (result.done) {
 											break;
 										};
-										var promise = result.value[0],
+										const promise = result.value[0],
 											val = result.value[1];
 										if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
-											var tools = root.Doodad.Tools;
 											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
 											if (val.reason) {
 												tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
 											};
-											__Internal__.unhandledRejections['delete'](promise);
+											__Internal__.unhandledRejections.delete(promise);
 										};
 									};
 								} catch(o) {
 									__Internal__.unhandledRejections.clear();
 								};
 								
-								var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+								const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 								//! IF_SET("serverSide")
 									if (types.isObject(timer) && types.isFunction(timer.unref)) {
 										// Node.Js: Allows the process to exit
@@ -256,7 +256,7 @@ module.exports = {
 								//! END_IF()
 							};
 							
-							var timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+							const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
 									// Node.Js: Allows the process to exit

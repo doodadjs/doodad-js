@@ -38,14 +38,14 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 				
 				//===================================
 				// Internal
 				//===================================
 				
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 
 				//===================================
@@ -137,7 +137,7 @@ module.exports = {
 
 							// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
 							if (_shared.Natives.symbolIterator) {
-								var self = this;
+								const self = this;
 								_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
 									return self;
 								}, {});

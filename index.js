@@ -29,7 +29,7 @@ module.exports = {
 
 		let config = null;
 		try {
-			config = require(packageDir + 'config.json')
+			config = require(packageDir + 'config.json');
 		} catch(ex) {
 		};
 		

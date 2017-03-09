@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -53,8 +53,11 @@ module.exports = {
 						options = {};
 					};
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(function(/*paramarray*/) {
+					command = test.prepareCommand(function(/*paramarray*/) {
 						return files.Url.parse.apply(files.Url, arguments);
 					}, "Doodad.Tools.Files.Url.parse.test1");
 						
@@ -397,13 +400,13 @@ module.exports = {
 					command.end();
 					
 			
-					var command = (function() {
-							var command = test.prepareCommand.call(this, function(url) {
+					command = (function() {
+							const command = test.prepareCommand.call(this, function(url) {
 									return files.Url.parse(url).toString();
 								}, "Doodad.Test.Tools.Files.Url.parse.test2");
 							return types.extend({}, command, {
 								run: function(url, /*optional*/expected /*paramarray*/) {
-									var params =  Array.prototype.slice.call(arguments, 0, arguments.length - 2);
+									const params =  Array.prototype.slice.call(arguments, 0, arguments.length - 2);
 									params.unshift(((expected === undefined) ? url : expected), {}, url);
 									command.run.apply(this, params);
 								},
@@ -636,7 +639,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(function(url1, url2, /*optional*/optionsUrl1, /*optional*/optionsUrl2, /*optional*/setUrl2, /*optional*/combineOptions, /*optional*/toStringOptions) {
+					command = test.prepareCommand(function(url1, url2, /*optional*/optionsUrl1, /*optional*/optionsUrl2, /*optional*/setUrl2, /*optional*/combineOptions, /*optional*/toStringOptions) {
 						url1 = files.Url.parse(url1, optionsUrl1);
 						if (!url1) {
 							return undefined;
@@ -665,7 +668,7 @@ module.exports = {
 					
 					
 					
-					var command = test.prepareCommand(function(url, path, /*optional*/optionsUrl, /*optional*/optionsPath, /*optional*/setPath, /*optional*/combineOptions, /*optional*/toStringOptions) {
+					command = test.prepareCommand(function(url, path, /*optional*/optionsUrl, /*optional*/optionsPath, /*optional*/setPath, /*optional*/combineOptions, /*optional*/toStringOptions) {
 						url = files.Url.parse(url, optionsUrl);
 						if (!url) {
 							return undefined;

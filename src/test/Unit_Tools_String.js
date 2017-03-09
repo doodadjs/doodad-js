@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -52,8 +52,11 @@ module.exports = {
 						options = {};
 					};
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(tools.findItem, "Doodad.Tools.findItem");
+					command = test.prepareCommand(tools.findItem, "Doodad.Tools.findItem");
 					
 					command.run(null,                                             {repetitions: 100}  /**/);
 					command.run(null,                                             {repetitions: 100}, /**/ "hi there !");
@@ -64,7 +67,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.findLastItem, "Doodad.Tools.findLastItem");
+					command = test.prepareCommand(tools.findLastItem, "Doodad.Tools.findLastItem");
 					
 					command.run(null,                                             {repetitions: 100}  /**/);
 					command.run(null,                                             {repetitions: 100}, /**/ "hi there !");
@@ -75,7 +78,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.findItems, "Doodad.Tools.findItems");
+					command = test.prepareCommand(tools.findItems, "Doodad.Tools.findItems");
 					
 					command.run([],                                               {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ "hi there !");
@@ -86,7 +89,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.repeat, "Doodad.Tools.repeat");
+					command = test.prepareCommand(tools.repeat, "Doodad.Tools.repeat");
 					
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "a");
@@ -98,7 +101,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.trim, "Doodad.Tools.trim");
+					command = test.prepareCommand(tools.trim, "Doodad.Tools.trim");
 					
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "a", 0);
@@ -116,7 +119,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.replace, "Doodad.Tools.replace");
+					command = test.prepareCommand(tools.replace, "Doodad.Tools.replace");
 					
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc", 0);
@@ -130,7 +133,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.search, "Doodad.Tools.search");
+					command = test.prepareCommand(tools.search, "Doodad.Tools.search");
 					
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcabcabc");
@@ -160,7 +163,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.join, "Doodad.Tools.join");
+					command = test.prepareCommand(tools.join, "Doodad.Tools.join");
 					
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "");
@@ -172,7 +175,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.title, "Doodad.Tools.title");
+					command = test.prepareCommand(tools.title, "Doodad.Tools.title");
 					
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ 0);
@@ -188,7 +191,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.format, "Doodad.Tools.format");
+					command = test.prepareCommand(tools.format, "Doodad.Tools.format");
 					
 					command.run("hi",                                             {repetitions: 100}, /**/ "~0~", ["hi", "there"]);
 					command.run("there",                                          {repetitions: 100}, /**/ "~1~", ["hi", "there"]);
@@ -200,7 +203,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.indexOf, "Doodad.Tools.indexOf");
+					command = test.prepareCommand(tools.indexOf, "Doodad.Tools.indexOf");
 					
 					command.run(-1,                                               {repetitions: 100}  /**/);
 					command.run(-1,                                               {repetitions: 100}, /**/ "hi there !");
@@ -210,7 +213,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.lastIndexOf, "Doodad.Tools.lastIndexOf");
+					command = test.prepareCommand(tools.lastIndexOf, "Doodad.Tools.lastIndexOf");
 					
 					command.run(-1,                                               {repetitions: 100}  /**/);
 					command.run(-1,                                               {repetitions: 100}, /**/ "hi there !");
@@ -220,7 +223,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.map, "Doodad.Tools.map");
+					command = test.prepareCommand(tools.map, "Doodad.Tools.map");
 					
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
 					//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ "abcdef");
@@ -230,8 +233,8 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(function(obj) {
-						var result = [];
+					command = test.prepareCommand(function(obj) {
+						const result = [];
 						tools.forEach(obj, function(val, key, obj) {
 							result.push(val);
 						});
@@ -244,7 +247,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.filter, "Doodad.Tools.filter");
+					command = test.prepareCommand(tools.filter, "Doodad.Tools.filter");
 					
 					command.run(undefined,                                        {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ "abcdefabcdef");
@@ -258,7 +261,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.filterKeys, "Doodad.Tools.filterKeys");
+					command = test.prepareCommand(tools.filterKeys, "Doodad.Tools.filterKeys");
 					
 					command.run(undefined,                                        {repetitions: 100}  /**/);
 					command.run([],                                               {repetitions: 100}, /**/ "abcdefabcdef");
@@ -271,7 +274,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.every, "Doodad.Tools.every");
+					command = test.prepareCommand(tools.every, "Doodad.Tools.every");
 					
 					command.run(false,                                            {repetitions: 100}  /**/);
 					command.run(true,                                             {repetitions: 100}, /**/ "");
@@ -294,7 +297,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.some, "Doodad.Tools.some");
+					command = test.prepareCommand(tools.some, "Doodad.Tools.some");
 					
 					command.run(false,                                            {repetitions: 100}  /**/);
 					command.run(false,                                            {repetitions: 100}, /**/ "");
@@ -314,7 +317,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.reduce, "Doodad.Tools.reduce");
+					command = test.prepareCommand(tools.reduce, "Doodad.Tools.reduce");
 					
 					command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");
@@ -327,7 +330,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(tools.reduceRight, "Doodad.Tools.reduceRight");
+					command = test.prepareCommand(tools.reduceRight, "Doodad.Tools.reduceRight");
 					
 					command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 					command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");

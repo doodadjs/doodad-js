@@ -38,7 +38,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools;
 					
@@ -47,7 +47,7 @@ module.exports = {
 				//===================================
 					
 				//// <FUTURE> Thread context
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 				
 				
@@ -55,7 +55,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				//var __options__ = types.nullObject({
+				//let __options__ = types.nullObject({
 				//}, _options);
 
 				//__options__. = types.to...(__options__.);
@@ -78,7 +78,7 @@ module.exports = {
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
-					var tempNatives = [
+					const tempNatives = [
 							//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
 								//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
 							//! ELSE()
@@ -88,7 +88,7 @@ module.exports = {
 
 						uuids = types.nullObject();
 
-					var problematicAliases = types.nullObject({
+					const problematicAliases = types.nullObject({
 						// Firefox
 						'Option': 'HTMLOptionElement',
 						'HTMLOptionElement': 'Option',
@@ -108,21 +108,21 @@ module.exports = {
 						'DOMSettableTokenList': 'DOMTokenList',
 					});
 
-					for (var i = 0; i < tempNatives.length; i++) {
-						var item = tempNatives[i],
+					for (let i = 0; i < tempNatives.length; i++) {
+						const item = tempNatives[i],
 							name = item[0],
 							native = global[name];
 
 						if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
 							if (types.has(problematicAliases, name)) {
-								var alias = global[problematicAliases[name]];
+								const alias = global[problematicAliases[name]];
 								if (alias && (native !== alias)) {
 									// <PRB> Some natives share the same prototype, or are duplicated.
 									continue;
 								};
 							};
 
-							var uuid = item[1],
+							const uuid = item[1],
 								nativeUUID = /*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + uuid;
 
 							if (types.has(native, _shared.UUIDSymbol) || types.has(native.prototype, _shared.UUIDSymbol)) {

@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -47,8 +47,11 @@ module.exports = {
 						unit = test.Types.Is,
 						io = doodad.IO;
 
+
+					let command;
+
 						
-					var command = test.prepareCommand(types.toSource, "Doodad.Types.toSource");
+					command = test.prepareCommand(types.toSource, "Doodad.Types.toSource");
 					command.run("undefined",                                       {}, /**/  undefined);
 					command.run("null",                                            {}, /**/  null);
 					command.run("NaN",                                             {}, /**/  NaN);

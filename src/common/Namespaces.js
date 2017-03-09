@@ -43,7 +43,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					namespaces = doodad.Namespaces,
@@ -54,7 +54,7 @@ module.exports = {
 				// Internals
 				//===================================
 				// <FUTURE> Thread context
-				var __Internal__ = {
+				const __Internal__ = {
 					waitCounter: 0,
 					waiting: false,
 				};
@@ -150,7 +150,7 @@ module.exports = {
 						}
 						//! END_REPLACE()
 				, function get(name, /*optional*/type) {
-					var entry = __Internal__.DD_REGISTRY.get(name, type);
+					const entry = __Internal__.DD_REGISTRY.get(name, type);
 					if (!entry || !entry.objectInitialized) {
 						return null;
 					};
@@ -221,7 +221,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 5,
+								revision: 6,
 								params: {
 									spec: {
 										type: 'object,string',
@@ -244,7 +244,7 @@ module.exports = {
 						}
 						//! END_REPLACE()
 				, function createNamespace(spec, /*optional*/options, /*optional*/ignoreOptionals) {
-					var Promise = types.getPromise();
+					const Promise = types.getPromise();
 					
 					if (types.isString(spec)) {
 						spec = {
@@ -253,8 +253,8 @@ module.exports = {
 					};
 					
 					function checkDependencies(spec) {
-						var baseName = spec.name.split('/', 2)[0],
-							deps = spec.dependencies;
+						const baseName = spec.name.split('/', 2)[0];
+						let deps = types.get(spec, 'dependencies');
 						if (spec.name !== baseName) {
 							if (!deps) {
 								spec.dependencies = deps = [];
@@ -264,9 +264,9 @@ module.exports = {
 							};
 						};
 						if (deps) {
-							for (var i = 0; i < deps.length; i++) {
-								if (i in deps) {
-									var dep = deps[i],
+							for (let i = 0; i < deps.length; i++) {
+								if (types.has(deps, i)) {
+									let dep = deps[i],
 										optional = false,
 										version = null;
 									if (!types.isString(dep)) {
@@ -274,7 +274,7 @@ module.exports = {
 										version = dep.version;
 										dep = dep.name;
 									};
-									var depEntry = __Internal__.DD_REGISTRY.get(dep);
+									let depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (version && depEntry && depEntry.version) {
 										if (tools.Version.compare(depEntry.version, tools.Version.parse(version, namespaces.VersionIdentifiers)) > 0) {
 											// Higher version expected
@@ -283,7 +283,7 @@ module.exports = {
 									};
 									if (!depEntry || !depEntry.objectCreated) {
 										if (!optional || !ignoreOptionals) {
-											var result = {
+											const result = {
 												spec: spec,
 												missingDep: dep, 
 												depOptional: optional,
@@ -298,19 +298,22 @@ module.exports = {
 					};
 					
 					function createParents(shortNames, fullName, parent) {
-						for (var i = 0; i < shortNames.length - 1; i++) {
-							var shortName = shortNames[i];
+						for (let i = 0; i < shortNames.length - 1; i++) {
+							const shortName = shortNames[i];
 							fullName += ('.' + shortName);
 							
-							var fName = fullName.slice(1);
+							const fName = fullName.slice(1);
 							
-							var namespace = parent[shortName];
+							let namespace = parent[shortName];
+
 							if (!namespace) {
-								var newSpec = {
+								const newSpec = {
 									name: fName,
 								};
+
 								namespace = new types.Namespace(parent, shortName, fName);
-								var entry = new entries.Namespace(root, newSpec, namespace);
+
+								const entry = new entries.Namespace(root, newSpec, namespace);
 								__Internal__.DD_REGISTRY.add(fName, entry, {secret: _shared.SECRET});
 							};
 							
@@ -321,9 +324,11 @@ module.exports = {
 					};
 
 					function createMain(shortNames, spec, parent) {
-						var entryType = spec.type;
+						const name = types.getDefault(spec, 'name', null);
+
+						let entryType = types.get(spec, 'type');
 						if (entryType) {
-							var val;
+							let val;
 							if (types.isString(entryType)) {
 								val = types.get(entries, entryType);
 							} else {
@@ -338,16 +343,16 @@ module.exports = {
 							entryType = entries.Module;
 						};
 
-						var entry = __Internal__.DD_REGISTRY.get(spec.name);
+						let entry = __Internal__.DD_REGISTRY.get(name);
 						if (entry) {
 							if (!types.is(entry, entries.Namespace) || (entryType === entries.Namespace)) {
 								return null;
 							};
 						};
 						
-						var namespaceType = spec.namespaceType;
+						let namespaceType = types.get(spec, 'namespaceType');
 						if (namespaceType) {
-							var val;
+							let val;
 							if (types.isString(namespaceType)) {
 								val = namespaces[namespaceType];
 							} else {
@@ -362,41 +367,41 @@ module.exports = {
 							namespaceType = types.Namespace;
 						};
 						
-						var namespace = spec.object;
+						let namespace = types.get(spec, 'object');
 						if (namespace) {
 							if (!types.isLike(namespace, namespaceType)) {
 								throw new types.Error("Invalid namespace object.");
 							};
 						};
 						
-						var replaceEntry = false,
-							curEntryType = types.getType(entry);
+						const curEntryType = types.getType(entry);
+						let replaceEntry = false;
 						if (curEntryType && (entryType !== curEntryType) && (entryType !== entries.Namespace)) {
 							replaceEntry = true;
 						};
 						
-						var shortName = shortNames[shortNames.length - 1];
-						var prevNamespace = null;
+						const shortName = shortNames[shortNames.length - 1];
+						let prevNamespace = null;
 						if (types.has(parent, shortName)) {
 							prevNamespace = parent[shortName];
-							if ((!replaceEntry && types._instanceof(namespace, types.Namespace)) || !spec.replaceObject) {
+							if ((!replaceEntry && types._instanceof(namespace, types.Namespace)) || !types.get(spec, 'replaceObject', false)) {
 								namespace = prevNamespace;
 								prevNamespace = null;
 							};
 						};
 						
 						if (entry && replaceEntry) {
-							__Internal__.DD_REGISTRY.remove(spec.name, null, {secret: _shared.SECRET});
+							__Internal__.DD_REGISTRY.remove(name, null, {secret: _shared.SECRET});
 							entry = null;
 						};
 						
-						var proto;
 						if (prevNamespace && !types._instanceof(prevNamespace, namespaceType)) {
-							var proto = {};
-							var keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
-							for (var i = 0; i < keys.length; i++) {
-								var key = keys[i];
-								var val = prevNamespace[key];
+							const proto = {};
+							const keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
+							const keysLen = keys.length;
+							for (let i = 0; i < keysLen; i++) {
+								const key = keys[i];
+								let val = prevNamespace[key];
 								if (!types._instanceof(val, types.AttributeBox)) {
 									// Sets everything to READ_ONLY by default
 									val = types.READ_ONLY(types.ENUMERABLE(val));
@@ -413,7 +418,7 @@ module.exports = {
 							));
 						};
 						
-						proto = spec.proto;
+						let proto = types.get(spec, 'proto');
 						if (proto) {
 							// Extend namespace object
 							if (types.isFunction(proto)) {
@@ -428,41 +433,42 @@ module.exports = {
 						};
 
 						if (!namespace) {
-							namespace = new namespaceType(parent, shortName, spec.name);
+							namespace = new namespaceType(parent, shortName, name);
 						};
 						
 						if (!entry) {
-							var protect = types.get(spec, 'protect', true);
+							const protect = types.get(spec, 'protect', true);
 							entry = new entryType(root, spec, namespace, {protect: protect});
-							__Internal__.DD_REGISTRY.add(spec.name, entry, {secret: _shared.SECRET});
+							__Internal__.DD_REGISTRY.add(name, entry, {secret: _shared.SECRET});
 						};
 						
 						return entry;
 					};
 					
 					function create(spec, parentName, parent) {
-						var baseName = spec.name.split('/', 2)[0];
-						var shortNames = baseName.split('.');
-						var parent = createParents(shortNames, parentName, parent);
-						var entry = createMain(shortNames, spec, parent);
+						const baseName = spec.name.split('/', 2)[0];
+						const shortNames = baseName.split('.');
+						parent = createParents(shortNames, parentName, parent);
+						const entry = createMain(shortNames, spec, parent);
 						return Promise.resolve(entry);
 					};
 					
 					function createNamespaces(entry) {
 						if (entry) {
-							var specNamespaces = entry.spec.namespaces;
+							const specNamespaces = types.get(entry.spec, 'namespaces');
 							if (specNamespaces) {
-								var baseName = entry.spec.name.split('/', 2)[0];
-								for (var i = 0; i < specNamespaces.length; i++) {
-									if (i in specNamespaces) {
-										var name = specNamespaces[i],
+								const specNamespacesLen = specNamespaces.length;
+								const baseName = entry.spec.name.split('/', 2)[0];
+								for (let i = 0; i < specNamespacesLen; i++) {
+									if (types.has(specNamespaces, i)) {
+										const name = specNamespaces[i],
 											shortNames = name.split('.');
-										var parent = createParents(shortNames, baseName, entry.namespace);
-										var	newSpec = {
-												name: baseName + '.' + name,
-												type: entries.Namespace,
-												namespaceType: types.Namespace,
-											};
+										const parent = createParents(shortNames, baseName, entry.namespace);
+										const newSpec = {
+											name: baseName + '.' + name,
+											type: entries.Namespace,
+											namespaceType: types.Namespace,
+										};
 										createMain(shortNames, newSpec, parent);
 									};
 								};
@@ -473,13 +479,14 @@ module.exports = {
 
 					function createObject(entry) {
 						if (entry) {
-							var baseName = entry.spec.name.split('/', 2)[0];
-							var opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
-							if (!entry.spec.bootstrap && !entry.objectCreated && !entry.objectCreating) {
-								var retval = null;
+							const baseName = entry.spec.name.split('/', 2)[0];
+							const opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
+							if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
+								let retval = null;
 								entry.objectCreating = true;
-								if (entry.spec.create) {
-									retval = entry.spec.create(root, opts, _shared);
+								const create = types.get(entry.spec, 'create');
+								if (create) {
+									retval = create(root, opts, _shared);
 								};
 								if (types.isNothing(retval)) {
 									entry.objectCreating = false;
@@ -534,7 +541,7 @@ module.exports = {
 					
 					
 					
-					var retval = checkDependencies(spec);
+					const retval = checkDependencies(spec);
 					if (retval) {
 						return retval;
 					};
@@ -567,22 +574,22 @@ module.exports = {
 						}
 						//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
-					var Promise = types.getPromise();
+					const Promise = types.getPromise();
 						
 					if (entry && !entry.objectInitialized) {
-						var promise = Promise.resolve();
+						let promise = Promise.resolve();
 						
-						var deps = entry.spec.dependencies;
+						const deps = types.get(entry.spec, 'dependencies');
 						if (deps) {
-							var depsLen = deps.length;
-							for (var i = 0; i < depsLen; i++) {
-								if (i in deps) {
-									var dep = deps[i];
+							const depsLen = deps.length;
+							for (let i = 0; i < depsLen; i++) {
+								if (types.has(deps, i)) {
+									let dep = deps[i];
 									if (!types.isString(dep)) {
 										dep = dep.name;
 									};
 									
-									var depEntry = __Internal__.DD_REGISTRY.get(dep);
+									const depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (depEntry) {
 										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
 											if (depEntry.spec.autoInit !== false) {
@@ -598,12 +605,12 @@ module.exports = {
 							};
 						};
 						
-						var baseName = entry.spec.name.split('/', 2)[0];
+						const baseName = entry.spec.name.split('/', 2)[0];
 						options = types.get(options, baseName);
 						
 						if (entry.objectInit) {
 							if (types.isFunction(entry.objectInit)) {
-								var retval = entry.objectInit(options);
+								const retval = entry.objectInit(options);
 								if (types.isPromise(retval)) {
 									__Internal__.incrementWait();
 									promise = promise
@@ -624,7 +631,7 @@ module.exports = {
 							};
 						};
 						
-						var terminate = function terminate() {
+						const terminate = function terminate() {
 							namespaces.dispatchEvent(new types.CustomEvent('init', 
 								{
 									detail: {
@@ -676,8 +683,8 @@ module.exports = {
 						}
 						//! END_REPLACE()
 				, function load(modules, /*optional*/options, /*optional*/callback) {
-					var Promise = types.getPromise();
-					var dontThrow = types.get(options, 'dontThrow');
+					const Promise = types.getPromise();
+					const dontThrow = types.get(options, 'dontThrow');
 					return Promise.try(function() {
 						if (types.isArray(options)) {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
@@ -689,7 +696,7 @@ module.exports = {
 
 						tools.forEach(modules, function(mod) {
 							if (mod) {
-								var modType = types.get(mod, 'type') || entries.Module;
+								let modType = types.get(mod, 'type') || entries.Module;
 								if (types.isString(modType)) {
 									modType = types.get(entries, modType);
 								};
@@ -697,11 +704,11 @@ module.exports = {
 							};
 						});
 					
-						var names = types.keys(modules),
+						const names = types.keys(modules),
 							toInit = [];
 						
 						names.sort(function(name1, name2) {
-							var mod1 = modules[name1],
+							const mod1 = modules[name1],
 								mod2 = modules[name2],
 								mod1IsModule = mod1 && !((mod1.type === entries.Special) || types.baseof(entries.Special, mod1.type)),
 								mod2IsModule = mod2 && !((mod2.type === entries.Special) || types.baseof(entries.Special, mod2.type));
@@ -714,14 +721,14 @@ module.exports = {
 							};
 						});
 
-						var doCallback = function _doCallback() {
+						const doCallback = function _doCallback() {
 							// Create Promise for callback result
-							var cbPromise = null;
+							let cbPromise = null;
 							if (callback) {
 								cbPromise = Promise.create(function readyPromise(resolve, reject) {
-										var cbReadyHandler,
+										let cbReadyHandler,
 											cbErrorHandler;
-										var cbCleanUp = function() {
+										const cbCleanUp = function() {
 											namespaces.removeEventListener('ready', cbReadyHandler);
 											namespaces.removeEventListener('error', cbErrorHandler);
 										};
@@ -754,15 +761,15 @@ module.exports = {
 							};
 						};
 
-						var loopCreateModules = function loopCreateModules(state) {
+						const loopCreateModules = function loopCreateModules(state) {
 							if (names.length) {
 								if (state.missings.length >= names.length) {
-									var entry = state.missings[0];
+									const entry = state.missings[0];
 									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.spec.name, entry.missingDep, (entry.depVersion || '<unspecified>')]);
 								} else if ((state.missings.length + state.optionals.length) >= names.length) {
 									state.ignoreOptionals = true;
 								};
-								var name = names.shift(),
+								const name = names.shift(),
 									spec = modules[name];
 								spec.name = name;
 								return __Internal__.createNamespace(spec, options, state.ignoreOptionals)
@@ -788,10 +795,10 @@ module.exports = {
 							};
 						};
 
-						var loopInitModules = function loopInitModules() {
+						const loopInitModules = function loopInitModules() {
 							if (toInit.length) {
-								var promise;
-								var entry = toInit.shift(); 
+								let promise;
+								const entry = toInit.shift(); 
 								if (!entry.objectInitialized && !entry.objectInitializing) {
 									entry.objectInitializing = true;
 									promise = __Internal__.initNamespace(entry, options);
@@ -808,7 +815,7 @@ module.exports = {
 						return loopCreateModules({missings: [], optionals: [], ignoreOptionals: false})
 							.then(loopInitModules)
 							.then(doCallback)
-							['catch'](function(err) {
+							.catch(function(err) {
 								if (!__Internal__.waiting) {
 									// Dispatches "onerror"
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
@@ -964,11 +971,11 @@ module.exports = {
 						}),
 
 						next: function next() {
-							var ar = this.__values,
+							const ar = this.__values,
 								len = ar.length,
 								type = this.__type,
-								exact = this.__exact,
-								ok = false,
+								exact = this.__exact;
+							let ok = false,
 								entry;
 							while (!ok) {
 								if ((this.__index < 0) || (this.__index >= len)) {
@@ -1047,7 +1054,7 @@ module.exports = {
 							} else {
 								type = entries.Entry;
 							};
-							var entry = this.registry[name];
+							const entry = this.registry[name];
 							if (!types._instanceof(entry, type)) {
 								return null;
 							};
@@ -1085,7 +1092,7 @@ module.exports = {
 							} else {
 								type = entries.Object;
 							};
-							var entry = this.registry[name];
+							const entry = this.registry[name];
 							return types._instanceof(entry, type);
 						}),
 						remove: root.DD_DOC(
@@ -1129,7 +1136,7 @@ module.exports = {
 							} else {
 								type = entries.Entry;
 							};
-							var entry = this.registry[name];
+							const entry = this.registry[name];
 							if (!types._instanceof(entry, type)) {
 								return false;
 							};
@@ -1137,11 +1144,11 @@ module.exports = {
 								return false;
 							};
 							delete this.registry[name];
-							var namespace = entry.namespace;
+							const namespace = entry.namespace;
 							if (namespace) {
-								var parent = namespace.DD_PARENT;
+								const parent = namespace.DD_PARENT;
 								if (parent && namespace.DD_NAME) {
-									var descriptor = types.getPropertyDescriptor(parent, namespace.DD_NAME);
+									const descriptor = types.getPropertyDescriptor(parent, namespace.DD_NAME);
 									if (descriptor && types.get(descriptor, 'configurable')) {
 										delete parent[namespace.DD_NAME];
 									};
@@ -1195,9 +1202,9 @@ module.exports = {
 							//types.freezeObject(entry);
 							this.registry[name] = entry;
 							if (!types._instanceof(entry, entries.Special)) {
-								var namespace = entry.namespace;
+								const namespace = entry.namespace;
 								if (namespace) {
-									var parent = namespace.DD_PARENT,
+									const parent = namespace.DD_PARENT,
 										name = namespace.DD_NAME;
 									if (parent && name) {
 										parent.ADD(name, namespace, entry.options.protect);
@@ -1277,7 +1284,7 @@ module.exports = {
 							
 							this.options = types.nullObject(options);
 							
-							var val = types.getIn(this.options, 'protect', true);
+							const val = types.getIn(this.options, 'protect', true);
 							this.options.protect = types.toBoolean(val);
 						}),
 					

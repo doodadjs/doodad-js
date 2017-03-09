@@ -39,7 +39,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools;
 				
@@ -47,7 +47,7 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 
 				//===================================
@@ -94,7 +94,7 @@ module.exports = {
 					/*instanceProto*/
 					{
 						next: function next() {
-							var ar = this.__keys;
+							const ar = this.__keys;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -116,7 +116,7 @@ module.exports = {
 					/*instanceProto*/
 					{
 						next: function next() {
-							var ar = this.__values;
+							const ar = this.__values;
 							if (this.__index < ar.length) {
 								return {
 									value: ar[this.__index++],
@@ -138,7 +138,7 @@ module.exports = {
 					/*instanceProto*/
 					{
 						next: function next() {
-							var ar = this.__keys,
+							const ar = this.__keys,
 								vals = this.__values;
 							if (this.__index < ar.length) {
 								return {
@@ -183,13 +183,13 @@ module.exports = {
 								throw types.TypeError("Invalid array.");
 							};
 
-							var keys = _shared.setAttribute(this, '__keys', []);
-							var vals = _shared.setAttribute(this, '__values', []);
+							const keys = _shared.setAttribute(this, '__keys', []);
+							const vals = _shared.setAttribute(this, '__values', []);
 							
 							if (ar) {
-								var len = ar.length;
-								for (var i = 0; i < len; i++) {
-									var item = ar[i];
+								const len = ar.length;
+								for (let i = 0; i < len; i++) {
+									const item = ar[i];
 									keys.push(item[0]);
 									vals.push(item[1]);
 								};
@@ -197,9 +197,9 @@ module.exports = {
 							};
 						}),
 						has: function has(key) {
-							var keys = this.__keys,
+							const keys = this.__keys,
 								len = keys.length;
-							for (var i = 0; i < len; i++) {
+							for (let i = 0; i < len; i++) {
 								if (keys[i] === key) {
 									return true;
 								};
@@ -207,19 +207,19 @@ module.exports = {
 							return false;
 						},
 						get: function get(key) {
-							var keys = this.__keys,
+							const keys = this.__keys,
 								len = keys.length;
-							for (var i = 0; i < len; i++) {
+							for (let i = 0; i < len; i++) {
 								if (keys[i] === key) {
 									return this.__values[i];
 								};
 							};
 						},
 						set: function set(key, value) {
-							var found = false,
-								keys = this.__keys,
+							const keys = this.__keys,
 								len = keys.length;
-							for (var i = 0; i < len; i++) {
+							let found = false;
+							for (let i = 0; i < len; i++) {
 								if (keys[i] === key) {
 									this.__values[i] = value;
 									found = true;
@@ -233,10 +233,10 @@ module.exports = {
 							};
 							return this;
 						},
-						'delete': function _delete(key) {
-							var keys = this.__keys,
+						delete: function _delete(key) {
+							const keys = this.__keys,
 								len = keys.length;
-							for (var i = 0; i < len; i++) {
+							for (let i = 0; i < len; i++) {
 								if (keys[i] === key) {
 									keys.splice(i, 1);
 									this.__values.splice(i, 1);
@@ -261,10 +261,10 @@ module.exports = {
 							return new __Internal__.MapEntriesIterator(this);
 						},
 						forEach: function forEach(callbackFn, /*optional*/thisObj) {
-							var keys = this.__keys,
+							const keys = this.__keys,
 								values = this.__values,
 								len = keys.length;
-							for (var i = 0; i < len; i++) {
+							for (let i = 0; i < len; i++) {
 								callbackFn.call(thisObj, values[i], keys[i], this);
 							};
 						},

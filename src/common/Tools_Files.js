@@ -43,7 +43,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files;
@@ -53,7 +53,7 @@ module.exports = {
 				//===================================
 					
 				// <FUTURE> Thread context
-				var __Internal__ = {
+				const __Internal__ = {
 				};
 				
 				
@@ -61,7 +61,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				//var __options__ = types.nullObject({
+				//const __options__ = types.nullObject({
 				//}, _options);
 
 				//types.freezeObject(__options__);
@@ -184,7 +184,7 @@ module.exports = {
 							root.DD_ASSERT(types.isArray(path) || types.isString(path), "Invalid path.");
 						};
 						
-						var dirChar = types.get(options, 'dirChar', '/');
+						const dirChar = types.get(options, 'dirChar', '/');
 
 						if (types.isString(dirRoot)) {
 							dirRoot = dirRoot.split(dirChar);
@@ -194,15 +194,15 @@ module.exports = {
 							path = path.split(dirChar);
 						};
 						
-						var dontThrow = types.get(options, 'dontThrow', false),
+						const dontThrow = types.get(options, 'dontThrow', false),
 							trailing = types.get(options, 'trailing', true);
 						
-						var isTrailing = function isTrailing(path) {
-							var len = path.length;
+						const isTrailing = function isTrailing(path) {
+							const len = path.length;
 							return (len > 1) && (path[len - 1] === '');
 						};
 						
-						var rootTrailing = trailing && dirRoot && isTrailing(dirRoot),
+						const rootTrailing = trailing && dirRoot && isTrailing(dirRoot),
 							pathTrailing = trailing && isTrailing(path);
 						
 						if (dirRoot) {
@@ -216,21 +216,21 @@ module.exports = {
 						});
 						
 						// Resolve ".." and "."
-						var pos = 0;
+						let pos = 0;
 						while (pos < path.length) {
-							var name = path[pos],   // NOTE: Don't trim because trailing spaces may be accepted by the OS and the file system. Paths must be parsed and validated before calling this function.
-								count = 0;
+							const name = path[pos];   // NOTE: Don't trim because trailing spaces may be accepted by the OS and the file system. Paths must be parsed and validated before calling this function.
+							let count = 0;
 							if (name === '.') {
 								count = 1;
 							} else if (name === '..') {
 								count = 2;
 							};
 							if (count) {
-								var tmp;
+								let tmp = null;
 								if (pos <= 0) {
 									if (dirRoot && (count > 1)) {
 										if (dirRoot.length) {
-											var tmp = dirRoot.pop();
+											tmp = dirRoot.pop();
 											// "doodad/v0///removeMe/..//" will resolves to "doodad/v0"
 											while (!tmp && dirRoot.length) {
 												tmp = dirRoot.pop();
@@ -387,17 +387,18 @@ module.exports = {
 									// WARNING: Validation is incomplete.
 									
 									// Flags
-									var dontThrow = types.get(options, 'dontThrow', false),
-										pathWasNothing = types.isNothing(path),
-										pathWasPath = false;
-									
+									const dontThrow = types.get(options, 'dontThrow', false),
+										pathWasNothing = types.isNothing(path);
+
+									let pathWasPath = false;
+
 									if (types._instanceof(path, files.Path)) {
 										options = types.fill(__Internal__.pathAllKeys, {}, path, options);
 										path = options.path;
 										pathWasPath = true;
 										
 									} else if (types._instanceof(path, files.Url)) {
-										var proto = types.get(options, 'protocol', path.protocol);
+										const proto = types.get(options, 'protocol', path.protocol);
 										if (proto && (proto !== 'file')) {
 											if (dontThrow) {
 												return null;
@@ -406,7 +407,7 @@ module.exports = {
 											};
 										};
 										
-										var pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
+										const pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
 										
 										if (path.isWindows) {
 											options = types.fill(__Internal__.pathAllKeys, {
@@ -438,8 +439,8 @@ module.exports = {
 									};
 									
 									// Options
-									var osInfo = tools.getOS();
-									var os = types.get(options, 'os', null),  // Default is Auto-set
+									const osInfo = tools.getOS();
+									let os = types.get(options, 'os', null),  // Default is Auto-set
 										dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
 										isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
 										noEscapes = types.get(options, 'noEscapes', false), // Default is False
@@ -455,7 +456,7 @@ module.exports = {
 
 									path = types.get(options, 'path', path);
 									
-									var pathIsString = types.isString(path),
+									const pathIsString = types.isString(path),
 										fileWasNothing = types.isNothing(file),
 										fileIsString = !fileWasNothing && types.isString(file),
 										dirRootIsString = types.isString(dirRoot);
@@ -477,12 +478,12 @@ module.exports = {
 									if (types.isNothing(quote)) {
 										quote = '';
 										if (shell !== 'api') {
-											var ref = (dirRootIsString ? dirRoot : (pathIsString ? path : ''));
+											const ref = (dirRootIsString ? dirRoot : (pathIsString ? path : ''));
 											if (ref) {
 												if ((os === 'unix') || (os === 'linux') || (os === 'windows')) {
 													// Auto-detect
 													if (path) {
-														var tmp = ref[0];
+														const tmp = ref[0];
 														if (
 															(tmp === '"') ||
 															(((os === 'unix') || (os === 'linux')) && (tmp === "'"))
@@ -537,13 +538,14 @@ module.exports = {
 
 									// Unescape and validate chars
 									if (!noEscapes && shell && (shell !== 'api')) {
-										var unescapePath = null,
-											state = {
-												invalid: null,
-											};
+										const state = {
+											invalid: null,
+										};
 										
+										let unescapePath = null;
+
 										if (shell === 'dos') {
-											unescapePath = function(path) {
+											unescapePath = function unescapePathDos(path) {
 												return tools.replace(path, __Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx, function(matched, g1, g2, pos, str) {
 													if (g1) {
 														// Unescape
@@ -565,7 +567,7 @@ module.exports = {
 												})
 											};
 										} else if (shell === 'bash') {
-											unescapePath = function(path) {
+											unescapePath = function unescapePathBash(path) {
 												return tools.replace(path, __Internal__.parsePathUnixUnescapeShellReservedCharsRegEx, function(matched, g1, g2, pos, str) {
 													if (g1) {
 														// Unescape
@@ -589,8 +591,8 @@ module.exports = {
 										};
 
 										if (unescapePath) {
-											var unescapePathArray = function(path) {
-												for (var i = 0; i < path.length; i++) {
+											const unescapePathArray = function unescapePathArray(path) {
+												for (let i = 0; i < path.length; i++) {
 													path[i] = unescapePath(path[i]);
 												};
 												return path;
@@ -639,10 +641,10 @@ module.exports = {
 									
 									// Replace alternate folder separators by the first one
 									if (types.isArray(dirChar)) {
-										var sep = dirChar[0];
+										const sep = dirChar[0];
 										if (sep) {
-											for (var i = 1; i < dirChar.length; i++) {
-												var char = dirChar[i];
+											for (let i = 1; i < dirChar.length; i++) {
+												const char = dirChar[i];
 												if (char && (char !== sep)) {
 													if (dirRootIsString) {
 														dirRoot = tools.replace(dirRoot, char, sep, 'g');
@@ -695,8 +697,8 @@ module.exports = {
 										// NOTE: "!isRelative" means 'null' or 'false'.
 										if (!isRelative && types.isNothing(host) && types.isNothing(drive)) {
 											if (path) {
-												var hasHost = ((path.length >= 4) && !path[0] && !path[1]);
-												var tmp = tools.trim(path, '', 1)[0];
+												const hasHost = ((path.length >= 4) && !path[0] && !path[1]);
+												const tmp = tools.trim(path, '', 1)[0];
 												if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
 													if (dirRoot) {
 														if (dontThrow) {
@@ -714,8 +716,8 @@ module.exports = {
 												};
 											};
 											if (dirRoot) {
-												var hasHost = ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]);
-												var tmp = tools.trim(dirRoot, '', 1)[0];
+												const hasHost = ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]);
+												const tmp = tools.trim(dirRoot, '', 1)[0];
 												if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
 													if (hasHost) {
 														host = dirRoot.splice(0, 3)[2];
@@ -787,8 +789,8 @@ module.exports = {
 											if (host) {
 												// TODO: Validate shared folder
 											} else {
-												//var chr = unicode.codePointAt(drive, 0) || 0;
-												var chr = drive.charCodeAt(0) || 0;
+												//const chr = unicode.codePointAt(drive, 0) || 0;
+												const chr = drive.charCodeAt(0) || 0;
 												if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
 													if (dontThrow) {
 														return null;
@@ -810,7 +812,7 @@ module.exports = {
 									if (!pathWasNothing && !pathWasPath && path && fileWasNothing) {
 										// Last item, when not empty, is the file name
 										if (path[path.length - 1]) {
-											var tmp = path.pop();
+											const tmp = path.pop();
 											if (tmp) {
 												// Auto-set
 												file = [tmp];
@@ -827,7 +829,7 @@ module.exports = {
 									// Resolve file
 									if (file) {
 										// File can traverse path but not root.
-										var abs = __Internal__.relativeToAbsolute(file, path || [], {
+										const abs = __Internal__.relativeToAbsolute(file, path || [], {
 											dirChar: dirChar,
 											dontThrow: dontThrow,
 											trailing: false,
@@ -843,7 +845,7 @@ module.exports = {
 									if (path) {
 										if (allowTraverse) {
 											// Path can traverse root
-											var abs = __Internal__.relativeToAbsolute(path, dirRoot || [], {
+											const abs = __Internal__.relativeToAbsolute(path, dirRoot || [], {
 												dirChar: dirChar,
 												dontThrow: dontThrow,
 												trailing: false,
@@ -855,7 +857,7 @@ module.exports = {
 											path = abs.path;
 										} else {
 											// Path must not traverse root
-											var abs = __Internal__.relativeToAbsolute(path, [], {
+											const abs = __Internal__.relativeToAbsolute(path, [], {
 												dirChar: dirChar,
 												dontThrow: dontThrow,
 												trailing: false,
@@ -880,7 +882,7 @@ module.exports = {
 											};
 										} else {
 											// NOTE: Root must not traverse '/'
-											var abs = __Internal__.relativeToAbsolute(dirRoot, [], {
+											const abs = __Internal__.relativeToAbsolute(dirRoot, [], {
 												dirChar: dirChar,
 												dontThrow: dontThrow,
 												trailing: false,
@@ -894,16 +896,17 @@ module.exports = {
 
 									// Validate file names
 									if (shell) {
-										var validatePath = null,
-											state = {
-												invalid: null,
-											};
+										const state = {
+											invalid: null,
+										};
 											
+										let validatePath = null;
+
 										if (shell === 'dos') {
-											validatePath = function(pathArray) {
+											validatePath = function validatePathDos(pathArray) {
 												tools.forEach(pathArray, function(item, pos, items) {
 													// NOTE: DOS trims spaces at the end of path and file names but keeps them at the beginning
-													var tmp = tools.trim(item, ' ', -1);
+													let tmp = tools.trim(item, ' ', -1);
 													
 													// NOTE: DOS also trims dots on the end
 													// NOTE: More than two dots resolves to one
@@ -928,7 +931,7 @@ module.exports = {
 										//} else if (shell === 'api') {
 										} else {
 											if (!isRelative) {
-												validatePath = function(pathArray) {
+												validatePath = function validatePathApi(pathArray) {
 													tools.forEach(pathArray, function(item, pos, items) {
 														if ((item === '.') || (item === '..')) {
 															state.invalid = item;
@@ -939,7 +942,7 @@ module.exports = {
 										};
 										//} else {
 										//	// Unix/Linux
-										//	validatePath = function(pathArray) {
+										//	validatePath = function validatePathNix(pathArray) {
 										//		tools.forEach(pathArray, function(item, pos, items) {
 										//			if (!isRelative) {
 										//				if ((item === '.') || (item === '..')) {
@@ -972,14 +975,14 @@ module.exports = {
 										if (file.length <= 1) {
 											file = file[0];
 										} else  {
-											var tmp = file[file.length - 1];
+											const tmp = file[file.length - 1];
 											path = types.append([], path, file.slice(0, file.length - 1));
 											file = tmp;
 										};
 									};
 									
 									if (file) {
-										var pos = file.indexOf('.');
+										const pos = file.indexOf('.');
 										if (types.isNothing(extension)) {
 											if (pos >= 0) {
 												extension = file.slice(pos + 1);
@@ -1022,7 +1025,7 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var attrs = types.fill(__Internal__.pathAllKeys, {}, options);
+								const attrs = types.fill(__Internal__.pathAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
@@ -1047,10 +1050,10 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									var newOptions = types.fill(__Internal__.pathAllKeys, {}, this);
+									let newOptions = types.fill(__Internal__.pathAllKeys, {}, this);
 									delete newOptions.extension;
 									newOptions = types.fill(__Internal__.pathAllKeys, newOptions, options);
-									var type = types.getType(this);
+									const type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
 							
@@ -1076,7 +1079,7 @@ module.exports = {
 									};
 
 									// Flags
-									var dontValidate = types.get(options, 'dontValidate', false);
+									const dontValidate = types.get(options, 'dontValidate', false);
 									
 									if (options) {
 										options = types.nullObject(options);
@@ -1094,7 +1097,7 @@ module.exports = {
 											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
-											var type = types.getType(this);
+											const type = types.getType(this);
 											options = type.parse(this, options);
 											if (!options) {
 												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
@@ -1107,33 +1110,39 @@ module.exports = {
 									};
 									
 									
-									var host = options.host,
+									let dirRoot = options.root,
+										path = options.path;
+									
+									const host = options.host,
 										drive = options.drive,
-										dirRoot = options.root,
-										path = options.path,
 										file = options.file,
 										hasRoot = path.length && !path[0].length;
 									
-									
-									dirRoot = dirRoot && tools.trim(dirRoot, '');
-									path = path && tools.trim(path, '');
+									if (dirRoot) {
+										dirRoot = tools.trim(dirRoot, '');
+									};
+
+									if (path) {
+										path = tools.trim(path, '');
+									};
+
 									path = types.append([], dirRoot, path, [file]);
 
 									if (!options.noEscapes && !options.quote) {
 										if (options.shell === 'bash') {
-											var pathLen = path.length;
-											for (var i = 0; i < pathLen; i++) {
+											const pathLen = path.length;
+											for (let i = 0; i < pathLen; i++) {
 												path[i] = path[i].replace(__Internal__.parsePathUnixEscapeShellReservedCharsRegEx, "\\$1");
 											};
 										} else if (options.shell === 'dos') {
-											var pathLen = path.length;
-											for (var i = 0; i < pathLen; i++) {
+											const pathLen = path.length;
+											for (let i = 0; i < pathLen; i++) {
 												path[i] = path[i].replace(__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx, "^$1");
 											};
 										};
 									};
 
-									var result = path.join(options.dirChar);
+									let result = path.join(options.dirChar);
 
 									if (!options.isRelative || host.length || drive.length || hasRoot) {
 										result = (options.dirChar + result);
@@ -1194,8 +1203,8 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(/*optional*/path, /*optional*/options) {
-									var type = types.getType(this);
-									var dontThrow = types.get(options, 'dontThrow', false),
+									const type = types.getType(this);
+									const dontThrow = types.get(options, 'dontThrow', false),
 										allowTraverse = types.get(options, 'allowTraverse', false);
 									
 									if (!types._instanceof(path, [files.Path, files.Url])) {
@@ -1203,14 +1212,13 @@ module.exports = {
 										options = null;
 									};
 									
-									var data = types.fill(__Internal__.pathAllKeys, {}, this);
+									const data = types.fill(__Internal__.pathAllKeys, {}, this);
 
-									var thisRoot = tools.trim(this.root || [], '');
+									const thisRoot = tools.trim(this.root || [], '');
 									
-									var thisPath = tools.trim(this.path || [], '');
-									var thisFile = this.file;
+									const thisPath = tools.trim(this.path || [], '');
 
-									var dirRoot = types.get(options, 'root');
+									let dirRoot = types.get(options, 'root');
 									if (types.isString(dirRoot)) {
 										dirRoot = dirRoot.split(data.dirChar);
 									};
@@ -1218,7 +1226,7 @@ module.exports = {
 										dirRoot = tools.trim(dirRoot, '');
 									};
 										
-									var dir = types.get(options, 'path', path.path);
+									let dir = types.get(options, 'path', path.path);
 									if (types.isString(dir)) {
 										dir = dir.split(data.dirChar);
 									};
@@ -1227,8 +1235,8 @@ module.exports = {
 									};
 
 									if (types._instanceof(path, files.Path)) {
-										var drive = types.get(options, 'drive', path.drive);
-										var host = types.get(options, 'host', path.host);
+										const drive = types.get(options, 'drive', path.drive);
+										const host = types.get(options, 'host', path.host);
 										if ((path.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
 											if (dontThrow) {
 												return null;
@@ -1266,6 +1274,7 @@ module.exports = {
 									data.dontThrow = dontThrow;
 									data.allowTraverse = allowTraverse;
 
+									let thisFile = this.file;
 									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || path.file)) {
 										thisPath.push(thisFile);
 										thisFile = null;
@@ -1302,9 +1311,9 @@ module.exports = {
 									if (types.isNothing(count)) {
 										count = 1;
 									};
-									var i = this.path.length - 1;
+									let i = this.path.length - 1;
 									while ((i >= 0) && (count > 0)) {
-										var tmp = this.path[i];
+										const tmp = this.path[i];
 										if (tmp === '.') {
 										} else if (tmp === '..') {
 											count++;
@@ -1313,7 +1322,7 @@ module.exports = {
 										};
 										i--;
 									};
-									var path;
+									let path;
 									if (count > 0) {
 										path = [];
 										if (this.isRelative) {
@@ -1325,7 +1334,7 @@ module.exports = {
 									} else {
 										path = this.path.slice(0, i + 1);
 									};
-									var type = types.getType(this);
+									const type = types.getType(this);
 									return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
 								}),
 							
@@ -1340,7 +1349,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function pushFile() {
-									var type = types.getType(this);
+									const type = types.getType(this);
 									if (this.file) {
 										return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
@@ -1365,15 +1374,15 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toArray(/*optional*/options) {
-									var isRelative = types.get(options, 'isRelative', this.isRelative),
+									const isRelative = types.get(options, 'isRelative', this.isRelative),
 										dirChar = types.get(options, 'dirChar', this.dirChar),
-										host = types.get(options, 'host', this.host),
-										drive = types.get(options, 'drive', this.drive),
-										root = types.get(options, 'root', this.root),
-										path = types.get(options, 'path', this.path),
 										file = types.get(options, 'file', this.file),
 										pathOnly = types.get(options, 'pathOnly', false),
 										trim = types.get(options, 'trim', false);
+									let host = types.get(options, 'host', this.host),
+										drive = types.get(options, 'drive', this.drive),
+										root = types.get(options, 'root', this.root),
+										path = types.get(options, 'path', this.path);
 									if (pathOnly) {
 										host = null; 
 										drive = null;
@@ -1395,7 +1404,7 @@ module.exports = {
 									} else {
 										path = null;
 									};
-									var newPath = types.append([], root, path);
+									const newPath = types.append([], root, path);
 									if (!isRelative) {
 										if (host && drive) {
 											if (trim) {
@@ -1422,7 +1431,7 @@ module.exports = {
 									throw new types.ParseError("Path is not absolute.");
 								};
 
-								var type = types.getType(this);
+								const type = types.getType(this);
 								
 								if (!types._instanceof(to, files.Path)) {
 									to = type.parse(to, options);
@@ -1439,15 +1448,16 @@ module.exports = {
 									throw new types.ParseError("Paths must be from the same network share or the same drive.");
 								};
 								
-								var os = tools.getOS(),
+								const os = tools.getOS(),
 									caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
 
-								var thisAr = this.toArray(),
+								const thisAr = this.toArray(),
 									toAr = to.toArray();
 								
-								var pathAr = [],
-									i = 0;
-								
+								const pathAr = [];
+
+								let i = 0;
+
 								for (; (i < thisAr.length) && (i < toAr.length); i++) {
 									if (caseSensitive) {
 										if (thisAr[i] !== toAr[i]) {
@@ -1460,7 +1470,7 @@ module.exports = {
 									};
 								};
 								
-								var j = i;
+								let j = i;
 								
 								for (; i < toAr.length; i++) {
 									pathAr.push('..');
@@ -1596,16 +1606,16 @@ module.exports = {
 									};
 
 									if (!types.isNothing(args)) {
-										var noEscapes = types.get(options, 'noEscapes', false);
+										const noEscapes = types.get(options, 'noEscapes', false);
 										if (types.isString(args)) {
 											args = args.split('&');
-											for (var i = args.length - 1; i >= 0; i--) {
-												var arg = tools.split(args[i], '=', 2);
-												var name = arg[0];
+											for (let i = args.length - 1; i >= 0; i--) {
+												const arg = tools.split(args[i], '=', 2);
+												let name = arg[0];
 												if (!noEscapes) {
 													name = __Internal__.decodeURIComponent(name);
 												};
-												var value = null;
+												let value = null;
 												if (arg.length === 2) {
 													value = arg[1];
 													if (!noEscapes) {
@@ -1673,7 +1683,7 @@ module.exports = {
 									return tools.reduce(this.__args, function(result, arg) {
 										if (arg.name) {
 											if (arg.name in result) {
-												var item = result[arg.name];
+												const item = result[arg.name];
 												if (types.isArray(item)) {
 													item.push(arg.value);
 												} else {
@@ -1752,18 +1762,16 @@ module.exports = {
 
 									options = types.extend({}, this.options, options);
 
-									var result = '',
-										len = this.__args.length,
-										arg,
-										name, 
-										val;
+									const len = this.__args.length;
 
-									var noEscapes = types.get(options, 'noEscapes', false);
+									let result = '';
 
-									for (var i = 0; i < len; i++) {
-										arg = this.__args[i];
-										name = arg.name;
-										val = arg.value;
+									const noEscapes = types.get(options, 'noEscapes', false);
+
+									for (let i = 0; i < len; i++) {
+										const arg = this.__args[i];
+										let name = arg.name;
+										let val = arg.value;
 										if (!types.isNothing(name) || !types.isNothing(val)) {
 											if (!types.isNothing(name)) {
 												if (!noEscapes) {
@@ -1809,8 +1817,8 @@ module.exports = {
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 									if (this.__args) {
-										for (var i = this.__args.length - 1; i >= 0; i--) {
-											var arg = this.__args[i];
+										for (let i = this.__args.length - 1; i >= 0; i--) {
+											const arg = this.__args[i];
 											if (arg.name === name) {
 												return true;
 											};
@@ -1845,7 +1853,7 @@ module.exports = {
 										root.DD_ASSERT(types.isNothing(name) || types.isString(name), "Invalid name.");
 									};
 
-									var result = undefined,
+									let result = undefined,
 										isArray = false,
 										isNothing = true;
 
@@ -1853,8 +1861,8 @@ module.exports = {
 										return result;
 									};
 
-									for (var i = this.__args.length - 1; i >= 0; i--) {
-										var arg = this.__args[i];
+									for (let i = this.__args.length - 1; i >= 0; i--) {
+										const arg = this.__args[i];
 										if (arg.name === name) {
 											if (isArray) {
 												result.push(arg.value);
@@ -1909,8 +1917,8 @@ module.exports = {
 										root.DD_ASSERT(types.isNothing(value) || types.isString(value) || types.isArray(value), "Invalid value.");
 									};
 
-									var isObj = types.isObject(name);
-									var noEscapes = types.get(this.options, 'noEscapes', false);
+									const isObj = types.isObject(name),
+										noEscapes = types.get(this.options, 'noEscapes', false);
 
 									if (!types.isArray(name) && !isObj) {
 										name = [name];
@@ -1924,7 +1932,7 @@ module.exports = {
 										value = [value];
 									};
 
-									var args;
+									let args;
 									if (types.isNothing(this.__args)) {
 										args = [];
 									} else {
@@ -1958,11 +1966,11 @@ module.exports = {
 										};
 
 										if (replace) {
-											for (var i = 0; i < args.length;) {
-												var arg = args[i];
+											for (let i = 0; i < args.length;) {
+												const arg = args[i];
 												if (arg.name === n) {
 													if (v.length) {
-														var val = v.shift();
+														let val = v.shift();
 														if (!noEscapes) {
 															val = __Internal__.decodeURIComponent(val);
 														};
@@ -1976,7 +1984,7 @@ module.exports = {
 											};
 										};
 
-										for (var i = 0; i < v.length; i++) {
+										for (let i = 0; i < v.length; i++) {
 											args.push({
 												name: n,
 												value: v[i],
@@ -1988,7 +1996,7 @@ module.exports = {
 										args = null;
 									};
 
-									var type = types.getType(this);
+									const type = types.getType(this);
 
 									return new type(args, types.clone(this.options));
 								}),
@@ -2018,13 +2026,13 @@ module.exports = {
 										names = [names || ''];
 									};
 
-									var args = [];
+									let args = [];
 
 									if (!types.isNothing(this.__args)) {
-										for (var i = 0; i < this.__args.length; i++) {
-											var arg = this.__args[i],
-												found = false;
-											for (var j = 0; j < names.length; j++) {
+										for (let i = 0; i < this.__args.length; i++) {
+											const arg = this.__args[i];
+											let found = false;
+											for (let j = 0; j < names.length; j++) {
 												if (arg.name === names[j]) {
 													found = true;
 													break;
@@ -2040,7 +2048,7 @@ module.exports = {
 										args = null;
 									};
 
-									var type = types.getType(this);
+									const type = types.getType(this);
 
 									return new type(args, types.clone(this.options));
 								}),
@@ -2067,11 +2075,11 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(args, /*optional*/options) {
-									var type = types.getType(this);
+									const type = types.getType(this);
 
 									options = types.extend({}, this.options, options);
 
-									var mode = types.get(options, 'argsMode', 'merge');
+									const mode = types.get(options, 'argsMode', 'merge');
 
 									if (!types._instanceof(args, files.UrlArguments)) {
 										args = type.parse(args, options);
@@ -2085,21 +2093,21 @@ module.exports = {
 										args = args.__args;
 
 									} else if (mode === 'merge') {
-										var tmp = {},
+										const tmp = {},
 											ar1 = this.__args,
 											ar1Len = ar1 && ar1.length;
 
-										for (var i = 0; i < ar1Len; i++) {
-											var item = ar1[i];
+										for (let i = 0; i < ar1Len; i++) {
+											const item = ar1[i];
 											item.order = i;
 											tmp[item.name] = item;
 										};
 
-										var ar2 = args.__args,
+										const ar2 = args.__args,
 											ar2Len = ar2 && ar2.length;
 
-										for (var i = 0; i < ar2Len; i++) {
-											var item = ar2[i];
+										for (let i = 0; i < ar2Len; i++) {
+											const item = ar2[i];
 											item.order = i + ar1Len;
 											tmp[item.name] = item;
 										};
@@ -2204,16 +2212,17 @@ module.exports = {
 									};
 									
 									// Flags
-									var dontThrow = types.get(options, 'dontThrow', false),
-										urlIsArray = types.isArray(url),
-										path = null; // Default is Auto-detect
+									const dontThrow = types.get(options, 'dontThrow', false),
+										urlIsArray = types.isArray(url);
+
+									let path = null; // Default is Auto-detect
 									
 									if (urlIsArray) {
 										path = url;
 										url = null;
 										
 									} else if (types._instanceof(url, files.Url)) {
-										var args = types.get(options, 'args', null);
+										const args = types.get(options, 'args', null);
 										
 										options = types.fill(__Internal__.urlAllKeys, {}, url, options);
 										
@@ -2224,9 +2233,9 @@ module.exports = {
 										url = null;
 										
 									} else if (types._instanceof(url, files.Path)) {
-										var pathTmp = url.path,
-											isWindows = (url.os === 'windows');
+										const isWindows = (url.os === 'windows');
 										
+										let pathTmp = url.path;
 										if (isWindows) {
 											pathTmp = types.append([], [url.drive + ':'], pathTmp)
 										};
@@ -2251,13 +2260,14 @@ module.exports = {
 										};
 									};
 
+									path = types.get(options, 'path', path);
+
 									// Options
-									var protocol = types.get(options, 'protocol', null), // Default is Auto-detect
+									let protocol = types.get(options, 'protocol', null), // Default is Auto-detect
 										domain = types.get(options, 'domain', null), // Default is Auto-detect
 										user = types.get(options, 'user', null), // Default is Auto-detect
 										password = types.get(options, 'password', null), // Default is Auto-detect
 										port = types.get(options, 'port', null), // Default is Auto-detect
-										path = types.get(options, 'path', path),
 										file = types.get(options, 'file', null), // Default is Auto-detect
 										extension = types.get(options, 'extension', null), // Default is "file" 's extension
 										args = types.get(options, 'args', null), // Default is Auto-detect
@@ -2270,11 +2280,9 @@ module.exports = {
 									if (url) {
 										url = tools.trim(url);
 										
-										var pos;
-										
 										// Auto-detect "protocol"
 										if (/^[A-Za-z+]+\:\/\//.test(url)) {
-											pos = url.indexOf(':');
+											const pos = url.indexOf(':');
 											if (pos >= 0) {
 												if (types.isNothing(protocol)) {
 													protocol = url.slice(0, pos).toLowerCase() || null;
@@ -2292,12 +2300,12 @@ module.exports = {
 										} else {
 											// Auto-detect "isWindows", "domain", "user", "password", "port", "path"
 											isWindows = false;
-											pos = tools.search(url, /[/\?#]/);
-											if (pos >= 0) {
+											const posUrl = tools.search(url, /[/\?#]/);
+											if (posUrl >= 0) {
 												if (types.isNothing(domain)) {
-													domain = url.slice(0, pos) || null;
+													domain = url.slice(0, posUrl) || null;
 												};
-												url = url.slice(pos);
+												url = url.slice(posUrl);
 											} else {
 												if (types.isNothing(domain)) {
 													domain = url || null;
@@ -2305,18 +2313,17 @@ module.exports = {
 												url = '';
 											};
 											if (domain) {
-												pos = domain.indexOf('@');
-												var login = null;
-												if (pos >= 0) {
-													login = domain.slice(0, pos);
-													domain = domain.slice(pos + 1) || null;
-													pos = login.indexOf(':');
-													if (pos >= 0) {
+												const posDomain = domain.indexOf('@');
+												if (posDomain >= 0) {
+													const login = domain.slice(0, posDomain);
+													domain = domain.slice(posDomain + 1) || null;
+													const posLogin = login.indexOf(':');
+													if (posLogin >= 0) {
 														if (types.isNothing(user)) {
-															user = login.slice(0, pos) || null;
+															user = login.slice(0, posLogin) || null;
 														};
 														if (types.isNothing(password)) {
-															password = login.slice(pos + 1);
+															password = login.slice(posLogin + 1);
 														};
 													} else {
 														if (types.isNothing(user)) {
@@ -2326,19 +2333,19 @@ module.exports = {
 												};
 											};
 											if (domain) {
-												pos = tools.search(domain, /[:][0-9]+/);
-												if (pos >= 0) {
+												const posDomain = tools.search(domain, /[:][0-9]+/);
+												if (posDomain >= 0) {
 													if (types.isNothing(port)) {
-														port = domain.slice(pos + 1) || null;
+														port = domain.slice(posDomain + 1) || null;
 													};
-													domain = domain.slice(0, pos) || null;
+													domain = domain.slice(0, posDomain) || null;
 												};
 											};
 										};
 
 										// Auto-detect "args" and "anchor"
-										var posArgs = tools.search(url, '?', 0, null, '#');
-										var posAnchor = tools.search(url, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
+										let posArgs = tools.search(url, '?', 0, null, '#');
+										const posAnchor = tools.search(url, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
 										if ((posArgs >= 0) && types.isNothing(args)) {
 											args = url.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor: undefined));
 										};
@@ -2353,12 +2360,12 @@ module.exports = {
 										};
 
 										// Auto-detect "path" and "file"
-										pos = url.lastIndexOf('/');
-										if (pos >= 0) {
+										const posUrl = url.lastIndexOf('/');
+										if (posUrl >= 0) {
 											if (types.isNothing(file)) {
-												file = url.slice(pos + 1) || null;
+												file = url.slice(posUrl + 1) || null;
 												if (types.isNothing(path)) {
-													path = url.slice(0, pos + 1);
+													path = url.slice(0, posUrl + 1);
 												};
 											} else {
 												if (types.isNothing(path)) {
@@ -2437,7 +2444,7 @@ module.exports = {
 									
 									if (urlIsArray) {
 										if (path[path.length - 1]) {
-											var tmp = path.pop();
+											const tmp = path.pop();
 											if (tmp) {
 												// Auto-set
 												file = [tmp];
@@ -2500,7 +2507,7 @@ module.exports = {
 									
 									if (!isRelative) {
 										if (path) {
-											var abs = __Internal__.relativeToAbsolute(path, null, {
+											const abs = __Internal__.relativeToAbsolute(path, null, {
 												dirChar: '/',
 												dontThrow: dontThrow,
 											});
@@ -2510,7 +2517,7 @@ module.exports = {
 											path = abs.path;
 										};
 										if (file) {
-											var abs = __Internal__.relativeToAbsolute(file, path || [], {
+											const abs = __Internal__.relativeToAbsolute(file, path || [], {
 												dirChar: '/',
 												dontThrow: dontThrow,
 											});
@@ -2523,18 +2530,21 @@ module.exports = {
 									};
 									
 									if (!isRelative) {
-										var state = {
-												invalid: null,
-											},
-											validatePath = function(pathArray) {
-												tools.forEach(pathArray, function(item, pos, items) {
-													if ((item === '.') || (item === '..')) {
-														state.invalid = item;
-													};
-												});
-											};
+										const state = {
+											invalid: null,
+										};
+
+										const validatePath = function validatePath(pathArray) {
+											tools.forEach(pathArray, function(item, pos, items) {
+												if ((item === '.') || (item === '..')) {
+													state.invalid = item;
+												};
+											});
+										};
+
 										validatePath(path);
 										validatePath(file);
+
 										if (state.invalid) {
 											if (dontThrow) {
 												return null;
@@ -2557,7 +2567,7 @@ module.exports = {
 									};
 
 									if (file) {
-										var pos = file.indexOf('.');
+										const pos = file.indexOf('.');
 										if (types.isNothing(extension)) {
 											if (pos >= 0) {
 												extension = file.slice(pos + 1);
@@ -2599,7 +2609,7 @@ module.exports = {
 						types.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								var attrs = types.fill(__Internal__.urlAllKeys, {}, options);
+								const attrs = types.fill(__Internal__.urlAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
@@ -2624,10 +2634,10 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									var newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
+									let newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
 									delete newOptions.extension;
 									newOptions = types.fill(__Internal__.urlAllKeys, newOptions, options);
-									var type = types.getType(this);
+									const type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
 							
@@ -2708,7 +2718,7 @@ module.exports = {
 									};
 
 									// Flags
-									var dontValidate = types.get(options, 'dontValidate', false);
+									const dontValidate = types.get(options, 'dontValidate', false);
 									
 									if (options) {
 										if (dontValidate) {
@@ -2720,7 +2730,7 @@ module.exports = {
 											if (!types.has(options, 'dontThrow')) {
 												options.dontThrow = true;  // "parse" will returns null when invalid
 											};
-											var type = types.getType(this);
+											const type = types.getType(this);
 											options = type.parse(this, options);
 											if (!options) {
 												// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
@@ -2734,10 +2744,10 @@ module.exports = {
 
 									
 									// Options
-									var noEscapes = types.get(options, 'noEscapes', false);
+									const noEscapes = types.get(options, 'noEscapes', false);
 
 									
-									var result = '';
+									let result = '';
 									
 									if (options.protocol) {
 										result += options.protocol + '://';
@@ -2760,7 +2770,7 @@ module.exports = {
 									};
 									
 									if ((options.path && options.path.length) || !options.isRelative) {
-										var path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
+										let path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
 										if (path.length > 1) {
 											path += '/';
 										};
@@ -2813,10 +2823,10 @@ module.exports = {
 									root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, files.Url), "Invalid url.");
 									
 									if (types.isString(url)) {
-										var type = types.getType(this);
+										const type = types.getType(this);
 										url = type.parse(url);
 									};
-									var result = (this.toString({anchor: null}) === url.toString({anchor: null}));
+									const result = (this.toString({anchor: null}) === url.toString({anchor: null}));
 									return (result ? ((this.anchor === url.anchor) ? 0 : 1) : -1); // 0=same, 1=different anchor, -1=different
 								}),
 							
@@ -2842,23 +2852,23 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(url, /*optional*/options) {
-									var type = types.getType(this);
+									const type = types.getType(this);
 
-									var dontThrow = types.get(options, 'dontThrow', false);
+									const dontThrow = types.get(options, 'dontThrow', false);
 									
 									if (!types._instanceof(url, [files.Url, files.Path])) {
 										url = type.parse(url, options);
 										options = null;
 									};
 
-									var data = types.fill(__Internal__.urlAllKeys, {}, this);
+									const data = types.fill(__Internal__.urlAllKeys, {}, this);
 
-									var thisPath = tools.trim(this.path, '');
+									const thisPath = tools.trim(this.path, '');
 									if (this.file) {
 										thisPath.push(this.file);
 									};
 									
-									var pathRoot = null;
+									let pathRoot = null;
 
 									if (types._instanceof(url, files.Url)) {
 										if (url.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
@@ -2868,7 +2878,7 @@ module.exports = {
 												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										var domain = types.get(options, 'domain', url.domain);
+										const domain = types.get(options, 'domain', url.domain);
 										if (domain) {
 											data.protocol = types.get(options, 'protocol', url.protocol);
 											data.user = types.get(options, 'user', url.user);
@@ -2876,11 +2886,11 @@ module.exports = {
 											data.domain = domain;
 											data.port = types.get(options, 'port', url.port);
 										};
-										var anchor = types.get(options, 'anchor', url.anchor);
+										const anchor = types.get(options, 'anchor', url.anchor);
 										if (anchor) {
 											data.anchor = anchor;
 										};
-										var args = types.get(options, 'args', url.args);
+										const args = types.get(options, 'args', url.args);
 										if (args) {
 											data.args = this.args.combine(args, options);
 										};
@@ -2899,7 +2909,7 @@ module.exports = {
 
 									data.dontThrow = dontThrow;
 									
-									var path = types.get(options, 'path', url.path);
+									let path = types.get(options, 'path', url.path);
 									if (types.isString(path)) {
 										path = path.split('/');
 									};
@@ -2907,7 +2917,7 @@ module.exports = {
 										path = tools.trim(path, '');
 									};
 									
-									var isRelative = types.get(options, 'isRelative', url.isRelative);
+									const isRelative = types.get(options, 'isRelative', url.isRelative);
 									if (isRelative) {
 										data.path = types.append([], thisPath, pathRoot, path);
 									} else {
@@ -2941,9 +2951,9 @@ module.exports = {
 									if (types.isNothing(count)) {
 										count = 1;
 									};
-									var i = this.path.length - 1;
+									let i = this.path.length - 1;
 									while ((i >= 0) && (count > 0)) {
-										var tmp = this.path[i];
+										const tmp = this.path[i];
 										if (tmp === '.') {
 										} else if (tmp === '..') {
 											count++;
@@ -2952,7 +2962,7 @@ module.exports = {
 										};
 										i--;
 									};
-									var path;
+									let path;
 									if (count > 0) {
 										path = [];
 										if (this.isRelative) {
@@ -2964,7 +2974,7 @@ module.exports = {
 									} else {
 										path = this.path.slice(0, i + 1);
 									};
-									var type = types.getType(this);
+									const type = types.getType(this);
 									return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
 								}),
 							
@@ -2979,7 +2989,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function pushFile() {
-									var type = types.getType(this);
+									const type = types.getType(this);
 									if (this.file) {
 										return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
 									} else {
@@ -3004,7 +3014,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toArray(/*optional*/options) {
-									var path = types.get(options, 'path', this.path),
+									let path = types.get(options, 'path', this.path),
 										isRelative = types.get(options, 'isRelative', this.isRelative),
 										protocol = types.get(options, 'protocol', this.protocol),
 										domain = types.get(options, 'domain', this.domain),
@@ -3042,7 +3052,7 @@ module.exports = {
 										// TODO: Should we throw ?
 										args = null;
 									};
-									var hasPath = !!path.length;
+									const hasPath = !!path.length;
 									if (isRelative) {
 										if (hasPath && !trim) {
 											path.unshift('');
@@ -3064,7 +3074,7 @@ module.exports = {
 										};
 									};
 
-									var argsAndAnchor = (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
+									const argsAndAnchor = (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
 									if (file) {
 										if (!hasPath && isRelative && !trim) {
 											path.push('');

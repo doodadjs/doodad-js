@@ -39,7 +39,7 @@ module.exports = {
 				run: function run(root, /*optional*/options) {
 					"use strict";
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						tools = doodad.Tools,
 						namespaces = doodad.Namespaces,
@@ -70,8 +70,11 @@ module.exports = {
 					
 					global.symbol = types.hasGetSymbolEnabled() && types.getSymbol("symbol") || undefined;
 					
+
+					let command;
+
 					
-					var command = test.prepareCommand(types.isNothing, "Doodad.Types.isNothing");
+					command = test.prepareCommand(types.isNothing, "Doodad.Types.isNothing");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -112,7 +115,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 
-					var command = test.prepareCommand(types.isPrimitive, "Doodad.Types.isPrimitive");
+					command = test.prepareCommand(types.isPrimitive, "Doodad.Types.isPrimitive");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "''");
@@ -154,7 +157,7 @@ module.exports = {
 					global.symbol && command.run(true, {eval: true, repetitions: 100},         /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isNumber, "Doodad.Types.isNumber");
+					command = test.prepareCommand(types.isNumber, "Doodad.Types.isNumber");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -195,7 +198,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 
-					var command = test.prepareCommand(types.isInteger, "Doodad.Types.isInteger");
+					command = test.prepareCommand(types.isInteger, "Doodad.Types.isInteger");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -236,7 +239,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 
-					var command = test.prepareCommand(types.isBoolean, "Doodad.Types.isBoolean");
+					command = test.prepareCommand(types.isBoolean, "Doodad.Types.isBoolean");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -277,7 +280,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isInfinite, "Doodad.Types.isInfinite");
+					command = test.prepareCommand(types.isInfinite, "Doodad.Types.isInfinite");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -318,7 +321,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isFloat, "Doodad.Types.isFloat");
+					command = test.prepareCommand(types.isFloat, "Doodad.Types.isFloat");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -359,7 +362,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isString, "Doodad.Types.isString");
+					command = test.prepareCommand(types.isString, "Doodad.Types.isString");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "''");
@@ -400,7 +403,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isDate, "Doodad.Types.isDate");
+					command = test.prepareCommand(types.isDate, "Doodad.Types.isDate");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -441,7 +444,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isArray, "Doodad.Types.isArray");
+					command = test.prepareCommand(types.isArray, "Doodad.Types.isArray");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -482,7 +485,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isArrayAndNotEmpty, "Doodad.Types.isArrayAndNotEmpty");
+					command = test.prepareCommand(types.isArrayAndNotEmpty, "Doodad.Types.isArrayAndNotEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -523,7 +526,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isArrayLike, "Doodad.Types.isArrayLike");
+					command = test.prepareCommand(types.isArrayLike, "Doodad.Types.isArrayLike");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "''");
@@ -575,7 +578,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isArrayLikeAndNotEmpty, "Doodad.Types.isArrayLikeAndNotEmpty");
+					command = test.prepareCommand(types.isArrayLikeAndNotEmpty, "Doodad.Types.isArrayLikeAndNotEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -616,7 +619,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isObject, "Doodad.Types.isObject");
+					command = test.prepareCommand(types.isObject, "Doodad.Types.isObject");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -658,7 +661,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},         /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isObjectLike, "Doodad.Types.isObjectLike");
+					command = test.prepareCommand(types.isObjectLike, "Doodad.Types.isObjectLike");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -700,7 +703,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isFunction, "Doodad.Types.isFunction");
+					command = test.prepareCommand(types.isFunction, "Doodad.Types.isFunction");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -741,7 +744,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isNativeFunction, "Doodad.Types.isNativeFunction");
+					command = test.prepareCommand(types.isNativeFunction, "Doodad.Types.isNativeFunction");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -782,7 +785,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isCustomFunction, "Doodad.Types.isCustomFunction");
+					command = test.prepareCommand(types.isCustomFunction, "Doodad.Types.isCustomFunction");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -823,7 +826,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isNaN, "Doodad.Types.isNaN");
+					command = test.prepareCommand(types.isNaN, "Doodad.Types.isNaN");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -864,7 +867,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isError, "Doodad.Types.isError");
+					command = test.prepareCommand(types.isError, "Doodad.Types.isError");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -906,7 +909,7 @@ module.exports = {
 					command.end();
 
 					if (global.document) {
-						var command = test.prepareCommand(client.isWindow, "Doodad.Client.isWindow");
+						command = test.prepareCommand(client.isWindow, "Doodad.Client.isWindow");
 						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 						command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -952,7 +955,7 @@ module.exports = {
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(client.isDocument, "Doodad.Client.isDocument");
+						command = test.prepareCommand(client.isDocument, "Doodad.Client.isDocument");
 						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 						command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -998,7 +1001,7 @@ module.exports = {
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(client.isNode, "Doodad.Client.isNode");
+						command = test.prepareCommand(client.isNode, "Doodad.Client.isNode");
 						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 						command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1044,7 +1047,7 @@ module.exports = {
 					};
 					
 					if (global.document) {
-						var command = test.prepareCommand(client.isElement, "Doodad.Client.isElement");
+						command = test.prepareCommand(client.isElement, "Doodad.Client.isElement");
 						command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 						command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 						command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1089,7 +1092,7 @@ module.exports = {
 						command.end();
 					};
 					
-					var command = test.prepareCommand(types.isNothingOrEmpty, "Doodad.Types.isNothingOrEmpty");
+					command = test.prepareCommand(types.isNothingOrEmpty, "Doodad.Types.isNothingOrEmpty");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "''");
@@ -1130,7 +1133,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isEmpty, "Doodad.Types.isEmpty");
+					command = test.prepareCommand(types.isEmpty, "Doodad.Types.isEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "''");
@@ -1171,7 +1174,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isStringAndNotEmpty, "Doodad.Types.isStringAndNotEmpty");
+					command = test.prepareCommand(types.isStringAndNotEmpty, "Doodad.Types.isStringAndNotEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1212,7 +1215,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isStringAndNotEmptyTrim, "Doodad.Types.isStringAndNotEmptyTrim");
+					command = test.prepareCommand(types.isStringAndNotEmptyTrim, "Doodad.Types.isStringAndNotEmptyTrim");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1253,7 +1256,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isObjectAndNotEmpty, "Doodad.Types.isObjectAndNotEmpty");
+					command = test.prepareCommand(types.isObjectAndNotEmpty, "Doodad.Types.isObjectAndNotEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1294,7 +1297,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isObjectLikeAndNotEmpty, "Doodad.Types.isObjectLikeAndNotEmpty");
+					command = test.prepareCommand(types.isObjectLikeAndNotEmpty, "Doodad.Types.isObjectLikeAndNotEmpty");
 					command.run(false, {eval: true, repetitions: 100},        /**/"undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/"''");
@@ -1336,13 +1339,13 @@ module.exports = {
 					command.end();
 					
 					
-					var hasIter = false;
+					let hasIter = false;
 					try {
 						hasIter = types.isSymbol(global.Symbol ? global.Symbol.iterator : undefined);
 					} catch(ex) {
 					};
 					
-					var hasGen = false;
+					let hasGen = false;
 					try {
 						types.eval("function*(){}");
 						hasGen = true;
@@ -1351,12 +1354,12 @@ module.exports = {
 					
 															
 					
-					var command = test.prepareCommand(types.hasIterators, "Doodad.Types.hasIterators");
+					command = test.prepareCommand(types.hasIterators, "Doodad.Types.hasIterators");
 					command.run(hasIter, {repetitions: 100}                   /**/);
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.isIterable, "Doodad.Types.isIterable");
+					command = test.prepareCommand(types.isIterable, "Doodad.Types.isIterable");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(hasIter, {eval: true, repetitions: 100},      /**/ "''");
@@ -1400,7 +1403,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.isIteratorLike, "Doodad.Types.isIteratorLike");
+					command = test.prepareCommand(types.isIteratorLike, "Doodad.Types.isIteratorLike");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -1444,11 +1447,11 @@ module.exports = {
 					command.end();
 					
 
-					var command = test.prepareCommand(types.hasGenerators, "Doodad.Types.hasGenerators");
+					command = test.prepareCommand(types.hasGenerators, "Doodad.Types.hasGenerators");
 					command.run(hasGen, {repetitions: 100}                    /**/);
 					command.end();
 
-					var command = test.prepareCommand(types.isGeneratorFunction, "Doodad.Types.isGeneratorFunction");
+					command = test.prepareCommand(types.isGeneratorFunction, "Doodad.Types.isGeneratorFunction");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -1492,7 +1495,7 @@ module.exports = {
 					command.end();
 					
 					
-					var command = test.prepareCommand(types.isGenerator, "Doodad.Types.isGenerator");
+					command = test.prepareCommand(types.isGenerator, "Doodad.Types.isGenerator");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
@@ -1535,7 +1538,7 @@ module.exports = {
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();
 					
-					var command = test.prepareCommand(types.isSymbol, "Doodad.Types.isSymbol");
+					command = test.prepareCommand(types.isSymbol, "Doodad.Types.isSymbol");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "null");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "''");
