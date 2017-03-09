@@ -7708,7 +7708,7 @@ module.exports = {
 								const tmp = {
 									type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : ''),
 								};
-								tools.forEach(self.$ERROR_ATTRIBUTES, function(key) {
+								tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 									if (types.hasInherited(value, key)) {
 										tmp[key] = this.$pack(value[key]);
 									};
