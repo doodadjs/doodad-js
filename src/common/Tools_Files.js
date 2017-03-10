@@ -2142,8 +2142,8 @@ module.exports = {
 					protocol: types.READ_ONLY( null ),
 					user: types.READ_ONLY( null ),
 					password: types.READ_ONLY( null ),
-					domain: types.READ_ONLY( null ),
-					port: types.READ_ONLY( null ),
+					domain: types.READ_ONLY( null ), // when set, changes 'host'
+					port: types.READ_ONLY( null ), // when set, changes 'host'
 					path: types.READ_ONLY( null ),
 					file: types.READ_ONLY( null ),   // when set, changes 'extension'.
 					args: types.READ_ONLY( null ),
@@ -2152,6 +2152,7 @@ module.exports = {
 				__Internal__.urlDataKeys = types.keys(__Internal__.urlData);
 					
 				__Internal__.urlOptions = {
+					host: types.READ_ONLY( null ), // when set, changes 'domain' and 'port'
 					extension: types.READ_ONLY( null ), // when set, changes 'file'
 					isRelative: types.READ_ONLY( false ),
 					noEscapes: types.READ_ONLY( false ),
@@ -2160,6 +2161,15 @@ module.exports = {
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
 				__Internal__.urlAllKeys = types.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
+
+				__Internal__.defaultPorts = types.nullObject({
+					http: 80,
+					https: 443,
+					ftp: 21,
+					ftps: 990,
+					sftp: 22,
+					// ...
+				});
 
 				files.ADD('Url', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2187,7 +2197,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 6,
+										revision: 7,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2206,6 +2216,8 @@ module.exports = {
 								//! END_REPLACE()
 								, function parse(/*optional*/url, /*optional*/options) {
 									// WARNING: Validation is incomplete.
+
+									// TODO: Domain encoding/decoding to/from Punycode
 									
 									if (types.isNothing(url)) {
 										url = types.get(options, 'url', null);
@@ -2252,6 +2264,7 @@ module.exports = {
 										
 									} else if (types.isNothing(url) || types.isString(url)) {
 										// Valid
+
 									} else {
 										if (dontThrow) {
 											return null;
@@ -2260,18 +2273,29 @@ module.exports = {
 										};
 									};
 
-									path = types.get(options, 'path', path);
+									path = types.get(options, 'path', types.get(options, 'pathname', path));
+
+									let host = types.get(options, 'host', null), // Default is Auto-set
+										domain, // Default is Auto-detect
+										port; // Default is Auto-detect
+
+									if (host) {
+										const tmp = tools.split(host, ':', 2);
+										domain = tmp[0] || null;
+										port = tmp[1] || null;
+									} else {
+										domain = types.get(options, 'domain', types.get(options, 'hostname', null)), // Default is Auto-detect
+										port = types.get(options, 'port', null); // Default is Auto-detect
+									};
 
 									// Options
 									let protocol = types.get(options, 'protocol', null), // Default is Auto-detect
-										domain = types.get(options, 'domain', null), // Default is Auto-detect
-										user = types.get(options, 'user', null), // Default is Auto-detect
+										user = types.get(options, 'user', types.get(options, 'username', null)), // Default is Auto-detect
 										password = types.get(options, 'password', null), // Default is Auto-detect
-										port = types.get(options, 'port', null), // Default is Auto-detect
 										file = types.get(options, 'file', null), // Default is Auto-detect
 										extension = types.get(options, 'extension', null), // Default is "file" 's extension
-										args = types.get(options, 'args', null), // Default is Auto-detect
-										anchor = types.get(options, 'anchor', null), // Default is Auto-detect
+										args = types.get(options, 'args', types.get(options, 'search', null)), // Default is Auto-detect
+										anchor = types.get(options, 'anchor', types.get(options, 'hash', null)), // Default is Auto-detect
 										isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
 										noEscapes = types.get(options, 'noEscapes', false),
 										isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
@@ -2602,6 +2626,7 @@ module.exports = {
 										noEscapes: !!noEscapes,
 										isRelative: !!isRelative,
 										isWindows: !!isWindows,
+										host: (domain ? domain + (port ? ':' + port : (protocol && (protocol in __Internal__.defaultPorts) ? ':' + __Internal__.defaultPorts[protocol] : '')) : null),
 									});
 								}),
 						},
