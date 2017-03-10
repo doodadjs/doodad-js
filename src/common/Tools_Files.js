@@ -2275,17 +2275,16 @@ module.exports = {
 
 									path = types.get(options, 'path', types.get(options, 'pathname', path));
 
-									let host = types.get(options, 'host', null), // Default is Auto-set
-										domain, // Default is Auto-detect
-										port; // Default is Auto-detect
-
-									if (host) {
-										const tmp = tools.split(host, ':', 2);
-										domain = tmp[0] || null;
-										port = tmp[1] || null;
-									} else {
-										domain = types.get(options, 'domain', types.get(options, 'hostname', null)), // Default is Auto-detect
+									let domain = types.get(options, 'domain', types.get(options, 'hostname', null)), // Default is Auto-detect
 										port = types.get(options, 'port', null); // Default is Auto-detect
+
+									if (types.isNothing(domain)) {
+										const host = types.get(options, 'host', null); // Default is Auto-set
+										if (host) {
+											const tmp = tools.split(host, ':', 2);
+											domain = tmp[0] || null;
+											port = tmp[1] || null;
+										};
 									};
 
 									// Options
