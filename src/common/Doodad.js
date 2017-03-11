@@ -918,7 +918,7 @@ module.exports = {
 					});
 					
 				__Internal__.oldDESTROY = _shared.DESTROY;
-				_shared.DESTROY = function(obj) {
+				_shared.DESTROY = function DESTROY(obj) {
 					if (types._implements(obj, mixIns.Creatable)) {
 						if (!obj.isDestroyed()) {
 							if (types.isType(obj)) {
@@ -1841,10 +1841,6 @@ module.exports = {
 								if (!this.isPersistent) {
 									if (this.__isFromStorage(attribute)) {
 										delete storage[attr];
-										//	const descriptor = types.getOwnPropertyDescriptor(obj, attr);
-										//	if (types.get(descriptor, 'configurable')) {
-										//		delete obj[attr];
-										//	};
 									} else {
 										delete obj[attr];
 									};
@@ -2207,7 +2203,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 8,
+									revision: 9,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -2380,37 +2376,43 @@ module.exports = {
 										};
 									};
 									
-									const values = {};										
-									values[__Internal__.symbolCurrentDispatch] = _dispatch;
-									values[__Internal__.symbolCurrentCallerIndex] = 0;
-									_shared.setAttributes(this, values);
-									
 									let oldHostDispatch,
 										oldHostCaller,
 										host;
-									if (types.baseof(doodad.Interface, type) && this[__Internal__.symbolHost]) {
-										host = this[__Internal__.symbolHost];
-										const result = _shared.getAttributes(host, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-										oldHostDispatch = result[__Internal__.symbolCurrentDispatch];
-										oldHostCaller = result[__Internal__.symbolCurrentCallerIndex];
-										const values = {};										
-										values[__Internal__.symbolCurrentDispatch] = _dispatch;
-										values[__Internal__.symbolCurrentCallerIndex] = 0;
-										_shared.setAttributes(host, values);
-									};
-									
-									__Internal__.invokedClass = type;
-									
+
 									let retVal = undefined;
 
 									try {
+										const values = {};										
+										values[__Internal__.symbolCurrentDispatch] = _dispatch;
+										values[__Internal__.symbolCurrentCallerIndex] = 0;
+										_shared.setAttributes(this, values);
+									
+										if (types.baseof(doodad.Interface, type)) {
+											if (!types.isInitialized(this) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because interface has been destroyed.", [_dispatch[_shared.NameSymbol] || __Internal__.ANONYMOUS, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
+											host = this[__Internal__.symbolHost];
+											const result = _shared.getAttributes(host, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
+											oldHostDispatch = result[__Internal__.symbolCurrentDispatch];
+											oldHostCaller = result[__Internal__.symbolCurrentCallerIndex];
+											const values = {};										
+											values[__Internal__.symbolCurrentDispatch] = _dispatch;
+											values[__Internal__.symbolCurrentCallerIndex] = 0;
+											_shared.setAttributes(host, values);
+										};
+									
+										__Internal__.invokedClass = type;
+
 										if (notReentrant) {
 											notReentrantMap.set(attr, true);
 										};
 
 										caller[__Internal__.symbolCalled] = false;
 										
+
 										retVal = validateResult(caller.apply(this, arguments));
+
 
 									} catch(ex) {
 										if (attr === 'toString') {
@@ -2432,7 +2434,7 @@ module.exports = {
 										
 									} finally {
 										if (notReentrant) {
-											if (async) {
+											if (async && retVal) {
 												retVal = retVal.nodeify(function resetCalled(err, result) {
 													notReentrantMap.set(attr, false);
 													if (err) {
@@ -2444,9 +2446,9 @@ module.exports = {
 											} else {
 												notReentrantMap.set(attr, false);
 											};
-										} else if (async) {
+										} else if (async && retVal) {
 											retVal = retVal.catch(handleError, this);
-										}
+										};
 
 										__Internal__.invokedClass = oldInvokedClass;
 										caller[__Internal__.symbolCalled] = oldCallerCalled;
@@ -3534,7 +3536,8 @@ module.exports = {
 										if (destroy) {
 											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
 												cleanup();
-												reject(new types.NotAvailable("Target object is about to be destroyed."));
+												// NOTE: We absolutly must reject the Promise.
+												reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
 											});
 										};
 									}, this);
@@ -5260,7 +5263,7 @@ module.exports = {
 				
 				__Internal__.preExtendAttribute = function preExtendAttribute(attr, base, baseProto, source, sourceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, forType, _isolated, extendedAttributes, proto, protoName) {
 					const attrs = (sourceAttributes ? sourceAttributes : sourceProto);
-					if ((attr !== '__proto__') && !(attr in _shared.reservedAttributes) && types.has(attrs, attr)) {
+					if (types.has(attrs, attr)) {
 						let sourceAttribute = types.AttributeBox(attrs[attr]);
 							
 						const _interface = types.get(sourceAttribute, __Internal__.symbolInterface);
@@ -5461,20 +5464,16 @@ module.exports = {
 						sourceTypeProto,
 						sourceInstanceProto,
 						sourceAttrs;
-					if (sourceIsClass || sourceIsType) {
+
+					if (sourceIsClass) {
+						// doodad-js Class
+						sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
 						sourceAttrs = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
-						if (sourceIsClass) {
-							// doodad-js Class
-							sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
-						} else {
-							// doodad-js Type
-							sourceTypeProto = source;
-							sourceInstanceProto = source.prototype;
-						};
 					} else if (types.isFunction(source)) {
-						// JS class
+						// doodad-js Type / JS class
 						sourceTypeProto = source;
 						sourceInstanceProto = source.prototype;
+						sourceAttrs = types.append(types.keys(sourceTypeProto), types.symbols(sourceTypeProto), types.keys(sourceInstanceProto), types.symbols(sourceInstanceProto));
 					} else {
 						// Prototype
 						sourceTypeProto = sourceInstanceProto = source;
@@ -5483,12 +5482,15 @@ module.exports = {
 					};
 					
 					// Pre-extend
-					const destAttributesKeys = types.append(types.keys(destAttributes), types.symbols(destAttributes));
-					const attrs = types.unique(sourceAttrs, destAttributesKeys);
+					const sourceAttrsLen = sourceAttrs.length;
 					const toExtend = [];
 					
-					for (let k = 0; k < attrs.length; k++) {
-						const attr = attrs[k];
+					for (let k = 0; k < sourceAttrsLen; k++) {
+						const attr = sourceAttrs[k];
+
+						if ((attr === '__proto__') || (attr === '_new') || (attr === '_delete') || (attr in _shared.reservedAttributes)) {
+							continue;
+						};
 
 						if (baseIsType) {
 							let params = __Internal__.preExtendAttribute(attr, base, baseTypeProto, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, proto, protoName);
@@ -5631,7 +5633,8 @@ module.exports = {
 									const destImplements = _implements;
 
 									destImplements.add(source);
-
+									
+									//const sourceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
 									const protoName = (sourceName ? sourceName + '_Interface' : null);
 									base = doodad.Interface;
 									baseType = base;
@@ -5642,9 +5645,8 @@ module.exports = {
 									instanceStorage = types.nullObject();
 									destAttributes = __Internal__.getDefaultAttributes();
 									
-									//newImplements.add(source);
 									extendedAttributes = [];
-									const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10*/ proto, /*11 modifiers*/ 0, /*12 sourceUUID*/ null];
+									const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ null, /*11 modifiers*/ 0, /*12 sourceUUID*/ null];
 
 									_isolated.set(source, data);
 
@@ -5762,7 +5764,7 @@ module.exports = {
 					};
 				};
 				
-				__Internal__.createType = function createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, /*optional*/_new, /*optional*/_delete) {
+				__Internal__.createType = function createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers) {
 					// Post-Extend
 					__Internal__.postExtend(destAttributes, extendedAttributes);
 					
@@ -5773,12 +5775,12 @@ module.exports = {
 						typeProto.$TYPE_NAME = types.READ_ONLY(protoName);
 						typeProto.$TYPE_UUID = types.READ_ONLY(protoUUID);
 
-						if (_new) {
-							instanceProto._new = typeProto._new = _new;
+						if (types.has(proto, '_new')) {
+							instanceProto._new = typeProto._new = proto._new;
 						};
 
-						if (_delete) {
-							instanceProto._delete = typeProto._delete = _delete;
+						if (types.has(proto, '_delete')) {
+							instanceProto._delete = typeProto._delete = proto._delete;
 						};
 					
 						const type = base.$inherit(
@@ -5855,15 +5857,14 @@ module.exports = {
 					};
 					
 					const index = tools.findLastItem(arguments, types.isJsObject),
-						proto = (index !== null) && arguments[index] || {},
-						protoName = proto && types.unbox(proto.$TYPE_NAME) || '',
-						protoUUID = proto && types.unbox(proto.$TYPE_UUID) || '',
-						_new = types.get(proto, '_new'),
-						_delete = types.get(proto, '_delete');
+						proto = (index !== null) && arguments[index] || {};
 					
-					if (proto) {	
-						delete proto._new;
-						delete proto._delete;
+					let protoName = '', 
+						protoUUID = '';
+
+					if (proto) {
+						protoName = types.unbox(proto.$TYPE_NAME) || '';
+						protoUUID = types.unbox(proto.$TYPE_UUID) || '';
 					};
 
 					//if (!types.isStringAndNotEmpty(protoName)) {
@@ -5953,7 +5954,7 @@ module.exports = {
 					};
 
 					// Create and return extended version of "base"
-					const type = __Internal__.createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers, _new, _delete);
+					const type = __Internal__.createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, _isolated, _implements, modifiers);
 
 					return type;
 				};
@@ -5964,7 +5965,7 @@ module.exports = {
 							
 							const cache = this[__Internal__.symbolIsolatedCache];
 							if (cache) {
-								cache.forEach(function(_interface) {
+								cache.forEach(function destroyEachInterface(_interface) {
 									types.DESTROY(_interface);
 								});
 							};
