@@ -203,14 +203,21 @@ module.exports = {
 				//===================================
 
 				__Internal__.oldDESTROY = _shared.DESTROY;
-				_shared.DESTROY = function(obj) {
+				_shared.DESTROY = function DESTROY(obj) {
 					if (types.isObject(obj) && !types.getType(obj)) {
 						if (!types.get(obj, 'destroyed', false)) {
-							if (types.isEmitter(obj)) {
+							if (types.isFunction(obj.unpipe)) {
+								// <PRB> After destroy/close, pipes may still exist.
+								obj.unpipe();
+							};
+
+							if (types.isFunction(obj.removeAllListeners)) {
 								// <PRB> Events could still occur even after a destroy/close.
 								obj.removeAllListeners();
+							};
 
-								// <PRB> The 'error' event could raise even after a destroy/close.
+							if (types.isFunction(obj.on)) {
+								// <PRB> The 'error' event could emits even after a destroy/close.
 								obj.on('error', function noop() {})
 							};
 
