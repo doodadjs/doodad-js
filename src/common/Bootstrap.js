@@ -2799,7 +2799,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -2815,13 +2815,25 @@
 				if (types.isNothing(obj)) {
 					return false;
 				};
+
 				if (typeof obj !== 'object') {
 					return false;
 				};
-				//if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
-				//	????
-				//};
-				return (_shared.Natives.objectToStringCall(obj) === '[object Object]');
+
+				let result = (_shared.Natives.objectToStringCall(obj) === '[object Object]');
+
+				if (!result) {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
+						result = true;
+
+						if (__options__.debug) {
+							// <PRB> Sometimes, the first call returns "false", but the second one returns "true". That seems to be a bug in V8 with Symbol.toStringTag.
+							debugger;
+						};
+					};
+				};
+
+				return result;
 			}));
 			
 		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
@@ -4365,7 +4377,7 @@
 				});
 
 				if (_shared.Natives.symbolToStringTag) {
-					type.prototype[_shared.Natives.symbolToStringTag] = 'Error';
+					_shared.setAttribute(type.prototype, _shared.Natives.symbolToStringTag, 'Error', {});
 				};
 				
 				_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
@@ -6027,7 +6039,12 @@
 			}
 			//! END_REPLACE()
 			, function _delete() {
-				_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+				if (this[__Internal__.symbolInitialized]) {
+					_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+				} else if (__options__.debug) {
+					// Object already deleted, should not happens.
+					debugger;
+				};
 			});
 		
 		__Internal__.typeToString = __Internal__.DD_DOC(
