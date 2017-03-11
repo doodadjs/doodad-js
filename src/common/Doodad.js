@@ -5961,8 +5961,6 @@ module.exports = {
 
 				__Internal__._delete = types.SUPER(
 						function _delete() {
-							this._super();
-							
 							const cache = this[__Internal__.symbolIsolatedCache];
 							if (cache) {
 								cache.forEach(function destroyEachInterface(_interface) {
@@ -6007,6 +6005,7 @@ module.exports = {
 								};
 							};
 							
+							this._super();
 						}
 					);
 
@@ -7065,18 +7064,11 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function $destroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									try {
-										this._super();
+									this._super();
 
-										this._delete();
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 
-									} catch(ex) {
-										types.Type._delete.call(this);
-										throw ex;
-
-									} finally {
-										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
-									};
+									this._delete();
 								};
 							})))),
 
@@ -7145,16 +7137,11 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function fastDestroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									try {
-										this._super();
+									this._super();
 
-									} catch(ex) {
-										throw ex;
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 
-									} finally {
-										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
-										types.Type.prototype._delete.call(this);
-									};
+									types.Type.prototype._delete.call(this);
 								};
 							})))),
 						
@@ -7171,18 +7158,11 @@ module.exports = {
 							, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 							function destroy() {
 								if (this[__Internal__.symbolDestroyed] === false) {
-									try {
-										this._super();
+									this._super();
 
-										this._delete();
+									_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
 
-									} catch(ex) {
-										types.Type.prototype._delete.call(this);
-										throw ex;
-
-									} finally {
-										_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
-									};
+									this._delete();
 								};
 							})))),
 
