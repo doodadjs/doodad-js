@@ -5495,7 +5495,7 @@
 			//! END_REPLACE()
 			, function createCaller(attr, fn, /*optional*/superFn) {
 				superFn = superFn || __Internal__.emptyFunction;
-				let _caller = function caller(/*paramarray*/) {
+				let _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/) {
 					const oldSuper = _shared.getAttribute(this, '_super');
 					_shared.setAttribute(this, '_super', superFn);
 					try {
@@ -5505,8 +5505,8 @@
 					} finally {
 						_shared.setAttribute(this, '_super', oldSuper);
 					};
-				};
-				_caller = types.setPrototypeOf(_caller, types.SUPER);
+				});
+				_shared.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
 				return _caller;
 			});
 
@@ -5573,7 +5573,7 @@
 			}));
 		
 		// "types.DESTROY" Hook	
-		_shared.DESTROY = function(obj) {
+		_shared.DESTROY = function DESTROY(obj) {
 			if (types.isInitialized(obj)) {
 				_shared.invoke(obj, '_delete', null, _shared.SECRET);
 			};
