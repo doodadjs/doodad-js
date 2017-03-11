@@ -116,7 +116,7 @@ module.exports = {
 					// Bluebird "asCallback" polyfill. NOTE: "spread" option has not been implemented.
 					if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 						Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
-							const promise = this.then(function(result) {
+							const promise = this.then(function _then(result) {
 									let retval = callback(null, result);
 									if (retval === undefined) {
 										retval = result;
@@ -585,7 +585,8 @@ module.exports = {
 						const insideFn = _shared.makeInside(obj, fn, secret);
 						const callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
 							if (mustBeInitialized && !types.isInitialized(obj)) {
-								throw new types.NotAvailable("Target object is no longer available because it has been destroyed.");
+								// NOTE: We absolutly must reject the Promise.
+								throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
 							};
 							try {
 								return insideFn.apply(obj, arguments);
