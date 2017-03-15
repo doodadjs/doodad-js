@@ -142,6 +142,15 @@ module.exports = {
 
 					// catchAndExit
 					consoleError: (types.isNativeFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
+
+					// stringToBytes, bytesToString
+					windowArrayBuffer: global.ArrayBuffer,
+					windowUint16Array: global.Uint16Array,
+					windowUint8Array: global.Uint8Array,
+					stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
+					stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
+					stringFromCharCodeCall: global.String.fromCharCode.call.bind(global.String.fromCharCode),
+					mathMin: global.Math.min,
 				});
 				
 				
@@ -1821,6 +1830,74 @@ module.exports = {
 				, function watch(url, eventCallback, /*optional*/options) {
 					// Do nothing
 				}));
+
+
+				//===================================
+				// Binary data
+				//===================================
+
+				// NOTE: Experimental
+				types.ADD('bytesToString', function bytesToString(buf) {
+					// Raw bytes array to string, without conversion.
+
+					// TODO: Find a better solution for browsers.
+
+					let lastChr;
+					if (buf.byteLength & 1) {
+						// <PRB> Uint16Array can't be created on an odd sized array buffer.
+						const ar = new _shared.Natives.windowUint8Array(buf);
+						lastChr = _shared.Natives.stringFromCharCodeApply(ar[buf.byteLength - 1] << 8);
+						buf = buf.slice(0, buf.byteLength - 1);
+					};
+
+					// Source: https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+					// NOTE: May crash with huge strings
+					const str = _shared.Natives.stringFromCharCodeApply(null, new _shared.Natives.windowUint16Array(buf));
+					return (lastChr ? str + lastChr : str);
+				});
+
+				// NOTE: Experimental
+				types.ADD('stringToBytes', function stringToBytes(str, /*optional*/size) {
+					// Raw string to bytes array, without conversion.
+					const strLen = str.length;
+					size = (types.isNothing(size) ? strLen * 2 : _shared.Natives.mathMin(strLen * 2, size));
+
+					// FUTURE: Look again for TextEncoder if it will finally supports an encoding argument, and also binary (raw) conversion.
+					// Reference: https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+
+					const buf = new _shared.Natives.windowArrayBuffer(size);
+
+					// --- Damned, Uint16Array can't be created on an odd sized array buffer. ---
+					//let i = 0,
+					//	pos = 0;
+					//let bufView = new _shared.Natives.windowUint16Array(buf);
+					//for (; i < strLen - 1 && pos < size; i++) {
+					//	bufView[i] = _shared.Natives.stringCharCodeAtCall(str, i);
+					//	pos += 2;
+					//};
+					//if (size & 1) {
+					//	bufView = new _shared.Natives.windowUint8Array(buf);
+					//	// NOTE : Assuming little endian.
+					//	bufView[pos] = (_shared.Natives.stringCharCodeAtCall(str, i) & 0xFF00) >> 8;
+					//} else {
+					//	bufView[i] = _shared.Natives.stringCharCodeAtCall(str, i);
+					//};
+
+
+					// NOTE : Assuming little endian.
+					const bufView = new _shared.Natives.windowUint8Array(buf);
+					let pos = 0;
+					for (let i = 0; i < strLen && pos < size; i++) {
+						const cc = _shared.Natives.stringCharCodeAtCall(str, i);
+						bufView[pos++] = (cc & 0xFF00) >> 8;
+						if (pos < size) {
+							bufView[pos++] = cc & 0x00FF;
+						};
+					};
+
+					return buf;
+				});
+
 
 				//===================================
 				// Init
