@@ -192,16 +192,7 @@ module.exports = {
 							const options = tools.getOptions();
 
 							types.addAppEventListener('unhandlederror', function(ev) {
-								//if (ev.detail.error.name === 'ScriptAbortedError') {
-								//	_shared.Natives.processExit(ev.detail.error.exitCode || 0);
-								//} else {
-								//	console.error(ev.detail.error.stack || ev.detail.error.message);
-								//	_shared.Natives.processExit(1);
-								//};
-								try {
-									tools.catchAndExit(ev.detail.error);
-								} catch(o) {
-								};
+								tools.catchAndExit(ev.detail.error);
 							});
 							
 							types.addAppEventListener('unhandledrejection', function(ev) {
