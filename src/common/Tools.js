@@ -1767,7 +1767,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'arraylike,object,Map,Set,Iterable',
@@ -1804,95 +1804,94 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function every(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions) {
-						if (types.isNothing(obj)) {
-							return false;
-						};
-						obj = _shared.Natives.windowObject(obj);
-						invert = !!invert;
-						if (!includeFunctions && types.isFunction(items)) {
-							if (types.isArrayLike(obj)) {
-								if (_shared.Natives.arrayEveryCall && !invert) {
-									// JS 1.6
-									return _shared.Natives.arrayEveryCall(obj, items, thisObj);
-								} else {
-									const len = obj.length;
-									for (let key = 0; key < len; key++) {
-										if (types.has(obj, key)) {
-											const value = obj[key];
-											if (invert === !!items.call(thisObj, value, key, obj)) {
-												return false;
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							invert = !!invert;
+							if (!includeFunctions && types.isFunction(items)) {
+								if (types.isArrayLike(obj)) {
+									if (_shared.Natives.arrayEveryCall && !invert) {
+										// JS 1.6
+										return _shared.Natives.arrayEveryCall(obj, items, thisObj);
+									} else {
+										const len = obj.length;
+										for (let key = 0; key < len; key++) {
+											if (types.has(obj, key)) {
+												const value = obj[key];
+												if (invert === !!items.call(thisObj, value, key, obj)) {
+													return false;
+												};
 											};
 										};
 									};
-								};
-							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
+								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
+									const entries = obj.entries();
+									let entry;
+									while (entry = entries.next()) {
+										if (entry.done) {
+											break;
+										};
+										if (invert === !!items.call(thisObj, entry.value[1], entry.value[0], obj)) {
+											return false;
+										};
 									};
-									if (invert === !!items.call(thisObj, entry.value[1], entry.value[0], obj)) {
-										return false;
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										item;
+									while ((item = iter.next()) && !item.done) {
+										if (invert === !!items.call(thisObj, item.value, key, obj)) {
+											return false;
+										};
+										key++;
 									};
-								};
-							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									item;
-								while ((item = iter.next()) && !item.done) {
-									if (invert === !!items.call(thisObj, item.value, key, obj)) {
-										return false;
-									};
-									key++;
-								};
-							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (invert === !!items.call(thisObj, obj[key], key, obj)) {
-										return false;
-									};
-								};
-							};
-						} else {
-							if (types.isArrayLike(obj)) {
-								const len = obj.length;
-								for (let key = 0; key < len; key++) {
-									if (types.has(obj, key)) {
-										const val = obj[key];
-										if (invert === (tools.findItem(items, val, undefined, true) !== null)) {
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (invert === !!items.call(thisObj, obj[key], key, obj)) {
 											return false;
 										};
 									};
 								};
-							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
-									};
-									if (invert === (tools.findItem(items, entry.value[1], undefined, true) !== null)) {
-										return false;
-									};
-								};
-							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let item;
-								while ((item = iter.next()) && !item.done) {
-									if (invert === (tools.findItem(items, item.value, undefined, true) !== null)) {
-										return false;
-									};
-								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (invert === (tools.findItem(items, obj[key], undefined, true) !== null)) {
-										return false;
+								if (types.isArrayLike(obj)) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (invert === (tools.findItem(items, val, undefined, true) !== null)) {
+												return false;
+											};
+										};
+									};
+								} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
+									const entries = obj.entries();
+									let entry;
+									while (entry = entries.next()) {
+										if (entry.done) {
+											break;
+										};
+										if (invert === (tools.findItem(items, entry.value[1], undefined, true) !== null)) {
+											return false;
+										};
+									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let item;
+									while ((item = iter.next()) && !item.done) {
+										if (invert === (tools.findItem(items, item.value, undefined, true) !== null)) {
+											return false;
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (invert === (tools.findItem(items, obj[key], undefined, true) !== null)) {
+											return false;
+										};
 									};
 								};
 							};
