@@ -734,7 +734,7 @@ module.exports = {
 								return fn.call(thisObj);
 							};
 						} else {
-							if (secret !== _shared.SECRET) {
+							if (!types.isNothing(obj) && (secret !== _shared.SECRET)) {
 								throw new types.Error("Invalid secret.");
 							};
 							//const type = types.getType(obj);
@@ -2231,7 +2231,8 @@ module.exports = {
 								const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/) {
 									const type = types.getType(this),
 										forType = types.isType(this),
-										result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]), 
+										result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, __Internal__.symbolAttributes]), 
+										attributes = result[__Internal__.symbolAttributes],
 										oldDispatch = result[__Internal__.symbolCurrentDispatch], 
 										oldCaller = result[__Internal__.symbolCurrentCallerIndex],
 										oldInvokedClass = __Internal__.invokedClass;
@@ -2306,8 +2307,9 @@ module.exports = {
 									};
 
 									const handleError = function handleError(ex) {
+										let emitted = false;
 										if (!ex.bubble /*&& !ex.trapped*/) {
-											if (types.isClass(type) && this._implements(mixIns.Events)) {
+											if ((types.isClass(type) || types.isInterfaceClass(type)) && this._implements(mixIns.Events)) {
 												let destroyed = false;
 												if (this._implements(mixIns.Creatable)) {
 													destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
@@ -2315,16 +2317,29 @@ module.exports = {
 												if (destroyed === false) { // NOTE: Can be 'null' for "not created".
 													const errorEvent = this.__ERROR_EVENT;
 													if (errorEvent && (attr !== errorEvent) && !notReentrantMap.get(errorEvent)) {
-														const ev = new doodad.ErrorEvent(ex);
-														this[errorEvent](ev);
-														if (ev.prevent) {
-															ex.trapped = true;
+														const errorAttr = attributes[errorEvent];
+														const onError = this[errorEvent];
+														if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
+															// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
+															if (onError.getCount() > 0) {
+																// <PRB> Node.Js re-emits 'error'.
+																onError.attachOnce(null, function noop(err) {});
+															};
+															emitted = onError.call(this, ex);
+														} else {
+															const ev = new doodad.ErrorEvent(ex);
+															onError.call(this, ev);
+															if (ev.prevent) {
+																ex.trapped = true;
+															};
 														};
 													};
 												};
 											};
 										};
-										throw ex;
+										if (!emitted) {
+											throw ex;
+										};
 									}
 
 									const validateResult = function validateResult(result) {
@@ -3290,7 +3305,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										obj: {
 											type: 'object',
@@ -3364,15 +3379,17 @@ module.exports = {
 									};
 									if (clearSorted) {
 										this[__Internal__.symbolSorted] = false;
+										this[__Internal__.symbolClonedStack] = null;
 									};
 									return false;
 								} else if (stack.length < this.stackSize) {
 									let cb = fn;
 									if (obj) {
-										cb = doodad.Callback(obj, cb);
+										cb = doodad.Callback(obj, cb, true);
 									};
 									stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 									this[__Internal__.symbolSorted] = false;
+									this[__Internal__.symbolClonedStack] = null;
 									return true;
 								} else {
 									throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
@@ -3405,25 +3422,26 @@ module.exports = {
 									description: "Detach a callback function from an event.",
 							}
 							//! END_REPLACE()
-							, function detach(obj, fn, /*optional*/datas) {
-								if (types.isNothing(datas)) {
-									datas = [];
-								};
-
+							, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
 									root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
-									root.DD_ASSERT(types.isArray(datas), "Invalid datas.");
+									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
 								};
 
 								const stack = this[__Internal__.symbolStack];
 
 								const evs = types.popItems(stack, function(ev) {
 									const evData = ev[3];
-									return (ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+									return (!obj || ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
 										return types.hasIndex(evData, key) && (evData[key] === value);
 									});
 								});
+
+								if (evs.length > 0) {
+									this[__Internal__.symbolSorted] = false;
+									this[__Internal__.symbolClonedStack] = null;
+								};
 
 								return evs;
 							}),
@@ -3654,6 +3672,11 @@ module.exports = {
 		//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
 							},
 					})));
+
+				extenders.REGISTER([], extenders.Event.$inherit({
+						$TYPE_NAME: "RawEvent",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
+				}));
 
 				doodad.ADD('ATTRIBUTE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4119,26 +4142,31 @@ module.exports = {
 							};
 
 							const evObj = ev.obj,
-								evName = ev.name;
+								evName = ev.name,
+								dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch);
 						
+							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							
 							let cancelled = !!this._super(ev) && cancellable;
 
 							if (!cancelled) {
-								const dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
-									stack = dispatch[__Internal__.symbolStack];
+								const stack = dispatch[__Internal__.symbolStack];
 
 								let clonedStack;
 								if (dispatch[__Internal__.symbolSorted]) {
 									clonedStack = dispatch[__Internal__.symbolClonedStack];
 								} else {
-									stack.sort(function(value1, value2) {
-										return tools.compareNumbers(value1[2], value2[2]);
-									});
+									if (stack.length) {
+										stack.sort(function(value1, value2) {
+											return tools.compareNumbers(value1[2], value2[2]);
+										});
+										clonedStack = types.clone(stack);
+									} else {
+										clonedStack = [];
+									};
 									dispatch[__Internal__.symbolSorted] = true;
-									dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
+									dispatch[__Internal__.symbolClonedStack] = clonedStack;
 								};
-							
-								_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 							
 								const stackLen = clonedStack.length;
 
@@ -4182,19 +4210,30 @@ module.exports = {
 									throw ex;
 
 								} finally {
-									types.popItems(stack, function(data) {
+									const removed = types.popItems(stack, function(data) {
 										return (data[4] <= 0);
 									});
+									if (removed.length) {
+										dispatch[__Internal__.symbolSorted] = false;
+										dispatch[__Internal__.symbolClonedStack] = null;
+									};
 
 									if (evObj) {
 										_shared.setAttributes(ev, {obj: evObj, name: evName});
 									};
-								};
-							};
 
-							if (errorEvent) {
-								if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
-									tools.catchAndExit(ev.error);
+									if (errorEvent) {
+										if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
+											tools.catchAndExit(ev.error);
+										};
+									};
+								};
+
+							} else {
+								if (errorEvent) {
+									if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
+										tools.catchAndExit(ev.error);
+									};
 								};
 							};
 
@@ -4234,11 +4273,16 @@ module.exports = {
 							if (dispatch[__Internal__.symbolSorted]) {
 								clonedStack = dispatch[__Internal__.symbolClonedStack];
 							} else {
-								stack.sort(function(value1, value2) {
-									return tools.compareNumbers(value1[2], value2[2]);
-								});
+								if (stack.length) {
+									stack.sort(function(value1, value2) {
+										return tools.compareNumbers(value1[2], value2[2]);
+									});
+									clonedStack = types.clone(stack);
+								} else {
+									clonedStack = [];
+								};
 								dispatch[__Internal__.symbolSorted] = true;
-								dispatch[__Internal__.symbolClonedStack] = clonedStack = types.clone(stack);
+								dispatch[__Internal__.symbolClonedStack] = clonedStack;
 							};
 							
 							const stackLen = clonedStack.length;
@@ -4262,21 +4306,24 @@ module.exports = {
 								throw ex;
 
 							} finally {
-								types.popItems(stack, function(data) {
+								const removed = types.popItems(stack, function(data) {
 									return (data[4] <= 0);
 								});
-
-							};
-
-							if (errorEvent) {
-								const ex = arguments[0];
-
-								if (emitted) {
-									ex.trapped = true;
+								if (removed.length) {
+									dispatch[__Internal__.symbolSorted] = false;
+									dispatch[__Internal__.symbolClonedStack] = null;
 								};
 
-								if (!ex.trapped) {
-									tools.catchAndExit(ex);
+								if (errorEvent) {
+									const ex = arguments[0];
+
+									if (emitted) {
+										ex.trapped = true;
+									};
+
+									if (!ex.trapped) {
+										tools.catchAndExit(ex);
+									};
 								};
 							};
 
@@ -4286,7 +4333,7 @@ module.exports = {
 						__Internal__.RAW_EVENT_CACHE[key] = eventFn;
 					};
 
-					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
 
 					if (fn) {
 						eventFn[__Internal__.symbolOverrideWith] = fn;
@@ -5560,10 +5607,10 @@ module.exports = {
 					};
 					
 					if (sourceImplements) {
-						const isIsolated = types.isIsolated(source);
+						//const isIsolated = types.isIsolated(source);
 						// <FUTURE> for (let item of sourceImplements)
 						sourceImplements.forEach(function(item) {
-							if ((!isIsolated || types.isIsolated(item)) && !_implements.has(item)) {
+							if (/*(!isIsolated || types.isIsolated(item)) && */ !_implements.has(item)) {
 								_implements.add(item);
 							};
 						});
@@ -6680,7 +6727,7 @@ module.exports = {
 				};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
-				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PROTECTED(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))));
+				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))));
 				
 				__Internal__.creatingInterfaceClass = true;
 				root.DD_DOC(
@@ -7437,7 +7484,7 @@ module.exports = {
 								bubbleError: {
 									type: 'bool,function',
 									optional: true,
-									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed.",
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
 								},
 								args: {
 									type: 'arrayof(any)',
@@ -7463,6 +7510,9 @@ module.exports = {
 						};
 						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
+						};
+						if (types.isNothing(bubbleError)) {
+							bubbleError = true;
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
@@ -7510,7 +7560,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 8,
+							revision: 9,
 							params: {
 								obj: {
 									type: 'object,Object',
@@ -7525,7 +7575,7 @@ module.exports = {
 								bubbleError: {
 									type: 'bool,function',
 									optional: true,
-									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed.",
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
 								},
 								args: {
 									type: 'arrayof(any)',
