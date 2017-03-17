@@ -5612,6 +5612,32 @@
 			}));
 			
 
+		// "types.DESTROYED" Hook	
+		_shared.DESTROYED = function DESTROYED(obj) {
+			return types.isNothing(obj) || ( !!(types.isLike(obj, types.Type) && !types.get(obj, __Internal__.symbolInitialized)) );
+		};
+
+		__Internal__.ADD('DESTROYED', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'object,type',
+								optional: false,
+								description: "A Doodad object or type.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' is object is destroyed. Otherwise, returns 'false'.",
+			}
+			//! END_REPLACE()
+			, function DESTROYED(obj) {
+				return _shared.DESTROYED(obj);
+			}));
+			
+
 		__Internal__.ADD('isInitialized', function isInitialized(obj) {
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 		});

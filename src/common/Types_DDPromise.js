@@ -581,10 +581,10 @@ module.exports = {
 						};
 						fn = types.unbind(fn);
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-						const mustBeInitialized = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
+						const checkDestroyed = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
 						const insideFn = _shared.makeInside(obj, fn, secret);
 						const callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
-							if (mustBeInitialized && !types.isInitialized(obj)) {
+							if (checkDestroyed && _shared.DESTROYED(obj)) {
 								// NOTE: We absolutly must reject the Promise.
 								throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
 							};

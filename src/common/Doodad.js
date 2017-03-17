@@ -920,7 +920,8 @@ module.exports = {
 				__Internal__.oldDESTROY = _shared.DESTROY;
 				_shared.DESTROY = function DESTROY(obj) {
 					if (types._implements(obj, mixIns.Creatable)) {
-						if (!obj.isDestroyed()) {
+						const destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+						if (destroyed === false) { // NOTE: Can be "null" for "not created".
 							if (types.isType(obj)) {
 								obj.$destroy();
 							} else {
@@ -929,6 +930,16 @@ module.exports = {
 						};
 					} else {
 						__Internal__.oldDESTROY(obj);
+					};
+				};
+
+				__Internal__.oldDESTROYED = _shared.DESTROYED;
+				_shared.DESTROYED = function DESTROYED(obj) {
+					if (types._implements(obj, mixIns.Creatable)) {
+						const destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+						return (destroyed !== false); // NOTE: Can be "null" for "not created".
+					} else {
+						return __Internal__.oldDESTROYED(obj);
 					};
 				};
 
@@ -2231,30 +2242,79 @@ module.exports = {
 								const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/) {
 									const type = types.getType(this),
 										forType = types.isType(this),
-										result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, __Internal__.symbolAttributes]), 
-										attributes = result[__Internal__.symbolAttributes],
-										oldDispatch = result[__Internal__.symbolCurrentDispatch], 
-										oldCaller = result[__Internal__.symbolCurrentCallerIndex],
-										oldInvokedClass = __Internal__.invokedClass;
+										modifiers = _dispatch[__Internal__.symbolModifiers],
+										canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed);
 									
-									// External methods (can't be called internally)
-									if (root.getOptions().debug || __options__.enforcePolicies) {
-										if (extender.isExternal && (type === oldInvokedClass)) {
-											throw new types.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+									if (!canBeDestroyed) {
+										//if (_shared.DESTROYED(this)) {
+										//	throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										//};
+										if (types._implements(this, mixIns.Creatable)) {
+											const destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+											if ((destroyed === null) && !forType) {
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
+											if (destroyed === true) {
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
+										} else {
+											if (__Internal__.oldDESTROYED(this)) {
+												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+											};
 										};
 									};
-									
-									// Public methods
+
+									const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, __Internal__.symbolAttributes]), 
+										oldDispatch = result[__Internal__.symbolCurrentDispatch], 
+										oldCaller = result[__Internal__.symbolCurrentCallerIndex],
+										attributes = result[__Internal__.symbolAttributes];
+
+									const oldInvokedClass = __Internal__.invokedClass;
+
+									const host = (types.baseof(doodad.Interface, type) ? this[__Internal__.symbolHost] : null),
+										hostType = types.getType(host);
+
 									if (root.getOptions().debug || __options__.enforceScopes) {
+										// Private methods
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
+											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
+												throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
+											};
+										};
+
+										// Non-public methods
+										if (!oldInvokedClass || (!host && (type !== oldInvokedClass)) || (host && (type !== oldInvokedClass) && (hostType !== oldInvokedClass))) {
 											if ((attribute[__Internal__.symbolScope] !== doodad.Scopes.Public) && !oldDispatch) {
 												throw new types.Error("Method '~0~' of '~1~' is not public.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 											};
 										};
 									};
 									
-									const modifiers = _dispatch[__Internal__.symbolModifiers],
-										notReentrant = extender.notReentrant || (attr === 'toString'),
+									if (root.getOptions().debug || __options__.enforcePolicies) {
+										// External methods (can't be called internally)
+										if (extender.isExternal && (type === oldInvokedClass)) {
+											throw new types.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										};
+
+										// Must override methods
+										if (modifiers & doodad.MethodModifiers.MustOverride) {
+											throw new types.Error("You must override the method '~0~' of type '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+										};
+									};
+
+									// Not implemented methods
+									if (modifiers & doodad.MethodModifiers.NotImplemented) {
+										throw new types.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
+									};
+
+									// Obsolete methods
+									if ((modifiers & doodad.MethodModifiers.Obsolete) && !_dispatch[__Internal__.symbolObsoleteWarned]) {
+										tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS, attribute[__Internal__.symbolUsageMessage] || '']);
+										_dispatch[__Internal__.symbolObsoleteWarned] = true;
+									};
+
+									// Non-reentrant methods
+									const notReentrant = extender.notReentrant || (attr === 'toString'),
 										async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
 
 									let notReentrantMap = __Internal__.notReentrantMap.get(this);
@@ -2271,37 +2331,6 @@ module.exports = {
 												return "Error: 'toString' is not reentrant.";
 											} else {
 												throw new types.Error("'~0~' is not reentrant.", [attr]);
-											};
-										};
-									};
-
-									// Not implemented methods
-									if (modifiers & doodad.MethodModifiers.NotImplemented) {
-										throw new types.Error("Method '~0~' of '~1~' is not implemented.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
-									};
-									
-									// Obsolete methods
-									if ((modifiers & doodad.MethodModifiers.Obsolete) && !_dispatch[__Internal__.symbolObsoleteWarned]) {
-										tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS, attribute[__Internal__.symbolUsageMessage] || '']);
-										_dispatch[__Internal__.symbolObsoleteWarned] = true;
-									};
-
-									if (root.getOptions().debug || __options__.enforcePolicies) {
-										// Must override methods
-										if (modifiers & doodad.MethodModifiers.MustOverride) {
-											throw new types.Error("You must override the method '~0~' of type '~1~'.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
-										};
-										
-										// Destroyed objects
-										if (types._implements(this, mixIns.Creatable)) {
-											if (!(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-												const destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-												if ((destroyed === null) && !forType) {
-													throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
-												};
-												if (destroyed === true) {
-													throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
-												};
 											};
 										};
 									};
@@ -2382,18 +2411,14 @@ module.exports = {
 									
 									const oldCallerCalled = caller[__Internal__.symbolCalled];
 
-									// Private methods
-									if (root.getOptions().debug || __options__.enforceScopes) {
-										if (!oldInvokedClass || (type !== oldInvokedClass)) {
-											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
-												throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
-											};
-										};
-									};
-									
-									let oldHostDispatch,
-										oldHostCaller,
-										host;
+									//let oldHostDispatch,
+									//	oldHostCaller;
+
+									//if (host) {
+									//	const result = _shared.getAttributes(host, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
+									//	oldHostDispatch = result[__Internal__.symbolCurrentDispatch];
+									//	oldHostCaller = result[__Internal__.symbolCurrentCallerIndex];
+									//};
 
 									let retVal = undefined;
 
@@ -2403,19 +2428,9 @@ module.exports = {
 										values[__Internal__.symbolCurrentCallerIndex] = 0;
 										_shared.setAttributes(this, values);
 									
-										if (types.baseof(doodad.Interface, type)) {
-											if (!types.isInitialized(this) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-												throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because interface has been destroyed.", [_dispatch[_shared.NameSymbol] || __Internal__.ANONYMOUS, types.getTypeName(type) || __Internal__.ANONYMOUS]);
-											};
-											host = this[__Internal__.symbolHost];
-											const result = _shared.getAttributes(host, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-											oldHostDispatch = result[__Internal__.symbolCurrentDispatch];
-											oldHostCaller = result[__Internal__.symbolCurrentCallerIndex];
-											const values = {};										
-											values[__Internal__.symbolCurrentDispatch] = _dispatch;
-											values[__Internal__.symbolCurrentCallerIndex] = 0;
-											_shared.setAttributes(host, values);
-										};
+										//if (host) {
+										//	_shared.setAttributes(host, values);
+										//};
 									
 										__Internal__.invokedClass = type;
 
@@ -2473,12 +2488,12 @@ module.exports = {
 										values[__Internal__.symbolCurrentCallerIndex] = oldCaller;
 										_shared.setAttributes(this, values);
 										
-										if (host) {
-											const values = {};										
-											values[__Internal__.symbolCurrentDispatch] = oldHostDispatch;
-											values[__Internal__.symbolCurrentCallerIndex] = oldHostCaller;
-											_shared.setAttributes(host, values);
-										};
+										//if (host) {
+										//	const values = {};										
+										//	values[__Internal__.symbolCurrentDispatch] = oldHostDispatch;
+										//	values[__Internal__.symbolCurrentCallerIndex] = oldHostCaller;
+										//	_shared.setAttributes(host, values);
+										//};
 									};
 
 									return retVal;
@@ -3362,7 +3377,7 @@ module.exports = {
 
 								const indexes = tools.findItems(stack, function(ev) {
 									const evData = ev[3];
-									return (ev[0] === obj) && (ev[1] === fn) && tools.every(datas, function(data, key) {
+									return ((ev[0] || null) === (obj || null)) && (ev[1] === fn) && tools.every(datas, function(data, key) {
 										return types.hasIndex(evData, key) && (evData[key] === data);
 									});
 								});
@@ -3433,7 +3448,7 @@ module.exports = {
 
 								const evs = types.popItems(stack, function(ev) {
 									const evData = ev[3];
-									return (!obj || ev[0] === obj) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+									return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
 										return types.hasIndex(evData, key) && (evData[key] === value);
 									});
 								});
@@ -3916,7 +3931,8 @@ module.exports = {
 						}, value);
 					}));
 
-				doodad.ADD('NOT_REENTRANT', root.DD_DOC(
+				// TODO: Remove "NOT_REENTRANT". Also change in README.md
+				doodad.ADD('NON_REENTRANT', doodad.ADD('NOT_REENTRANT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
@@ -3929,14 +3945,14 @@ module.exports = {
 								},
 							},
 							returns: 'AttributeBox,Extender',
-							description: "Specifies that a method is not reentrant.",
+							description: "Specifies that a method is non-reentrant.",
 					}
 					//! END_REPLACE()
-					, function NOT_REENTRANT(value) {
+					, function NON_REENTRANT(value) {
 						return doodad.OPTIONS({
 							notReentrant: true,
 						}, value);
-					}));
+					})));
 				
 				doodad.ADD('EXTERNAL', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4179,7 +4195,7 @@ module.exports = {
 										const obj = data[0];
 
 										if (data[4] > 0) {
-											if (types.getType(obj) && !types.isInitialized(obj)) {
+											if (obj && _shared.DESTROYED(obj)) {
 												data[4] = 0;
 												continue;
 											};
@@ -7063,7 +7079,7 @@ module.exports = {
 						// TODO: Been able to do something like :
 						// onDestroy: doodad.IF_IMPLEMENTS(doodad.Events, doodad.EVENT(false)),
 
-						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function() {
+						isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function isDestroyed() {
 							const destroyed = this[__Internal__.symbolDestroyed];
 							return (destroyed !== false); // NOTE: Can be "null" for "not created".
 						}))))),
@@ -7522,11 +7538,10 @@ module.exports = {
 						if (callBubble && types.isBindable(bubbleError)) {
 							bubbleError = _shared.makeInside(obj, bubbleError, secret);
 						};
-						const type = types.getType(obj);
 						let callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
 							callback.lastError = null;
 							try {
-								if (!type || types.isInitialized(obj)) {
+								if (!obj || !_shared.DESTROYED(obj)) {
 									if (args) {
 										return insideFnApply(obj, args);
 									} else {
@@ -7622,7 +7637,7 @@ module.exports = {
 							callback.lastError = null;
 							tools.callAsync(function async(/*paramarray*/) {
 								try {
-									if (!type || types.isInitialized(obj)) {
+									if (!obj || !_shared.DESTROYED(obj)) {
 										if (isClass) {
 											_shared.invoke(obj, fn, args, secret);
 										} else {

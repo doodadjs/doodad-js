@@ -255,6 +255,15 @@ module.exports = {
 					};
 				};
 
+				__Internal__.oldDESTROYED = _shared.DESTROYED;
+				_shared.DESTROYED = function DESTROYED(obj) {
+					if (types.isObject(obj) && !types.getType(obj)) {
+						return !!types.get(obj, 'destroyed', false);
+					} else {
+						return __Internal__.oldDESTROYED(obj);
+					};
+				};
+
 				//===================================
 				// Application events
 				//===================================
