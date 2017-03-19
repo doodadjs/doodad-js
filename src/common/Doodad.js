@@ -985,17 +985,17 @@ module.exports = {
 							fullName = (name ? (types._instanceof(this, types.Namespace) && !types.is(this, root) ? this.DD_FULL_NAME + '.' : '') + name : null),
 							isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
 						
-						if ((root.getOptions().debug || __options__.enforcePolicies)) {
-							if (isClass && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
-								const mustOverride = type[__Internal__.symbolMustOverride];
-								if (mustOverride) {
-									throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(type) || __Internal__.ANONYMOUS]);
-								};
-							};
-						};
-
 						if (isType && !types.isInitialized(type)) {
 							newType = types.INIT(type);
+						};
+
+						if ((root.getOptions().debug || __options__.enforcePolicies)) {
+							if (isClass && !types.isMixIn(newType) && !types.isInterface(newType) && !types.isBase(newType)) {
+								const mustOverride = newType[__Internal__.symbolMustOverride];
+								if (mustOverride) {
+									throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(newType) || __Internal__.ANONYMOUS]);
+								};
+							};
 						};
 
 						if (newType !== type) {
@@ -2918,9 +2918,12 @@ module.exports = {
 								value = this.createDispatch(attr, obj, attribute, value);
 
 								if (root.getOptions().debug || __options__.enforcePolicies) {
-									const storage = (forType ? typeStorage : instanceStorage);
-									if (!storage[__Internal__.symbolMustOverride] && (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride)) {
-										storage[__Internal__.symbolMustOverride] = attr;
+									if (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride) {
+										if (!typeStorage[__Internal__.symbolMustOverride]) {
+											typeStorage[__Internal__.symbolMustOverride] = attr;
+										};
+									} else if (typeStorage[__Internal__.symbolMustOverride] === attr) {
+										typeStorage[__Internal__.symbolMustOverride] = null;
 									};
 								};
 
@@ -3361,15 +3364,15 @@ module.exports = {
 									count = Infinity;
 								};
 
-								if (types.isNothing(datas)) {
-									datas = [];
+								if (!types.isNothing(datas)) {
+									types.freezeObject(datas);
 								};
 
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
 									root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
 									root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
-									root.DD_ASSERT(types.isArray(datas), "Invalid datas.");
+									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
 									root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
 								};
 								
