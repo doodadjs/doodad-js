@@ -192,7 +192,10 @@ module.exports = {
 							const options = tools.getOptions();
 
 							types.addAppEventListener('unhandlederror', function(ev) {
-								tools.catchAndExit(ev.detail.error);
+								try {
+									tools.catchAndExit(ev.detail.error);
+								} catch(o) {
+								};
 							});
 							
 							types.addAppEventListener('unhandledrejection', function(ev) {
