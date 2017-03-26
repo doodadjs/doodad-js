@@ -1468,7 +1468,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 4,
+								revision: 5,
 								params: {
 									obj: {
 										type: 'object,array',
@@ -1476,7 +1476,7 @@ module.exports = {
 										description: "An object or an array.",
 									},
 									items: {
-										type: 'arrayof(any),function',
+										type: 'any,arrayof(any),function',
 										optional: false,
 										description: "The values of the items to pop out. When it is a function, calls it to get the items to pop out.",
 									},
@@ -1547,6 +1547,29 @@ module.exports = {
 													result.push(val);
 												};
 											};
+										};
+									};
+								};
+							} else {
+								if (types.isArray(obj)) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (items === val) {
+												_shared.Natives.arraySpliceCall(obj, key, 1);
+												result.push(val);
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (items === val) {
+											delete obj[key];
+											result.push(val);
 										};
 									};
 								};
