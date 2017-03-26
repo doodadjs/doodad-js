@@ -3291,7 +3291,7 @@
 				if (!types.isFunction(obj)) {
 					return false;
 				};
-				return types.has(obj, __Internal__.symbolIsType);
+				return !!obj[__Internal__.symbolIsType]; // types.has(obj, __Internal__.symbolIsType);
 			}));
 		
 		__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -3870,13 +3870,14 @@
 					return null;
 				};
 				obj = _shared.Natives.windowObject(obj);
-				if (!types.isFunction(obj)) {
-					obj = obj.constructor;
+				if (types.isType(obj)) {
+					return obj;
 				};
-				if (!types.isType(obj)) {
-					return null;
+				const ctr = obj.constructor;
+				if (types.isType(ctr)) {
+					return ctr;
 				};
-				return obj;
+				return null;
 			}));
 
 		__Internal__.ADD('getTypeName', __Internal__.DD_DOC(
@@ -5949,7 +5950,7 @@
 				ctx.proto = proto;
 			
 				_shared.setAttribute(type, '$TYPE_NAME', name, {});
-				_shared.setAttribute(type, __Internal__.symbolIsType, undefined, {});
+				_shared.setAttribute(type, __Internal__.symbolIsType, true, {});
 
 				uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
 				_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
