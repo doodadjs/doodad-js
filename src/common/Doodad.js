@@ -149,13 +149,17 @@ module.exports = {
 				
 				// Interface
 				doodad.ADD('HostSymbol', __Internal__.symbolHost);
-				
+
+				// Class				
+				_shared.CurrentDispatchSymbol = __Internal__.symbolCurrentDispatch;
+
 				// AttributeBox
 				_shared.ExtenderSymbol = __Internal__.symbolExtender;
 
 				// EventHandler
 				_shared.ObjectSymbol = __Internal__.symbolObject;
 				_shared.StackSymbol = __Internal__.symbolStack;
+				_shared.ClonedStackSymbol = __Internal__.symbolClonedStack;
 				_shared.SortedSymbol = __Internal__.symbolSorted;
 
 				//=====================
@@ -2345,7 +2349,7 @@ module.exports = {
 												};
 												if (destroyed === false) { // NOTE: Can be 'null' for "not created".
 													const errorEvent = this.__ERROR_EVENT;
-													if (errorEvent && (attr !== errorEvent) && !notReentrantMap.get(errorEvent)) {
+													if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
 														const errorAttr = attributes[errorEvent];
 														const onError = this[errorEvent];
 														if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
@@ -3292,409 +3296,328 @@ module.exports = {
 						}),
 					})));
 				
-				__Internal__.eventHandlerInstanceProto = {
-						stackSize: types.NOT_CONFIGURABLE(types.WRITABLE(10)),
-						
-						_new: types.SUPER(function _new(obj, extender) {
-							this._super();
-							
-							const values = {};
-							values[__Internal__.symbolStack] = [];
-							values[__Internal__.symbolObject] = obj;
-							values[__Internal__.symbolExtender] = extender;
-							_shared.setAttributes(this, values);
-						}),
-
-						apply: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionApply)),
-						call: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionCall)),
-						bind: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionBind)),
-
-						getCount: function getCount() {
-							const stack = this[__Internal__.symbolStack];
-							return tools.reduce(stack, function(result, data) {
-								if (data[4] > 0) {
-									result++;
-								};
-								return result;
-							}, 0)
-						},
-
-						attach: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 4,
-									params: {
-										obj: {
-											type: 'object',
-											optional: true,
-											description: "Object to have in 'this' of the callback function.",
-										},
-										fn: {
-											type: 'function',
-											optional: false,
-											description: "Callback function.",
-										},
-										priority: {
-											type: 'integer',
-											optional: true,
-											description: "Priority. Default is '20'.",
-										},
-										datas: {
-											type: 'arrayof(any)',
-											optional: true,
-											description: "Data to attach with the event.",
-										},
-										count: {
-											type: 'integer',
-											optional: true,
-											description: "Number of times the callback function will be called before been detached. Default is Infinity.",
-										},
-									},
-									returns: 'undefined',
-									description: "Attach a callback function to an event.",
-							}
-							//! END_REPLACE()
-							, function attach(/*optional*/obj, fn, /*optional*/priority, /*optional*/datas, /*optional*/count) {
-								if (types.isNothing(priority)) {
-									priority = 20;
-								};
-
-								if (types.isNothing(count)) {
-									count = Infinity;
-								};
-
-								if (!types.isNothing(datas)) {
-									types.freezeObject(datas);
-								};
-
-								if (root.DD_ASSERT) {
-									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
-									root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
-									root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
-									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
-									root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
-								};
-								
-								const stack = this[__Internal__.symbolStack];
-
-								const indexes = tools.findItems(stack, function(ev) {
-									const evData = ev[3];
-									return ((ev[0] || null) === (obj || null)) && (ev[1] === fn) && tools.every(datas, function(data, key) {
-										return types.hasIndex(evData, key) && (evData[key] === data);
-									});
-								});
-								
-								const indexesLen = indexes.length;
-								if (indexesLen) {
-									let clearSorted = false;
-									for (let i = 0; i < indexesLen; i++) {
-										const ev = stack[indexes[i]];
-										if (ev[2] !== priority) {
-											ev[2] = priority;
-											clearSorted = true;
-										};
-									};
-									if (clearSorted) {
-										this[__Internal__.symbolSorted] = false;
-										this[__Internal__.symbolClonedStack] = null;
-									};
-									return false;
-								} else if (stack.length < this.stackSize) {
-									let cb = fn;
-									if (obj) {
-										cb = doodad.Callback(obj, cb, true);
-									};
-									stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
-									this[__Internal__.symbolSorted] = false;
-									this[__Internal__.symbolClonedStack] = null;
-									return true;
-								} else {
-									throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
-								};
-							}),
-
-						detach: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 3,
-									params: {
-										obj: {
-											type: 'object',
-											optional: true,
-											description: "Object linked with the callback function.",
-										},
-										fn: {
-											type: 'function',
-											optional: true,
-											description: "Callback function.",
-										},
-										datas: {
-											type: 'array',
-											optional: true,
-											description: "Data attached with the event.",
-										},
-									},
-									returns: 'undefined',
-									description: "Detach a callback function from an event.",
-							}
-							//! END_REPLACE()
-							, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
-								if (root.DD_ASSERT) {
-									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
-									root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
-									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
-								};
-
-								const stack = this[__Internal__.symbolStack];
-
-								const evs = types.popItems(stack, function(ev) {
-									const evData = ev[3];
-									return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
-										return types.hasIndex(evData, key) && (evData[key] === value);
-									});
-								});
-
-								if (evs.length > 0) {
-									this[__Internal__.symbolSorted] = false;
-									this[__Internal__.symbolClonedStack] = null;
-								};
-
-								return evs;
-							}),
-
-						clear: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 1,
-									params: null,
-									returns: 'undefined',
-									description: "Detach every callback function from an event.",
-							}
-							//! END_REPLACE()
-							, function clear() {
-								this[__Internal__.symbolStack].length = 0;
-							}),
-
-						attachOnce: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										obj: {
-											type: 'object',
-											optional: true,
-											description: "Object to have in 'this' of the callback function.",
-										},
-										fn: {
-											type: 'function',
-											optional: false,
-											description: "Callback function.",
-										},
-										priority: {
-											type: 'integer',
-											optional: true,
-											description: "Priority. Default is '20'.",
-										},
-										datas: {
-											type: 'array',
-											optional: true,
-											description: "Data to attach with the event.",
-										},
-									},
-									returns: 'undefined',
-									description: "Attach a callback function to an event that will get called only once.",
-							}
-							//! END_REPLACE()
-							, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
-								return this.attach(obj, fn, priority, datas, 1);
-							}),
-
-						promise: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 1,
-									params: null,
-									returns: 'Promise',
-									description: "Creates a promise for an event.",
-							}
-							//! END_REPLACE()
-							, function promise(/*optional*/callback, /*optional*/thisObj) {
-								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-								const Promise = types.getPromise();
-								if (callback) {
-									callback = new _shared.PromiseCallback(thisObj, callback);
-								};
-								return Promise.create(function eventPromise(resolve, reject) {
-										const self = this,
-											obj = this[__Internal__.symbolObject],
-											errorEvent = obj.__ERROR_EVENT,
-											destroy = types.isImplemented(obj, 'onDestroy');
-
-										let fn = null,
-											errorFn = null,
-											destroyFn = null;
-
-										const cleanup = function cleanup() {
-											self.detach(null, fn);
-											errorEvent && obj[errorEvent].detach(null, errorFn);
-											destroy && obj.onDestroy.detach(null, destroyFn);
-										};
-
-										this.attach(null, fn = function onSuccess(ev) {
-											let retval = undefined;
-											if (callback) {
-												try {
-													retval = callback(ev);
-												} catch(ex) {
-													cleanup();
-													reject(ex);
-													retval = false;
-												};
-											};
-											if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
-												cleanup();
-												resolve(retval);
-											};
-										});
-
-										if (errorEvent) {
-											obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
-												cleanup();
-												reject(ev.error);
-											});
-										};
-
-										if (destroy) {
-											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
-												cleanup();
-												// NOTE: We absolutly must reject the Promise.
-												reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
-											});
-										};
-									}, this);
-							}),
-					};
-
-				// FUTURE: Syntax for variable keys in object declaration
-				// TODO: Protect these variables from the outside
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
-				__Internal__.eventHandlerInstanceProto[__Internal__.symbolClonedStack] = types.NOT_CONFIGURABLE(types.WRITABLE(null));
-
-					
-				root.DD_DOC(
+				//==================================
+				// Scopes
+				//==================================
+				
+				doodad.ADD('Scopes', types.freezeObject(types.nullObject({
+					Public: 1,
+					Protected: 2,
+					Private: 3,
+				})));
+				
+				doodad.ADD('PUBLIC', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
-							params: null,
-							returns: 'EventHandler',
-							description: "Event handler prototype.",
+							revision: 0,
+							params: {
+								value: {
+									type: 'AttributeBox,any',
+									optional: false,
+									description: "Value.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Creates a public attribute.",
 					}
 					//! END_REPLACE()
-					, doodad.REGISTER(types.Type.$inherit(
-						/*typeProto*/
-						{
-							$TYPE_NAME: 'EventHandler',
-							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
-						},
-						/*instanceProto*/
-						__Internal__.eventHandlerInstanceProto
-					)));
+					, function PUBLIC(value) {
+						let extender = null;
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
+							extender = value;
+							value = undefined;
+						};
+						value = types.AttributeBox(value);
+						value[__Internal__.symbolScope] = doodad.Scopes.Public;
+						if (extender) {
+							value[__Internal__.symbolExtender] = extender;
+						};
+						return value;
+					}));
 				
-				root.DD_DOC(
+				doodad.ADD('PROTECTED', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								value: {
+									type: 'AttributeBox,any',
+									optional: false,
+									description: "Value.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Creates a protected attribute.",
+					}
+					//! END_REPLACE()
+					, function PROTECTED(value) {
+						let extender = null;
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
+							extender = value;
+							value = undefined;
+						};
+						value = types.AttributeBox(value);
+						value[__Internal__.symbolScope] = doodad.Scopes.Protected;
+						if (extender) {
+							value[__Internal__.symbolExtender] = extender;
+						};
+						return value;
+					}));
+
+				doodad.ADD('PRIVATE', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								value: {
+									type: 'AttributeBox,any',
+									optional: false,
+									description: "Value.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Creates a private attribute.",
+					}
+					//! END_REPLACE()
+					, function PRIVATE(value) {
+						// <FUTURE> Will not have other choices than transpiling to JS classes to be able to use the incomming private fields and make Doodad's private fields more secure.
+						let extender = null;
+						if (types._instanceof(value, types.getType(extenders.Extender))) {
+							extender = value;
+							value = undefined;
+						};
+						value = types.AttributeBox(value);
+						value[__Internal__.symbolScope] = doodad.Scopes.Private;
+						if (extender) {
+							value[__Internal__.symbolExtender] = extender;
+						};
+						return value;
+					}));
+				
+				doodad.ADD('PROTECTED_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED));
+				doodad.ADD('PRIVATE_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE));
+				
+				//==================================
+				// Class Modifiers
+				//==================================
+				
+				// Can be combined
+				doodad.ADD('ClassModifiers', types.freezeObject(types.nullObject({
+					Base: 1,
+					MixIn: 2,
+					Interface: 4,
+					Sealed: 8,
+					Static: 16,
+					Singleton: 32,
+					Isolated: 64,
+					Expandable: 128,
+				})));
+				doodad.ADD('preservedClassModifiers', doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface | doodad.ClassModifiers.Sealed | doodad.ClassModifiers.Static);
+
+				doodad.ADD('BASE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
 							params: {
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options.",
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
 								},
 							},
-							returns: 'Extender',
-							description: "Attribute extender which extends an event.",
+							returns: 'Class',
+							description: "Sets a class, interface or mix-in as base.",
 					}
 					//! END_REPLACE()
-					, extenders.REGISTER([], extenders.Method.$inherit({
-						$TYPE_NAME: "Event",
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
-
-						eventsAttr: types.READ_ONLY('__EVENTS'),
-						eventsImplementation: types.READ_ONLY('Doodad.MixIns.Events'),
-						eventProto: types.READ_ONLY(doodad.EventHandler),
-
-						enableScopes: types.READ_ONLY(false),
-						errorEvent: types.READ_ONLY(false),
-
-						isProto: types.READ_ONLY(false), // must be created on Class instances, not on the prototype
-						
-						_new: types.SUPER(function _new(/*optional*/options) {
-								this._super(options);
-								_shared.setAttributes(this, {
-									errorEvent: types.get(options, 'errorEvent', this.errorEvent),
-								});
-							}),
-
-						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-								return this._super(options) + 
-									',' + (types.get(options, 'errorEvent', this.errorEvent) ? '1' : '0');
-							}),
-
-						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-								options = this._super(options, newOptions, replace);
-								if (replace) {
-									types.fill(['errorEvent'], options, this, newOptions);
-								} else {
-									options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
-								};
-								return options;
-							}),
-
-						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								if (root.getOptions().debug) {
-									if (!types.has(destAttributes, this.eventsAttr)) {
-										throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
-									};
-								};
-								
-								const events = types.unbox(destAttributes[this.eventsAttr]);
-								events.push(attr);
-								
-								if (this.errorEvent) {
-									destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
-								};
-
-								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-							}),
-
-						createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
-								const dispatch = this._super(attr, obj, attribute, callers);
-								return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
-							}),
-
-						remove: function remove(attr, obj, storage, forType, attribute) {
-								const handler = obj[attr];
-								if (types._instanceof(handler, doodad.EventHandler)) {
-									handler.clear();
-								};
-		//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
+					, function BASE(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
+						return cls;
+					}));
+				
+				// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
+				doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
 							},
+							returns: 'Class',
+							description: "Transforms a class to a mix-in.",
+					}
+					//! END_REPLACE()
+					, function MIX_IN(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (root.getOptions().debug || __options__.enforcePolicies) {
+							const base = types.getBase(cls);
+							if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
+								throw new types.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
+							};
+						};
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
+						return cls;
 					})));
-
-				extenders.REGISTER([], extenders.Event.$inherit({
-						$TYPE_NAME: "RawEvent",
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
-				}));
+				
+				doodad.ADD('INTERFACE', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Transforms a class to an interface.",
+					}
+					//! END_REPLACE()
+					, function INTERFACE(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (root.getOptions().debug || __options__.enforcePolicies) {
+							const base = types.getBase(cls);
+							if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
+								throw new types.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
+							};
+						};
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
+						return cls;
+					}));
+				
+				doodad.ADD('SEALED', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Sets a class, interface or mix-in to a sealed one.",
+					}
+					//! END_REPLACE()
+					, function SEALED(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
+						return cls;
+					}));
+				
+				doodad.ADD('STATIC', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Transforms a class to a static class.",
+					}
+					//! END_REPLACE()
+					, function STATIC(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
+						return cls;
+					}));
+				
+				doodad.ADD('ISOLATED', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Transforms a mix-in or an interface to an isolated one.",
+					}
+					//! END_REPLACE()
+					, function ISOLATED(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (root.getOptions().debug || __options__.enforcePolicies) {
+							if (!types.isInterface(cls) && !types.isMixIn(cls)) {
+								throw new types.Error("Isolation can only be applied on interfaces and mix-ins.");
+							};
+						};
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
+						return cls;
+					}));
+				
+				doodad.ADD('EXPANDABLE', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								cls: {
+									type: 'Class',
+									optional: false,
+									description: "Class.",
+								},
+							},
+							returns: 'Class',
+							description: "Makes expandable objects.",
+					}
+					//! END_REPLACE()
+					, function EXPANDABLE(cls) {
+						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
+						if (root.getOptions().debug || __options__.enforcePolicies) {
+							if (types.isInterface(cls) || types.isMixIn(cls)) {
+								throw new types.Error("Expandable can't be applied on interfaces and mix-ins.");
+							};
+						};
+						if (types.isInitialized(cls)) {
+							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						};
+						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
+						return cls;
+					}));
+				
+				//===================================
+				// Attribute modifiers
+				//===================================
 
 				doodad.ADD('ATTRIBUTE', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4125,657 +4048,6 @@ module.exports = {
 						const enumerable = types.getDefault(descriptor, 'enumerable', true);
 
 						return doodad.ATTRIBUTE(descriptor, extenders.Property, {isEnumerable: enumerable});
-					}));
-				
-				__Internal__.EVENT_CACHE = types.nullObject();
-
-				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/eventTypeName, /*optional*/fn) {
-					cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
-
-					const key = (cancellable ? 'y' : 'n') + '|' + eventTypeName;
-
-					let eventFn = null,
-						errorEvent = false;
-
-					if (types.has(__Internal__.EVENT_CACHE, key)) {
-						eventFn = __Internal__.EVENT_CACHE[key];
-						errorEvent = eventFn[1];
-						eventFn = eventFn[0];
-
-					} else {
-						const eventType = namespaces.get(eventTypeName);
-
-						root.DD_ASSERT && root.DD_ASSERT((eventType === doodad.Event) || types.baseof(doodad.Event, eventType), "Invalid 'eventTypeName' argument.");
-
-						errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
-
-						eventFn = function handleEvent(/*optional*/ev) {
-							if (!types._instanceof(ev, eventType)) {
-								if (!errorEvent && types.isNothing(ev)) {
-									ev = new eventType();
-								} else if (errorEvent && types.isError(ev)) {
-									ev = new eventType(ev);
-								} else {
-									throw new types.Error("Invalid or missing event object.");
-								};
-							};
-
-							const evObj = ev.obj,
-								evName = ev.name,
-								dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch);
-						
-							_shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
-							
-							let cancelled = !!this._super(ev) && cancellable;
-
-							if (!cancelled) {
-								const stack = dispatch[__Internal__.symbolStack];
-
-								let clonedStack;
-								if (dispatch[__Internal__.symbolSorted]) {
-									clonedStack = dispatch[__Internal__.symbolClonedStack];
-								} else {
-									if (stack.length) {
-										stack.sort(function(value1, value2) {
-											return tools.compareNumbers(value1[2], value2[2]);
-										});
-										clonedStack = types.clone(stack);
-									} else {
-										clonedStack = [];
-									};
-									dispatch[__Internal__.symbolSorted] = true;
-									dispatch[__Internal__.symbolClonedStack] = clonedStack;
-								};
-							
-								const stackLen = clonedStack.length;
-
-								try {
-									for (let i = 0; i < stackLen; i++) {
-										const data = clonedStack[i];
-									
-										let retval = undefined;
-
-										const obj = data[0];
-
-										if (data[4] > 0) {
-											if (obj && _shared.DESTROYED(obj)) {
-												data[4] = 0;
-												continue;
-											};
-
-											data[4]--;
-
-											_shared.setAttribute(ev, 'handlerData', data[3]);
-
-											retval = data[5].call(obj, ev);
-										};
-
-										if ((retval === false) && cancellable) {
-											ev = new doodad.CancelEvent({
-												event: ev,
-											});
-
-											_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
-
-											this.onEventCancelled(ev);
-
-											cancelled = true;
-
-											break;
-										};
-									};
-
-								} catch(ex) {
-									throw ex;
-
-								} finally {
-									const removed = types.popItems(stack, function(data) {
-										return (data[4] <= 0);
-									});
-									if (removed.length) {
-										dispatch[__Internal__.symbolSorted] = false;
-										dispatch[__Internal__.symbolClonedStack] = null;
-									};
-
-									if (evObj) {
-										_shared.setAttributes(ev, {obj: evObj, name: evName});
-									};
-
-									if (errorEvent) {
-										if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
-											tools.catchAndExit(ev.error);
-										};
-									};
-								};
-
-							} else {
-								if (errorEvent) {
-									if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
-										tools.catchAndExit(ev.error);
-									};
-								};
-							};
-
-							return cancelled;
-						};
-
-						__Internal__.EVENT_CACHE[key] = [eventFn, errorEvent];
-					};
-
-					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
-
-					if (fn) {
-						eventFn[__Internal__.symbolOverrideWith] = fn;
-					};
-
-					return eventFn;
-				};
-				
-				__Internal__.RAW_EVENT_CACHE = types.nullObject();
-
-				__Internal__.RAW_EVENT = function RAW_EVENT(errorEvent, /*optional*/fn) {
-					const key = (errorEvent ? 'y' : 'n');
-
-					let eventFn;
-
-					if (types.has(__Internal__.RAW_EVENT_CACHE, key)) {
-						eventFn = __Internal__.RAW_EVENT_CACHE[key];
-
-					} else {
-						eventFn = function handleEvent(/*paramarray*/) {
-							let emitted = !!this._super.apply(this, arguments);
-
-							const dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
-								stack = dispatch[__Internal__.symbolStack];
-						
-							let clonedStack;
-							if (dispatch[__Internal__.symbolSorted]) {
-								clonedStack = dispatch[__Internal__.symbolClonedStack];
-							} else {
-								if (stack.length) {
-									stack.sort(function(value1, value2) {
-										return tools.compareNumbers(value1[2], value2[2]);
-									});
-									clonedStack = types.clone(stack);
-								} else {
-									clonedStack = [];
-								};
-								dispatch[__Internal__.symbolSorted] = true;
-								dispatch[__Internal__.symbolClonedStack] = clonedStack;
-							};
-							
-							const stackLen = clonedStack.length;
-
-							try {
-								for (let i = 0; i < stackLen; i++) {
-									const data = clonedStack[i],
-										obj = data[0],
-										fn = data[1];
-									
-									if (data[4] > 0) {
-										data[4]--;
-
-										_shared.invoke(obj, fn, arguments, _shared.SECRET);
-
-										emitted = true;
-									};
-								};
-
-							} catch(ex) {
-								throw ex;
-
-							} finally {
-								const removed = types.popItems(stack, function(data) {
-									return (data[4] <= 0);
-								});
-								if (removed.length) {
-									dispatch[__Internal__.symbolSorted] = false;
-									dispatch[__Internal__.symbolClonedStack] = null;
-								};
-
-								if (errorEvent) {
-									const ex = arguments[0];
-
-									if (emitted) {
-										ex.trapped = true;
-									};
-
-									if (!ex.trapped) {
-										tools.catchAndExit(ex);
-									};
-								};
-							};
-
-							return emitted;
-						};
-
-						__Internal__.RAW_EVENT_CACHE[key] = eventFn;
-					};
-
-					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
-
-					if (fn) {
-						eventFn[__Internal__.symbolOverrideWith] = fn;
-					};
-
-					return eventFn;
-				};
-				
-				doodad.ADD('EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cancellable: {
-									type: 'bool',
-									optional: true,
-									description: "Function. Default is 'true'.",
-								},
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Event handler.",
-								},
-							},
-							returns: 'AttributeBox,Extender',
-							description: "Creates an event.",
-					}
-					//! END_REPLACE()
-					, function EVENT(/*optional*/cancellable, /*optional*/fn) {
-						const boxed = __Internal__.EVENT(cancellable, 'Doodad.Event', fn);
-						return boxed;
-					}));
-
-				doodad.ADD('ERROR_EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Event handler.",
-								},
-							},
-							returns: 'AttributeBox,Extender',
-							description: "Creates an error event ('onError').",
-					}
-					//! END_REPLACE()
-					, function ERROR_EVENT(/*optional*/fn) {
-						const boxed = __Internal__.EVENT(false, 'Doodad.ErrorEvent', fn);
-						return boxed;
-					}));
-
-				doodad.ADD('RAW_EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'AttributeBox,Extender',
-							description: "Creates a special event.",
-					}
-					//! END_REPLACE()
-					, function RAW_EVENT(/*optional*/fn) {
-						const boxed = __Internal__.RAW_EVENT(false, fn);
-						return boxed;
-					}));
-
-				doodad.ADD('RAW_ERROR_EVENT', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'AttributeBox,Extender',
-						description: "Creates a special error event.",
-					}
-					//! END_REPLACE()
-					, function RAW_ERROR_EVENT(/*optional*/fn) {
-						const boxed = __Internal__.RAW_EVENT(true, fn);
-						return boxed;
-					}));
-
-				__Internal__.CANCEL_EVENT = root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Event handler.",
-								},
-							},
-							returns: 'AttributeBox,Extender',
-							description: "Creates an 'event cancelled' event.",
-					}
-					//! END_REPLACE()
-					, function CANCEL_EVENT(/*optional*/fn) {
-						const boxed = __Internal__.EVENT(false, 'Doodad.CancelEvent', fn);
-						return boxed;
-					});
-
-				//==================================
-				// Scopes
-				//==================================
-				
-				doodad.ADD('Scopes', types.freezeObject(types.nullObject({
-					Public: 1,
-					Protected: 2,
-					Private: 3,
-				})));
-				
-				doodad.ADD('PUBLIC', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value: {
-									type: 'AttributeBox,any',
-									optional: false,
-									description: "Value.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Creates a public attribute.",
-					}
-					//! END_REPLACE()
-					, function PUBLIC(value) {
-						let extender = null;
-						if (types._instanceof(value, types.getType(extenders.Extender))) {
-							extender = value;
-							value = undefined;
-						};
-						value = types.AttributeBox(value);
-						value[__Internal__.symbolScope] = doodad.Scopes.Public;
-						if (extender) {
-							value[__Internal__.symbolExtender] = extender;
-						};
-						return value;
-					}));
-				
-				doodad.ADD('PROTECTED', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value: {
-									type: 'AttributeBox,any',
-									optional: false,
-									description: "Value.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Creates a protected attribute.",
-					}
-					//! END_REPLACE()
-					, function PROTECTED(value) {
-						let extender = null;
-						if (types._instanceof(value, types.getType(extenders.Extender))) {
-							extender = value;
-							value = undefined;
-						};
-						value = types.AttributeBox(value);
-						value[__Internal__.symbolScope] = doodad.Scopes.Protected;
-						if (extender) {
-							value[__Internal__.symbolExtender] = extender;
-						};
-						return value;
-					}));
-
-				doodad.ADD('PRIVATE', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value: {
-									type: 'AttributeBox,any',
-									optional: false,
-									description: "Value.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Creates a private attribute.",
-					}
-					//! END_REPLACE()
-					, function PRIVATE(value) {
-						// <FUTURE> Will not have other choices than transpiling to JS classes to be able to use the incomming private fields and make Doodad's private fields more secure.
-						let extender = null;
-						if (types._instanceof(value, types.getType(extenders.Extender))) {
-							extender = value;
-							value = undefined;
-						};
-						value = types.AttributeBox(value);
-						value[__Internal__.symbolScope] = doodad.Scopes.Private;
-						if (extender) {
-							value[__Internal__.symbolExtender] = extender;
-						};
-						return value;
-					}));
-				
-				doodad.ADD('PROTECTED_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED));
-				doodad.ADD('PRIVATE_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE));
-				
-				//==================================
-				// Class Modifiers
-				//==================================
-				
-				// Can be combined
-				doodad.ADD('ClassModifiers', types.freezeObject(types.nullObject({
-					Base: 1,
-					MixIn: 2,
-					Interface: 4,
-					Sealed: 8,
-					Static: 16,
-					Singleton: 32,
-					Isolated: 64,
-					Expandable: 128,
-				})));
-				doodad.ADD('preservedClassModifiers', doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface | doodad.ClassModifiers.Sealed | doodad.ClassModifiers.Static);
-
-				doodad.ADD('BASE', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Sets a class, interface or mix-in as base.",
-					}
-					//! END_REPLACE()
-					, function BASE(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
-						return cls;
-					}));
-				
-				// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
-				doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Transforms a class to a mix-in.",
-					}
-					//! END_REPLACE()
-					, function MIX_IN(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
-							const base = types.getBase(cls);
-							if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
-								throw new types.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
-							};
-						};
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
-						return cls;
-					})));
-				
-				doodad.ADD('INTERFACE', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Transforms a class to an interface.",
-					}
-					//! END_REPLACE()
-					, function INTERFACE(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
-							const base = types.getBase(cls);
-							if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
-								throw new types.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
-							};
-						};
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
-						return cls;
-					}));
-				
-				doodad.ADD('SEALED', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Sets a class, interface or mix-in to a sealed one.",
-					}
-					//! END_REPLACE()
-					, function SEALED(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
-						return cls;
-					}));
-				
-				doodad.ADD('STATIC', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Transforms a class to a static class.",
-					}
-					//! END_REPLACE()
-					, function STATIC(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
-						return cls;
-					}));
-				
-				doodad.ADD('ISOLATED', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Transforms a mix-in or an interface to an isolated one.",
-					}
-					//! END_REPLACE()
-					, function ISOLATED(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
-							if (!types.isInterface(cls) && !types.isMixIn(cls)) {
-								throw new types.Error("Isolation can only be applied on interfaces and mix-ins.");
-							};
-						};
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
-						return cls;
-					}));
-				
-				doodad.ADD('EXPANDABLE', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								cls: {
-									type: 'Class',
-									optional: false,
-									description: "Class.",
-								},
-							},
-							returns: 'Class',
-							description: "Makes expandable objects.",
-					}
-					//! END_REPLACE()
-					, function EXPANDABLE(cls) {
-						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
-							if (types.isInterface(cls) || types.isMixIn(cls)) {
-								throw new types.Error("Expandable can't be applied on interfaces and mix-ins.");
-							};
-						};
-						if (types.isInitialized(cls)) {
-							throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
-						};
-						_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
-						return cls;
 					}));
 				
 				//==================================
@@ -5256,7 +4528,6 @@ module.exports = {
 						return fn;
 					}));
 				
-
 				//==================================
 				// Class
 				//==================================
@@ -6769,85 +6040,9 @@ module.exports = {
 				
 
 				//==================================
-				// Interfaces
+				// Events
 				//==================================
-				
-				root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'Class',
-							description: "Interface that represents a clonable object.",
-					}
-					//! END_REPLACE()
-					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
-						$TYPE_NAME: 'Clonable',
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Clonable')), true) */,
 
-						clone: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: null,
-									returns: 'Object',
-									description: "Returns a clone of the object.",
-							}
-							//! END_REPLACE()
-							, doodad.PUBLIC(doodad.RETURNS(function clone(val) {return (val !== this) && types.is(val, this);}))),  // function()
-					}))));
-				
-				root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'Class',
-							description: "Interface that represents a serializable object.",
-					}
-					//! END_REPLACE()
-					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
-						$TYPE_NAME: 'Serializable',
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
-					
-						serialize: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: null,
-									returns: 'object',
-									description: "Serializes the object and returns the result.",
-							}
-							//! END_REPLACE()
-							, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
-								
-						$unserialize: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										data: {
-											type: 'object',
-											optional: false,
-											description: "Serialized object.",
-										},
-									},
-									returns: 'Object',
-									description: "Deserializes an object.",
-							}
-							//! END_REPLACE()
-							, doodad.PUBLIC(doodad.RETURNS(function(val) {return types._instanceof(val, this); /* Polymorphism allowed */}))), // function(data)
-					}))));
-
-				//==================================
-				// Events classes
-				//==================================
-				
 				doodad.REGISTER(root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6970,12 +6165,857 @@ module.exports = {
 							};
 						}),
 
-						preventDefault: doodad.SUPER(function preventDefault() {
+						preventDefault: types.SUPER(function preventDefault() {
 							this._super();
 
 							this.error.trapped = true;
 						}),
 					})));
+
+					
+				__Internal__.eventHandlerInstanceProto = {
+						stackSize: types.NOT_CONFIGURABLE(types.WRITABLE(10)),
+						
+						_new: types.SUPER(function _new(obj, extender) {
+							this._super();
+							
+							const values = {};
+							values[__Internal__.symbolStack] = [];
+							values[__Internal__.symbolObject] = obj;
+							values[__Internal__.symbolExtender] = extender;
+							_shared.setAttributes(this, values);
+						}),
+
+						apply: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionApply)),
+						call: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionCall)),
+						bind: types.NOT_CONFIGURABLE(types.READ_ONLY(_shared.Natives.functionBind)),
+
+						getCount: function getCount() {
+							const stack = this[__Internal__.symbolStack];
+							return tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result++;
+								};
+								return result;
+							}, 0)
+						},
+
+						attach: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 4,
+									params: {
+										obj: {
+											type: 'object',
+											optional: true,
+											description: "Object to have in 'this' of the callback function.",
+										},
+										fn: {
+											type: 'function',
+											optional: false,
+											description: "Callback function.",
+										},
+										priority: {
+											type: 'integer',
+											optional: true,
+											description: "Priority. Default is '20'.",
+										},
+										datas: {
+											type: 'arrayof(any)',
+											optional: true,
+											description: "Data to attach with the event.",
+										},
+										count: {
+											type: 'integer',
+											optional: true,
+											description: "Number of times the callback function will be called before been detached. Default is Infinity.",
+										},
+									},
+									returns: 'undefined',
+									description: "Attach a callback function to an event.",
+							}
+							//! END_REPLACE()
+							, function attach(/*optional*/obj, fn, /*optional*/priority, /*optional*/datas, /*optional*/count) {
+								if (types.isNothing(priority)) {
+									priority = 20;
+								};
+
+								if (types.isNothing(count)) {
+									count = Infinity;
+								};
+
+								if (!types.isNothing(datas)) {
+									types.freezeObject(datas);
+								};
+
+								if (root.DD_ASSERT) {
+									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
+									root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
+									root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
+									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+									root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
+								};
+								
+								const stack = this[__Internal__.symbolStack];
+
+								const indexes = tools.findItems(stack, function(ev) {
+									const evData = ev[3];
+									return ((ev[0] || null) === (obj || null)) && (ev[1] === fn) && tools.every(datas, function(data, key) {
+										return types.hasIndex(evData, key) && (evData[key] === data);
+									});
+								});
+								
+								const indexesLen = indexes.length;
+								if (indexesLen) {
+									let clearSorted = false;
+									for (let i = 0; i < indexesLen; i++) {
+										const ev = stack[indexes[i]];
+										if (ev[2] !== priority) {
+											ev[2] = priority;
+											clearSorted = true;
+										};
+									};
+									if (clearSorted) {
+										this[__Internal__.symbolSorted] = false;
+										this[__Internal__.symbolClonedStack] = null;
+									};
+									return false;
+								} else if (stack.length < this.stackSize) {
+									let cb = fn;
+									if (obj) {
+										cb = doodad.Callback(obj, cb, true);
+									};
+									stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
+									this[__Internal__.symbolSorted] = false;
+									this[__Internal__.symbolClonedStack] = null;
+									const eventObj = this[__Internal__.symbolObject];
+									const ev = new doodad.Event({event: this[_shared.NameSymbol], obj: obj, handler: fn, datas: datas});
+									//if (types.isEntrant(eventObj, 'onEventAttached')) {
+										_shared.invoke(eventObj, eventObj.onEventAttached, [ev], _shared.SECRET);
+									//};
+									return true;
+								} else {
+									throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
+								};
+							}),
+
+						detach: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 3,
+									params: {
+										obj: {
+											type: 'object',
+											optional: true,
+											description: "Object linked with the callback function.",
+										},
+										fn: {
+											type: 'function',
+											optional: true,
+											description: "Callback function.",
+										},
+										datas: {
+											type: 'array',
+											optional: true,
+											description: "Data attached with the event.",
+										},
+									},
+									returns: 'undefined',
+									description: "Detach a callback function from an event.",
+							}
+							//! END_REPLACE()
+							, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
+								if (root.DD_ASSERT) {
+									root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
+									root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
+									root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+								};
+
+								const stack = this[__Internal__.symbolStack];
+
+								const evs = types.popItems(stack, function(ev) {
+									const evData = ev[3];
+									return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+										return types.hasIndex(evData, key) && (evData[key] === value);
+									});
+								});
+
+								const evsLen = evs.length;
+								if (evsLen) {
+									this[__Internal__.symbolSorted] = false;
+									this[__Internal__.symbolClonedStack] = null;
+
+									const eventObj = this[__Internal__.symbolObject];
+
+									if (!_shared.DESTROYED(eventObj)) {
+										//if (types.isEntrant(eventObj, 'onEventDetached')) {
+											const eventName = this[_shared.NameSymbol],
+												onEventDetached = eventObj.onEventDetached;
+
+											for (let i = 0; i < evsLen; i++) {
+												const data = evs[i];
+												const ev = new doodad.Event({event: eventName, obj: data[0], handler: data[1], datas: data[3]});
+												_shared.invoke(eventObj, onEventDetached, [ev], _shared.SECRET);
+											};
+										//};
+									};
+								};
+
+								return evs;
+							}),
+
+						clear: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 2,
+									params: null,
+									returns: 'undefined',
+									description: "Detach every callback function from an event.",
+							}
+							//! END_REPLACE()
+							, function clear() {
+								this.detach();
+							}),
+
+						attachOnce: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										obj: {
+											type: 'object',
+											optional: true,
+											description: "Object to have in 'this' of the callback function.",
+										},
+										fn: {
+											type: 'function',
+											optional: false,
+											description: "Callback function.",
+										},
+										priority: {
+											type: 'integer',
+											optional: true,
+											description: "Priority. Default is '20'.",
+										},
+										datas: {
+											type: 'array',
+											optional: true,
+											description: "Data to attach with the event.",
+										},
+									},
+									returns: 'undefined',
+									description: "Attach a callback function to an event that will get called only once.",
+							}
+							//! END_REPLACE()
+							, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
+								return this.attach(obj, fn, priority, datas, 1);
+							}),
+
+						promise: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 1,
+									params: null,
+									returns: 'Promise',
+									description: "Creates a promise for an event.",
+							}
+							//! END_REPLACE()
+							, function promise(/*optional*/callback, /*optional*/thisObj) {
+								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
+								const Promise = types.getPromise();
+								if (callback) {
+									callback = new _shared.PromiseCallback(thisObj, callback);
+								};
+								return Promise.create(function eventPromise(resolve, reject) {
+										const self = this,
+											obj = this[__Internal__.symbolObject],
+											errorEvent = obj.__ERROR_EVENT,
+											destroy = types.isImplemented(obj, 'onDestroy');
+
+										let successFn = null,
+											errorFn = null,
+											destroyFn = null,
+											detachedFn = null;
+
+										const cleanup = function cleanup() {
+											detachedFn && obj.onEventDetached.detach(null, detachedFn); // Must be first to be detached
+											self.detach(null, successFn);
+											errorEvent && obj[errorEvent].detach(null, errorFn);
+											destroy && obj.onDestroy.detach(null, destroyFn);
+										};
+
+										this.attach(null, successFn = function onSuccess(ev) {
+											let retval = undefined;
+											if (callback) {
+												try {
+													retval = callback(ev);
+												} catch(ex) {
+													cleanup();
+													reject(ex);
+													retval = false;
+												};
+											};
+											if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
+												cleanup();
+												resolve(retval);
+											};
+										});
+
+										if (errorEvent) {
+											obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
+												cleanup();
+												reject(ev.error);
+											});
+										};
+
+										if (destroy) {
+											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
+												cleanup();
+												// NOTE: We absolutly must reject the Promise.
+												reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
+											});
+										};
+
+										obj.onEventDetached.attach(null, detachedFn = function(ev) {
+											if (ev.data.handler === successFn) {
+												tools.callAsync(cleanup, -1); // Must be async
+												// NOTE: We absolutly must reject the Promise.
+												reject(new types.ScriptInterruptedError("Target event has been detached."));
+											};
+										});
+									}, this);
+							}),
+					};
+
+				// FUTURE: Syntax for variable keys in object declaration
+				// TODO: Protect these variables from the outside
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolObject] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolExtender] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolStack] = types.NOT_CONFIGURABLE(types.READ_ONLY(null));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolSorted] = types.NOT_CONFIGURABLE(types.WRITABLE(false));
+				__Internal__.eventHandlerInstanceProto[__Internal__.symbolClonedStack] = types.NOT_CONFIGURABLE(types.WRITABLE(null));
+
+				root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'EventHandler',
+							description: "Event handler prototype.",
+					}
+					//! END_REPLACE()
+					, doodad.REGISTER(types.Type.$inherit(
+						/*typeProto*/
+						{
+							$TYPE_NAME: 'EventHandler',
+							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
+						},
+						/*instanceProto*/
+						__Internal__.eventHandlerInstanceProto
+					)));
+				
+
+				root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'Extender',
+							description: "Attribute extender which extends an event.",
+					}
+					//! END_REPLACE()
+					, extenders.REGISTER([], extenders.Method.$inherit({
+						$TYPE_NAME: "Event",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
+
+						eventsAttr: types.READ_ONLY('__EVENTS'),
+						eventsImplementation: types.READ_ONLY('Doodad.MixIns.Events'),
+						eventProto: types.READ_ONLY(doodad.EventHandler),
+
+						enableScopes: types.READ_ONLY(false),
+						errorEvent: types.READ_ONLY(false),
+
+						isProto: types.READ_ONLY(false), // must be created on Class instances, not on the prototype
+						
+						_new: types.SUPER(function _new(/*optional*/options) {
+								this._super(options);
+
+								_shared.setAttribute(this, 'errorEvent', !!types.get(options, 'errorEvent', this.errorEvent));
+							}),
+
+						getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+								return this._super(options) + 
+									',' + (types.get(options, 'errorEvent', this.errorEvent) ? '1' : '0');
+							}),
+
+						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+								options = this._super(options, newOptions, replace);
+								if (replace) {
+									types.fill(['errorEvent'], options, this, newOptions);
+								} else {
+									options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
+								};
+								return options;
+							}),
+
+						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
+								if (root.getOptions().debug) {
+									if (!types.has(destAttributes, this.eventsAttr)) {
+										throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
+									};
+								};
+								
+								const events = types.unbox(destAttributes[this.eventsAttr]);
+								events.push(attr);
+								
+								if (this.errorEvent) {
+									destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
+								};
+
+								return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+							}),
+
+						createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
+								const dispatch = this._super(attr, obj, attribute, callers);
+								return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
+							}),
+
+						remove: function remove(attr, obj, storage, forType, attribute) {
+								const handler = obj[attr];
+								if (types._instanceof(handler, doodad.EventHandler)) {
+									handler.clear();
+								};
+		//							extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
+							},
+					})));
+
+				extenders.REGISTER([], extenders.Event.$inherit({
+						$TYPE_NAME: "RawEvent",
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
+				}));
+
+				__Internal__.EVENT_CACHE = types.nullObject();
+
+				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/eventTypeName, /*optional*/fn) {
+					cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
+
+					const key = (cancellable ? 'y' : 'n') + '|' + (eventTypeName || '');
+
+					let eventFn = null,
+						errorEvent = false;
+
+					if (types.has(__Internal__.EVENT_CACHE, key)) {
+						eventFn = __Internal__.EVENT_CACHE[key];
+						errorEvent = eventFn[1];
+						eventFn = eventFn[0];
+
+					} else {
+						let eventType = null;
+						if (!types.isNothing(eventTypeName)) {
+							eventType = namespaces.get(eventTypeName);
+							root.DD_ASSERT && root.DD_ASSERT((eventType === doodad.Event) || types.baseof(doodad.Event, eventType), "Invalid 'eventTypeName' argument.");
+						};
+
+						errorEvent = ((eventType === doodad.ErrorEvent) || types.baseof(doodad.ErrorEvent, eventType));
+
+						eventFn = function handleEvent(/*optional*/ev) {
+							if (eventType && !types._instanceof(ev, eventType)) {
+								if (!errorEvent && types.isNothing(ev)) {
+									ev = new eventType();
+								} else if (errorEvent && types.isError(ev)) {
+									ev = new eventType(ev);
+								} else {
+									throw new types.Error("Invalid or missing event object.");
+								};
+							};
+
+							const evObj = ev && ev.obj,
+								evName = ev && ev.name,
+								dispatch = this[__Internal__.symbolCurrentDispatch];
+						
+							ev && _shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
+							
+							let cancelled = !!this._super(ev) && cancellable;
+
+							if (!cancelled) {
+								const stack = dispatch[__Internal__.symbolStack];
+
+								let clonedStack;
+								if (dispatch[__Internal__.symbolSorted]) {
+									clonedStack = dispatch[__Internal__.symbolClonedStack];
+								} else {
+									if (stack.length) {
+										stack.sort(function(value1, value2) {
+											return tools.compareNumbers(value1[2], value2[2]);
+										});
+										clonedStack = types.clone(stack);
+									} else {
+										clonedStack = [];
+									};
+									dispatch[__Internal__.symbolSorted] = true;
+									dispatch[__Internal__.symbolClonedStack] = clonedStack;
+								};
+							
+								const stackLen = clonedStack.length;
+
+								try {
+									for (let i = 0; i < stackLen; i++) {
+										const data = clonedStack[i];
+									
+										let retval = undefined;
+
+										const obj = data[0];
+
+										if (data[4] > 0) {
+											if (obj && _shared.DESTROYED(obj)) {
+												data[4] = 0;
+												continue;
+											};
+
+											data[4]--;
+
+											ev && _shared.setAttribute(ev, 'handlerData', data[3]);
+
+											retval = data[5].call(obj, ev);
+										};
+
+										if ((retval === false) && cancellable) {
+											ev = new doodad.CancelEvent({
+												event: ev,
+											});
+
+											_shared.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]});
+
+											this.onEventCancelled(ev);
+
+											cancelled = true;
+
+											break;
+										};
+									};
+
+								} catch(ex) {
+									throw ex;
+
+								} finally {
+									const removed = types.popItems(stack, function(data) {
+										return (data[4] <= 0);
+									});
+									if (removed.length) {
+										dispatch[__Internal__.symbolSorted] = false;
+										dispatch[__Internal__.symbolClonedStack] = null;
+									};
+
+									if (evObj) {
+										_shared.setAttributes(ev, {obj: evObj, name: evName});
+									};
+
+									if (ev && errorEvent) {
+										if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
+											tools.catchAndExit(ev.error);
+										};
+									};
+								};
+
+							} else {
+								if (ev && errorEvent) {
+									if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
+										tools.catchAndExit(ev.error);
+									};
+								};
+							};
+
+							return cancelled;
+						};
+
+						__Internal__.EVENT_CACHE[key] = [eventFn, errorEvent];
+					};
+
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
+
+					if (fn) {
+						eventFn[__Internal__.symbolOverrideWith] = fn;
+					};
+
+					return eventFn;
+				};
+				
+				__Internal__.RAW_EVENT_CACHE = types.nullObject();
+
+				__Internal__.RAW_EVENT = function RAW_EVENT(errorEvent, /*optional*/fn) {
+					const key = (errorEvent ? 'y' : 'n');
+
+					let eventFn;
+
+					if (types.has(__Internal__.RAW_EVENT_CACHE, key)) {
+						eventFn = __Internal__.RAW_EVENT_CACHE[key];
+
+					} else {
+						eventFn = function handleEvent(/*paramarray*/) {
+							let emitted = !!this._super.apply(this, arguments);
+
+							const dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch),
+								stack = dispatch[__Internal__.symbolStack];
+						
+							let clonedStack;
+							if (dispatch[__Internal__.symbolSorted]) {
+								clonedStack = dispatch[__Internal__.symbolClonedStack];
+							} else {
+								if (stack.length) {
+									stack.sort(function(value1, value2) {
+										return tools.compareNumbers(value1[2], value2[2]);
+									});
+									clonedStack = types.clone(stack);
+								} else {
+									clonedStack = [];
+								};
+								dispatch[__Internal__.symbolSorted] = true;
+								dispatch[__Internal__.symbolClonedStack] = clonedStack;
+							};
+							
+							const stackLen = clonedStack.length;
+
+							try {
+								for (let i = 0; i < stackLen; i++) {
+									const data = clonedStack[i],
+										obj = data[0],
+										fn = data[1];
+									
+									if (data[4] > 0) {
+										data[4]--;
+
+										_shared.invoke(obj, fn, arguments, _shared.SECRET);
+
+										emitted = true;
+									};
+								};
+
+							} catch(ex) {
+								throw ex;
+
+							} finally {
+								const removed = types.popItems(stack, function(data) {
+									return (data[4] <= 0);
+								});
+								if (removed.length) {
+									dispatch[__Internal__.symbolSorted] = false;
+									dispatch[__Internal__.symbolClonedStack] = null;
+								};
+
+								if (errorEvent) {
+									const ex = arguments[0];
+
+									if (emitted) {
+										ex.trapped = true;
+									};
+
+									if (!ex.trapped) {
+										tools.catchAndExit(ex);
+									};
+								};
+							};
+
+							return emitted;
+						};
+
+						__Internal__.RAW_EVENT_CACHE[key] = eventFn;
+					};
+
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
+
+					if (fn) {
+						eventFn[__Internal__.symbolOverrideWith] = fn;
+					};
+
+					return eventFn;
+				};
+				
+				doodad.ADD('EVENT', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								cancellable: {
+									type: 'bool',
+									optional: true,
+									description: "Function. Default is 'true'.",
+								},
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates an event.",
+					}
+					//! END_REPLACE()
+					, function EVENT(/*optional*/cancellable, /*optional*/fn) {
+						const boxed = __Internal__.EVENT(cancellable, 'Doodad.Event', fn);
+						return boxed;
+					}));
+
+				doodad.ADD('ERROR_EVENT', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates an error event ('onError').",
+					}
+					//! END_REPLACE()
+					, function ERROR_EVENT(/*optional*/fn) {
+						const boxed = __Internal__.EVENT(false, 'Doodad.ErrorEvent', fn);
+						return boxed;
+					}));
+
+				doodad.ADD('RAW_EVENT', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'AttributeBox,Extender',
+							description: "Creates a special event.",
+					}
+					//! END_REPLACE()
+					, function RAW_EVENT(/*optional*/fn) {
+						const boxed = __Internal__.RAW_EVENT(false, fn);
+						return boxed;
+					}));
+
+				doodad.ADD('RAW_ERROR_EVENT', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'AttributeBox,Extender',
+						description: "Creates a special error event.",
+					}
+					//! END_REPLACE()
+					, function RAW_ERROR_EVENT(/*optional*/fn) {
+						const boxed = __Internal__.RAW_EVENT(true, fn);
+						return boxed;
+					}));
+
+				__Internal__.CANCEL_EVENT = root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Event handler.",
+								},
+							},
+							returns: 'AttributeBox,Extender',
+							description: "Creates an 'event cancelled' event.",
+					}
+					//! END_REPLACE()
+					, function CANCEL_EVENT(/*optional*/fn) {
+						const boxed = __Internal__.EVENT(false, 'Doodad.CancelEvent', fn);
+						return boxed;
+					});
+
+				//==================================
+				// Interfaces
+				//==================================
+				
+				root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'Class',
+							description: "Interface that represents a clonable object.",
+					}
+					//! END_REPLACE()
+					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
+						$TYPE_NAME: 'Clonable',
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Clonable')), true) */,
+
+						clone: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 0,
+									params: null,
+									returns: 'Object',
+									description: "Returns a clone of the object.",
+							}
+							//! END_REPLACE()
+							, doodad.PUBLIC(doodad.RETURNS(function clone(val) {return (val !== this) && types.is(val, this);}))),  // function()
+					}))));
+				
+				root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'Class',
+							description: "Interface that represents a serializable object.",
+					}
+					//! END_REPLACE()
+					, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
+						$TYPE_NAME: 'Serializable',
+						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
+					
+						serialize: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 0,
+									params: null,
+									returns: 'object',
+									description: "Serializes the object and returns the result.",
+							}
+							//! END_REPLACE()
+							, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
+								
+						$unserialize: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										data: {
+											type: 'object',
+											optional: false,
+											description: "Serialized object.",
+										},
+									},
+									returns: 'Object',
+									description: "Deserializes an object.",
+							}
+							//! END_REPLACE()
+							, doodad.PUBLIC(doodad.RETURNS(function(val) {return types._instanceof(val, this); /* Polymorphism allowed */}))), // function(data)
+					}))));
 
 				//==================================
 				// Mix-ins
@@ -6998,6 +7038,8 @@ module.exports = {
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
 						__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
+						onEventAttached: __Internal__.EVENT(false),
+						onEventDetached: __Internal__.EVENT(false),
 						onEventCancelled: __Internal__.CANCEL_EVENT(), // function onEventCancelled(ev)
 							
 						detachEvents: root.DD_DOC(
