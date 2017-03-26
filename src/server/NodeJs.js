@@ -73,6 +73,8 @@ module.exports = {
 					watchedFiles: {},
 					tmpdir: null,
 					caseSensitive: null,
+
+					symbolHandler: types.getSymbol('__HANDLER__'),
 				};
 				
 				//===================================
@@ -103,14 +105,17 @@ module.exports = {
 					processRemoveListener: global.process.removeListener.bind(global.process),
 
 					// "stringToBytes", "bytesToString"
-					//globalBufferFrom: global.Buffer.from.bind(global.Buffer),
+					globalBufferFrom: global.Buffer.from.bind(global.Buffer),
 					windowArrayBuffer: global.ArrayBuffer,
 					windowUint16Array: global.Uint16Array,
 					windowUint8Array: global.Uint8Array,
 					stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
-					stringFromCharCodeCall: global.String.fromCharCode.call.bind(global.String.fromCharCode),
+					stringFromCharCode: global.String.fromCharCode.bind(global.String),
 					stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
 					mathMin: global.Math.min,
+
+					// NodeEvent
+					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 				});
 				
 				//===================================
@@ -2280,7 +2285,7 @@ module.exports = {
 							description: "Class mix-in to implement for NodeJs events.",
 				}
 				//! END_REPLACE()
-				, doodad.MIX_IN(doodad.Class.$extend({
+				, doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "NodeEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
 					
@@ -2321,58 +2326,64 @@ module.exports = {
 						},
 						/*instanceProto*/
 						{
-							attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once) {
+							attach: types.SUPER(function attach(emitters, /*optional*/context, /*optional*/once, /*optional*/prepend) {
 								if (!types.isArray(emitters)) {
 									emitters = [emitters];
 								};
 
-								//this.detach(emitters);
-
-								const self = this;
-								let ignore = false;
+								const self = this,
+									fn = this[__Internal__.symbolHandler];
 								
-								const createHandler = function(emitter, type) {
+								const createHandler = function(emitter, eventType) {
+									let ignore = false;
 									const handler = doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
 										if (!ignore) {
 											if (once) {
+												self.detach(emitter);
+
+												// <PRB> Sometimes "once" is raised more than once (it might have been fixed since we wrote that patch)
 												ignore = true;
-												self.detach(emitters);
 											};
 											const ctx = {
 												emitter: emitter,
-												type: type,
+												type: eventType,
 												data: context,
 											};
-											return self.apply(this, types.append([ctx], arguments));
+											return fn.apply(this, types.append([ctx], arguments));
 										};
 									});
 									return handler;
 								};
 								
-								const eventTypes = this[_shared.ExtenderSymbol].types;
+								const eventType = this[_shared.ExtenderSymbol].eventType;
 									
-								for (let i = 0; i < eventTypes.length; i++) {
-									if (types.has(eventTypes, i)) {
-										const type = eventTypes[i];
-										for (let j = 0; j < emitters.length; j++) {
-											if (types.has(emitters, j)) {
-												const emitter = emitters[j],
-													handler = createHandler(emitter, type);
-												if (this._super(this[_shared.ObjectSymbol], this, null, [emitter, type, handler])) {
-													if (once) {
-														emitter.once(type, handler);
-													} else {
-														emitter.on(type, handler);
-													};
+								for (let j = 0; j < emitters.length; j++) {
+									if (types.has(emitters, j)) {
+										const emitter = emitters[j],
+											handler = createHandler(emitter, eventType);
+										if (this._super(this[_shared.ObjectSymbol], this, (prepend ? 10 : null), [emitter, eventType, handler])) {
+											if (once) {
+												if (prepend) {
+													emitter.prependOnceListener(eventType, handler);
+												} else {
+													emitter.once(eventType, handler);
+												};
+											} else {
+												if (prepend) {
+													emitter.prependListener(eventType, handler);
+												} else {
+													emitter.on(eventType, handler);
 												};
 											};
 										};
 									};
 								};
 							}),
-							attachOnce: function attachOnce(emitters, /*optional*/context) {
-								this.attach(emitters, context, true);
+
+							attachOnce: function attachOnce(emitters, /*optional*/context, /*optional*/prepend) {
+								this.attach(emitters, context, true, prepend);
 							},
+
 							detach: types.SUPER(function detach(/*optional*/emitters) {
 								if (types.isNothing(emitters)) {
 									const evs = this._super(this[_shared.ObjectSymbol], this);
@@ -2408,29 +2419,62 @@ module.exports = {
 									};
 								};
 							}),
-							clear: function clear() {
-								this.detach();
-							},
+
 							promise: function promise(emitters, /*optional*/context) {
 								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 								const canReject = this[_shared.ExtenderSymbol].canReject;
-								const self = this;
 								const Promise = types.getPromise();
 								return Promise.create(function eventPromise(resolve, reject) {
-									if (canReject) {
-										self.attachOnce(emitters, context, function(context, err /*, paramarray*/) {
-											if (types.isError(err)) {
-												return reject(err);
-											} else {
-												return resolve(types.toArray(arguments));
-											};
-										});
-									} else {
-										self.attachOnce(emitters, context, function(/*paramarray*/) {
-											return resolve(types.toArray(arguments));
+									const self = this,
+										obj = this[__Internal__.symbolObject],
+										errorEvent = obj.__ERROR_EVENT,
+										destroy = types.isImplemented(obj, 'onDestroy');
+
+									let successFn = null,
+										errorFn = null,
+										destroyFn = null,
+										detachedFn = null;
+
+									const cleanup = function cleanup() {
+										detachedFn && obj.onEventDetached.detach(null, detachedFn); // Must be first to be detached
+										self.detach(null, successFn);
+										errorEvent && obj[errorEvent].detach(null, errorFn);
+										destroy && obj.onDestroy.detach(null, destroyFn);
+									};
+
+									this.attachOnce(emitters, context, successFn = function(context, err /*, paramarray*/) {
+										cleanup();
+										if (canReject && types.isError(err)) {
+											reject(err);
+										} else {
+											resolve(types.toArray(arguments));
+										};
+									});
+
+									if (errorEvent) {
+										obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
+											cleanup();
+											reject(ev.error);
 										});
 									};
-								});
+
+									if (destroy) {
+										obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
+											cleanup();
+											// NOTE: We absolutly must reject the Promise.
+											reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
+										});
+									};
+
+									obj.onEventDetached.attach(null, detachedFn = function(ev) {
+										if (ev.data.handler === successFn) {
+											tools.callAsync(cleanup, -1); // Must be async
+											// NOTE: We absolutly must reject the Promise.
+											reject(new types.ScriptInterruptedError("Target event has been detached."));
+										};
+									});
+
+								}, this);
 							},
 						}
 					)));
@@ -2445,7 +2489,7 @@ module.exports = {
 							description: "Node.Js event extender.",
 				}
 				//! END_REPLACE()
-				, extenders.Event.$inherit({
+				, extenders.RawEvent.$inherit({
 					$TYPE_NAME: "NodeEvent",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
 					
@@ -2455,32 +2499,40 @@ module.exports = {
 
 					enableScopes: types.READ_ONLY(true),
 					canReject: types.READ_ONLY(true),
-					types: types.READ_ONLY(null),
+					eventType: types.READ_ONLY(null),
 					
-					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+					_new: types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
 						if (!types.isType(this)) {
 							_shared.setAttributes(this, {
 								canReject: types.get(options, 'canReject', this.canReject),
-								types: types.freezeObject(types.get(options, 'types', this.types) || []),
+								eventType: types.get(options, 'eventType', this.eventType),
 							});
 						};
-					})),
-					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+					}),
+
+					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 						return this._super(options) + 
 							',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
-							',' + types.unique(types.get(options, 'types', this.types)).sort().join('|');
-					})),
-					overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+							',' + types.get(options, 'eventType', this.eventType);
+					}),
+
+					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 						options = this._super(options, newOptions, replace);
 						if (replace) {
-							types.fill(['canReject', 'types'], options, this, newOptions);
+							types.fill(['canReject', 'eventType'], options, this, newOptions);
 						} else {
 							options.canReject = !!newOptions.canReject || this.canReject;
-							options.types = types.unique([], newOptions.types, this.types);
+							options.eventType = newOptions.eventType || this.eventType;
 						};
 						return options;
-					})),
+					}),
+
+					init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
+						this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+
+						_shared.setAttribute(obj[attr], __Internal__.symbolHandler, attribute[__Internal__.symbolHandler], {});
+					}),
 				})));
 
 				
@@ -2488,16 +2540,16 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 4,
 							params: {
-								eventTypes: {
-									type: 'arrayof(string),string',
-									optional: true,
-									description: "List of event names.",
+								eventType: {
+									type: 'string',
+									optional: false,
+									description: "Event name.",
 								},
 								fn: {
 									type: 'function',
-									optional: true,
+									optional: false,
 									description: "Event handler.",
 								},
 							},
@@ -2505,21 +2557,71 @@ module.exports = {
 							description: "NodeJs event attribute modifier.",
 				}
 				//! END_REPLACE()
-				, function NODE_EVENT(eventTypes, /*optional*/fn) {
-					if (types.isStringAndNotEmpty(eventTypes)) {
-						eventTypes = eventTypes.split(',');
-					};
+				, function NODE_EVENT(eventType, fn) {
 					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isNothing(eventTypes) || types.isArrayAndNotEmpty(eventTypes), "Invalid types.");
-						if (eventTypes) {
-							root.DD_ASSERT(tools.every(eventTypes, types.isStringAndNotEmpty), "Invalid types.");
-						};
+						root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid type.");
 						const val = types.unbox(fn);
-						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+						root.DD_ASSERT(types.isJsFunction(val), "Invalid function.");
 					};
-					return doodad.PROTECTED(doodad.ATTRIBUTE(fn, extenders.NodeEvent, {
-						types: eventTypes,
-					}));
+					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx /*paramarray*/) {
+						!!this._super.apply(this, arguments);
+
+						const dispatch = this[_shared.CurrentDispatchSymbol],
+							stack = dispatch[_shared.StackSymbol];
+						
+						let clonedStack;
+						if (dispatch[_shared.SortedSymbol]) {
+							clonedStack = dispatch[_shared.ClonedStackSymbol];
+						} else {
+							if (stack.length) {
+								stack.sort(function(value1, value2) {
+									return tools.compareNumbers(value1[2], value2[2]);
+								});
+								clonedStack = types.clone(stack);
+							} else {
+								clonedStack = [];
+							};
+							dispatch[_shared.SortedSymbol] = true;
+							dispatch[_shared.ClonedStackSymbol] = clonedStack;
+						};
+							
+						const stackLen = clonedStack.length;
+
+						try {
+							for (let i = 0; i < stackLen; i++) {
+								const data = clonedStack[i],
+									obj = data[0],
+									fn = data[1],
+									evDatas = data[3],
+									emitter = evDatas[0];
+									
+								if ((!ctx || (emitter === ctx.emitter)) && (data[4] > 0)) {
+									data[4]--;
+
+									const handler = evDatas[2];
+
+									//_shared.invoke(obj, handler, arguments, _shared.SECRET);
+									handler.apply(obj, _shared.Natives.arraySliceCall(arguments, 1));
+								};
+							};
+
+						} catch(ex) {
+							throw ex;
+
+						} finally {
+							const removed = types.popItems(stack, function(data) {
+								return (data[4] <= 0);
+							});
+							if (removed.length) {
+								dispatch[_shared.SortedSymbol] = false;
+								dispatch[_shared.ClonedStackSymbol] = null;
+							};
+						};
+					}, extenders.NodeEvent, {enableScopes: true, eventType: eventType}))));
+
+					eventFn[__Internal__.symbolHandler] = fn;
+
+					return eventFn;
 				}));
 				
 				//*********************************************
@@ -2681,14 +2783,18 @@ module.exports = {
 				types.ADD('bytesToString', function bytesToString(buf) {
 					// Raw bytes array to string, without conversion.
 
-					// TODO: Find a better solution for Node.Js.
+					// TODO: Find a better solution.
+
+					if (types.isTypedArray(buf)) {
+						buf = buf.buffer;
+					};
 
 					let lastChr;
 					if (buf.byteLength & 1) {
 						// <PRB> Uint16Array can't be created on an odd sized array buffer.
 						// NOTE : Assuming little endian.
 						const ar = new _shared.Natives.windowUint8Array(buf);
-						lastChr = _shared.Natives.stringFromCharCodeCall(null, ar[buf.byteLength - 1] << 8);
+						lastChr = _shared.Natives.stringFromCharCode(ar[buf.byteLength - 1]);
 						buf = buf.slice(0, buf.byteLength - 1);
 					};
 
@@ -2700,6 +2806,8 @@ module.exports = {
 
 				// NOTE: Experimental
 				types.ADD('stringToBytes', function stringToBytes(str, /*optional*/size) {
+					// TODO: Find a better solution.
+
 					// Raw string to bytes array, without conversion.
 
 					// --- Damned, Node.Js ignores high-order bytes. ---
@@ -2736,12 +2844,12 @@ module.exports = {
 					let pos = 0;
 					for (let i = 0; i < strLen && pos < size; i++) {
 						const cc = _shared.Natives.stringCharCodeAtCall(str, i);
-						bufView[pos++] = (cc & 0xFF00) >> 8;
+						bufView[pos++] = cc & 0x00FF;
 						if (pos < size) {
-							bufView[pos++] = cc & 0x00FF;
+							bufView[pos++] = (cc & 0xFF00) >> 8;
 						};
 					};
-					return buf;
+					return _shared.Natives.globalBufferFrom(buf);
 				});
 
 
