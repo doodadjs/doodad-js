@@ -144,12 +144,13 @@ module.exports = {
 					consoleError: (types.isNativeFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
 
 					// stringToBytes, bytesToString
+					globalBufferFrom: (types.isFunction(global.Buffer) && types.isFunction(global.Buffer.from) ? global.Buffer.from.bind(global.Buffer) : undefined), // For Node.Js polyfills
 					windowArrayBuffer: global.ArrayBuffer,
 					windowUint16Array: global.Uint16Array,
 					windowUint8Array: global.Uint8Array,
 					stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
 					stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
-					stringFromCharCodeCall: global.String.fromCharCode.call.bind(global.String.fromCharCode),
+					stringFromCharCode: global.String.fromCharCode.bind(global.String),
 					mathMin: global.Math.min,
 				});
 				
@@ -658,7 +659,7 @@ module.exports = {
 							description: "Class mix-in to implement for JS events.",
 				}
 				//! END_REPLACE()
-				, doodad.MIX_IN(doodad.Class.$extend({
+				, doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "JsEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 					
@@ -1840,13 +1841,18 @@ module.exports = {
 				types.ADD('bytesToString', function bytesToString(buf) {
 					// Raw bytes array to string, without conversion.
 
-					// TODO: Find a better solution for browsers.
+					// TODO: Find a better solution.
+
+					if (types.isTypedArray(buf)) {
+						buf = buf.buffer;
+					};
 
 					let lastChr;
 					if (buf.byteLength & 1) {
 						// <PRB> Uint16Array can't be created on an odd sized array buffer.
+						// NOTE : Assuming little endian.
 						const ar = new _shared.Natives.windowUint8Array(buf);
-						lastChr = _shared.Natives.stringFromCharCodeApply(ar[buf.byteLength - 1] << 8);
+						lastChr = _shared.Natives.stringFromCharCode(ar[buf.byteLength - 1]);
 						buf = buf.slice(0, buf.byteLength - 1);
 					};
 
@@ -1858,6 +1864,8 @@ module.exports = {
 
 				// NOTE: Experimental
 				types.ADD('stringToBytes', function stringToBytes(str, /*optional*/size) {
+					// TODO: Find a better solution.
+
 					// Raw string to bytes array, without conversion.
 					const strLen = str.length;
 					size = (types.isNothing(size) ? strLen * 2 : _shared.Natives.mathMin(strLen * 2, size));
@@ -1889,13 +1897,13 @@ module.exports = {
 					let pos = 0;
 					for (let i = 0; i < strLen && pos < size; i++) {
 						const cc = _shared.Natives.stringCharCodeAtCall(str, i);
-						bufView[pos++] = (cc & 0xFF00) >> 8;
+						bufView[pos++] = cc & 0x00FF;
 						if (pos < size) {
-							bufView[pos++] = cc & 0x00FF;
+							bufView[pos++] = (cc & 0xFF00) >> 8;
 						};
 					};
 
-					return buf;
+					return (_shared.Natives.globalBufferFrom ? _shared.Natives.globalBufferFrom(buf) : bufView);
 				});
 
 
