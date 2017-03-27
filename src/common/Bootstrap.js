@@ -129,7 +129,9 @@
 		__Internal__.classesNotCallable = true;
 		(function() {
 			try {
-				const cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
+				// <PRB> Firefox returns 'undefined' on class definition !!!
+				//const cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
+				const cls = global.eval("var a = class A {}; a"); // Will throw an error if ES6 classes are not supported.
 				__Internal__.hasClasses = (_shared.Natives.functionToStringCall(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
 				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
 				//if (__Internal__.hasClasses) {
