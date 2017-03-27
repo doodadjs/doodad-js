@@ -2660,6 +2660,7 @@ module.exports = {
 								, function set(options) {
 									let newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
 									delete newOptions.extension;
+									delete newOptions.host;
 									newOptions = types.fill(__Internal__.urlAllKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
