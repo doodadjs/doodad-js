@@ -429,7 +429,7 @@ module.exports = {
 							};
 						};
 						
-						if (!__Internal__.setCurrentLocationPending) {
+						//if (!__Internal__.setCurrentLocationPending) {
 							try {
 								let reload = false;
 								let url = files.Url.parse(_shared.Natives.windowLocation.href);
@@ -458,7 +458,7 @@ module.exports = {
 									debugger;
 								};
 							};
-						};
+						//};
 					};
 					
 					if (!__Internal__.catchAndExitCalled) {
@@ -1037,7 +1037,7 @@ module.exports = {
 				}));
 				
 				
-				__Internal__.setCurrentLocationPending = false;
+				//__Internal__.setCurrentLocationPending = false;
 				
 				tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1076,7 +1076,7 @@ module.exports = {
 						root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
 					};
 					
-					if (!__Internal__.setCurrentLocationPending) {
+					//if (!__Internal__.setCurrentLocationPending) {
 						if (!types._instanceof(url, files.Url)) {
 							url = files.Url.parse(url);
 						};
@@ -1091,31 +1091,30 @@ module.exports = {
 						const result = url.compare(_location.href);
 						if (!noReload && (result === 0)) {
 							_location.reload();
-							__Internal__.setCurrentLocationPending = true;
+
+							//__Internal__.setCurrentLocationPending = true;
+
 						} else {
-							//if (_window.history && types.isNativeFunction(_window.history.replaceState)) {
-								//_window.history.replaceState(null, null, url.toString());
+							//if ('onpageshow' in _window) {
+							//	client.addListener(_window, 'pageshow', function(ev) {
+							//		if (ev.persisted) {
+							//			_location.reload();
+							//		};
+							//	});
+							//} else if ('onunload' in _window) {
+							//	// NOTE: Only the presence of the handler forces the page to reload.
+							//	client.addListener(_window, 'unload', function(ev) {
+							//	});
 							//} else {
-							if ('onpageshow' in _window) {
-								client.addListener(_window, 'pageshow', function(ev) {
-									if (ev.persisted) {
-										_location.reload();
-									};
-								});
-							} else if ('onunload' in _window) {
-								// NOTE: Only the presence of the handler forces the page to reload.
-								const __unloadHandler = function() {
-									//client.removeListener(_window, 'unload', __unloadHandler);
-								};
-								client.addListener(_window, 'unload', __unloadHandler);
-							} else {
-								_shared.Natives.windowDocument.open('text/plain', false);
-								_shared.Natives.windowDocument.close();
-							};
+							//	_shared.Natives.windowDocument.open('text/plain', false);
+							//	_shared.Natives.windowDocument.close();
+							//};
+
 							_location.href = url.toString();
-							__Internal__.setCurrentLocationPending = (result !== 0);
+
+							//__Internal__.setCurrentLocationPending = (result !== 0);
 						};
-					};
+					//};
 
 					if (!dontAbort) {
 						throw new types.PageMovedError();
