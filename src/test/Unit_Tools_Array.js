@@ -168,7 +168,7 @@ module.exports = {
 					
 					
 					command = test.prepareCommand(tools.every, "Doodad.Tools.every");
-					command.run(false,                                            {repetitions: 100}  /**/);
+					command.run(true,                                             {repetitions: 100}  /**/);
 					command.run(true,                                             {repetitions: 100}, /**/ []);
 					command.run(true,                                             {repetitions: 100}, /**/ [], "a");
 					command.run(false,                                            {repetitions: 100}, /**/ ["a", "a", "a", "a", "a"]);
