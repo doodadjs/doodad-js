@@ -56,7 +56,7 @@ From Javascript, when the script is loaded, create the root namespace :
 
 You can create a shortcut to the namespaces this way :
 ```js
-    var doodad = root.Doodad,
+    const doodad = root.Doodad,
         types = doodad.Types,
         tools = doodad.Tools,
         mixins = doodad.MixIns,
