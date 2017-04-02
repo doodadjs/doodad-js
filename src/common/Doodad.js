@@ -1744,7 +1744,8 @@ module.exports = {
 
 						preInit: types.SUPER(function preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 							const retVal = this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-							if (this.__isFromStorage(attribute)) {
+							const storage = (forType ? typeStorage : instanceStorage);
+							if (storage && this.__isFromStorage(attribute)) {
 								return retVal || !((this.isProto === null) || !isProto || (isProto === this.isProto));   // 'true' === Cancel init
 							} else {
 								return retVal || !((this.isProto === null) || (isProto === null) || (isProto === this.isProto));   // 'true' === Cancel init
@@ -1814,7 +1815,7 @@ module.exports = {
 									value = storage;
 								};
 
-								if (this.__isFromStorage(attribute)) {
+								if (storage && this.__isFromStorage(attribute)) {
 									storage[attr] = value; // stored regardless of "isProto"
 
 									if (attr !== __Internal__.symbolAttributesStorage) {
@@ -1854,7 +1855,7 @@ module.exports = {
 
 						remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 								if (!this.isPersistent) {
-									if (this.__isFromStorage(attribute)) {
+									if (storage && this.__isFromStorage(attribute)) {
 										delete storage[attr];
 									} else {
 										delete obj[attr];
@@ -2922,12 +2923,14 @@ module.exports = {
 								value = this.createDispatch(attr, obj, attribute, value);
 
 								if (root.getOptions().debug || __options__.enforcePolicies) {
-									if (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride) {
-										if (!typeStorage[__Internal__.symbolMustOverride]) {
-											typeStorage[__Internal__.symbolMustOverride] = attr;
+									if (typeStorage) {
+										if (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride) {
+											if (!typeStorage[__Internal__.symbolMustOverride]) {
+												typeStorage[__Internal__.symbolMustOverride] = attr;
+											};
+										} else if (typeStorage[__Internal__.symbolMustOverride] === attr) {
+											typeStorage[__Internal__.symbolMustOverride] = null;
 										};
-									} else if (typeStorage[__Internal__.symbolMustOverride] === attr) {
-										typeStorage[__Internal__.symbolMustOverride] = null;
 									};
 								};
 
