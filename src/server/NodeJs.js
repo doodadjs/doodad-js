@@ -75,6 +75,7 @@ module.exports = {
 					caseSensitive: null,
 
 					symbolHandler: types.getSymbol('__HANDLER__'),
+					symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
 				};
 				
 				//===================================
@@ -440,7 +441,7 @@ module.exports = {
 				// Shutdown & Exit
 				//=====================================
 				
-				__Internal__.catchAndExitCalled = false;
+				//__Internal__.catchAndExitCalled = false;
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
 					if (!err.critical && err.bubble) {
@@ -451,15 +452,15 @@ module.exports = {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
-					if (__Internal__.catchAndExitCalled) {
-						// Process didn't exit before another error happened !!! Something is wrong.
-						if (root.getOptions().debug) {
-							debugger;
-						};
-
-						_shared.Natives.processExit(_shared.Natives.process.exitCode || 1);
-
-					} else {
+					//if (__Internal__.catchAndExitCalled) {
+					//	// Process didn't exit before another error happened !!! Something is wrong.
+					//	if (root.getOptions().debug) {
+					//		debugger;
+					//	};
+					//
+					//	_shared.Natives.processExit(_shared.Natives.process.exitCode || 1);
+					//
+					//} else {
 						err.trapped = true;
 
 						__Internal__.catchAndExitCalled = true;
@@ -486,10 +487,12 @@ module.exports = {
 							};
 						};
 						
-						// Give time to the error to propagate then exit.
-						tools.callAsync(_shared.Natives.processExit, 0);
-					};
-					
+					//	// Give time to the error to propagate then exit.
+					//	tools.callAsync(_shared.Natives.processExit, 0);
+					//};
+
+					_shared.Natives.processExit();
+
 					throw err;
 				});
 				
@@ -2022,7 +2025,7 @@ module.exports = {
 							fileCallbacks = __Internal__.watchedFiles[path];
 						} else {
 							fileCallbacks = [];
-							nodeFs.watch(path, {persistent: false}, doodad.Callback(this, function(event, filename) {
+							nodeFs.watch(path, {persistent: false}, doodad.Callback(null, function(event, filename) {
 								const callbacks = __Internal__.watchedFiles[path];
 								for (let i = callbacks.length - 1; i >= 0; i--) {
 									let callback = callbacks[i];
@@ -2331,12 +2334,10 @@ module.exports = {
 									emitters = [emitters];
 								};
 
-								const self = this,
-									fn = this[__Internal__.symbolHandler];
-								
 								const createHandler = function(emitter, eventType) {
 									let ignore = false;
-									const handler = doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
+									const self = this;
+									const handler = doodad.Callback(this[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
 										if (!ignore) {
 											if (once) {
 												self.detach(emitter);
@@ -2349,7 +2350,7 @@ module.exports = {
 												type: eventType,
 												data: context,
 											};
-											return fn.apply(this, types.append([ctx], arguments));
+											return self[__Internal__.symbolHandler].apply(this, types.append([ctx], arguments));
 										};
 									});
 									return handler;
@@ -2360,7 +2361,7 @@ module.exports = {
 								for (let j = 0; j < emitters.length; j++) {
 									if (types.has(emitters, j)) {
 										const emitter = emitters[j],
-											handler = createHandler(emitter, eventType);
+											handler = createHandler.call(this, emitter, eventType);
 										if (this._super(this[_shared.ObjectSymbol], this, (prepend ? 10 : null), [emitter, eventType, handler])) {
 											if (once) {
 												if (prepend) {
@@ -2419,8 +2420,8 @@ module.exports = {
 									};
 								};
 							}),
-
-							promise: function promise(emitters, /*optional*/context) {
+/*
+							promise: function promise(emitters, /*optional* /context) {
 								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 								const canReject = this[_shared.ExtenderSymbol].canReject;
 								const Promise = types.getPromise();
@@ -2442,7 +2443,7 @@ module.exports = {
 										destroy && obj.onDestroy.detach(null, destroyFn);
 									};
 
-									this.attachOnce(emitters, context, successFn = function(context, err /*, paramarray*/) {
+									this.attachOnce(emitters, context, successFn = function(context, err /*, paramarray* /) {
 										cleanup();
 										if (canReject && types.isError(err)) {
 											reject(err);
@@ -2476,6 +2477,7 @@ module.exports = {
 
 								}, this);
 							},
+*/
 						}
 					)));
 				
@@ -2528,10 +2530,49 @@ module.exports = {
 						return options;
 					}),
 
+					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
+						if (sourceIsProto) {
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
+							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+							if (handlerSrc) {
+								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+								const extender = handlerSrc[_shared.ExtenderSymbol];
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+								return destAttribute;
+							} else {
+								const extender = handlerDest[_shared.ExtenderSymbol];
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								return destAttribute;
+							};
+						} else {
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
+							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+							const extender = handlerSrc[_shared.ExtenderSymbol];
+							destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
+							const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
+							destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
+							return destAttribute;
+						};
+					}),
+
+					postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
+						const handler = destAttribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+						};
+
+						return this._super(attr, destAttributes, destAttribute);
+					}),
+
 					init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
 						this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 
-						_shared.setAttribute(obj[attr], __Internal__.symbolHandler, attribute[__Internal__.symbolHandler], {});
+						const handler = attribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							extender.init(__Internal__.symbolHandler, obj[attr], attributes, null, null, forType, handler, types.unbox(handler), isProto);
+						};
 					}),
 				})));
 
@@ -2591,7 +2632,6 @@ module.exports = {
 							for (let i = 0; i < stackLen; i++) {
 								const data = clonedStack[i],
 									obj = data[0],
-									fn = data[1],
 									evDatas = data[3],
 									emitter = evDatas[0];
 									
@@ -2600,7 +2640,6 @@ module.exports = {
 
 									const handler = evDatas[2];
 
-									//_shared.invoke(obj, handler, arguments, _shared.SECRET);
 									handler.apply(obj, _shared.Natives.arraySliceCall(arguments, 1));
 								};
 							};
@@ -2619,7 +2658,7 @@ module.exports = {
 						};
 					}, extenders.NodeEvent, {enableScopes: true, eventType: eventType}))));
 
-					eventFn[__Internal__.symbolHandler] = fn;
+					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(fn));
 
 					return eventFn;
 				}));
