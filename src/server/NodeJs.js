@@ -130,23 +130,6 @@ module.exports = {
 					return (typeof obj === 'object') && (buffer instanceof _shared.Natives.globalBuffer);
 				})));
 				
-				//if (global.global.Uint8Array) {
-				//	// Source: http://stackoverflow.com/questions/23822724/nodejs-javascript-typedarray-to-buffer-to-string-and-back-again
-				//	// TODO: Test and Check if there is a faster way
-				//	types.ADD('typedArrayToBuffer', function typedArrayToBuffer(ab) {
-				//		const buffer = new global.Buffer(ab.byteLength);
-				//		const view = new global.Uint8Array(ab);
-				//		for (let i = 0; i < buffer.length; i++) {
-				//			buffer[i] = view[i];
-				//		}
-				//		return buffer;
-				//	});
-				//} else {
-				//	types.ADD('typedArrayToBuffer', function typedArrayToBuffer(ab) {
-				//		throw new types.NotSupported("'typedArrayToBuffer' is not supported.");
-				//	});
-				//};
-
 				//===================================
 				// Emitters
 				//===================================
@@ -441,8 +424,6 @@ module.exports = {
 				// Shutdown & Exit
 				//=====================================
 				
-				//__Internal__.catchAndExitCalled = false;
-				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
 					if (!err.critical && err.bubble) {
 						// Ignore errors like "ScriptInterruptedError".
@@ -451,45 +432,32 @@ module.exports = {
 
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
-					
-					//if (__Internal__.catchAndExitCalled) {
-					//	// Process didn't exit before another error happened !!! Something is wrong.
-					//	if (root.getOptions().debug) {
-					//		debugger;
-					//	};
-					//
-					//	_shared.Natives.processExit(_shared.Natives.process.exitCode || 1);
-					//
-					//} else {
-						err.trapped = true;
 
-						__Internal__.catchAndExitCalled = true;
-						
-						_shared.Natives.process.exitCode = 1; // 1 = General error
+					err.trapped = true;
 
-						try {
-							if (types._instanceof(err, types.ScriptAbortedError)) {
-								_shared.Natives.process.exitCode = err.exitCode;
-							} else {
-								_shared.Natives.processStdErrWrite("<FATAL ERROR> " + err.message + '\n' + err.stack + '\n');
-							};
-						} catch(o) {
-							if (root.getOptions().debug) {
-								debugger;
-							};
-						};
+					__Internal__.catchAndExitCalled = true;
 						
-						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: _shared.Natives.process.exitCode}})); // sync
-						} catch(o) {
-							if (root.getOptions().debug) {
-								debugger;
-							};
+					_shared.Natives.process.exitCode = 1; // 1 = General error
+
+					try {
+						if (types._instanceof(err, types.ScriptAbortedError)) {
+							_shared.Natives.process.exitCode = err.exitCode;
+						} else {
+							_shared.Natives.processStdErrWrite("<FATAL ERROR> " + err.message + '\n' + err.stack + '\n');
 						};
+					} catch(o) {
+						if (root.getOptions().debug) {
+							debugger;
+						};
+					};
 						
-					//	// Give time to the error to propagate then exit.
-					//	tools.callAsync(_shared.Natives.processExit, 0);
-					//};
+					try {
+						tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: _shared.Natives.process.exitCode}})); // sync
+					} catch(o) {
+						if (root.getOptions().debug) {
+							debugger;
+						};
+					};
 
 					_shared.Natives.processExit();
 
@@ -2605,8 +2573,6 @@ module.exports = {
 						root.DD_ASSERT(types.isJsFunction(val), "Invalid function.");
 					};
 					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx /*paramarray*/) {
-						!!this._super.apply(this, arguments);
-
 						const dispatch = this[_shared.CurrentDispatchSymbol],
 							stack = dispatch[_shared.StackSymbol];
 						
@@ -2628,34 +2594,19 @@ module.exports = {
 							
 						const stackLen = clonedStack.length;
 
-						try {
-							for (let i = 0; i < stackLen; i++) {
-								const data = clonedStack[i],
-									obj = data[0],
-									evDatas = data[3],
-									emitter = evDatas[0];
+						for (let i = 0; i < stackLen; i++) {
+							const data = clonedStack[i],
+								obj = data[0],
+								evDatas = data[3],
+								emitter = evDatas[0];
 									
-								if ((!ctx || (emitter === ctx.emitter)) && (data[4] > 0)) {
-									data[4]--;
+							if (!ctx || (emitter === ctx.emitter)) {
+								const handler = evDatas[2];
 
-									const handler = evDatas[2];
-
-									handler.apply(obj, _shared.Natives.arraySliceCall(arguments, 1));
-								};
-							};
-
-						} catch(ex) {
-							throw ex;
-
-						} finally {
-							const removed = types.popItems(stack, function(data) {
-								return (data[4] <= 0);
-							});
-							if (removed.length) {
-								dispatch[_shared.SortedSymbol] = false;
-								dispatch[_shared.ClonedStackSymbol] = null;
+								handler.apply(obj, _shared.Natives.arraySliceCall(arguments, 1));
 							};
 						};
+
 					}, extenders.NodeEvent, {enableScopes: true, eventType: eventType}))));
 
 					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(fn));

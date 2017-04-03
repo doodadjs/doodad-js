@@ -976,17 +976,7 @@ module.exports = {
 						const val = types.unbox(fn);
 						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 					};
-					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*optional*/ev) {
-						!!this._super.apply(this, arguments);
-
-						if (!ev && ctx) {
-							ev = ctx.event;
-						};
-
-						if (!ev) {
-							throw new types.Error("Event object is missing.");
-						};
-
+					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
 						const dispatch = this[_shared.CurrentDispatchSymbol],
 							stack = dispatch[_shared.StackSymbol];
 						
@@ -1008,32 +998,16 @@ module.exports = {
 							
 						const stackLen = clonedStack.length;
 
-						try {
-							for (let i = 0; i < stackLen; i++) {
-								const data = clonedStack[i],
-									obj = data[0],
-									evDatas = data[3],
-									element = evDatas[0];
+						for (let i = 0; i < stackLen; i++) {
+							const data = clonedStack[i],
+								obj = data[0],
+								evDatas = data[3],
+								element = evDatas[0];
 									
-								if ((!ctx || (element === ctx.element)) && (data[4] > 0)) {
-									data[4]--;
+							if (!ctx || (element === ctx.element)) {
+								const handler = evDatas[2];
 
-									const handler = evDatas[2];
-
-									handler.call(obj, ev);
-								};
-							};
-
-						} catch(ex) {
-							throw ex;
-
-						} finally {
-							const removed = types.popItems(stack, function(data) {
-								return (data[4] <= 0);
-							});
-							if (removed.length) {
-								dispatch[_shared.SortedSymbol] = false;
-								dispatch[_shared.ClonedStackSymbol] = null;
+								handler.call(obj, ctx);
 							};
 						};
 					}, extenders.JsEvent, {enableScopes: true, eventType: eventType}))));
