@@ -183,14 +183,19 @@ module.exports = {
 						if (!__Internal__.unhandledErrorEvent.has(listener)) {
 							const handler = function(msg, url, lineNo, columnNo, error) {
 								if (!error) {
-									// <PRB> Not every browsers supports the "error" argument
-									error = new types.Error(msg);
-									error.stack = "";
-									error.fileName = error.sourceURL = url;
-									error.line = error.lineNumber = lineNo;
-									error.columnNumber = columnNo;
-									error.functionName = "";
-									error.parsed = true;
+									if (!types.isString(msg)) {
+										// IE
+										error = msg;
+									} else {
+										// <PRB> Not every browsers supports the "error" argument
+										error = new types.Error(msg);
+										error.stack = "";
+										error.fileName = error.sourceURL = url;
+										error.line = error.lineNumber = lineNo;
+										error.columnNumber = columnNo;
+										error.functionName = "";
+										error.parsed = true;
+									};
 								};
 								listener(new types.CustomEvent('unhandlederror', {
 									detail: {
