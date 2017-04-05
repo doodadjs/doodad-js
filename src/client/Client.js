@@ -239,7 +239,13 @@ module.exports = {
 				});
 				
 				types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
-					if (event === 'unhandledrejection') {
+					if (event === 'unhandlederror') {
+						if (__Internal__.unhandledErrorEvent.has(listener)) {
+							const handler = __Internal__.unhandledErrorEvent.get(listener);
+							client.removeListener(global, 'error', handler);
+							__Internal__.unhandledErrorEvent.delete(listener);
+						};
+					} else if (event === 'unhandledrejection') {
 						if (__Internal__.unhandledRejectionEvent.has(listener)) {
 							const handler = __Internal__.unhandledRejectionEvent.get(listener);
 							client.removeListener(global, event, handler);
