@@ -73,7 +73,7 @@ module.exports = {
 				
 				const __options__ = types.extend({
 					enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
-					defaultScriptTimeout: 10000,		// milliseconds
+					defaultScriptTimeout: 120000,		// milliseconds
 				}, _options);
 
 				__options__.enableDomObjectsModel = types.toBoolean(__options__.enableDomObjectsModel);
