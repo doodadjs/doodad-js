@@ -1,5 +1,3 @@
-"use strict";
-
 require('doodad-js').createRoot()
 	.then(root => {
 		const doodad = root.Doodad,
