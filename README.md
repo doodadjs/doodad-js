@@ -28,23 +28,25 @@ Object-oriented programming framework for Javascript.
 
 ## Quick Start
 
-### Browsers
+### Browsers (without a bundler)
 
 Download and extract the .zip file from the [latest release][latest-url].
 
-In your HTML, load the Doodad package :
+In your HTML file, load UUID and the Doodad package :
 
 ```html
+	<script src="lib/uuid/uuid.min.js"></script>
 	<script src="doodad-js.js"></script>
 ```
 
-or its debug version :
+or their debug version :
 
 ```html
+	<script src="lib/uuid/uuid.js"></script>
 	<script src="doodad-js_debug.js"></script>
 ```
 
-From Javascript, when the script is loaded, create the root namespace :
+From Javascript, when the scripts are loaded, create the root namespace :
 
 ```js
 	window.createRoot()
