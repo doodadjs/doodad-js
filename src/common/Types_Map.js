@@ -189,11 +189,13 @@ module.exports = {
 							if (ar) {
 								const len = ar.length;
 								for (let i = 0; i < len; i++) {
-									const item = ar[i];
-									keys.push(item[0]);
-									vals.push(item[1]);
+									if (types.has(ar, i)) {
+										const item = ar[i];
+										keys.push(item[0]);
+										vals.push(item[1]);
+									};
 								};
-								_shared.setAttribute(this, 'size', len);
+								_shared.setAttribute(this, 'size', keys.length);
 							};
 						}),
 						has: function has(key) {
