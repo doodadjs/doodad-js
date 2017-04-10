@@ -81,8 +81,10 @@ module.exports = {
 								}, this);
 							} else if (types.isArrayLike(ar)) {
 								for (let i = 0; i < ar.length; i++) {
-									const item = ar[i];
-									this.set(item[0], item[1]);
+									if (types.has(ar, i)) {
+										const item = ar[i];
+										this.set(item[0], item[1]);
+									};
 								};
 							} else {
 								throw types.TypeError("Invalid array.");
