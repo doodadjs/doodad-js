@@ -2985,7 +2985,7 @@
 		__Internal__.nodeUUID = null;
 		if (typeof require === 'function') {
 			try {
-				// NOTE: Client-side 'uuid' is browserified and made available through "require"
+				// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
 				__Internal__.nodeUUID = require('uuid');
 			} catch(ex) {
 			};
@@ -3005,10 +3005,7 @@
 				if (__Internal__.nodeUUID) {
 					return __Internal__.nodeUUID();
 				} else {
-					// Source: https://gist.github.com/LeverOne
-					let a, b;
-					for (b = a = ''; a++ < 36; b += a * 51 & 52 ? (a^15 ? 8^_shared.Natives.mathRandom() * (a^20 ? 16 : 4) : 4).toString(16) : '-');
-					return b
+					throw new global.Error("Package 'uuid' is missing.");
 				};
 			})
 		);
@@ -7088,7 +7085,6 @@
 				"use strict";
 				// <PRB> "{...}" and "function ..." need parentheses.
 				return eval('(' + arguments[0] + ')');
-					
 			},
 			evalWithCtx: function(ctx /*, expr*/) {
 				// NOTE: "ctx" is to be used by the expression
