@@ -83,7 +83,7 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				tools.ADD('getOptions', function() {
+				tools.ADD('getOptions', function getOptions() {
 					return __options__;
 				});
 

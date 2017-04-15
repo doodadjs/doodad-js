@@ -178,7 +178,7 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				doodad.ADD('getOptions', function() {
+				doodad.ADD('getOptions', function getOptions() {
 					return __options__;
 				});
 
@@ -1267,7 +1267,7 @@ module.exports = {
 									return type;
 								})),
 
-							_new: types.SUPER(function() {
+							_new: types.SUPER(function _new() {
 									this._super();
 									_shared.setAttributes(this, {
 										$cache: types.nullObject(),

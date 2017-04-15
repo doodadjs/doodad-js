@@ -81,7 +81,7 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				client.ADD('getOptions', function() {
+				client.ADD('getOptions', function getOptions() {
 					return __options__;
 				});
 				
@@ -1311,7 +1311,7 @@ module.exports = {
 								};
 							};
 						},
-						start: function() {
+						start: function start() {
 							if (!this.launched) {
 								this.launched = true;
 								

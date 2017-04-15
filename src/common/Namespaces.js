@@ -940,7 +940,7 @@ module.exports = {
 				// Registry object
 				//-----------------------------------
 					
-				__Internal__.NamespaceGetter = function() {};
+				__Internal__.NamespaceGetter = function NamespaceGetter() {};
 					
 				__Internal__.RegistryIterator = types.INIT(types.Iterator.$inherit(
 					{

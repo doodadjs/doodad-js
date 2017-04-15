@@ -62,7 +62,7 @@ module.exports = {
 
 				//types.freezeObject(__options__);
 
-				//config.ADD('getOptions', function() {
+				//config.ADD('getOptions', function getOptions() {
 				//	return __options__;
 				//});
 				

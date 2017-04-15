@@ -592,7 +592,7 @@ module.exports = {
 								this.initOptions = initOptions;
 							}),
 							
-							start: function() {
+							start: function start() {
 								if (!this.launched) {
 									this.launched = true;
 									
