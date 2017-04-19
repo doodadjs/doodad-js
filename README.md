@@ -204,7 +204,7 @@ Doodad must be built using [doodad-js-make][make-url] and its dependencies.
 
 ## Pre-built Errors
 
-  - **types.TypeError**: (alias to 'global.TypeError') Raised on invalid value type.
+  - **types.TypeError**: (inherits 'global.TypeError') Raised on invalid value type.
   - **types.Error**: (inherits 'global.Error') Generic error with message formatting.
   - **types.AssertionError**: (inherits 'types.Error') Raised when an assertion fail.
   - **types.ParseError**: (inherits 'types.Error') Raised on parse error.
