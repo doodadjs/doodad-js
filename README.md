@@ -386,6 +386,35 @@ Example 5 (expandable objects) :
 	console.log(perrot.makeNoise());
 ```
 
+## Future
+
+I personally hope that the TC39 will adopt some parts of my works, but that's very difficult for an individual like me to be understood and taken seriously.
+
+Maybe I'll try to write a Babel plugin to get something like the following :
+
+
+```js
+    @interface
+    class Turtles {
+        talk()
+    }
+
+    class SmallTurtle implements Turtles {
+	    @override
+        talk() {
+            return "hi";
+        }
+    }
+
+    class GiantTurtle implements Turtles {
+        @override
+        talk() {
+            return "HI";
+        }
+    }
+```
+
+
 ## Other available packages
 
   - **doodad-js**: Object-oriented programming framework (release)
