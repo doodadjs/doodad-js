@@ -400,7 +400,7 @@ Maybe I'll try to write a Babel plugin to get something like the following :
     }
 
     class SmallTurtle implements Turtles {
-	    @override
+        @override
         talk() {
             return "hi";
         }
