@@ -2876,7 +2876,7 @@
 							},
 						},
 						returns: 'object',
-						description: "Prevent extensions of the object when supported and returns that same object. Otherwise, returns that object untouched. Note that it can't be reverted for the moment (ES5).",
+						description: "Prevent extensions of the object returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
 			, function preventExtensions(obj) {
@@ -2898,7 +2898,7 @@
 							},
 						},
 						returns: 'object',
-						description: "Seals the object when supported and returns that same object. Otherwise returns the object untouched.",
+						description: "Seals the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
 			,function sealObject(obj) {
@@ -2921,7 +2921,7 @@
 							},
 						},
 						returns: 'object',
-						description: "Freezes the object when supported and returns that same object. Otherwise returns the object untouched. Note that it can't be reverted for the moment (ES5).",
+						description: "Freezes the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
 			, function freezeObject(obj) {
@@ -2935,6 +2935,10 @@
 		
 		if (types.isArray(_options)) {
 			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
+		//! IF_UNSET("serverSide")
+		} else {
+			_options = types.depthExtend(15, {}, ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined), _options);
+		//! END_IF()
 		};
 
 		const __options__ = types.depthExtend(15, {
@@ -2943,7 +2947,6 @@
 				debug: true,					// When 'true', will be in 'debug mode'.
 				fromSource: true,				// When 'true', loads source code instead of built code
 				enableProperties: true,			// When 'true', enables "defineProperty"
-				// SLOW enableProxies: true,	// Enables or disables ES6 Proxies
 				enableAsserts: true,			// When 'true', enables asserts.
 			//! END_IF()
 			
@@ -2954,7 +2957,6 @@
 		__options__.fromSource = types.toBoolean(__options__.fromSource);
 		__options__.enableProperties = types.toBoolean(__options__.enableProperties);
 		__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
-		//__options__.enableProxies = types.toBoolean(__options__.enableProxies);
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
 		_shared.SECRET = types.get(__options__, 'secret');
@@ -2986,6 +2988,7 @@
 		if (typeof require === 'function') {
 			try {
 				// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
+				//       Also it works with Node.js and bundlers.
 				__Internal__.nodeUUID = require('uuid');
 			} catch(ex) {
 			};
@@ -3040,9 +3043,9 @@
 						description: "Returns 'true' if 'getSymbolFor' is available and enabled. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function hasGetSymbolForEnabled() {
+			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function hasGetSymbolEnabled() {
 				return true;
-			} : function hasGetSymbolForEnabled() {
+			} : function hasGetSymbolEnabled() {
 				return false;
 			})));
 			
@@ -3227,48 +3230,10 @@
 		
 		__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IS_TYPE')), true) */ '__DD_IS_TYPE__' /*! END_REPLACE() */, true);
 		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
-		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
-
-		_shared.getUUID = function getUUID(obj) {
-			if (!types.isObjectLike(obj)) {
-				return null;
-			};
-			let type;
-			if (types.isFunction(obj)) {
-				type = obj;
-			} else {
-				type = obj.constructor;
-				if (!types.isFunction(type)) {
-					// Invalid constructor
-					return null;
-				};
-			};
-			let uuid;
-			const isType = types.isType(type);
-			if (isType) {
-				uuid = types.get(type, __Internal__.symbolTypeUUID);
-				// TODO: Is the following necessary ?
-				//if (uuid && (types.get(type.prototype, __Internal__.symbolTypeUUID) !== uuid)) {
-				//	// Invalid type
-				//	return null;
-				//};
-			} else {
-				uuid = types.get(type, _shared.UUIDSymbol);
-				// TODO: Is the following necessary ?
-				//if (uuid && (types.get(type.prototype, _shared.UUIDSymbol) !== uuid)) {
-				//	// Invalid type
-				//	return null;
-				//};
-			};
-			if (uuid && !isType && !types.isNativeFunction(type) && !types.isErrorType(type)) {
-				uuid = /*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + uuid;
-			};
-			return (uuid || null);
-		};
-
 		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
 		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('$IS_SINGLETON')), true) */ '$IS_SINGLETON' /*! END_REPLACE() */, true);
 		__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SINGLETON')), true) */ 'SINGLETON' /*! END_REPLACE() */, true);
+		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('isType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3332,6 +3297,43 @@
 			, function isJsObject(obj) {
 				return types.isObject(obj) && !types.getType(obj);
 			}));
+
+		_shared.getUUID = function getUUID(obj) {
+			if (!types.isObjectLike(obj)) {
+				return null;
+			};
+			let type;
+			if (types.isFunction(obj)) {
+				type = obj;
+			} else {
+				type = obj.constructor;
+				if (!types.isFunction(type)) {
+					// Invalid constructor
+					return null;
+				};
+			};
+			let uuid;
+			const isType = types.isType(type);
+			if (isType) {
+				uuid = types.get(type, __Internal__.symbolTypeUUID);
+				// TODO: Is the following necessary ?
+				//if (uuid && (types.get(type.prototype, __Internal__.symbolTypeUUID) !== uuid)) {
+				//	// Invalid type
+				//	return null;
+				//};
+			} else {
+				uuid = types.get(type, _shared.UUIDSymbol);
+				// TODO: Is the following necessary ?
+				//if (uuid && (types.get(type.prototype, _shared.UUIDSymbol) !== uuid)) {
+				//	// Invalid type
+				//	return null;
+				//};
+			};
+			if (uuid && !isType && !types.isNativeFunction(type) && !types.isErrorType(type)) {
+				uuid = /*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE')), true) */ '__JS_TYPE__' /*! END_REPLACE() */ + uuid;
+			};
+			return (uuid || null);
+		};
 
 		__Internal__.ADD('baseof', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3966,7 +3968,7 @@
 							},
 						},
 						returns: 'any',
-						description: "Invoke a method or a function as from inside the object.",
+						description: "Invokes a method or a function as from inside the object.",
 			}
 			//! END_REPLACE()
 			, function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
