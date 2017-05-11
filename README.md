@@ -232,7 +232,7 @@ Doodad must be built using [doodad-js-make][make-url] and its dependencies.
   - **namespaces.Entries.Module**: (inherits 'namespaces.Entries.Namespace') Module registry entry.
   - **namespaces.Entries.Application**: (inherits 'namespaces.Entries.Namespace') Application registry entry.
   - **namespaces.get**: Returns the namespace object of the specified namespace from the registry.
-  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(/*optional*/modules, /*optional*/options, /*optional*/callback)
+  - **namespaces.load**: Load modules and get them ready to be used. Usage: namespaces.load(modules, /*optional*/options, /*optional*/callback)
   - **[namespace].REGISTER**: Registers a class in the namespace object.
   - **[namespace].UNREGISTER**: Unregisters a class from the namespace object.
 
@@ -388,19 +388,17 @@ Example 5 (expandable objects) :
 
 ## Future
 
-I personally hope that the TC39 will adopt some parts of my works, but that's very difficult for an individual like me to be understood and taken seriously.
-
 Maybe I'll try to write a Babel plugin to get something like the following :
-
 
 ```js
     @interface
     class Turtles {
+        @returns(types.isString)
         talk()
     }
 
     class SmallTurtle implements Turtles {
-	    @override
+        @override
         talk() {
             return "hi";
         }
@@ -414,6 +412,7 @@ Maybe I'll try to write a Babel plugin to get something like the following :
     }
 ```
 
+But I have to wait on what will be feasible after current proposals like "decorators", "public fields" and "private fields".
 
 ## Other available packages
 
