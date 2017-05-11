@@ -95,16 +95,14 @@ module.exports = {
 				
 				_shared.pathParser = function pathParser(path, /*optional*/options) {
 					if (!types._instanceof(path, files.Path)) {
-						if (!options) {
-							options = {
-								os: 'linux',
-								dirChar: '/',
-							};
-						};
+						options = types.extend({
+							os: 'linux',
+							dirChar: '/',
+						}, options);
 
 						path = files.Path.parse(path, options).set({
-							os: null,
-							dirChar: null,
+							os: null, // switch to default
+							dirChar: null, // switch to default
 						});
 					};
 					return path;
