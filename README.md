@@ -366,24 +366,23 @@ Example 5 (expandable objects) :
         makeNoise: doodad.MUST_OVERRIDE(),
     })));
 
-	const perrot = new doodad.Object();
-	
-	perrot.extend(
-                IAnimal, // Implements "IAnimal"
-			{
-				phrase: null,
-				create: doodad.OVERRIDE(function(phrase) {
-					this._super();
-					this.phrase = phrase;
-				}),
-				makeNoise: doodad.OVERRIDE(function() {
-					return this.phrase;
-				}),
-			}
-		)
-		.create("Hello world !");
+    const perrot = new doodad.Object();
 
-	console.log(perrot.makeNoise());
+    perrot.extend(
+            IAnimal, // Implements "IAnimal"
+        {
+            phrase: null,
+            create: doodad.OVERRIDE(function(phrase) {
+                this._super();
+                this.phrase = phrase;
+            }),
+            makeNoise: doodad.OVERRIDE(function() {
+                return this.phrase;
+            }),
+       })
+       .create("Hello world !");
+
+    console.log(perrot.makeNoise());
 ```
 
 ## Future
