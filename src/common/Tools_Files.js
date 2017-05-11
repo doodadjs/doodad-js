@@ -82,7 +82,7 @@ module.exports = {
 				};
 				
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
-					if (types.isString(url)) {
+					if (!types._instanceof(url, files.Url)) {
 						if (!options) {
 							options = {
 								noEscapes: true,
@@ -94,7 +94,7 @@ module.exports = {
 				};
 				
 				_shared.pathParser = function pathParser(path, /*optional*/options) {
-					if (types.isString(path)) {
+					if (!types._instanceof(path, files.Path)) {
 						if (!options) {
 							options = {
 								os: 'linux',
