@@ -941,7 +941,7 @@ module.exports = {
 				_shared.DESTROYED = function DESTROYED(obj) {
 					if (types._implements(obj, mixIns.Creatable)) {
 						const destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
-						return (destroyed !== false); // NOTE: Can be "null" for "not created".
+						return (types.isType(obj) ? !!destroyed : (destroyed !== false)); // NOTE: Can be "null" for "not created".
 					} else {
 						return __Internal__.oldDESTROYED(obj);
 					};
