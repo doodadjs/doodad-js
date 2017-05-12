@@ -27,7 +27,38 @@
 module.exports.add = function(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 
-	DD_MODULES.options = /*! INCLUDE(VAR("config"), 'utf-8') */;
+	const has = function(obj, key) {
+		return obj && Object.prototype.hasOwnProperty.call(obj, key);
+	};
+
+	const config = /*! INCLUDE(VAR("config"), 'utf-8') */;
+
+	//! IF_SET('debug')
+		if (!has(config, 'startup')) {
+			config.startup = {};
+		};
+		if (!has(config, 'Doodad.Tools')) {
+			config['Doodad.Tools'] = {};
+		};
+
+		// Debug mode
+		config.startup.debug = true;
+
+		// Will load modules from source
+		config.startup.fromSource = true;
+
+		// Enable some validations on debug
+		config.startup.enableAsserts = true;
+		config.startup.enableProperties = true;
+
+		// Ease debug
+		config.startup.enableSymbols = false;
+
+		// Enable all log levels
+		config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+	//! END_IF()
+
+	DD_MODULES.options = config;
 
 	//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
