@@ -1587,8 +1587,8 @@
 						rawFunctionName: rawFunctionName,
 						functionName: ((functionName === "eval code") ? '' : functionName),
 						path: (path || ''),
-						lineNumber: types.toInteger(call[10] || call[13] || -1),
-						columnNumber: types.toInteger(call[15] || -1),
+						lineNumber: types.toInteger(call[10] || call[13] || -1), // Starts at 1. Number -1 is for "unknown".
+						columnNumber: types.toInteger(call[15] || -1), // Starts at 1. Number -1 is for "unknown".
 						isSystemPath: isSystemPath,
 					});
 					
