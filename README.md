@@ -49,8 +49,8 @@ or their debug version :
 From Javascript, when the scripts are loaded, create the root namespace :
 
 ```js
-	window.createRoot()
-		.then(root => ...)
+    window.createRoot()
+        .then(root => ...)
         .catch(err => {
             console.error(err);
         });
@@ -90,7 +90,7 @@ Linux/Unix :
 Now, from Javascript, create the root namespace :
 ```js
     require('doodad-js').createRoot()
-		.then(root => ...)
+        .then(root => ...)
         .catch(err => {
             console.error(err);
         });
