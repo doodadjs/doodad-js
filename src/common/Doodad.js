@@ -6432,7 +6432,7 @@ module.exports = {
 								// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
 								const Promise = types.getPromise();
 								if (callback) {
-									callback = new _shared.PromiseCallback(thisObj, callback);
+									callback = _shared.PromiseCallback(thisObj, callback);
 								};
 								return Promise.create(function eventPromise(resolve, reject) {
 										const self = this,
@@ -6477,7 +6477,7 @@ module.exports = {
 										};
 
 										if (destroy) {
-											obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
+											obj.onDestroy.attachOnce(null, destroyFn = function(ev) {
 												cleanup();
 												// NOTE: We absolutly must reject the Promise.
 												reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
