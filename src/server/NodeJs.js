@@ -1595,13 +1595,13 @@ module.exports = {
 								if (index >= 0) {
 									return readdir(base.set({path: ar.slice(0, index)}))
 										.then(function resolve(names) {
-											const name = ar[index],
-												nameLc = name.toLowerCase();
+											const name = ar[index];
 											let resolved = names.filter(function(n) {return n === name})[0];
 											if (!resolved) {
+												const nameLc = name.toLowerCase();
 												resolved = names.filter(function(n) {return n.toLowerCase() === nameLc})[0];
+												ar[index] = resolved;
 											};
-											ar[index] = resolved;
 											return loopAr(base, ar, index - 1);
 										});
 								};
@@ -2658,7 +2658,7 @@ module.exports = {
 					}),
 					
 					emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
-						// <PRB> Readable stream re-emits "onerror" with its own error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
+						// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
 						const name = 'on' + event;
 						if (tools.indexOf(this.__EVENTS, name) >= 0) {
 							const oldCurrentlyEmitted = this.__currentlyEmitted;
