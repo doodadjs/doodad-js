@@ -2826,12 +2826,8 @@
 
 				if (!result) {
 					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
+						// <PRB> Sometimes, the first call returns "false", but the second one returns "true". That seems to be a bug in V8 with Symbol.toStringTag.
 						result = true;
-
-						if (__options__.debug) {
-							// <PRB> Sometimes, the first call returns "false", but the second one returns "true". That seems to be a bug in V8 with Symbol.toStringTag.
-							debugger;
-						};
 					};
 				};
 
