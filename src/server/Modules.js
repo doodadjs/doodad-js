@@ -101,7 +101,8 @@ module.exports = {
 						files.push({
 							module: _module,
 							name: name,
-							options: types.extend({optional: false, isConfig: false, configOptions: null}, fileOptions),
+							options: types.extend({optional: false, isConfig: false}, fileOptions),
+							exports: null,
 						});
 						return files;
 					}, []);
@@ -109,23 +110,11 @@ module.exports = {
 					return Promise.map(files, function(file) {
 						return modules.locate(file.module, file.name, options)
 							.then(function(location) {
-								if (file.options.isConfig) {
-									try {
-										const conf = Module._load(location.toString(), require.main || module.parent);
-										types.depthExtend(2, file.configOptions, conf, file.configOptions);
-									} catch(err) {
-										if (!file.options.optional) {
-											throw err;
-										};
-									};
-								} else {
-									try {
-										file.exports = Module._load(location.toString(), require.main || module.parent);
-									} catch(err) {
-										file.exports = null;
-										if (!file.options.optional) {
-											throw err;
-										};
+								try {
+									file.exports = Module._load(location.toString(), require.main || module.parent);
+								} catch(err) {
+									if (!file.options.optional) {
+										throw err;
 									};
 								};
 								return file;
@@ -188,7 +177,9 @@ module.exports = {
 								const DD_MODULES = {};
 								tools.forEach(_modules, function(_files) {
 									tools.forEach(_files, function(file) {
-										if (!file.options.isConfig && file.exports.add) {
+										if (file.options.isConfig) {
+											types.depthExtend(15, options, file.exports, options);
+										} else if (file.exports.add) {
 											file.exports.add(DD_MODULES);
 										};
 									});

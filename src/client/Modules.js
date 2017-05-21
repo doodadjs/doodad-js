@@ -128,7 +128,8 @@ module.exports = {
 						files.push({
 							module: module,
 							name: name,
-							options: types.extend({optional: false, isConfig: false, configOptions: null}, fileOptions),
+							options: types.extend({optional: false, isConfig: false}, fileOptions),
+							exports: null,
 						});
 						return files;
 					}, []);
@@ -144,7 +145,7 @@ module.exports = {
 													throw err;
 												};
 											} else {
-												types.depthExtend(2, file.configOptions, conf, file.configOptions);
+												file.exports = conf;
 											};
 											return file;
 										});
@@ -152,7 +153,7 @@ module.exports = {
 									return Promise.create(function startScriptLoader(resolve, reject) {
 										const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 										scriptLoader.addEventListener('load', function() {
-											file.exports = null; // <PRB> unable to get a reference to the loaded script and its exports
+											//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
 											resolve(file);
 										});
 										scriptLoader.addEventListener('error', function(ev) {
@@ -233,6 +234,17 @@ module.exports = {
 								return modules.loadFiles(module.name, module.files, options);
 							})
 							.then(function(_modules) {
+								//const DD_MODULES = {};
+								tools.forEach(_modules, function(_files) {
+									tools.forEach(_files, function(file) {
+										if (file.options.isConfig) {
+											types.depthExtend(15, options, file.exports, options);
+										//} else if (file.exports.add) {
+											//file.exports.add(DD_MODULES);
+										};
+									});
+								});
+								//return namespaces.load(DD_MODULES, options);
 								const retval = namespaces.load(global.DD_MODULES, options);
 								delete global.DD_MODULES;
 								return retval;
