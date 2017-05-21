@@ -2934,10 +2934,10 @@
 		//==============
 		
 		if (types.isArray(_options)) {
-			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined) /*! END_IF() */ ],  _options));
+			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ],  _options));
 		//! IF_UNSET("serverSide")
 		} else {
-			_options = types.depthExtend(15, {}, ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES.options : undefined), _options);
+			_options = types.depthExtend(15, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
 		//! END_IF()
 		};
 
