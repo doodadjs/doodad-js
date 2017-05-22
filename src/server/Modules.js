@@ -233,6 +233,8 @@ module.exports = {
 												return files;
 											}, {});
 											
+											files['config.json'] = {optional: true, isConfig: true};
+
 											return modules.load({[manifest.name]: files}, types.extend({}, _options, {secret: _shared.SECRET}))
 												.then(function() {
 													// Returns nothing.
