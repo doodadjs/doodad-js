@@ -70,24 +70,24 @@ You can create a shortcut to the namespaces this way :
 
 ### Node.js
 
-Download and install Doodad from NPM :
+Download and install Doodad from NPM using the command prompt (Windows) or your favorite shell (Unix/Linux) :
 
 ```bash
-$ npm install doodad-js --save
+    npm install doodad-js --save
 ```
 
 By default, Doodad is running in production mode, which disables every validations. You may want to activate the development mode by setting the "NODE_ENV" environment variable :
 
-Windows :
+Windows (command prompt) :
 ```dos
     set NODE_ENV=development
 ```
-Linux/Unix :
+Linux/Unix (shell) :
 ```bash
     export NODE_ENV=development
 ```
 
-Now, from Javascript, create the root namespace :
+Now, in your Node.js script, create the root namespace :
 ```js
     require('doodad-js').createRoot()
         .then(root => ...)
