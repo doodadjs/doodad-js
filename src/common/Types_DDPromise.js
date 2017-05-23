@@ -579,7 +579,7 @@ module.exports = {
 						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
-						fn = types.unbind(fn);
+						fn = types.unbind(fn) || fn;
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 						const checkDestroyed = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
 						const insideFn = _shared.makeInside(obj, fn, secret);

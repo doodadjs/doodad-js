@@ -620,7 +620,7 @@ module.exports = {
 
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
-					fn = types.unbind(fn);
+					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					let _insider = null;
 					const fnApply = fn.apply.bind(fn);
@@ -7578,7 +7578,7 @@ module.exports = {
 						if (types.isNothing(bubbleError)) {
 							bubbleError = true;
 						};
-						fn = types.unbind(fn);
+						fn = types.unbind(fn) || fn;
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						const insideFn = _shared.makeInside(obj, fn, secret),
 							insideFnApply = insideFn.apply.bind(insideFn),
@@ -7666,7 +7666,7 @@ module.exports = {
 						if (types.isNothing(obj) && types.isCallback(fn)) {
 							return fn;
 						};
-						fn = types.unbind(fn);
+						fn = types.unbind(fn) || fn;
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						const type = types.getType(obj),
 							isClass = (types.isClass(type) || types.isInterfaceClass(type));

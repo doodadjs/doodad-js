@@ -89,7 +89,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function bind(obj, fn, /*optional*/args) {
-						fn = types.unbind(fn);
+						fn = types.unbind(fn) || fn;
 						if (!types.isBindable(fn)) {
 							return null;
 						};
@@ -109,7 +109,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 5,
+								revision: 6,
 								params: {
 									fn: {
 										type: 'function',
@@ -142,7 +142,7 @@ module.exports = {
 							};
 							return oldFn;
 						} else {
-							return fn;
+							return null;
 						};
 					}));
 

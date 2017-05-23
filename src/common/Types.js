@@ -1638,7 +1638,7 @@ module.exports = {
 				
 				// NOTE: Will be replaced by "Doodad.js"
 				_shared.makeInside = function makeInside(/*optional*/obj, fn) {
-					fn = types.unbind(fn);
+					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					return (types.isNothing(obj) ? fn : types.bind(obj, fn));
 				};
