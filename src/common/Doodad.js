@@ -77,28 +77,28 @@ module.exports = {
 					inEventHandler: false, // <FUTURE> thread level
 					
 					// Class
-					symbolAttributes: types.getSymbol('__ATTRIBUTES'),
-					symbolImplements: types.getSymbol('IMPLEMENTS'),
-					symbolMustOverride: types.getSymbol('MUST_OVERRIDE'),
-					symbolBase: types.getSymbol('BASE'),
-					symbolIsolated: types.getSymbol('ISOLATED'),
-					symbolIsolatedCache: types.getSymbol('__ISOLATED_CACHE'),
-					symbolAttributesStorage: types.getSymbol('__ATTRIBUTES_STORAGE'),
-					symbolCurrentDispatch: types.getSymbol('__CURRENT_DISPATCH'),
-					symbolCurrentCallerIndex: types.getSymbol('__CURRENT_CALLER_INDEX'),
+					symbolAttributes: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES')), true) */ '__DD_ATTRIBUTES' /*! END_REPLACE() */, true),
+					symbolImplements: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IMPLEMENTS')), true) */ '__DD_IMPLEMENTS' /*! END_REPLACE() */, true),
+					symbolMustOverride: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MUST_OVERRIDE')), true) */ '__DD_MUST_OVERRIDE' /*! END_REPLACE() */, true),
+					symbolBase: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true),
+					symbolIsolated: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED')), true) */ '__DD_ISOLATED' /*! END_REPLACE() */, true),
+					symbolIsolatedCache: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED_CACHE')), true) */ '__DD_ISOLATED_CACHE' /*! END_REPLACE() */, true),
+					symbolAttributesStorage: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES_STORAGE')), true) */ '__DD_ATTRIBUTES_STORAGE' /*! END_REPLACE() */, true),
+					symbolCurrentDispatch: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_DISPATCH')), true) */ '__DD_CURRENT_DISPATCH' /*! END_REPLACE() */, true),
+					symbolCurrentCallerIndex: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_CALLER_INDEX')), true) */ '__DD_CURRENT_CALLER_INDEX' /*! END_REPLACE() */, true),
 					
 					// Class, Methods, Callers, AttributeBox
-					symbolPrototype: types.getSymbol('PROTOTYPE'),
-					symbolModifiers: types.getSymbol('__MODIFIERS__'),
+					symbolPrototype: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROTOTYPE')), true) */ '__DD_PROTOTYPE' /*! END_REPLACE() */, true),
+					symbolModifiers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MODIFIERS')), true) */ '__DD_MODIFIERS' /*! END_REPLACE() */, true),
 
 					// Methods, Callers, AttributeBox
-					symbolCallers: types.getSymbol('__CALLERS__'),
+					symbolCallers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLERS')), true) */ '__DD_CALLERS' /*! END_REPLACE() */, true),
 
 					// Interface
-					symbolHost: types.getSymbol('__HOST__'),
+					symbolHost: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_HOST')), true) */ '__DD_HOST' /*! END_REPLACE() */, true),
 					
 					// EventHandler, AttributeBox
-					symbolExtender: types.getSymbol('__EXTENDER__'),
+					symbolExtender: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_EXTENDER')), true) */ '__DD_EXTENDER' /*! END_REPLACE() */, true),
 
 					// EventHandler
 					symbolObject: types.getSymbol('__OBJECT__'),
@@ -115,21 +115,21 @@ module.exports = {
 
 					// Callers & AttributeBox
 					symbolCalled: types.getSymbol('__CALLED__'),
-					symbolPosition: types.getSymbol('__POSITION__'),
-					symbolUsageMessage: types.getSymbol('__USAGE_MESSAGE__'),
+					symbolPosition: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_POSITION')), true) */ '__DD_POSITION' /*! END_REPLACE() */, true),
+					symbolUsageMessage: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_USAGE_MESSAGE')), true) */ '__DD_USAGE_MESSAGE' /*! END_REPLACE() */, true),
 					
 					// AttributeBox
-					symbolScope: types.getSymbol('__SCOPE__'),
-					symbolReturns: types.getSymbol('__RETURNS__'),
-					symbolInterface: types.getSymbol('__INTERFACE__'),
-					symbolCallFirstLength: types.getSymbol('__CALL_FIRST_LENGTH__'),
-					symbolRenamedFrom: types.getSymbol('__RENAMED_FROM__'),
-					symbolRenamedTo: types.getSymbol('__RENAMED_TO__'),
-					symbolOverrideWith: types.getSymbol('__OVERRIDE_WITH__'),
-					symbolReplacedCallers: types.getSymbol('__REPLACED_CALLERS__'),
+					symbolScope: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SCOPE')), true) */ '__DD_SCOPE' /*! END_REPLACE() */, true),
+					symbolReturns: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RETURNS')), true) */ '__DD_RETURNS' /*! END_REPLACE() */, true),
+					symbolInterface: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INTERFACE')), true) */ '__DD_INTERFACE' /*! END_REPLACE() */, true),
+					symbolCallFirstLength: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALL_FIRST_LENGTH')), true) */ '__DD_CALL_FIRST_LENGTH' /*! END_REPLACE() */, true),
+					symbolRenamedFrom: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_FROM')), true) */ '__DD_RENAMED_FROM' /*! END_REPLACE() */, true),
+					symbolRenamedTo: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_TO')), true) */ '__DD_RENAMED_TO' /*! END_REPLACE() */, true),
+					symbolOverrideWith: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OVERRIDE_WITH')), true) */ '__DD_OVERRIDE_WITH' /*! END_REPLACE() */, true),
+					symbolReplacedCallers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_REPLACED_CALLERS')), true) */ '__DD_REPLACED_CALLERS' /*! END_REPLACE() */, true),
 					
 					// Creatable
-					symbolDestroyed: types.getSymbol('__destroyed'),
+					symbolDestroyed: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DESTROYED')), true) */ '__DD_DESTROYED' /*! END_REPLACE() */, true),
 
 					ANONYMOUS: '<anonymous>',
 
@@ -443,7 +443,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'Object,Class',
@@ -451,7 +451,7 @@ module.exports = {
 										description: "Object to test for.",
 									},
 									cls: {
-										type: 'arrayof(Class),Class',
+										type: 'arrayof(Class),Class,arrayof(Object),Object',
 										optional: false,
 										description: "Classes.",
 									},
@@ -461,29 +461,48 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function _implements(obj, cls) {
-						if (!types.isLike(obj, doodad.Class) && !types.isLike(obj, doodad.Interface)) {
+						if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 							return false;
 						};
-						if (!types.isArray(cls)) {
-							cls = [cls];
-						};
-						const clsLen = cls.length;
 						const impls = _shared.getAttribute(obj, __Internal__.symbolImplements);
-						for (let i = 0; i < clsLen; i++) {
-							if (types.has(cls, i)) {
-								const cl = types.getType(cls[i]);
-								if (!cl) {
-									continue;
-								};
-								if ((cl !== doodad.Class) && !types.baseof(doodad.Class, cl)) {
-									continue;
-								};
-								if (impls.has(cl)) {
-									return true;
+						if (types.isArray(cls)) {
+							const clsLen = cls.length;
+							for (let i = 0; i < clsLen; i++) {
+								if (types.has(cls, i)) {
+									const cl = types.getType(cls[i]);
+									if (!cl) {
+										continue;
+									};
+									if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+										continue;
+									};
+									if (impls.has(cl)) {
+										return true;
+									};
+									const uuid = _shared.getUUID(cl);
+									if (uuid && impls.has(uuid)) {
+										return true;
+									};
 								};
 							};
+							return false;
+						} else {
+							const cl = types.getType(cls);
+							if (!cl) {
+								return false;
+							};
+							if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+								return false;
+							};
+							if (impls.has(cl)) {
+								return true;
+							};
+							const uuid = _shared.getUUID(cl);
+							if (uuid && impls.has(uuid)) {
+								return true;
+							};
+							return false;
 						};
-						return false;
 					}));
 
 				types.ADD('getImplements', root.DD_DOC(
@@ -503,7 +522,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function getImplements(obj) {
-						if (!types.isLike(obj, doodad.Class) && !types.isLike(obj, doodad.Interface)) {
+						if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 							return null;
 						};
 						return types.toArray(_shared.getAttribute(obj, __Internal__.symbolImplements));
@@ -531,7 +550,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isMethod(obj, name) {
-						if (!types.isLike(obj, doodad.Class) && !types.isLike(obj, doodad.Interface)) {
+						if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 							return false;
 						};
 						const isType = types.isType(obj);
@@ -572,7 +591,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isImplemented(obj, name) {
-						if (!types.isLike(obj, doodad.Class) && !types.isLike(obj, doodad.Interface)) {
+						if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 							return false;
 						};
 						const attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
@@ -4608,10 +4627,14 @@ module.exports = {
 							
 						const _interface = types.get(sourceAttribute, __Internal__.symbolInterface);
 						if (_interface) {
-							if (!_isolated.has(_interface)) {
+							const uuid = _shared.getUUID(_interface);
+							if (!_isolated.has(_interface) && (!uuid || !_isolated.has(uuid))) {
 								throw new types.Error("Interface '~0~' not found.", [types.getTypeName(_interface) || __Internal__.ANONYMOUS]);
 							};
-							const data = _isolated.get(_interface);
+							let data = _isolated.get(_interface);
+							if (!data) {
+								data = _isolated.get(uuid);
+							};
 							extendedAttributes = data[1];
 							destAttributes = data[2];
 						};
@@ -4785,7 +4808,7 @@ module.exports = {
 					let baseIsProto = false,
 						baseTypeProto,
 						baseInstanceProto;
-					if (types.isFunction(base) || baseType) {
+					if (baseType) {
 						if (baseIsClass) {
 							// doodad-js Class / Class Object
 							baseTypeProto = baseInstanceProto = _shared.getAttribute(base, __Internal__.symbolPrototype);
@@ -4892,10 +4915,20 @@ module.exports = {
 				__Internal__.addImplements = function addImplements(_implements, attributes, _isolated, source, sourceBase, sourceImplements, sourceAttributes, sourceIsolated, baseIsType, extendedAttributes) {
 					// Add new implement
 					_implements.add(source);
+
+					const uuid = _shared.getUUID(source);
+					if (uuid) {
+						_implements.add(uuid);
+					};
 					
 					if (sourceBase) {
 						if (types.isInterface(sourceBase) || types.isMixIn(sourceBase)) {
 							_implements.add(sourceBase);
+
+							const uuid = _shared.getUUID(sourceBase);
+							if (uuid) {
+								_implements.add(uuid);
+							};
 						};
 					};
 					
@@ -4903,8 +4936,16 @@ module.exports = {
 						//const isIsolated = types.isIsolated(source);
 						// <FUTURE> for (let item of sourceImplements)
 						sourceImplements.forEach(function(item) {
-							if (/*(!isIsolated || types.isIsolated(item)) && */ !_implements.has(item)) {
-								_implements.add(item);
+							if (!types.isString(item)) {
+								const uuid = _shared.getUUID(item);
+
+								if (/*(!isIsolated || types.isIsolated(item)) && */ !_implements.has(item) && (!uuid || !_implements.has(uuid))) {
+									_implements.add(item);
+
+									if (uuid) {
+										_implements.add(uuid);
+									};
+								};
 							};
 						});
 					};
@@ -4921,21 +4962,38 @@ module.exports = {
 					
 					if (sourceIsolated) {
 						sourceIsolated.forEach(function(data, _interface) {
-							if (!_isolated.has(_interface)) {
-								_isolated.set(_interface, data);
+							if (!types.isString(_interface)) {
+								const uuid = _shared.getUUID(_interface);
 
-								const impls = _shared.getAttribute(_interface, __Internal__.symbolImplements).values();
+								if (!_isolated.has(_interface) && (!uuid || !_isolated.has(uuid))) {
+									_isolated.set(_interface, data);
 
-								let impl;
-									
-								// <FUTURE> for (let impl of impls)
-								while (impl = impls.next()) {
-									if (impl.done) {
-										break;
+									if (uuid) {
+										_isolated.set(uuid, data);
 									};
-									impl = impl.value;
-									if (types.isIsolated(impl) && !_isolated.has(impl)) {
-										_isolated.set(impl, data);
+
+									const impls = _shared.getAttribute(_interface, __Internal__.symbolImplements).values();
+
+									let impl;
+									
+									// <FUTURE> for (let impl of impls)
+									while (impl = impls.next()) {
+										if (impl.done) {
+											break;
+										};
+										impl = impl.value;
+
+										if (!types.isString(impl)) {
+											const uuid = _shared.getUUID(impl);
+
+											if (types.isIsolated(impl) && !_isolated.has(impl) && (!uuid || !_isolated.has(uuid))) {
+												_isolated.set(impl, data);
+
+												if (uuid) {
+													_isolated.set(uuid, data);
+												};
+											};
+										};
 									};
 								};
 							};
@@ -4947,12 +5005,12 @@ module.exports = {
 					const sourceType = types.getType(source),
 						sourceIsType = sourceType && types.isType(source),
 						sourceIsClass = sourceType && (types.isClass(sourceType) || types.isInterfaceClass(sourceType)),
-						sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME));
-						//sourceUUID = (sourceType ? _shared.getTypeUUID(sourceType) : types.unbox(source.$TYPE_UUID));
-					if (!sourceIsClass || !_implements.has(source)) {
+						sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME)),
+						sourceUUID = (sourceType ? _shared.getUUID(sourceType) : types.unbox(source.$TYPE_UUID));
+					if (!sourceIsClass || (!_implements.has(sourceType) && (!sourceUUID || !_implements.has(sourceUUID)))) {
 						if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
 							if (root.getOptions().debug || __options__.enforcePolicies) {
-								if (source !== base) {
+								if (sourceType !== baseType) {
 									//if (!baseIsBase && types.isBase(source)) {
 									//	throw new types.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName || __Internal__.ANONYMOUS, types.getTypeName(base) || __Internal__.ANONYMOUS]);
 									//};
@@ -4968,8 +5026,8 @@ module.exports = {
 								};
 							};
 							
-							if (types.isIsolated(source) && !types.isIsolated(base)) {
-								if (!_implements.has(source)) {
+							if (types.isIsolated(sourceType) && !types.isIsolated(baseType)) {
+								if (!_implements.has(sourceType) && (!sourceUUID || !_implements.has(sourceUUID))) {
 									const destImplements = _implements;
 
 									destImplements.add(source);
@@ -4986,9 +5044,14 @@ module.exports = {
 									destAttributes = __Internal__.getDefaultAttributes();
 									
 									extendedAttributes = [];
-									const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ null, /*11 modifiers*/ 0, /*12 sourceUUID*/ null];
+									const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ null, /*11 modifiers*/ 0, /*12*/ sourceUUID];
 
 									_isolated.set(source, data);
+
+									const uuid = _shared.getUUID(source);
+									if (uuid) {
+										_isolated.set(uuid, data);
+									};
 
 									const impls = _shared.getAttribute(source, __Internal__.symbolImplements).values();
 
@@ -4999,10 +5062,21 @@ module.exports = {
 										};
 										impl = impl.value;
 										if (types.isIsolated(impl)) {
-											if (!destImplements.has(impl)) {
+											const uuid = _shared.getUUID(impl);
+
+											if (!destImplements.has(impl) && (!uuid || !destImplements.has(uuid))) {
 												destImplements.add(impl);
+
+												if (uuid) {
+													destImplements.add(uuid);
+												};
 											};
+
 											_isolated.set(impl, data);
+
+											if (uuid) {
+												_isolated.set(uuid, data);
+											};
 										};
 									};
 									
@@ -5673,16 +5747,27 @@ module.exports = {
 							if (!cache) {
 								cache = _shared.setAttribute(this, __Internal__.symbolIsolatedCache, new types.Map());
 							}
+
 							if (cache.has(type)) {
 								return cache.get(type);
 							};
 
-							const _isolated = this[__Internal__.symbolIsolated];
-							if (!_isolated.has(type)) {
-								return null;
+							const uuid = _shared.getUUID(type);
+
+							if (uuid && cache.has(uuid)) {
+								return cache.get(uuid);
 							};
 
-							const data = _isolated.get(type);
+							const _isolated = this[__Internal__.symbolIsolated];
+
+							let data = _isolated.get(type);
+							if (!data) {
+								data = _isolated.get(uuid);
+							};
+
+							if (!data) {
+								return null;
+							};
 
 							let _interface = data[6];
 
@@ -5698,7 +5783,7 @@ module.exports = {
 									_implements = data[9],
 									proto = data[10],
 									modifiers = data[11],
-									protoUUID = data[12];
+									protoUUID = null; //data[12];
 
 								_interface = __Internal__.createType(base, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, attributes, extendedAttributes, _isolated, _implements, modifiers);
 
@@ -5714,9 +5799,18 @@ module.exports = {
 							const obj = new _interface(this);
 
 							const _implements = _shared.getAttribute(_interface, __Internal__.symbolImplements);
+
 							_implements.forEach(function(impl) {
-								if (types.isIsolated(impl) && !cache.has(impl)) {
-									cache.set(impl, obj);
+								if (!types.isString(impl)) {
+									const uuid = _shared.getUUID(impl);
+
+									if (types.isIsolated(impl) && !cache.has(impl) && (!uuid || !cache.has(uuid))) {
+										cache.set(impl, obj);
+
+										if (uuid) {
+											cache.set(uuid, obj);
+										};
+									};
 								};
 							});
 
@@ -5791,10 +5885,10 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										cls: {
-											type: 'arrayof(Class),Class',
+											type: 'arrayof(Class),Class,arrayof(Object),Object',
 											optional: false,
 											description: "Classes.",
 										},
@@ -5805,26 +5899,45 @@ module.exports = {
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function _implements(cls) {
-							if (!types.isArray(cls)) {
-								cls = [cls];
-							};
-							const clsLen = cls.length,
-								impls = this[__Internal__.symbolImplements];
-							for (let i = 0; i < clsLen; i++) {
-								if (types.has(cls, i)) {
-									const cl = types.getType(cls[i]);
-									if (!cl) {
-										continue;
-									};
-									if ((cl !== doodad.Class) && !types.baseof(doodad.Class, cl)) {
-										continue;
-									};
-									if (impls.has(cl)) {
-										return true;
+							const impls = this[__Internal__.symbolImplements];
+							if (types.isArray(cls)) {
+								const clsLen = cls.length;
+								for (let i = 0; i < clsLen; i++) {
+									if (types.has(cls, i)) {
+										const cl = types.getType(cls[i]);
+										if (!cl) {
+											continue;
+										};
+										if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+											continue;
+										};
+										if (impls.has(cl)) {
+											return true;
+										};
+										const uuid = _shared.getUUID(cl);
+										if (uuid && impls.has(uuid)) {
+											return true;
+										};
 									};
 								};
+								return false;
+							} else {
+								const cl = types.getType(cls);
+								if (!cl) {
+									return false;
+								};
+								if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+									return false;
+								};
+								if (impls.has(cl)) {
+									return true;
+								};
+								const uuid = _shared.getUUID(cl);
+								if (uuid && impls.has(uuid)) {
+									return true;
+								};
+								return false;
 							};
-							return false;
 						}))))),
 						
 					isImplemented: root.DD_DOC(
@@ -6041,6 +6154,9 @@ module.exports = {
 					//! END_REPLACE()
 					, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.interfaceProto))));
 				
+
+				__Internal__.CLASS_OR_INTERFACE = [doodad.Class, doodad.Interface];
+
 
 				//==================================
 				// Events

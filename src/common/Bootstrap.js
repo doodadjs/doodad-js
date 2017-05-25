@@ -397,7 +397,7 @@
 			// "allSymbols", "symbols"
 			objectGetOwnPropertySymbols: (types.isNativeFunction(global.Object.getOwnPropertySymbols) ? global.Object.getOwnPropertySymbols : undefined),
 			
-			// "isSafeInteger"
+			// "isSafeInteger", "getSafeIntegerBounds"
 			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER || global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1,
 			numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER || -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1,
 			
@@ -3224,12 +3224,12 @@
 		// Type functions
 		//===================================
 		
-		__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IS_TYPE')), true) */ '__DD_IS_TYPE__' /*! END_REPLACE() */, true);
-		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
-		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('INITIALIZED')), true) */ 'INITIALIZED' /*! END_REPLACE() */, true);
-		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('$IS_SINGLETON')), true) */ '$IS_SINGLETON' /*! END_REPLACE() */, true);
-		__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SINGLETON')), true) */ 'SINGLETON' /*! END_REPLACE() */, true);
-		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('JS_TYPE_UUID')), true) */ '__JS_TYPE_UUID__' /*! END_REPLACE() */, true);
+		__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE__' /*! END_REPLACE() */, true);
+		__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
+		__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
+		__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
+		__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
+		_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID__' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('isType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4176,7 +4176,7 @@
 		global.Error.prototype.critical = false;
 		global.Error.prototype.trapped = false;
 
-		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('IsErrorType')), true) */ '__DD_IS_ERROR_TYPE__' /*! END_REPLACE() */, true);
+		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_ERROR_TYPE')), true) */ '__DD_IS_ERROR_TYPE' /*! END_REPLACE() */, true);
 
 		__Internal__.ADD('isErrorType', function isErrorType(type) {
 			return types.isFunction(type) && types.has(type, __Internal__.symbolIsErrorType);
@@ -4780,7 +4780,7 @@
 		// Box/Unbox
 		//===================================
 		
-		_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('ORIGINAL_VALUE')), true) */ '__ORIGINAL_VALUE__' /*! END_REPLACE() */, true);
+		_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ORIGINAL_VALUE')), true) */ '__DD_ORIGINAL_VALUE' /*! END_REPLACE() */, true);
 		
 		__Internal__.ADD('box', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4897,7 +4897,7 @@
 		
 		//! REPLACE_IF(IS_UNSET('debug'), "__Internal__.DD_DOC = function(d,v) {return v;}; __Internal__.GET_DD_DOC = function(v) {return null;}")
 
-			__Internal__.symbolDD_DOC = types.getSymbol('__DD_DOC__');
+			__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
 
 			_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
 		
@@ -5107,12 +5107,12 @@
 		// Type
 		//===================================
 		
-		_shared.SuperEnabledSymbol = types.getSymbol('__SUPER_ENABLED__');
-		_shared.EnumerableSymbol = types.getSymbol('__ENUMERABLE__');
-		_shared.ReadOnlySymbol = types.getSymbol('__READ_ONLY__');
-		_shared.ConfigurableSymbol = types.getSymbol('__CONFIGURABLE__');
-		__Internal__.symbolGetter = types.getSymbol('__GETTER__');
-		__Internal__.symbolSetter = types.getSymbol('__SETTER__');
+		_shared.SuperEnabledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SUPER_ENABLED')), true) */ '__DD_SUPER_ENABLED' /*! END_REPLACE() */, true);
+		_shared.EnumerableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ENUMERABLE')), true) */ '__DD_ENUMERABLE' /*! END_REPLACE() */, true);
+		_shared.ReadOnlySymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_READ_ONLY')), true) */ '__DD_READ_ONLY' /*! END_REPLACE() */, true);
+		_shared.ConfigurableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONFIGURABLE')), true) */ '__DD_CONFIGURABLE' /*! END_REPLACE() */, true);
+		__Internal__.symbolGetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_GETTER')), true) */ '__DD_GETTER' /*! END_REPLACE() */, true);
+		__Internal__.symbolSetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SETTER')), true) */ '__DD_SETTER' /*! END_REPLACE() */, true);
 		
 		__Internal__.ADD('INHERIT', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
