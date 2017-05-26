@@ -269,7 +269,7 @@
 			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 			
 			// "isCustomFunction", "isNativeFunction", getFunctionName"
-			// FUTURE: Remove when "Natives" will be "types.extend"ed
+			// FUTURE: Remove when "_shared.Natives" will be "types.extend"ed
 			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 				
 			// "extend"
