@@ -3,11 +3,7 @@ node_js:
   - "7"
   - "6"
 env:
-  NODE_ENV: development
-  NODE_ENV: production
-install:
-  - cd ..
-  - git clone --depth=1 https://github.com/doodadjs/travis_scripts.git travis_scripts
-  - chmod +x ./travis_scripts/install.sh
-  - ./travis_scripts/install.sh
-  - cd node_modules/doodad-js-test
+  - NODE_ENV=development
+  - NODE_ENV=production
+before_install: cd .. && git clone --depth=1 https://github.com/doodadjs/travis_scripts.git travis_scripts && chmod +x ./travis_scripts/install.sh
+install: ./travis_scripts/install.sh && cd node_modules/doodad-js-test
