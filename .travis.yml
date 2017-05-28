@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "7"
+  - "6"
+env:
+  NODE_ENV:
+    - development
+    - production
+install:
+  - git clone git@github.com/doodadjs/travis_scripts.git .
+  - ./install.sh
+  - cd node_modules/doodad-js-test
