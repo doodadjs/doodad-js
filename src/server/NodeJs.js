@@ -204,7 +204,8 @@ module.exports = {
 				__Internal__.oldDESTROY = _shared.DESTROY;
 				_shared.DESTROY = function DESTROY(obj) {
 					if (types.isObject(obj) && !types.getType(obj)) {
-						if (!types.get(obj, 'destroyed', false)) {
+						// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
+						if (!obj.destroyed) {
 							if (types.isFunction(obj.unpipe)) {
 								// <PRB> After destroy/close, pipes may still exist.
 								obj.unpipe();
@@ -229,7 +230,10 @@ module.exports = {
 							// <PRB> Not every NodeJs destroyable object has/maintains the "destroyed" flag.
 							// <PRB> Not every NodeJs closable object has/maintains the "_closed" flag.
 							// <PRB> The "_closed" flag can be a read-only property. So we use "destroyed" instead.
-							obj.destroyed = true;
+							// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
+							if (!obj.destroyed) {
+								obj.destroyed = true;
+							};
 
 							// <PRB> ZLib may have a callback that crashes when the stream is closed (Node.Js v7.7.1) :
 							// TypeError: Cannot read property 'write' of null
@@ -247,7 +251,8 @@ module.exports = {
 				__Internal__.oldDESTROYED = _shared.DESTROYED;
 				_shared.DESTROYED = function DESTROYED(obj) {
 					if (types.isObject(obj) && !types.getType(obj)) {
-						return !!types.get(obj, 'destroyed', false);
+						// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
+						return !!obj.destroyed;
 					} else {
 						return __Internal__.oldDESTROYED(obj);
 					};
