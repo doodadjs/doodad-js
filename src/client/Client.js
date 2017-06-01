@@ -2022,11 +2022,12 @@ module.exports = {
 					try {
 						types.getPromise();
 					} catch(ex) {
-						const Promise = 
-							(types.isObject(global.RSVP) && global.RSVP.Promise) || // tiny Promise/A+ implementation
-							(types.isObject(global.ES6Promise) && global.ES6Promise.Promise); // subset of RSVP
-						if (types.isFunction(Promise)) {
-							types.setPromise(Promise);
+						if (global.RSVP && types.isFunction(global.RSVP.Promise)) {
+							// tiny Promise/A+ implementation
+							types.setPromise(global.RSVP.Promise);
+						} else if (global.ES6Promise && types.isFunction(global.ES6Promise.Promise)) {
+							// subset of RSVP
+							types.setPromise(global.ES6Promise.Promise);
 						};
 					};
 				};
