@@ -1449,8 +1449,8 @@ module.exports = {
 								const os = tools.getOS(),
 									caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
 
-								const thisAr = this.toArray(),
-									toAr = to.toArray();
+								const thisAr = this.toArray({trim: true}),
+									toAr = to.toArray({trim: true});
 								
 								const pathAr = [];
 
