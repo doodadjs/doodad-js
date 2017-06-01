@@ -537,6 +537,7 @@ module.exports = {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 
+						_shared.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
 						_shared.setAttribute(DDPromise, __Internal__.symbolIsExtendedPromise, true, {});
 
 						__Internal__.Promise = DDPromise;
