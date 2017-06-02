@@ -90,7 +90,7 @@ module.exports = {
 			//! END_IF()
 		//! END_FOR()
 
-		const bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? MAKE_MANIFEST("sourceDir") + "/common/Bootstrap.js" : "./common/Bootstrap.min.js")) */);
+		const bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? PATH("%SOURCEDIR%/common/Bootstrap.js").relative(PATH("%BROWSERIFYDIR%")).toString({os: 'linux'}) : "./common/Bootstrap.min.js")) */);
 
 		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
 	},
