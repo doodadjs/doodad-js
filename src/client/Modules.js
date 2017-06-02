@@ -218,9 +218,9 @@ module.exports = {
 							};
 							if (types.isEmpty(files)) {
 								if (fromSource) {
-									files[name + '_debug.js'] = {optional: false};
-								} else {
 									files[name + '.js'] = {optional: false};
+								} else {
+									files[name + '.min.js'] = {optional: false};
 								};
 							};
 							_modules.push({

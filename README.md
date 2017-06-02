@@ -36,14 +36,14 @@ In your HTML file, load UUID and the Doodad package :
 
 ```html
     <script src="lib/uuid/uuid.min.js"></script>
-    <script src="doodad-js.js"></script>
+    <script src="doodad-js.min.js"></script>
 ```
 
 or their debug version :
 
 ```html
     <script src="lib/uuid/uuid.js"></script>
-    <script src="doodad-js_debug.js"></script>
+    <script src="doodad-js.js"></script>
 ```
 
 From Javascript, when the scripts are loaded, create the root namespace :
