@@ -106,6 +106,12 @@ module.exports = {
 						// Edge
 						'DOMTokenList': 'DOMSettableTokenList',
 						'DOMSettableTokenList': 'DOMTokenList',
+						
+						// Firefox vs Edge
+						'RTCDTMFSender': 'RTCDtmfSender',
+						'RTCDtmfSender': 'RTCDTMFSender',
+						'WebKitFileSystem': 'FileSystem',
+						'FileSystem': 'WebKitFileSystem',
 					});
 
 					for (let i = 0; i < tempNatives.length; i++) {
