@@ -592,23 +592,10 @@ module.exports = {
 							try {
 								return insideFn.apply(obj, arguments);
 							} catch(ex) {
-								if (ex.bubble) {
-									throw ex;
-								} else {
-									if (!ex.trapped) {
-										ex.trapped = true;
-										try {
-											tools.log(tools.LogLevels.Error, "The Promise '~0~' has been rejected due to an unhandled error.", [(types.get(callback.promise, _shared.NameSymbol) || '<anonymous>')]);
-											if (ex.stack) {
-												tools.log(tools.LogLevels.Error, ex.stack);
-											} else {
-												tools.log(tools.LogLevels.Error, ex);
-											};
-										} catch(o) {
-										};
-									};
-									throw ex;
+								if (!ex.promiseName) {
+									ex.promiseName = (types.get(callback.promise, _shared.NameSymbol) || '<anonymous>');
 								};
+								throw ex;
 							};
 						});
 						callback[_shared.BoundObjectSymbol] = obj;

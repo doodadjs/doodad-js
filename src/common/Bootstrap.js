@@ -127,6 +127,7 @@
 
 		__Internal__.hasClasses = false;
 		__Internal__.classesNotCallable = true;
+		
 		(function() {
 			try {
 				// <PRB> Firefox returns 'undefined' on class definition !!!
@@ -4175,6 +4176,7 @@
 		global.Error.prototype.bubble = false;
 		global.Error.prototype.critical = false;
 		global.Error.prototype.trapped = false;
+		global.Error.prototype.promiseName = false;
 
 		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_ERROR_TYPE')), true) */ '__DD_IS_ERROR_TYPE' /*! END_REPLACE() */, true);
 
