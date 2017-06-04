@@ -221,10 +221,12 @@ module.exports = {
 								obj.on('error', function noop() {})
 							};
 
+							if (types.isFunction(obj.close) && !obj._closed) {
+								obj.close();
+							};
+
 							if (types.isFunction(obj.destroy)) {
 								obj.destroy();
-							} else if (types.isFunction(obj.close) && !obj._closed) {
-								obj.close();
 							};
 
 							// <PRB> Not every NodeJs destroyable object has/maintains the "destroyed" flag.
