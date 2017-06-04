@@ -280,6 +280,10 @@ module.exports = {
 							}
 							return Promise.race(promises);
 						};
+						// TODO: Try to implement in DDPromise.prototype instead.
+						racer.isSolved = function() {
+							return !!state.res && !!state.rej;
+						};
 						return racer;
 					};
 
