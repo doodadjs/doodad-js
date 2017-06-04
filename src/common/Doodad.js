@@ -7979,7 +7979,7 @@ module.exports = {
 										cls = _shared.Natives.windowError;
 									};
 									const tmp = new cls();
-									tools.forEach(self.$ERROR_ATTRIBUTES, function(key) {
+									tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 										if (types.has(value, key)) {
 											tmp[key] = this.$unpack(value[key]);
 										};
