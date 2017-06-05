@@ -450,7 +450,12 @@ module.exports = {
 						if (types._instanceof(err, types.ScriptAbortedError)) {
 							_shared.Natives.process.exitCode = err.exitCode;
 						} else {
-							_shared.Natives.processStdErrWrite("<FATAL ERROR> " + err.message + '\n' + err.stack + '\n');
+							const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
+							try {
+								global.console.error(msg);
+							} catch(o) {
+								_shared.Natives.processStdErrWrite(msg);
+							};
 						};
 					} catch(o) {
 						if (root.getOptions().debug) {
