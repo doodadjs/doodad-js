@@ -389,10 +389,12 @@ module.exports = {
 				__Internal__.catchAndExitCalled = false;
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
-					if (!err.critical && err.bubble) {
-						// Ignore errors like "ScriptInterruptedError".
+					if (err.trapped || (!err.critical && err.bubble)) {
+						// Ignore trapped errors or errors like "ScriptInterruptedError".
 						return;
 					};
+
+					err.trapped = true;
 
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
@@ -411,8 +413,6 @@ module.exports = {
 						};
 
 					} else {
-						err.trapped = true;
-
 						let exitCode = 1; // 1 = General error
 
 						try {
