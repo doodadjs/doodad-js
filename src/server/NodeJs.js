@@ -432,8 +432,8 @@ module.exports = {
 				//=====================================
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
-					if (!err.critical && err.bubble) {
-						// Ignore errors like "ScriptInterruptedError".
+					if (err.trapped || (!err.critical && err.bubble)) {
+						// Ignore trapped errors or errors like "ScriptInterruptedError".
 						return;
 					};
 
@@ -2165,18 +2165,18 @@ module.exports = {
 						}
 						//! END_REPLACE()
 						, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
-							if (!__Internal__.oldConsole) {
-								this.release();
-								const newConsole = new this(hook, stdout, stderr),
-									oldConsole = global.console;
-								types.defineProperty(global, 'console', {
-									configurable: true,
-									enumerable: true,
-									value: newConsole,
-									writable: !types.hasDefinePropertyEnabled(),
-								});
-								__Internal__.oldConsole = oldConsole;
+							if (__Internal__.oldConsole) {
+								throw new types.Error("'global.console' already captured.")
 							};
+							const newConsole = new this(hook, stdout, stderr),
+								oldConsole = global.console;
+							types.defineProperty(global, 'console', {
+								configurable: true,
+								enumerable: true,
+								value: newConsole,
+								writable: false,
+							});
+							__Internal__.oldConsole = oldConsole;
 						}),
 						
 						release: root.DD_DOC(
@@ -2195,7 +2195,7 @@ module.exports = {
 									configurable: true,
 									enumerable: true,
 									value: __Internal__.oldConsole,
-									writable: !types.hasDefinePropertyEnabled(),
+									writable: false,
 								});
 								__Internal__.oldConsole = null;
 							};
@@ -2208,45 +2208,77 @@ module.exports = {
 						__hasStd: false,
 						
 						log: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
-							const message = this.__hook('log', types.toArray(arguments));
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super.apply(this, arguments);
+							try {
+								const message = this.__hook('log', types.toArray(arguments));
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super.apply(this, arguments);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
 								};
 							};
 						})),
 						
 						info: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
-							const message = this.__hook('info', types.toArray(arguments));
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super.apply(this, arguments);
+							try {
+								const message = this.__hook('info', types.toArray(arguments));
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super.apply(this, arguments);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
 								};
 							};
 						})),
 						
 						error: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
-							const message = this.__hook('error', types.toArray(arguments));
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super.apply(this, arguments);
+							try {
+								const message = this.__hook('error', types.toArray(arguments));
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super.apply(this, arguments);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
 								};
 							};
 						})),
 						
 						warn: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
-							const message = this.__hook('warn', types.toArray(arguments));
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super.apply(this, arguments);
+							try {
+								const message = this.__hook('warn', types.toArray(arguments));
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super.apply(this, arguments);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
 								};
 							};
 						})),
