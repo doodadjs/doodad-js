@@ -282,7 +282,7 @@ module.exports = {
 						};
 						// TODO: Try to implement in DDPromise.prototype instead.
 						racer.isSolved = function() {
-							return !!state.res && !!state.rej;
+							return !state.res || !state.rej;
 						};
 						return racer;
 					};
