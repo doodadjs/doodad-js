@@ -76,6 +76,8 @@ module.exports = {
 
 					symbolHandler: types.getSymbol('__HANDLER__'),
 					symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
+
+					PROMISE_ANY_OPTIONS_INCLUDE_ERRORS: types.freezeObject({includeErrors: true}),
 				};
 				
 				//===================================
@@ -1135,12 +1137,12 @@ module.exports = {
 						};
 					};
 				}));
-					
+
 				files.ADD('copy', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								source: {
 									type: 'string,Path',
@@ -1158,238 +1160,380 @@ module.exports = {
 									description: "Options.",
 								},
 							},
-							returns: 'bool,Promise(bool)',
+							returns: 'undefined',
 							description: "Copies source file or folder to destination.",
 				}
 				//! END_REPLACE()
 				, function copy(source, destination, /*optional*/options) {
-					// TODO: Rewrite me
 					const Promise = types.getPromise();
-					if (types.isString(source)) {
-						source = files.Path.parse(source);
-					};
-					if (types.isString(destination)) {
-						destination = files.Path.parse(destination);
-					};
+
 					const async = types.get(options, 'async', false),
-						bufferLength = types.get(options, 'bufferLength', 4096),
+						bufferLength = types.get(options, 'bufferLength', 16384),
 						preserveTimes = types.get(options, 'preserveTimes', true),
 						override = types.get(options, 'override', false),
 						recursive = types.get(options, 'recursive', false),
-						skipInvalid = types.get(options, 'skipInvalid', false);
-					if (async) {
-						return Promise.create(function copyPromise(resolve, reject) {
-							nodeFs.lstat(source.toApiString(), function(ex, stats) {
-								if (ex) {
-									reject(ex);
-								} else {
-									if (stats.isSymbolicLink()) {
-										// Copy symbolic link
-										if (!destination.file) {
-											destination = destination.set({ file: source.file });
-										};
-										nodeFs.readlink(source.toApiString(), function(ex, linkString) {
-											if (ex) {
-												reject(ex);
-											} else {
-												const dest = destination.toApiString();
-												nodeFs.symlink(linkString, dest, (stats.isFile() ? 'file' : 'dir'), function(ex) {
-													if (ex) {
-														reject(ex);
-													} else if (preserveTimes) {
-														nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
-															if (ex) {
-																reject(ex);
-															} else {
-																resolve(true);
-															};
-														});
-													} else {
-														resolve(true);
-													};
-												});
-											};
-										});
-									} else if (stats.isFile()) {
-										// Copy file
-										if (!destination.file) {
-											destination = destination.set({ file: source.file });
-										};
-										const dest = destination.toApiString();
-										const copyFile = function copyFile(buf, sourceFd, destFd) {
-											nodeFs.read(sourceFd, buf, null, buf.length, null, function(ex, bytesRead, _buf) {
-												if (ex) {
-													reject(ex);
-												} else if (bytesRead) {
-													nodeFs.write(destFd, _buf, 0, bytesRead, function(ex) {
-														if (ex) {
-															reject(ex);
-														} else {
-															copyFile(buf, sourceFd, destFd);
-														};
-													});
-												} else {
-													nodeFs.close(sourceFd, function(ex1) {
-														nodeFs.close(destFd, function(ex2) {
-															if (ex1 || ex2) {
-																reject(ex1 || ex2);
-															} else if (preserveTimes) {
-																nodeFs.utimes(dest, stats.atime, stats.mtime, function(ex) {
-																	if (ex) {
-																		reject(ex);
-																	} else {
-																		resolve(true);
-																	};
-																});
-															} else {
-																resolve(true);
-															};
-														});
-													});
-												};
-											});
-										};
-										nodeFs.open(source.toApiString(), 'r', function(ex, sourceFd) {
-											if (ex) {
-												reject(ex);
-											};
-											nodeFs.open(dest, (override ? 'w' : 'wx'), function(ex, destFd) {
-												if (ex) {
-													nodeFs.close(sourceFd, function() {
-														reject(ex);
-													});
-												} else {
-													const buf = new Buffer(bufferLength);
-													copyFile(buf, sourceFd, destFd);
-												};
-											});
-										});
-									} else if (stats.isDirectory() && recursive) {
-										// Recurse directory
-										const copyFile = function copyFile(dirFiles) {
-											const dirFile = dirFiles.shift();
-											if (dirFile) {
-												files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options)
-													.then(function() {
-														copyFile(dirFiles);
-													})
-													['catch'](function(ex) {
-														reject(ex);
-													});
-											} else if (preserveTimes) {
-												// FIXME: Dates are not correct
-												nodeFs.utimes(destination.toApiString(), stats.atime, stats.mtime, function(ex) {
-													if (ex) {
-														reject(ex);
-													} else {
-														resolve(true);
-													};
-												});
-											} else {
-												resolve(true);
-											};
-										};
-										files.mkdir(destination, options).then(function() {
-											nodeFs.readdir(source.toApiString(), function(ex, dirFiles) {
-												if (ex) {
-													reject(ex);
-												} else {
-													copyFile(dirFiles);
-												};
-											});
-										});
-											
-									} else if (!skipInvalid) {
-										// Invalid file system object
-										let ex;
-										if (stats.isDirectory()) {
-											ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
-										} else {
-											ex = new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
-										};
-										reject(ex);
-									} else {
-										// Skip invalid file system object
-										resolve(false);
-									};
-								};
-							});
-						});
-					} else {
-						const stats = nodeFs.lstatSync(source.toApiString());
-						if (stats.isSymbolicLink()) {
-							// Copy symbolic link
-							if (!destination.file) {
-								destination = destination.set({ file: source.file });
-							};
-							const linkString = nodeFs.readlinkSync(source.toApiString());
-							const dest = destination.toApiString();
-							nodeFs.symlinkSync(linkString, dest, (stats.isFile() ? 'file' : 'dir'));
-							if (preserveTimes) {
-								nodeFs.utimesSync(dest, stats.atime, stats.mtime);
-							};
-							return true;
-						} else if (stats.isFile()) {
-							// Copy file
-							if (!destination.file) {
-								destination = destination.set({ file: source.file });
-							};
-							const dest = destination.toApiString();
-							let sourceFd = null,
-								destFd = null;
-							try {
-								sourceFd = nodeFs.openSync(source.toApiString(), 'r');
-								destFd = nodeFs.openSync(dest, (override ? 'w' : 'wx'));
-								const buf = new Buffer(bufferLength);
-								let bytesRead = 0;
-								do {
-									bytesRead = nodeFs.readSync(sourceFd, buf, null, buf.length);
-									if (bytesRead) {
-										nodeFs.writeSync(destFd, buf, 0, bytesRead);
-									};
-								} while (bytesRead);
-							} catch(ex) {
-								throw ex;
-							} finally {
-								try {
-									sourceFd && nodeFs.closeSync(sourceFd);
-								} catch(ex) {
-									throw ex;
-								} finally {
-									destFd && nodeFs.closeSync(destFd);
-								};
-							};
-							if (preserveTimes) {
-								nodeFs.utimesSync(dest, stats.atime, stats.mtime);
-							};
-							return true;
-						} else if (stats.isDirectory() && recursive) {
-							// Recurse directory
-							files.mkdir(destination, options);
-							const dirFiles = nodeFs.readdirSync(source.toApiString());
-							for (let i = 0; i < dirFiles.length; i++) {
-								const dirFile = dirFiles[i];
-								files.copy(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }), options);
-							};
-							if (preserveTimes) {
-								// FIXME: Dates are not correct
-								nodeFs.utimesSync(destination.toApiString(), stats.atime, stats.mtime);
-							};
-							return true;
-						} else if (!skipInvalid) {
-							// Invalid file system object
-							let ex;
-							if (stats.isDirectory()) {
-								ex = new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
-							} else {
-								ex = new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
-							};
-							throw ex;
+						skipInvalid = types.get(options, 'skipInvalid', false),
+						makeParents = types.get(options, 'makeParents', false);
+
+					const throwInvalid = function _throwInvalid(stats, sourceStr) {
+						// Invalid file system object
+						if (stats.isDirectory()) {
+							throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [sourceStr]);
 						} else {
-							// Skip invalid file system object
-							return false;
+							throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
 						};
 					};
+
+					let COPY_FILE_BUFFER = null;
+
+					const copyInternal = function _copyInternal(source, destination) {
+						/* ASYNC */
+						if (async) {
+							return Promise.try(function copyPromise() {
+								if (types.isString(source)) {
+									source = files.Path.parse(source);
+								};
+
+								if (types.isString(destination)) {
+									destination = files.Path.parse(destination);
+								};
+
+								const sourceStr = source.toApiString();
+
+								const lstat = function _lstat(path) {
+									return Promise.create(function lstatPromise(resolve, reject) {
+										nodeFs.lstat(path, function(err, stats) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve(stats);
+											};
+										});
+									});
+								};
+
+								const readlink = function _readlink(path) {
+									return Promise.create(function readlinkPromise(resolve, reject) {
+										nodeFs.readlink(path, function(err, link) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve(link);
+											};
+										});
+									});
+								};
+
+								const symlink = function _symlink(link, path, type) {
+									return Promise.create(function symlinkPromise(resolve, reject) {
+										nodeFs.symlink(link, path, type, function(err) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve();
+											};
+										});
+									});
+								};
+
+								const utimes = function _utimes(path, atime, mtime) {
+									return Promise.create(function utimesPromise(resolve, reject) {
+										nodeFs.utimes(path, atime, mtime, function(err) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve();
+											};
+										});
+									});
+								};
+						
+								const open = function _open(path, mode) {
+									return Promise.create(function openPromise(resolve, reject) {
+										nodeFs.open(path, mode, function(err, fd) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve(fd);
+											};
+										});
+									});
+								};
+
+								const close = function _close(fd) {
+									return Promise.create(function closePromise(resolve, reject) {
+										nodeFs.close(fd, function(err) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve();
+											};
+										});
+									});
+								};
+
+								const read = function _read(fd) {
+									return Promise.create(function readPromise(resolve, reject) {
+										nodeFs.read(fd, COPY_FILE_BUFFER, null, COPY_FILE_BUFFER.length, null, function(err, bytesRead) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve(bytesRead);
+											};
+										});
+									});
+								};
+
+								const write = function _write(fd, bytesCount) {
+									return Promise.create(function readPromise(resolve, reject) {
+										nodeFs.write(fd, COPY_FILE_BUFFER, 0, bytesCount, function(err) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve();
+											};
+										});
+									});
+								};
+
+								const readdir = function _readdir(path) {
+									return Promise.create(function readdirPromise(resolve, reject) {
+										nodeFs.readdir(path, function(err, files) {
+											if (err) {
+												reject(err);
+											} else {
+												resolve(files);
+											};
+										});
+									});
+								};
+
+
+								const copyLink = function _copyLink(stats) {
+									// TODO: Test me
+									// Copy symbolic link
+									return Promise.try(function() {
+										if (!destination.file) {
+											destination = destination.set({ file: source.file });
+										};
+										const destStr = destination.toApiString();
+										return readlink(sourceStr)
+											.then(function(link) {
+												return symlink(link, destStr, (stats.isFile() ? 'file' : 'dir'));
+											})
+											.then(function() {
+												if (preserveTimes) {
+													return utimes(destStr, stats.atime, stats.mtime);
+												};
+											});
+									});
+								};
+
+								const loopCopyFileContent = function _loopCopyFileContent(sourceFd, destFd) {
+									return read(sourceFd)
+										.then(function(bytesRead) {
+											if (bytesRead > 0) {
+												return write(destFd, bytesRead)
+													.then(function(dummy) {
+														return loopCopyFileContent(sourceFd, destFd);
+													});
+											};
+										});
+								};
+
+								const copyFile = function _copyFile(stats) {
+									// Copy file
+									return Promise.try(function() {
+										if (!destination.file) {
+											destination = destination.set({ file: source.file });
+										};
+										const destStr = destination.toApiString();
+										if (!COPY_FILE_BUFFER) {
+											COPY_FILE_BUFFER = new _shared.Natives.globalBuffer(bufferLength);
+										};
+										return Promise.any([open(sourceStr, 'r'), open(destStr, (override ? 'w' : 'wx'))], __Internal__.PROMISE_ANY_OPTIONS_INCLUDE_ERRORS)
+											.then(function(fds) {
+												const sourceFd = fds[0];
+												const sourceIsErr = types.isError(sourceFd);
+												const destFd = fds[1];
+												const destIsErr = types.isError(destFd);
+												return Promise.try(function() {
+														if (!sourceIsErr && !destIsErr) {
+															return loopCopyFileContent(sourceFd, destFd);
+														};
+													})
+													.nodeify(function(err, dummy) {
+														let promise = Promise.all([
+																(sourceIsErr ? undefined : close(sourceFd)), 
+																(destIsErr ? undefined : close(destFd))
+															]);
+														if (err || sourceIsErr || destIsErr) {
+															promise = promise.then(function(dummy) {
+																if (err) {
+																	throw err;
+																} else if (sourceIsErr) {
+																	throw sourceFd;
+																} else { //if (destIsErr)
+																	throw destFd;
+																};
+															});
+														};
+														return promise;
+													});
+											})
+											.then(function(dummy) {
+												if (preserveTimes) {
+													return utimes(destStr, stats.atime, stats.mtime);
+												};
+											});
+									});
+								};
+
+								const loopDirectoryContent = function _loopDirectoryContent(dirFiles, index) {
+									return Promise.try(function() {
+										const dirFile = dirFiles[index];
+										if (dirFile) {
+											return copyInternal(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }))
+												.then(function() {
+													return loopDirectoryContent(dirFiles, index + 1);
+												});
+										};
+									});
+								};
+
+								const copyDirectory = function _copyDirectory(stats) {
+									// Recurse directory
+									return files.mkdir(destination, {makeParents: makeParents, async: true})
+										.then(function(dummy) {
+											return readdir(sourceStr)
+										})
+										.then(function(dirFiles) {
+											return loopDirectoryContent(dirFiles, 0);
+										})
+										.then(function(dummy) {
+											if (preserveTimes) {
+												// FIXME: Dates are not correct
+												return utimes(destination.toApiString(), stats.atime, stats.mtime);
+											};
+										});
+								};
+
+								return lstat(sourceStr)
+									.then(function(stats) {
+										if (stats.isSymbolicLink()) {
+											return copyLink(stats);
+										} else if (stats.isFile()) {
+											return copyFile(stats);
+										} else if (stats.isDirectory() && recursive) {
+											return copyDirectory(stats)
+										} else if (!skipInvalid) {
+											// Invalid file system object
+											throwInvalid(stats, sourceStr);
+										};
+									});
+							});
+
+
+						/* SYNC */
+						} else {
+							if (types.isString(source)) {
+								source = files.Path.parse(source);
+							};
+
+							if (types.isString(destination)) {
+								destination = files.Path.parse(destination);
+							};
+
+							const sourceStr = source.toApiString();
+
+							const stats = nodeFs.lstatSync(sourceStr);
+
+							if (stats.isSymbolicLink()) {
+								// Copy symbolic link
+								if (!destination.file) {
+									destination = destination.set({ file: source.file });
+								};
+
+								const linkString = nodeFs.readlinkSync(sourceStr);
+
+								const destStr = destination.toApiString();
+
+								nodeFs.symlinkSync(linkString, destStr, (stats.isFile() ? 'file' : 'dir'));
+
+								if (preserveTimes) {
+									nodeFs.utimesSync(destStr, stats.atime, stats.mtime);
+								};
+
+							} else if (stats.isFile()) {
+								// Copy file
+								if (!destination.file) {
+									destination = destination.set({ file: source.file });
+								};
+
+								const destStr = destination.toApiString();
+
+								if (!COPY_FILE_BUFFER) {
+									COPY_FILE_BUFFER = new _shared.Natives.globalBuffer(bufferLength);
+								};
+
+								let sourceFd = null,
+									destFd = null;
+								try {
+									sourceFd = nodeFs.openSync(sourceStr, 'r');
+									destFd = nodeFs.openSync(destStr, (override ? 'w' : 'wx'));
+
+									let bytesRead = 0;
+									do {
+										bytesRead = nodeFs.readSync(sourceFd, COPY_FILE_BUFFER, null, COPY_FILE_BUFFER.length);
+										if (bytesRead) {
+											nodeFs.writeSync(destFd, COPY_FILE_BUFFER, 0, bytesRead);
+										};
+									} while (bytesRead);
+
+								} catch(ex) {
+									throw ex;
+
+								} finally {
+									try {
+										if (!types.isNothing(sourceFd)) {
+											nodeFs.closeSync(sourceFd);
+										};
+									} catch(ex) {
+										throw ex;
+									} finally {
+										if (!types.isNothing(destFd)) {
+											nodeFs.closeSync(destFd);
+										};
+									};
+								};
+
+								if (preserveTimes) {
+									nodeFs.utimesSync(destStr, stats.atime, stats.mtime);
+								};
+
+							} else if (stats.isDirectory() && recursive) {
+								// Recurse directory
+								files.mkdir(destination, {makeParents: makeParents, async: false});
+
+								const dirFiles = nodeFs.readdirSync(sourceStr);
+								for (let i = 0; i < dirFiles.length; i++) {
+									const dirFile = dirFiles[i];
+									copyInternal(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }));
+								};
+
+								if (preserveTimes) {
+									// FIXME: Dates are not correct
+									nodeFs.utimesSync(destination.toApiString(), stats.atime, stats.mtime);
+								};
+
+							} else if (!skipInvalid) {
+								// Invalid file system object
+								throwInvalid(stats, sourceStr);
+							};
+						};
+					};
+
+					return copyInternal(source, destination);
 				}));
 					
 				files.ADD('readdir', root.DD_DOC(
