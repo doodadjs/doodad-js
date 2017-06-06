@@ -2054,21 +2054,6 @@
 			};
 		})();
 
-		// TODO: Remove me
-		__Internal__.ADD('hasProperties', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'boolean',
-						description: "OBSOLETE... Returns 'true' if properties are available. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function hasProperties() {
-				return true;
-			}));
-		
 		__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2403,7 +2388,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							paramarray: {
 								type: 'any',
@@ -2420,34 +2405,18 @@
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
 					const len = arguments.length;
-					if (types.hasProperties()) {
-						for (let i = 1; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
-							};
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							obj = _shared.Natives.windowObject(obj);
-							const keys = types.append(types.keys(obj), types.symbols(obj));
-							for (let j = 0; j < keys.length; j++) {
-								const key = keys[j];
-								const descriptor = types.getOwnPropertyDescriptor(obj, key);
-								types.defineProperty(result, key, descriptor);
-							};
+					for (let i = 1; i < len; i++) {
+						obj = arguments[i];
+						if (types.isNothing(obj)) {
+							continue;
 						};
-					} else {
-						for (let i = 1; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
-							};
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							obj = _shared.Natives.windowObject(obj);
-							const keys = types.append(types.keys(obj), types.symbols(obj));
-							for (let j = 0; j < keys.length; j++) {
-								const key = keys[j];
-								result[key] = obj[key];
-							};
+						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+						obj = _shared.Natives.windowObject(obj);
+						const keys = types.append(types.keys(obj), types.symbols(obj));
+						for (let j = 0; j < keys.length; j++) {
+							const key = keys[j];
+							const descriptor = types.getOwnPropertyDescriptor(obj, key);
+							types.defineProperty(result, key, descriptor);
 						};
 					};
 				};
@@ -2573,7 +2542,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							paramarray: {
 								type: 'any',
@@ -2591,37 +2560,19 @@
 				if (!types.isNothing(obj)) {
 					result = _shared.Natives.windowObject(obj);
 					const len = arguments.length;
-					if (types.hasProperties()) {
-						for (let i = 1; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
-							};
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							obj = _shared.Natives.windowObject(obj);
-							const keys = types.append(types.keys(obj), types.symbols(obj));
-							for (let j = 0; j < keys.length; j++) {
-								const key = keys[j];
-								if (!types.has(result, key)) {
-									const descriptor = types.getOwnPropertyDescriptor(obj, key);
-									types.defineProperty(result, key, descriptor);
-								};
-							};
+					for (let i = 1; i < len; i++) {
+						obj = arguments[i];
+						if (types.isNothing(obj)) {
+							continue;
 						};
-					} else {
-						for (let i = 1; i < len; i++) {
-							obj = arguments[i];
-							if (types.isNothing(obj)) {
-								continue;
-							};
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							obj = _shared.Natives.windowObject(obj);
-							const keys = types.append(types.keys(obj), types.symbols(obj));
-							for (let j = 0; j < keys.length; j++) {
-								const key = keys[j];
-								if (!types.has(result, key)) {
-									result[key] = obj[key];
-								};
+						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+						obj = _shared.Natives.windowObject(obj);
+						const keys = types.append(types.keys(obj), types.symbols(obj));
+						for (let j = 0; j < keys.length; j++) {
+							const key = keys[j];
+							if (!types.has(result, key)) {
+								const descriptor = types.getOwnPropertyDescriptor(obj, key);
+								types.defineProperty(result, key, descriptor);
 							};
 						};
 					};
@@ -4044,7 +3995,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 8,
+						revision: 9,
 						params: {
 							obj: {
 								type: 'object',
@@ -4073,47 +4024,43 @@
 			//! END_REPLACE()
 			, function setAttribute(obj, attr, value, /*optional*/options) {
 				options = options && types.nullObject(options);
-				if (types.hasProperties()) {
-					const hasOwn = types.has(obj, attr);
-					let descriptor = types.getPropertyDescriptor(obj, attr);
-					const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
-						descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
-						descWritable = !descriptor || types.get(descriptor, 'writable', false),
-						descGet = types.get(descriptor, 'get'),
-						descSet = types.get(descriptor, 'set');
-					if (descSet && !options) {
-						descSet.call(obj, value);
-					} else if (descGet && !options) {
-						if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
-							// NOTE: Use native error because something might be wrong
-							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-						};
-					} else if (hasOwn && descWritable && (!options || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
-						obj[attr] = value;
-					} else if (descConfigurable) {
-						if (options && types.hasDefinePropertyEnabled()) {
-							if ('all' in options) {
-								descriptor = {
-									configurable: ('configurable' in options ? options.configurable : options.all),
-									enumerable: ('enumerable' in options ? options.enumerable : options.all),
-									writable: ('writable' in options ? options.writable : options.all),
-								};
-							} else {
-								descriptor = options;
-							};
-						} else if (!descriptor) {
-							descriptor = {configurable: true, enumerable: true, writable: true};
-						};
-						descriptor.value = value;
-						types.defineProperty(obj, attr, descriptor);
-					} else {
-						if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
-							// NOTE: Use native error because something might be wrong
-							throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-						};
+				const hasOwn = types.has(obj, attr);
+				let descriptor = types.getPropertyDescriptor(obj, attr);
+				const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
+					descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
+					descWritable = !descriptor || types.get(descriptor, 'writable', false),
+					descGet = types.get(descriptor, 'get'),
+					descSet = types.get(descriptor, 'set');
+				if (descSet && !options) {
+					descSet.call(obj, value);
+				} else if (descGet && !options) {
+					if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
+						// NOTE: Use native error because something might be wrong
+						throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 					};
-				} else {
+				} else if (hasOwn && descWritable && (!options || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
 					obj[attr] = value;
+				} else if (descConfigurable) {
+					if (options && types.hasDefinePropertyEnabled()) {
+						if ('all' in options) {
+							descriptor = {
+								configurable: ('configurable' in options ? options.configurable : options.all),
+								enumerable: ('enumerable' in options ? options.enumerable : options.all),
+								writable: ('writable' in options ? options.writable : options.all),
+							};
+						} else {
+							descriptor = options;
+						};
+					} else if (!descriptor) {
+						descriptor = {configurable: true, enumerable: true, writable: true};
+					};
+					descriptor.value = value;
+					types.defineProperty(obj, attr, descriptor);
+				} else {
+					if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
+						// NOTE: Use native error because something might be wrong
+						throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
+					};
 				};
 				return value;
 			});
@@ -5443,11 +5390,9 @@
 		// <PRB> If "prototype" is not configurable, we can't set it to read-only
 		__Internal__.prototypeIsConfigurable = false;
 		(function() {
-			if (types.hasProperties()) {
-				const f = function() {};
-				const desc = types.getOwnPropertyDescriptor(f, 'prototype');
-				__Internal__.prototypeIsConfigurable = desc.configurable;
-			};
+			const f = function() {};
+			const desc = types.getOwnPropertyDescriptor(f, 'prototype');
+			__Internal__.prototypeIsConfigurable = desc.configurable;
 		})();
 			
 		_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
