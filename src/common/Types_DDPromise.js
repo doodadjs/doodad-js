@@ -173,7 +173,7 @@ module.exports = {
 							const Promise = this;
 
 							return Promise.try(function tryMap() {
-								const len = ar.length;
+								const len = ar.length | 0;
 
 								options = types.nullObject({
 									concurrency: Infinity,
@@ -318,6 +318,51 @@ module.exports = {
 							promise[_shared.NameSymbol] = getPromiseName(callback);
 						};
 						return promise;
+					};
+
+					// NOTE: Experimental
+					Promise.any = function _any(ar, /*optional*/options) {
+						const Promise = this;
+						return Promise.create(function(resolve, reject) {
+							const includeErrors = types.get(options, 'includeErrors', false);
+							const count = ar.length | 0;
+							if (count <= 0) {
+								resolve([]);
+							} else {
+								const result = _shared.Natives.windowArray(count);
+								let successes = 0;
+								let errors = 0;
+								let firstError = null;
+								const check = function _check() {
+									if (!includeErrors && (errors >= count)) {
+										reject(firstError);
+									} else if (successes + errors >= count) {
+										resolve(result);
+									};
+								};
+								for (let i = 0; i < count; i++) {
+									// NOTE: Same behavior than Promise.all : Empty slots and non-promise values are included.
+									Promise.resolve(ar[i]).then(function(value) {
+											successes++;
+											result[i] = value;
+											check();
+										})
+										.catch(function(err) {
+											if (errors <= 0) {
+												firstError = err;
+											};
+											errors++;
+											if (includeErrors) {
+												result[i] = err;
+											};
+											check();
+										})
+										.catch(function(err) {
+											reject(err);
+										});
+								};
+							};
+						});
 					};
 
 					// Add "thisObj" argument
