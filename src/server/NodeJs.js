@@ -76,8 +76,6 @@ module.exports = {
 
 					symbolHandler: types.getSymbol('__HANDLER__'),
 					symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
-
-					PROMISE_ANY_OPTIONS_INCLUDE_ERRORS: types.freezeObject({includeErrors: true}),
 				};
 				
 				//===================================
@@ -1351,35 +1349,32 @@ module.exports = {
 										if (!COPY_FILE_BUFFER) {
 											COPY_FILE_BUFFER = new _shared.Natives.globalBuffer(bufferLength);
 										};
-										return Promise.any([open(sourceStr, 'r'), open(destStr, (override ? 'w' : 'wx'))], __Internal__.PROMISE_ANY_OPTIONS_INCLUDE_ERRORS)
-											.then(function(fds) {
-												const sourceFd = fds[0];
-												const sourceIsErr = types.isError(sourceFd);
-												const destFd = fds[1];
-												const destIsErr = types.isError(destFd);
-												return Promise.try(function() {
-														if (!sourceIsErr && !destIsErr) {
-															return loopCopyFileContent(sourceFd, destFd);
+										let sourceFd = null;
+										let destFd = null;
+										return open(sourceStr, 'r')
+											.then(function(fd) {
+												sourceFd = fd;
+												return open(destStr, (override ? 'w' : 'wx'));
+											})
+											.then(function(fd) {
+												destFd = fd;
+												if ((sourceFd !== null) && (destFd !== null)) {
+													return loopCopyFileContent(sourceFd, destFd);
+												};
+											})
+											.nodeify(function(err, dummy) {
+												let promise = Promise.all([
+														((sourceFd === null) ? undefined : close(sourceFd)), 
+														((destFd === null) ? undefined : close(destFd))
+													]);
+												if (err) {
+													promise = promise.then(function(dummy) {
+														if (err) {
+															throw err;
 														};
-													})
-													.nodeify(function(err, dummy) {
-														let promise = Promise.all([
-																(sourceIsErr ? undefined : close(sourceFd)), 
-																(destIsErr ? undefined : close(destFd))
-															]);
-														if (err || sourceIsErr || destIsErr) {
-															promise = promise.then(function(dummy) {
-																if (err) {
-																	throw err;
-																} else if (sourceIsErr) {
-																	throw sourceFd;
-																} else { //if (destIsErr)
-																	throw destFd;
-																};
-															});
-														};
-														return promise;
 													});
+												};
+												return promise;
 											})
 											.then(function(dummy) {
 												if (preserveTimes) {
