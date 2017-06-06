@@ -342,7 +342,8 @@ module.exports = {
 								};
 								for (let i = 0; i < count; i++) {
 									// NOTE: Same behavior than Promise.all : Empty slots and non-promise values are included.
-									Promise.resolve(ar[i]).then(function(value) {
+									Promise.resolve(ar[i])
+										.then(function(value) {
 											successes++;
 											result[i] = value;
 											check();
