@@ -987,7 +987,7 @@ module.exports = {
 						const val = types.unbox(fn);
 						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 					};
-					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
+					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
 						const dispatch = this[_shared.CurrentDispatchSymbol],
 							stack = dispatch[_shared.StackSymbol];
 						

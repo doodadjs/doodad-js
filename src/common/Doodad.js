@@ -3879,12 +3879,11 @@ module.exports = {
 						}, value);
 					}));
 
-				// TODO: Remove "NOT_REENTRANT". Also change in README.md
-				doodad.ADD('NON_REENTRANT', doodad.ADD('NOT_REENTRANT', root.DD_DOC(
+				doodad.ADD('NON_REENTRANT', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								value: {
 									type: 'AttributeBox,Extender,any',
@@ -3900,7 +3899,7 @@ module.exports = {
 						return doodad.OPTIONS({
 							notReentrant: true,
 						}, value);
-					})));
+					}));
 				
 				doodad.ADD('EXTERNAL', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6863,7 +6862,7 @@ module.exports = {
 						__Internal__.EVENT_CACHE[key] = [eventFn, errorEvent];
 					};
 
-					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
 
 					if (fn) {
 						eventFn[__Internal__.symbolOverrideWith] = fn;
@@ -6953,7 +6952,7 @@ module.exports = {
 						__Internal__.RAW_EVENT_CACHE[key] = eventFn;
 					};
 
-					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NOT_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
+					eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
 
 					if (fn) {
 						eventFn[__Internal__.symbolOverrideWith] = fn;

@@ -163,7 +163,7 @@ Doodad must be built using [doodad-js-make][make-url] and its dependencies.
   - **doodad.RETURNS**: Specifies a validator to the method's returned value.
   - **doodad.SUPER**: For methods defined with "doodad.JS_METHOD", used to override a method.
   - **doodad.BIND**: Binds a method to its object.
-  - **doodad.NOT_REENTRANT**: The method must exits before being able to call it again.
+  - **doodad.NON_REENTRANT**: The method must exits before being able to call it again.
   - **doodad.EXTERNAL**: The method can't be called from inside the object.
   - **doodad.AFTER**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack after the function of the specified class.
   - **doodad.BEFORE**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack before the function of the specified class. 
