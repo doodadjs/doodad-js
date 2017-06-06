@@ -321,6 +321,7 @@ module.exports = {
 					};
 
 					// NOTE: Experimental
+					// WARNING: Makes use of sparse arrays (which are considered bad practice)
 					Promise.any = function _any(ar, /*optional*/options) {
 						const Promise = this;
 						return Promise.create(function(resolve, reject) {
