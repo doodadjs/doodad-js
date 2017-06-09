@@ -321,7 +321,7 @@ module.exports = {
 					};
 
 					// NOTE: Experimental
-					// WARNING: Makes use of sparse arrays (which are considered bad practice)
+					// NOTE: Makes use of sparse arrays, but they are not considered by the new features of ES6+
 					Promise.any = function _any(ar, /*optional*/options) {
 						const Promise = this;
 						return Promise.create(function(resolve, reject) {
@@ -341,9 +341,8 @@ module.exports = {
 										resolve(result);
 									};
 								};
-								for (let i = 0; i < count; i++) {
-									// NOTE: Same behavior than Promise.all : Empty slots and non-promise values are included.
-									Promise.resolve(ar[i])
+								tools.forEach(ar, function(val) {
+									Promise.resolve(val)
 										.then(function(value) {
 											successes++;
 											result[i] = value;
@@ -362,7 +361,7 @@ module.exports = {
 										.catch(function(err) {
 											reject(err);
 										});
-								};
+								});
 							};
 						});
 					};
