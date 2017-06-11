@@ -156,6 +156,9 @@ module.exports = {
 					// "sign"
 					mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
 
+					// "round", "floor"
+					mathPow: (types.isNativeFunction(global.Math.pow) ? global.Math.pow : undefined),
+
 					// "round"
 					mathRound: (types.isNativeFunction(global.Math.round) ? global.Math.round : undefined),
 
@@ -2352,7 +2355,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									number: {
 										type: 'number',
@@ -2370,7 +2373,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function round(number, /*optional*/precision) {
-						const MUL = 10 ** (precision | 0);
+						const MUL = _shared.mathPow(10, precision | 0);
 						return _shared.Natives.mathRound((+number) * MUL) / MUL;
 					}));
 
@@ -2378,7 +2381,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									number: {
 										type: 'number',
@@ -2396,7 +2399,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function floor(number, /*optional*/precision) {
-						const MUL = 10 ** (precision | 0);
+						const MUL = _shared.mathPow(10, precision | 0);
 						return _shared.Natives.mathFloor((+number) * MUL) / MUL;
 					}));
 
