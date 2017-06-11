@@ -2813,21 +2813,46 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
-								type: 'any',
+								type: 'object,arraylike',
 								optional: false,
 								description: "An object.",
+							},
+							depth: {
+								type: 'integer',
+								optional: true,
+								description: "Depth.",
 							},
 						},
 						returns: 'object',
 						description: "Prevent extensions of the object returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
-			, function preventExtensions(obj) {
-					obj = _shared.Natives.windowObject(obj);
-					_shared.Natives.objectPreventExtensions(obj);
+			, function preventExtensions(obj, /*optional*/depth) {
+					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+					const isArray = types.isArrayLike(obj);
+					const isObject = types.isJsObject || types.isObject;
+					if (isArray || isObject(obj)) {
+						if (depth >= 0) {
+							if (isArray) {
+								const len = obj.length;
+								for (let i = 0; i < len; i++) {
+									if (types.has(obj, i)) {
+										types.preventExtensions(obj[i], depth);
+									};
+								};
+							} else {
+								const keys = types.keys(obj),
+									keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.preventExtensions(obj[keys[i]], depth);
+								};
+							};
+						};
+						_shared.Natives.objectPreventExtensions(obj);
+					};
 					return obj;
 				}));
 		
@@ -2835,21 +2860,48 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
-								type: 'any',
+								type: 'object,arraylike',
 								optional: false,
 								description: "An object.",
+							},
+							depth: {
+								type: 'integer',
+								optional: true,
+								description: "Depth.",
 							},
 						},
 						returns: 'object',
 						description: "Seals the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
-			,function sealObject(obj) {
-					obj = _shared.Natives.windowObject(obj);
-					return _shared.Natives.objectSeal(obj);
+			, function sealObject(obj, /*optional*/depth) {
+					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+					const isArray = types.isArrayLike(obj);
+					const isObject = types.isJsObject || types.isObject;
+					if (isArray || isObject(obj)) {
+						if (depth >= 0) {
+							if (isArray) {
+								const len = obj.length;
+								for (let i = 0; i < len; i++) {
+									if (types.has(obj, i)) {
+										types.sealObject(obj[i], depth);
+									};
+								};
+							} else {
+								const keys = types.keys(obj),
+									keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.sealObject(obj[keys[i]], depth);
+								};
+							};
+						};
+						return _shared.Natives.objectSeal(obj);
+					} else {
+						return obj;
+					};
 				}));
 		
 		__Internal__.ADD('isFrozen', _shared.Natives.objectIsFrozen);
@@ -2858,21 +2910,48 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
-								type: 'any',
+								type: 'object,arraylike',
 								optional: false,
 								description: "An object.",
+							},
+							depth: {
+								type: 'integer',
+								optional: true,
+								description: "Depth.",
 							},
 						},
 						returns: 'object',
 						description: "Freezes the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
 			}
 			//! END_REPLACE()
-			, function freezeObject(obj) {
-					obj = _shared.Natives.windowObject(obj);
-					return _shared.Natives.objectFreeze(obj);
+			, function freezeObject(obj, /*optional*/depth) {
+					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+					const isArray = types.isArrayLike(obj);
+					const isObject = types.isJsObject || types.isObject;
+					if (isArray || isObject(obj)) {
+						if (depth >= 0) {
+							if (isArray) {
+								const len = obj.length;
+								for (let i = 0; i < len; i++) {
+									if (types.has(obj, i)) {
+										types.freezeObject(obj[i], depth);
+									};
+								};
+							} else {
+								const keys = types.keys(obj),
+									keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.freezeObject(obj[keys[i]], depth);
+								};
+							};
+						};
+						return _shared.Natives.objectFreeze(obj);
+					} else {
+						return obj;
+					};
 				}));
 		
 		//==============
