@@ -387,7 +387,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'any',
@@ -435,6 +435,16 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										if (item.call(thisObj, iterResult.value, key, obj)) {
+											return key;
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -454,6 +464,16 @@ module.exports = {
 												return key;
 											};
 										};
+									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										if (iterResult.value === item) {
+											return key;
+										};
+										key++;
 									};
 								} else {
 									const keys = types.keys(obj),
@@ -557,7 +577,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'any',
@@ -606,6 +626,16 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										if (items.call(thisObj, iterResult.value, key, obj)) {
+											result.push(key);
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -629,6 +659,16 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										if (tools.findItem(items, iterResult.value, undefined, true, sparsed) !== null) {
+											result.push(key);
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -648,7 +688,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'any',
@@ -697,6 +737,17 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										const val = iterResult.value;
+										if (item.call(thisObj, val, key, obj)) {
+											return val;
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -718,6 +769,17 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										const val = iterResult.value;
+										if (val === item) {
+											return val;
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -738,7 +800,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									obj: {
 										type: 'any',
@@ -788,6 +850,17 @@ module.exports = {
 											};
 										};
 									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										const val = iterResult.value;
+										if (items.call(thisObj, val, key, obj)) {
+											result.push(val);
+										};
+										key++;
+									};
 								} else {
 									const keys = types.keys(obj),
 										len = keys.length; // performance
@@ -808,16 +881,30 @@ module.exports = {
 										itemsLen = items.length;
 									for (let key = 0; key < objLen; key++) {
 										if (!sparsed || types.has(obj, key)) {
-											const valObj = obj[key];
+											const val = obj[key];
 											for (let i = 0; i < itemsLen; i++) {
 												if (!sparsed || types.has(items, i)) {
-													const valItems = items[i];
-													if (valObj === valItems) {
-														result.push(valItems);
+													if (val === items[i]) {
+														result.push(val);
 													};
 												};
 											};
 										};
+									};
+								} else if (types.isIterable(obj)) {
+									const iter = obj[_shared.Natives.symbolIterator]();
+									let key = 0,
+										iterResult;
+									while ((iterResult = iter.next()) && !iterResult.done) {
+										const val = iterResult.value;
+										for (let j = 0; j < itemsLen; j++) {
+											if (!sparsed || types.has(items, j)) {
+												if (val === items[j]) {
+													result.push(val);
+												};
+											};
+										};
+										key++;
 									};
 								} else {
 									const keys = types.keys(obj),
@@ -825,12 +912,11 @@ module.exports = {
 										itemsLen = items.length;
 									for (let i = 0; i < keysLen; i++) {
 										const key = keys[i];
-										const valObj = obj[key];
+										const val = obj[key];
 										for (let j = 0; j < itemsLen; j++) {
 											if (!sparsed || types.has(items, j)) {
-												const valItems = items[j];
-												if (valObj === valItems) {
-													result.push(valItems);
+												if (val === items[j]) {
+													result.push(val);
 												};
 											};
 										};
