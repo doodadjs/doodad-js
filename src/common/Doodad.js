@@ -7839,7 +7839,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								value: {
 									type: 'any',
@@ -7949,8 +7949,8 @@ module.exports = {
 						$unpack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $unpack(data) {
 							let value;
 							if (types.isJsObject(data)) {
-								const type = data.type;
-								value = data.value;
+								const type = types.toString(types.get(data, 'type'));
+								value = types.get(data, 'value');
 								if (type === 'undefined') {
 									value = undefined;
 								} else if (type === 'infinity') {
@@ -7968,8 +7968,9 @@ module.exports = {
 									value = NaN;
 								} else if (type === 'error') {
 									let cls;
-									if (value.type) {
-										const clsName = value.type.slice(1, -1);
+									const valueType = types.toString(types.get(value, 'type', ''));
+									if (valueType) {
+										const clsName = valueType.slice(1, -1);
 										cls = namespaces.get(clsName);
 										if (!types.isErrorType(cls)) {
 											throw new types.TypeError("Error of type '~0~' can't be deserialized.", [clsName]);
