@@ -156,6 +156,12 @@ module.exports = {
 					// "sign"
 					mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
 
+					// "round"
+					mathRound: (types.isNativeFunction(global.Math.round) ? global.Math.round : undefined),
+
+					// "floor"
+					mathFloor: (types.isNativeFunction(global.Math.floor) ? global.Math.floor : undefined),
+
 					//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
 					
 					// ES5
@@ -2342,6 +2348,58 @@ module.exports = {
 						return (obj < 0 ? -1 : (obj > 0 ? 1 : obj)); 
 					})));
 					
+				tools.ADD('round', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									number: {
+										type: 'number',
+										optional: false,
+										description: "Number to round.",
+									},
+									precision: {
+										type: 'integer',
+										optional: true,
+										description: "Decimal precision. Default is 0.",
+									},
+								},
+								returns: 'number',
+								description: "Rounds a number with the specified precision.",
+					}
+					//! END_REPLACE()
+					, function round(number, /*optional*/precision) {
+						const MUL = 10 ** (precision | 0);
+						return _shared.Natives.mathRound((+number) * MUL) / MUL;
+					}));
+
+				tools.ADD('floor', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									number: {
+										type: 'number',
+										optional: false,
+										description: "Number to round.",
+									},
+									precision: {
+										type: 'integer',
+										optional: true,
+										description: "Decimal precision. Default is 0.",
+									},
+								},
+								returns: 'number',
+								description: "Floors a number with the specified precision.",
+					}
+					//! END_REPLACE()
+					, function floor(number, /*optional*/precision) {
+						const MUL = 10 ** (precision | 0);
+						return _shared.Natives.mathFloor((+number) * MUL) / MUL;
+					}));
+
 			},
 		};
 		return DD_MODULES;
