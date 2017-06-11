@@ -2373,7 +2373,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function round(number, /*optional*/precision) {
-						const MUL = _shared.mathPow(10, precision | 0);
+						const MUL = _shared.Natives.mathPow(10, precision | 0);
 						return _shared.Natives.mathRound((+number) * MUL) / MUL;
 					}));
 
@@ -2399,7 +2399,7 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function floor(number, /*optional*/precision) {
-						const MUL = _shared.mathPow(10, precision | 0);
+						const MUL = _shared.Natives.mathPow(10, precision | 0);
 						return _shared.Natives.mathFloor((+number) * MUL) / MUL;
 					}));
 
