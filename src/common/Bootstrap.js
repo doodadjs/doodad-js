@@ -87,14 +87,12 @@
 		//===================================
 		// Temporary DD_DOC
 		//===================================
-		//! REPLACE_IF(IS_UNSET('debug'), "__Internal__.DD_DOC = function(d,v) {return v;}")
 		__Internal__.tempDocs = [];
 
 		__Internal__.DD_DOC = function DD_DOC(doc, value) {
 			__Internal__.tempDocs.push([doc, value]);
 			return value;
 		};
-		//! END_REPLACE()
 
 		//===================================
 		// Temporary ADD (for Doodad.Types)
@@ -4844,67 +4842,63 @@
 		// DD_DOC
 		//===================================
 		
-		//! REPLACE_IF(IS_UNSET('debug'), "__Internal__.DD_DOC = function(d,v) {return v;}; __Internal__.GET_DD_DOC = function(v) {return null;}")
+		__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
 
-			__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
-
-			_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
+		_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
 		
-			__Internal__.DD_DOC = __Internal__.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							doc: {
-								type: 'object',
-								optional: false,
-								description: "Document to apply.",
-							},
-							value: {
-								type: 'any',
-								optional: false,
-								description: "Target value",
-							},
+		__Internal__.DD_DOC = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						doc: {
+							type: 'object',
+							optional: false,
+							description: "Document to apply.",
 						},
-						returns: 'object',
-						description: "Applies a document to an object and returns that object.",
-				}
-				//! END_REPLACE()
-				, function DD_DOC(doc, value) {
-					value = _shared.Natives.windowObject(value);
-					if (types.hasDefinePropertyEnabled()) {
-						types.defineProperty(value, __Internal__.symbolDD_DOC, {
-							value: doc && types.freezeObject(doc),
-						});
-					} else {
-						value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
-					};
-					return value;
-				});
-
-			__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'object',
-						description: "Gets the document applied to an object.",
-				}
-				//! END_REPLACE()
-				, function GET_DD_DOC(value) {
-					return value[__Internal__.symbolDD_DOC];
-				});
-		
-			(function() {
-				for (let i = 0; i < __Internal__.tempDocs.length; i++) {
-					__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
+						value: {
+							type: 'any',
+							optional: false,
+							description: "Target value",
+						},
+					},
+					returns: 'object',
+					description: "Applies a document to an object and returns that object.",
+			}
+			//! END_REPLACE()
+			, function DD_DOC(doc, value) {
+				value = _shared.Natives.windowObject(value);
+				if (types.hasDefinePropertyEnabled()) {
+					types.defineProperty(value, __Internal__.symbolDD_DOC, {
+						value: doc && types.freezeObject(doc),
+					});
+				} else {
+					value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
 				};
-				delete __Internal__.tempDocs;
-			})();
+				return value;
+			});
 
-		//! END_REPLACE()
+		__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'object',
+					description: "Gets the document applied to an object.",
+			}
+			//! END_REPLACE()
+			, function GET_DD_DOC(value) {
+				return value[__Internal__.symbolDD_DOC];
+			});
+		
+		(function() {
+			for (let i = 0; i < __Internal__.tempDocs.length; i++) {
+				__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
+			};
+			delete __Internal__.tempDocs;
+		})();
 
 		//===================================
 		// Clone
