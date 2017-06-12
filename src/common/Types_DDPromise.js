@@ -334,7 +334,7 @@ module.exports = {
 					Promise.resolve = function _resolve(value) {
 						const promise = oldResolve.call(Promise, value);
 						if (types.isPromise(value)) {
-							_shared.setAttribute(promise, 'cancel', value.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+							types.defineProperty(promise, 'cancel', {value: value.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						};
 						return promise;
 					};
@@ -345,7 +345,7 @@ module.exports = {
 					Promise.reject = function _resolve(value) {
 						const promise = oldReject.call(Promise, value);
 						if (types.isPromise(value)) {
-							_shared.setAttribute(promise, 'cancel', value.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+							types.defineProperty(promise, 'cancel', {value: value.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						};
 						return promise;
 					};
@@ -459,7 +459,7 @@ module.exports = {
 							};
 						};
 						promise[_shared.NameSymbol] = name;
-						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						types.defineProperty(promise, 'cancel', {value: this.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
@@ -529,7 +529,7 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
-						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						types.defineProperty(promise, 'cancel', {value: this.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
@@ -548,7 +548,7 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
-						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						types.defineProperty(promise, 'cancel', {value: this.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
@@ -567,7 +567,7 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
-						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						types.defineProperty(promise, 'cancel', {value: this.cancel, configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 
@@ -583,7 +583,7 @@ module.exports = {
 
 					// Experimental
 					// Override this function to implement 'cancel'
-					_shared.setAttribute(Promise.prototype, 'cancel', types.NotSupportedFunction, {configurable: true, enumerable: false, writable: true});
+					types.defineProperty(Promise.prototype, 'cancel', {value: types.NotSupportedFunction, configurable: true, enumerable: false, writable: true});
 				};
 				
 				types.ADD('setPromise', root.DD_DOC(
