@@ -92,6 +92,27 @@ module.exports = {
 					, function isPromise(obj) {
 						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]) || (types.getIn(obj, _shared.IsPromiseSymbol, false) === true);
 					}));
+			
+				// NOTE: Experimental
+				types.ADD('isCancellablePromise', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a cancellable Promise, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isCancellablePromise(obj) {
+						return types.isPromise(obj) && types.isFunction(obj.cancel) && (obj.cancel !== types.NotSupportedFunction);
+					}));
 				
 				types.ADD('getPromise', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -157,7 +178,7 @@ module.exports = {
 					if (!types.isFunction(Promise.try)) {
 						Promise.try = function _try(callback) {
 							const Promise = this;
-							return new Promise(function _try(resolve, reject) {
+							return Promise.create(function _try(resolve, reject, promise) {
 								try {
 									resolve(callback());
 								} catch(ex) {
@@ -229,16 +250,36 @@ module.exports = {
 
 					// Add "thisObj" argument
 					// Add promise name
-					Promise.create = function create(/*optional*/callback, /*optional*/thisObj) {
+					// Add "promise" argument to callback // NOTE: Experimental
+					// Add "cancel" // NOTE: Experimental
+					Promise.create = function create(callback, /*optional*/thisObj) {
 						const Promise = this;
-						if (callback && thisObj) {
+						if (thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						const promise = new Promise(callback);
-						if (callback) {
-							callback.promise = promise;
-							promise[_shared.NameSymbol] = getPromiseName(callback);
+						let res = null,
+							rej = null;
+						const promise = new Promise(function(resolve, reject) {
+							res = function(value) {
+								if (types.isPromise(value)) {
+									promise.cancel = value.cancel;
+								};
+								resolve(value);
+							};
+							rej = function(value) {
+								if (types.isPromise(value)) {
+									promise.cancel = value.cancel;
+								};
+								reject(value);
+							};
+						});
+						try {
+							callback(res, rej, promise);
+						} catch (ex) {
+							rej(ex);
 						};
+						callback.promise = promise;
+						promise[_shared.NameSymbol] = getPromiseName(callback);
 						return promise;
 					};
 
@@ -285,6 +326,28 @@ module.exports = {
 							return !state.res || !state.rej;
 						};
 						return racer;
+					};
+
+					// NOTE: Experimental
+					// Add "cancel"
+					const oldResolve = Promise.resolve;
+					Promise.resolve = function _resolve(value) {
+						const promise = oldResolve.call(Promise, value);
+						if (types.isPromise(value)) {
+							_shared.setAttribute(promise, 'cancel', value.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						};
+						return promise;
+					};
+
+					// NOTE: Experimental
+					// Add "cancel"
+					const oldReject = Promise.reject;
+					Promise.reject = function _resolve(value) {
+						const promise = oldReject.call(Promise, value);
+						if (types.isPromise(value)) {
+							_shared.setAttribute(promise, 'cancel', value.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
+						};
+						return promise;
 					};
 
 					// Add "thisObj" argument
@@ -368,6 +431,7 @@ module.exports = {
 
 					// Add "thisObj" argument
 					// Add promise name
+					// Add "cancel"
 					const oldThen = Promise.prototype.then;
 					Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 						if (!thisObj && !types.isFunction(rejectedCb)) {
@@ -395,12 +459,14 @@ module.exports = {
 							};
 						};
 						promise[_shared.NameSymbol] = name;
+						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
 					// Add "thisObj" argument
 					// Add promise name
 					// Add Bluebird polyfill for catch (must be done there).
+					// Add "cancel"
 					// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 					// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
 					const oldCatch = Promise.prototype.catch;
@@ -463,11 +529,13 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
+						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
 					// Add "thisObj" argument
 					// Add promise name
+					// Add "cancel"
 					const oldAsCallback = Promise.prototype.asCallback;
 					Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
@@ -480,11 +548,13 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
+						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 					
 					// Add "thisObj" argument
 					// Add promise name
+					// Add "cancel"
 					const oldFinally = Promise.prototype.finally;
 					Promise.prototype.finally = function _finally(/*optional*/callback, /*optional*/thisObj) {
 						if (callback && thisObj) {
@@ -497,6 +567,7 @@ module.exports = {
 						} else {
 							promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 						};
+						_shared.setAttribute(promise, 'cancel', this.cancel, {configurable: true, enumerable: false, writable: true}); // Experimental
 						return promise;
 					};
 
@@ -504,11 +575,15 @@ module.exports = {
 					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
 						const Promise = this.constructor;
 						return this.then(function(result) {
-							return Promise.create(function(resolve, reject) {
-								return callback.call(thisObj, result, resolve, reject);
-							}, thisObj);
-						}, null, thisObj);
+								return Promise.create(function(resolve, reject) {
+									return callback.call(thisObj, result, resolve, reject);
+								}, thisObj);
+							}, null, thisObj);
 					};
+
+					// Experimental
+					// Override this function to implement 'cancel'
+					_shared.setAttribute(Promise.prototype, 'cancel', types.NotSupportedFunction, {configurable: true, enumerable: false, writable: true});
 				};
 				
 				types.ADD('setPromise', root.DD_DOC(
