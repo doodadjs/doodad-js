@@ -948,7 +948,26 @@ module.exports = {
 							path = files.Path.parse(path);
 						};
 
-						const force = types.get(options, 'force', false);
+						const force = types.get(options, 'force', false),
+							cancellable = types.get(options, 'cancellable', true), // Experimental
+							timeout = types.get(options, 'timeout', null); // Experimental
+
+						let stopRacer = types.get(options, 'stopRacer', null), // Experimental
+							timeoutId = null; // Experimental
+
+						// Experimental
+						if (cancellable || !types.isNothing(timeout)) {
+							if (!stopRacer) {
+								stopRacer = Promise.createRacer();
+							};
+						};
+						if (!types.isNothing(timeout)) {
+							timeoutId = tools.callAsync(function() {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(new types.TimeoutError());
+								};
+							}, timeout, null, null, true);
+						};
 
 						const rmdir = function rmdir(path) {
 							return Promise.create(function doRmDir(resolve, reject) {
@@ -986,27 +1005,28 @@ module.exports = {
 							});
 						};
 
-						const deleteContent = function deleteContent(parent, names, index) {
+						const loopDeleteContent = function loopDeleteContent(parent, names, index) {
 							if (index < names.length) {
 								const path = parent.combine(null, {
 									file: names[index],
 								});
 								const pathStr = path.toApiString();
-								return unlink(pathStr)
+								const promise = unlink(pathStr);
+								return (stopRacer ? stopRacer.race(promise) : promise)
 									.nodeify(function manageUnlinkResult(err, dummy) {
 										if (err) {
 											if (err.code === 'ENOENT') {
-												return deleteContent(parent, names, index + 1);
+												return loopDeleteContent(parent, names, index + 1);
 											} else if (err.code === 'EPERM') {
 												return proceed(path)
 													.then(function deleteNextFile() {
-														return deleteContent(parent, names, index + 1);
+														return loopDeleteContent(parent, names, index + 1);
 													});
 											} else {
 												throw err;
 											};
 										} else {
-											return deleteContent(parent, names, index + 1);
+											return loopDeleteContent(parent, names, index + 1);
 										};
 									});
 							};
@@ -1019,7 +1039,7 @@ module.exports = {
 									if (force && (err.code === 'ENOTEMPTY')) {
 										return readdir(pathStr)
 											.then(function deletePathContent(names) {
-												return deleteContent(path, names, 0);
+												return loopDeleteContent(path, names, 0);
 											})
 											.then(function deletePath(dummy) {
 												return rmdir(pathStr);
@@ -1041,7 +1061,27 @@ module.exports = {
 								});
 						};
 
-						return proceed(path);
+						const finalPromise = proceed(path)
+							.nodeify(function(err, result) {
+								if (timeoutId) {
+									timeoutId.cancel();
+								};
+								if (err) {
+									throw err;
+								} else {
+									return result;
+								};
+							});
+
+						if (cancellable) {
+							finalPromise.cancel = function(/*optional*/reason) {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
+								};
+							};
+						};
+
+						return finalPromise;
 					});
 				});
 
@@ -1341,7 +1381,26 @@ module.exports = {
 							recursive = types.get(options, 'recursive', false),
 							skipInvalid = types.get(options, 'skipInvalid', false),
 							makeParents = types.get(options, 'makeParents', false),
-							followLinks = types.get(options, 'followLinks', false);
+							followLinks = types.get(options, 'followLinks', false),
+							cancellable = types.get(options, 'cancellable', true), // Experimental
+							timeout = types.get(options, 'timeout', null); // Experimental
+
+						let stopRacer = types.get(options, 'stopRacer', null), // Experimental
+							timeoutId = null; // Experimental
+
+						// Experimental
+						if (cancellable || !types.isNothing(timeout)) {
+							if (!stopRacer) {
+								stopRacer = Promise.createRacer();
+							};
+						};
+						if (!types.isNothing(timeout)) {
+							timeoutId = tools.callAsync(function() {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(new types.TimeoutError());
+								};
+							}, timeout, null, null, true);
+						};
 
 						let COPY_FILE_BUFFER = null;
 
@@ -1498,7 +1557,7 @@ module.exports = {
 								};
 
 								const loopCopyFileContent = function _loopCopyFileContent(sourceFd, destFd) {
-									return read(sourceFd)
+									const promise = read(sourceFd)
 										.then(function(bytesRead) {
 											if (bytesRead > 0) {
 												return write(destFd, bytesRead)
@@ -1507,6 +1566,7 @@ module.exports = {
 													});
 											};
 										});
+									return (stopRacer ? stopRacer.race(promise) : promise);
 								};
 
 								const copyFile = function _copyFile(stats) {
@@ -1555,7 +1615,7 @@ module.exports = {
 								};
 
 								const loopDirectoryContent = function _loopDirectoryContent(dirFiles, index) {
-									return Promise.try(function() {
+									const promise = Promise.try(function() {
 										const dirFile = dirFiles[index];
 										if (dirFile) {
 											return copyInternal(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }))
@@ -1564,6 +1624,7 @@ module.exports = {
 												});
 										};
 									});
+									return (stopRacer ? stopRacer.race(promise) : promise);
 								};
 
 								const copyDirectory = function _copyDirectory(stats) {
@@ -1605,11 +1666,31 @@ module.exports = {
 												throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
 											};
 										};
-									});
+									})
 							});
 						};
 
-						return copyInternal(source, destination);
+						const finalPromise = copyInternal(source, destination)
+							.nodeify(function(err, result) {
+								if (timeoutId) {
+									timeoutId.cancel();
+								};
+								if (err) {
+									throw err;
+								} else {
+									return result;
+								};
+							});
+
+						if (cancellable) {
+							finalPromise.cancel = function(/*optional*/reason) {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
+								};
+							};
+						};
+
+						return finalPromise;
 					});
 				});
 
@@ -1702,7 +1783,7 @@ module.exports = {
 
 					const proceed = function proceed(result, path, base, depth) {
 						if (depth >= 0) {
-							const names = nodeFs.readdirSync(path.toString());
+							const names = nodeFs.readdirSync(path.toApiString());
 							for (let i = 0; i < names.length; i++) {
 								parse(result, path, base, names[i], depth);
 							};
@@ -1724,7 +1805,26 @@ module.exports = {
 						const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 							relative = types.get(options, 'relative', false),
 							followLinks = types.get(options, 'followLinks', false),
-							skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
+							skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
+							cancellable = types.get(options, 'cancellable', true), // Experimental
+							timeout = types.get(options, 'timeout', null); // Experimental
+
+						let stopRacer = types.get(options, 'stopRacer', null), // Experimental
+							timeoutId = null; // Experimental
+
+						// Experimental
+						if (cancellable || !types.isNothing(timeout)) {
+							if (!stopRacer) {
+								stopRacer = Promise.createRacer();
+							};
+						};
+						if (!types.isNothing(timeout)) {
+							timeoutId = tools.callAsync(function() {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(new types.TimeoutError());
+								};
+							}, timeout, null, null, true);
+						};
 
 						const getStats = function getStats(path) {
 							return Promise.create(function tryStat(resolve, reject) {
@@ -1759,7 +1859,8 @@ module.exports = {
 							if (index < names.length) {
 								const name = names[index],
 									path = parent.combine(name);
-								return getStats(path.toString())
+								const promise = getStats(path.toApiString());
+								return (stopRacer ? stopRacer.race(promise) : promise)
 									.nodeify(function thenAddAndProceed(err, stats) {
 										if (err) {
 											if (!skipOnDeniedPermission || (err.code !== 'EPERM')) {
@@ -1781,7 +1882,8 @@ module.exports = {
 	
 						const proceed = function proceed(result, path, base, depth) {
 							if (depth >= 0) {
-								return readDir(path.toString())
+								const promise = readDir(path.toApiString());
+								return (stopRacer ? stopRacer.race(promise) : stopRacer)
 									.then(function thenParseNames(names) {
 										return parseNames(result, path, base, names, 0, depth);
 									});
@@ -1789,7 +1891,27 @@ module.exports = {
 							return result;
 						};
 
-						return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth);
+						const finalPromise = proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth)
+							.nodeify(function(err, result) {
+								if (timeoutId) {
+									timeoutId.cancel();
+								};
+								if (err) {
+									throw err;
+								} else {
+									return result;
+								};
+							});
+
+						if (cancellable) {
+							finalPromise.cancel = function(/*optional*/reason) {
+								if (!stopRacer.isSolved()) {
+									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
+								};
+							};
+						};
+
+						return finalPromise;
 					});
 				});
 
