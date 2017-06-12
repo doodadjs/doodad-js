@@ -4588,6 +4588,10 @@
 				this.superArgs = [message || "Not supported.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
 		
+		__Internal__.ADD('NotSupportedFunction', function NotSupportedFunction(/*paramarray*/) {
+			throw new types.NotSupported();
+		});
+
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
