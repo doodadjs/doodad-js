@@ -1074,11 +1074,11 @@ module.exports = {
 							});
 
 						if (cancellable) {
-							finalPromise.cancel = function(/*optional*/reason) {
+							finalPromise.addCancel(function(/*optional*/reason) {
 								if (!stopRacer.isSolved()) {
 									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
 								};
-							};
+							});
 						};
 
 						return finalPromise;
@@ -1666,7 +1666,7 @@ module.exports = {
 												throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
 											};
 										};
-									})
+									});
 							});
 						};
 
@@ -1683,11 +1683,11 @@ module.exports = {
 							});
 
 						if (cancellable) {
-							finalPromise.cancel = function(/*optional*/reason) {
+							finalPromise.addCancel(function(/*optional*/reason) {
 								if (!stopRacer.isSolved()) {
 									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
 								};
-							};
+							});
 						};
 
 						return finalPromise;
@@ -1904,11 +1904,11 @@ module.exports = {
 							});
 
 						if (cancellable) {
-							finalPromise.cancel = function(/*optional*/reason) {
+							finalPromise.addCancel(function(/*optional*/reason) {
 								if (!stopRacer.isSolved()) {
 									stopRacer.reject(types.isNothing(reason) ? new types.CanceledError() : reason);
 								};
-							};
+							});
 						};
 
 						return finalPromise;
