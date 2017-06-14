@@ -2056,7 +2056,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'any',
@@ -2080,12 +2080,7 @@
 			//! END_REPLACE()
 			, function defineProperty(obj, name, descriptor) {
 				// <PRB> "Object.defineProperty" stupidly takes inherited properties instead of just own properties. So we fix that because of "Object.prototype".
-				descriptor = types.extend(types.createObject(null), descriptor);
-				types.getDefault(descriptor, 'configurable', false);
-				types.getDefault(descriptor, 'enumerable', false);
-				if (!types.get(descriptor, 'get') && !types.get(descriptor, 'set')) {
-					types.getDefault(descriptor, 'writable', false);
-				};
+				descriptor = types.nullObject(descriptor);
 				return _shared.Natives.objectDefineProperty(obj, name, descriptor);
 			}));
 
@@ -4588,10 +4583,6 @@
 				this.superArgs = [message || "Not supported.", params];
 			}, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
 		
-		__Internal__.ADD('NotSupportedFunction', function NotSupportedFunction(/*paramarray*/) {
-			throw new types.NotSupported();
-		});
-
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
