@@ -360,11 +360,6 @@ module.exports = {
 					// NOTE: Makes use of sparse arrays, but they are not considered by the new features of ES6+
 					Promise.any = function _any(promises, /*optional*/options) {
 						const Promise = this;
-						tools.forEach(promises, function(promise, key) {
-							if (!types.isPromise(promise)) {
-								promises[key] = Promise.resolve(promise);
-							};
-						});
 						const promise = Promise.create(function(resolve, reject) {
 							const includeErrors = types.get(options, 'includeErrors', false);
 							const count = types.indexes(promises).length;
@@ -404,9 +399,6 @@ module.exports = {
 										});
 								});
 							};
-						});
-						tools.forEach(promises, function(p) {
-							__Internal__.mergeCancelStates(promise, p);
 						});
 						return promise;
 					};
