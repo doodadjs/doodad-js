@@ -7865,6 +7865,7 @@ module.exports = {
 						$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
 							'name',
 							'message',
+							'innerStack',
 						], extenders.UniqueArray))),
 						
 						__value: doodad.PROTECTED(doodad.READ_ONLY(null)),
@@ -7918,8 +7919,9 @@ module.exports = {
 									type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : ''),
 								};
 								tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
-									if (types.hasInherited(value, key)) {
-										tmp[key] = this.$pack(value[key]);
+									const valKey = (key === 'innerStack' ? 'stack' : key);
+									if (types.hasInherited(value, valKey)) {
+										tmp[key] = this.$pack(value[valKey]);
 									};
 								}, this);
 								data = {
