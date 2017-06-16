@@ -3995,7 +3995,11 @@ module.exports = {
 						};
 						fn = doodad.ATTRIBUTE(fn, extenders.Method);
 						if (types.isAsyncFunction(val)) {
-							return doodad.ASYNC(fn);
+							if (types.hasAsyncAwait()) {
+								return doodad.ASYNC(fn);
+							} else {
+								throw new types.NotSupported("Async functions are not supported because they always coerce to a native ES6 Promise.");
+							};
 						} else {
 							return fn;
 						};
