@@ -288,9 +288,19 @@ module.exports = {
 				//===================================
 			
 				__Internal__.hasAsyncAwait = false;
+				__Internal__.hasAsyncAwaitBug = false;
 				try {
 					types.eval("async function test() {}");
 					__Internal__.hasAsyncAwait = true;
+
+					// <PRB> Once again, ES specs are wrong because we SHOULD reuse Thenables instead of coercing them to an ES6 native Promise.
+					types.eval(
+						"(async function() {return {then: (res, rej) => {" + 
+							"ctx.Internal.hasAsyncAwaitBug = true;" +
+							"res(1);" +
+						"}}})()"
+					, {Internal: __Internal__});
+
 				} catch(ex) {
 				};
 
@@ -298,14 +308,14 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: null,
 							returns: 'bool',
-							description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
+							description: "Returns 'true' if the Javascript engine has ES6 async/await support, 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, function hasAsyncAwait() {
-						return __Internal__.hasAsyncAwait;
+						return __Internal__.hasAsyncAwait && !__Internal__.hasAsyncAwaitBug;
 					}));
 
 				types.ADD('isAsyncFunction', root.DD_DOC(
