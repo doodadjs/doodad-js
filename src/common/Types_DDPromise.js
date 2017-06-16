@@ -78,7 +78,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'object',
@@ -91,7 +91,27 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function isPromise(obj) {
-						return types._instanceof(obj, [__Internal__.Promise, _shared.Natives.windowPromise]) || (types.getIn(obj, _shared.IsPromiseSymbol, false) === true);
+						return types.isObjectLike(obj) && !!obj[_shared.IsPromiseSymbol];
+					}));
+			
+				types.ADD('isExtendedPromise', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
+					}
+					//! END_REPLACE()
+					, function isExtendedPromise(obj) {
+						return types.isObjectLike(obj) && !!obj[__Internal__.symbolIsExtendedPromise];
 					}));
 			
 				types.ADD('getPromise', root.DD_DOC(
@@ -651,7 +671,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								Promise: {
 									type: 'Promise',
@@ -673,7 +693,7 @@ module.exports = {
 							return Promise;
 						};
 
-						if (Promise[__Internal__.symbolIsExtendedPromise]) {
+						if (Promise.prototype[__Internal__.symbolIsExtendedPromise]) {
 							// Already extended.
 							__Internal__.Promise = Promise;
 							return Promise;
@@ -724,19 +744,12 @@ module.exports = {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 
+						_shared.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
+
 						_shared.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
-						_shared.setAttribute(DDPromise, __Internal__.symbolIsExtendedPromise, true, {});
+						_shared.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
 
 						__Internal__.Promise = DDPromise;
-
-						types.defineProperty(global, 'Promise', {get: function() {
-								console.warn("Reference to 'global.Promise' detected.");
-								types.defineProperty(global, 'Promise', {value: _shared.Natives.windowPromise, configurable: true, enumerable: true, writable: true});
-								return _shared.Natives.windowPromise;
-							}, set: function(Promise) {
-								console.warn("Reference to 'global.Promise' detected.");
-								types.defineProperty(global, 'Promise', {value: Promise, configurable: true, enumerable: true, writable: true});
-							}, configurable: true, enumerable: true});
 
 						return DDPromise;
 					}));
@@ -808,6 +821,20 @@ module.exports = {
 				//===================================
 				return function init(/*optional*/options) {
 					if (_shared.Natives.windowPromise) {
+						types.defineProperty(global, 'Promise', {
+							get: function() {
+								console.warn(new global.Error("Reference to 'global.Promise' detected."));
+								types.defineProperty(global, 'Promise', {value: _shared.Natives.windowPromise, configurable: true, enumerable: true, writable: true});
+								return _shared.Natives.windowPromise;
+							},
+							set: function(Promise) {
+								console.warn(new global.Error("Reference to 'global.Promise' detected."));
+								types.defineProperty(global, 'Promise', {value: Promise, configurable: true, enumerable: true, writable: true});
+							},
+							configurable: true,
+							enumerable: true
+						});
+
 						try {
 							types.setPromise(_shared.Natives.windowPromise);
 						} catch(ex) {
