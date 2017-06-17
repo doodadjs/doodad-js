@@ -124,22 +124,20 @@
 		//===================================
 
 		__Internal__.hasClasses = false;
+		__Internal__.hasFirefoxClassesToStringBug = false;
 		__Internal__.classesNotCallable = true;
 		
-		(function() {
-			try {
-				// <PRB> Firefox returns 'undefined' on class definition !!!
-				//const cls = global.eval("class A {}"); // Will throw an error if ES6 classes are not supported.
-				const cls = global.eval("var a = class A {}; a"); // Will throw an error if ES6 classes are not supported.
-				__Internal__.hasClasses = (_shared.Natives.functionToStringCall(cls).slice(0, 6) === 'class ');  // Check for Firefox's bug
-				// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
-				//if (__Internal__.hasClasses) {
-				//	cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
-				//	__Internal__.classesNotCallable = false;
-				//};
-			} catch(o) {
-			};
-		})();
+		try {
+			const cls = global.eval("(class A {})"); // Will throw an error if ES6 classes are not supported.
+			__Internal__.hasClasses = true;
+
+			__Internal__.hasFirefoxClassesToStringBug = (_shared.Natives.functionToStringCall(cls).slice(0, 6) !== 'class ');  // Check for Firefox's bug
+
+			// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
+			//cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
+			//__Internal__.classesNotCallable = false;
+		} catch(o) {
+		};
 
 		__Internal__.ADD('hasClasses', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -152,7 +150,7 @@
 			}
 			//! END_REPLACE()
 			, function hasClasses() {
-				return __Internal__.hasClasses;
+				return __Internal__.hasClasses && !__Internal__.hasFirefoxClassesToStringBug;
 			}));
 
 		//===================================
@@ -203,7 +201,7 @@
 						description: "Returns 'true' if object is a Javascript class function, 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, __Internal__.hasClasses ? function isJsClass(obj) {
+			, __Internal__.hasClasses && !__Internal__.hasFirefoxClassesToStringBug ? function isJsClass(obj) {
 				if (types.isFunction(obj)) {
 					return (_shared.Natives.functionToStringCall(obj).slice(0, 6) === 'class ');
 				};
@@ -4244,7 +4242,7 @@
 				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
 				let type;
 				if (__Internal__.hasClasses) {
-					const expr = "class " + name + " extends ctx.base {" +
+					let expr = "class " + name + " extends ctx.base {" +
 						"constructor(/*paramarray*/...args) {" +
 							"const context = {_this: {}, superArgs: null};" +
 							(constructor ? (
