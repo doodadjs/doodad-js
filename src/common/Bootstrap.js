@@ -150,7 +150,7 @@
 			}
 			//! END_REPLACE()
 			, function hasClasses() {
-				return __Internal__.hasClasses && !__Internal__.hasFirefoxClassesToStringBug;
+				return __Internal__.hasClasses;
 			}));
 
 		//===================================
