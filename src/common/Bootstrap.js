@@ -58,7 +58,10 @@
 				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
 
-				// "isNativeFunction"
+				// "extend"
+				objectAssignApply: global.Object.assign.apply.bind(global.Object.assign),
+			
+				// "isCustomFunction", "isNativeFunction", getFunctionName"
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 			},
 		};
@@ -154,7 +157,7 @@
 			}));
 
 		//===================================
-		// Native functions
+		// Functions
 		//===================================
 		// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 		try {
@@ -248,8 +251,37 @@
 				};
 			}));
 		
-		// FUTURE: "types.extend(_shared.Natives, {...})" when "Object.assign" will be accessible on every engine
-		_shared.Natives = {
+
+		//===================================
+		// Extend
+		//===================================
+
+		__Internal__.ADD('extend', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							paramarray: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+						},
+						returns: 'object',
+						description: "Extends the first object with owned properties of the other objects.",
+			}
+			//! END_REPLACE()
+			, function extend(/*paramarray*/obj) {
+				return _shared.Natives.objectAssignApply(null, arguments);
+			}));
+
+
+		//===================================
+		// Natives
+		//===================================
+
+		types.extend(_shared.Natives, {
 			// General
 			windowFunction: global.Function,
 			windowObject: global.Object,
@@ -262,15 +294,7 @@
 			objectPrototype: global.Object.prototype,
 			
 			// "has", "isCustomFunction", "isNativeFunction"
-			// FUTURE: Remove when "Natives" will be "types.extend"ed
 			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
-			
-			// "isCustomFunction", "isNativeFunction", getFunctionName"
-			// FUTURE: Remove when "_shared.Natives" will be "types.extend"ed
-			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
-				
-			// "extend"
-			objectAssign: (types.isNativeFunction(global.Object.assign) ? global.Object.assign : undefined),
 			
 			// "createObject"
 			objectCreate: global.Object.create,
@@ -403,7 +427,7 @@
 
 			// AssertionError
 			//consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
-		};
+		});
 
 		// "_instanceof"
 		_shared.Natives.functionHasInstance = (_shared.Natives.symbolHasInstance ? global.Function.prototype[_shared.Natives.symbolHasInstance] : undefined);
@@ -1995,44 +2019,6 @@
 				return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 			}));
 		
-		__Internal__.ADD('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							paramarray: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'object',
-						description: "Extends the first object with owned properties of the other objects.",
-			}
-			//! END_REPLACE()
-			, function extend(/*paramarray*/obj) {
-				let result;
-				if (!types.isNothing(obj)) {
-					result = _shared.Natives.windowObject(obj);
-					const len = arguments.length;
-					for (let i = 1; i < len; i++) {
-						obj = arguments[i];
-						if (types.isNothing(obj)) {
-							continue;
-						};
-						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-						obj = _shared.Natives.windowObject(obj);
-						const keys = types.append(types.keys(obj), types.symbols(obj));
-						for (let j = 0; j < keys.length; j++) {
-							const key = keys[j];
-							result[key] = obj[key];
-						};
-					};
-				};
-				return result;
-			})));
-			
 		__Internal__.hasGetOwnPropertyRestrictionOnCaller = false;
 		(function() {
 			// Edge
