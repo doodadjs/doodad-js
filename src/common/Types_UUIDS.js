@@ -71,8 +71,9 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				//types.complete(_shared.Natives, {
-				//});
+				types.complete(_shared.Natives, {
+					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
+				});
 				
 				//===================================
 				// Init
@@ -111,7 +112,7 @@ module.exports = {
 					for (let i = 0; i < tempNatives.length; i++) {
 						const item = tempNatives[i],
 							name = item[0],
-							native = global[name];
+							native = (name === 'Promise' && _shared.Natives.windowPromise || global[name]);
 
 						if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
 							if (types.has(problematicAliases, name)) {
