@@ -3,8 +3,11 @@ node_js:
   - "8"
   - "7"
   - "6"
+cache:
+  directories:
+    - $HOME/build/clean
 env:
   - NODE_ENV=development
   - NODE_ENV=production
 before_install: git clone --depth=1 https://github.com/doodadjs/travis_scripts.git ~/travis_scripts && chmod +x ~/travis_scripts/install.sh
-install: TARGET=~/build/clean; export DD_REPOS=`cd .. && pwd`; mkdir -p $TARGET && cd $TARGET && ~/travis_scripts/install.sh && cd doodad-js-test
+install: TARGET=$HOME/build/clean; export DD_REPOS=`cd $TRAVIS_BUILD_DIR/.. && pwd`; mkdir -p $TARGET && cd $TARGET && ~/travis_scripts/install.sh && cd doodad-js-test
