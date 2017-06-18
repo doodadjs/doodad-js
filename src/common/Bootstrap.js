@@ -4228,7 +4228,7 @@
 				// <FUTURE> Declare classes directly (when ES6 will be everywhere)
 				let type;
 				if (__Internal__.hasClasses) {
-					let expr = "class " + name + " extends ctx.base {" +
+					const expr = "class " + name + " extends ctx.base {" +
 						"constructor(/*paramarray*/...args) {" +
 							"const context = {_this: {}, superArgs: null};" +
 							(constructor ? (
