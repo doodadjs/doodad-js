@@ -55,12 +55,35 @@
 			// NOTE: Preload of immediatly needed natives.
 			Natives: {
 				// General
+				windowObject: global.Object,
 				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
 
+				// "is*"
+				symbolToStringTag: (global.Symbol && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
+				stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
+
+				// "isArray", "isObject", "isJsObject", "isCallable"
+				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
+
+				// "isEnumerable", "symbols"
+				objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
+
+				// "allSymbols", "symbols"
+				objectGetOwnPropertySymbols: (global.Object.getOwnPropertySymbols ? global.Object.getOwnPropertySymbols : undefined),
+
+				// "has", "isCustomFunction", "isNativeFunction"
+				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
+
+				// "keys"
+				objectKeys: global.Object.keys,
+
+				// "append", "concat"
+				arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
+
 				// "extend"
-				objectAssignApply: global.Object.assign.apply.bind(global.Object.assign),
-			
+				objectAssign: global.Object.assign,
+
 				// "isCustomFunction", "isNativeFunction", getFunctionName"
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 			},
@@ -254,27 +277,343 @@
 
 		//===================================
 		// Extend
+		// <FUTURE> Simply use "Object.assign" when IE will be no longer a thing.
+		// <FUTURE> Move all these functions where appropriated once "Object.assign" will be available everywhere.
 		//===================================
 
-		__Internal__.ADD('extend', __Internal__.DD_DOC(
+		__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 1,
 						params: {
-							paramarray: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+							key: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "A property name to test for.",
+							},
+						},
+						returns: 'boolean',
+						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isEnumerable(obj, key) {
+				return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
+			}));
+		
+		__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
 								type: 'any',
 								optional: false,
 								description: "An object.",
 							},
 						},
-						returns: 'object',
-						description: "Extends the first object with owned properties of the other objects.",
+						returns: 'arrayof(symbol)',
+						description: "Returns an array of enumerable and non-enumerable own property symbols.",
 			}
 			//! END_REPLACE()
-			, function extend(/*paramarray*/obj) {
-				return _shared.Natives.objectAssignApply(null, arguments);
+			, (_shared.Natives.objectGetOwnPropertySymbols ? 
+			function allSymbols(obj) {
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				return _shared.Natives.objectGetOwnPropertySymbols(obj);
+			}
+			:
+			function allSymbols(obj) {
+				// Not supported
+				return [];
+			})));
+
+		__Internal__.ADD('symbols', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+						},
+						returns: 'arrayof(symbol)',
+						description: "Returns an array of enumerable own property symbols.",
+			}
+			//! END_REPLACE()
+			, function symbols(obj) {
+				// FUTURE: "Object.symbols" ? (like "Object.keys")
+				// FUTURE: Use "filter"
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				const all = types.allSymbols(obj);
+				const symbols = [];
+				for (let i = 0; i < all.length; i++) {
+					const symbol = all[i];
+					if (types.isEnumerable(obj, symbol)) {
+						symbols.push(symbol);
+					};
+				};
+				return symbols;
 			}));
+		
+		__Internal__.ADD('has', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+							keys: {
+								type: 'arrayof(string,Symbol),string,Symbol',
+								optional: false,
+								description: "Key(s) to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if one of the specified keys is an owned property of the object.",
+			}
+			//! END_REPLACE()
+			, function has(obj, keys) {
+				if (!types.isNothing(obj)) {
+					obj = _shared.Natives.windowObject(obj);
+					if (!types.isArray(keys)) {
+						return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
+					};
+					const len = keys.length;
+					if (!len) {
+						return false;
+					};
+					for (let i = 0; i < len; i++) {
+						if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
+							const key = keys[i];
+							if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
+								return true;
+							};
+						};
+					};
+				};
+				return false;
+			}));
+		
+		// <PRB> JS has no function to test for strings
+		__Internal__.ADD('isString', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isString(obj) {
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj === 'object') {
+					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'String')) {
+						try {
+							obj = _shared.Natives.stringValueOfCall(obj);
+						} catch(o) {
+							return false;
+						};
+					} else if (_shared.Natives.objectToStringCall(obj) !== '[object String]') {
+						return false;
+					} else {
+						obj = _shared.Natives.stringValueOfCall(obj);
+					};
+				};
+				return (typeof obj === 'string');
+			}));
+		
+		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isArrayLike(obj) {
+				// Unbelievable : There is not an official way to detect an array-like object !!!!
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj === 'object') {
+					const len = obj.length;
+					return (typeof len === 'number') && ((len >>> 0) === len);
+				} else if (types.isString(obj)) {
+					return true;
+				} else {
+					return false;
+				};
+			}));
+		
+		__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
+
+		__Internal__.ADD('keys', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object.",
+							},
+						},
+						returns: 'arrayof(string)',
+						description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
+			}
+			//! END_REPLACE()
+			, function keys(obj) {
+				// Returns enumerable own properties (those not inherited).
+				// Doesn't not include array items.
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				
+				obj = _shared.Natives.windowObject(obj);
+
+				let result;
+				
+				if (types.isArrayLike(obj)) {
+					result = [];
+					for (let key in obj) {
+						if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
+							result.push(key);
+						};
+					};
+				} else {
+					 result = _shared.Natives.objectKeys(obj);
+				};
+				
+				return result;
+			}));
+		
+		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+			, function isNothing(obj) {
+				return (obj == null);
+			}));
+		
+		__Internal__.ADD('append', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'arraylike',
+								optional: false,
+								description: "Target array.",
+							},
+							paramarray: {
+								type: 'arrayof(arraylike)',
+								optional: true,
+								description: "Arrays to append.",
+							},
+						},
+						returns: 'array',
+						description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
+			}
+			//! END_REPLACE()
+			, function append(obj /*paramarray*/) {
+				if (!types.isArrayLike(obj)) {
+					return null;
+				};
+				const len = arguments.length;
+				for (let i = 1; i < len; i++) {
+					const arg = arguments[i];
+					if (!types.isNothing(arg)) {
+						_shared.Natives.arrayPushApply(obj, arg);
+					};
+				};
+				return obj;
+			}));
+			
+		__Internal__.ADD('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						paramarray: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'object',
+					description: "Extends the first object with owned properties of the other objects.",
+				}
+				//! END_REPLACE()
+		, function extend(/*paramarray*/obj) {
+			let result;
+			if (!types.isNothing(obj)) {
+				result = _shared.Natives.windowObject(obj);
+				const len = arguments.length;
+				for (let i = 1; i < len; i++) {
+					obj = arguments[i];
+					if (types.isNothing(obj)) {
+						continue;
+					};
+					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+					obj = _shared.Natives.windowObject(obj);
+					const keys = types.append(types.keys(obj), types.symbols(obj));
+					for (let j = 0; j < keys.length; j++) {
+						const key = keys[j];
+						result[key] = obj[key];
+					};
+				};
+			};
+			return result;
+		})));
 
 
 		//===================================
@@ -284,7 +623,6 @@
 		types.extend(_shared.Natives, {
 			// General
 			windowFunction: global.Function,
-			windowObject: global.Object,
 			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 
 			// "eval"
@@ -292,9 +630,6 @@
 
 			// "hasInherited"
 			objectPrototype: global.Object.prototype,
-			
-			// "has", "isCustomFunction", "isNativeFunction"
-			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
 			
 			// "createObject"
 			objectCreate: global.Object.create,
@@ -317,17 +652,8 @@
 			// "isPrototypeOf"
 			objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
-			// "keys"
-			objectKeys: global.Object.keys,
-			
-			// "isEnumerable", "symbols"
-			objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
-			
 			// "setPrototypeOf"
 			objectSetPrototypeOf: global.Object.setPrototypeOf,
-			
-			// "isArray", "isObject", "isJsObject", "isCallable"
-			objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 			
 			// "isArray"
 			arrayIsArray: (types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
@@ -364,10 +690,8 @@
 			symbolHasInstance: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.hasInstance === 'symbol') ? global.Symbol.hasInstance : undefined),
 
 			// "is*"
-			symbolToStringTag: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
 			numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
 			booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
-			stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
 			dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
 
 			// "isNaN"
@@ -379,10 +703,9 @@
 			// "concat"
 			arrayConcatApply: (types.isNativeFunction(global.Array.prototype.concat) ? global.Array.prototype.concat.apply.bind(global.Array.prototype.concat) : undefined),
 
-			// "append"
+			// "concat"
 			arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
-			arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
-			
+
 			// "isInteger"
 			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
 
@@ -414,9 +737,6 @@
 
 			// "preventExtensions"
 			objectPreventExtensions: global.Object.preventExtensions,
-			
-			// "allSymbols", "symbols"
-			objectGetOwnPropertySymbols: (types.isNativeFunction(global.Object.getOwnPropertySymbols) ? global.Object.getOwnPropertySymbols : undefined),
 			
 			// "isSafeInteger", "getSafeIntegerBounds"
 			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER || global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1,
@@ -538,26 +858,6 @@
 					};
 				};
 				return false;
-			}));
-		
-		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isNothing(obj) {
-				return (obj == null);
 			}));
 		
 		//==================================
@@ -1244,43 +1544,6 @@
 				return (typeof obj === 'boolean');
 			}));
 		
-		// <PRB> JS has no function to test for strings
-		__Internal__.ADD('isString', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isString(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj === 'object') {
-					if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'String')) {
-						try {
-							obj = _shared.Natives.stringValueOfCall(obj);
-						} catch(o) {
-							return false;
-						};
-					} else if (_shared.Natives.objectToStringCall(obj) !== '[object String]') {
-						return false;
-					} else {
-						obj = _shared.Natives.stringValueOfCall(obj);
-					};
-				};
-				return (typeof obj === 'string');
-			}));
-		
 		// <PRB> JS has no function to test for dates
 		__Internal__.ADD('isDate', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1350,37 +1613,6 @@
 				return (_shared.Natives.objectToStringCall(obj) === '[object Array]');
 			})));
 
-		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isArrayLike(obj) {
-				// Unbelievable : There is not an official way to detect an array-like object !!!!
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj === 'object') {
-					const len = obj.length;
-					return (typeof len === 'number') && ((len >>> 0) === len);
-				} else if (types.isString(obj)) {
-					return true;
-				} else {
-					return false;
-				};
-			}));
-		
 		// <PRB> JS has no function to test for errors
 		__Internal__.ADD('isError', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1700,49 +1932,6 @@
 				return false;
 			}));
 		
-		__Internal__.ADD('has', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-							keys: {
-								type: 'arrayof(string,Symbol),string,Symbol',
-								optional: false,
-								description: "Key(s) to test for.",
-							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if one of the specified keys is an owned property of the object.",
-			}
-			//! END_REPLACE()
-			, function has(obj, keys) {
-				if (!types.isNothing(obj)) {
-					obj = _shared.Natives.windowObject(obj);
-					if (!types.isArray(keys)) {
-						return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
-					};
-					const len = keys.length;
-					if (!len) {
-						return false;
-					};
-					for (let i = 0; i < len; i++) {
-						if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
-							const key = keys[i];
-							if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
-								return true;
-							};
-						};
-					};
-				};
-				return false;
-			}));
-		
 		__Internal__.ADD('get', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1839,74 +2028,6 @@
 			}));
 		
 		
-		__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-							key: {
-								type: 'string,Symbol',
-								optional: false,
-								description: "A property name to test for.",
-							},
-						},
-						returns: 'boolean',
-						description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isEnumerable(obj, key) {
-				return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
-			}));
-		
-		__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
-
-		__Internal__.ADD('keys', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'arrayof(string)',
-						description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
-			}
-			//! END_REPLACE()
-			, function keys(obj) {
-				// Returns enumerable own properties (those not inherited).
-				// Doesn't not include array items.
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				
-				obj = _shared.Natives.windowObject(obj);
-
-				let result;
-				
-				if (types.isArrayLike(obj)) {
-					result = [];
-					for (let key in obj) {
-						if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
-							result.push(key);
-						};
-					};
-				} else {
-					 result = _shared.Natives.objectKeys(obj);
-				};
-				
-				return result;
-			}));
-		
 		__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
 
 		__Internal__.ADD('allKeysInherited', __Internal__.DD_DOC(
@@ -1933,68 +2054,6 @@
 				return types.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
 			}));
 		
-		__Internal__.ADD('symbols', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'arrayof(symbol)',
-						description: "Returns an array of enumerable own property symbols.",
-			}
-			//! END_REPLACE()
-			, function symbols(obj) {
-				// FUTURE: "Object.symbols" ? (like "Object.keys")
-				// FUTURE: Use "filter"
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				const all = types.allSymbols(obj);
-				const symbols = [];
-				for (let i = 0; i < all.length; i++) {
-					const symbol = all[i];
-					if (types.isEnumerable(obj, symbol)) {
-						symbols.push(symbol);
-					};
-				};
-				return symbols;
-			}));
-		
-		__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object.",
-							},
-						},
-						returns: 'arrayof(symbol)',
-						description: "Returns an array of enumerable and non-enumerable own property symbols.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.objectGetOwnPropertySymbols ? 
-			function symbols(obj) {
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				return _shared.Natives.objectGetOwnPropertySymbols(obj);
-			}
-			:
-			function symbols(obj) {
-				// Not supported
-				return [];
-			})));
-
 		__Internal__.ADD('allSymbolsInherited', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2596,41 +2655,6 @@
 					return result;
 				}
 			)));
-			
-		__Internal__.ADD('append', __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'arraylike',
-								optional: false,
-								description: "Target array.",
-							},
-							paramarray: {
-								type: 'arrayof(arraylike)',
-								optional: true,
-								description: "Arrays to append.",
-							},
-						},
-						returns: 'array',
-						description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
-			}
-			//! END_REPLACE()
-			, function append(obj /*paramarray*/) {
-				if (!types.isArrayLike(obj)) {
-					return null;
-				};
-				const len = arguments.length;
-				for (let i = 1; i < len; i++) {
-					const arg = arguments[i];
-					if (!types.isNothing(arg)) {
-						_shared.Natives.arrayPushApply(obj, arg);
-					};
-				};
-				return obj;
-			}));
 			
 		__Internal__.ADD('unique', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
