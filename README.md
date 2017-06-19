@@ -435,7 +435,7 @@ But I have to wait on what will be feasible after current proposals like "decora
   - **doodad-js-test**: Test application
   - **doodad-js-unicode**: Unicode Tools (alpha)
   - **doodad-js-widgets**: Widgets base module (alpha)
-  - **doodad-js-xml**: XML Parser (release)
+  - **doodad-js-xml**: XML Parser (beta)
   
 ## License
 
