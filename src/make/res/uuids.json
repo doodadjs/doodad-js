@@ -124,5 +124,6 @@
     "SYMBOL_RENAMED_TO": "7b72b02c-c4c0-4c1c-9314-d96aa2fa0c5c",
     "SYMBOL_OVERRIDE_WITH": "9c418070-e181-4224-afdc-e2ec701591f9",
     "SYMBOL_REPLACED_CALLERS": "150e1a2a-5bc7-4df4-85fd-f0d9c0c37fd9",
-    "SYMBOL_DESTROYED": "4a34cd5d-53cc-4585-a62e-78aef65d7794"
+    "SYMBOL_DESTROYED": "4a34cd5d-53cc-4585-a62e-78aef65d7794",
+    "PromiseCancelState": "35aa2204-5e5e-4ffd-aec1-a4d247bbaa6a"
 }
