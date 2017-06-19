@@ -229,7 +229,7 @@ module.exports = {
 				// Shared Symbols
 				//===================================
 				
-				_shared.NameSymbol = types.getSymbol('__NAME__');
+				_shared.NameSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_NAME')), true) */ '__NAME__' /*! END_REPLACE() */, true);
 
 
 				//===================================
@@ -380,7 +380,7 @@ module.exports = {
 				// Bindable
 				//===================================
 
-				_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
+				_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
 				
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;
