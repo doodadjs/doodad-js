@@ -60,7 +60,6 @@
     "UrlArguments": "c1308b9d-56a9-4377-b0db-0739fe1dae7c",
     "Url": "45d3ca2f-4d35-4daf-ad48-dfddf3750f88",
     "Version": "baa59f5f-eba0-404f-b1f8-b229fefcf655",
-    "BOUND_OBJECT": "160609c4-7c2f-4631-8726-b51bdba01d55",
     "Iterator": "93b43e67-56ae-495c-904c-2a92d3c42f34",
     "Native_GeneratorFunction": "190d4b55-5ce4-40f0-99f1-0e85d235a411",
     "Native_TypedArray": "72157d03-d55c-4af1-80a7-5f1985860fab",
@@ -73,8 +72,6 @@
     "MapValuesIterator": "25ab7a91-fb83-4620-9c45-1a50dc8beaa2",
     "MapEntriesIterator": "723501aa-a015-4b53-aa3c-980c8eb0e456",
     "Map": "f38643b9-9aa1-41ba-83d7-bff3efb3e91c",
-    "IsPromiseExtended": "e54c9058-943b-4f62-bc94-0544144cb3ff",
-    "IsPromise": "d7fdeec4-904b-452e-9c56-7bb810f10712",
     "WeakMap": "9d19e3e6-34dd-4035-8f32-595323a191d2",
     "NATIVE_TYPE": "1e14e8c5-755b-4c5b-a46e-1ad4f443e66d",
     "ScriptLoader": "e457dd6f-d97f-44ef-bf62-d6b19a490215",
@@ -125,5 +122,9 @@
     "SYMBOL_OVERRIDE_WITH": "9c418070-e181-4224-afdc-e2ec701591f9",
     "SYMBOL_REPLACED_CALLERS": "150e1a2a-5bc7-4df4-85fd-f0d9c0c37fd9",
     "SYMBOL_DESTROYED": "4a34cd5d-53cc-4585-a62e-78aef65d7794",
-    "PromiseCancelState": "35aa2204-5e5e-4ffd-aec1-a4d247bbaa6a"
+    "SYMBOL_NAME": "e111f689-8856-47e8-a2fd-d5b0524c5e3a",
+    "SYMBOL_BOUND_OBJECT": "643dfb9f-03fa-410c-b1a1-6c202231f93d",
+    "SYMBOL_IS_PROMISE_EXTENDED": "08378332-cae4-4264-8d6d-dcf517d00354",
+    "SYMBOL_IS_PROMISE": "4dd3170c-5a28-4174-ac6b-068e028896c1",
+    "SYMBOL_PROMISE_CANCEL_STATE": "4038d209-6da0-42d5-b34b-1bc7fb1b66b8"
 }
