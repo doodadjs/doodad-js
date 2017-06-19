@@ -417,14 +417,14 @@ But I have to wait on what will be feasible after current proposals like "decora
 
   - **doodad-js**: Object-oriented programming framework (release)
   - **doodad-js-cluster**: Cluster manager (alpha)
-  - **doodad-js-dates**: Dates formatting (release)
+  - **doodad-js-dates**: Dates formatting (beta)
   - **doodad-js-http**: Http server (alpha)
   - **doodad-js-http_jsonrpc**: JSON-RPC over http server (alpha)
   - **doodad-js-io**: I/O module (alpha)
   - **doodad-js-ipc**: IPC/RPC server (alpha)
   - **doodad-js-json**: JSON parser (alpha)
   - **doodad-js-loader**: Scripts loader (beta)
-  - **doodad-js-locale**: Locales (release)
+  - **doodad-js-locale**: Locales (beta)
   - **doodad-js-make**: Make tools for doodad (alpha)
   - **doodad-js-mime**: Mime types (beta)
   - **doodad-js-minifiers**: Javascript minifier used by doodad (alpha)
@@ -433,7 +433,7 @@ But I have to wait on what will be feasible after current proposals like "decora
   - **doodad-js-templates**: HTML page templates (alpha)
   - **doodad-js-terminal**: Terminal (alpha)
   - **doodad-js-test**: Test application
-  - **doodad-js-unicode**: Unicode Tools (alpha)
+  - **doodad-js-unicode**: Unicode Tools (beta)
   - **doodad-js-widgets**: Widgets base module (alpha)
   - **doodad-js-xml**: XML Parser (beta)
   
