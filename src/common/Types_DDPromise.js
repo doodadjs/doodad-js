@@ -187,13 +187,13 @@ module.exports = {
 					// Bluebird "finally" polyfill
 					if (!types.isFunction(Promise.prototype.finally)) {
 						Promise.prototype.finally = function _finally(callback) {
-							const Promise = this.constructor;
+							const P = this.constructor || Promise;
 							const promise = this.then(function(result) {
-									return Promise.resolve(callback()).then(function() {
+									return P.resolve(callback()).then(function() {
 										return result;
 									});
 								}, function(err) {
-									return Promise.resolve(callback()).then(function() {
+									return P.resolve(callback()).then(function() {
 										throw err;
 									});
 								});
@@ -205,8 +205,8 @@ module.exports = {
 					// Bluebird "try" polyfill
 					if (!types.isFunction(Promise.try)) {
 						Promise.try = function _try(callback) {
-							const Promise = this;
-							return Promise.create(function _try(resolve, reject, promise) {
+							const P = this || Promise;
+							return P.create(function _try(resolve, reject, promise) {
 								try {
 									resolve(callback());
 								} catch(ex) {
@@ -219,9 +219,9 @@ module.exports = {
 					// Bluebird "map" polyfill
 					if (!types.isFunction(Promise.map)) {
 						Promise.map = function _map(ar, fn, /*optional*/options) {
-							const Promise = this;
+							const P = this || Promise;
 
-							return Promise.try(function tryMap() {
+							return P.try(function tryMap() {
 								const len = ar.length | 0;
 
 								options = types.nullObject({
@@ -233,15 +233,15 @@ module.exports = {
 								};
 
 								if (options.concurrency >= len) {
-									return Promise.all(tools.map(ar, function _mapFn(val, key, obj) {
-										return Promise.resolve(fn.call(undefined, val, key, obj));
+									return P.all(tools.map(ar, function _mapFn(val, key, obj) {
+										return P.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
 									const result = _shared.Natives.windowArray(len);
 									const state = {start: 0};
 									const mapFn = function _mapFn(val, key, obj) {
 										state.start++;
-										return Promise.resolve(fn.call(undefined, val, key, obj))
+										return P.resolve(fn.call(undefined, val, key, obj))
 											.then(function(res) {
 												result[key] = res;
 												const pos = state.start;
@@ -251,7 +251,7 @@ module.exports = {
 											});
 									};
 									if (options.concurrency > 1) {
-										return Promise.all(tools.map(ar, mapFn, null, 0, options.concurrency))
+										return P.all(tools.map(ar, mapFn, null, 0, options.concurrency))
 											.then(function() {
 												return result;
 											});
@@ -271,18 +271,18 @@ module.exports = {
 					// Add "thisObj" argument
 					// Add promise name
 					Promise.create = function create(callback, /*optional*/thisObj) {
-						const Promise = this;
+						const P = this || Promise;
 						if (thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						return new Promise(callback, thisObj);
+						return new P(callback, thisObj);
 					};
 
 					// NOTE: Experimental
 					Promise.createRacer = function createRacer() {
-						const Promise = this,
+						const P = this || Promise,
 							state = {res: null, rej: null};
-						const racer = Promise.create(function Racer(res, rej) {
+						const racer = P.create(function Racer(res, rej) {
 							state.res = res;
 							state.rej = rej;
 						});
@@ -314,7 +314,7 @@ module.exports = {
 							} else {
 								promises = [this, promise];
 							}
-							return Promise.race(promises);
+							return P.race(promises);
 						};
 						// TODO: Try to implement in DDPromise.prototype instead.
 						racer.isSolved = function() {
@@ -327,8 +327,8 @@ module.exports = {
 					// Add "cancel"
 					const oldResolveCall = Promise.resolve.call.bind(Promise.resolve);
 					Promise.resolve = function _resolve(value) {
-						const Promise = this;
-						const promise = oldResolveCall(Promise, value);
+						const P = this || Promise;
+						const promise = oldResolveCall(P, value);
 						if (types.isPromise(value)) {
 							__Internal__.mergeCancelStates(promise, value);
 						};
@@ -339,8 +339,8 @@ module.exports = {
 					// Add "cancel"
 					const oldRejectCall = Promise.reject.call.bind(Promise.reject);
 					Promise.reject = function _reject(value) {
-						const Promise = this;
-						const promise = oldRejectCall(Promise, value);
+						const P = this || Promise;
+						const promise = oldRejectCall(P, value);
 						if (types.isPromise(value)) {
 							__Internal__.mergeCancelStates(promise, value);
 						};
@@ -351,11 +351,11 @@ module.exports = {
 					// Add promise name
 					const oldTryCall = Promise.try.call.bind(Promise.try);
 					Promise.try = function _try(callback, /*optional*/thisObj) {
-						const Promise = this;
+						const P = this || Promise;
 						if (thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						const promise = oldTryCall(Promise, callback);
+						const promise = oldTryCall(P, callback);
 						callback.promise = promise;
 						promise[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
 						return promise;
@@ -365,12 +365,12 @@ module.exports = {
 					// Add promise name
 					const oldMapCall = Promise.map.call.bind(Promise.map);
 					Promise.map = function _map(ar, callback, /*optional*/options) {
-						const Promise = this,
+						const P = this || Promise,
 							thisObj = types.get(options, 'thisObj');
 						if (thisObj) {
 							callback = _shared.PromiseCallback(thisObj, callback);
 						};
-						const promise = oldMapCall(Promise, ar, callback, options);
+						const promise = oldMapCall(P, ar, callback, options);
 						callback.promise = promise;
 						promise[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
 						return promise;
@@ -379,8 +379,8 @@ module.exports = {
 					// NOTE: Experimental
 					// NOTE: Makes use of sparse arrays, but they are not considered by the new features of ES6+
 					Promise.any = function _any(promises, /*optional*/options) {
-						const Promise = this;
-						const promise = Promise.create(function(resolve, reject) {
+						const P = this || Promise;
+						const promise = P.create(function(resolve, reject) {
 							const includeErrors = types.get(options, 'includeErrors', false);
 							const count = types.indexes(promises).length;
 							if (count <= 0) {
@@ -398,7 +398,7 @@ module.exports = {
 									};
 								};
 								tools.forEach(promises, function(val) {
-									Promise.resolve(val)
+									P.resolve(val)
 										.then(function(value) {
 											successes++;
 											result[i] = value;
@@ -582,9 +582,9 @@ module.exports = {
 
 					// Combines "then" and "create"
 					Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
-						const Promise = this.constructor;
+						const P = this.constructor || Promise;
 						const promise = this.then(function(result) {
-								return Promise.create(function(resolve, reject) {
+								return P.create(function(resolve, reject) {
 									return callback.call(thisObj, result, resolve, reject);
 								}, thisObj);
 							}, null, thisObj);
