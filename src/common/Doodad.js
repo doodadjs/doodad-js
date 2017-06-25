@@ -768,10 +768,14 @@ module.exports = {
 									if (types.isString(fn) || types.isSymbol(fn)) {
 										fn = thisObj[fn];
 									};
-									if (args) {
-										return fn.apply(thisObj, args);
+									if (types.isFunction(fn)) {
+										if (args) {
+											return fn.apply(thisObj, args);
+										} else {
+											return fn.call(thisObj);
+										};
 									} else {
-										return fn.call(thisObj);
+										throw new types.TypeError("'fn' is not a function.");
 									};
 								} catch(ex) {
 									throw ex;
@@ -7160,9 +7164,9 @@ module.exports = {
 						__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray)))))))),
 						__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null))))))),
 						
-						onEventAttached: __Internal__.EVENT(false),
-						onEventDetached: __Internal__.EVENT(false),
-						onEventCancelled: __Internal__.CANCEL_EVENT(), // function onEventCancelled(ev)
+						onEventAttached: doodad.TYPE(doodad.INSTANCE(__Internal__.EVENT(false))),
+						onEventDetached: doodad.TYPE(doodad.INSTANCE(__Internal__.EVENT(false))),
+						onEventCancelled: doodad.TYPE(doodad.INSTANCE(__Internal__.CANCEL_EVENT())), // function onEventCancelled(ev)
 							
 						detachEvents: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
