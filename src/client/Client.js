@@ -1730,6 +1730,63 @@ module.exports = {
 				// File functions
 				//===================================
 				
+				files.ADD('existsAsync', function existsAsync(url, /*optional*/options) {
+					const Promise = types.getPromise();
+
+					return Promise.try(function tryExists() {
+						if (types.isString(url)) {
+							url = files.Url.parse(url);
+						};
+
+						const type = types.get(options, 'type', null);
+
+						return files.readFileAsync(url, types.extend({}, options, {method: 'HEAD'}))
+							.nodeify(function(err, dummy) {
+								if (err) {
+									if (types._instanceof(err, types.HttpError) && (err.code === types.HttpStatus.NotFound)) {
+										return false;
+									} else {
+										throw err;
+									};
+								} else {
+									return (type === 'file' ? !!url.file : (type === 'folder' ? !url.file : true))
+								};
+							});
+					});
+				});
+
+				files.ADD('exists', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								url: {
+									type: 'string,Url',
+									optional: false,
+									description: "Target folder url.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function exists(url, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.existsAsync(url, options);
+					} else {
+						throw new types.NotSupported("Synchronous version of 'exists' is not implemented.");
+					};
+				}));
+					
+
 				files.ADD('readFileAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1756,11 +1813,9 @@ module.exports = {
 				, function readFileAsync(url, /*optional*/options) {
 					const Promise = types.getPromise();
 					return Promise.try(function readFilePromise() {
-						if (types.isString(url)) {
-							url = _shared.urlParser(url, options.parseOptions);
-						};
-						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
 						options = types.nullObject(options);
+						url = _shared.urlParser(url, options.parseOptions);
+						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
 						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
 							// Fix for some browsers
@@ -1769,6 +1824,7 @@ module.exports = {
 							// Fix
 							encoding = 'utf-8';
 						};
+						const method = (options.method || 'GET');
 						if (_shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
@@ -1782,8 +1838,11 @@ module.exports = {
 								};
 							};
 							const init = {
-								method: 'GET',
+								method: method,
 								headers: headers,
+							};
+							if (!types.isNothing(options.body)) {
+								init.body = options.body;
 							};
 							if (!options.enableCache) {
 								init.cache = 'no-cache';
@@ -1834,7 +1893,7 @@ module.exports = {
 								timeoutId: null,
 								ready: false,
 							};
-							xhr.open('GET', url, true);
+							xhr.open(method, url, true);
 							const headers = options.headers;
 							if (headers) {
 								tools.forEach(headers, function(value, name) {
@@ -1842,37 +1901,13 @@ module.exports = {
 								});
 							};
 							if (encoding) {
-								if ('overrideMimeType' in xhr) { // IE 11+ and other browsers
-									xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
-								} else {
-									xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', 'text/plain'));
-									//xhr.setRequestHeader('Accept-Charset', encoding); // <<<< Refused ?????
-								};
+								xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
 							} else {
 								xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', '*/*'));
 							};
-							if ('responseType' in xhr) { // IE 10+ and other browsera
-								xhr.responseType = (encoding ? 'text' : 'blob');
-							};
+							xhr.responseType = (encoding ? 'text' : 'blob');
 							const loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
 							return Promise.create(function readerPromise(resolve, reject) {
-								client.addListener(xhr, loadEv, function(ev) {
-									if ((loadEv !== 'readystatechange') || ((xhr.readyState === 4) && types.HttpStatus.isSuccessful(xhr.status))) {
-										if (state.timeoutId) {
-											_shared.Natives.windowClearTimeout(state.timeoutId);
-											state.timeoutId = null;
-										};
-										if (!this.ready) {
-											this.ready = true;
-											resolve(
-												('response' in xhr) ?
-													xhr.response  // IE 10+ and other browsers
-												:
-													(encoding ? xhr.responseText : xhr.responseBody) // IE 7-9
-											);
-										};
-									};
-								});
 								const handleError = function handleError(ex) {
 									if (state.timeoutId) {
 										_shared.Natives.windowClearTimeout(state.timeoutId);
@@ -1883,8 +1918,24 @@ module.exports = {
 										reject(ex);
 									};
 								};
+								client.addListener(xhr, loadEv, function(ev) {
+									if ((loadEv !== 'readystatechange') || (xhr.readyState === 4)) {
+										if (types.HttpStatus.isSuccessful(xhr.status)) {
+											if (state.timeoutId) {
+												_shared.Natives.windowClearTimeout(state.timeoutId);
+												state.timeoutId = null;
+											};
+											if (!this.ready) {
+												this.ready = true;
+												resolve(xhr.response);
+											};
+										} else {
+											handleError(new types.HttpError(xhr.status, xhr.statusText));
+										};
+									};
+								});
 								client.addListener(xhr, 'error', function(ev) {
-									handleError(new types.HttpError(xhr.status, xhr.statusText));
+									handleError(ev.error);
 								});
 								const timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
 								if ('timeout' in xhr) {
@@ -1899,7 +1950,7 @@ module.exports = {
 									}, timeout);
 								};
 								try {
-									xhr.send();
+									xhr.send(options.body);
 								} catch(ex) {
 									if (!state.ready) {
 										handleError(ex);
