@@ -1291,7 +1291,7 @@ module.exports = {
 								};
 							};
 						},
-						__handleError: function __handleError(ev) {
+						__handleError: function __handleError(ex) {
 							if (this.timeoutId) {
 								clearTimeout(this.timeoutId);
 								this.timeoutId = null;
@@ -1299,10 +1299,11 @@ module.exports = {
 							if (!this.ready) {
 								this.ready = true;
 								this.failed = true;
-								this.dispatchEvent(new types.CustomEvent('error', {detail: new types.TimeoutError()}));
+								this.dispatchEvent(new types.CustomEvent('error', {detail: ex}));
 								tools.dispatchEvent(new types.CustomEvent('scripterror', {
 									detail: {
 										loader: this,
+										error: ex,
 									},
 								}));
 								if (this.element && this.element.parentNode) {
@@ -1332,7 +1333,7 @@ module.exports = {
 								
 								// NOTE: IE and Safari: "onerror" doesn't raise, so we can't know if there was an error
 								client.addListener(this.element, 'error', function scriptOnError(ev) {
-									return self.__handleError(ev);
+									return self.__handleError(ev.error);
 								});
 
 								this.dispatchEvent(new types.CustomEvent('init'));
@@ -1391,7 +1392,7 @@ module.exports = {
 										self.timeoutId = null;
 										if (!self.ready) {
 											self.timedout = true;
-											self.__handleError(ev);
+											self.__handleError(new types.TimeoutError());
 										};
 									}, this.timeout);
 								};
@@ -1729,11 +1730,11 @@ module.exports = {
 				// File functions
 				//===================================
 				
-				files.ADD('readFile', root.DD_DOC(
+				files.ADD('readFileAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 6,
+							revision: 7,
 							params: {
 								url: {
 									type: 'string,Url',
@@ -1752,15 +1753,14 @@ module.exports = {
 								"(*) Local file access is [hopefully] restricted.",
 				}
 				//! END_REPLACE()
-				, function readFile(url, /*optional*/options) {
+				, function readFileAsync(url, /*optional*/options) {
 					const Promise = types.getPromise();
-					options = types.nullObject(options);
 					return Promise.try(function readFilePromise() {
 						if (types.isString(url)) {
 							url = _shared.urlParser(url, options.parseOptions);
 						};
 						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
-						const async = options.async;
+						options = types.nullObject(options);
 						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
 							// Fix for some browsers
@@ -1769,7 +1769,7 @@ module.exports = {
 							// Fix
 							encoding = 'utf-8';
 						};
-						if (async && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
+						if (_shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
 							});
@@ -1834,7 +1834,7 @@ module.exports = {
 								timeoutId: null,
 								ready: false,
 							};
-							xhr.open('GET', url, async);
+							xhr.open('GET', url, true);
 							const headers = options.headers;
 							if (headers) {
 								tools.forEach(headers, function(value, name) {
@@ -1908,6 +1908,39 @@ module.exports = {
 							});
 						};
 					});
+				}));
+
+				files.ADD('readFile', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								url: {
+									type: 'string,Url',
+									optional: false,
+									description: "File Url.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'Promise',
+							description: 
+								"Reads a remote or local(*) file and returns a Promise.\n" +
+								"(*) Local file access is [hopefully] restricted.",
+				}
+				//! END_REPLACE()
+				, function readFile(url, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.readFileAsync(url, /*optional*/options);
+					} else {
+						throw new types.NotSupported("Synchronous read is not implemented.");
+					};
 				}));
 				
 				files.ADD('watch', root.DD_DOC(
