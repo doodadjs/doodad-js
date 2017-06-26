@@ -77,17 +77,17 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									module: {
 										type: 'string',
-										optional: false,
-										description: "Module name",
+										optional: true,
+										description: "Module name.",
 									},
-									file: {
+									path: {
 										type: 'string,Path,Url',
 										optional: true,
-										description: "Module file",
+										description: "Module file path.",
 									},
 									options: {
 										type: 'object',
@@ -99,18 +99,26 @@ module.exports = {
 								description: "Locates a module and returns its path.",
 					}
 					//! END_REPLACE()
-					, function locate(module, /*optional*/path, /*optional*/options) {
+					, function locate(/*optional*/module, /*optional*/path, /*optional*/options) {
 						const Promise = types.getPromise();
 						return Promise.try(function() {
-							let location = tools.getCurrentLocation()
-								.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
-								.set({file: null})
-								.combine(types.get(options, 'modulesUri', __options__.modulesUri))
-								.combine(files.Path.parse(module, {os: 'linux'}))
-								.pushFile();
 							if (path) {
-								location = location
-									.combine(files.Path.parse(path, {os: 'linux', isRelative: true}));
+								path = _shared.urlParser(path);
+							};
+							let location;
+							if (!path || path.isRelative) {
+								location = tools.getCurrentLocation()
+									.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
+									.set({file: null})
+									.combine(types.get(options, 'modulesUri', __options__.modulesUri))
+									.combine(files.Path.parse(module))
+									.pushFile();
+								if (path) {
+									location = location
+										.combine(path);
+								};
+							} else {
+								location = path;
 							};
 							if (!location.file) {
 								location = location
@@ -120,76 +128,77 @@ module.exports = {
 						});
 					}));
 				
-				modules.ADD('loadFiles', function loadFiles(module, files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
 					const Promise = types.getPromise();
 
-					// Convert to array of objects for Promise.map
-					files = tools.reduce(files, function(files, fileOptions, name) {
-						files.push({
-							module: module,
-							name: name,
-							options: types.extend({optional: false, isConfig: false}, fileOptions),
-							exports: null,
-						});
-						return files;
-					}, []);
+					const fromSource = root.getOptions().fromSource;
 
 					return Promise.map(files, function(file) {
-						return modules.locate(file.module, file.name, options)
+						types.getDefault(file, 'module', null);
+						types.getDefault(file, 'path', (file.module ? (fromSource ? file.module + '.js' : file.module + '.min.js') : null));
+						types.getDefault(file, 'optional', false);
+						types.getDefault(file, 'isConfig', false);
+
+						file.exports = null;
+
+						return modules.locate(file.module, file.path, options)
 							.then(function(location) {
-								if (file.options.isConfig) {
+								if (file.isConfig) {
 									return config.load(location, {async: true, encoding: 'utf-8'})
 										.nodeify(function(err, conf) {
 											if (err) {
-												if (!file.options.optional) {
+												if (!file.optional) {
 													throw err;
 												};
 											} else {
 												file.exports = conf;
 											};
-											return file;
 										});
 								} else {
 									return Promise.create(function startScriptLoader(resolve, reject) {
 										const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 										scriptLoader.addEventListener('load', function() {
 											//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
-											resolve(file);
+											resolve();
 										});
 										scriptLoader.addEventListener('error', function(ev) {
 											reject(ev.detail ? ev.detail : new types.Error("Unspecified error."));
 										});
 										scriptLoader.start();
 									})
-										.nodeify(function(err, result) {
-											if (err) {
-												if (!file.options.optional) {
-													throw err;
-												} else {
-													return null;
-												};
+									.nodeify(function(err, dummy) {
+										if (err) {
+											if (!file.optional) {
+												throw err;
 											} else {
-												return result;
+												return null;
 											};
-										});
+										} else {
+											return file;
+										};
+									});
 								};
 							})
 							.catch(function(err) {
-								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
+								if (module) {
+									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+								} else {
+									throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+								};
 							});
-					}, options);
+					});
 				});
 				
 				modules.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 4,
+								revision: 5,
 								params: {
-									modules: {
-										type: 'object',
+									files: {
+										type: 'arrayof(object)',
 										optional: false,
-										description: "Module names with their files",
+										description: "Module files.",
 									},
 									options: {
 										type: 'arrayof(object),object',
@@ -201,48 +210,23 @@ module.exports = {
 								description: "Loads a module.",
 					}
 					//! END_REPLACE()
-					, function load(_modules, /*optional*/options) {
+					, function load(files, /*optional*/options) {
 						const Promise = types.getPromise();
-						const fromSource = root.getOptions().fromSource;
 						global.DD_MODULES = {};
 
 						if (types.isArray(options)) {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
 						};
 
-						// Convert to array of objects for Promise.map
-						_modules = tools.reduce(_modules, function(_modules, files, name) {
-							name = name.split('/', 2)[0];
-							if (!files) {
-								files = {};
-							};
-							if (types.isEmpty(files)) {
-								if (fromSource) {
-									files[name + '.js'] = {optional: false};
-								} else {
-									files[name + '.min.js'] = {optional: false};
-								};
-							};
-							_modules.push({
-								name: name,
-								files: files,
-							});
-							return _modules;
-						}, []);
-
-						return Promise.map(_modules, function(module) {
-								return modules.loadFiles(module.name, module.files, options);
-							})
-							.then(function(_modules) {
+						return modules.loadFiles(files, options)
+							.then(function(files) {
 								//const DD_MODULES = {};
-								tools.forEach(_modules, function(_files) {
-									tools.forEach(_files, function(file) {
-										if (file.options.isConfig) {
-											types.depthExtend(15, options, file.exports, options);
-										//} else if (file.exports.add) {
-											//file.exports.add(DD_MODULES);
-										};
-									});
+								tools.forEach(files, function(file) {
+									if (file.isConfig) {
+										types.depthExtend(15, options, file.exports, options);
+									//} else if (types.has(file.exports, 'add')) {
+										//file.exports.add(DD_MODULES);
+									};
 								});
 								//return namespaces.load(DD_MODULES, options);
 								const retval = namespaces.load(global.DD_MODULES, options);

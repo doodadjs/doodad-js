@@ -58,11 +58,11 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									module: {
 										type: 'string',
-										optional: false,
+										optional: true,
 										description: "Module name",
 									},
 									file: {
@@ -80,47 +80,62 @@ module.exports = {
 								description: "Locates a module and returns its path.",
 					}
 					//! END_REPLACE()
-					, function locate(_module, /*optional*/file, /*optional*/options) {
+					, function locate(/*optional*/_module, /*optional*/file, /*optional*/options) {
 						const Promise = types.getPromise();
 						return Promise.try(function() {
-							let location = files.Path.parse(_module, {file: 'package.json'})
-								.toString({isRelative: true});
-							location = Module._resolveFilename(location, require.main || module.parent);
-							location = files.Path.parse(location)
-								.set({file: ''})
-								.combine(file, {dirChar: ['/', '\\'], isRelative: true});
+							let location;
+							if (file) {
+								file = _shared.pathParser(file);
+							};
+							if (!file || file.isRelative) {
+								location = files.Path.parse(_module, {file: 'package.json'})
+									.toApiString({isRelative: true});
+								location = Module._resolveFilename(location, require.main || module.parent);
+								location = files.Path.parse(location)
+									.set({file: ''});
+								if (file) {
+									location = location
+										.combine(file);
+								};
+							} else {
+								location = file;
+							};
+							if (!location.file) {
+								location = location
+									.set({file: 'index.js'});
+							};
 							return location;
 						});
 					}));
 				
-				modules.ADD('loadFiles', function loadFiles(_module, files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
 					const Promise = types.getPromise();
 
-					// Convert to array of objects for Promise.map
-					files = tools.reduce(files, function(files, fileOptions, name) {
-						files.push({
-							module: _module,
-							name: name,
-							options: types.extend({optional: false, isConfig: false}, fileOptions),
-							exports: null,
-						});
-						return files;
-					}, []);
-
 					return Promise.map(files, function(file) {
-						return modules.locate(file.module, file.name, options)
+						types.getDefault(file, 'module', null);
+						types.getDefault(file, 'path', (file.module ? 'index.js' : null));
+						types.getDefault(file, 'optional', false);
+						types.getDefault(file, 'isConfig', false);
+
+						file.exports = null;
+
+						return modules.locate(file.module, file.path, options)
 							.then(function(location) {
 								try {
-									file.exports = Module._load(location.toString(), require.main || module.parent);
+									file.exports = Module._load(location.toApiString(), (require.main || module.parent));
 								} catch(err) {
-									if (!file.options.optional) {
+									if (!file.optional) {
 										throw err;
 									};
 								};
 								return file;
 							})
-							['catch'](function(err) {
-								throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.name, file.module, err]);
+							.catch(function(err) {
+								if (file.module) {
+									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+								} else {
+									throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+								};
 							});
 					});
 				});
@@ -131,10 +146,10 @@ module.exports = {
 								author: "Claude Petit",
 								revision: 3,
 								params: {
-									modules: {
-										type: 'object',
+									files: {
+										type: 'arrayof(object)',
 										optional: false,
-										description: "Module names with their files",
+										description: "Module files.",
 									},
 									options: {
 										type: 'arrayof(object),object',
@@ -146,43 +161,22 @@ module.exports = {
 								description: "Loads a module.",
 					}
 					//! END_REPLACE()
-					, function load(_modules, /*optional*/options) {
+					, function load(files, /*optional*/options) {
 						const Promise = types.getPromise();
-						//const fromSource = root.getOptions().fromSource;
 
 						if (types.isArray(options)) {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
 						};
 
-						// Convert to array of objects for Promise.map
-						_modules = tools.reduce(_modules, function(_modules, files, name) {
-							name = name.split('/', 2)[0];
-							if (!files) {
-								files = {};
-							};
-							if (types.isEmpty(files)) {
-								files['index.js'] = {optional: false};
-							};
-							_modules.push({
-								name: name,
-								files: files,
-							});
-							return _modules;
-						}, []);
-
-						return Promise.map(_modules, function(module) {
-								return modules.loadFiles(module.name, module.files, options);
-							})
-							.then(function(_modules) {
+						return modules.loadFiles(files, options)
+							.then(function(files) {
 								const DD_MODULES = {};
-								tools.forEach(_modules, function(_files) {
-									tools.forEach(_files, function(file) {
-										if (file.options.isConfig) {
-											types.depthExtend(15, options, file.exports, options);
-										} else if (file.exports.add) {
-											file.exports.add(DD_MODULES);
-										};
-									});
+								tools.forEach(files, function(file) {
+									if (file.isConfig) {
+										types.depthExtend(15, options, file.exports, options);
+									} else if (types.has(file.exports, 'add')) {
+										file.exports.add(DD_MODULES);
+									};
 								});
 								return namespaces.load(DD_MODULES, options);
 							});
@@ -191,11 +185,14 @@ module.exports = {
 				
 				modules.ADD('loadManifest', function loadManifest(pkg, /*optional*/options) {
 					const Promise = types.getPromise();
-					return modules.loadFiles(pkg, {'package.json': {}, 'make.json': {}}, options)
-						.then(function(contents) {
+					return modules.loadFiles([
+							{module: pkg, path: 'package.json'},
+							{module: pkg, path: 'make.json'},
+						], options)
+						.then(function(files) {
 							return {
-								manifest: contents[0].exports,
-								makeManifest: contents[1].exports,
+								manifest: files[0].exports,
+								makeManifest: files[1].exports,
 							};
 						})
 						.then(function(manifests) {
@@ -223,19 +220,26 @@ module.exports = {
 												return mod.server && !mod.manual && !mod.test;
 											});
 
-											files = tools.reduce(files, function(files, mod) {
-												const file = (fromSource ?
-														(makeManifest.sourceDir || './src') + '/' + mod.src
-													:
-														(makeManifest.buildDir || './build') + '/' + mod.src.replace(/([.]js)$/, ".min.js")
-													);
-												files[file] = {optional: types.get(mod, 'optional', false)};
-												return files;
-											}, {});
+											files = tools.map(files, function(file) {
+												return {
+													module: manifest.name,
+													path: (fromSource ?
+															(makeManifest.sourceDir || './src') + '/' + file.src
+														:
+															(makeManifest.buildDir || './build') + '/' + file.src.replace(/([.]js)$/, ".min.js")
+														),
+													optional: types.get(file, 'optional', false),
+												};
+											}, []);
 											
-											files['config.json'] = {optional: true, isConfig: true};
+											files.push({
+												module: manifest.name,
+												path: 'config.json',
+												optional: true,
+												isConfig: true,
+											});
 
-											return modules.load({[manifest.name]: files}, types.extend({}, _options, {secret: _shared.SECRET}))
+											return modules.load(files, types.extend({}, _options, {secret: _shared.SECRET}))
 												.then(function() {
 													// Returns nothing.
 												});
