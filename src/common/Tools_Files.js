@@ -108,6 +108,22 @@ module.exports = {
 					return path;
 				};
 				
+				__Internal__.detectUrlRegexp = /^[a-zA-Z]+\:\/\//;
+
+				files.ADD('parseLocation', function parseLocation(location, /*optional*/options) {
+					if (types.isString(location)) {
+						if (__Internal__.detectUrlRegexp.test(location)) {
+							return _shared.urlParser(location, options);
+						} else {
+							return _shared.pathParser(location, options);
+						};
+					} else if (types._instanceof(location, [files.Path, files.Url])) {
+						return location;
+					} else {
+						throw types.TypeError("Invalid file location.");
+					};
+				});
+
 				//===================================
 				// Native functions
 				//===================================
@@ -1163,7 +1179,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 0,
+											revision: 1,
 											params: {
 												options: {
 													type: 'object',
@@ -1176,7 +1192,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toApiString(/*optional*/options) {
-									return this.toString(types.extend(options || {}, {os: null, dirChar: null, shell: 'api'}));
+									return this.toString(types.extend({}, options, {os: null, dirChar: null, shell: 'api'}));
 								}),
 							
 							combine: root.DD_DOC(
@@ -2826,6 +2842,26 @@ module.exports = {
 									return result;
 								}),
 							
+							toApiString: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											options: {
+												type: 'object',
+												optional: true,
+												description: "Options.",
+											},
+										},
+										returns: 'string',
+										description: "Converts to a string for the APIs.",
+								}
+								//! END_REPLACE()
+								, function toApiString(/*optional*/options) {
+									return this.toString(types.extend({}, options, {noEscapes: true}));
+								}),
+
 							compare: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
