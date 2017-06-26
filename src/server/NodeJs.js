@@ -574,7 +574,7 @@ module.exports = {
 					// Script loader functions
 					//===================================
 
-					__Internal__.ScriptLoader = types.CustomEventTarget.$inherit(
+					__Internal__.ScriptLoader = types.INIT(types.CustomEventTarget.$inherit(
 						/*typeProto*/
 						{
 							$TYPE_NAME: 'ScriptLoader',
@@ -623,19 +623,12 @@ module.exports = {
 									}));
 
 									try {
-										let init;
-										const mod = require(this.file);
-										if (mod.create) {
-											init = mod.create(root, this.createOptions);
-										};
+										require(this.file);
 
 										const self = this;
 										this.ready = true;
-										this.dispatchEvent(new types.CustomEvent('load', {
-											detail: {
-												finalize: init && (function() { init(self.initOptions); }),
-											},
-										}));
+
+										this.dispatchEvent(new types.CustomEvent('load'));
 										tools.dispatchEvent(new types.CustomEvent('scriptload', {
 											detail: {
 												loader: this,
@@ -648,10 +641,11 @@ module.exports = {
 										} else {
 											this.ready = true;
 											this.failed = true;
-											this.dispatchEvent(new types.CustomEvent('error'));
+											this.dispatchEvent(new types.CustomEvent('error', {detail: ex}));
 											tools.dispatchEvent(new types.CustomEvent('scripterror', {
 												detail: {
 													loader: this,
+													error: ex,
 												},
 											}));
 										};
@@ -660,7 +654,7 @@ module.exports = {
 								};
 							},
 						}
-					);
+					));
 					
 					tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -791,9 +785,7 @@ module.exports = {
 				__Internal__.oldLoadConfig = _shared.loadConfig;
 				
 				_shared.loadConfig = function loadConfig(path, /*optional*/options, /*optional*/callbacks) {
-					if (types.isString(path)) {
-						path = _shared.pathParser(path, types.get(options, 'parseOptions'));
-					};
+					path = _shared.pathParser(path, types.get(options, 'parseOptions'));
 					return __Internal__.oldLoadConfig(path, options, callbacks);
 				};
 
