@@ -221,7 +221,7 @@ module.exports = {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 6,
+								revision: 7,
 								params: {
 									spec: {
 										type: 'object,string',
@@ -469,7 +469,8 @@ module.exports = {
 											type: entries.Namespace,
 											namespaceType: types.Namespace,
 										};
-										createMain(shortNames, newSpec, parent);
+										const main = createMain(shortNames, newSpec, parent);
+										createObject(main);
 									};
 								};
 							};
