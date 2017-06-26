@@ -794,6 +794,88 @@ module.exports = {
 				// Files functions
 				//=====================================
 					
+				files.ADD('existsSync', function existsSync(path, /*optional*/options) {
+					if (types.isString(path)) {
+						path = files.Path.parse(path);
+					};
+
+					const type = types.get(options, 'type', null);
+
+					try {
+						const stats = nodeFs.statSync(path.toApiString());
+
+						return (type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isFolder() : true));
+
+					} catch(ex) {
+						if (ex.code === 'ENOENT') {
+							return false;
+						} else {
+							throw ex;
+						};
+					};
+				});
+
+				files.ADD('existsAsync', function existsAsync(path, /*optional*/options) {
+					const Promise = types.getPromise();
+
+					return Promise.try(function tryExists() {
+						const exists = function exists(path, type) {
+							return Promise.create(function existsPromise(resolve, reject) {
+								nodeFs.stat(path, function(ex, stats) {
+									if (ex) {
+										if (ex.code === 'ENOENT') {
+											resolve(false);
+										} else {
+											reject(ex);
+										};
+									} else {
+										resolve((type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isFolder() : true)));
+									};
+								});
+							});
+						};
+
+						if (types.isString(path)) {
+							path = files.Path.parse(path);
+						};
+
+						const type = types.get(options, 'type', null);
+
+						return exists(path.toApiString(), type);
+					});
+				});
+
+				files.ADD('exists', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								path: {
+									type: 'string,Path',
+									optional: false,
+									description: "Target folder path.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'bool,Promise(bool)',
+							description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function exists(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.existsAsync(path, options);
+					} else {
+						return files.existsSync(path, options);
+					};
+				}));
+					
 				files.ADD('rmSync', function rmSync(path, /*optional*/options) {
 					if (types.isString(path)) {
 						path = files.Path.parse(path);
