@@ -73,7 +73,7 @@ module.exports = {
 				
 				const __options__ = types.extend({
 					enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
-					defaultScriptTimeout: 120000,		// milliseconds
+					defaultScriptTimeout: 1000 * 60 * 2,		// milliseconds
 				}, _options);
 
 				__options__.enableDomObjectsModel = types.toBoolean(__options__.enableDomObjectsModel);
@@ -1277,7 +1277,7 @@ module.exports = {
 						__handleSuccess: function __handleSuccess(ev) {
 							if ((this.loadEv !== 'readystatechange') || (this.element.readyState === 'loaded') || (this.element.readyState === 'complete')) {
 								if (this.timeoutId) {
-									clearTimeout(this.timeoutId);
+									this.timeoutId.cancel();
 									this.timeoutId = null;
 								};
 								if (!this.ready) {
@@ -1293,7 +1293,7 @@ module.exports = {
 						},
 						__handleError: function __handleError(ex) {
 							if (this.timeoutId) {
-								clearTimeout(this.timeoutId);
+								this.timeoutId.cancel();
 								this.timeoutId = null;
 							};
 							if (!this.ready) {
@@ -1387,14 +1387,14 @@ module.exports = {
 									};
 								};
 								
-								if (this.timeout) {
-									this.timeoutId = setTimeout(function handleTimeout(ev) {
+								if (!types.isNothing(this.timeout)) {
+									this.timeoutId = tools.callAsync(function handleTimeout(ev) {
 										self.timeoutId = null;
 										if (!self.ready) {
 											self.timedout = true;
 											self.__handleError(new types.TimeoutError());
 										};
-									}, this.timeout);
+									}, this.timeout, null, null, true);
 								};
 							};
 						},
@@ -1791,7 +1791,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 7,
+							revision: 8,
 							params: {
 								url: {
 									type: 'string,Url',
@@ -1814,8 +1814,10 @@ module.exports = {
 					const Promise = types.getPromise();
 					return Promise.try(function readFilePromise() {
 						options = types.nullObject(options);
+
 						url = _shared.urlParser(url, options.parseOptions);
 						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
+
 						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
 							// Fix for some browsers
@@ -1824,11 +1826,17 @@ module.exports = {
 							// Fix
 							encoding = 'utf-8';
 						};
+
 						const method = (options.method || 'GET');
-						if (_shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
+
+						const timeout = options.timeout;
+
+						// <PRB> A supposedly better API (fetch), but coming with no way to abort or specify a timeout !!!!!!
+						if (types.isNothing(timeout) && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
 							});
+
 							const headers = new _shared.Natives.windowHeaders(options.headers);
 							if (!headers.has('Accept')) {
 								if (encoding) {
@@ -1837,20 +1845,25 @@ module.exports = {
 									headers.set('Accept', '*/*');
 								};
 							};
+
 							const init = {
 								method: method,
 								headers: headers,
 							};
+
 							if (!types.isNothing(options.body)) {
 								init.body = options.body;
 							};
+
 							if (!options.enableCache) {
 								init.cache = 'no-cache';
 							};
+
 							if (options.enableCookies) {
 								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
 								init.credentials = 'include';
 							};
+
 							return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
 								if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
@@ -1877,40 +1890,51 @@ module.exports = {
 							});
 						} else {
 							const xhr = new _shared.Natives.windowXMLHttpRequest();
+
 							if (!('response' in xhr) && !('responseBody' in xhr)) {
 								throw new types.NotSupported("Incompatible browser.");
 							};
-							const rootUrl = tools.getCurrentLocation();
+
 							let args = url.args;
+
+							const rootUrl = tools.getCurrentLocation();
 							if ((rootUrl.protocol !== 'file') && !options.enableCache) {
 								args = url.args.set('XHR_DISABLE_CACHE', tools.generateUUID(), true);
 							};
+
 							url = url.toString({
 								args: args,
 								noEscapes: true,
 							});
+
 							const state = {
 								timeoutId: null,
 								ready: false,
 							};
+
 							xhr.open(method, url, true);
+
 							const headers = options.headers;
 							if (headers) {
 								tools.forEach(headers, function(value, name) {
 									xhr.setRequestHeader(name, value);
 								});
 							};
+
 							if (encoding) {
 								xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
 							} else {
 								xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', '*/*'));
 							};
+
 							xhr.responseType = (encoding ? 'text' : 'blob');
+
 							const loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
+
 							return Promise.create(function readerPromise(resolve, reject) {
 								const handleError = function handleError(ex) {
 									if (state.timeoutId) {
-										_shared.Natives.windowClearTimeout(state.timeoutId);
+										state.timeoutId.cancel();
 										state.timeoutId = null;
 									};
 									if (!state.ready) {
@@ -1918,11 +1942,12 @@ module.exports = {
 										reject(ex);
 									};
 								};
+
 								client.addListener(xhr, loadEv, function(ev) {
 									if ((loadEv !== 'readystatechange') || (xhr.readyState === 4)) {
 										if (types.HttpStatus.isSuccessful(xhr.status)) {
 											if (state.timeoutId) {
-												_shared.Natives.windowClearTimeout(state.timeoutId);
+												state.timeoutId.cancel();
 												state.timeoutId = null;
 											};
 											if (!this.ready) {
@@ -1934,21 +1959,27 @@ module.exports = {
 										};
 									};
 								});
+
 								client.addListener(xhr, 'error', function(ev) {
 									handleError(ev.error);
 								});
-								const timeout = options.timeout || 5000;  // Don't allow "0" (for infinite)
-								if ('timeout' in xhr) {
-									xhr.timeout = timeout;
-								} else {
-									state.timeoutId = _shared.Natives.windowSetTimeout(function(ev) {
-										state.timeoutId = null;
-										if (!state.ready) {
-											xhr.abort();
-											handleError(new types.TimeoutError("Request has timed out."));
-										};
-									}, timeout);
+
+								if (!types.isNothing(timeout)) {
+									if ('timeout' in xhr) {
+										// Wow ! A timeout option !!!
+										xhr.timeout = timeout;
+									} else {
+										// No timeout option !
+										state.timeoutId = tools.callAsync(function(ev) {
+											state.timeoutId = null;
+											if (!state.ready) {
+												xhr.abort();
+												handleError(new types.TimeoutError("Request has timed out."));
+											};
+										}, timeout, null, null, true);
+									};
 								};
+
 								try {
 									xhr.send(options.body);
 								} catch(ex) {
