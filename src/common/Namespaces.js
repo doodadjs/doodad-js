@@ -252,6 +252,8 @@ module.exports = {
 						};
 					};
 					
+					const globalOptions = types.get(options, 'global');
+
 					function checkDependencies(spec) {
 						const baseName = spec.name.split('/', 2)[0];
 						let deps = types.get(spec, 'dependencies');
@@ -481,7 +483,10 @@ module.exports = {
 					function createObject(entry) {
 						if (entry) {
 							const baseName = entry.spec.name.split('/', 2)[0];
-							const opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
+							let opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
+							if (globalOptions) {
+								opts = types.extend({}, globalOptions, opts);
+							};
 							if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
 								let retval = null;
 								entry.objectCreating = true;
@@ -606,8 +611,14 @@ module.exports = {
 							};
 						};
 						
+						const globalOptions = types.get(options, 'global');
+
 						const baseName = entry.spec.name.split('/', 2)[0];
 						options = types.get(options, baseName);
+
+						if (globalOptions) {
+							options = types.extend({}, globalOptions, options);
+						};
 						
 						if (entry.objectInit) {
 							if (types.isFunction(entry.objectInit)) {
