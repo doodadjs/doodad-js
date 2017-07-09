@@ -1787,6 +1787,10 @@ module.exports = {
 				}));
 					
 
+				files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
+					throw new types.NotSupported("'readFile' not supported synchronously because the W3C has decided to disable it from 'fetch' and 'XHR'.");
+				});
+
 				files.ADD('readFileAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2021,7 +2025,7 @@ module.exports = {
 					if (async) {
 						return files.readFileAsync(url, /*optional*/options);
 					} else {
-						throw new types.NotSupported("Synchronous read is not implemented.");
+						return files.readFileSync(url, /*optional*/options);
 					};
 				}));
 				

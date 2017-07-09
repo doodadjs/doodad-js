@@ -2201,17 +2201,29 @@ module.exports = {
 					return folder;
 				}));
 
+				files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
+					if (types.isString(path)) {
+						path = files.parseLocation(path);
+					};
+
+					const encoding = types.get(options, 'encoding', null);
+
+					if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+						if (types._instanceof(path, files.Url)) {
+							path = files.Path.parse(path);
+						};
+						return nodeFs.readFileSync(path.toApiString(), {encoding: encoding});
+					} else {
+						throw new types.NotSupported("HTTP not supported synchronously.");
+					};
+				});
+
 				files.ADD('readFileAsync', function readFileAsync(path, /*optional*/options) {
 					const Promise = types.getPromise();
 
 					return Promise.try(function tryReadFile() {
 						if (types.isString(path)) {
-							const url = files.Url.parse(path);
-							if (url.protocol) {
-								path = url;
-							} else {
-								path = files.Path.parse(path);
-							};
+							path = files.parseLocation(path);
 						};
 
 						const encoding = types.get(options, 'encoding', null),
@@ -2384,9 +2396,9 @@ module.exports = {
 					const async = types.get(options, 'async', false);
 
 					if (async) {
-						return files.readFileAsync(path, /*optional*/options);
+						return files.readFileAsync(path, options);
 					} else {
-						throw new types.NotSupported("Synchronous read is not implemented.");
+						return files.readFileSync(path, options);
 					};
 				}));
 
