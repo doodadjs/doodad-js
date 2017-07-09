@@ -124,6 +124,20 @@ module.exports = {
 					};
 				});
 
+				files.ADD('parseApiLocation', function parseLocation(location, /*optional*/options) {
+					if (types.isString(location)) {
+						if (__Internal__.detectUrlRegexp.test(location)) {
+							return _shared.urlParser(location, types.extend({}, options, {noEscapes: false}));
+						} else {
+							return _shared.pathParser(location, types.extend({}, options, {os: null, dirChar: null}));
+						};
+					} else if (types._instanceof(location, [files.Path, files.Url])) {
+						return location;
+					} else {
+						throw types.TypeError("Invalid file location.");
+					};
+				});
+
 				//===================================
 				// Native functions
 				//===================================
@@ -1219,7 +1233,8 @@ module.exports = {
 								, function combine(/*optional*/path, /*optional*/options) {
 									const type = types.getType(this);
 									const dontThrow = types.get(options, 'dontThrow', false),
-										allowTraverse = types.get(options, 'allowTraverse', false);
+										allowTraverse = types.get(options, 'allowTraverse', false),
+										includePathInRoot = types.get(options, 'includePathInRoot', false);
 									
 									if (!types._instanceof(path, [files.Path, files.Url])) {
 										path = type.parse(path, options);
@@ -1294,8 +1309,13 @@ module.exports = {
 										thisFile = null;
 									};
 
-									data.root = types.append([], thisRoot, thisPath);
-									data.path = types.append([], dirRoot, dir);
+									if (includePathInRoot) {
+										data.root = types.append([], thisRoot, thisPath);
+										data.path = types.append([], dirRoot, dir);
+									} else {
+										data.root = thisRoot;
+										data.path = types.append([], thisPath, dirRoot, dir);
+									};
 									
 									data.file = types.get(options, 'file', path.file || thisFile);
 									data.extension = types.get(options, 'extension', path.extension);
