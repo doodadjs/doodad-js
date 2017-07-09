@@ -1233,8 +1233,9 @@ module.exports = {
 								, function combine(/*optional*/path, /*optional*/options) {
 									const type = types.getType(this);
 									const dontThrow = types.get(options, 'dontThrow', false),
-										allowTraverse = types.get(options, 'allowTraverse', false),
-										includePathInRoot = types.get(options, 'includePathInRoot', false);
+										allowTraverse = types.get(options, 'allowTraverse', false);
+
+									let includePathInRoot = types.get(options, 'includePathInRoot', null);
 									
 									if (!types._instanceof(path, [files.Path, files.Url])) {
 										path = type.parse(path, options);
@@ -1307,6 +1308,11 @@ module.exports = {
 									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || path.file)) {
 										thisPath.push(thisFile);
 										thisFile = null;
+									};
+
+									if (types.isNothing(includePathInRoot)) {
+										// Auto-detect
+										includePathInRoot = !thisRoot || !thisRoot.length;
 									};
 
 									if (includePathInRoot) {
