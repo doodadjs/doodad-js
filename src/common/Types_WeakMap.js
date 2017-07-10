@@ -48,7 +48,7 @@ module.exports = {
 				// Internal
 				//===================================
 				
-				const __Internal__ = {};
+				//const __Internal__ = {};
 
 				//===================================
 				// Native functions
