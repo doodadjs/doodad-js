@@ -136,7 +136,7 @@ module.exports = {
 										if (file.path) {
 											throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
 										} else {
-											throw new types.Error("Failed to load module '~1~': ~2~", [file.module, err]);
+											throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
 										};
 									} else {
 										throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
@@ -176,7 +176,7 @@ module.exports = {
 
 						const trapMissingDeps = function _trapMissingDeps(err) {
 								const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
-								if (tools.some(ignoredMissingDeps, function(dep1) {
+								if (ignoredMissingDeps && ignoredMissingDeps.length && tools.every(ignoredMissingDeps, function(dep1) {
 											return (tools.findItem(err.missingDeps, function(dep2) {
 												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
 											}) !== null);
@@ -184,38 +184,46 @@ module.exports = {
 									throw err;
 								};
 								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
-								const pkgs = tools.map(
-									tools.filter(err.missingDeps, function(dep) {
-										return !dep.path;
-									}), function(dep) {
-										return dep.module;
-									}
-								);
-								const files = tools.filter(err.missingDeps, function(dep) {
-									return !!dep.path;
-								});
+								const DD_MODULES = err.modules;
+								let files = null;
 								let promise = Promise.resolve();
-								if (root.getOptions().fromSource && pkgs.length) {
-									promise = promise
-										.then(function(dummy) {
-											return modules.loadManifests(pkgs, newOptions)
-												.then(function(mods) {
-													const DD_MODULES = {};
-													tools.forEach(mods, function(mod) {
-														if (types.get(mod, 'add', null)) {
-															mod.add(DD_MODULES);
-														};
+								if (root.getOptions().fromSource) {
+									const pkgs = tools.map(
+										tools.filter(err.missingDeps, function(dep) {
+											return !dep.path;
+										}), function(dep) {
+											return dep.module;
+										}
+									);
+									files = tools.filter(err.missingDeps, function(dep) {
+										return !!dep.path;
+									});
+									if (pkgs.length) {
+										promise = promise
+											.then(function(dummy) {
+												return modules.loadManifests(pkgs, newOptions)
+													.then(function(mods) {
+														tools.forEach(mods, function(mod) {
+															if (types.has(mod, 'add')) {
+																mod.add(DD_MODULES);
+															};
+														});
 													});
-													return namespaces.load(DD_MODULES, newOptions)
-														.catch(types.MissingDependencies, trapMissingDeps);
-												});
-										});
+											});
+									};
+								} else {
+									files = err.missingDeps;
 								};
-								return promise
+								promise = promise
 									.then(function(dummy) {
 										if (files.length) {
 											return modules.load(files, newOptions);
 										};
+									});
+								return promise
+									.then(function(dummy) {
+										return namespaces.load(DD_MODULES, newOptions)
+											.catch(types.MissingDependencies, trapMissingDeps);
 									});
 							};
 
@@ -229,9 +237,12 @@ module.exports = {
 										file.exports.add(DD_MODULES);
 									};
 								});
-								return namespaces.load(DD_MODULES, options);
+								return namespaces.load(DD_MODULES, options)
+									.catch(types.MissingDependencies, trapMissingDeps);
 							})
-							.catch(types.MissingDependencies, trapMissingDeps);
+							.then(function(dummy) {
+								return root;
+							});
 					}));
 				
 				
@@ -255,7 +266,7 @@ module.exports = {
 								add: function(DD_MODULES) {
 									DD_MODULES = DD_MODULES || {};
 									DD_MODULES[manifest.name] = {
-										type: makeManifest.type,
+										type: 'Package',
 										version: manifest.version + (manifest.stage || 'd'),
 										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
 											return dep.server && !dep.manual && !dep.test;

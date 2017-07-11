@@ -101,6 +101,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function locate(/*optional*/module, /*optional*/path, /*optional*/options) {
 						const Promise = types.getPromise();
+
 						return Promise.try(function() {
 							if (path) {
 								path = _shared.urlParser(path);
@@ -122,7 +123,7 @@ module.exports = {
 							};
 							if (!location.file) {
 								location = location
-									.set({file: 'index.js'});
+									.set({file: (root.getOptions().debug ? module + '.js' : module + '.min.js')});
 							};
 							return location;
 						});
@@ -156,32 +157,36 @@ module.exports = {
 										});
 								} else {
 									return Promise.create(function startScriptLoader(resolve, reject) {
-										const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
-										scriptLoader.addEventListener('load', function() {
-											//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
-											resolve();
-										});
-										scriptLoader.addEventListener('error', function(ev) {
-											reject(ev.detail ? ev.detail : new types.Error("Unspecified error."));
-										});
-										scriptLoader.start();
-									})
-									.nodeify(function(err, dummy) {
-										if (err) {
-											if (!file.optional) {
-												throw err;
+											const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+											scriptLoader.addEventListener('load', function() {
+												//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
+												resolve();
+											});
+											scriptLoader.addEventListener('error', function(ev) {
+												reject(ev.detail ? ev.detail : new types.Error("Unspecified error (the browser didn't give any error detail)."));
+											});
+											scriptLoader.start();
+										})
+										.nodeify(function(err, dummy) {
+											if (err) {
+												if (!file.optional) {
+													throw err;
+												} else {
+													return null;
+												};
 											} else {
-												return null;
+												return file;
 											};
-										} else {
-											return file;
-										};
-									});
+										});
 								};
 							})
 							.catch(function(err) {
 								if (module) {
-									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+									if (file.path) {
+										throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+									} else {
+										throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
+									};
 								} else {
 									throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
 								};
@@ -193,7 +198,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 5,
+								revision: 6,
 								params: {
 									files: {
 										type: 'arrayof(object)',
@@ -211,16 +216,36 @@ module.exports = {
 					}
 					//! END_REPLACE()
 					, function load(files, /*optional*/options) {
-						const Promise = types.getPromise();
-						global.DD_MODULES = {};
+						//const Promise = types.getPromise();
 
 						if (types.isArray(options)) {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
 						};
 
+						const trapMissingDeps = function _trapMissingDeps(err) {
+								const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
+								if (ignoredMissingDeps && ignoredMissingDeps.length && tools.every(ignoredMissingDeps, function(dep1) {
+											return (tools.findItem(err.missingDeps, function(dep2) {
+												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
+											}) !== null);
+										})) {
+									throw err;
+								};
+								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
+								return modules.load(err.missingDeps, newOptions)
+									.then(function(dummy) {
+										return namespaces.load(err.modules, newOptions)
+											.catch(types.MissingDependencies, trapMissingDeps);
+									});
+							};
+
+						global.DD_MODULES = {};
+
 						return modules.loadFiles(files, options)
 							.then(function(files) {
 								//const DD_MODULES = {};
+								const DD_MODULES = global.DD_MODULES;
+								delete global.DD_MODULES;
 								tools.forEach(files, function(file) {
 									if (file.isConfig) {
 										types.depthExtend(15, options, file.exports, options);
@@ -228,10 +253,11 @@ module.exports = {
 										//file.exports.add(DD_MODULES);
 									};
 								});
-								//return namespaces.load(DD_MODULES, options);
-								const retval = namespaces.load(global.DD_MODULES, options);
-								delete global.DD_MODULES;
-								return retval;
+								return namespaces.load(DD_MODULES, options)
+									.catch(types.MissingDependencies, trapMissingDeps);
+							})
+							.then(function(dummy) {
+								return root;
 							});
 					}));
 				

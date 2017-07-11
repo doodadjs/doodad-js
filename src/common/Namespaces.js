@@ -247,11 +247,11 @@ module.exports = {
 					const Promise = types.getPromise();
 					
 					return Promise.try(function() {
-						if (types.isString(spec)) {
-							spec = {
-								name: spec,
-							};
-						};
+						//if (types.isString(spec)) {
+						//	spec = {
+						//		name: spec,
+						//	};
+						//};
 					
 						const globalOptions = types.get(options, 'global');
 
@@ -720,8 +720,9 @@ module.exports = {
 							throw new types.AccessDenied("Secrets mismatch.");
 						};
 
-						tools.forEach(modules, function(mod) {
+						tools.forEach(modules, function(mod, name) {
 							if (mod) {
+								mod.name = name;
 								let modType = types.get(mod, 'type') || entries.Module;
 								if (types.isString(modType)) {
 									modType = types.get(entries, modType);
@@ -793,20 +794,15 @@ module.exports = {
 										throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.consumer, entry.module, (entry.version || '<unspecified>')]);
 									} else {
 										const missingDeps = types.unique(function(dep1, dep2) {
-											return (dep1.module === dep2.module) && (dep1.path === dep2.path);
-										}, state.missingDeps, tools.map(state.missingDeps, function(dep) {
-											return {
-												module: dep.consumer.split('/', 2)[0],
-											};
-										}));
-										throw new types.MissingDependencies(missingDeps);
+												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
+											}, state.missingDeps);
+										throw new types.MissingDependencies(missingDeps, modules);
 									};
 								} else if ((state.missings + state.optionals) >= names.length) {
 									state.ignoreOptionals = true;
 								};
 								const name = names.shift(),
 									spec = modules[name];
-								spec.name = name;
 								return __Internal__.createNamespace(spec, options, state.ignoreOptionals)
 									.then(function(entry) {
 										if (types.isArray(entry)) {
@@ -1578,8 +1574,9 @@ module.exports = {
 				)));
 				
 
-				types.REGISTER(types.createErrorType("MissingDependencies", types.Error, function _new(missingDeps) {
+				types.REGISTER(types.createErrorType("MissingDependencies", types.Error, function _new(missingDeps, modules) {
 					this._this.missingDeps = missingDeps;
+					this._this.modules = modules;
 					const names = tools.map(missingDeps, function(dep) {
 						return dep.module;
 					});
