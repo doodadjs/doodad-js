@@ -389,7 +389,7 @@ module.exports = {
 				__Internal__.catchAndExitCalled = false;
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
-					if (err.trapped || (!err.critical && err.bubble)) {
+					if (!err || err.trapped || (!err.critical && err.bubble)) {
 						// Ignore trapped errors or errors like "ScriptInterruptedError".
 						return;
 					};
@@ -399,96 +399,111 @@ module.exports = {
 					// NOTE: This is the last resort error handling.
 					// NOTE: types.ScriptAbortedError should bubbles here
 					
-					if (__Internal__.catchAndExitCalled) {
-						// Process didn't exit before another error happened !!! Something is wrong.
+					let exitCode = 1; // 1 = General error
+					let isAborted = false;
+					try {
+						isAborted = types._instanceof(err, types.ScriptAbortedError)
+					} catch(o) {
 						if (root.getOptions().debug) {
 							debugger;
 						};
+					};
+					if (isAborted) {
+						exitCode = err.exitCode;
+					};
 
-						try {
-							_shared.Natives.windowDocument.open('text/plain', false);
-							_shared.Natives.windowDocument.write("");
-							_shared.Natives.windowDocument.close();
-						} catch(o) {
+					let ev = null;
+					try {
+						ev = new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}})
+						tools.dispatchEvent(ev); // sync
+					} catch(o) {
+						ev = null;
+						if (root.getOptions().debug) {
+							debugger;
 						};
+					};
 
-					} else {
-						let exitCode = 1; // 1 = General error
-
-						try {
-							if (types._instanceof(err, types.ScriptAbortedError)) {
-								exitCode = err.exitCode;
-							} else {
-								_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
-							};
-						} catch(o) {
+					if (!ev || !ev.canceled) {
+						if (__Internal__.catchAndExitCalled) {
+							// Process didn't exit before another error happened !!! Something is wrong.
 							if (root.getOptions().debug) {
 								debugger;
 							};
-						};
-						
-						try {
-							tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}})); // sync
-						} catch(o) {
-							if (root.getOptions().debug) {
-								debugger;
-							};
-						};
-						
-						try {
-							global.console.log("Page exited with code : " + types.toString(exitCode));
-						} catch(o) {
-							if (root.getOptions().debug) {
-								debugger;
-							};
-						};
-						
-						//if (!__Internal__.setCurrentLocationPending) {
+
 							try {
-								let reload = false;
-								let url = files.Url.parse(_shared.Natives.windowLocation.href);
-							
-								// TODO: Better user message, with translation
 								_shared.Natives.windowDocument.open('text/plain', false);
-								if (exitCode !== 0) {
-									if (types.toBoolean(url.args.get('crashReport', true))) {
-										_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
-									} else {
-										reload = true;
-										_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
+								_shared.Natives.windowDocument.write("");
+								_shared.Natives.windowDocument.close();
+							} catch(o) {
+							};
+
+						} else {
+							if (!isAborted) {
+								try {
+									_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
+								} catch(o) {
+									if (root.getOptions().debug) {
+										debugger;
 									};
 								};
-								_shared.Natives.windowDocument.close();
-							
-								if (reload) {
-									url = url.setArgs({crashReport: true})
-									tools.setCurrentLocation(url, true);
-								};
-
-								__Internal__.catchAndExitCalled = true;
-
+							};
+						
+							try {
+								global.console.log("Page exited with code : " + types.toString(exitCode));
 							} catch(o) {
 								if (root.getOptions().debug) {
 									debugger;
 								};
 							};
-						//};
-					};
-					
-					if (!__Internal__.catchAndExitCalled) {
-						__Internal__.catchAndExitCalled = true;
+						
+							//if (!__Internal__.setCurrentLocationPending) {
+								try {
+									let reload = false;
+									let url = files.Url.parse(_shared.Natives.windowLocation.href);
+							
+									// TODO: Better user message, with translation
+									_shared.Natives.windowDocument.open('text/plain', false);
+									if (exitCode !== 0) {
+										if (types.toBoolean(url.args.get('crashReport', true))) {
+											_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+										} else {
+											reload = true;
+											_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
+										};
+									};
+									_shared.Natives.windowDocument.close();
+							
+									if (reload) {
+										url = url.setArgs({crashReport: true})
+										tools.setCurrentLocation(url, true);
+									};
 
-						// TODO: Better handle that case
-						if (root.getOptions().debug) {
-							debugger;
+									__Internal__.catchAndExitCalled = true;
+
+								} catch(o) {
+									if (root.getOptions().debug) {
+										debugger;
+									};
+								};
+							//};
 						};
+					
+						if (!__Internal__.catchAndExitCalled) {
+							// TODO: Better handle that case
 
-						try {
-							// Try to blank the page.
-							_shared.Natives.windowDocument.open('text/plain', false);
-							_shared.Natives.windowDocument.write("");
-							_shared.Natives.windowDocument.close();
-						} catch(o) {
+							__Internal__.catchAndExitCalled = true;
+
+							if (root.getOptions().debug) {
+								debugger;
+							};
+
+							try {
+								// Try to blank the page.
+								_shared.Natives.windowDocument.open('text/plain', false);
+								_shared.Natives.windowDocument.write("");
+								_shared.Natives.windowDocument.close();
+							} catch(o) {
+							};
 						};
 					};
 

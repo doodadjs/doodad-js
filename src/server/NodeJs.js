@@ -98,8 +98,8 @@ module.exports = {
 
 					// "catchAndExit"
 					process: global.process,
-					processExit: global.process.exit,
-					processStdErrWrite: (global.process.stderr ? global.process.stderr.write.bind(global.process.stderr) : (global.process.stdout ? global.process.stdout.write.bind(global.process.stdout) : function _void() { })),
+					processExit: global.process.exit.bind(global.process),
+					consoleError: global.console.error.bind(global.console),
 
 					// "addAppListener", "removeAppListener"
 					processOn: global.process.on.bind(global.process),
@@ -432,7 +432,7 @@ module.exports = {
 				//=====================================
 				
 				tools.ADD('catchAndExit', function catchAndExit(err) {
-					if (err.trapped || (!err.critical && err.bubble)) {
+					if (!err || err.trapped || (!err.critical && err.bubble)) {
 						// Ignore trapped errors or errors like "ScriptInterruptedError".
 						return;
 					};
@@ -442,36 +442,46 @@ module.exports = {
 
 					err.trapped = true;
 
-					__Internal__.catchAndExitCalled = true;
-						
-					_shared.Natives.process.exitCode = 1; // 1 = General error
-
+					let exitCode = 1; // 1 = General error
+					let isAborted = false;
 					try {
-						if (types._instanceof(err, types.ScriptAbortedError)) {
-							_shared.Natives.process.exitCode = err.exitCode;
-						} else {
-							const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
+						isAborted = types._instanceof(err, types.ScriptAbortedError)
+					} catch(o) {
+						if (root.getOptions().debug) {
+							debugger;
+						};
+					};
+					if (isAborted) {
+						exitCode = err.exitCode;
+					};
+
+					let ev = null;
+					try {
+						ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode: exitCode}});
+						tools.dispatchEvent(ev); // sync
+					} catch(o) {
+						ev = null;
+						if (root.getOptions().debug) {
+							debugger;
+						};
+					};
+
+					if (!ev || !ev.canceled) {
+						_shared.Natives.process.exitCode = exitCode;
+
+						if (!isAborted) {
 							try {
-								global.console.error(msg);
+								const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
+								_shared.Natives.consoleError(msg);
 							} catch(o) {
-								_shared.Natives.processStdErrWrite(msg);
+								if (root.getOptions().debug) {
+									debugger;
+								};
 							};
 						};
-					} catch(o) {
-						if (root.getOptions().debug) {
-							debugger;
-						};
-					};
 						
-					try {
-						tools.dispatchEvent(new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: _shared.Natives.process.exitCode}})); // sync
-					} catch(o) {
-						if (root.getOptions().debug) {
-							debugger;
-						};
+						_shared.Natives.processExit();
 					};
-
-					_shared.Natives.processExit();
 
 					throw err;
 				});
