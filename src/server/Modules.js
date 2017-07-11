@@ -184,59 +184,61 @@ module.exports = {
 									throw err;
 								};
 								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
-								const DD_MODULES = err.modules;
-								let files = null;
-								let promise = Promise.resolve();
-								if (root.getOptions().fromSource) {
-									const pkgs = tools.map(
-										tools.filter(err.missingDeps, function(dep) {
-											return !dep.path;
-										}), function(dep) {
-											return dep.module;
-										}
-									);
-									files = tools.filter(err.missingDeps, function(dep) {
-										return !!dep.path;
-									});
-									if (pkgs.length) {
-										promise = promise
-											.then(function(dummy) {
-												return modules.loadManifests(pkgs, newOptions)
-													.then(function(mods) {
-														tools.forEach(mods, function(mod) {
-															if (types.has(mod, 'add')) {
-																mod.add(DD_MODULES);
-															};
-														});
-													});
-											});
-									};
-								} else {
-									files = err.missingDeps;
-								};
-								promise = promise
+								return modules.load(err.missingDeps, newOptions)
 									.then(function(dummy) {
-										if (files.length) {
-											return modules.load(files, newOptions);
-										};
-									});
-								return promise
-									.then(function(dummy) {
-										return namespaces.load(DD_MODULES, newOptions)
+										return namespaces.load(err.modules, newOptions)
 											.catch(types.MissingDependencies, trapMissingDeps);
 									});
 							};
 
-						return modules.loadFiles(files, options)
+						const DD_MODULES = {};
+
+						let promise = Promise.resolve();
+
+						if (root.getOptions().fromSource) {
+							const pkgs = tools.map(
+								tools.filter(files, function(dep) {
+									return !dep.path;
+								}), function(dep) {
+									return dep.module;
+								}
+							);
+							files = tools.filter(files, function(dep) {
+								return !!dep.path;
+							});
+							if (pkgs.length) {
+								promise = promise
+									.then(function(dummy) {
+										return modules.loadManifests(pkgs, options)
+											.then(function(mods) {
+												tools.forEach(mods, function(mod) {
+													if (types.has(mod, 'add')) {
+														mod.add(DD_MODULES);
+													};
+												});
+											});
+									});
+							};
+						};
+
+						return promise
+							.then(function(dummy) {
+								if (files && files.length) {
+									return modules.loadFiles(files, options);
+								};
+							})
 							.then(function(files) {
-								const DD_MODULES = {};
-								tools.forEach(files, function(file) {
-									if (file.isConfig) {
-										types.depthExtend(15, options, file.exports, options);
-									} else if (types.has(file.exports, 'add')) {
-										file.exports.add(DD_MODULES);
-									};
-								});
+								if (files && files.length) {
+									tools.forEach(files, function(file) {
+										if (file.isConfig) {
+											types.depthExtend(15, options, file.exports, options);
+										} else if (types.has(file.exports, 'add')) {
+											file.exports.add(DD_MODULES);
+										};
+									});
+								};
+							})
+							.then(function(dummy) {
 								return namespaces.load(DD_MODULES, options)
 									.catch(types.MissingDependencies, trapMissingDeps);
 							})
