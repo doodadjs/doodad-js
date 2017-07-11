@@ -589,6 +589,7 @@ module.exports = {
 							launched: false,
 							ready: false,
 							failed: false,
+							lastError: null,
 							
 							oninit: null,
 							onloading: null,
@@ -605,7 +606,15 @@ module.exports = {
 							}),
 							
 							start: function start() {
-								if (!this.launched) {
+								if (this.launched) {
+									if (this.ready) {
+										if (this.failed) {
+											this.dispatchEvent(new types.CustomEvent('error', {detail: this.lastError}));
+										} else {
+											this.dispatchEvent(new types.CustomEvent('load'));
+										};
+									};
+								} else {
 									this.launched = true;
 									
 									this.dispatchEvent(new types.CustomEvent('init'));
@@ -641,6 +650,7 @@ module.exports = {
 										} else {
 											this.ready = true;
 											this.failed = true;
+											this.lastError = ex;
 											this.dispatchEvent(new types.CustomEvent('error', {detail: ex}));
 											tools.dispatchEvent(new types.CustomEvent('scripterror', {
 												detail: {
