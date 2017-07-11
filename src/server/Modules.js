@@ -131,10 +131,16 @@ module.exports = {
 								return file;
 							})
 							.catch(function(err) {
-								if (file.module) {
-									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
-								} else {
-									throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+								if (!file.optional) {
+									if (file.module) {
+										if (file.path) {
+											throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+										} else {
+											throw new types.Error("Failed to load module '~1~': ~2~", [file.module, err]);
+										};
+									} else {
+										throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+									};
 								};
 							});
 					});
@@ -168,6 +174,51 @@ module.exports = {
 							options = types.depthExtend.apply(null, types.append([15, {}], options));
 						};
 
+						const trapMissingDeps = function _trapMissingDeps(err) {
+								const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
+								if (tools.some(ignoredMissingDeps, function(dep1) {
+											return (tools.findItem(err.missingDeps, function(dep2) {
+												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
+											}) !== null);
+										})) {
+									throw err;
+								};
+								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
+								const pkgs = tools.map(
+									tools.filter(err.missingDeps, function(dep) {
+										return !dep.path;
+									}), function(dep) {
+										return dep.module;
+									}
+								);
+								const files = tools.filter(err.missingDeps, function(dep) {
+									return !!dep.path;
+								});
+								let promise = Promise.resolve();
+								if (root.getOptions().fromSource && pkgs.length) {
+									promise = promise
+										.then(function(dummy) {
+											return modules.loadManifests(pkgs, newOptions)
+												.then(function(mods) {
+													const DD_MODULES = {};
+													tools.forEach(mods, function(mod) {
+														if (types.get(mod, 'add', null)) {
+															mod.add(DD_MODULES);
+														};
+													});
+													return namespaces.load(DD_MODULES, newOptions)
+														.catch(types.MissingDependencies, trapMissingDeps);
+												});
+										});
+								};
+								return promise
+									.then(function(dummy) {
+										if (files.length) {
+											return modules.load(files, newOptions);
+										};
+									});
+							};
+
 						return modules.loadFiles(files, options)
 							.then(function(files) {
 								const DD_MODULES = {};
@@ -179,7 +230,8 @@ module.exports = {
 									};
 								});
 								return namespaces.load(DD_MODULES, options);
-							});
+							})
+							.catch(types.MissingDependencies, trapMissingDeps);
 					}));
 				
 				
@@ -239,7 +291,7 @@ module.exports = {
 												isConfig: true,
 											});
 
-											return modules.load(files, types.extend({}, _options, {secret: _shared.SECRET}))
+											return modules.load(files, types.depthExtend(15, {}, _options, {startup: {secret: _shared.SECRET}}))
 												.then(function() {
 													// Returns nothing.
 												});
@@ -251,6 +303,12 @@ module.exports = {
 						});
 				});
 				
+				modules.ADD('loadManifests', function loadManifests(pkgs, /*optional*/options) {
+					const Promise = types.getPromise();
+					return Promise.map(pkgs, function(pkg) {
+						return modules.loadManifest(pkg, options);
+					});
+				});
 				
 				//===================================
 				// Init
