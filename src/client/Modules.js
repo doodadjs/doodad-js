@@ -121,7 +121,16 @@ module.exports = {
 							} else {
 								location = path;
 							};
-							if (!location.file) {
+							if (location.file) {
+								if (!root.getOptions().debug) {
+									// Force minified files.
+									const parts = location.file.split('.');
+									if ((parts.slice(-1)[0] === 'js') && (parts.slice(-2, -1)[0] !== 'min')) {
+										location = location
+											.set({file: parts.slice(0, -1).join('.') + '.min.js'});
+									};
+								};
+							} else {
 								location = location
 									.set({file: (root.getOptions().debug ? module + '.js' : module + '.min.js')});
 							};
@@ -129,14 +138,14 @@ module.exports = {
 						});
 					}));
 				
-				modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
+				modules.ADD('loadFiles', function loadFiles(filesToLoad, /*optional*/options) {
 					const Promise = types.getPromise();
 
 					const fromSource = root.getOptions().fromSource;
 
-					return Promise.map(files, function(file) {
+					return Promise.map(filesToLoad, function(file) {
 						types.getDefault(file, 'module', null);
-						types.getDefault(file, 'path', (file.module ? (fromSource ? file.module + '.js' : file.module + '.min.js') : null));
+						types.getDefault(file, 'path', null);
 						types.getDefault(file, 'optional', false);
 						types.getDefault(file, 'isConfig', false);
 
@@ -144,19 +153,13 @@ module.exports = {
 
 						return modules.locate(file.module, file.path, options)
 							.then(function(location) {
+								let promise = null;
 								if (file.isConfig) {
-									return config.load(location, {async: true, encoding: 'utf-8'})
-										.nodeify(function(err, conf) {
-											if (err) {
-												if (!file.optional) {
-													throw err;
-												};
-											} else {
-												file.exports = conf;
-											};
-										});
-								} else {
-									return Promise.create(function startScriptLoader(resolve, reject) {
+									promise = config.load(location, {async: true, encoding: 'utf-8'});
+
+								} else if (root.getOptions().debug) {
+									// In debug mode, we want to be able to open a JS file with the debugger.
+									promise = Promise.create(function startScriptLoader(resolve, reject) {
 											const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 											scriptLoader.addEventListener('load', function() {
 												//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
@@ -167,18 +170,30 @@ module.exports = {
 											});
 											scriptLoader.start();
 										})
-										.nodeify(function(err, dummy) {
-											if (err) {
-												if (!file.optional) {
-													throw err;
-												} else {
-													return null;
-												};
-											} else {
-												return file;
-											};
-										});
+								} else {
+									promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: false})
+										.then(function(code) {
+											const DD_MODULE = {exports: {}};
+											const locals = {DD_MODULE: DD_MODULE, DD_MODULES: undefined};
+											const evalFn = types.createEval(types.keys(locals), false).apply(null, types.values(locals));
+											evalFn(code);
+											return DD_MODULE.exports;
+										})
 								};
+
+								return promise
+									.nodeify(function(err, exports) {
+										if (err) {
+											if (!file.optional) {
+												throw err;
+											} else {
+												return null;
+											};
+										} else {
+											file.exports = exports;
+											return file;
+										};
+									});
 							})
 							.catch(function(err) {
 								if (module) {
@@ -239,20 +254,37 @@ module.exports = {
 									});
 							};
 
-						global.DD_MODULES = {};
+						if (root.getOptions().debug) {
+							global.DD_MODULES = {};
+						};
 
 						return modules.loadFiles(files, options)
 							.then(function(files) {
-								//const DD_MODULES = {};
-								const DD_MODULES = global.DD_MODULES;
-								delete global.DD_MODULES;
+								// Load configuration files.
 								tools.forEach(files, function(file) {
-									if (file.isConfig) {
+									if (file && file.isConfig) {
 										types.depthExtend(15, options, file.exports, options);
-									//} else if (types.has(file.exports, 'add')) {
-										//file.exports.add(DD_MODULES);
 									};
 								});
+
+								// Get Doodad modules from JS script files.
+								let DD_MODULES = null;
+
+								if (root.getOptions().debug) {
+									DD_MODULES = global.DD_MODULES;
+									delete global.DD_MODULES;
+								} else {
+									DD_MODULES = {};
+									tools.forEach(files, function(file) {
+										if (file && !file.isConfig) {
+											if (types.has(file.exports, 'add')) {
+												file.exports.add(DD_MODULES);
+											};
+										};
+									});
+								};
+
+								// Load modules.
 								return namespaces.load(DD_MODULES, options)
 									.catch(types.MissingDependencies, trapMissingDeps);
 							})
