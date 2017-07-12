@@ -163,7 +163,7 @@ module.exports = {
 											const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 											scriptLoader.addEventListener('load', function() {
 												//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
-												resolve();
+												resolve(null);
 											});
 											scriptLoader.addEventListener('error', function(ev) {
 												reject(ev.detail ? ev.detail : new types.Error("Unspecified error (the browser didn't give any error detail)."));
