@@ -747,6 +747,9 @@
 
 			// AssertionError
 			//consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
+
+			// "createEval"
+			arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
 		});
 
 		// "_instanceof"
@@ -819,6 +822,34 @@
 					return __Internal__.evals.evalStrict(expr);
 				};
 			}));
+
+		__Internal__.ADD('createEval', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							locals: {
+								type: 'object',
+								description: "Variables to be passed to the executed code.",
+							},
+							strict: {
+								type: 'boolean',
+								description: "Enables strict mode or not.",
+							},
+						},
+						returns: 'function',
+						description: "Create a function to evaluate expressions with the given variables.",
+			}
+			//! END_REPLACE()
+			, function createEval(locals, /*optional*/strict) {
+				if (strict) {
+					return __Internal__.evals.createEval(_shared.Natives.arrayJoinCall, locals);
+				} else {
+					return __Internal__.evals.createEvalStrict(_shared.Natives.arrayJoinCall, locals);
+				};
+			}));
+
 
 		//==================================
 		// is*
@@ -7119,6 +7150,25 @@
 				ctx = ctx || {}; // force variable to be preserved
 				// <PRB> "{...}" and "function ..." need parentheses.
 				return eval('(' + arguments[1] + ')');
+			},
+			createEval: function(/*arrayJoinCall,locals*/) {
+				return eval(
+					"(function(" + arguments[0](arguments[1], ',') + ") {" +
+						"return function(/*expression*/) {" +
+							"return eval(arguments[0]);" +
+						"};" +
+					"})"
+				);
+			},
+			createEvalStrict: function(/*arrayJoinCall,locals*/) {
+				return eval(
+					"(function(" + arguments[0](arguments[1], ',') + ") {" +
+						"return function(/*expression*/) {" +
+							'"use strict";' +
+							"return eval(arguments[0]);" +
+						"};" +
+					"})"
+				);
 			},
 		}
 	})
