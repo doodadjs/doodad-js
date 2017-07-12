@@ -100,10 +100,21 @@ module.exports = {
 							} else {
 								location = file;
 							};
-							if (!location.file) {
+							if (location.file) {
+								const rootOptions = root.getOptions();
+								if (!rootOptions.debug && !rootOptions.fromSource && (location.file !== 'index.js')) {
+									// Force minified files.
+									const parts = location.file.split('.');
+									if ((parts.slice(-1)[0] === 'js') && (parts.slice(-2, -1)[0] !== 'min')) {
+										location = location
+											.set({file: parts.slice(0, -1).join('.') + '.min.js'});
+									};
+								};
+							} else {
 								location = location
 									.set({file: 'index.js'});
 							};
+
 							return location;
 						});
 					}));
@@ -123,24 +134,24 @@ module.exports = {
 							.then(function(location) {
 								try {
 									file.exports = Module._load(location.toApiString(), (require.main || module.parent));
+									return file;
 								} catch(err) {
 									if (!file.optional) {
 										throw err;
+									} else {
+										return null;
 									};
 								};
-								return file;
 							})
 							.catch(function(err) {
-								if (!file.optional) {
-									if (file.module) {
-										if (file.path) {
-											throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
-										} else {
-											throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
-										};
+								if (file.module) {
+									if (file.path) {
+										throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
 									} else {
-										throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+										throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
 									};
+								} else {
+									throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
 								};
 							});
 					});
@@ -230,10 +241,15 @@ module.exports = {
 							.then(function(files) {
 								if (files && files.length) {
 									tools.forEach(files, function(file) {
-										if (file.isConfig) {
+										if (file && file.isConfig) {
 											types.depthExtend(15, options, file.exports, options);
-										} else if (types.has(file.exports, 'add')) {
-											file.exports.add(DD_MODULES);
+										};
+									});
+									tools.forEach(files, function(file) {
+										if (file && !file.isConfig) {
+											if (types.has(file.exports, 'add')) {
+												file.exports.add(DD_MODULES);
+											};
 										};
 									});
 								};
