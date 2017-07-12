@@ -1,4 +1,4 @@
-//! BEGIN_MODULE()
+(function() {
 
 //! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
@@ -24,16 +24,15 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports.add = function(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
+const DD_OPTIONS = /*! INCLUDE(VAR("config"), 'utf-8') */;
+const DD_MODULES = {};
 
-	const has = function(obj, key) {
-		return obj && Object.prototype.hasOwnProperty.call(obj, key);
-	};
+//! IF_SET('debug')
+	(function() {
+		const has = function(obj, key) {
+			return obj && Object.prototype.hasOwnProperty.call(obj, key);
+		};
 
-	const DD_OPTIONS = /*! INCLUDE(VAR("config"), 'utf-8') */;
-
-	//! IF_SET('debug')
 		if (!has(DD_OPTIONS, 'startup')) {
 			DD_OPTIONS.startup = {};
 		};
@@ -56,11 +55,9 @@ module.exports.add = function(DD_MODULES) {
 
 		// Enable all log levels
 		DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
-	//! END_IF()
+	})();
+//! END_IF()
 
-	//! INCLUDE(VAR("bundle"), 'utf-8', true)
+//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-	return DD_MODULES
-};
-
-//! END_MODULE();
+})();
