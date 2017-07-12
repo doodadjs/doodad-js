@@ -24,7 +24,7 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-const DD_OPTIONS = /*! INCLUDE(VAR("config"), 'utf-8') */;
+const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
 const DD_MODULES = {};
 
 //! IF_SET('debug')
