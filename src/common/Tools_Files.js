@@ -75,7 +75,7 @@ module.exports = {
 				//===================================
 
 				_shared.urlArgumentsParser = function urlArgumentsParser(/*optional*/args, /*optional*/options) {
-					if (/*!types.isNothing(args) &&*/ !types._instanceof(args, files.UrlArguments)) {
+					if (/* !types.isNothing(args) &&*/ !types._instanceof(args, files.UrlArguments)) {
 						args = files.UrlArguments.parse(args, options);
 					};
 					return args;
