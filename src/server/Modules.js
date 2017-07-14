@@ -85,7 +85,7 @@ module.exports = {
 						return Promise.try(function() {
 							let location;
 							if (file) {
-								file = _shared.pathParser(file);
+								file = files.parsePath(file);
 							};
 							if (!file || file.isRelative) {
 								location = files.Path.parse(_module, {file: 'package.json'})

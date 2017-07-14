@@ -104,7 +104,7 @@ module.exports = {
 
 						return Promise.try(function() {
 							if (path) {
-								path = _shared.urlParser(path);
+								path = files.parseUrl(path);
 							};
 							let location;
 							if (!path || path.isRelative) {

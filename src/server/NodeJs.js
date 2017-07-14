@@ -805,7 +805,7 @@ module.exports = {
 				__Internal__.oldLoadConfig = _shared.loadConfig;
 				
 				_shared.loadConfig = function loadConfig(path, /*optional*/options, /*optional*/callbacks) {
-					path = _shared.pathParser(path, types.get(options, 'parseOptions'));
+					path = files.parsePath(path, types.get(options, 'parseOptions'));
 					return __Internal__.oldLoadConfig(path, options, callbacks);
 				};
 

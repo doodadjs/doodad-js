@@ -1745,7 +1745,7 @@ module.exports = {
 				_shared.loadConfig = function loadConfig(url, /*optional*/options, /*optional*/callbacks) {
 						options = types.nullObject(options);
 						if (types.isString(url)) {
-							url = _shared.urlParser(url, options.parseOptions);
+							url = files.parseUrl(url, options.parseOptions);
 						};
 						return __Internal__.oldLoadConfig(url, options, callbacks);
 					};
@@ -1844,7 +1844,7 @@ module.exports = {
 					return Promise.try(function readFilePromise() {
 						options = types.nullObject(options);
 
-						url = _shared.urlParser(url, options.parseOptions);
+						url = files.parseUrl(url, options.parseOptions);
 						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
 
 						let encoding = options.encoding;
