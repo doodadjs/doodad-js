@@ -110,6 +110,14 @@ module.exports = {
 				
 				__Internal__.detectUrlRegexp = /^[a-zA-Z]+\:\/\//;
 
+				files.ADD('parseUrl', function parseUrl(url, /*optional*/options) {
+					return _shared.urlParser(url, options);
+				});
+
+				files.ADD('parsePath', function parsePath(path, /*optional*/options) {
+					return _shared.pathParser(path, options);
+				});
+
 				files.ADD('parseLocation', function parseLocation(location, /*optional*/options) {
 					if (types.isNothing(location)) {
 						return location;
@@ -2519,7 +2527,7 @@ module.exports = {
 									if (urlIsArray) {
 										if (path[path.length - 1]) {
 											const tmp = path.pop();
-											if (tmp) {
+											if (!types.isNothing(tmp)) {
 												// Auto-set
 												file = [tmp];
 											};
@@ -2547,16 +2555,13 @@ module.exports = {
 										
 										if (types.isNothing(file)) {
 											file = null;
+											extension = null;
 										} else {
 											if (types.isString(file)) {
 												if (!noEscapes) {
 													file = __Internal__.decodeURIComponent(file);
 												};
-												if (file.length) {
-													file = file.split('/');
-												} else {
-													file = null;
-												};
+												file = file.split('/');
 											} else {
 												if (!noEscapes) {
 													file = tools.map(file, __Internal__.decodeURIComponent);
@@ -2572,13 +2577,25 @@ module.exports = {
 													!!(tools.findItems(file, ['.', '..']).length)
 									};
 									
+									let trailingFile = false;
+									if ((!file || !file.length) && path && path.length) {
+										const trailing = path[path.length - 1];
+										if (!trailing) {
+											file = [trailing];
+											trailingFile = true;
+										};
+									} else if (file && (file.length > 0)) {
+										if (file.length > 1) {
+											file = tools.trim(file, '');
+										} else if (file[0] === '') {
+											trailingFile = true;
+										};
+									};
+
 									if (path) {
 										path = tools.trim(path, '');
 									};
-									if (file) {
-										file = tools.trim(file, '');
-									};
-									
+
 									if (!isRelative) {
 										if (path) {
 											const abs = __Internal__.relativeToAbsolute(path, null, {
@@ -2590,7 +2607,8 @@ module.exports = {
 											};
 											path = abs.path;
 										};
-										if (file) {
+
+										if (file && !trailingFile) {
 											const abs = __Internal__.relativeToAbsolute(file, path || [], {
 												dirChar: '/',
 												dontThrow: dontThrow,
@@ -2603,7 +2621,7 @@ module.exports = {
 										};
 									};
 									
-									if (!isRelative) {
+									if (!isRelative && (path || file)) {
 										const state = {
 											invalid: null,
 										};
@@ -2640,7 +2658,10 @@ module.exports = {
 										};
 									};
 
-									if (file) {
+									if (types.isNothing(file)) {
+										file = null;
+										extension = null;
+									} else {
 										const pos = file.indexOf('.');
 										if (types.isNothing(extension)) {
 											if (pos >= 0) {
@@ -2658,8 +2679,6 @@ module.exports = {
 											// Remove trailing '.'
 											file = file.slice(0, pos);
 										};
-									} else {
-										extension = null;
 									};
 									
 									return new this({
@@ -2669,7 +2688,7 @@ module.exports = {
 										password: password,
 										port: port,
 										path: path || [],
-										file: file || null,
+										file: file,
 										extension: extension,
 										args: args,
 										anchor: anchor,
@@ -2827,7 +2846,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											options: {
 												type: 'object',
@@ -2896,7 +2915,7 @@ module.exports = {
 										};
 									};
 									
-									if ((options.path && options.path.length) || !options.isRelative) {
+									if (options.path && options.path.length) {
 										let path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
 										if (path.length > 1) {
 											path += '/';
@@ -2910,8 +2929,8 @@ module.exports = {
 										result += path;
 									};
 
-									if (options.file) {
-										if ((!options.path || !options.path.length) && options.isRelative) {
+									if (!types.isNothing(options.file)) {
+										if (!options.path || !options.path.length) {
 											result += '/';
 										};
 										result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
@@ -2981,7 +3000,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 6,
+										revision: 7,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -3010,9 +3029,11 @@ module.exports = {
 
 									const data = types.fill(__Internal__.urlAllKeys, {}, this);
 
-									const thisPath = tools.trim(this.path, '');
-									if (this.file) {
-										thisPath.push(this.file);
+									const thisPath = this.path;
+									const thisFile = this.file;
+
+									if (thisFile) {
+										thisPath.push(thisFile);
 									};
 									
 									let pathRoot = null;
@@ -3063,15 +3084,31 @@ module.exports = {
 									if (path) {
 										path = tools.trim(path, '');
 									};
-									
-									const isRelative = types.get(options, 'isRelative', url.isRelative);
-									if (isRelative) {
-										data.path = types.append([], thisPath, pathRoot, path);
-									} else {
-										data.path = types.append([], pathRoot, path);
+
+									let file = types.get(options, 'file', url.file);
+									if (types.isString(file)) {
+										file = file.split('/');
+									};
+									if (file && file.length) {
+										const tmp = file.pop();
+										file = tools.trim(file, '');
+										path = types.append(path, file);
+										file = tmp;
 									};
 
-									data.file = types.get(options, 'file', url.file);
+									const isRelative = !types.get(options, 'domain', url.domain) && types.get(options, 'isRelative', url.isRelative);
+									if (isRelative) {
+										data.path = types.append([], thisPath, pathRoot, path);
+									} else if ((pathRoot && pathRoot.length) || (path && path.length)) {
+										data.path = types.append([], pathRoot, path);
+									} else {
+										data.path = [];
+										if (!file) {
+											file = '';
+										};
+									};
+
+									data.file = file;
 
 									data.extension = types.get(options, 'extension', null);
 									

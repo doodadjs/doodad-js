@@ -180,8 +180,8 @@ module.exports = {
 						domain: 'www.doodad-js.local',
 						port: 8080,
 						path: ['v0', 'tests', 'units'],
-						file: null,
-						extension: null,
+						file: '',
+						extension: '',
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -196,8 +196,8 @@ module.exports = {
 						domain: 'www.doodad-js.local',
 						port: 8080,
 						path: ['v0', 'tests'],
-						file: null,
-						extension: null,
+						file: '',
+						extension: '',
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -212,8 +212,8 @@ module.exports = {
 						domain: 'www.doodad-js.local',
 						port: 8080,
 						path: [],
-						file: null,
-						extension: null,
+						file: '',
+						extension: '',
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -232,7 +232,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080", options);
@@ -248,7 +248,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local", options);
@@ -264,7 +264,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://:password@www.doodad-js.local", options);
@@ -280,7 +280,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:@www.doodad-js.local", options);
@@ -296,7 +296,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://user@www.doodad-js.local", options);
@@ -312,7 +312,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://www.doodad-js.local", options);
@@ -344,7 +344,7 @@ module.exports = {
 						extension: null,
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
 						isWindows: false,
 					}, {depth: 3}, /**/ "http://www.doodad-js.local:8080", options);
@@ -657,8 +657,8 @@ module.exports = {
 						return url2;
 					}, "Doodad.Tools.Files.Url.combine.Url");
 					
-					command.run("http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor");
-					command.run("http://www.doodad-js.local/Doodad/v1/?v=1&a=&b&#anchor",                                 {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local?v=1&a=&b&#anchor");
+					command.run("http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor"); // absolute
+					command.run("http://www.doodad-js.local/?v=1&a=&b&#anchor",                                            {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local?v=1&a=&b&#anchor");  // absolute
 					command.run("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js?v=1&a=&b&#anchor");
 					command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js?v=1&a=&b&#anchor",        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js?v=1&a=&b&#anchor");
 					command.run("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1#anchor", "/Doodad.js?a=&b&");
