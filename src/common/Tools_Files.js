@@ -709,16 +709,26 @@ module.exports = {
 									};
 										
 									// Split paths
-									if (dirRootIsString && dirRoot) {
-										dirRoot = dirRoot.split(dirChar);
+									if (dirRootIsString) {
+										if (dirRoot) {
+											dirRoot = dirRoot.split(dirChar);
+										};
+									} else if (types.isArray(dirRoot)) {
+										dirRoot = types.append([], dirRoot);
 									};
 									
-									if (pathIsString && path) {
-										path = path.split(dirChar);
+									if (pathIsString) {
+										if (path) {
+											path = path.split(dirChar);
+										};
+									} else if (types.isArray(path)) {
+										path = types.append([], path);
 									};
 									
 									if (fileIsString) {
 										file = file.split(dirChar);
+									} else if (types.isArray(file)) {
+										file = types.append([], file);
 									};
 
 									// Get and validate host and drive
@@ -1399,7 +1409,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 2,
+											revision: 3,
 											params: null,
 											returns: 'Path',
 											description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
@@ -1408,7 +1418,7 @@ module.exports = {
 								, function pushFile() {
 									const type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file, ''])}));
 									} else {
 										return type.parse(this);
 									};
@@ -1418,7 +1428,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 2,
+											revision: 3,
 											params: {
 												options: {
 													type: 'object',
@@ -1433,35 +1443,55 @@ module.exports = {
 								, function toArray(/*optional*/options) {
 									const isRelative = types.get(options, 'isRelative', this.isRelative),
 										dirChar = types.get(options, 'dirChar', this.dirChar),
-										file = types.get(options, 'file', this.file),
 										pathOnly = types.get(options, 'pathOnly', false),
-										trim = types.get(options, 'trim', false);
-									let host = types.get(options, 'host', this.host),
+										trim = types.get(options, 'trim', false),
+										pushFile = types.get(options, 'pushFile', false);
+
+									let file = types.get(options, 'file', this.file),
+										host = types.get(options, 'host', this.host),
 										drive = types.get(options, 'drive', this.drive),
 										root = types.get(options, 'root', this.root),
 										path = types.get(options, 'path', this.path);
+
 									if (pathOnly) {
 										host = null; 
 										drive = null;
 										root = null;
 									};
+
 									if (types.isString(root)) {
 										root = root.split(dirChar);
 									};
+
 									if (types.isArray(root)) {
 										root = tools.trim(root, '');
 									} else {
 										root = null;
 									};
+
 									if (types.isString(path)) {
 										path = path.split(dirChar);
 									};
+
 									if (types.isArray(path)) {
 										path = tools.trim(path, '');
 									} else {
 										path = null;
 									};
+
 									const newPath = types.append([], root, path);
+
+									if (pushFile && file) {
+										newPath.push(file);
+										file = '';
+									};
+
+									if (!trim && (file === '')) {
+										newPath.push('');
+									} else if (file) {
+										newPath.push(file);
+									};
+
 									if (!isRelative) {
 										if (host && drive) {
 											if (trim) {
@@ -1471,15 +1501,11 @@ module.exports = {
 											};
 										} else if (!host && drive) {
 											newPath.unshift(drive + ':');
-										} else if (!trim) {
+										} else if (!trim && path.length && path[0]) {
 											newPath.unshift('');
 										};
 									};
-									if (file) {
-										newPath.push(file);
-									} else if (!trim) {
-										newPath.push('');
-									};
+
 									return newPath;
 								}),
 								
@@ -1508,8 +1534,8 @@ module.exports = {
 								const os = tools.getOS(),
 									caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
 
-								const thisAr = this.toArray({trim: true, file: null}),
-									toAr = to.toArray({trim: true, file: null});
+								const thisAr = this.toArray({trim: true}),
+									toAr = to.toArray({trim: true, pushFile: true});
 								
 								const pathAr = [];
 
@@ -1541,7 +1567,7 @@ module.exports = {
 									pathAr.push(thisAr[j]);
 								};
 								
-								return type.parse(null, types.extend(types.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: this.file, isRelative: true}));
+								return type.parse(null, types.extend(types.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
 							},
 
 							toDataObject: root.DD_DOC(
@@ -2530,6 +2556,8 @@ module.exports = {
 									};
 									
 									if (urlIsArray) {
+										path = types.append([], path);
+
 										if (path[path.length - 1]) {
 											const tmp = path.pop();
 											if (!types.isNothing(tmp)) {
@@ -2551,8 +2579,10 @@ module.exports = {
 												} else {
 													path = [];
 												};
-											} else {
-												if (!noEscapes) {
+											} else { // isArray
+												if (noEscapes) {
+													path = types.append([], path);
+												} else {
 													path = tools.map(path, __Internal__.decodeURIComponent);
 												};
 											};
@@ -2567,8 +2597,10 @@ module.exports = {
 													file = __Internal__.decodeURIComponent(file);
 												};
 												file = file.split('/');
-											} else {
-												if (!noEscapes) {
+											} else { // isArray
+												if (noEscapes) {
+													file = types.append([], file);
+												} else {
 													file = tools.map(file, __Internal__.decodeURIComponent);
 												};
 											};
@@ -3172,7 +3204,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 1,
+											revision: 2,
 											params: null,
 											returns: 'Url',
 											description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
@@ -3181,7 +3213,7 @@ module.exports = {
 								, function pushFile() {
 									const type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file])}));
+										return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file, ''])}));
 									} else {
 										return type.parse(this);
 									};
@@ -3204,8 +3236,12 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toArray(/*optional*/options) {
+									const isRelative = types.get(options, 'isRelative', this.isRelative),
+										pushFile = types.get(options, 'pushFile', false),
+										trim = types.get(options, 'trim', false),
+										pathOnly = types.get(options, 'pathOnly', false);
+
 									let path = types.get(options, 'path', this.path),
-										isRelative = types.get(options, 'isRelative', this.isRelative),
 										protocol = types.get(options, 'protocol', this.protocol),
 										domain = types.get(options, 'domain', this.domain),
 										user = types.get(options, 'user', this.user),
@@ -3213,9 +3249,8 @@ module.exports = {
 										port = types.get(options, 'port', this.port),
 										args = types.get(options, 'args', this.args),
 										anchor = types.get(options, 'anchor', this.anchor),
-										file = types.get(options, 'file', this.file),
-										pathOnly = types.get(options, 'pathOnly', false),
-										trim = types.get(options, 'trim', false);
+										file = types.get(options, 'file', this.file);
+
 									if (pathOnly) {
 										protocol = null;
 										domain = null;
@@ -3225,34 +3260,40 @@ module.exports = {
 										args = null;
 										anchor = null;
 									};
-									if (types.isString(path)) {
-										path = tools.split('/');
-									} else if (types.isArray(path)) {
-										path = types.clone(path);
-									};
-									if (!types.isArray(path)) {
-										// TODO: Should we throw ?
+
+									if (types.isNothing(path)) {
 										path = [];
-									};
-									path = tools.trim(path, '');
-									if (types.isString(args)) {
-										path = _shared.urlArgumentsParser(args);
-									};
-									if (!types._instanceof(args, files.UrlArguments)) {
-										// TODO: Should we throw ?
-										args = null;
-									};
-									const hasPath = !!path.length;
-									if (isRelative) {
-										if (hasPath && !trim) {
-											path.unshift('');
-										};
 									} else {
-										if (types.isNothing(domain)) {
-											if (!trim) {
-												path.unshift('');
-											};
-										} else {
+										if (types.isString(path)) {
+											path = tools.split('/');
+										} else if (types.isArray(path)) {
+											path = types.append([], path);
+										};
+
+										path = tools.trim(path, '');
+									};
+
+									if (types.isNothing(args)) {
+										args = null;
+									} else if (types.isString(args)) {
+										args = _shared.urlArgumentsParser(args);
+									};
+
+									file = (file || '') + (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
+
+									if (pushFile && file) {
+										path.push(file);
+										file = '';
+									};
+
+									if (!trim && (file === '')) {
+										path.push('');
+									} else if (file) {
+										path.push(file);
+									};
+
+									if (!isRelative) {
+										if (domain) {
 											if (!types.isNothing(user) || !types.isNothing(password)) {
 												path.unshift((types.isNothing(user) ? '' : user) + (types.isNothing(password) ? '' : ':' + password) + '@' + domain + (types.isNothing(port) ? '' : ':' + port));
 											} else {
@@ -3261,17 +3302,11 @@ module.exports = {
 											if (protocol) {
 												path.unshift(protocol + ':', '', '');
 											};
+										} else {
+											if (!trim && path.length && path[0]) {
+												path.unshift('');
+											};
 										};
-									};
-
-									const argsAndAnchor = (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
-									if (file) {
-										if (!hasPath && isRelative && !trim) {
-											path.push('');
-										};
-										path.push(file + argsAndAnchor);
-									} else if (argsAndAnchor) {
-										path.push(argsAndAnchor);
 									};
 
 									return path;
@@ -3329,8 +3364,8 @@ module.exports = {
 								
 									const caseSensitive = types.get(options, 'caseSensitive', false);
 
-									const thisAr = this.toArray({trim: true, file: null}),
-										toAr = to.toArray({trim: true, file: null});
+									const thisAr = this.toArray({trim: true}),
+										toAr = to.toArray({trim: true});
 								
 									const pathAr = [];
 
@@ -3362,7 +3397,7 @@ module.exports = {
 										pathAr.push(thisAr[j]);
 									};
 								
-									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: this.file, isRelative: true}));
+									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
 								},
 
 							toDataObject: root.DD_DOC(
