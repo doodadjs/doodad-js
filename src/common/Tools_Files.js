@@ -75,14 +75,14 @@ module.exports = {
 				//===================================
 
 				_shared.urlArgumentsParser = function urlArgumentsParser(/*optional*/args, /*optional*/options) {
-					if (!types._instanceof(args, files.UrlArguments)) {
+					if (/*!types.isNothing(args) &&*/ !types._instanceof(args, files.UrlArguments)) {
 						args = files.UrlArguments.parse(args, options);
 					};
 					return args;
 				};
 				
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
-					if (!types._instanceof(url, files.Url)) {
+					if (!types.isNothing(url) && !types._instanceof(url, files.Url)) {
 						if (!options) {
 							options = {
 								noEscapes: true,
@@ -94,7 +94,7 @@ module.exports = {
 				};
 				
 				_shared.pathParser = function pathParser(path, /*optional*/options) {
-					if (!types._instanceof(path, files.Path)) {
+					if (!types.isNothing(path) && !types._instanceof(path, files.Path)) {
 						options = types.extend({
 							os: 'linux',
 							dirChar: '/',
@@ -111,7 +111,9 @@ module.exports = {
 				__Internal__.detectUrlRegexp = /^[a-zA-Z]+\:\/\//;
 
 				files.ADD('parseLocation', function parseLocation(location, /*optional*/options) {
-					if (types.isString(location)) {
+					if (types.isNothing(location)) {
+						return location;
+					} else if (types.isString(location)) {
 						if (__Internal__.detectUrlRegexp.test(location)) {
 							return _shared.urlParser(location, options);
 						} else {
@@ -125,7 +127,9 @@ module.exports = {
 				});
 
 				files.ADD('parseApiLocation', function parseLocation(location, /*optional*/options) {
-					if (types.isString(location)) {
+					if (types.isNothing(location)) {
+						return location;
+					} else if (types.isString(location)) {
 						if (__Internal__.detectUrlRegexp.test(location)) {
 							return _shared.urlParser(location, types.extend({}, options, {noEscapes: false}));
 						} else {
@@ -1213,7 +1217,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 9,
+											revision: 10,
 											params: {
 												path: {
 													type: 'string,Path,Url',
@@ -1324,7 +1328,8 @@ module.exports = {
 									};
 									
 									data.file = types.get(options, 'file', path.file || thisFile);
-									data.extension = types.get(options, 'extension', path.extension);
+
+									data.extension = types.get(options, 'extension', null);
 
 									path = type.parse(null, data);
 
@@ -1871,7 +1876,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											name: {
 												type: 'string',
@@ -1879,13 +1884,13 @@ module.exports = {
 												description: "Name of the argument.",
 											},
 											singleValue: {
-												type: 'bool',
+												type: 'boolean',
 												optional: true,
 												description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
 											},
 										},
-										returns: 'object',
-										description: "Returns an object having 'name' and 'value' attributes. When argument doesn't exists, 'value' is 'undefined'.",
+										returns: 'string,arrayof(string)',
+										description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
 								}
 								//! END_REPLACE()
 								, function get(name, /*optional*/singleValue) {
@@ -1922,6 +1927,7 @@ module.exports = {
 											};
 										};
 									};
+
 									return result;
 								}),
 							
@@ -2200,7 +2206,10 @@ module.exports = {
 				};
 				__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
+				__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'pathname', 'username', 'search', 'hash'];
+
 				__Internal__.urlAllKeys = types.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
+				__Internal__.urlAllKeysAndNonStoredKeys = types.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
 
 				__Internal__.defaultPorts = types.nullObject({
 					http: 80,
@@ -2276,7 +2285,7 @@ module.exports = {
 									} else if (types._instanceof(url, files.Url)) {
 										const args = types.get(options, 'args', null);
 										
-										options = types.fill(__Internal__.urlAllKeys, {}, url, options);
+										options = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, {}, url, {host: null, extension: null}, options);
 										
 										if (types.isJsObject(args)) {
 											options.args = url.args.combine(args, options);
@@ -2292,11 +2301,12 @@ module.exports = {
 											pathTmp = types.append([], [url.drive + ':'], pathTmp)
 										};
 										
-										options = types.fill(__Internal__.urlAllKeys, {
+										options = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
 											protocol: 'file',
+											host: null,
 											path: pathTmp,
 											file: url.file,
-											extension: url.extension,
+											extension: null,
 											isWindows: isWindows,
 										}, options);
 										
@@ -2465,6 +2475,7 @@ module.exports = {
 									
 									if (domain) {
 										domain = domain.toLowerCase();
+										isRelative = false;
 									} else {
 										if ((protocol !== 'file') || (!path && !file)) {
 											protocol = null;
@@ -2685,7 +2696,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 2,
+										revision: 3,
 										params: {
 											options: {
 												type: 'object',
@@ -2701,9 +2712,60 @@ module.exports = {
 									let newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
 									delete newOptions.extension;
 									delete newOptions.host;
-									newOptions = types.fill(__Internal__.urlAllKeys, newOptions, options);
+									if (types.has(options, 'url')) {
+										delete newOptions.path;
+										delete newOptions.file;
+									};
+									newOptions = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
+								}),
+							
+							hasArg: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											name: {
+												type: 'string',
+												optional: false,
+												description: "Argument name.",
+											},
+										},
+										returns: 'boolean',
+										description: "Return 'true' if argument exists. Returns false otherwise.",
+								}
+								//! END_REPLACE()
+								, function hasArg(name) {
+									return !!this.args && this.args.has(name);
+								}),
+							
+							getArg: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+										author: "Claude Petit",
+										revision: 0,
+										params: {
+											name: {
+												type: 'string',
+												optional: false,
+												description: "Argument name.",
+											},
+											singleValue: {
+												type: 'boolean',
+												optional: true,
+												description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
+											},
+										},
+										returns: 'string,arrayof(string)',
+										description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
+								}
+								//! END_REPLACE()
+								, function getArg(name, /*optional*/singleValue) {
+									if (this.args) {
+										return this.args.get(name, singleValue);
+									};
 								}),
 							
 							setArgs: root.DD_DOC(
@@ -2919,7 +2981,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 5,
+										revision: 6,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -3011,7 +3073,7 @@ module.exports = {
 
 									data.file = types.get(options, 'file', url.file);
 
-									data.extension = types.get(options, 'extension', url.extension);
+									data.extension = types.get(options, 'extension', null);
 									
 									return type.parse(null, data);
 								}),
@@ -3192,6 +3254,74 @@ module.exports = {
 									});
 								}),
 								
+							relative: function relative(to, /*optional*/options) {
+									if (this.isRelative) {
+										throw new types.ParseError("Url is not absolute.");
+									};
+
+									const type = types.getType(this);
+								
+									if (!types._instanceof(to, files.Url)) {
+										to = type.parse(to, options);
+									};
+									if (to.isRelative) {
+										throw new types.ParseError("Target must be an absolute url.");
+									};
+								
+									if (this.isWindows && !to.isWindows) {
+										throw new types.ParseError("Incompatible OSes.");
+									};
+								
+									if (this.isWindows && (this.path[0] !== to.path[0])) {
+										throw new types.ParseError("Urls must be from the same network share or the same drive.");
+									};
+
+									if ((this.domain !== to.domain) && (this.port !== to.port)) {
+										throw new types.ParseError("Urls must be from the same domain and have the same port number.");
+									};
+								
+									if ((this.user !== to.user) || (this.password !== to.password)) {
+										throw new types.ParseError("Urls must be from the same credentials.");
+									};
+								
+									const caseSensitive = types.get(options, 'caseSensitive', false);
+
+									const thisAr = this.toArray({trim: true, file: null}),
+										toAr = to.toArray({trim: true, file: null});
+								
+									const pathAr = [];
+
+									let i = 0;
+
+									for (; (i < thisAr.length) && (i < toAr.length); i++) {
+										if (caseSensitive) {
+											if (thisAr[i] !== toAr[i]) {
+												break;
+											};
+										} else {
+											if (thisAr[i].toLowerCase() !== toAr[i].toLowerCase()) {
+												break;
+											};
+										};
+									};
+								
+									let j = i;
+								
+									for (; i < toAr.length; i++) {
+										pathAr.push('..');
+									};
+								
+									if (pathAr.length === 0) {
+										pathAr.push('.');
+									};
+								
+									for (; j < thisAr.length; j++) {
+										pathAr.push(thisAr[j]);
+									};
+								
+									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: this.file, isRelative: true}));
+								},
+
 							toDataObject: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
