@@ -1428,7 +1428,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 3,
+											revision: 4,
 											params: {
 												options: {
 													type: 'object',
@@ -1501,7 +1501,7 @@ module.exports = {
 											};
 										} else if (!host && drive) {
 											newPath.unshift(drive + ':');
-										} else if (!trim && path.length && path[0]) {
+										} else if (!trim && newPath.length) {
 											newPath.unshift('');
 										};
 									};
@@ -3223,7 +3223,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 3,
+											revision: 4,
 											params: {
 												options: {
 													type: 'object',
@@ -3303,7 +3303,7 @@ module.exports = {
 												path.unshift(protocol + ':', '', '');
 											};
 										} else {
-											if (!trim && path.length && path[0]) {
+											if (!trim && path.length) {
 												path.unshift('');
 											};
 										};
