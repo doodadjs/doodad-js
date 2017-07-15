@@ -1352,7 +1352,7 @@ module.exports = {
 						recursive = types.get(options, 'recursive', false),
 						skipInvalid = types.get(options, 'skipInvalid', false),
 						makeParents = types.get(options, 'makeParents', false),
-						followLinks = types.get(options, 'followLinks', false);
+						followLinks = types.get(options, 'followLinks', true);
 
 					let COPY_FILE_BUFFER = null;
 
@@ -1475,7 +1475,7 @@ module.exports = {
 							recursive = types.get(options, 'recursive', false),
 							skipInvalid = types.get(options, 'skipInvalid', false),
 							makeParents = types.get(options, 'makeParents', false),
-							followLinks = types.get(options, 'followLinks', false),
+							followLinks = types.get(options, 'followLinks', true),
 							cancellable = types.get(options, 'cancellable', true), // Experimental
 							timeout = types.get(options, 'timeout', null); // Experimental
 
@@ -1850,7 +1850,7 @@ module.exports = {
 						
 					const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
-						followLinks = types.get(options, 'followLinks', false),
+						followLinks = types.get(options, 'followLinks', true),
 						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
 
 					const parse = function parse(result, parent, base, name, depth) {
@@ -1898,7 +1898,7 @@ module.exports = {
 
 						const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 							relative = types.get(options, 'relative', false),
-							followLinks = types.get(options, 'followLinks', false),
+							followLinks = types.get(options, 'followLinks', true),
 							skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
 							cancellable = types.get(options, 'cancellable', true), // Experimental
 							timeout = types.get(options, 'timeout', null); // Experimental
