@@ -815,9 +815,7 @@ module.exports = {
 				//=====================================
 					
 				files.ADD('existsSync', function existsSync(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 
 					const type = types.get(options, 'type', null);
 
@@ -855,13 +853,11 @@ module.exports = {
 							});
 						};
 
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 
 						const type = types.get(options, 'type', null);
 
-						return exists(path.toApiString(), type);
+						return exists(path.toString(), type);
 					});
 				});
 
@@ -897,9 +893,7 @@ module.exports = {
 				}));
 					
 				files.ADD('rmSync', function rmSync(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 
 					try {
 						nodeFs.unlinkSync(path.toApiString());
@@ -935,9 +929,7 @@ module.exports = {
 							});
 						};
 
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 
 						return unlink(path.toApiString());
 					});
@@ -977,9 +969,7 @@ module.exports = {
 				files.ADD('rmdirSync', function rmdirSync(path, /*optional*/options) {
 					const force = types.get(options, 'force', false);
 
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 
 					const pathStr = path.toApiString();
 
@@ -998,9 +988,7 @@ module.exports = {
 							for (let i = 0; i < count; i++) {
 								const dirFile = dirFiles[i];
 
-								const newPath = path.combine(null, {
-									file: dirFile,
-								});
+								const newPath = path.combine(dirFile);
 
 								try {
 									nodeFs.unlinkSync(newPath.toApiString());
@@ -1009,7 +997,19 @@ module.exports = {
 									if (ex.code === 'ENOENT') {
 										// Do nothing
 									} else if (ex.code === 'EPERM') {
-										files.rmdirSync(newPath, options);
+										try {
+											const stats = nodeFs.stat(newPath);
+											if (stats.isFolder()) {
+												files.rmdirSync(newPath, options);
+											} else {
+												// EPERM
+												throw ex;
+											};
+										} catch(ex2) {
+											if (ex2.code !== 'ENOENT') {
+												throw ex2;
+											};
+										};
 									} else {
 										throw ex;
 									};
@@ -1038,9 +1038,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function tryRmDir() {
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 
 						const force = types.get(options, 'force', false),
 							cancellable = types.get(options, 'cancellable', true), // Experimental
@@ -1061,6 +1059,18 @@ module.exports = {
 									stopRacer.reject(new types.TimeoutError());
 								};
 							}, timeout, null, null, true);
+						};
+
+						const isFolder = function isFolder(path) {
+							return Promise.create(function stat(resolve, reject) {
+								nodeFs.stat(path, function(err, stats) {
+									if (err) {
+										reject(err);
+									} else {
+										resolve(stats.isFolder());
+									};
+								});
+							});
 						};
 
 						const rmdir = function rmdir(path) {
@@ -1101,9 +1111,7 @@ module.exports = {
 
 						const loopDeleteContent = function loopDeleteContent(parent, names, index) {
 							if (index < names.length) {
-								const path = parent.combine(null, {
-									file: names[index],
-								});
+								const path = parent.combine(names[index]);
 								const pathStr = path.toApiString();
 								const promise = unlink(pathStr);
 								return (stopRacer ? stopRacer.race(promise) : promise)
@@ -1112,7 +1120,21 @@ module.exports = {
 											if (err.code === 'ENOENT') {
 												return loopDeleteContent(parent, names, index + 1);
 											} else if (err.code === 'EPERM') {
-												return proceed(path)
+												return isFolder(path)
+													.nodeify(function(err2, isFolder) {
+														if (err2) {
+															if (err2.code === 'ENOENT') {
+																// Ignore
+															} else {
+																throw err2;
+															};
+														} else if (isFolder) {
+															return proceed(path);
+														} else {
+															// EPERM
+															throw err;
+														};
+													})
 													.then(function deleteNextFile() {
 														return loopDeleteContent(parent, names, index + 1);
 													});
@@ -1211,9 +1233,7 @@ module.exports = {
 				}));
 					
 				files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 					path = path.pushFile();
 
 					const ignoreExists = types.get(options, 'ignoreExists', true),
@@ -1255,9 +1275,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function mkdirPromise() {
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 						path = path.pushFile();
 
 						const ignoreExists = types.get(options, 'ignoreExists', true),
@@ -1357,13 +1375,8 @@ module.exports = {
 					let COPY_FILE_BUFFER = null;
 
 					const copyInternal = function _copyInternal(source, destination) {
-						if (types.isString(source)) {
-							source = files.Path.parse(source);
-						};
-
-						if (types.isString(destination)) {
-							destination = files.Path.parse(destination);
-						};
+						source = files.parsePath(source);
+						destination = files.parsePath(destination);
 
 						const sourceStr = source.toApiString();
 
@@ -1444,7 +1457,7 @@ module.exports = {
 							const dirFiles = nodeFs.readdirSync(sourceStr);
 							for (let i = 0; i < dirFiles.length; i++) {
 								const dirFile = dirFiles[i];
-								copyInternal(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }));
+								copyInternal(source.combine(dirFile), destination.combine(dirFile));
 							};
 
 							if (preserveTimes) {
@@ -1620,13 +1633,8 @@ module.exports = {
 
 						const copyInternal = function _copyInternal(source, destination) {
 							return Promise.try(function copyInternalPromise() {
-								if (types.isString(source)) {
-									source = files.Path.parse(source);
-								};
-
-								if (types.isString(destination)) {
-									destination = files.Path.parse(destination);
-								};
+								source = files.parsePath(source);
+								destination = files.parsePath(destination);
 
 								const sourceStr = source.toApiString();
 
@@ -1712,7 +1720,7 @@ module.exports = {
 									const promise = Promise.try(function() {
 										const dirFile = dirFiles[index];
 										if (dirFile) {
-											return copyInternal(source.combine(null, { file: dirFile }), destination.combine(null, { file: dirFile }))
+											return copyInternal(source.combine(dirFile), destination.combine(dirFile))
 												.then(function() {
 													return loopDirectoryContent(dirFiles, index + 1);
 												});
@@ -1830,7 +1838,7 @@ module.exports = {
 					if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
 						const file = {
 							name: name,
-							path: (isFolder ? base.combine(name, {file: ''}) : base.combine(null, {file: name})),
+							path: (isFolder ? base.combine(name, {file: ''}) : base.combine(name)),
 							isFolder: isFolder,
 							isFile: isFile,
 							size: stats.size, // bytes
@@ -1844,9 +1852,7 @@ module.exports = {
 				};
 
 				files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 						
 					const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
@@ -1892,9 +1898,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function readdirPromise() {
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 
 						const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 							relative = types.get(options, 'relative', false),
@@ -2041,9 +2045,7 @@ module.exports = {
 				}));
 					
 				files.ADD('getCanonicalSync', function getCanonicalSync(path, /*optional*/options) {
-					if (types.isString(path)) {
-						path = files.Path.parse(path);
-					};
+					path = files.parsePath(path);
 
 					const stats = nodeFs.statSync(path.toApiString());
 
@@ -2078,9 +2080,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function getCanonicalPromise() {
-						if (types.isString(path)) {
-							path = files.Path.parse(path);
-						};
+						path = files.parsePath(path);
 
 						const stat = function stat(path) {
 							path = path.toApiString();
@@ -2180,7 +2180,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: null,
 							returns: 'string',
 							description: "Returns system temporary folder path.",
@@ -2191,7 +2191,7 @@ module.exports = {
 						return __Internal__.tmpdir;
 					};
 
-					let folder = nodeOs.tmpdir(); // ??? it looks like my code before revision 1
+					let folder = nodeOs.tmpdir();
 
 					let stats = null;
 
@@ -2207,13 +2207,8 @@ module.exports = {
 							files.mkdir(folder);
 						} catch(ex) {
 						};
-						folder = folder.toApiString();
-					};
-
-					const os = tools.getOS();
-
-					if (folder[folder.length - 1] !== os.dirChar) {
-						folder += os.dirChar;
+					} else {
+						folder = files.Path.parse(folder);
 					};
 
 					__Internal__.tmpdir = folder;
@@ -2242,9 +2237,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function tryReadFile() {
-						if (types.isString(path)) {
-							path = files.parseLocation(path);
-						};
+						path = files.parseLocation(path);
 
 						const encoding = types.get(options, 'encoding', null),
 							timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
@@ -2426,14 +2419,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function tryWriteFile() {
-						if (types.isString(path)) {
-							const url = files.Url.parse(path);
-							if (url.protocol) {
-								path = url;
-							} else {
-								path = files.Path.parse(path);
-							};
-						};
+						path = files.parseLocation(path);
 
 						const encoding = types.get(options, 'encoding', null),
 							//timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
@@ -2541,7 +2527,7 @@ module.exports = {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								path: {
 									type: 'string,Url,Path',
@@ -2564,14 +2550,7 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function watch(path, callbacks, /*optional*/options) {
-					if (types.isString(path)) {
-						const url = files.Url.parse(path);
-						if (url.protocol) {
-							path = url;
-						} else {
-							path = files.Path.parse(path);
-						};
-					};
+					path = files.parseLocation(path);
 					if (!types.isArray(callbacks)) {
 						callbacks = [callbacks];
 					};
@@ -2580,43 +2559,101 @@ module.exports = {
 						if (types._instanceof(path, files.Url)) {
 							path = files.Path.parse(path);
 						};
-						path = path.toApiString();
+						const pathStr = path.toApiString();
 							
-						let fileCallbacks;
-						if (types.has(__Internal__.watchedFiles, path)) {
-							fileCallbacks = __Internal__.watchedFiles[path];
+						let data;
+						if (types.has(__Internal__.watchedFiles, pathStr)) {
+							data = __Internal__.watchedFiles[pathStr];
 						} else {
-							fileCallbacks = [];
-							nodeFs.watch(path, {persistent: false}, doodad.Callback(null, function(event, filename) {
-								const callbacks = __Internal__.watchedFiles[path];
-								for (let i = callbacks.length - 1; i >= 0; i--) {
-									let callback = callbacks[i];
-									if (callback) {
-										try {
-											callback.apply(null, arguments);
-										} catch(ex) {
+							data = {
+								callbacks: [],
+								watcher: nodeFs.watch(pathStr, {persistent: false}, doodad.Callback(null, function(event, filename) {
+									const data = __Internal__.watchedFiles[pathStr],
+										len = data.callbacks.length;
+									for (let i = len - 1; i >= 0; i--) {
+										let callback = data.callbacks[i];
+										if (callback) {
+											try {
+												callback.apply(null, arguments);
+											} catch(ex) {
+											};
+											if (types.get(callback.__OPTIONS__, 'once', false)) {
+												callback = null;
+											};
 										};
-										if (types.get(callback.__OPTIONS__, 'once', false)) {
-											callback = null;
+										if (!callback) {
+											data.callbacks.splice(i, 1);
 										};
 									};
-									if (!callback) {
-										callbacks.splice(i, 1);
-									};
-								};
-							}));
+								})),
+							};
+							__Internal__.watchedFiles[pathStr] = data;
 						};
 							
 						tools.forEach(callbacks, function(callback) {
 							callback.__OPTIONS__ = options;
 						});
 							
-						__Internal__.watchedFiles[path] = types.unique(fileCallbacks, callbacks);
+						data.callbacks = types.unique(data.callbacks, callbacks);
 							
 					} else {
 						throw new types.NotSupported("Remote files are not supported.");
 					};
 				}));
+					
+				files.ADD('unwatch', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								path: {
+									type: 'string,Url,Path',
+									optional: false,
+									description: "File Url or Path.",
+								},
+								callbacks: {
+									type: 'arrayof(function),function',
+									optional: true,
+									description: "Callback functions.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Options.",
+								},
+							},
+							returns: 'undefined',
+							description: "Removes a file watcher.",
+				}
+				//! END_REPLACE()
+				, function unwatch(path, /*optional*/callbacks, /*optional*/options) {
+					path = files.parseLocation(path);
+					if (!types.isNothing(callbacks)) {
+						if (!types.isArray(callbacks)) {
+							callbacks = [callbacks];
+						};
+					};
+						
+					if (types._instanceof(path, files.Url)) {
+						path = files.Path.parse(path);
+					};
+					const pathStr = path.toApiString();
+							
+					if (types.has(__Internal__.watchedFiles, pathStr)) {
+						const data = __Internal__.watchedFiles[pathStr];
+						if (types.isNothing(callbacks)) {
+							data.callbacks = null;
+						} else {
+							types.popItems(data.callbacks, callbacks);
+						};
+						if (!data.callbacks || !data.callbacks.length) {
+							data.watcher.close();
+							delete __Internal__.watchedFiles[pathStr];
+						};
+					};
+				}));
+					
 					
 					
 				//===================================
@@ -3477,8 +3514,8 @@ module.exports = {
 						// NOTE: On some systems, the temp folder may have a different file system.
 						const temp = files.getTempFolder(),
 							uuid = tools.generateUUID(),
-							name1 = temp + 'DoOdAd.' + uuid,
-							name2 = temp + 'dOoDaD.' + uuid;
+							name1 = temp.combine('DoOdAd.' + uuid),
+							name2 = temp.combine('dOoDaD.' + uuid);
 						files.mkdir(name1, {ignoreExists: false});
 						try {
 							files.mkdir(name2, {ignoreExists: false});
