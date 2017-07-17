@@ -2190,14 +2190,14 @@ module.exports = {
 										
 										const callFn = (extender.byReference ? fn : types.unbox(_caller[__Internal__.symbolPrototype][attr]));
 										
+										_caller[__Internal__.symbolCalled] = true;
+										
 										let retVal = callFn.apply(this, arguments);
 
 										if (modifiers & doodad.MethodModifiers.Async) {
 											const Promise = types.getPromise();
 											retVal = Promise.resolve(retVal);
 										};
-										
-										_caller[__Internal__.symbolCalled] = true;
 										
 										if (root.getOptions().debug || __options__.enforcePolicies) {
 											if ((_caller[__Internal__.symbolModifiers] & doodad.MethodModifiers.Override) && !_super[__Internal__.symbolCalled]) {
