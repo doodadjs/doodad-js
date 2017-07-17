@@ -124,8 +124,9 @@ module.exports = {
 							if (location.file) {
 								if (!root.getOptions().debug) {
 									// Force minified files.
-									const parts = location.file.split('.');
-									if ((parts.slice(-1)[0] === 'js') && (parts.slice(-2, -1)[0] !== 'min')) {
+									const parts = location.file.split('.'),
+										len = parts.length;
+									if ((parts[len - 1] === 'js') && (parts[len - 2] !== 'min')) {
 										location = location
 											.set({file: parts.slice(0, -1).join('.') + '.min.js'});
 									};
@@ -171,7 +172,7 @@ module.exports = {
 											scriptLoader.start();
 										})
 								} else {
-									promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: false})
+									promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: true})
 										.then(function(code) {
 											const DD_MODULE = {exports: {}};
 											const locals = {DD_MODULE: DD_MODULE, DD_MODULES: undefined};
@@ -277,9 +278,7 @@ module.exports = {
 									DD_MODULES = {};
 									tools.forEach(files, function(file) {
 										if (file && !file.isConfig) {
-											if (types.has(file.exports, 'add')) {
-												file.exports.add(DD_MODULES);
-											};
+											file.exports.add(DD_MODULES);
 										};
 									});
 								};
