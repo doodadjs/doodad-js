@@ -4231,10 +4231,18 @@
 		// Errors
 		//===================================
 
+		// Change the prototype of Error so that these properties do not fall back to Object.prototype (yes, I do that !)
+
 		global.Error.prototype.bubble = false;
 		global.Error.prototype.critical = false;
 		global.Error.prototype.trapped = false;
-		global.Error.prototype.promiseName = false;
+		global.Error.prototype.promiseName = '';
+
+		//! IF_SET('serverSide')
+		// For Node.Js
+		global.Error.prototype.code = '';
+		//! END_IF()
+
 
 		__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_ERROR_TYPE')), true) */ '__DD_IS_ERROR_TYPE' /*! END_REPLACE() */, true);
 
@@ -4244,6 +4252,12 @@
 			
 		// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
 		// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
+		// NOTE: 2017: Constructors of ES6 classes are very restrictives...
+		//       1) They don't allow us to do things with 'this' BEFORE calling "super".
+		//       2) 'super' must be called in the constructor itself, that's not possible to pass 'super' to another function.
+		//       So that we give a context object with '_superArgs' and '_this' attributes to a customizable constructor function.
+		//       That function puts whatever it had normally do with 'this' into the '_this' attribute of that context. After the real 'super' gets called, the attributes are copied back to 'this'.
+		//       That function also store arguments for 'super' into the "_superArgs" attribute of the context, which are then passed to 'super'.
 		__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
