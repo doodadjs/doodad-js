@@ -82,30 +82,44 @@ module.exports = {
 				};
 				
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
-					if (!types.isNothing(url) && !types._instanceof(url, files.Url)) {
-						if (!options) {
-							options = {
+					if (!types.isNothing(url)) {
+						if (!types._instanceof(url, files.Url)) {
+							options = types.extend({
 								noEscapes: true,
-							};
+							}, options);
+							url = files.Url.parse(url, options);
 						};
-						url = files.Url.parse(url, options);
+						if (types.get(options, 'noEscapes', false)) {
+							return url.set({
+									noEscapes: false,
+								});
+						} else {
+							return url;
+						};
 					};
-					return url;
 				};
 				
 				_shared.pathParser = function pathParser(path, /*optional*/options) {
-					if (!types.isNothing(path) && !types._instanceof(path, files.Path)) {
-						options = types.extend({
-							os: 'linux',
-							dirChar: '/',
-						}, options);
+					if (!types.isNothing(path)) {
+						if (!types._instanceof(path, files.Path)) {
+							if (types.get(options, 'isRelative', false)) {
+								options = types.extend({
+									os: 'linux',
+									dirChar: '/',
+								}, options);
+							};
 
-						path = files.Path.parse(path, options).set({
-							os: null, // switch to default
-							dirChar: null, // switch to default
-						});
+							path = files.Path.parse(path, options);
+						};
+						if (types.get(options, 'os', null) || types.get(options, 'dirChar', null)) {
+							return path.set({
+									os: null, // switch to default
+									dirChar: null, // switch to default
+								});
+						} else {
+							return path;
+						};
 					};
-					return path;
 				};
 				
 				__Internal__.detectUrlRegexp = /^[a-zA-Z]+\:\/\//;
@@ -130,23 +144,7 @@ module.exports = {
 					} else if (types._instanceof(location, [files.Path, files.Url])) {
 						return location;
 					} else {
-						throw types.TypeError("Invalid file location.");
-					};
-				});
-
-				files.ADD('parseApiLocation', function parseLocation(location, /*optional*/options) {
-					if (types.isNothing(location)) {
-						return location;
-					} else if (types.isString(location)) {
-						if (__Internal__.detectUrlRegexp.test(location)) {
-							return _shared.urlParser(location, types.extend({}, options, {noEscapes: false}));
-						} else {
-							return _shared.pathParser(location, types.extend({}, options, {os: null, dirChar: null}));
-						};
-					} else if (types._instanceof(location, [files.Path, files.Url])) {
-						return location;
-					} else {
-						throw types.TypeError("Invalid file location.");
+						throw new types.TypeError("Invalid file location object.");
 					};
 				});
 
@@ -1239,12 +1237,12 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 10,
+											revision: 11,
 											params: {
-												path: {
+												location: {
 													type: 'string,Path,Url',
 													optional: true,
-													description: "'Path' or 'Url' object to combine with. A string is parsed to a 'Path' object.",
+													description: "'Path' or 'Url' object to combine with.",
 												},
 												options: {
 													type: 'object',
@@ -1253,20 +1251,21 @@ module.exports = {
 												},
 											},
 											returns: 'Path',
-											description: "Combines with the specified 'Url' or 'Path' object and the provided options, then returns the result.",
+											description: "Combines the Path with the specified Path or Url, then returns the result.",
 								}
 								//! END_REPLACE()
-								, function combine(/*optional*/path, /*optional*/options) {
+								, function combine(/*optional*/location, /*optional*/options) {
+									location = files.parseLocation(location, types.extend({isRelative: true}, options));
+									
+									if (types.isNothing(location)) {
+										return this;
+									};
+
 									const type = types.getType(this);
 									const dontThrow = types.get(options, 'dontThrow', false),
 										allowTraverse = types.get(options, 'allowTraverse', false);
 
 									let includePathInRoot = types.get(options, 'includePathInRoot', null);
-									
-									if (!types._instanceof(path, [files.Path, files.Url])) {
-										path = type.parse(path, options);
-										options = null;
-									};
 									
 									const data = types.fill(__Internal__.pathAllKeys, {}, this);
 
@@ -1282,7 +1281,7 @@ module.exports = {
 										dirRoot = tools.trim(dirRoot, '');
 									};
 										
-									let dir = types.get(options, 'path', path.path);
+									let dir = types.get(options, 'path', location.path);
 									if (types.isString(dir)) {
 										dir = dir.split(data.dirChar);
 									};
@@ -1290,10 +1289,10 @@ module.exports = {
 										dir = tools.trim(dir, '');
 									};
 
-									if (types._instanceof(path, files.Path)) {
-										const drive = types.get(options, 'drive', path.drive);
-										const host = types.get(options, 'host', path.host);
-										if ((path.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
+									if (types._instanceof(location, files.Path)) {
+										const drive = types.get(options, 'drive', location.drive);
+										const host = types.get(options, 'host', location.host);
+										if ((location.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -1301,17 +1300,17 @@ module.exports = {
 											};
 										};
 										if (!dirRoot) {
-											dirRoot = path.root;
+											dirRoot = location.root;
 										};
-									} else { //if (types._instanceof(path, files.Url))
-										if (path.protocol && (path.protocol !== 'file')) {
+									} else { //if (types._instanceof(location, files.Url))
+										if (location.protocol && (location.protocol !== 'file')) {
 											if (dontThrow) {
 												return null;
 											} else {
 												throw new types.ParseError("Bad url protocol.");
 											};
 										};
-										if (path.isWindows) {
+										if (location.isWindows) {
 											if (dir.length && ((this.os !== 'windows') || this.host || (dir[0][0] !== this.drive))) {
 												if (dontThrow) {
 													return null;
@@ -1331,7 +1330,7 @@ module.exports = {
 									data.allowTraverse = allowTraverse;
 
 									let thisFile = this.file;
-									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || path.file)) {
+									if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || location.file)) {
 										thisPath.push(thisFile);
 										thisFile = null;
 									};
@@ -1349,13 +1348,13 @@ module.exports = {
 										data.path = types.append([], thisPath, dirRoot, dir);
 									};
 									
-									data.file = types.get(options, 'file', path.file || thisFile);
+									data.file = types.get(options, 'file', location.file || thisFile);
 
 									data.extension = types.get(options, 'extension', null);
 
-									path = type.parse(null, data);
+									location = type.parse(null, data);
 
-									return path;
+									return location;
 								}),
 							
 							moveUp: root.DD_DOC(
@@ -3038,12 +3037,12 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 7,
+										revision: 8,
 										params: {
-											url: {
+											location: {
 												type: 'string,Url,Path',
 												optional: false,
-												description: "URL to combine with.",
+												description: "Url or Path to combine with.",
 											},
 											options: {
 												type: 'object',
@@ -3052,19 +3051,20 @@ module.exports = {
 											},
 										},
 										returns: 'Url',
-										description: "Combines URL with another URL, then returns the result.",
+										description: "Combines the Url with another Url or Path, then returns the result.",
 								}
 								//! END_REPLACE()
-								, function combine(url, /*optional*/options) {
+								, function combine(location, /*optional*/options) {
+									location = files.parseLocation(location, types.extend({isRelative: true}, options));
+
+									if (types.isNothing(location)) {
+										return this;
+									};
+
 									const type = types.getType(this);
 
 									const dontThrow = types.get(options, 'dontThrow', false);
 									
-									if (!types._instanceof(url, [files.Url, files.Path])) {
-										url = type.parse(url, options);
-										options = null;
-									};
-
 									const data = types.fill(__Internal__.urlAllKeys, {}, this);
 
 									const thisPath = this.path;
@@ -3076,35 +3076,35 @@ module.exports = {
 									
 									let pathRoot = null;
 
-									if (types._instanceof(url, files.Url)) {
-										if (url.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
+									if (types._instanceof(location, files.Url)) {
+										if (location.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
 											} else {
 												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										const domain = types.get(options, 'domain', url.domain);
+										const domain = types.get(options, 'domain', location.domain);
 										if (domain) {
-											data.protocol = types.get(options, 'protocol', url.protocol);
-											data.user = types.get(options, 'user', url.user);
-											data.password = types.get(options, 'password', url.password);
+											data.protocol = types.get(options, 'protocol', location.protocol);
+											data.user = types.get(options, 'user', location.user);
+											data.password = types.get(options, 'password', location.password);
 											data.domain = domain;
-											data.port = types.get(options, 'port', url.port);
+											data.port = types.get(options, 'port', location.port);
 										};
-										const anchor = types.get(options, 'anchor', url.anchor);
+										const anchor = types.get(options, 'anchor', location.anchor);
 										if (anchor) {
 											data.anchor = anchor;
 										};
-										const args = types.get(options, 'args', url.args);
+										const args = types.get(options, 'args', location.args);
 										if (args) {
 											data.args = this.args.combine(args, options);
 										};
-									} else { // if (types._instanceof(url, files.Path))
-										if (url.root) {
-											pathRoot = tools.trim(url.root, '');
+									} else { // if (types._instanceof(location, files.Path))
+										if (location.root) {
+											pathRoot = tools.trim(location.root, '');
 										};
-										if ((url.os === 'windows') && url.drive && (!this.isWindows || (url.drive !== thisPath[0]))) {
+										if ((location.os === 'windows') && location.drive && (!this.isWindows || (location.drive !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -3115,7 +3115,7 @@ module.exports = {
 
 									data.dontThrow = dontThrow;
 									
-									let path = types.get(options, 'path', url.path);
+									let path = types.get(options, 'path', location.path);
 									if (types.isString(path)) {
 										path = path.split('/');
 									};
@@ -3123,7 +3123,7 @@ module.exports = {
 										path = tools.trim(path, '');
 									};
 
-									let file = types.get(options, 'file', url.file);
+									let file = types.get(options, 'file', location.file);
 									if (types.isString(file)) {
 										file = file.split('/');
 									};
@@ -3134,7 +3134,7 @@ module.exports = {
 										file = tmp;
 									};
 
-									const isRelative = !types.get(options, 'domain', url.domain) && types.get(options, 'isRelative', url.isRelative);
+									const isRelative = !types.get(options, 'domain', location.domain) && types.get(options, 'isRelative', location.isRelative);
 									if (isRelative) {
 										data.path = types.append([], thisPath, pathRoot, path);
 									} else if ((pathRoot && pathRoot.length) || (path && path.length)) {
