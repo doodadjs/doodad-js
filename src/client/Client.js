@@ -1759,9 +1759,7 @@ module.exports = {
 					const Promise = types.getPromise();
 
 					return Promise.try(function tryExists() {
-						if (types.isString(url)) {
-							url = files.Url.parse(url);
-						};
+						url = files.parseUrl(url);
 
 						const type = types.get(options, 'type', null);
 
@@ -1813,7 +1811,7 @@ module.exports = {
 					
 
 				files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
-					throw new types.NotSupported("'readFile' not supported synchronously because the W3C has decided to disable it from 'fetch' and 'XHR'.");
+					throw new types.NotSupported("'readFile' is not supported synchronously because the W3C has decided to disable it from 'fetch' and 'XHR'.");
 				});
 
 				files.ADD('readFileAsync', root.DD_DOC(
@@ -1844,8 +1842,7 @@ module.exports = {
 					return Promise.try(function readFilePromise() {
 						options = types.nullObject(options);
 
-						url = files.parseUrl(url, options.parseOptions);
-						root.DD_ASSERT && root.DD_ASSERT(types._instanceof(url, files.Url), "Invalid url.");
+						url = files.parseUrl(url);
 
 						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
@@ -2065,7 +2062,7 @@ module.exports = {
 									optional: false,
 									description: "File Url.",
 								},
-								eventCallback: {
+								callbacks: {
 									type: 'arrayof(function),function',
 									optional: false,
 									description: "Callback functions.",
@@ -2080,7 +2077,37 @@ module.exports = {
 							description: "Not implemented.",
 				}
 				//! END_REPLACE()
-				, function watch(url, eventCallback, /*optional*/options) {
+				, function watch(url, callbacks, /*optional*/options) {
+					// Do nothing
+				}));
+
+				files.ADD('unwatch', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								url: {
+									type: 'string,Url,Blob,File',
+									optional: false,
+									description: "File Url.",
+								},
+								callbacks: {
+									type: 'arrayof(function),function',
+									optional: true,
+									description: "Callback functions.",
+								},
+								options: {
+									type: 'object',
+									optional: true,
+									description: "Callback options.",
+								},
+							},
+							returns: 'undefined',
+							description: "Not implemented.",
+				}
+				//! END_REPLACE()
+				, function unwatch(url, callbacks, /*optional*/options) {
 					// Do nothing
 				}));
 
