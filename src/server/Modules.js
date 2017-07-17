@@ -247,9 +247,7 @@ module.exports = {
 									});
 									tools.forEach(files, function(file) {
 										if (file && !file.isConfig) {
-											if (types.has(file.exports, 'add')) {
-												file.exports.add(DD_MODULES);
-											};
+											file.exports.add(DD_MODULES);
 										};
 									});
 								};
