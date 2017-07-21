@@ -110,9 +110,9 @@ module.exports = {
 							if (!path || path.isRelative) {
 								location = tools.getCurrentLocation()
 									.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
-									.set({file: null})
+									.set({file: ''})
 									.combine(types.get(options, 'modulesUri', __options__.modulesUri))
-									.combine(files.Path.parse(module))
+									.combine(module)
 									.pushFile();
 								if (path) {
 									location = location
@@ -120,6 +120,10 @@ module.exports = {
 								};
 							} else {
 								location = path;
+								if (location) {
+									location = location
+										.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
+								};
 							};
 							if (location.file) {
 								if (!root.getOptions().debug) {
