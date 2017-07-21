@@ -407,7 +407,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 7,
+											revision: 8,
 											params: {
 												path: {
 													type: 'string,array',
@@ -829,48 +829,44 @@ module.exports = {
 										};
 									};
 
-									let trailingFile = false;
+									let trailingSlash = false;
 
-									if (path && path.length && types.isNothing(file)) {
-										// Last item, when not empty, is the file name
-										if (path[path.length - 1]) {
-											const tmp = path.pop();
-											// Auto-set
+									if (types.isNothing(file) && path && path.length) {
+										// Auto-detect
+										const tmp = path[path.length - 1];
+										if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
+											file = [];
+											trailingSlash = true;
+										} else {
+											path.pop();
 											file = [tmp];
-											if (tmp === '') {
-												trailingFile = true;
-											};
 										};
-									};
-
-									if ((!file || !file.length) && path && path.length) {
-										const trailing = path[path.length - 1];
-										if (!trailing) {
-											file = [trailing];
-											trailingFile = true;
+									} else if (file && file.length) {
+										const tmp = file[file.length - 1];
+										if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
+											trailingSlash = true;
 										};
-									} else if (file && (file.length > 0)) {
-										if (file.length > 1) {
-											file = tools.trim(file, '');
-										} else if (file[0] === '') {
-											trailingFile = true;
-										};
+									} else if (path && path.length) {
+										file = [];
+										trailingSlash = true;
 									};
 
 									if (types.isNothing(isRelative)) {
 										// Auto-detect
-										isRelative = ((!dirRoot || !dirRoot.length || !!dirRoot[0].length) && (!path || !path.length || !!path[0].length)) ||
-													!!(tools.findItems(path, ['.', '..']).length) || 
-													!!(tools.findItems(file, ['.', '..']).length);
+										isRelative = ((!dirRoot || !dirRoot.length || !!dirRoot[0].length) && (!path || !path.length || !!path[0].length));
 									};
 									
 									if (path) {
 										path = tools.trim(path, '');
 									};
 
+									if (file) {
+										file = tools.trim(file, '');
+									};
+
 									if (!isRelative) {
 										// Resolve file
-										if (file && !trailingFile) {
+										if (file) {
 											// File can traverse path but not root.
 											const abs = __Internal__.relativeToAbsolute(file, path || [], {
 												dirChar: dirChar,
@@ -1015,13 +1011,12 @@ module.exports = {
 										};
 									};
 									
-									if (file && (file.length > 0)) {
-										if (file.length === 1) {
+									if (file) {
+										if (trailingSlash || !file.length) {
+											file = '';
+										} else if (file.length === 1) {
 											file = file[0];
 										} else {
-											//const tmp = file[file.length - 1];
-											//path = types.append([], path, file.slice(0, file.length - 1));
-											//file = tmp;
 											if (dontThrow) {
 												return null;
 											} else {
@@ -1237,7 +1232,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 11,
+											revision: 12,
 											params: {
 												location: {
 													type: 'string,Path,Url',
@@ -1255,7 +1250,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(/*optional*/location, /*optional*/options) {
-									location = files.parseLocation(location, types.extend({isRelative: true}, options));
+									//options = types.extend({isRelative: true}, options);
+
+									location = files.parseLocation(location, options);
 									
 									if (types.isNothing(location)) {
 										return this;
@@ -1289,9 +1286,11 @@ module.exports = {
 										dir = tools.trim(dir, '');
 									};
 
+									let isRelative = false;
 									if (types._instanceof(location, files.Path)) {
-										const drive = types.get(options, 'drive', location.drive);
 										const host = types.get(options, 'host', location.host);
+										const drive = types.get(options, 'drive', location.drive);
+										isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
 										if ((location.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
 											if (dontThrow) {
 												return null;
@@ -1303,6 +1302,7 @@ module.exports = {
 											dirRoot = location.root;
 										};
 									} else { //if (types._instanceof(location, files.Url))
+										isRelative = !types.get(options, 'domain', location.domain) && types.get(options, 'isRelative', location.isRelative);
 										if (location.protocol && (location.protocol !== 'file')) {
 											if (dontThrow) {
 												return null;
@@ -1337,15 +1337,18 @@ module.exports = {
 
 									if (types.isNothing(includePathInRoot)) {
 										// Auto-detect
-										includePathInRoot = !thisRoot || !thisRoot.length;
+										includePathInRoot = !isRelative && (!thisRoot || !thisRoot.length);
 									};
 
 									if (includePathInRoot) {
 										data.root = types.append([], thisRoot, thisPath);
 										data.path = types.append([], dirRoot, dir);
-									} else {
+									} else if (isRelative) {
 										data.root = thisRoot;
 										data.path = types.append([], thisPath, dirRoot, dir);
+									} else {
+										data.root = thisRoot;
+										data.path = types.append([], dirRoot, dir);
 									};
 									
 									data.file = types.get(options, 'file', location.file || thisFile);
@@ -1408,18 +1411,39 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 3,
+											revision: 4,
 											params: null,
 											returns: 'Path',
 											description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
 								}
 								//! END_REPLACE()
 								, function pushFile() {
-									const type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file, ''])}));
+										return this.set({file: '', path: types.append([], this.path, [this.file])});
 									} else {
-										return type.parse(this);
+										return this;
+									};
+								}),
+							
+							popFile: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: null,
+											returns: 'Path',
+											description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
+								}
+								//! END_REPLACE()
+								, function popFile() {
+									if (this.file) {
+										return this;
+									} else if (this.path && this.path.length) {
+										const newPath = types.append([], this.path);
+										const newFile = newPath.pop();
+										return this.set({file: newFile, path: newPath});
+									} else {
+										return null;
 									};
 								}),
 							
@@ -2283,7 +2307,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 7,
+										revision: 8,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2310,12 +2334,11 @@ module.exports = {
 									};
 									
 									// Flags
-									const dontThrow = types.get(options, 'dontThrow', false),
-										urlIsArray = types.isArray(url);
+									const dontThrow = types.get(options, 'dontThrow', false);
 
 									let path = null; // Default is Auto-detect
 									
-									if (urlIsArray) {
+									if (types.isArray(url)) {
 										path = url;
 										url = null;
 										
@@ -2554,106 +2577,100 @@ module.exports = {
 										anchor = __Internal__.decodeURIComponent(anchor);
 									};
 									
-									if (urlIsArray) {
-										path = types.append([], path);
-
-										if (path[path.length - 1]) {
-											const tmp = path.pop();
-											if (!types.isNothing(tmp)) {
-												// Auto-set
-												file = [tmp];
-											};
+									if (types.isNothing(path)) {
+										path = [];
+									} else if (types.isString(path)) {
+										if (!noEscapes) {
+											path = __Internal__.decodeURIComponent(path);
 										};
-										
-									} else {
-										if (types.isNothing(path)) {
+										if (path) {
+											path = path.split('/');
+										} else {
 											path = [];
-										} else {
-											if (types.isString(path)) {
-												if (!noEscapes) {
-													path = __Internal__.decodeURIComponent(path);
-												};
-												if (path.length) {
-													path = path.split('/');
-												} else {
-													path = [];
-												};
-											} else { // isArray
-												if (noEscapes) {
-													path = types.append([], path);
-												} else {
-													path = tools.map(path, __Internal__.decodeURIComponent);
-												};
-											};
 										};
-										
-										if (types.isNothing(file)) {
-											file = null;
-											extension = null;
+									} else { // isArray
+										if (noEscapes) {
+											//path = types.append([], path);
 										} else {
-											if (types.isString(file)) {
-												if (!noEscapes) {
-													file = __Internal__.decodeURIComponent(file);
-												};
-												file = file.split('/');
-											} else { // isArray
-												if (noEscapes) {
-													file = types.append([], file);
-												} else {
-													file = tools.map(file, __Internal__.decodeURIComponent);
-												};
-											};
+											path = tools.map(path, __Internal__.decodeURIComponent);
 										};
+									};
+
+									if (types.isNothing(file)) {
+										file = null;
+										extension = null;
+									} else if (types.isString(file)) {
+										if (!noEscapes) {
+											file = __Internal__.decodeURIComponent(file);
+										};
+										file = file.split('/');
+									} else { // isArray
+										if (noEscapes) {
+											file = types.append([], file);
+										} else {
+											file = tools.map(file, __Internal__.decodeURIComponent);
+										};
+									};
+
+									let trailingSlash = false;
+
+									if (types.isNothing(file) && path && path.length) {
+										// Auto-detect
+										const tmp = path[path.length - 1];
+										if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
+											file = [];
+											trailingSlash = true;
+										} else {
+											path.pop();
+											file = [tmp];
+										};
+									} else if (file && file.length) {
+										const tmp = file[file.length - 1];
+										if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
+											trailingSlash = true;
+										};
+									} else if (path && path.length) {
+										file = [];
+										trailingSlash = true;
 									};
 
 									if (types.isNothing(isRelative)) {
 										// Auto-detect
-										isRelative = (!path || !path.length || !!path[0].length) ||
-													!!(tools.findItems(path, ['.', '..']).length) || 
-													!!(tools.findItems(file, ['.', '..']).length)
+										isRelative = !path || !path.length || !!path[0].length;
 									};
 									
-									let trailingFile = false;
-									if ((!file || !file.length) && path && path.length) {
-										const trailing = path[path.length - 1];
-										if (!trailing) {
-											file = [trailing];
-											trailingFile = true;
-										};
-									} else if (file && (file.length > 0)) {
-										if (file.length > 1) {
-											file = tools.trim(file, '');
-										} else if (file[0] === '') {
-											trailingFile = true;
-										};
-									};
-
 									if (path) {
 										path = tools.trim(path, '');
 									};
 
-									if (!isRelative) {
-										if (path) {
-											const abs = __Internal__.relativeToAbsolute(path, null, {
-												dirChar: '/',
-												dontThrow: dontThrow,
-											});
-											if (!abs) {
-												return null;
-											};
-											path = abs.path;
-										};
+									if (file) {
+										file = tools.trim(file, '');
+									};
 
-										if (file && !trailingFile) {
+									if (!isRelative) {
+										if (file) {
 											const abs = __Internal__.relativeToAbsolute(file, path || [], {
 												dirChar: '/',
 												dontThrow: dontThrow,
+												trailing: false,
 											});
 											if (!abs) {
 												return null;
 											};
 											path = abs.dirRoot;
 											file = abs.path;
+										};
+
+										if (path) {
+											const abs = __Internal__.relativeToAbsolute(path, [], {
+												dirChar: '/',
+												dontThrow: dontThrow,
+												trailing: false,
+											});
+											if (!abs) {
+												return null;
+											};
+											path = abs.path;
 										};
 									};
 									
@@ -2682,8 +2699,10 @@ module.exports = {
 										};
 									};
 											
-									if (file && (file.length > 0)) {
-										if (file.length === 1) {
+									if (file) {
+										if (trailingSlash || !file.length) {
+											file = '';
+										} else if (file.length === 1) {
 											file = file[0];
 										} else {
 											if (dontThrow) {
@@ -3037,7 +3056,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 8,
+										revision: 9,
 										params: {
 											location: {
 												type: 'string,Url,Path',
@@ -3055,7 +3074,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(location, /*optional*/options) {
-									location = files.parseLocation(location, types.extend({isRelative: true}, options));
+									//options = types.extend({isRelative: true}, options);
+
+									location = files.parseLocation(location, options);
 
 									if (types.isNothing(location)) {
 										return this;
@@ -3076,7 +3097,10 @@ module.exports = {
 									
 									let pathRoot = null;
 
+									let isRelative = false;
 									if (types._instanceof(location, files.Url)) {
+										const domain = types.get(options, 'domain', location.domain);
+										isRelative = !domain && types.get(options, 'isRelative', location.isRelative);
 										if (location.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
@@ -3084,7 +3108,6 @@ module.exports = {
 												throw new types.ParseError("Drive mismatch.");
 											};
 										};
-										const domain = types.get(options, 'domain', location.domain);
 										if (domain) {
 											data.protocol = types.get(options, 'protocol', location.protocol);
 											data.user = types.get(options, 'user', location.user);
@@ -3101,10 +3124,13 @@ module.exports = {
 											data.args = this.args.combine(args, options);
 										};
 									} else { // if (types._instanceof(location, files.Path))
+										const host = types.get(options, 'host', location.host);
+										const drive = types.get(options, 'drive', location.drive);
+										isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
 										if (location.root) {
 											pathRoot = tools.trim(location.root, '');
 										};
-										if ((location.os === 'windows') && location.drive && (!this.isWindows || (location.drive !== thisPath[0]))) {
+										if ((location.os === 'windows') && drive && (!this.isWindows || (drive !== thisPath[0]))) {
 											if (dontThrow) {
 												return null;
 											} else {
@@ -3134,7 +3160,6 @@ module.exports = {
 										file = tmp;
 									};
 
-									const isRelative = !types.get(options, 'domain', location.domain) && types.get(options, 'isRelative', location.isRelative);
 									if (isRelative) {
 										data.path = types.append([], thisPath, pathRoot, path);
 									} else if ((pathRoot && pathRoot.length) || (path && path.length)) {
@@ -3204,21 +3229,42 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 											author: "Claude Petit",
-											revision: 2,
+											revision: 3,
 											params: null,
 											returns: 'Url',
 											description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
 								}
 								//! END_REPLACE()
 								, function pushFile() {
-									const type = types.getType(this);
 									if (this.file) {
-										return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {file: null, extension: null, path: types.append([], this.path, [this.file, ''])}));
+										return this.set({file: '', path: types.append([], this.path, [this.file])});
 									} else {
-										return type.parse(this);
+										return this;
 									};
 								}),
 								
+							popFile: root.DD_DOC(
+								//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+											author: "Claude Petit",
+											revision: 0,
+											params: null,
+											returns: 'Path',
+											description: "Excludes file from the path and returns a new Url object. Will returns 'null' when there is no file that can be extracted from the url.",
+								}
+								//! END_REPLACE()
+								, function popFile() {
+									if (this.file) {
+										return this;
+									} else if (this.path && this.path.length) {
+										const newPath = types.append([], this.path);
+										const newFile = newPath.pop();
+										return this.set({file: newFile, path: newPath});
+									} else {
+										return null;
+									};
+								}),
+							
 							toArray: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
