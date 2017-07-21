@@ -262,9 +262,10 @@ module.exports = {
 								if (!deps) {
 									spec.dependencies = deps = [];
 								};
-								if (tools.indexOf(deps, baseName) < 0) {
-									deps.push(baseName);
-								};
+								deps.push({
+									name: baseName,
+									autoLoad: false,
+								});
 							};
 							const missingDeps = [];
 							if (deps) {
@@ -273,11 +274,13 @@ module.exports = {
 										let dep = deps[i],
 											optional = false,
 											version = null,
-											path = null;
+											path = null,
+											autoLoad = true;
 										if (!types.isString(dep)) {
 											path = types.get(dep, 'path', null);
 											optional = types.toBoolean(types.get(dep, 'optional', false));
 											version = types.get(dep, 'version', null);
+											autoLoad = types.get(dep, 'autoLoad', true);
 											dep = dep.name;
 										};
 										let depEntry = __Internal__.DD_REGISTRY.get(dep),
@@ -297,6 +300,7 @@ module.exports = {
 													path: path,
 													consumer: spec.name,
 													versionMismatch: versionMismatch,
+													autoLoad: autoLoad,
 												};
 												if (versionMismatch) {
 													return [missingDep];

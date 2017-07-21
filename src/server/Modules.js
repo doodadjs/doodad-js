@@ -195,7 +195,10 @@ module.exports = {
 									throw err;
 								};
 								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
-								return modules.load(err.missingDeps, newOptions)
+								const missingDeps = tools.filter(err.missingDeps, function(dep) {
+									return dep.autoLoad;
+								});
+								return modules.load(missingDeps, newOptions)
 									.then(function(dummy) {
 										return namespaces.load(err.modules, newOptions)
 											.catch(types.MissingDependencies, trapMissingDeps);
