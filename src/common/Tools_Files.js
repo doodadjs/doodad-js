@@ -84,9 +84,8 @@ module.exports = {
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
 					if (!types.isNothing(url)) {
 						if (!types._instanceof(url, files.Url)) {
-							options = types.extend({
-								noEscapes: true,
-							}, options);
+							//options = types.extend({
+							//}, options);
 							url = files.Url.parse(url, options);
 						};
 						if (types.get(options, 'noEscapes', false)) {
@@ -111,10 +110,11 @@ module.exports = {
 
 							path = files.Path.parse(path, options);
 						};
-						if (types.get(options, 'os', null) || types.get(options, 'dirChar', null)) {
+						if (types.get(options, 'os', null) || types.get(options, 'dirChar', null) || types.get(options, 'noEscapes', false)) {
 							return path.set({
 									os: null, // switch to default
 									dirChar: null, // switch to default
+									noEscapes: false, // switch to default
 								});
 						} else {
 							return path;
