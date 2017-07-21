@@ -288,7 +288,7 @@ module.exports = {
 										type: 'Package',
 										version: manifest.version + (manifest.stage || 'd'),
 										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
-											return dep.server && !dep.manual && !dep.test;
+											return dep.server && !dep.test;
 										}),
 										
 										create: function create(root, /*optional*/_options, _shared) {
@@ -299,7 +299,7 @@ module.exports = {
 												fromSource = root.getOptions().fromSource;
 											
 											let files = tools.filter(makeManifest.modules, function(mod) {
-												return mod.server && !mod.manual && !mod.test;
+												return mod.server && !mod.exclude && !mod.test;
 											});
 
 											files = tools.map(files, function(file) {
