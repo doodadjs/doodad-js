@@ -1,5 +1,3 @@
-(function() {
-
 //! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
 // File: package.js - Module startup file (client-side)
@@ -23,11 +21,10 @@
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
 //! END_REPLACE()
+(function() {
+	const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
+	const DD_MODULES = {};
 
-const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
-const DD_MODULES = {};
-
-//! IF_SET('debug')
 	(function() {
 		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
@@ -40,24 +37,25 @@ const DD_MODULES = {};
 			DD_OPTIONS['Doodad.Tools'] = {};
 		};
 
-		// Debug mode
-		DD_OPTIONS.startup.debug = true;
+		// Can't load modules from source on the client
+		DD_OPTIONS.startup.fromSource = false;
 
-		// Will load modules from source
-		DD_OPTIONS.startup.fromSource = true;
+		//! IF_SET('debug')
+			// Debug mode
+			DD_OPTIONS.startup.debug = true;
 
-		// Enable some validations on debug
-		DD_OPTIONS.startup.enableAsserts = true;
-		DD_OPTIONS.startup.enableProperties = true;
+			// Enable some validations on debug
+			DD_OPTIONS.startup.enableAsserts = true;
+			DD_OPTIONS.startup.enableProperties = true;
 
-		// Ease debug
-		DD_OPTIONS.startup.enableSymbols = false;
+			// Ease debug
+			DD_OPTIONS.startup.enableSymbols = false;
 
-		// Enable all log levels
-		DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+			// Enable all log levels
+			DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+		//! END_IF()
 	})();
-//! END_IF()
 
-//! INCLUDE(VAR("bundle"), 'utf-8', true)
+	//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
 })();

@@ -3001,10 +3001,12 @@
 		};
 
 		const __options__ = types.depthExtend(15, {
-			//! IF(IS_SET('debug'))
-				// Starting from source code...
-				debug: true,					// When 'true', will be in 'debug mode'.
+			//! BEGIN_REMOVE()
 				fromSource: true,				// When 'true', loads source code instead of built code
+			//! END_REMOVE()
+
+			//! IF(IS_SET('debug'))
+				debug: true,					// When 'true', will be in 'debug mode'.
 				enableProperties: true,			// When 'true', enables "defineProperty"
 				enableAsserts: true,			// When 'true', enables asserts.
 			//! END_IF()
