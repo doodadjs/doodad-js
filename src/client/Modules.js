@@ -251,11 +251,15 @@ module.exports = {
 								const missingDeps = tools.filter(err.missingDeps, function(dep) {
 									return dep.autoLoad;
 								});
-								return modules.load(missingDeps, newOptions)
-									.then(function(dummy) {
-										return namespaces.load(err.modules, newOptions)
-											.catch(types.MissingDependencies, trapMissingDeps);
-									});
+								if (missingDeps.length) {
+									return modules.load(missingDeps, newOptions)
+										.then(function(dummy) {
+											return namespaces.load(err.modules, newOptions)
+												.catch(types.MissingDependencies, trapMissingDeps);
+										});
+								} else {
+									throw err;
+								};
 							};
 
 						if (root.getOptions().debug) {
