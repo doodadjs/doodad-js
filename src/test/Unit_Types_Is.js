@@ -328,9 +328,9 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/"' '");
 					command.run(false, {eval: true, repetitions: 100},        /**/"'a'");
 					command.run(false, {eval: true, repetitions: 100},        /**/"'1'");
-					command.run(false, {eval: true, repetitions: 100},        /**/"0");
-					command.run(false, {eval: true, repetitions: 100},        /**/"1");
-					command.run(true, {eval: true, repetitions: 100},        /**/ "0.1");
+					command.run(true,  {eval: true, repetitions: 100},        /**/"0");
+					command.run(true,  {eval: true, repetitions: 100},        /**/"1");
+					command.run(true,  {eval: true, repetitions: 100},        /**/ "0.1");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "true");
@@ -343,8 +343,8 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/"new String(' ')");
 					command.run(false, {eval: true, repetitions: 100},        /**/"new String('a')");
 					command.run(false, {eval: true, repetitions: 100},        /**/"new String('1')");
-					command.run(false, {eval: true, repetitions: 100},        /**/"new Number(0)");
-					command.run(false, {eval: true, repetitions: 100},        /**/"new Number(1)");
+					command.run(true,  {eval: true, repetitions: 100},        /**/"new Number(0)");
+					command.run(true,  {eval: true, repetitions: 100},        /**/"new Number(1)");
 					command.run(true, {eval: true, repetitions: 100},        /**/ "new Number(0.1)");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
 					command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
@@ -357,7 +357,7 @@ module.exports = {
 					command.run(false, {eval: true, repetitions: 100},        /**/"Object");
 					global.document && command.run(false, {eval: true, repetitions: 100},        /**/"document.body");
 					command.run(false, {eval: true, repetitions: 100},        /**/"a");
-					command.run(false, {eval: true, repetitions: 100},        /**/"b");
+					command.run(true,  {eval: true, repetitions: 100},        /**/"b");
 					command.run(false, {eval: true, repetitions: 100},        /**/"c");
 					global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 					command.end();

@@ -706,21 +706,23 @@
 			// "concat"
 			arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
 
-			// "isInteger"
-			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
-
 			// "trim"
 			stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
 
 			// "depthExtend"
 			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
 			
+			// "isInteger", "isSafeInteger", "toInteger", "toFloat"
+			mathFloor: global.Math.floor,
+			mathAbs: global.Math.abs,
+
+			// "isInteger"
+			numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
+
 			// "isSafeInteger"
 			numberIsSafeInteger: (types.isNativeFunction(global.Number.isSafeInteger) ? global.Number.isSafeInteger : undefined),
 
-			// "isSafeInteger", "toInteger", "toFloat"
-			mathFloor: global.Math.floor,
-			mathAbs: global.Math.abs,
+			// "toFloat"
 			mathPow: global.Math.pow,
 			
 			// "sealObject"
@@ -1019,7 +1021,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1032,22 +1034,21 @@
 			}
 			//! END_REPLACE()
 			, function toInteger(obj) {
-				// Source: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-				const number = _shared.Natives.windowNumber(obj);
-				if (types.isNaN(number)) {
+				obj = _shared.Natives.windowNumber(obj);
+				if ((obj === 0) || types.isNaN(obj)) {
 					return 0;
 				};
-				if ((number === 0) || !types.isFinite(number)) {
-					return number;
+				if (!types.isFinite(obj)) {
+					return obj;
 				};
-				return (number > 0 ? 1 : -1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(number));
+				return (obj < 0 ? -1 : 1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj));
 			}));
 		
 		__Internal__.ADD('toFloat', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							obj: {
 								type: 'any',
@@ -1065,15 +1066,15 @@
 			}
 			//! END_REPLACE()
 			, function toFloat(obj, /*optional*/precision) {
-				let number = _shared.Natives.windowNumber(obj);
-				if (types.isNaN(number)) {
+				obj = _shared.Natives.windowNumber(obj);
+				if ((obj === 0.0) || types.isNaN(obj) || !types.isFinite(obj)) {
 					return 0.0;
 				} else {
 					if (!types.isNothing(precision)) {
 						precision = _shared.Natives.mathPow(10, precision);
-						number = _shared.Natives.mathFloor(number * precision) / precision;
+						obj = ((obj < 0.0 ? -1.0 : 1.0) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj) * precision)) / precision;
 					};
-					return number;
+					return obj;
 				};
 			}));
 		
@@ -1237,7 +1238,7 @@
 							},
 						},
 						returns: 'bool',
-						description: "Returns 'true' if object is a number (integer or float). Returns 'false' otherwise.",
+						description: "Returns 'true' if object is a number. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isNumber(obj) {
@@ -1267,7 +1268,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							obj: {
 								type: 'any',
@@ -1310,7 +1311,8 @@
 					if (!types.isFinite(obj)) {
 						return false;
 					};
-					return (obj === _shared.Natives.mathFloor(obj));
+					const abs = _shared.Natives.mathAbs(obj);
+					return (abs === _shared.Natives.mathFloor(abs));
 				};
 			}));
 		
@@ -1318,7 +1320,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1358,6 +1360,15 @@
 					// <PRB> "Number.isSafeInteger(Object(1)) === false", but "Object(1) instanceof Number === true" !!!
 					return _shared.Natives.numberIsSafeInteger(obj);
 				} else {
+					if (!types.isFinite(obj)) {
+						// Not a finite number
+						return false;
+					};
+					const abs = _shared.Natives.mathAbs(obj);
+					if (abs !== _shared.Natives.mathFloor(abs)) {
+						// Not an integer
+						return false;
+					};
 					return (obj >= _shared.Natives.numberMinSafeInteger) && (obj <= _shared.Natives.numberMaxSafeInteger);
 				};
 			}));
@@ -1496,7 +1507,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -1535,7 +1546,7 @@
 				if (!types.isFinite(obj)) {
 					return false;
 				};
-				return (obj !== (obj | 0));
+				return true;
 			})),
 		
 		// <PRB> JS has no function to test for booleans
@@ -1715,7 +1726,7 @@
 				if (_shared.Natives.numberIsNaN) {
 					return _shared.Natives.numberIsNaN(obj);
 				} else {
-					// Explanation: NaN is the only object not equal to itself.
+					// Explanation: NaN is the only value not equal to itself.
 					return (obj !== obj); // NaN
 				};
 			}));
