@@ -2307,7 +2307,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 8,
+										revision: 9,
 										params: {
 											url: {
 												type: 'string,Url,Path',
@@ -2477,46 +2477,30 @@ module.exports = {
 											};
 										};
 
-										// Auto-detect "args" and "anchor"
-										let posArgs = tools.search(url, '?', 0, null, '#');
-										const posAnchor = tools.search(url, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
-										if ((posArgs >= 0) && types.isNothing(args)) {
-											args = url.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor: undefined));
-										};
-										if ((posAnchor >= 0) && types.isNothing(anchor)) {
-											anchor = url.slice(posAnchor + 1);
-										};
-										if (posArgs < 0) {
-											posArgs = posAnchor;
-										};
-										if (posArgs >= 0) {
-											url = url.slice(0, posArgs);
-										};
-
 										// Auto-detect "path" and "file"
-										const posUrl = url.lastIndexOf('/');
-										if (posUrl >= 0) {
+										const posFile = url.lastIndexOf('/');
+										if (posFile >= 0) {
 											if (types.isNothing(file)) {
-												file = url.slice(posUrl + 1) || null;
-												if (types.isNothing(path)) {
-													path = url.slice(0, posUrl + 1);
-												};
-											} else {
-												if (types.isNothing(path)) {
-													path = url;
-												};
+												file = url.slice(posFile + 1) || null;
+											};
+											if (types.isNothing(path)) {
+												path = url.slice(0, posFile + 1);
 											};
 										} else {
 											if (types.isNothing(file)) {
 												file = url || null;
-												if (types.isNothing(path)) {
-													path = '';
-												};
-											} else {
-												path = url;
+											};
+											if (types.isNothing(path)) {
+												path = [];
 											};
 										};
-										
+
+									} else if (types.isArray(path)) {
+										// Auto-detect "file"
+										if (types.isNothing(file)) {
+											file = path.slice(-1)[0] || null;
+											path = path.slice(0, -1);
+										};
 									};
 									
 									if (!noEscapes) {
@@ -2556,7 +2540,25 @@ module.exports = {
 											};
 										};
 									};
-									
+
+									if (!types.isNothing(file)) {
+										// Auto-detect "args" and "anchor"
+										let posArgs = tools.search(file, '?', 0, null, '#');
+										const posAnchor = tools.search(file, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
+										if ((posArgs >= 0) && types.isNothing(args)) {
+											args = file.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor: undefined));
+										};
+										if ((posAnchor >= 0) && types.isNothing(anchor)) {
+											anchor = file.slice(posAnchor + 1);
+										};
+										if (posArgs < 0) {
+											posArgs = posAnchor;
+										};
+										if (posArgs >= 0) {
+											file = file.slice(0, posArgs) || null;
+										};
+									};
+
 									if (types._instanceof(args, files.UrlArguments)) {
 										args = (args.toString({noEscapes: noEscapes}) || null);
 									};
@@ -2902,7 +2904,7 @@ module.exports = {
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											options: {
 												type: 'object',
@@ -2972,7 +2974,11 @@ module.exports = {
 									};
 									
 									if (options.path && options.path.length) {
-										let path = '/' + tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
+										let path = '';
+										if (!types.isNothing(options.domain) || !options.isRelative || options.isWindows) {
+											path += '/';
+										};
+										path += tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
 										if (path.length > 1) {
 											path += '/';
 										};
@@ -2986,7 +2992,7 @@ module.exports = {
 									};
 
 									if (!types.isNothing(options.file)) {
-										if (!options.path || !options.path.length) {
+										if ((!options.path || !options.path.length) && (!types.isNothing(options.domain) || !options.isRelative)) {
 											result += '/';
 										};
 										result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
@@ -3388,6 +3394,7 @@ module.exports = {
 									if (!types._instanceof(to, files.Url)) {
 										to = type.parse(to, options);
 									};
+
 									if (to.isRelative) {
 										throw new types.ParseError("Target must be an absolute url.");
 									};
@@ -3410,8 +3417,8 @@ module.exports = {
 								
 									const caseSensitive = types.get(options, 'caseSensitive', false);
 
-									const thisAr = this.toArray({trim: true}),
-										toAr = to.toArray({trim: true});
+									const thisAr = this.toArray({trim: true, domain: null}),
+										toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
 								
 									const pathAr = [];
 
@@ -3443,7 +3450,7 @@ module.exports = {
 										pathAr.push(thisAr[j]);
 									};
 								
-									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
+									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true, isWindows: false}));
 								},
 
 							toDataObject: root.DD_DOC(
