@@ -83,8 +83,7 @@ module.exports = {
 					createDicts();
 					
 
-					let command,
-						task;
+					let command;
 
 					
 					command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
@@ -420,9 +419,9 @@ module.exports = {
 					
 					command.run(undefined,   {eval: true}     /**/ );
 					command.run(undefined,   {eval: true},    /**/ "undefined", "'a'");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1");
+					command.run(undefined,   {eval: true},    /**/ "dict1");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict1", "'a'", "2");
@@ -430,13 +429,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'c'", "4");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7");
+					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11");
-						task = command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12");
+						command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "2");
@@ -444,13 +443,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'c'", "4");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'d'", "5");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6");
-					task = command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7");
+					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "11");
-						task = command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12");
+						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "2");
@@ -458,13 +457,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'c'", "4");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'d'", "5");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6");
-					task = command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7");
+					command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "11");
-						task = command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12");
+						command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12");
 					};
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
@@ -472,13 +471,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'c'", "4", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6", "true");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "true");
+					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "true");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11", "true");
-						task = command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "true");
+						command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
@@ -486,13 +485,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict2", "'c'", "4", "true");
 					command.run(5,           {eval: true},    /**/ "dict2", "'d'", "5", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6", "true");
-					task = command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "true");
+					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "true");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11", "true");
-						task = command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "true");
+						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
@@ -500,13 +499,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict3", "'c'", "4", "true");
 					command.run(5,           {eval: true},    /**/ "dict3", "'d'", "5", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
-					task = command.run(7, {eval: true},    /**/ "dict3", "'f'", "7", "true");
+					command.run(7, {eval: true},    /**/ "dict3", "'f'", "7", "true");
 					if (global.symbol1) {
 						command.run(11,           {eval: true},    /**/ "dict3", "symbol1", "11", "true");
-						task = command.run(12, {eval: true},    /**/ "dict3", "symbol2", "12", "true");
+						command.run(12, {eval: true},    /**/ "dict3", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict1", "'a'", "2", "false");
@@ -514,13 +513,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'c'", "4", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "5", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "6", "false");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "false");
+					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "7", "false");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict1", "symbol1", "11", "false");
-						task = command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "false");
+						command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "12", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "2", "false");
@@ -528,13 +527,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'c'", "4", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'d'", "5", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "6", "false");
-					task = command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "false");
+					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "7", "false");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "11", "false");
-						task = command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "false");
+						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "12", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "2", "false");
@@ -542,14 +541,14 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'c'", "4", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'d'", "5", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'e'", "6", "false");
-					task = command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
+					command.run(7,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "11", "false");
-						task = command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
+						command.run(12,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
 					};
 					
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
@@ -560,78 +559,78 @@ module.exports = {
 					command.run("{}",                                   {eval: true},    /**/ "undefined", "'a'");
 					command.run("{}",                                   {eval: true},    /**/ "dict1");
 					
-					task = command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
+					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
 					
 					if (global.symbol1) {
-						task.chain(function(dummy) {
+						command.chain(function(dummy) {
 							createDicts();
 						});
-						task = command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}");
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{}",                                   {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
+					command.run("{}",                                   {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{e: 6, f: 7}",                         {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
+					command.run("{e: 6, f: 7}",                         {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
+					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
 					
 					if (global.symbol1) {
-						task.chain(function(dummy) {
+						command.chain(function(dummy) {
 							createDicts();
 						});
-						task = command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{a: 2, b: 3, c: 4, d: 5}",             {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
+					command.run("{a: 2, b: 3, c: 4, d: 5}",             {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
 					
 					if (global.symbol1) {
-						task.chain(function(dummy) {
+						command.chain(function(dummy) {
 							createDicts();
 						});
-						task = command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+						command.run("{a: 2, b: 3, [symbol1]: 11}",          {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
+					command.run("{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "true");
 					
 					if (global.symbol1) {
-						task.chain(function(dummy) {
+						command.chain(function(dummy) {
 							createDicts();
 						});
-						task = command.run("{a: 2, b: 3, c: 4, d: 5, [symbol1]: 11}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
+						command.run("{a: 2, b: 3, c: 4, d: 5, [symbol1]: 11}",  {eval: true, note: "May fail under engines not supporting variables in object declaration."},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, [symbol1]: 11, [symbol2]: 12}", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
+					command.run("{a: 2, b: 3}",                         {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{}",                                   {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
+					command.run("{}",                                   {eval: true},    /**/ "dict2", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{e: 6, f: 7}",                         {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
+					command.run("{e: 6, f: 7}",                         {eval: true},    /**/ "dict3", "{a: 2, b: 3, c: 4, d: 5, e: 6, f: 7}", "false");
 					
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 
@@ -648,13 +647,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "true");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "true");
+					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "true");
-						task = command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "true");
+						command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "true");
@@ -663,13 +662,13 @@ module.exports = {
 					command.run(5,           {eval: true},    /**/ "dict1", "'d'", "5", "true");
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "true");
-					task = command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "true");
+					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "true");
-						task = command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "true");
+						command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "undefined", "false");
@@ -678,13 +677,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'d'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict1", "'f'", "undefined", "false");
-					task = command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "false");
+					command.run(undefined,   {eval: true},    /**/ "dict1", "'toString'", "undefined", "false");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "undefined", "false");
-						task = command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "false");
+						command.run(undefined,   {eval: true},    /**/ "dict1", "symbol2", "undefined", "false");
 					};
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict1", "'a'", "2", "false");
@@ -693,13 +692,13 @@ module.exports = {
 					command.run(5,           {eval: true},    /**/ "dict1", "'d'", "5", "false");
 					command.run(6,           {eval: true},    /**/ "dict1", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict1", "'f'", "7", "false");
-					task = command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "false");
+					command.run(8,           {eval: true},    /**/ "dict1", "'toString'", "8", "false");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict1", "symbol1", "11", "false");
-						task = command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "false");
+						command.run(12,          {eval: true},    /**/ "dict1", "symbol2", "12", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "undefined", "true");
@@ -708,13 +707,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict2", "'d'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "true");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "true");
-					task = command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "true");
+					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "undefined", "true");
-						task = command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "true");
+						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict2", "'a'", "2", "true");
@@ -723,13 +722,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict2", "'d'", "5", "true");
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "true");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "true");
-					task = command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "true");
+					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict2", "symbol1", "11", "true");
-						task = command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "true");
+						command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'a'", "undefined", "false");
@@ -738,13 +737,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'d'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'e'", "undefined", "false");
 					command.run(undefined,   {eval: true},    /**/ "dict2", "'f'", "undefined", "false");
-					task = command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "false");
+					command.run(undefined,   {eval: true},    /**/ "dict2", "'toString'", "undefined", "false");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol1", "undefined", "false");
-						task = command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "false");
+						command.run(undefined,   {eval: true},    /**/ "dict2", "symbol2", "undefined", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict2", "'a'", "2", "false");
@@ -753,13 +752,13 @@ module.exports = {
 					command.run(5,           {eval: true},    /**/ "dict2", "'d'", "5", "false");
 					command.run(6,           {eval: true},    /**/ "dict2", "'e'", "6", "false");
 					command.run(7,           {eval: true},    /**/ "dict2", "'f'", "7", "false");
-					task = command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "false");
+					command.run(8,           {eval: true},    /**/ "dict2", "'toString'", "8", "false");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict2", "symbol1", "11", "false");
-						task = command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "false");
+						command.run(12,          {eval: true},    /**/ "dict2", "symbol2", "12", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "undefined", "true");
@@ -768,13 +767,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict3", "'d'", "undefined", "true");
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "true");
-					task = command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "true");
+					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "undefined", "true");
-						task = command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "true");
+						command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,           {eval: true},    /**/ "dict3", "'a'", "2", "true");
@@ -783,13 +782,13 @@ module.exports = {
 					command.run(4,           {eval: true},    /**/ "dict3", "'d'", "5", "true");
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "true");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "true");
-					task = command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "true");
+					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "true");
 					if (global.symbol1) {
 						command.run(10,          {eval: true},    /**/ "dict3", "symbol1", "11", "true");
-						task = command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "true");
+						command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "true");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'a'", "undefined", "false");
@@ -798,13 +797,13 @@ module.exports = {
 					command.run(undefined,   {eval: true},    /**/ "dict3", "'d'", "undefined", "false");
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "undefined", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "undefined", "false");
-					task = command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "false");
+					command.run(undefined,   {eval: true},    /**/ "dict3", "'toString'", "undefined", "false");
 					if (global.symbol1) {
 						command.run(undefined,   {eval: true},    /**/ "dict3", "symbol1", "undefined", "false");
-						task = command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "false");
+						command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "undefined", "false");
 					};
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(2,           {eval: true},    /**/ "dict3", "'a'", "2", "false");
@@ -813,10 +812,10 @@ module.exports = {
 					command.run(5,           {eval: true},    /**/ "dict3", "'d'", "5", "false");
 					command.run(5,           {eval: true},    /**/ "dict3", "'e'", "6", "false");
 					command.run(6,           {eval: true},    /**/ "dict3", "'f'", "7", "false");
-					task = command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "false");
+					command.run(8,           {eval: true},    /**/ "dict3", "'toString'", "8", "false");
 					if (global.symbol1) {
 						command.run(11,          {eval: true},    /**/ "dict3", "symbol1", "11", "false");
-						task = command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
+						command.run(11,          {eval: true},    /**/ "dict3", "symbol2", "12", "false");
 					};
 					
 					command.run("undefined",                    {eval: true}     /**/ );
@@ -825,8 +824,8 @@ module.exports = {
 					command.run(1,                              {eval: true},    /**/ "undefined", "'a'", "1", "true");
 					command.run(1,                              {eval: true},    /**/ "undefined", "'a'", "1", "false");
 
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 
@@ -839,44 +838,44 @@ module.exports = {
 					
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']");
 					command.run("{}",                     {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']");
-					task = command.run("{e: 5}",                 {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']");
+					command.run("{e: 5}",                 {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "undefined", "true");
 					command.run("{a: 1, c: 3}",           {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "undefined", "true");
-					task = command.run("{a: 1, c: 3, e: 5}",     {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "undefined", "true");
+					command.run("{a: 1, c: 3, e: 5}",     {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "undefined", "true");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1}",                 {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "undefined", "false");
 					command.run("{}",                     {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "undefined", "false");
-					task = command.run("{e: 5}",                 {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "undefined", "false");
+					command.run("{e: 5}",                 {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "undefined", "false");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1, c: 9, e: 11, toString: 13}",   {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}");
 					command.run("{a: 7, c: 9, e: 11, toString: 13}",   {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}");
-					task = command.run("{a: 7, c: 9, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}");
+					command.run("{a: 7, c: 9, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1, c: 9, e: 11, toString: 13}",   {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "true");
 					command.run("{a: 1, c: 3, e: 11, toString: 13}",   {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "true");
-					task = command.run("{a: 1, c: 3, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "true");
+					command.run("{a: 1, c: 3, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "true");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1, c: 9, e: 11, toString: 13}",   {eval: true},    /**/ "dict1", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "false");
 					command.run("{a: 7, c: 9, e: 11, toString: 13}",   {eval: true},    /**/ "dict2", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "false");
-					task = command.run("{a: 7, c: 9, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "false");
+					command.run("{a: 7, c: 9, e: 5, toString: 13}",    {eval: true},    /**/ "dict3", "['a', 'c', 'e', 'toString']", "{a: 7, c: 9, e: 11, toString: 13}", "false");
 					
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 1}",                              {eval: true},    /**/ "dict1", "'a'");
@@ -890,8 +889,8 @@ module.exports = {
 					command.run("{a: 1, c: 3}",                        {eval: true},    /**/ "undefined", "['a', 'c']", "{a: 1, b: 2, c: 3}", "true");
 					command.run("{a: 1, c: 3}",                        {eval: true},    /**/ "undefined", "['a', 'c']", "{a: 1, b: 2, c: 3}", "false");
 
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
@@ -915,8 +914,8 @@ module.exports = {
 					command = test.prepareCommand(types.complete, "Doodad.Types.complete");
 					command.run("undefined",                      {eval: true}     /**/ );
 					command.run("{a: 1, b: 2, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
@@ -930,8 +929,8 @@ module.exports = {
 					
 					command = test.prepareCommand(types.extend, "Doodad.Types.extend");
 					command.run("{a: 2, b: 3, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
@@ -941,28 +940,28 @@ module.exports = {
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
 					command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5, bbb: 5}}}",  {eval: true, depth: 2}, /**/ "2", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
 					
 					command = test.prepareCommand(types.fill, "Doodad.Types.fill");
 					command.run("undefined",                        {eval: true}     /**/ );
-					task = command.run("{a: 1, b: 2}",                     {eval: true},    /**/ "undefined", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
+					command.run("{a: 1, b: 2}",                     {eval: true},    /**/ "undefined", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("{a: 2, b: 2}",                     {eval: true},    /**/ "'a'", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
+					command.run("{a: 2, b: 2}",                     {eval: true},    /**/ "'a'", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 
-					task.chain(function(dummy) {
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("{a: 2, b: 2, c: 4}",               {eval: true},    /**/ "['a', 'c']", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
 
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
@@ -985,67 +984,67 @@ module.exports = {
 					
 					command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
 					command.run(undefined,  {eval: true}     /**/ );
-					task = command.run(undefined,  {eval: true},    /**/  "dict1");
-					task.chain(function(dummy) {
+					command.run(undefined,  {eval: true},    /**/  "dict1");
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run(1,          {eval: true},    /**/  "dict1", "'a'");
-					task.chain(function(dummy) {
+					command.run(1,          {eval: true},    /**/  "dict1", "'a'");
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run(2,          {eval: true},    /**/  "dict1", "'b'");
-					task.chain(function(dummy) {
+					command.run(2,          {eval: true},    /**/  "dict1", "'b'");
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(undefined,  {eval: true},    /**/  "dict1", "'c'");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 
 					command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "dict1");
-					task = command.run(undefined,  {eval: true},    /**/  "dict1", 0);
-					task.chain(function(dummy) {
+					command.run(undefined,  {eval: true},    /**/  "dict1", 0);
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run(1,          {eval: true},    /**/  "dict1", 1);
-					task.chain(function(dummy) {
+					command.run(1,          {eval: true},    /**/  "dict1", 1);
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run(2,          {eval: true},    /**/  "dict1", 2);
-					task.chain(function(dummy) {
+					command.run(2,          {eval: true},    /**/  "dict1", 2);
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run(undefined,  {eval: true},    /**/  "dict1", 3);
-					task.chain(function(dummy) {
+					command.run(undefined,  {eval: true},    /**/  "dict1", 3);
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run(1,          {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 
 					command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
 					command.run("[]",       {eval: true, contains: true}  /**/ );
 					command.run("[]",       {eval: true, contains: true}, /**/  "dict1");
-					task = command.run("[]",       {eval: true, contains: true}, /**/  "dict1", "[0]");
-					task.chain(function(dummy) {
+					command.run("[]",       {eval: true, contains: true}, /**/  "dict1", "[0]");
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "[0, 1]");
-					task.chain(function(dummy) {
+					command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "[0, 1]");
+					command.chain(function(dummy) {
 						createDicts();
 					});
-					task = command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "[0, 1, 2]");
-					task.chain(function(dummy) {
+					command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "[0, 1, 2]");
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-					task = command.end();
-					task.chain(function(dummy) {
+					command.end();
+					command.chain(function(dummy) {
 						createDicts();
 					});
 					
