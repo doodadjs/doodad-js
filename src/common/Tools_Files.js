@@ -2478,7 +2478,9 @@ module.exports = {
 										};
 
 										// Auto-detect "path" and "file"
-										const posFile = url.lastIndexOf('/');
+										// TODO: Create "tools.searchLast" instead of slicing.
+										const posArgs = url.indexOf('?');
+										const posFile = url.slice(0, posArgs < 0 ? undefined : posArgs).lastIndexOf('/');
 										if (posFile >= 0) {
 											if (types.isNothing(file)) {
 												file = url.slice(posFile + 1) || null;
