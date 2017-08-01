@@ -247,13 +247,52 @@ module.exports = {
 					const Promise = types.getPromise();
 					
 					return Promise.try(function() {
-						//if (types.isString(spec)) {
-						//	spec = {
-						//		name: spec,
-						//	};
-						//};
-					
 						const globalOptions = types.get(options, 'global');
+
+						const getEntryType = function(spec) {
+							const entryType = types.get(spec, 'type');
+							if (entryType) {
+								if (types.isString(entryType)) {
+									const tmp = types.get(entries, entryType);
+									if (tmp && types.baseof(entries.Entry, tmp)) {
+										//spec.type = tmp;
+										return tmp;
+									} else {
+										throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
+									};
+								} else if (!entryType || !types.baseof(entries.Entry, entryType)) {
+									throw new types.Error("Invalid registry entry type : '~0~'.", [types.getTypeName(entryType)]);
+								} else {
+									return entryType;
+								};
+							} else {
+								//spec.type = entries.Module;
+								return entries.Module;
+							};
+						};
+
+						const getNamespaceType = function _getNamespaceType(spec) {
+							const namespaceType = types.get(spec, 'namespaceType');
+							if (namespaceType) {
+								if (types.isString(namespaceType)) {
+									// TODO: Place namespace types in their own Namespace, like 'entries'.
+									const tmp = namespaces[namespaceType];
+									if (tmp && (tmp === types.Namespace) || types.baseof(types.Namespace, tmp)) {
+										//spec.namespaceType = tmp;
+										return tmp;
+									} else {
+										throw new types.Error("Invalid namespace object type : '~0~'.", [types.toString(namespaceType).slice(0, 50)]);
+									};
+								} else if (!namespaceType || ((namespaceType !== types.Namespace) && !types.baseof(types.Namespace, namespaceType))) {
+									throw new types.Error("Invalid namespace object type : '~0~'.", [types.getTypeName(namespaceType)]);
+								} else {
+									return namespaceType;
+								};
+							} else {
+								//spec.namespaceType = types.Namespace;
+								return types.Namespace;
+							};
+						};
 
 						const checkDependencies = function _checkDependencies(spec) {
 							const baseName = spec.name.split('/', 2)[0];
@@ -265,22 +304,25 @@ module.exports = {
 								deps.push({
 									name: baseName,
 									autoLoad: false,
+									optional: true,
 								});
 							};
 							const missingDeps = [];
 							if (deps) {
+								const entryType = getEntryType(spec);
 								for (let i = 0; i < deps.length; i++) {
 									if (types.has(deps, i)) {
 										let dep = deps[i],
 											optional = false,
 											version = null,
 											path = null,
-											autoLoad = true;
+											autoLoad = types.isLike(entryType, entries.Package);
 										if (!types.isString(dep)) {
+											const depType = getEntryType(dep);
 											path = types.get(dep, 'path', null);
 											optional = types.toBoolean(types.get(dep, 'optional', false));
 											version = types.get(dep, 'version', null);
-											autoLoad = types.get(dep, 'autoLoad', true);
+											autoLoad = types.get(dep, 'autoLoad', types.isLike(depType, entries.Package));
 											dep = dep.name;
 										};
 										let depEntry = __Internal__.DD_REGISTRY.get(dep),
@@ -341,48 +383,18 @@ module.exports = {
 						};
 
 						const createMain = function _createMain(shortNames, spec, parent) {
-							const name = types.getDefault(spec, 'name', null);
+							const baseName = spec.name.split('/', 2)[0];
 
-							let entryType = types.get(spec, 'type');
-							if (entryType) {
-								let val;
-								if (types.isString(entryType)) {
-									val = types.get(entries, entryType);
-								} else {
-									val = entryType;
-								};
-								if (val && types.baseof(entries.Entry, val)) {
-									entryType = val;
-								} else {
-									throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
-								};
-							} else {
-								entryType = entries.Module;
-							};
+							const entryType = getEntryType(spec);
 
-							let entry = __Internal__.DD_REGISTRY.get(name);
+							let entry = __Internal__.DD_REGISTRY.get(spec.name);
 							if (entry) {
 								if (!types.is(entry, entries.Namespace) || (entryType === entries.Namespace)) {
-									return null;
+									return entry;
 								};
 							};
 						
-							let namespaceType = types.get(spec, 'namespaceType');
-							if (namespaceType) {
-								let val;
-								if (types.isString(namespaceType)) {
-									val = namespaces[namespaceType];
-								} else {
-									val = namespaceType;
-								};
-								if (val && (val === types.Namespace) || types.baseof(types.Namespace, val)) {
-									namespaceType = val;
-								} else {
-									throw new types.Error("Invalid namespace object type : '~0~'.", [types.toString(namespaceType).slice(0, 50)]);
-								};
-							} else {
-								namespaceType = types.Namespace;
-							};
+							let namespaceType = getNamespaceType(spec);
 						
 							let namespace = types.get(spec, 'object');
 							if (namespace) {
@@ -408,55 +420,62 @@ module.exports = {
 							};
 						
 							if (entry && replaceEntry) {
-								__Internal__.DD_REGISTRY.remove(name, null, {secret: _shared.SECRET});
+								__Internal__.DD_REGISTRY.remove(spec.name, null, {secret: _shared.SECRET});
 								entry = null;
 							};
 						
-							if (prevNamespace && !types._instanceof(prevNamespace, namespaceType)) {
-								const proto = {};
-								const keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
-								const keysLen = keys.length;
-								for (let i = 0; i < keysLen; i++) {
-									const key = keys[i];
-									let val = prevNamespace[key];
-									if (!types._instanceof(val, types.AttributeBox)) {
-										// Sets everything to READ_ONLY by default
-										val = types.READ_ONLY(types.ENUMERABLE(val));
-									};
-									proto[key] = val;
-								};
-								namespaceType = types.INIT(namespaceType.$inherit(
-									/*typeProto*/
-									{
-										$TYPE_NAME: types.getTypeName(namespaceType),
-									},
-									/*instanceProto*/
-									proto
-								));
-							};
-						
-							let proto = types.get(spec, 'proto');
-							if (proto) {
-								// Extend namespace object
-								if (types.isFunction(proto)) {
-									proto = proto(root);
-								};
-								if (proto) {
-									if (!types.isArray(proto)) {
-										proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
-									};
-									namespaceType = types.INIT(namespaceType.$inherit.apply(namespaceType, proto));
-								};
-							};
-
-							if (!namespace) {
-								namespace = new namespaceType(parent, shortName, name);
-							};
-						
 							if (!entry) {
+								if (spec.name !== baseName) {
+									const baseEntry = __Internal__.DD_REGISTRY.get(baseName);
+									if (baseEntry) {
+										namespace = baseEntry.namespace;
+									};
+								};
+
+								if (!namespace) {
+									if (prevNamespace && !types._instanceof(prevNamespace, namespaceType)) {
+										const proto = {};
+										const keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
+										const keysLen = keys.length;
+										for (let i = 0; i < keysLen; i++) {
+											const key = keys[i];
+											let val = prevNamespace[key];
+											if (!types._instanceof(val, types.AttributeBox)) {
+												// Sets everything to READ_ONLY by default
+												val = types.READ_ONLY(types.ENUMERABLE(val));
+											};
+											proto[key] = val;
+										};
+										namespaceType = types.INIT(namespaceType.$inherit(
+											/*typeProto*/
+											{
+												$TYPE_NAME: types.getTypeName(namespaceType),
+											},
+											/*instanceProto*/
+											proto
+										));
+									};
+
+									let proto = types.get(spec, 'proto');
+									if (proto) {
+										// Extend namespace object
+										if (types.isFunction(proto)) {
+											proto = proto(root);
+										};
+										if (proto) {
+											if (!types.isArray(proto)) {
+												proto = [/*typeProto*/{$TYPE_NAME: types.getTypeName(namespaceType)}, /*instanceProto*/proto];
+											};
+											namespaceType = types.INIT(namespaceType.$inherit.apply(namespaceType, proto));
+										};
+									};
+
+									namespace = new namespaceType(parent, shortName, baseName);
+								};
+
 								const protect = types.get(spec, 'protect', true);
 								entry = new entryType(root, spec, namespace, {protect: protect});
-								__Internal__.DD_REGISTRY.add(name, entry, {secret: _shared.SECRET});
+								__Internal__.DD_REGISTRY.add(spec.name, entry, {secret: _shared.SECRET});
 							};
 						
 							return entry;
@@ -474,8 +493,8 @@ module.exports = {
 							if (entry) {
 								const specNamespaces = types.get(entry.spec, 'namespaces');
 								if (specNamespaces) {
-									const specNamespacesLen = specNamespaces.length;
 									const baseName = entry.spec.name.split('/', 2)[0];
+									const specNamespacesLen = specNamespaces.length;
 									for (let i = 0; i < specNamespacesLen; i++) {
 										if (types.has(specNamespaces, i)) {
 											const name = specNamespaces[i],
@@ -560,11 +579,26 @@ module.exports = {
 							return entry;
 						};
 					
+						const check = function _check(spec) {
+							const baseName = spec.name.split('/', 2)[0];
+							if (!spec.bootstrap && (spec.name !== baseName)) {
+								const existing = __Internal__.DD_REGISTRY.get(spec.name);
+								if (existing) {
+									return existing;
+								};
+							};
 					
-					
-						const missingDeps = checkDependencies(spec);
-						if (missingDeps.length) {
-							return missingDeps;
+							const missingDeps = checkDependencies(spec);
+							if (missingDeps.length) {
+								return missingDeps;
+							};
+
+							return null;
+						};
+						
+						const result = check(spec);
+						if (result) {
+							return result;
 						};
 					
 						return Promise.resolve(create(spec, '', root))
@@ -597,91 +631,93 @@ module.exports = {
 						//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
 					const Promise = types.getPromise();
+
+					return Promise.try(function() {
+						if (entry && !entry.objectInitialized) {
+							let promise = Promise.resolve();
 						
-					if (entry && !entry.objectInitialized) {
-						let promise = Promise.resolve();
-						
-						const deps = types.get(entry.spec, 'dependencies');
-						if (deps) {
-							const depsLen = deps.length;
-							for (let i = 0; i < depsLen; i++) {
-								if (types.has(deps, i)) {
-									let dep = deps[i];
-									if (!types.isString(dep)) {
-										dep = dep.name;
-									};
+							const deps = types.get(entry.spec, 'dependencies');
+							if (deps) {
+								const depsLen = deps.length;
+								for (let i = 0; i < depsLen; i++) {
+									if (types.has(deps, i)) {
+										let dep = deps[i];
+										if (!types.isString(dep)) {
+											dep = dep.name;
+										};
 									
-									const depEntry = __Internal__.DD_REGISTRY.get(dep);
-									if (depEntry) {
-										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
-											if (depEntry.spec.autoInit !== false) {
-												depEntry.objectInitializing = true;
-												promise = promise
-													.then(function() {
-														return __Internal__.initNamespace(depEntry, options);
-													});
+										const depEntry = __Internal__.DD_REGISTRY.get(dep);
+										if (depEntry) {
+											if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
+												if (depEntry.spec.autoInit !== false) {
+													depEntry.objectInitializing = true;
+													promise = promise
+														.then(function() {
+															return __Internal__.initNamespace(depEntry, options);
+														});
+												};
 											};
 										};
 									};
 								};
 							};
-						};
 						
-						const globalOptions = types.get(options, 'global');
+							const globalOptions = types.get(options, 'global');
 
-						const baseName = entry.spec.name.split('/', 2)[0];
-						options = types.get(options, baseName);
+							const baseName = entry.spec.name.split('/', 2)[0];
+							options = types.get(options, baseName);
 
-						if (globalOptions) {
-							options = types.extend({}, globalOptions, options);
-						};
-						
-						if (entry.objectInit) {
-							if (types.isFunction(entry.objectInit)) {
-								const retval = entry.objectInit(options);
-								if (types.isPromise(retval)) {
-									__Internal__.incrementWait();
-									promise = promise
-										.then(function() {
-											return retval;
-										})
-										.nodeify(function(err, result) {
-											__Internal__.decrementWait();
-											if (err) {
-												throw err;
-											} else {
-												return result;
-											};
-										});
-								};
-							} else {
-								throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
+							if (globalOptions) {
+								options = types.extend({}, globalOptions, options);
 							};
-						};
 						
-						const terminate = function terminate() {
-							namespaces.dispatchEvent(new types.CustomEvent('init', 
-								{
-									detail: {
-										entry: entry,
-										options: options,
-									},
-								}
-							));
+							if (entry.objectInit) {
+								if (types.isFunction(entry.objectInit)) {
+									const retval = entry.objectInit(options);
+									if (types.isPromise(retval)) {
+										__Internal__.incrementWait();
+										promise = promise
+											.then(function() {
+												return retval;
+											})
+											.nodeify(function(err, result) {
+												__Internal__.decrementWait();
+												if (err) {
+													throw err;
+												} else {
+													return result;
+												};
+											});
+									};
+								} else {
+									throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
+								};
+							};
+						
+							const terminate = function terminate() {
+								namespaces.dispatchEvent(new types.CustomEvent('init', 
+									{
+										detail: {
+											entry: entry,
+											options: options,
+										},
+									}
+								));
 							
-							entry.init(options);
+								entry.init(options);
 							
-							tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
+								tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
 							
+								return entry;
+							};
+						
+							return promise
+								.then(terminate);
+						
+						} else {
 							return entry;
 						};
-						
-						return promise
-							.then(terminate);
-						
-					} else {
-						return Promise.resolve(entry);
-					};
+					});
 				});
 				
 				namespaces.ADD('load', root.DD_DOC(
@@ -835,13 +871,14 @@ module.exports = {
 
 						const loopInitModules = function loopInitModules(toInit) {
 							if (toInit.length) {
-								let promise;
+								let promise = Promise.resolve();
+
 								const entry = toInit.shift(); 
 								if (!entry.objectInitialized && !entry.objectInitializing) {
 									entry.objectInitializing = true;
-									promise = __Internal__.initNamespace(entry, options);
-								} else {
-									promise = Promise.resolve();
+									promise = promise.then(function(dummy) {
+										return __Internal__.initNamespace(entry, options);
+									});
 								};
 
 								return promise.then(function() {

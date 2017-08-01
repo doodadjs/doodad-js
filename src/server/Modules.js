@@ -187,18 +187,13 @@ module.exports = {
 
 						const trapMissingDeps = function _trapMissingDeps(err) {
 								const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
-								if (ignoredMissingDeps && ignoredMissingDeps.length && tools.every(ignoredMissingDeps, function(dep1) {
-											return (tools.findItem(err.missingDeps, function(dep2) {
-												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
-											}) !== null);
-										})) {
-									throw err;
-								};
-								const newOptions = types.extend({}, options, {ignoredMissingDeps: err.missingDeps});
-								const missingDeps = tools.filter(err.missingDeps, function(dep) {
-									return dep.autoLoad;
+								const missingDeps = tools.filter(err.missingDeps, function(dep1) {
+									return dep1.autoLoad && (tools.findItem(ignoredMissingDeps, function(dep2) {
+										return ((dep1.module || '') === (dep2.module || '')) && ((dep1.path || '') === (dep2.path || ''));
+									}) === null);
 								});
 								if (missingDeps.length) {
+									const newOptions = types.extend({}, options, {ignoredMissingDeps: missingDeps});
 									return modules.load(missingDeps, newOptions)
 										.then(function(dummy) {
 											return namespaces.load(err.modules, newOptions)
@@ -216,7 +211,7 @@ module.exports = {
 						if (root.getOptions().fromSource) {
 							const pkgs = tools.map(
 								tools.filter(files, function(dep) {
-									return !dep.path;
+									return dep.module && !dep.path;
 								}), function(dep) {
 									return dep.module;
 								}
@@ -293,6 +288,8 @@ module.exports = {
 										version: manifest.version + (manifest.stage || 'd'),
 										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
 											return dep.server && !dep.test;
+										}).map(function(dep) {
+											return types.extend({}, dep, {type: types.get(dep, 'type', 'Package')});
 										}),
 										
 										create: function create(root, /*optional*/_options, _shared) {
