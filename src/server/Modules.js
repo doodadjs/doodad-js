@@ -284,7 +284,7 @@ module.exports = {
 								add: function(DD_MODULES) {
 									DD_MODULES = DD_MODULES || {};
 									DD_MODULES[manifest.name] = {
-										type: 'Package',
+										type: makeManifest.type || 'Package',
 										version: manifest.version + (manifest.stage || 'd'),
 										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
 											return dep.server && !dep.test;
