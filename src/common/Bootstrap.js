@@ -837,7 +837,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							locals: {
 								type: 'object',
@@ -854,9 +854,9 @@
 			//! END_REPLACE()
 			, function createEval(locals, /*optional*/strict) {
 				if (strict) {
-					return __Internal__.evals.createEval(_shared.Natives.arrayJoinCall, locals);
-				} else {
 					return __Internal__.evals.createEvalStrict(_shared.Natives.arrayJoinCall, locals);
+				} else {
+					return __Internal__.evals.createEval(_shared.Natives.arrayJoinCall, locals);
 				};
 			}));
 
@@ -5732,31 +5732,74 @@
 			return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 		});
 		
-		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables) {
+		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, generateFnName) {
 			const forType = types.isType(target);
 
-			const loopKeys = function loopKeys(keys) {
+			const loopKeys = function _loopKeys(keys, isSymbol) {
 				for (let i = 0; i < keys.length; i++) {
 					const key = keys[i];
 
-					const hasKey = types.has(target, key);
-					if (hasKey && skipExisting) {
-						continue;
-					};
-
 					if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
+						if (generateFnName) {
+							if (isSymbol) {
+								code += "key = protoSymbols[" + types.toString(i) + "];";
+							} else {
+								code += "key = '" + key.replace(/[']/g, "\\'") + "';";
+							};
+						};
+
+						let hasKey = false;
+
+						if (generateFnName) {
+							code += "hasKey = types.has(target, key);";
+						} else {
+							hasKey = types.has(target, key);
+						};
+
+						if (generateFnName) {
+							if (skipExisting) {
+								code += "ok = !hasKey;"
+							} else {
+								code += "ok = true;"
+							};
+						} else {
+							if (hasKey && skipExisting) {
+								continue;
+							};
+						};
+
+						code += "if (ok) {";
+
 						const attr = types.AttributeBox(proto[key]),
 							g = types.get(attr, __Internal__.symbolGetter),
 							s = types.get(attr, __Internal__.symbolSetter);
+
+						if (generateFnName) {
+							code += "attr = types.AttributeBox(proto[key]);";
+						};
+
 						let value = attr,
 							isFunction = false;
 
+						if (generateFnName) {
+							code += "value = attr;" +
+									"isFunction = false;";
+						};
+
 						if (!g && !s) {
-							if (hasKey) {
-								value = target[key];
+							if (generateFnName) {
+								code += "if (hasKey) {" +
+											"value = target[key];" +
+										"};" +
+										"value = types.unbox(value);" +
+										"isFunction = types.isJsFunction(value);";
+							} else {
+								if (hasKey) {
+									value = target[key];
+								};
+								value = types.unbox(value);
+								isFunction = types.isJsFunction(value);
 							};
-							value = types.unbox(value);
-							isFunction = types.isJsFunction(value);
 						};
 
 						let cf = types.get(attr, _shared.ConfigurableSymbol);
@@ -5764,27 +5807,60 @@
 							cf = !isFunction;
 						};
 
-						if (cf && skipConfigurables && !types.hasIn(target, key)) {
-							continue;
+						if (generateFnName) {
+							if (cf && skipConfigurables) {
+								code += "ok = types.hasIn(target, key);";
+							} else {
+								code += "ok = true;";
+							};
+						} else {
+							if (cf && skipConfigurables && !types.hasIn(target, key)) {
+								continue;
+							};
 						};
 
-						const createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
-						if (createSuper) {
-							const _super = base && _shared.getAttribute(base, key);
-							value = __Internal__.createCaller(key, value, _super);
+						code += "if (ok) {";
+
+						if (generateFnName) {
+							if (types.get(attr, _shared.SuperEnabledSymbol)) {
+								code += "const createSuper = !hasKey && isFunction;" +
+										"if (createSuper) {" +
+											"const _super = base && _shared.getAttribute(base, key);" +
+											"value = __Internal__.createCaller(key, value, _super);" +
+										"};";
+							};
+						} else {
+							const createSuper = !hasKey && isFunction && types.get(attr, _shared.SuperEnabledSymbol);
+							if (createSuper) {
+								const _super = base && _shared.getAttribute(base, key);
+								value = __Internal__.createCaller(key, value, _super);
+							};
 						};
 
-						if (isFunction) {
-							_shared.setAttributes(value, {
-								apply: value.apply,
-								call: value.call,
-								bind: value.bind,
-							}, {ignoreWhenReadOnly: true});
-						};
+						if (generateFnName) {
+							code += "if (isFunction) {" +
+										"_shared.setAttributes(value, {" +
+											"apply: value.apply," +
+											"call: value.call," +
+											"bind: value.bind," +
+										"}, {ignoreWhenReadOnly: true});" +
+									"};";
+						} else {
+							if (isFunction) {
+								_shared.setAttributes(value, {
+									apply: value.apply,
+									call: value.call,
+									bind: value.bind,
+								}, {ignoreWhenReadOnly: true});
+							};
+						}
 
 						if (preApply) {
-							_shared.setAttribute(target, key, value, {all: true});
-
+							if (generateFnName) {
+								code += "_shared.setAttribute(target, key, value, {all: true});";
+							} else {
+								_shared.setAttribute(target, key, value, {all: true});
+							};
 						} else {
 							let enu = types.get(attr, _shared.EnumerableSymbol);
 							if (types.isNothing(enu)) {
@@ -5793,34 +5869,89 @@
 
 							if (g || s) {
 								// TODO: SUPER
-								types.defineProperty(target, key, {
-									configurable: !!cf,
-									enumerable: !!enu,
-									get: g || undefined,
-									set: s || undefined,
-								});
+								if (generateFnName) {
+									code += "types.defineProperty(target, key, {" +
+												"configurable: " + (!!cf ? 'true' : 'false') + "," +
+												"enumerable: " + (!!enu ? 'true' : 'false') + "," +
+												"get: types.get(attr, __Internal__.symbolGetter) || undefined," +
+												"set: types.get(attr, __Internal__.symbolSetter) || undefined," +
+											"});";
+								} else {
+									types.defineProperty(target, key, {
+										configurable: !!cf,
+										enumerable: !!enu,
+										get: g || undefined,
+										set: s || undefined,
+									});
+								};
 							} else {
 								let ro = types.get(attr, _shared.ReadOnlySymbol);
-								if (types.isNothing(ro)) {
-									ro = isFunction;
-								};
 
-								_shared.setAttribute(target, key, value, {
-									configurable: !!cf,
-									enumerable: !!enu,
-									writable: !ro,
-									ignoreWhenReadOnly: true,
-								});
+								if (generateFnName) {
+									if (types.isNothing(ro)) {
+										code += "ro = isFunction;";
+									} else {
+										code += "ro = " + (ro ? 'true' : 'false') + ";";
+									};
+
+									code += "_shared.setAttribute(target, key, value, {" +
+												"configurable: " + (!!cf ? 'true' : 'false') + "," +
+												"enumerable: " + (!!enu ? 'true' : 'false') + "," +
+												"writable: !ro," +
+												"ignoreWhenReadOnly: true," +
+											"});";
+								} else {
+									if (types.isNothing(ro)) {
+										ro = isFunction;
+									};
+
+									_shared.setAttribute(target, key, value, {
+										configurable: !!cf,
+										enumerable: !!enu,
+										writable: !ro,
+										ignoreWhenReadOnly: true,
+									});
+								};
 							};
 						};
+
+						code +=		"};" +
+								"};";
+
 					};
 				};
 			};
 
-			loopKeys(types.keys(proto));
-			loopKeys(types.symbols(proto));
+			let code = '';
 
-			types.defineProperty(target, '_super', {value: null, writable: true});
+			if (generateFnName) {
+				code +=	"(function " + generateFnName + "(target, base, proto) {" +
+							"let key, hasKey, attr, value, isFunction, ok, ro;";
+			};
+
+			const protoSymbols = types.symbols(proto);
+
+			loopKeys(types.keys(proto), false);
+			loopKeys(protoSymbols, true);
+
+			if (generateFnName) {
+				code += "types.defineProperty(target, '_super', {value: null, writable: true});";
+			} else {
+				types.defineProperty(target, '_super', {value: null, writable: true});
+			};
+
+			if (generateFnName) {
+				code += "})";
+			};
+
+			let fn = null;
+
+			if (generateFnName) {
+				const evalFn = types.createEval(['types', 'tools', '_shared', '__Internal__', 'protoSymbols'], true)(types, tools, _shared, __Internal__, protoSymbols);
+				fn = evalFn(code);
+			};
+
+			return fn;
 		};
 
 		__Internal__.ADD('createType', __Internal__.DD_DOC(
@@ -5929,8 +6060,8 @@
 						""
 					) +
 
-					"let " + (typeProto ? "skipConfigurables = true," : "") +
-						"obj;" +
+					//"let " + (typeProto ? "skipConfigurables = true," : "") +
+					"let obj;" +
 					"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 						"obj = this;" +
 					"} else {" +
@@ -5958,11 +6089,11 @@
 
 						"ctx._shared.setAttribute(this, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
-						(typeProto ? 
-							"skipConfigurables = false;" 
-						: 
-							""
-						) +
+						//(typeProto ? 
+						//	"skipConfigurables = false;" 
+						//: 
+						//	""
+						//) +
 
 						"const isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
 						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
@@ -5977,7 +6108,8 @@
 
 					(typeProto ?
 						"if (forType) {" +
-							"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
+							"ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);" +
+							//"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
 						"};"
 					: 
 						""
@@ -5985,7 +6117,8 @@
 
 					(instanceProto && types.hasDefinePropertyEnabled() ?
 						"if (!forType) {" +
-							"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
+							"ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);" +
+							//"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
 						"};"
 					: 
 						""
@@ -6008,17 +6141,21 @@
 					"return obj;" +
 				"}";
 				
+				const instanceBase = (base ? base.prototype : null);
+
 				const ctx = types.nullObject({
 					base: base,
 					constructor: constructor,
 					typeProto: typeProto, 
 					instanceProto: instanceProto,
-					instanceBase: (base ? base.prototype : null),
+					instanceBase: instanceBase,
 					type: null, // will be set after type creation
 					proto: null, // will be set after type creation
 					_shared: _shared,
 					__Internal__: __Internal__,
 					types: types,
+					applyProtoToType: __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
+					applyProtoToInstance: __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
 				});
 
 				let type = types.eval(expr, ctx);
@@ -6050,11 +6187,11 @@
 				_shared.setAttribute(proto, __Internal__.symbolTypeUUID, uuid, {});
 	
 				if (typeProto) {
-					__Internal__.applyProto(type, base, typeProto, true, false, false);
+					__Internal__.applyProto(type, base, typeProto, true, false, false, '');
 				};
 
 				if (instanceProto) {
-					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto, false, false, false);
+					__Internal__.applyProto(proto, ctx.instanceBase, instanceProto, false, false, false, '');
 				};
 
 				// Return type
