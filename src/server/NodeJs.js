@@ -448,7 +448,7 @@ module.exports = {
 						isAborted = types._instanceof(err, types.ScriptAbortedError)
 					} catch(o) {
 						if (root.getOptions().debug) {
-							debugger;
+							types.DEBUGGER();
 						};
 					};
 					if (isAborted) {
@@ -462,7 +462,7 @@ module.exports = {
 					} catch(o) {
 						ev = null;
 						if (root.getOptions().debug) {
-							debugger;
+							types.DEBUGGER();
 						};
 					};
 
@@ -475,7 +475,7 @@ module.exports = {
 								_shared.Natives.consoleError(msg);
 							} catch(o) {
 								if (root.getOptions().debug) {
-									debugger;
+									types.DEBUGGER();
 								};
 							};
 						};

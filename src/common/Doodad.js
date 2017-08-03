@@ -207,7 +207,7 @@ module.exports = {
 						]);
 					};
 					if (root.getOptions().debug) {
-						debugger;
+						types.DEBUGGER();
 					};
 				};
 				
@@ -878,16 +878,19 @@ module.exports = {
 							__Internal__.invokedClass = type;
 							try {
 								const storage = obj[__Internal__.symbolAttributesStorage];
-								const keys = types.append(types.keys(values), types.symbols(values)),
-									keysLen = keys.length;
-								for (let i = 0; i < keysLen; i++) {
-									const key = keys[i];
-									if (types.hasIn(storage, key)) {
-										storage[key] = values[key];
-									} else {
-										__Internal__.oldSetAttribute(obj, key, values[key], options);
+								const loopKeys = function _loopKeys(keys) {
+									const keysLen = keys.length;
+									for (let i = 0; i < keysLen; i++) {
+										const key = keys[i];
+										if (types.hasIn(storage, key)) {
+											storage[key] = values[key];
+										} else {
+											__Internal__.oldSetAttribute(obj, key, values[key], options);
+										};
 									};
 								};
+								loopKeys(types.keys(values));
+								loopKeys(types.symbols(values));
 								return values;
 							} catch(ex) {
 								throw ex;
@@ -1209,7 +1212,7 @@ module.exports = {
 									} catch(p) {
 									};
 									if (root.getOptions().debug) {
-										debugger;
+										types.DEBUGGER();
 									};
 								};
 							} finally {
@@ -1276,8 +1279,8 @@ module.exports = {
 									};
 									const name = proto.$TYPE_NAME;
 									const uuid = proto.$TYPE_UUID;
-									delete proto.$TYPE_NAME;
-									delete proto.$TYPE_UUID;
+									//delete proto.$TYPE_NAME;
+									//delete proto.$TYPE_UUID;
 									const type = this._super(
 										/*typeProto*/
 										{
@@ -2924,7 +2927,8 @@ module.exports = {
 									const callerI = callers[j],
 										position = callerI[__Internal__.symbolPosition];
 									if (position) {
-										delete position[__Internal__.symbolOk];
+										//delete position[__Internal__.symbolOk];
+										position[__Internal__.symbolOk] = false;
 									};
 								};
 
@@ -4583,20 +4587,26 @@ module.exports = {
 					const proto = (__Internal__.creatingClass ? __Internal__.classProto : __Internal__.interfaceProto);
 					root.DD_ASSERT && root.DD_ASSERT(types.isObject(proto));
 
-					const keys = types.append(types.keys(attributes), types.symbols(attributes));
-					tools.forEach(keys, function(key) {
-						const attribute = attributes[key] = doodad.OPTIONS({isEnumerable: false}, attributes[key]);
-						attribute[__Internal__.symbolPrototype] = proto;
-					});
+					const initReserved = !(__Internal__.symbolAttributes in _shared.reservedAttributes);
 					
-					if (!(__Internal__.symbolAttributes in _shared.reservedAttributes)) {
-						// First time "getDefaultAttributes" is called...
+					const loopKeys = function _loopKeys(keys) {
 						tools.forEach(keys, function(key) {
-							if (!(key in _shared.reservedAttributes)) {
-								_shared.reservedAttributes[key] = null;
-							};
+							const attribute = attributes[key] = doodad.OPTIONS({isEnumerable: false}, attributes[key]);
+							attribute[__Internal__.symbolPrototype] = proto;
 						});
+					
+						if (initReserved) {
+							// First time "getDefaultAttributes" is called...
+							tools.forEach(keys, function(key) {
+								if (!(key in _shared.reservedAttributes)) {
+									_shared.reservedAttributes[key] = null;
+								};
+							});
+						};
 					};
+
+					loopKeys(types.keys(attributes));
+					loopKeys(types.symbols(attributes));
 					
 					return attributes;
 				};
@@ -5109,15 +5119,52 @@ module.exports = {
 
 				__Internal__.initializeAttributes = function initializeAttributes(obj, attributes, typeStorage, instanceStorage, forType, isProto, /*optional*/values, /*optional*/extendedAttributes) {
 					const storage = (forType ? typeStorage : instanceStorage);
-					const attrs = (extendedAttributes ? types.unique(extendedAttributes) : types.append(types.keys(attributes), types.symbols(attributes)))
-					for (let i = attrs.length - 1; i >= 0; i--) {
-						const attr = attrs[i],
-							attribute = attributes[attr],
-							extender = attribute[__Internal__.symbolExtender];
+
+					const preLoopAttrs = function _preLoopAttrs(attrs) {
+						for (let i = attrs.length - 1; i >= 0; i--) {
+							const attr = attrs[i],
+								attribute = attributes[attr],
+								extender = attribute[__Internal__.symbolExtender];
 						
-						if (extender) {
-							if ((forType && extender.isType) || (!forType && extender.isInstance)) {
-								if (extender.preExtend) {
+							if (extender) {
+								if ((forType && extender.isType) || (!forType && extender.isInstance)) {
+									if (extender.preExtend) {
+										const value = types.get(values, attr, types.unbox(attribute));
+										let cancelInit = extender.preInit && extender.preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+										if (!cancelInit) {
+											extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+											if (extender.isPreserved && !types.isSymbol(attr)) {
+												const presAttr = '__' + attr + '_preserved__';
+												cancelInit = extender.preInit && extender.preInit(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+												if (!cancelInit) {
+													extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+												};
+											};
+										};
+										//delete attrs[i]; //attrs.splice(i, 1);
+										attrs[i] = null;
+									};
+								} else {
+									//delete attrs[i]; //attrs.splice(i, 1);
+									attrs[i] = null;
+								};
+							} else {
+								//delete attrs[i]; //attrs.splice(i, 1);
+								attrs[i] = null;
+							};
+						};
+					};
+
+					const loopAttrs = function _loopAttrs(attrs) {
+						for (let i = attrs.length - 1; i >= 0; i--) {
+							const attr = attrs[i];
+						
+							if (attr) {
+								const attribute = attributes[attr],
+									extender = attribute[__Internal__.symbolExtender];
+							
+								if (extender) {
+									// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice()".
 									const value = types.get(values, attr, types.unbox(attribute));
 									let cancelInit = extender.preInit && extender.preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
 									if (!cancelInit) {
@@ -5130,39 +5177,22 @@ module.exports = {
 											};
 										};
 									};
-									delete attrs[i]; //attrs.splice(i, 1);
 								};
-							} else {
-								delete attrs[i]; //attrs.splice(i, 1);
 							};
-						} else {
-							delete attrs[i]; //attrs.splice(i, 1);
 						};
 					};
 
-					for (let i = attrs.length - 1; i >= 0; i--) {
-						const attr = attrs[i];
-						
-						if (attr) {
-							const attribute = attributes[attr],
-								extender = attribute[__Internal__.symbolExtender];
-							
-							if (extender) {
-								// NOTE: "if (!extender.preExtend && ((forType && extender.isType) || (!forType && extender.isInstance)) {...}" --> Done with "attrs.splice()".
-								const value = types.get(values, attr, types.unbox(attribute));
-								let cancelInit = extender.preInit && extender.preInit(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-								if (!cancelInit) {
-									extender.init && extender.init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-									if (extender.isPreserved && !types.isSymbol(attr)) {
-										const presAttr = '__' + attr + '_preserved__';
-										cancelInit = extender.preInit && extender.preInit(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-										if (!cancelInit) {
-											extender.init && extender.init(presAttr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
-										};
-									};
-								};
-							};
-						};
+					if (extendedAttributes) {
+						const attrs = types.unique(extendedAttributes);
+						preLoopAttrs(attrs);
+						loopAttrs(attrs);
+					} else {
+						const attrsKeys = types.keys(attributes);
+						const attrsSymbols = types.symbols(attributes);
+						preLoopAttrs(attrsKeys);
+						preLoopAttrs(attrsSymbols);
+						loopAttrs(attrsKeys);
+						loopAttrs(attrsSymbols);
 					};
 				};
 				
@@ -5393,39 +5423,55 @@ module.exports = {
 								cls = types.getType(this),
 								attributes = this[__Internal__.symbolAttributes],
 								storage = this[__Internal__.symbolAttributesStorage],
-								attrs = types.append(types.keys(attributes), types.symbols(attributes)),
 								sealed = types.isSealedClass(cls);
+							
+							const preLoopAttrs = function _preLoopAttrs(attrs) {
+								for (let i = attrs.length - 1; i >= 0; i--) {
+									const attr = attrs[i],
+										attribute = attributes[attr],
+										extender = attribute[__Internal__.symbolExtender];
 								
-							for (let i = attrs.length - 1; i >= 0; i--) {
-								const attr = attrs[i],
-									attribute = attributes[attr],
-									extender = attribute[__Internal__.symbolExtender];
-								
-								if (extender) {
-									if (extender.isPersistent) {
-										attrs.splice(i, 1);
-									} else if (!extender.preExtend) {
+									if (extender) {
+										if (extender.isPersistent) {
+											//attrs.splice(i, 1);
+											attrs[i] = null;
+										} else if (!extender.preExtend) {
+											if ((extender.isType && forType) || (extender.isInstance && !forType)) {
+												extender.remove && extender.remove(attr, this, storage, forType, attribute);
+											};
+											//attrs.splice(i, 1);
+											attrs[i] = null;
+										};
+									} else {
+										//attrs.splice(i, 1);
+										attrs[i] = null;
+									};
+								};
+							};
+							
+							const loopAttrs = function _loopAttrs(attrs) {
+								for (let i = attrs.length - 1; i >= 0; i--) {
+									const attr = attrs[i];
+
+									if (attr) {
+										const attribute = attributes[attr],
+											extender = attribute[__Internal__.symbolExtender];
+									
+										// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
 										if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 											extender.remove && extender.remove(attr, this, storage, forType, attribute);
 										};
-										attrs.splice(i, 1);
 									};
-								} else {
-									attrs.splice(i, 1);
 								};
 							};
 							
-							for (let i = attrs.length - 1; i >= 0; i--) {
-								const attr = attrs[i],
-									attribute = attributes[attr],
-									extender = attribute[__Internal__.symbolExtender];
-									
-								// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
-								if ((extender.isType && forType) || (extender.isInstance && !forType)) {
-									extender.remove && extender.remove(attr, this, storage, forType, attribute);
-								};
-							};
-							
+							const attrsKeys = types.keys(attributes);
+							const attrsSymbols = types.symbols(attributes);
+							preLoopAttrs.call(this, attrsKeys);
+							preLoopAttrs.call(this, attrsSymbols);
+							loopAttrs.call(this, attrsKeys);
+							loopAttrs.call(this, attrsSymbols);
+
 							this._super();
 						}
 					);
@@ -5994,20 +6040,23 @@ module.exports = {
 							__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
 								const isType = types.isType(this),
 									attrs = this[__Internal__.symbolAttributes],
-									keys = types.append(types.keys(attrs), types.symbols(attrs)),
 									result = {};
-								for (let i = 0; i < keys.length; i++) {
-									const key = keys[i];
-									if (key !== customSymbol) {
-										const attr = attrs[key],
-											extender = attr[__Internal__.symbolExtender];
-										if (extender) {
-											if ((attr[__Internal__.symbolScope] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
-												result[key] = _shared.getAttribute(this, key);
+								const loopKeys = function _loopKeys(keys) {
+									for (let i = 0; i < keys.length; i++) {
+										const key = keys[i];
+										if (key !== customSymbol) {
+											const attr = attrs[key],
+												extender = attr[__Internal__.symbolExtender];
+											if (extender) {
+												if ((attr[__Internal__.symbolScope] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
+													result[key] = _shared.getAttribute(this, key);
+												};
 											};
 										};
 									};
 								};
+								loopKeys.call(this, types.keys(attrs));
+								loopKeys.call(this, types.symbols(attrs));
 								return result;
 							})))));
 						};
@@ -7730,7 +7779,7 @@ module.exports = {
 										doodad.trapException(ex, obj, attr);
 									} catch(o) {
 										if (root.getOptions().debug) {
-											debugger;
+											types.DEBUGGER();
 										};
 									};
 								};
@@ -7826,7 +7875,7 @@ module.exports = {
 											doodad.trapException(ex, obj, attr);
 										} catch (o) {
 											if (root.getOptions().debug) {
-												debugger;
+												types.DEBUGGER();
 											};
 										};
 									};

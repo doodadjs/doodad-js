@@ -757,6 +757,14 @@
 		// "_instanceof"
 		_shared.Natives.functionHasInstance = (_shared.Natives.symbolHasInstance ? global.Function.prototype[_shared.Natives.symbolHasInstance] : undefined);
 
+
+		__Internal__.ADD('DEBUGGER', function() {
+			// Something weird just happened. Please see the call stack.
+
+			// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
+			debugger;
+		});
+
 		//===================================
 		// Eval
 		//===================================
@@ -1190,7 +1198,7 @@
 					if (types.isString(message)) {
 						message = tools.format(message, params || []);
 					};
-					debugger;
+					types.DEBUGGER();
 					throw new types.AssertionError(message);
 				};
 			});
@@ -3032,7 +3040,8 @@
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
 		_shared.SECRET = types.get(__options__, 'secret');
-		delete __options__.secret;
+		//delete __options__.secret;
+		__options__.secret = null;
 
 		types.freezeObject(__options__);
 		
@@ -4597,7 +4606,8 @@
 		};
 		//! END_IF()
 
-		delete __Internal__.AssertionErrorDD_DOC;
+		//delete __Internal__.AssertionErrorDD_DOC;
+		__Internal__.AssertionErrorDD_DOC = null;
 
 		__Internal__.REGISTER(__Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -5037,7 +5047,8 @@
 			for (let i = 0; i < __Internal__.tempDocs.length; i++) {
 				__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
 			};
-			delete __Internal__.tempDocs;
+			//delete __Internal__.tempDocs;
+			__Internal__.tempDocs = null;
 		})();
 
 		//===================================
@@ -5722,88 +5733,92 @@
 		});
 		
 		__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables) {
-			const forType = types.isType(target),
-				keys = types.append(types.keys(proto), types.symbols(proto));
+			const forType = types.isType(target);
 
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
+			const loopKeys = function loopKeys(keys) {
+				for (let i = 0; i < keys.length; i++) {
+					const key = keys[i];
 
-				const hasKey = types.has(target, key);
-				if (hasKey && skipExisting) {
-					continue;
-				};
-
-				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
-					const attr = types.AttributeBox(proto[key]),
-						g = types.get(attr, __Internal__.symbolGetter),
-						s = types.get(attr, __Internal__.symbolSetter);
-					let value = attr,
-						isFunction = false;
-
-					if (!g && !s) {
-						if (hasKey) {
-							value = target[key];
-						};
-						value = types.unbox(value);
-						isFunction = types.isJsFunction(value);
-					};
-
-					let cf = types.get(attr, _shared.ConfigurableSymbol);
-					if (types.isNothing(cf)) {
-						cf = !isFunction;
-					};
-
-					if (cf && skipConfigurables && !types.hasIn(target, key)) {
+					const hasKey = types.has(target, key);
+					if (hasKey && skipExisting) {
 						continue;
 					};
 
-					const createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
-					if (createSuper) {
-						const _super = base && _shared.getAttribute(base, key);
-						value = __Internal__.createCaller(key, value, _super);
-					};
+					if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
+						const attr = types.AttributeBox(proto[key]),
+							g = types.get(attr, __Internal__.symbolGetter),
+							s = types.get(attr, __Internal__.symbolSetter);
+						let value = attr,
+							isFunction = false;
 
-					if (isFunction) {
-						_shared.setAttributes(value, {
-							apply: value.apply,
-							call: value.call,
-							bind: value.bind,
-						}, {ignoreWhenReadOnly: true});
-					};
-
-					if (preApply) {
-						_shared.setAttribute(target, key, value, {all: true});
-
-					} else {
-						let enu = types.get(attr, _shared.EnumerableSymbol);
-						if (types.isNothing(enu)) {
-							enu = true;
+						if (!g && !s) {
+							if (hasKey) {
+								value = target[key];
+							};
+							value = types.unbox(value);
+							isFunction = types.isJsFunction(value);
 						};
 
-						if (g || s) {
-							// TODO: SUPER
-							types.defineProperty(target, key, {
-								configurable: !!cf,
-								enumerable: !!enu,
-								get: g || undefined,
-								set: s || undefined,
-							});
+						let cf = types.get(attr, _shared.ConfigurableSymbol);
+						if (types.isNothing(cf)) {
+							cf = !isFunction;
+						};
+
+						if (cf && skipConfigurables && !types.hasIn(target, key)) {
+							continue;
+						};
+
+						const createSuper = (!hasKey && isFunction ? types.get(attr, _shared.SuperEnabledSymbol) : false);
+						if (createSuper) {
+							const _super = base && _shared.getAttribute(base, key);
+							value = __Internal__.createCaller(key, value, _super);
+						};
+
+						if (isFunction) {
+							_shared.setAttributes(value, {
+								apply: value.apply,
+								call: value.call,
+								bind: value.bind,
+							}, {ignoreWhenReadOnly: true});
+						};
+
+						if (preApply) {
+							_shared.setAttribute(target, key, value, {all: true});
+
 						} else {
-							let ro = types.get(attr, _shared.ReadOnlySymbol);
-							if (types.isNothing(ro)) {
-								ro = isFunction;
+							let enu = types.get(attr, _shared.EnumerableSymbol);
+							if (types.isNothing(enu)) {
+								enu = true;
 							};
 
-							_shared.setAttribute(target, key, value, {
-								configurable: !!cf,
-								enumerable: !!enu,
-								writable: !ro,
-								ignoreWhenReadOnly: true,
-							});
+							if (g || s) {
+								// TODO: SUPER
+								types.defineProperty(target, key, {
+									configurable: !!cf,
+									enumerable: !!enu,
+									get: g || undefined,
+									set: s || undefined,
+								});
+							} else {
+								let ro = types.get(attr, _shared.ReadOnlySymbol);
+								if (types.isNothing(ro)) {
+									ro = isFunction;
+								};
+
+								_shared.setAttribute(target, key, value, {
+									configurable: !!cf,
+									enumerable: !!enu,
+									writable: !ro,
+									ignoreWhenReadOnly: true,
+								});
+							};
 						};
 					};
 				};
 			};
+
+			loopKeys(types.keys(proto));
+			loopKeys(types.symbols(proto));
 
 			types.defineProperty(target, '_super', {value: null, writable: true});
 		};
@@ -6088,8 +6103,8 @@
 				if (typeProto) {
 					name = types.unbox(types.get(typeProto, '$TYPE_NAME'));
 					uuid = types.unbox(types.get(typeProto, '$TYPE_UUID'));
-					delete typeProto.$TYPE_NAME;
-					delete typeProto.$TYPE_UUID;
+					//delete typeProto.$TYPE_NAME;
+					//delete typeProto.$TYPE_UUID;
 					name = !types.isNothing(name) && types.toString(name) || '';
 					uuid = !types.isNothing(uuid) && types.toString(uuid) || '';
 				};
@@ -6148,7 +6163,7 @@
 					_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
 				} else if (__options__.debug) {
 					// Object already deleted, should not happens.
-					debugger;
+					types.DEBUGGER();
 				};
 			});
 		
@@ -6868,11 +6883,16 @@
 								obj = tool[1];
 							root.Doodad.Tools.ADD(name, obj);
 						};
-						delete __Internal__.tempTypesAdded;
-						delete __Internal__.tempToolsAdded;
-						delete __Internal__.ADD;
-						delete __Internal__.REGISTER;
-						delete __Internal__.ADD_TOOL;
+						//delete __Internal__.tempTypesAdded;
+						//delete __Internal__.tempToolsAdded;
+						//delete __Internal__.ADD;
+						//delete __Internal__.REGISTER;
+						//delete __Internal__.ADD_TOOL;
+						__Internal__.tempTypesAdded = null;
+						__Internal__.tempToolsAdded = null;
+						__Internal__.ADD = null;
+						__Internal__.REGISTER = null;
+						__Internal__.ADD_TOOL = null;
 
 						const nsObjs = types.nullObject({
 							'Doodad': root.Doodad,
@@ -7034,28 +7054,33 @@
 							entry.objectInit && entry.objectInit(opts)
 							entry.init(opts);
 							namespaces.add(name, entry, nsOptions);
-							delete nsObjs[name];
+							//delete nsObjs[name];
+							nsObjs[name] = null;
 						};
 						
 						const nsNames = types.keys(nsObjs);
 						for (let i = 0; i < nsNames.length; i++) {
 							const name = nsNames[i];
 							const namespace = nsObjs[name];
-							const baseName = name.split('/', 2)[0];
-							const entry = new entries.Namespace(root, null, namespace);
-							const opts = options[baseName];
-							entry.init(opts);
-							namespaces.add(name, entry, nsOptions);
+							if (namespace) {
+								const baseName = name.split('/', 2)[0];
+								const entry = new entries.Namespace(root, null, namespace);
+								const opts = options[baseName];
+								entry.init(opts);
+								namespaces.add(name, entry, nsOptions);
+							};
 						};
 						
-						delete types.Namespace[__Internal__.symbolInitialized];
+						//delete types.Namespace[__Internal__.symbolInitialized];
+						types.Namespace[__Internal__.symbolInitialized] = null;
 						_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
 
 						for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 							const type = __Internal__.tempTypesRegistered[i];
 							_shared.REGISTER.call(root.Doodad.Types, type, null, true);
 						};
-						delete __Internal__.tempTypesRegistered;
+						//delete __Internal__.tempTypesRegistered;
+						__Internal__.tempTypesRegistered = null;
 
 						if (_shared.REGISTER !== __Internal__.registerOthers) { 
 							for (let i = 0; i < __Internal__.tempRegisteredOthers.length; i++) {
@@ -7066,10 +7091,12 @@
 							};
 						} else {
 							// "_shared.REGISTER" should have been replaced by "Doodad.js" !!!
-							debugger;
+							types.DEBUGGER();
 						};
-						delete __Internal__.registerOthers;
-						delete __Internal__.tempRegisteredOthers;
+						//delete __Internal__.registerOthers;
+						//delete __Internal__.tempRegisteredOthers;
+						__Internal__.registerOthers = null;
+						__Internal__.tempRegisteredOthers = null;
 					}),
 					
 					//! BEGIN_REMOVE()

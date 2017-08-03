@@ -410,7 +410,7 @@ module.exports = {
 						isAborted = types._instanceof(err, types.ScriptAbortedError)
 					} catch(o) {
 						if (root.getOptions().debug) {
-							debugger;
+							types.DEBUGGER();
 						};
 					};
 					if (isAborted) {
@@ -424,7 +424,7 @@ module.exports = {
 					} catch(o) {
 						ev = null;
 						if (root.getOptions().debug) {
-							debugger;
+							types.DEBUGGER();
 						};
 					};
 
@@ -432,7 +432,7 @@ module.exports = {
 						if (__Internal__.catchAndExitCalled) {
 							// Process didn't exit before another error happened !!! Something is wrong.
 							if (root.getOptions().debug) {
-								debugger;
+								types.DEBUGGER();
 							};
 
 							try {
@@ -448,7 +448,7 @@ module.exports = {
 									_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
 								} catch(o) {
 									if (root.getOptions().debug) {
-										debugger;
+										types.DEBUGGER();
 									};
 								};
 							};
@@ -457,7 +457,7 @@ module.exports = {
 								global.console.log("Page exited with code : " + types.toString(exitCode));
 							} catch(o) {
 								if (root.getOptions().debug) {
-									debugger;
+									types.DEBUGGER();
 								};
 							};
 						
@@ -487,7 +487,7 @@ module.exports = {
 
 								} catch(o) {
 									if (root.getOptions().debug) {
-										debugger;
+										types.DEBUGGER();
 									};
 								};
 							//};
@@ -499,7 +499,7 @@ module.exports = {
 							__Internal__.catchAndExitCalled = true;
 
 							if (root.getOptions().debug) {
-								debugger;
+								types.DEBUGGER();
 							};
 
 							try {
@@ -752,7 +752,8 @@ module.exports = {
 										};
 										if (!ev.getUnified) {
 											ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
-											delete ev.__unified;
+											//delete ev.__unified;
+											ev.__unified = null;
 										};
 										const ctx = {
 											element: element,

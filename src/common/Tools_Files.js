@@ -1099,6 +1099,7 @@ module.exports = {
 								, function set(options) {
 									let newOptions = types.fill(__Internal__.pathAllKeys, {}, this);
 									delete newOptions.extension;
+										//newOptions.extension = null;
 									newOptions = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
@@ -2384,7 +2385,13 @@ module.exports = {
 										};
 									};
 
-									path = types.get(options, 'path', types.get(options, 'pathname', path));
+									let tmpPath = types.get(options, 'path', null);
+									if (types.isNothing(tmpPath)) {
+										tmpPath = types.get(options, 'pathname', null);
+									};
+									if (!types.isNothing(tmpPath)) {
+										path = tmpPath;
+									};
 
 									let domain = types.get(options, 'domain', types.get(options, 'hostname', null)), // Default is Auto-detect
 										port = types.get(options, 'port', null); // Default is Auto-detect
@@ -2790,10 +2797,14 @@ module.exports = {
 								, function set(options) {
 									let newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
 									delete newOptions.extension;
+										//newOptions.extension = null;
 									delete newOptions.host;
+										//newOptions.host = null;
 									if (types.has(options, 'url')) {
 										delete newOptions.path;
+											//newOptions.path = null;
 										delete newOptions.file;
+											//newOptions.file = null;
 									};
 									newOptions = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);

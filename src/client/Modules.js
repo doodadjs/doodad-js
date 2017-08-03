@@ -279,7 +279,8 @@ module.exports = {
 
 								if (root.getOptions().debug) {
 									DD_MODULES = global.DD_MODULES;
-									delete global.DD_MODULES;
+									//delete global.DD_MODULES;
+									global.DD_MODULES = null;
 								} else {
 									DD_MODULES = {};
 									tools.forEach(files, function(file) {
