@@ -63,7 +63,6 @@ module.exports = {
 				
 				types.complete(_shared.Natives, {
 					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
-					windowArray: global.Array,
 					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 				});
 				
@@ -237,7 +236,7 @@ module.exports = {
 										return P.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
-									const result = _shared.Natives.windowArray(len);
+									const result = types.createArray(len);
 									const state = {start: 0};
 									const mapFn = function _mapFn(val, key, obj) {
 										state.start++;
@@ -386,7 +385,7 @@ module.exports = {
 							if (count <= 0) {
 								resolve([]);
 							} else {
-								const result = _shared.Natives.windowArray(count);
+								const result = types.createArray(count);
 								let successes = 0;
 								let errors = 0;
 								let firstError = null;

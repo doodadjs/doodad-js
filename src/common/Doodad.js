@@ -145,7 +145,6 @@ module.exports = {
 					functionCall: global.Function.prototype.call,
 					functionBind: global.Function.prototype.bind,
 					windowObject: global.Object,
-					windowArray: global.Array,
 				});
 				
 				// Interface
@@ -4879,7 +4878,7 @@ module.exports = {
 					const preExtendLoop = function _preExtendLoop(sourceAttrs) {
 						const sourceAttrsLen = sourceAttrs.length;
 						//const toExtend = [];
-						const toExtend = _shared.Natives.windowArray(sourceAttrsLen);
+						const toExtend = types.createArray(sourceAttrsLen, undefined);
 
 						let index = 0;					
 

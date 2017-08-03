@@ -661,8 +661,10 @@
 
 			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 
-			// "clone"
+			// "createArray"
 			windowArray: global.Array,
+			//arrayFrom: global.Array.from,
+			arrayFillCall: (types.isNativeFunction(global.Array.prototype.fill) ? global.Array.prototype.fill.call.bind(global.Array.prototype.fill) : undefined),
 			
 			// "createErrorType", "isError"
 			windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
@@ -763,6 +765,28 @@
 
 			// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
 			debugger;
+		});
+
+		//===================================
+		// Arrays
+		//===================================
+
+		__Internal__.ADD('createArray', function(length, /*optional*/defaultValue) {
+			length = length | 0;
+			if (length <= 0) {
+				return [];
+			};
+			const ar = new _shared.Natives.windowArray(length);
+			if (arguments.length > 1) {
+				if (_shared.Natives.arrayFillCall) {
+					_shared.Natives.arrayFillCall(ar, defaultValue);
+				} else {
+					for (let i = 0; i < length; i++) {
+						ar[i] = defaultValue;
+					};
+				};
+			};
+			return ar;
 		});
 
 		//===================================
@@ -5051,6 +5075,7 @@
 			__Internal__.tempDocs = null;
 		})();
 
+
 		//===================================
 		// Clone
 		//===================================
@@ -5074,7 +5099,7 @@
 				if (isArray) {
 					obj = _shared.Natives.windowObject(obj);
 					if (depth >= 0) {
-						result = new _shared.Natives.windowArray(obj.length);
+						result = types.createArray(obj.length);
 						const len = obj.length;
 						for (let key = 0; key < len; key++) {
 							if (types.has(obj, key)) {

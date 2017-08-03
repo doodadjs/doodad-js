@@ -150,9 +150,6 @@ module.exports = {
 
 					// Polyfills
 
-					// "map"
-					windowArray: global.Array,
-
 					// "sign"
 					mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
 
@@ -345,7 +342,7 @@ module.exports = {
 								if (_shared.Natives.arrayMapCall && (start === 0) && (end >= len) && !sparsed) {
 									return _shared.Natives.arrayMapCall(obj, fn, thisObj);
 								} else {
-									const result = _shared.Natives.windowArray(end - start);
+									const result = types.createArray(end - start);
 									let pos = 0;
 									for (let key = start; key < end; key++) {
 										if (!sparsed || types.has(obj, key)) {
