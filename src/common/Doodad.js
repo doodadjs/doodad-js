@@ -145,6 +145,7 @@ module.exports = {
 					functionCall: global.Function.prototype.call,
 					functionBind: global.Function.prototype.bind,
 					windowObject: global.Object,
+					windowArray: global.Array,
 				});
 				
 				// Interface
@@ -4842,90 +4843,148 @@ module.exports = {
 					
 					let sourceIsProto = false,
 						sourceTypeProto,
-						sourceInstanceProto,
-						sourceAttrs;
+						sourceInstanceProto;
+						//sourceAttrs;
+
+					let sourceAttrs1 = null,
+						sourceAttrs2 = null,
+						sourceAttrs3 = null,
+						sourceAttrs4 = null;
 
 					if (sourceIsClass) {
 						// doodad-js Class
 						sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
-						sourceAttrs = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
+						//sourceAttrs = types.append(types.keys(sourceAttributes), types.symbols(sourceAttributes));
+						sourceAttrs1 = types.keys(sourceAttributes);
+						sourceAttrs2 = types.symbols(sourceAttributes);
 					} else if (types.isFunction(source)) {
 						// doodad-js Type / JS class
 						sourceTypeProto = source;
 						sourceInstanceProto = source.prototype;
-						sourceAttrs = types.append(types.keys(sourceTypeProto), types.symbols(sourceTypeProto), types.keys(sourceInstanceProto), types.symbols(sourceInstanceProto));
+						//sourceAttrs = types.append(types.keys(sourceTypeProto), types.symbols(sourceTypeProto), types.keys(sourceInstanceProto), types.symbols(sourceInstanceProto));
+						sourceAttrs1 = types.keys(sourceTypeProto);
+						sourceAttrs2 = types.symbols(sourceTypeProto);
+						sourceAttrs3 = types.keys(sourceInstanceProto);
+						sourceAttrs4 = types.symbols(sourceInstanceProto);
 					} else {
 						// Prototype
 						sourceTypeProto = sourceInstanceProto = source;
-						sourceAttrs = types.append(types.keys(source), types.symbols(source));
+						//sourceAttrs = types.append(types.keys(source), types.symbols(source));
+						sourceAttrs1 = types.keys(source);
+						sourceAttrs2 = types.symbols(source);
 						sourceIsProto = true;
 					};
 					
 					// Pre-extend
-					const sourceAttrsLen = sourceAttrs.length;
-					const toExtend = [];
-					
-					for (let k = 0; k < sourceAttrsLen; k++) {
-						const attr = sourceAttrs[k];
+					const preExtendLoop = function _preExtendLoop(sourceAttrs) {
+						const sourceAttrsLen = sourceAttrs.length;
+						//const toExtend = [];
+						const toExtend = _shared.Natives.windowArray(sourceAttrsLen);
 
-						if ((attr === '__proto__') || (attr === '_new') || (attr === '_delete') || (attr in _shared.reservedAttributes)) {
-							continue;
-						};
+						let index = 0;					
 
-						if (baseIsType) {
-							let params = __Internal__.preExtendAttribute(attr, base, baseTypeProto, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, proto, protoName);
+						for (let k = 0; k < sourceAttrsLen; k++) {
+							const attr = sourceAttrs[k];
+
+							if ((attr === '__proto__') || (attr === '_new') || (attr === '_delete') || (attr in _shared.reservedAttributes)) {
+								continue;
+							};
+
+							if (baseIsType) {
+								let params = __Internal__.preExtendAttribute(attr, base, baseTypeProto, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, proto, protoName);
+								if (params) {
+									//toExtend.push(params);
+									toExtend[index++] = params;
+								};
+							};
+						
+							let params = __Internal__.preExtendAttribute(attr, base, baseInstanceProto, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, proto, protoName);
 							if (params) {
-								toExtend.push(params);
+								//toExtend.push(params);
+								toExtend[index++] = params;
 							};
 						};
-						
-						let params = __Internal__.preExtendAttribute(attr, base, baseInstanceProto, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, proto, protoName);
-						if (params) {
-							toExtend.push(params);
-						};
+
+						return toExtend;
 					};
 					
 					// Extend
-					const toExtendLen = toExtend.length;
-					for (let k = 0; k < toExtendLen; k++) {
-						let data = toExtend[k];
-						const params = data[1];
-						data = data[0];
-						const extender = data[0],
-							source = params[1],
-							sourceProto = params[2],
-							destAttributes = params[3],
-							forType = params[4],
-							sourceAttribute = params[5],
-							sourceIsProto = params[7],
-							proto = params[8],
-							protoName = params[9];
-						let attr = params[0],
-							destAttribute = params[6];
-						const result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-						if (destAttribute) {
-							destAttribute = destAttribute.setValue(result);
-						} else {
-							destAttribute = result; //result.clone();
+					const extendLoop = function _extendLoop(toExtend) {
+						const toExtendLen = toExtend.length;
+						for (let k = 0; k < toExtendLen; k++) {
+							let data = toExtend[k];
+							if (!data) {
+								break;
+							};
+							const params = data[1];
+							data = data[0];
+							const extender = data[0],
+								source = params[1],
+								sourceProto = params[2],
+								destAttributes = params[3],
+								forType = params[4],
+								sourceAttribute = params[5],
+								sourceIsProto = params[7],
+								proto = params[8],
+								protoName = params[9];
+							let attr = params[0],
+								destAttribute = params[6];
+							const result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+							if (destAttribute) {
+								destAttribute = destAttribute.setValue(result);
+							} else {
+								destAttribute = result; //result.clone();
+							};
+							const newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
+							if (newAttr) {
+								destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName);
+								attr = newAttr;
+							};
+							let overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
+							if (overrideWith) {
+								overrideWith = doodad.OVERRIDE(overrideWith);
+								const result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, true, proto, protoName);
+								destAttribute = destAttribute.setValue(result);
+							};
+							destAttributes[attr] = destAttribute;
+							if (extender.isPreserved && !types.isSymbol(attr)) {
+								const presAttr = '__' + attr + '_preserved__';
+								destAttribute = destAttribute.clone();
+								destAttribute[__Internal__.symbolExtender] = extender.get({isPreserved: false});
+								destAttributes[presAttr] = destAttribute;
+							};
 						};
-						const newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
-						if (newAttr) {
-							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName);
-							attr = newAttr;
-						};
-						let overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
-						if (overrideWith) {
-							overrideWith = doodad.OVERRIDE(overrideWith);
-							const result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, true, proto, protoName);
-							destAttribute = destAttribute.setValue(result);
-						};
-						destAttributes[attr] = destAttribute;
-						if (extender.isPreserved && !types.isSymbol(attr)) {
-							const presAttr = '__' + attr + '_preserved__';
-							destAttribute = destAttribute.clone();
-							destAttribute[__Internal__.symbolExtender] = extender.get({isPreserved: false});
-							destAttributes[presAttr] = destAttribute;
-						};
+					};
+
+					let toExtend1 = null,
+						toExtend2 = null,
+						toExtend3 = null,
+						toExtend4 = null;
+
+					if (sourceAttrs1) {
+						toExtend1 = preExtendLoop(sourceAttrs1);
+					};
+					if (sourceAttrs2) {
+						toExtend2 = preExtendLoop(sourceAttrs2);
+					};
+					if (sourceAttrs3) {
+						toExtend3 = preExtendLoop(sourceAttrs3);
+					};
+					if (sourceAttrs4) {
+						toExtend4 = preExtendLoop(sourceAttrs4);
+					};
+
+					if (toExtend1) {
+						extendLoop(toExtend1);
+					};
+					if (toExtend2) {
+						extendLoop(toExtend2);
+					};
+					if (toExtend3) {
+						extendLoop(toExtend3);
+					};
+					if (toExtend4) {
+						extendLoop(toExtend4);
 					};
 				};
 				
