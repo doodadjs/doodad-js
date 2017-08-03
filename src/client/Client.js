@@ -65,6 +65,8 @@ module.exports = {
 
 					symbolHandler: types.getSymbol('__HANDLER__'),
 					symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
+
+					alert: null,
 				};
 
 				//=====================
@@ -155,6 +157,9 @@ module.exports = {
 					stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
 					stringFromCharCode: global.String.fromCharCode.bind(global.String),
 					mathMin: global.Math.min,
+
+					// alert
+					windowAlert: global.alert || global.console.log.bind(global.console),
 				});
 				
 				
@@ -2187,6 +2192,21 @@ module.exports = {
 
 
 				//===================================
+				// Alert
+				//===================================
+
+				tools.ADD('setAlert', function setAlert(alertFn) {
+					__Internal__.alert = alertFn;
+				});
+
+				tools.ADD('alert', function alert(msg, /*optional*/params) {
+					if (params) {
+						msg = tools.format(msg, params);
+					};
+					tools.callAsync(__Internal__.alert, 0, null, [msg]);
+				});
+
+				//===================================
 				// Init
 				//===================================
 				return function init(/*optional*/options) {
@@ -2201,6 +2221,8 @@ module.exports = {
 							types.setPromise(global.ES6Promise.Promise);
 						};
 					};
+
+					tools.setAlert(_shared.Natives.windowAlert);
 				};
 			},
 		};
