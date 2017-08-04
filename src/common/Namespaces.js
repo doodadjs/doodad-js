@@ -310,19 +310,20 @@ module.exports = {
 							const missingDeps = [];
 							if (deps) {
 								const entryType = getEntryType(spec);
+								const defaultAutoLoad = types.isLike(entryType, entries.Package) || types.isLike(entryType, entries.Application);
 								for (let i = 0; i < deps.length; i++) {
 									if (types.has(deps, i)) {
 										let dep = deps[i],
 											optional = false,
 											version = null,
 											path = null,
-											autoLoad = types.isLike(entryType, entries.Package);
+											autoLoad = defaultAutoLoad;
 										if (!types.isString(dep)) {
 											const depType = getEntryType(dep);
 											path = types.get(dep, 'path', null);
 											optional = types.toBoolean(types.get(dep, 'optional', false));
 											version = types.get(dep, 'version', null);
-											autoLoad = types.get(dep, 'autoLoad', types.isLike(depType, entries.Package));
+											autoLoad = types.get(dep, 'autoLoad', types.isLike(depType, entries.Package) || types.isLike(depType, entries.Application));
 											dep = dep.name;
 										};
 										let depEntry = __Internal__.DD_REGISTRY.get(dep),
@@ -517,7 +518,7 @@ module.exports = {
 						const createObject = function _createObject(entry) {
 							if (entry) {
 								const baseName = entry.spec.name.split('/', 2)[0];
-								let opts = (types._instanceof(entry, entries.Package) ? options : types.get(options, baseName));
+								let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
 								if (globalOptions) {
 									opts = types.extend({}, globalOptions, opts);
 								};
