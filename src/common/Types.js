@@ -177,7 +177,7 @@ module.exports = {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 3,
+								revision: 4,
 								params: {
 									obj: {
 										type: 'string,array,arraylike',
@@ -205,18 +205,24 @@ module.exports = {
 						};
 						obj = _shared.Natives.windowObject(obj);
 						let result,
-							fill = false;
+							len;
 						if (types.isString(obj)) {
 							result = _shared.Natives.arraySliceCall(obj);
+							len = result.length;
 						} else { //if (types.isArrayLike(obj)) {
-							if (obj.length === 1) {
+							len = +obj.length || 0;
+							if (types.isInfinite(len)) {
+								throw new types.TypeError("Invalid array length.");
+							};
+							if (len <= 0) {
+								result = [];
+							} else if (len === 1) {
 								// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
 								result = [obj[0]];
 							} else {
 								result = _shared.Natives.windowArrayApply(null, obj);
 							};
 						};
-						const len = result.length;
 						if (mapFn) {
 							for (let key = 0; key < len; key++) {
 								result[key] = mapFn.call(thisObj, result[key], key);
