@@ -6084,7 +6084,6 @@
 						""
 					) +
 
-					//"let " + (typeProto ? "skipConfigurables = true," : "") +
 					"let obj;" +
 					"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 						"obj = this;" +
@@ -6113,11 +6112,6 @@
 
 						"ctx._shared.setAttribute(this, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
 						"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
-						//(typeProto ? 
-						//	"skipConfigurables = false;" 
-						//: 
-						//	""
-						//) +
 
 						"const isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
 						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
@@ -6130,10 +6124,10 @@
 						"};" +
 					"};" +
 
-					(typeProto ?
+					(typeProto && types.hasDefinePropertyEnabled() ?
 						"if (forType) {" +
 							"ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);" +
-							//"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, skipConfigurables);" +
+							//"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, false, '');" +
 						"};"
 					: 
 						""
@@ -6142,7 +6136,7 @@
 					(instanceProto && types.hasDefinePropertyEnabled() ?
 						"if (!forType) {" +
 							"ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);" +
-							//"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true);" +
+							//"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true, '');" +
 						"};"
 					: 
 						""
@@ -6178,8 +6172,8 @@
 					_shared: _shared,
 					__Internal__: __Internal__,
 					types: types,
-					applyProtoToType: __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
-					applyProtoToInstance: __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
+					applyProtoToType: typeProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
+					applyProtoToInstance: instanceProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
 				});
 
 				let type = types.eval(expr, ctx);
