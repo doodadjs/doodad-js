@@ -768,28 +768,6 @@
 		});
 
 		//===================================
-		// Arrays
-		//===================================
-
-		__Internal__.ADD('createArray', function(length, /*optional*/defaultValue) {
-			length = length | 0;
-			if (length <= 0) {
-				return [];
-			};
-			const ar = new _shared.Natives.windowArray(length);
-			if (arguments.length > 1) {
-				if (_shared.Natives.arrayFillCall) {
-					_shared.Natives.arrayFillCall(ar, defaultValue);
-				} else {
-					for (let i = 0; i < length; i++) {
-						ar[i] = defaultValue;
-					};
-				};
-			};
-			return ar;
-		});
-
-		//===================================
 		// Eval
 		//===================================
 		
@@ -1800,7 +1778,28 @@
 				};
 			}));
 			
-		
+		//===================================
+		// Arrays
+		//===================================
+
+		__Internal__.ADD('createArray', function(length, /*optional*/defaultValue) {
+			length = +length || 0;
+			if ((length <= 0) || types.isInfinite(length)) {
+				return [];
+			};
+			const ar = new _shared.Natives.windowArray(length);
+			if (arguments.length > 1) {
+				if (_shared.Natives.arrayFillCall) {
+					_shared.Natives.arrayFillCall(ar, defaultValue);
+				} else {
+					for (let i = 0; i < length; i++) {
+						ar[i] = defaultValue;
+					};
+				};
+			};
+			return ar;
+		});
+
 		//===================================
 		// Stack functions
 		//===================================
