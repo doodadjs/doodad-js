@@ -998,7 +998,7 @@ module.exports = {
 										// Do nothing
 									} else if (ex.code === 'EPERM') {
 										try {
-											const stats = nodeFs.stat(newPath);
+											const stats = nodeFs.stat(newPath.toApiString());
 											if (stats.isFolder()) {
 												files.rmdirSync(newPath, options);
 											} else {
@@ -1120,7 +1120,7 @@ module.exports = {
 											if (err.code === 'ENOENT') {
 												return loopDeleteContent(parent, names, index + 1);
 											} else if (err.code === 'EPERM') {
-												return isFolder(path)
+												return isFolder(pathStr)
 													.nodeify(function(err2, isFolder) {
 														if (err2) {
 															if (err2.code === 'ENOENT') {
