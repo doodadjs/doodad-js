@@ -5764,11 +5764,13 @@
 					const key = keys[i];
 
 					if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
+						let keyStr;
 						if (generateFnName) {
 							if (isSymbol) {
 								code += "key = protoSymbols[" + types.toString(i) + "];";
 							} else {
-								code += "key = '" + key.replace(/[']/g, "\\'") + "';";
+								keyStr = "'" + key.replace(/[']/g, "\\'") + "'";
+								code += "key = " + keyStr + ";";
 							};
 						};
 
@@ -5918,23 +5920,44 @@
 										code += "ro = " + (ro ? 'true' : 'false') + ";";
 									};
 
-									code += "_shared.setAttribute(target, key, value, {" +
-												"configurable: " + (!!cf ? 'true' : 'false') + "," +
-												"enumerable: " + (!!enu ? 'true' : 'false') + "," +
-												"writable: !ro," +
-												"ignoreWhenReadOnly: true," +
-											"});";
+									if (cf && enu) {
+										code += "if (!ro && " + (isSymbol ? "!(key in target)" : "!(" + keyStr + " in target)") + ") {" +
+													(isSymbol ? 
+														"target[key] = value;" 
+													: 
+														"target[" + keyStr + "] = value;"
+													) +
+												"} else {" +
+													"_shared.setAttribute(target, key, value, {" +
+														"configurable: true," +
+														"enumerable: true," +
+														"writable: !ro," +
+														"ignoreWhenReadOnly: true," +
+													"});" +
+												"};"
+									} else {
+										code += "_shared.setAttribute(target, key, value, {" +
+													"configurable: " + (cf ? 'true' : 'false') + "," +
+													"enumerable: " + (enu ? 'true' : 'false') + "," +
+													"writable: !ro," +
+													"ignoreWhenReadOnly: true," +
+												"});";
+									};
 								} else {
 									if (types.isNothing(ro)) {
 										ro = isFunction;
 									};
 
-									_shared.setAttribute(target, key, value, {
-										configurable: !!cf,
-										enumerable: !!enu,
-										writable: !ro,
-										ignoreWhenReadOnly: true,
-									});
+									if (cf && enu && !ro && !(key in target)) {
+										target[key] = value;
+									} else {
+										_shared.setAttribute(target, key, value, {
+											configurable: !!cf,
+											enumerable: !!enu,
+											writable: !ro,
+											ignoreWhenReadOnly: true,
+										});
+									};
 								};
 							};
 						};
