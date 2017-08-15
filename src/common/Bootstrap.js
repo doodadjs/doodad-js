@@ -4105,12 +4105,17 @@
 								optional: false,
 								description: "Attribute name.",
 							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options",
+							},
 						},
 						returns: 'any',
 						description: "Gets the value of an attribute as from inside the object.",
 			}
 			//! END_REPLACE()
-			, function getAttribute(obj, attr) {
+			, function getAttribute(obj, attr, /*optional*/options) {
 				return obj[attr];
 			});
 			
@@ -4130,18 +4135,23 @@
 								optional: false,
 								description: "Attribute names.",
 							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options",
+							},
 						},
 						returns: 'object',
 						description: "Gets the value of multiple attributes as from inside the object.",
 			}
 			//! END_REPLACE()
-			, function getAttributes(obj, attrs) {
+			, function getAttributes(obj, attrs, /*optional*/options) {
 				const attrsLen = attrs.length,
 					result = {};
 				for (let i = 0; i < attrsLen; i++) {
 					if (types.has(attrs, i)) {
 						const attr = attrs[i];
-						result[attr] = _shared.getAttribute(obj, attr);
+						result[attr] = _shared.getAttribute(obj, attr, options);
 					};
 				};
 				return result;

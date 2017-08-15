@@ -29,7 +29,8 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types/ToSource'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			
+			bootstrap: true,
+
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 

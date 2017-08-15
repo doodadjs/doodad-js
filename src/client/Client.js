@@ -697,7 +697,7 @@ module.exports = {
 					$TYPE_NAME: "JsEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 					
-					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true})))))))),
+					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
 						
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 						const events = this.__JS_EVENTS,
@@ -715,6 +715,104 @@ module.exports = {
 						};
 					})))),
 				}))));
+
+				__Internal__.eventHandlerProto = {
+					$TYPE_NAME: 'JsEventHandler',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventHandler')), true) */,
+
+					attach: doodad.OVERRIDE(function attach(elements, /*optional*/context, /*optional*/useCapture, /*optional*/once) {
+						if (!types.isArrayLike(elements)) {
+							elements = [elements];
+						};
+							
+						useCapture = !!useCapture;
+							
+						const self = this;
+						const handler = self[__Internal__.symbolHandler];
+
+						const createHandler = function(element, eventType) {
+							let ignore = false;
+							return doodad.Callback(self[_shared.ObjectSymbol], function jsEventHandler(ev) {
+								if (!ignore) {
+									if (once) {
+										ignore = true;
+										self.detach(element);
+									};
+									if (!ev.getUnified) {
+										ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
+										//delete ev.__unified;
+										ev.__unified = null;
+									};
+									const ctx = {
+										element: element,
+										event: ev,
+										type: eventType,
+										data: context,
+									};
+									return handler.call(this, ctx);
+								};
+							}, null, null, _shared.SECRET);
+						};
+							
+						const eventType = this[_shared.ExtenderSymbol].eventType;
+								
+						const elementsLen = elements.length;
+						for (let j = 0; j < elementsLen; j++) {
+							if (types.has(elements, j)) {
+								const element = elements[j],
+									handler = createHandler(element, eventType);
+								if (this._super(this[_shared.ObjectSymbol], this, null, [element, eventType, handler])) {
+									client.addListener(element, eventType, handler, useCapture);
+								};
+							};
+						};
+					}),
+
+					attachOnce: doodad.REPLACE(function attachOnce(elements, /*optional*/context, /*optional*/useCapture) {
+						this.attach(elements, context, useCapture, true);
+					}),
+
+					detach: doodad.OVERRIDE(function detach(/*optional*/elements) {
+						if (types.isNothing(elements)) {
+							const evs = this._super(this[_shared.ObjectSymbol], this);
+							const evsLen = evs.length;
+							for (let j = 0; j < evsLen; j++) {
+								const evData = evs[j][3],
+									element = evData[0],
+									type = evData[1],
+									handler = evData[2];
+								client.removeListener(element, type, handler);
+							};
+						} else {
+							if (!types.isArrayLike(elements)) {
+								elements = [elements];
+							};
+								
+							root.DD_ASSERT && root.DD_ASSERT(tools.every(elements, function(element) {
+								return client.isEventTarget(element);
+							}), "Invalid elements.");
+								
+							const elementsLen = elements.length;
+							for (let i = 0; i < elementsLen; i++) {
+								const evs = this._super(this[_shared.ObjectSymbol], this, [elements[i]]);
+								const evsLen = evs.length;
+								for (let j = 0; j < evsLen; j++) {
+									const evData = evs[j][3],
+										element = evData[0],
+										type = evData[1],
+										handler = evData[2];
+									client.removeListener(element, type, handler);
+								};
+							};
+						};
+					}),
+
+					clear: function clear() {
+						this.detach();
+					},
+				};
+
+				__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
 				
 				doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -726,157 +824,7 @@ module.exports = {
 							description: "JS event handler prototype.",
 				}
 				//! END_REPLACE()
-				, doodad.EventHandler.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'JsEventHandler',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventHandler')), true) */,
-					},
-					/*instanceProto*/
-					{
-						attach: types.SUPER(function attach(elements, /*optional*/context, /*optional*/useCapture, /*optional*/once) {
-							if (!types.isArrayLike(elements)) {
-								elements = [elements];
-							};
-							
-							useCapture = !!useCapture;
-							
-							const createHandler = function(element, eventType) {
-								let ignore = false;
-								const self = this;
-								return doodad.Callback(this[_shared.ObjectSymbol], function jsEventHandler(ev) {
-									if (!ignore) {
-										if (once) {
-											ignore = true;
-											self.detach(element);
-										};
-										if (!ev.getUnified) {
-											ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
-											//delete ev.__unified;
-											ev.__unified = null;
-										};
-										const ctx = {
-											element: element,
-											event: ev,
-											type: eventType,
-											data: context,
-										};
-										return self[__Internal__.symbolHandler].call(this, ctx);
-									};
-								});
-							};
-							
-							const eventType = this[_shared.ExtenderSymbol].eventType;
-								
-							const elementsLen = elements.length;
-							for (let j = 0; j < elementsLen; j++) {
-								if (types.has(elements, j)) {
-									const element = elements[j],
-										handler = createHandler.call(this, element, eventType);
-									if (this._super(this[_shared.ObjectSymbol], this, null, [element, eventType, handler])) {
-										client.addListener(element, eventType, handler, useCapture);
-									};
-								};
-							};
-						}),
-
-						attachOnce: function attachOnce(elements, /*optional*/context, /*optional*/useCapture) {
-							this.attach(elements, context, useCapture, true);
-						},
-
-						detach: types.SUPER(function detach(/*optional*/elements) {
-							if (types.isNothing(elements)) {
-								const evs = this._super(this[_shared.ObjectSymbol], this);
-								const evsLen = evs.length;
-								for (let j = 0; j < evsLen; j++) {
-									const evData = evs[j][3],
-										element = evData[0],
-										type = evData[1],
-										handler = evData[2];
-									client.removeListener(element, type, handler);
-								};
-							} else {
-								if (!types.isArrayLike(elements)) {
-									elements = [elements];
-								};
-								
-								root.DD_ASSERT && root.DD_ASSERT(tools.every(elements, function(element) {
-									return client.isEventTarget(element);
-								}), "Invalid elements.");
-								
-								const elementsLen = elements.length;
-								for (let i = 0; i < elementsLen; i++) {
-									const evs = this._super(this[_shared.ObjectSymbol], this, [elements[i]]);
-									const evsLen = evs.length;
-									for (let j = 0; j < evsLen; j++) {
-										const evData = evs[j][3],
-											element = evData[0],
-											type = evData[1],
-											handler = evData[2];
-										client.removeListener(element, type, handler);
-									};
-								};
-							};
-						}),
-
-						clear: function clear() {
-							this.detach();
-						},
-/*
-						promise: function promise(elements, /*optional* /context, /*optional* /useCapture) {
-							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							const canReject = this[_shared.ExtenderSymbol].canReject;
-							const Promise = types.getPromise();
-							return Promise.create(function eventPromise(resolve, reject) {
-								const self = this,
-									obj = this[__Internal__.symbolObject],
-									errorEvent = obj.__ERROR_EVENT,
-									destroy = types.isImplemented(obj, 'onDestroy');
-
-								const cleanup = function cleanup() {
-									detachedFn && obj.onEventDetached.detach(null, detachedFn); // Must be first to be detached
-									self.detach(null, successFn);
-									errorEvent && obj[errorEvent].detach(null, errorFn);
-									destroy && obj.onDestroy.detach(null, destroyFn);
-								};
-
-								this.attachOnce(elements, context, useCapture, function(ev) {
-									cleanup();
-									if (canReject && types._instanceof(ev, doodad.ErrorEvent)) {
-										return reject(ev);
-									} else {
-										return resolve(ev);
-									};
-								});
-
-								if (errorEvent) {
-									obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
-										cleanup();
-										reject(ev.error);
-									});
-								};
-
-								if (destroy) {
-									obj.onDestroy.attachOnce(null, destroyFn = function (ev) {
-										cleanup();
-										// NOTE: We absolutly must reject the Promise.
-										reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
-									});
-								};
-
-								obj.onEventDetached.attach(null, detachedFn = function(ev) {
-									if (ev.data.handler === successFn) {
-										tools.callAsync(cleanup, -1); // Must be async
-										// NOTE: We absolutly must reject the Promise.
-										reject(new types.ScriptInterruptedError("Target event has been detached."));
-									};
-								});
-
-							}, this);
-						},
-*/
-					}
-				)));
+				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 				
 				extenders.REGISTER([], root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -941,43 +889,54 @@ module.exports = {
 							const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
 							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
 							if (handlerSrc) {
-								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								const extender = handlerSrc[_shared.ExtenderSymbol];
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
-								return destAttribute;
+								if (extender.extend) {
+									destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+								};
 							} else {
 								const extender = handlerDest[_shared.ExtenderSymbol];
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
-								return destAttribute;
+								if (extender.extend) {
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								};
 							};
 						} else {
 							const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
-							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
 							const extender = handlerSrc[_shared.ExtenderSymbol];
-							destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
-							const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
-							return destAttribute;
+							if (extender.extend) {
+								const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
+								const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
+							};
 						};
+						return destAttribute;
 					}),
 
 					postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
 						const handler = destAttribute[__Internal__.symbolHandlerExtended];
 						if (handler) {
 							const extender = handler[_shared.ExtenderSymbol];
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+							if (extender.postExtend) {
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+							};
 						};
 
 						return this._super(attr, destAttributes, destAttribute);
 					}),
 
-					init: types.SUPER(function init(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto) {
-						this._super(attr, obj, attributes, typeStorage, instanceStorage, forType, attribute, value, isProto);
+					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator) {
+						this._super(attr, attributes, forType, attribute, value, generator);
 
 						const handler = attribute[__Internal__.symbolHandlerExtended];
 						if (handler) {
 							const extender = handler[_shared.ExtenderSymbol];
-							extender.init(__Internal__.symbolHandler, obj[attr], attributes, null, null, forType, handler, types.unbox(handler), isProto);
+							if (extender.init) {
+								const oldObjId = generator.objId;
+								generator.objId = generator.vars.fromKey(attr);
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator);
+								generator.objId = oldObjId;
+							};
 						};
 					}),
 				})));
@@ -1009,12 +968,15 @@ module.exports = {
 						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 					};
 					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
-						const dispatch = this[_shared.CurrentDispatchSymbol],
-							stack = dispatch[_shared.StackSymbol];
+						const dispatch = this[_shared.CurrentDispatchSymbol];
+						
+						const values = _shared.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+
+						const stack = values[_shared.StackSymbol];
 						
 						let clonedStack;
-						if (dispatch[_shared.SortedSymbol]) {
-							clonedStack = dispatch[_shared.ClonedStackSymbol];
+						if (values[_shared.SortedSymbol]) {
+							clonedStack = values[_shared.ClonedStackSymbol];
 						} else {
 							if (stack.length) {
 								stack.sort(function(value1, value2) {
@@ -1024,8 +986,10 @@ module.exports = {
 							} else {
 								clonedStack = [];
 							};
-							dispatch[_shared.SortedSymbol] = true;
-							dispatch[_shared.ClonedStackSymbol] = clonedStack;
+							const values = {};
+							values[_shared.SortedSymbol] = true;
+							values[_shared.ClonedStackSymbol] = clonedStack;
+							_shared.setAttributes(dispatch, values);
 						};
 							
 						const stackLen = clonedStack.length;
@@ -1044,7 +1008,7 @@ module.exports = {
 						};
 					}, extenders.JsEvent, {enableScopes: true, eventType: eventType}))));
 
-					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(fn));
+					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
 
 					return eventFn;
 
