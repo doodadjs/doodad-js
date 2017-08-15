@@ -3317,38 +3317,43 @@ module.exports = {
 						//	},
 						preInit: null,
 
-						init: function init(attr, obj, attributes, forType, attribute, value, generator, isProto) {
-								const descriptor = types.extend({}, value);
-								
-								let get = types.get(descriptor, 'get');
-								if (get) {
-									get = this.createDispatch(attr, obj, attribute, types.unbox(get));  // copy attribute flags of "boxed"
-									if (this.bindMethod) {
-										get = types.INHERIT(get, types.bind(obj, get));
-									};
-									descriptor.get = get;
-								};
-									
-								let set = types.get(descriptor, 'set');
-								if (set) {
-									set = this.createDispatch(attr, obj, attribute, types.unbox(set));  // copy attribute flags of "boxed"
-									if (this.bindMethod) {
-										set = types.INHERIT(set, types.bind(obj, set));
-									};
-									descriptor.set = set;
-								};
-									
-								descriptor.enumerable = this.isEnumerable;
-									
-								if (types.has(descriptor, 'get') || types.has(descriptor, 'set')) {
-									descriptor.configurable = false;
-								} else {
-									descriptor.configurable = this.isReadOnly;
-									descriptor.writable = !this.isReadOnly;
-								};
-									
+						init: function init(attr, attributes, forType, attribute, value, generator, isProto) {
+								const extenderId = generator.vars.add(this);
 								const attrId = generator.vars.add(attr);
-								const descriptorId = generator.vars.add(descriptor);
+								const attributeId = generator.vars.add(attribute);
+								
+								const valueId = generator.vars.add(value);
+								const descriptorId = generator.vars.add(new generator.DynamicValue("types.extend({}, " + valueId + ")"));
+
+								const get = types.get(value, 'get');
+								if (get) {
+									const getId = generator.vars.add(types.unbox(get));
+									let dispatchId = generator.vars.add(new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + getId + ")"));
+									if (this.bindMethod) {
+										dispatchId = generator.vars.add(new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))"));
+									};
+									generator.code.add(descriptorId + ".get = " + dispatchId);
+								};
+									
+								const set = types.get(value, 'set');
+								if (set) {
+									const setId = generator.vars.add(types.unbox(set));
+									let dispatchId = generator.vars.add(new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + setId + ")"));
+									if (this.bindMethod) {
+										dispatchId = generator.vars.add(new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))"));
+									};
+									generator.code.add(descriptorId + ".set = " + dispatchId);
+								};
+									
+								generator.code.add(descriptorId + ".enumerable = " + types.toSource(this.isEnumerable));
+									
+								if (get || set) {
+									generator.code.add(descriptorId + ".configurable = false");
+								} else {
+									generator.code.add(descriptorId + ".configurable = " + types.toSource(this.isReadOnly));
+									generator.code.add(descriptorId + ".writable = " + types.toSource(!this.isReadOnly));
+								};
+									
 								generator.define(attrId, descriptorId);
 							},
 
@@ -5225,6 +5230,9 @@ module.exports = {
 						propsId: 'props',
 						vars: {
 							add: function add(val, /*optional*/key) {
+								if (key && (key in generator.__kvars)) {
+									throw new types.Error("Key '~0~' already added.", [key]);
+								};
 								let varId;
 								if (val instanceof generator.DynamicValue) {
 									generator.__endDefine();

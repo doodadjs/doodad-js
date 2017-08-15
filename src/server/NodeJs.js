@@ -3153,8 +3153,11 @@ module.exports = {
 							if (extender.init) {
 								const oldObjId = generator.objId;
 								generator.objId = generator.vars.fromKey(attr);
-								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator);
+								const oldKeyVars = generator.__kvars;
+								generator.__kvars = types.nullObject();
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto);
 								generator.objId = oldObjId;
+								generator.__kvars = oldKeyVars;
 							};
 						};
 					}),

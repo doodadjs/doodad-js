@@ -729,6 +729,7 @@ module.exports = {
 							
 						const self = this;
 						const handler = self[__Internal__.symbolHandler];
+						const extender = self[_shared.ExtenderSymbol];
 
 						const createHandler = function(element, eventType) {
 							let ignore = false;
@@ -739,7 +740,7 @@ module.exports = {
 										self.detach(element);
 									};
 									if (!ev.getUnified) {
-										ev.getUnified = self[_shared.ExtenderSymbol].getUnified;
+										ev.getUnified = extender.getUnified;
 										//delete ev.__unified;
 										ev.__unified = null;
 									};
@@ -807,9 +808,9 @@ module.exports = {
 						};
 					}),
 
-					clear: function clear() {
+					clear: doodad.REPLACE(function clear() {
 						this.detach();
-					},
+					}),
 				};
 
 				__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
@@ -925,8 +926,8 @@ module.exports = {
 						return this._super(attr, destAttributes, destAttribute);
 					}),
 
-					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator) {
-						this._super(attr, attributes, forType, attribute, value, generator);
+					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto) {
+						this._super(attr, attributes, forType, attribute, value, generator, isProto);
 
 						const handler = attribute[__Internal__.symbolHandlerExtended];
 						if (handler) {
@@ -934,8 +935,11 @@ module.exports = {
 							if (extender.init) {
 								const oldObjId = generator.objId;
 								generator.objId = generator.vars.fromKey(attr);
-								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator);
+								const oldKeyVars = generator.__kvars;
+								generator.__kvars = types.nullObject();
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto);
 								generator.objId = oldObjId;
+								generator.__kvars = oldKeyVars;
 							};
 						};
 					}),
