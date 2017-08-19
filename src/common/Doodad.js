@@ -2572,8 +2572,6 @@ module.exports = {
 									return retVal;
 								});
 
-								_dispatch[__Internal__.symbolCalled] = false;
-
 								return _dispatch;
 							}),
 
@@ -2613,6 +2611,7 @@ module.exports = {
 								const caller = this.callerTemplate(attr, sourceAttribute, destAttribute);
 
 								const values = {};
+								values[__Internal__.symbolCalled] = false;
 								values[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
 								values[__Internal__.symbolModifiers] = (sourceAttribute[__Internal__.symbolModifiers] || 0);
 								values[__Internal__.symbolPosition] = sourceAttribute[__Internal__.symbolPosition];
