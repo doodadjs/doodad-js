@@ -380,6 +380,12 @@ module.exports = {
 
 				__Internal__.pathAllKeys = types.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
 				__Internal__.pathAllKeysAndNonStoredKeys = types.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
+
+				// NOTE: To prevent using "delete"
+				__Internal__.pathSetExcludedKeys = ['extension'];
+				__Internal__.pathAllKeysForSet = tools.filter(__Internal__.pathAllKeys, function(key) {
+							return (tools.indexOf(__Internal__.pathSetExcludedKeys, key) < 0);
+						});
 				
 				files.ADD('Path', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1097,9 +1103,8 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									let newOptions = types.fill(__Internal__.pathAllKeys, {}, this);
-									delete newOptions.extension;
-										//newOptions.extension = null;
+									let newOptions = types.fill(__Internal__.pathAllKeysForSet, {}, this);
+										//delete newOptions.extension;
 									newOptions = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
@@ -2273,6 +2278,12 @@ module.exports = {
 				__Internal__.urlAllKeys = types.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 				__Internal__.urlAllKeysAndNonStoredKeys = types.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
 
+				// NOTE: To prevent using "delete"
+				__Internal__.urlSetExcludedKeys = ['extension', 'host', 'path', 'file'];
+				__Internal__.urlAllKeysForSet = tools.filter(__Internal__.urlAllKeys, function(key) {
+							return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
+						});
+
 				__Internal__.defaultPorts = types.nullObject({
 					http: 80,
 					https: 443,
@@ -2795,16 +2806,14 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									let newOptions = types.fill(__Internal__.urlAllKeys, {}, this);
-									delete newOptions.extension;
-										//newOptions.extension = null;
-									delete newOptions.host;
-										//newOptions.host = null;
-									if (types.has(options, 'url')) {
-										delete newOptions.path;
-											//newOptions.path = null;
-										delete newOptions.file;
-											//newOptions.file = null;
+									let newOptions = types.fill(__Internal__.urlAllKeysForSet, {}, this);
+										//delete newOptions.extension;
+										//delete newOptions.host;
+									if (!types.has(options, 'url')) {
+										newOptions.path = this.path;
+										newOptions.file = this.file;
+											//delete newOptions.path;
+											//delete newOptions.file;
 									};
 									newOptions = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
