@@ -109,6 +109,7 @@ module.exports = {
 
 					// Methods (Dispatches)
 					symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
+//					symbolSuperAsync: types.getSymbol('__ASYNC_SUPER__'),
 
 					// Callers
 					symbolOk: types.getSymbol('__OK__'),
@@ -2268,6 +2269,80 @@ module.exports = {
 								return _caller;
 							}),
 
+						validateDispatchResult: function validateDispatchResult(result, attr, async, attribute, obj, secret) {
+								if (async) {
+									// Asynchronous methods must always return a Promise
+									const Promise = types.getPromise();
+									result = Promise.resolve(result);
+									if (root.getOptions().debug || __options__.enforcePolicies) {
+										const validator = attribute[__Internal__.symbolReturns];
+										if (validator) {
+											result = result.then(function(val) {
+												if (!validator.call(obj, val)) {
+													throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+												};
+												return val;
+											}, null, obj, secret);
+										};
+									};
+								} else {
+									if (root.getOptions().debug || __options__.enforcePolicies) {
+										const validator = attribute[__Internal__.symbolReturns];
+										// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+										if (validator && !validator.call(obj, result)) {
+											if (attr === 'toString') {
+												result = tools.format("Invalid returned value from method '~0~'.", [attr]);
+											} else {
+												throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
+											};
+										};
+									};
+								};
+								return result;
+							},
+
+						handleDispatchError: function handleDispatchError(ex, attr, obj) {
+								const type = types.getType(obj);
+								const attributes = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+								const notReentrantMap = __Internal__.notReentrantMap.get(obj);
+								let emitted = false;
+								if (!ex.bubble /*&& !ex.trapped*/) {
+									if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
+										let destroyed = false;
+										if (obj._implements(mixIns.Creatable)) {
+											destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+										};
+										if (destroyed === false) { // NOTE: Can be 'null' for "not created".
+											const errorEvent = obj.__ERROR_EVENT;
+											if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
+												const errorAttr = attributes[errorEvent];
+												const onError = obj[errorEvent];
+												if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
+													// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
+													if (onError.getCount() > 0) {
+														// <PRB> Node.Js re-emits 'error'.
+														onError.attachOnce(null, function noop(err) {});
+													};
+													emitted = onError.call(obj, ex);
+												} else {
+													const ev = new doodad.ErrorEvent(ex);
+													onError.call(obj, ev);
+													if (ev.prevent) {
+														ex.trapped = true;
+													};
+													//if (ex.trapped) {
+													//	emitted = true;
+													//};
+												};
+											};
+										};
+									};
+								};
+								if (!emitted) {
+									throw ex;
+								};
+							},
+
 						dispatchTemplate: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2294,7 +2369,7 @@ module.exports = {
 									description: "Template function to create a dispatch.",
 							}
 							//! END_REPLACE()
-							, function(attr, attribute, callers) {
+							, function dispatchTemplate(attr, attribute, callers) {
 								const extender = this;
 
 								const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/) {
@@ -2393,78 +2468,10 @@ module.exports = {
 										};
 									};
 
-									const handleError = function handleError(ex) {
-										let emitted = false;
-										if (!ex.bubble /*&& !ex.trapped*/) {
-											if ((types.isClass(type) || types.isInterfaceClass(type)) && this._implements(mixIns.Events)) {
-												let destroyed = false;
-												if (this._implements(mixIns.Creatable)) {
-													destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-												};
-												if (destroyed === false) { // NOTE: Can be 'null' for "not created".
-													const errorEvent = this.__ERROR_EVENT;
-													if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
-														const errorAttr = attributes[errorEvent];
-														const onError = this[errorEvent];
-														if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
-															// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
-															if (onError.getCount() > 0) {
-																// <PRB> Node.Js re-emits 'error'.
-																onError.attachOnce(null, function noop(err) {});
-															};
-															emitted = onError.call(this, ex);
-														} else {
-															const ev = new doodad.ErrorEvent(ex);
-															onError.call(this, ev);
-															if (ev.prevent) {
-																ex.trapped = true;
-															};
-														};
-													};
-												};
-											};
-										};
-										if (!emitted) {
-											throw ex;
-										};
-									}
-
-									const validateResult = function validateResult(result) {
-										if (async) {
-											// Asynchronous methods must always return a Promise
-											const Promise = types.getPromise();
-											result = Promise.resolve(result);
-											if (root.getOptions().debug || __options__.enforcePolicies) {
-												const validator = attribute[__Internal__.symbolReturns];
-												if (validator) {
-													result = result.then(function(val) {
-														if (!validator.call(this, val)) {
-															throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
-														};
-														return val;
-													}, null, this);
-												};
-											};
-										} else {
-											if (root.getOptions().debug || __options__.enforcePolicies) {
-												const validator = attribute[__Internal__.symbolReturns];
-												// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-												if (validator && !validator.call(this, result)) {
-													if (attr === 'toString') {
-														result = tools.format("Invalid returned value from method '~0~'.", [attr]);
-													} else {
-														throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
-													};
-												};
-											};
-										};
-										return result;
-									};
-
 									const caller = _dispatch[__Internal__.symbolCallers][0];
 									if (!caller) {
 										// No caller
-										return validateResult(undefined);
+										return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 									};
 									
 									const oldCallerCalled = caller[__Internal__.symbolCalled];
@@ -2490,7 +2497,7 @@ module.exports = {
 										//	_shared.setAttributes(host, values);
 										//};
 									
-										__Internal__.invokedClass = type;
+//										_dispatch[__Internal__.symbolSuperAsync] = false;
 
 										if (notReentrant) {
 											notReentrantMap.set(attr, true);
@@ -2498,16 +2505,20 @@ module.exports = {
 
 										caller[__Internal__.symbolCalled] = false;
 										
+										__Internal__.invokedClass = type;
 
-										retVal = validateResult(caller.apply(this, arguments));
+										retVal = caller.apply(this, arguments);
 
+//										if (!_dispatch[__Internal__.symbolSuperAsync]) {
+											retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
+//										};
 
 									} catch(ex) {
 										if (attr === 'toString') {
 											// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 											try {
 												retVal = "Error: " + types.toString(ex);
-											} catch (o) {
+											} catch(o) {
 												retVal = "Internal error";
 											};
 										} else {
@@ -2516,27 +2527,31 @@ module.exports = {
 												const Promise = types.getPromise();
 												retVal = Promise.reject(ex);
 											} else {
-												handleError.call(this, ex);
+												extender.handleDispatchError(ex, attr, this);
 											};
 										};
 										
 									} finally {
-										if (notReentrant) {
-											if (async && retVal) {
-												retVal = retVal.nodeify(function resetCalled(err, result) {
+//										if (!_dispatch[__Internal__.symbolSuperAsync]) {
+											if (notReentrant) {
+												if (async && retVal) {
+													retVal = retVal.nodeify(function resetCalled(err, result) {
+														notReentrantMap.set(attr, false);
+														if (err) {
+															extender.handleDispatchError(err, attr, this);
+														} else {
+															return result;
+														};
+													}, this);
+												} else {
 													notReentrantMap.set(attr, false);
-													if (err) {
-														handleError.call(this, err);
-													} else {
-														return result;
-													};
-												}, this);
-											} else {
-												notReentrantMap.set(attr, false);
+												};
+											} else if (async && retVal) {
+												retVal = retVal.catch(function(err) {
+														extender.handleDispatchError(err, attr, this);
+													}, this);
 											};
-										} else if (async && retVal) {
-											retVal = retVal.catch(handleError, this);
-										};
+//										};
 
 										__Internal__.invokedClass = oldInvokedClass;
 										caller[__Internal__.symbolCalled] = oldCallerCalled;
@@ -5728,8 +5743,10 @@ module.exports = {
 								this._super[__Internal__.symbolCalled] = true;
 							};
 						}))))));
-/* TODO: Test and debug, don't forget ASYNC functions
-				__Internal__.superAsync = root.DD_DOC(
+
+/* TODO: Complete
+				// TODO: Try re-using "dispatchTemplate"
+				__Internal__._superAsync = root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
@@ -5740,54 +5757,107 @@ module.exports = {
 						}
 						//! END_REPLACE()
 						, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
-						function superAsync() {
-							var _super = this._super;
+						function _superAsync() {
+							const _super = this._super;
+
+							const attributes = this[__Internal__.symbolAttributes],
+								dispatch = this[__Internal__.symbolCurrentDispatch],
+								index = this[__Internal__.symbolCurrentCallerIndex];
+
+							const modifiers = dispatch[__Internal__.symbolModifiers],
+								async = !!(modifiers & doodad.MethodModifiers.Async),
+								canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed);
+
+							const attr = dispatch[_shared.NameSymbol],
+								attribute = attributes[attr],
+								extender = attribute[__Internal__.symbolExtender];
+
+							const notReentrant = __Internal__.notReentrantMap.get(this);
 
 							if (_super) {
-								var obj = this,
-									type = types.getType(obj),
-									forType = types.isType(obj);
-
 								_super[__Internal__.symbolCalled] = true;
-								
-								var dispatch = this[__Internal__.symbolCurrentDispatch],
-									index = this[__Internal__.symbolCurrentCallerIndex],
-									modifiers = dispatch[__Internal__.symbolModifiers];
-								
-								var _superApply = _super.apply.bind(_super);
+							};
 
-								return function superAsync(/*paramarray* /) {
-									if (this._implements(mixIns.Creatable)) {
-										var destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
-										var attr = dispatch[_shared.NameSymbol];
-										if ((destroyed === null) && !forType && (attr !== 'create')) {
-											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+							dispatch[__Internal__.symbolSuperAsync] = true;
+
+							return (function superAsync(/*paramarray* /) {
+								if (!canBeDestroyed && types.DESTROYED(this)) {
+									throw new types.TypeError("Object is destroyed.");
+								};
+									
+								if (!_super) {
+									// No caller
+									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
+								};
+
+								const oldInvokedClass = __Internal__.invokedClass;
+								const oldValues = _shared.getAttributes(this, ['_super', __Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
+								const oldCallerCalled = _super[__Internal__.symbolCalled];
+
+								__Internal__.invokedClass = types.getType(this);
+
+								let retVal = undefined;
+
+								try {
+									const attrs = {};
+									attrs._super = _super;
+									attrs[__Internal__.symbolCurrentDispatch] = dispatch;
+									attrs[__Internal__.symbolCurrentCallerIndex] = index;
+									_shared.setAttributes(this, attrs);
+										
+									_super[__Internal__.symbolCalled] = false;
+
+									retVal = _super.apply(this, arguments);
+
+									retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
+
+								} catch(ex) {
+									if (attr === 'toString') {
+										// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+										try {
+											retVal = "Error: " + types.toString(ex);
+										} catch (o) {
+											retVal = "Internal error";
 										};
-										if ((destroyed === true) && !(modifiers & doodad.MethodModifiers.CanBeDestroyed)) {
-											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [attr, types.getTypeName(type) || __Internal__.ANONYMOUS]);
+									} else {
+										if (async) {
+											// Asynchronous methods must always return a Promise
+											const Promise = types.getPromise();
+											retVal = Promise.reject(ex);
+										} else {
+											extender.handleDispatchError(ex, attr, this);
 										};
 									};
 									
-									var oldSuper = _shared.getAttribute(obj, '_super');
-									var oldDispatch = _shared.getAttributes(obj, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-									try {
-										_shared.setAttribute(obj, '_super', _super);
-										
-										var attrs = {};
-										attrs[__Internal__.symbolCurrentDispatch] = dispatch;
-										attrs[__Internal__.symbolCurrentCallerIndex] = index;
-										_shared.setAttributes(obj, attrs);
-										
-										return _superApply(obj, arguments);
-										
-									} finally {
-										_shared.setAttribute(obj, '_super', oldSuper);
-										_shared.setAttributes(obj, oldDispatch);
+								} finally {
+									if (notReentrant) {
+										if (async && retVal) {
+											retVal = retVal.nodeify(function resetCalled(err, result) {
+												notReentrantMap.set(attr, false);
+												if (err) {
+													extender.handleDispatchError(err, attr, this);
+												} else {
+													return result;
+												};
+											}, this);
+										} else {
+											notReentrantMap.set(attr, false);
+										};
+									} else if (async && retVal) {
+										retVal = retVal.catch(function(err) {
+												extender.handleDispatchError(err, attr, this);
+											}, this);
 									};
+
+									__Internal__.invokedClass = oldInvokedClass;
+									_super[__Internal__.symbolCalled] = oldCallerCalled;
+
+									_shared.setAttributes(this, oldValues);
 								};
-							} else {
-								return function() {};
-							};
+
+								return retVal;
+
+							}).bind(this);
 						}))))));
 */
 				__Internal__.classProto = {
@@ -6097,8 +6167,8 @@ module.exports = {
 
 					overrideSuper: __Internal__.overrideSuper,
 					_superFrom: __Internal__._superFrom,
-//TODO: Test and debug					superAsync: __Internal__.superAsync,
-				
+//					_superAsync: __Internal__._superAsync,
+
 					_implements: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -6356,7 +6426,7 @@ module.exports = {
 					
 					overrideSuper: __Internal__.overrideSuper,
 					_superFrom: __Internal__._superFrom,
-					superAsync: __Internal__.superAsync,
+//					_superAsync: __Internal__.superAsync,
 				};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
