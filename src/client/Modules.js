@@ -107,7 +107,7 @@ module.exports = {
 								path = files.parseUrl(path);
 							};
 							let location;
-							if (!path || path.isRelative) {
+							if (module && (!path || path.isRelative)) {
 								location = tools.getCurrentLocation()
 									.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
 									.set({file: ''})

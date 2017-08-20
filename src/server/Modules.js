@@ -80,25 +80,25 @@ module.exports = {
 								description: "Locates a module and returns its path.",
 					}
 					//! END_REPLACE()
-					, function locate(/*optional*/_module, /*optional*/file, /*optional*/options) {
+					, function locate(/*optional*/_module, /*optional*/path, /*optional*/options) {
 						const Promise = types.getPromise();
 						return Promise.try(function() {
 							let location;
-							if (file) {
-								file = files.parsePath(file);
+							if (path) {
+								path = files.parsePath(path);
 							};
-							if (!file || file.isRelative) {
+							if (_module && (!path || path.isRelative)) {
 								location = files.Path.parse(_module, {file: 'package.json'})
 									.toApiString({isRelative: true});
 								location = Module._resolveFilename(location, require.main || module.parent);
 								location = files.Path.parse(location)
 									.set({file: ''});
-								if (file) {
+								if (path) {
 									location = location
-										.combine(file);
+										.combine(path);
 								};
 							} else {
-								location = file;
+								location = path;
 							};
 							if (location.file) {
 								const rootOptions = root.getOptions();
