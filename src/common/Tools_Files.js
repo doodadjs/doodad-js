@@ -1062,7 +1062,7 @@ module.exports = {
 										host: host || null,
 										drive: drive || null,
 										root: dirRoot || null,
-										path: path || [],
+										path: types.freezeObject(path || []),
 										file: file,
 										extension: extension,
 										quote: quote || null,
@@ -1778,7 +1778,7 @@ module.exports = {
 								};
 
 								_shared.setAttribute(this, 'options', options, {});
-								_shared.setAttribute(this, '__args', args, {});
+								_shared.setAttribute(this, '__args', types.freezeObject(args), {});
 							}),
 							
 							__toDataObject: root.DD_DOC(
@@ -2765,7 +2765,7 @@ module.exports = {
 										user: user,
 										password: password,
 										port: port,
-										path: path || [],
+										path: types.freezeObject(path || []),
 										file: file,
 										extension: extension,
 										args: args,
@@ -3116,7 +3116,7 @@ module.exports = {
 									
 									const data = types.fill(__Internal__.urlAllKeys, {}, this);
 
-									const thisPath = this.path;
+									const thisPath = tools.trim(this.path || [], '');
 									const thisFile = this.file;
 
 									if (thisFile) {
