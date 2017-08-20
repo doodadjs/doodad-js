@@ -2049,7 +2049,7 @@ module.exports = {
 									if (types.isNothing(this.__args)) {
 										args = [];
 									} else {
-										args = types.clone(this.__args, 1);
+										args = this.__args.slice(0);
 									};
 
 									tools.forEach(name, function(v, n) {
