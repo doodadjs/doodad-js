@@ -1866,9 +1866,14 @@ module.exports = {
 										") {"
 									, true);
 
+									attrDesc.release();
+
 									const desc = new generator.DynamicValue("{configurable: false, enumerable: " + types.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
 									const descId = generator.vars.add(desc);
 									generator.define(attrId, descId);
+
+									get.release();
+									set.release();
 
 									generator.code.add(
 										"}"
@@ -3004,8 +3009,10 @@ module.exports = {
 									const attrId = generator.vars.add(attr);
 									const attributeId = generator.vars.add(attribute);
 									const valueId = generator.vars.add(value);
-									const valueId2 = generator.vars.add(new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")"));
-									value = new generator.DynamicValue("types.INHERIT(" + valueId2 + ", types.bind(" + generator.objId + ", " + valueId2 + "))");
+									const value2 = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
+									const value2Id = generator.vars.add(value2);
+									value = new generator.DynamicValue("types.INHERIT(" + value2Id + ", types.bind(" + generator.objId + ", " + value2Id + "))");
+									value2.release();
 								} else {
 									const extender = this;
 									const extenderId = generator.vars.add(extender);
@@ -3343,9 +3350,12 @@ module.exports = {
 								const get = types.get(value, 'get');
 								if (get) {
 									const getId = generator.vars.add(types.unbox(get));
-									let dispatchId = generator.vars.add(new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + getId + ")"));
+									const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + getId + ")");
+									let dispatchId = generator.vars.add(dispatch);
 									if (this.bindMethod) {
-										dispatchId = generator.vars.add(new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))"));
+										const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+										dispatch.release();
+										dispatchId = generator.vars.add(newDispatch);
 									};
 									generator.code.add(descriptorId + ".get = " + dispatchId);
 								};
@@ -3353,9 +3363,12 @@ module.exports = {
 								const set = types.get(value, 'set');
 								if (set) {
 									const setId = generator.vars.add(types.unbox(set));
-									let dispatchId = generator.vars.add(new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + setId + ")"));
+									const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + setId + ")");
+									let dispatchId = generator.vars.add(dispatch);
 									if (this.bindMethod) {
-										dispatchId = generator.vars.add(new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))"));
+										const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+										dispatch.release();
+										dispatchId = generator.vars.add(newDispatch);
 									};
 									generator.code.add(descriptorId + ".set = " + dispatchId);
 								};
@@ -5235,13 +5248,13 @@ module.exports = {
 						__code: '',
 						__vars: [],
 						__dvars: 0,
+						__dvarsReleased: [],
 						__props: [],
 						__hasProps: false,
 						__kvars: types.nullObject(),
 						objId: 'obj',
 						storageId: 'storage',
 						varsId: 'vars',
-						dvarsId: 'dvars',
 						propsId: 'props',
 						vars: {
 							add: function add(val, /*optional*/key) {
@@ -5251,7 +5264,16 @@ module.exports = {
 								let varId;
 								if (val instanceof generator.DynamicValue) {
 									generator.__endDefine();
-									varId = generator.dvarsId + "[" + types.toString(generator.__dvars++) + "]";
+									const released = generator.__dvarsReleased;
+									let index = 0;
+									if (released.length) {
+										index = released.shift();
+									} else {
+										index = generator.__dvars;
+										generator.__dvars++;
+									};
+									val.__index = index;
+									varId = "$" + types.toString(index);
 									generator.code.add(varId + " = (" + val.__code + ")");
 								} else {
 									const ar = generator.__vars;
@@ -5292,6 +5314,10 @@ module.exports = {
 								generator.code.add(props.join(';'));
 							};
 						},
+					};
+
+					generator.DynamicValue.prototype.release = function() {
+						generator.__dvarsReleased.push(this.__index);
 					};
 
 					const preLoopAttrs = function _preLoopAttrs(attrs) {
@@ -5368,7 +5394,12 @@ module.exports = {
 					//	return fn;
 					//} else {
 						generator.__endDefine();
-						const code = "(function(" + generator.objId + ", " + generator.storageId + ") {" + (generator.__dvars > 0 ? "const " + generator.dvarsId + " = new _shared.Natives.windowArray(" + types.toSource(generator.__dvars) + "); " : "") + (generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") + generator.__code + (generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + "})";
+						const dvars = generator.__dvars;
+						let dvarsStr = '';
+						for (let i = 0; i < dvars; i++) {
+							dvarsStr += '$' + types.toString(i) + (i < dvars - 1 ? ',' : '');
+						};
+						const code = "(function(" + generator.objId + ", " + generator.storageId + ") {" + (dvarsStr ? "let " + dvarsStr + "; " : "") + (generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") + generator.__code + (generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + "})";
 						const evalFn = types.createEval(['doodad', 'types', 'tools', '_shared', generator.varsId], true)(doodad, types, tools, _shared, types.freezeObject(generator.__vars));
 						const fn = evalFn(code);
 						return fn;
