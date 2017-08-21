@@ -50,7 +50,7 @@ module.exports = {
 				const __Internal__ = {
 					Promise: null,
 					symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_PROMISE_EXTENDED')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
-					symbolPromiseCancelState: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROMISE_CANCEL_STATE')), true) */ '__DD_PROMSIE_CANCEL_STATE__' /*! END_REPLACE() */, true),
+					symbolPromiseCancelState: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROMISE_CANCEL_STATE')), true) */ '__DD_PROMISE_CANCEL_STATE__' /*! END_REPLACE() */, true),
 				};
 
 				
