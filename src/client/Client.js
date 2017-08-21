@@ -436,7 +436,7 @@ module.exports = {
 							};
 
 							try {
-								_shared.Natives.windowDocument.open('text/plain', false);
+								_shared.Natives.windowDocument.open('text/plain', 'replace');
 								_shared.Natives.windowDocument.write("");
 								_shared.Natives.windowDocument.close();
 							} catch(o) {
@@ -447,67 +447,68 @@ module.exports = {
 								try {
 									_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
 								} catch(o) {
-									if (root.getOptions().debug) {
-										types.DEBUGGER();
-									};
 								};
 							};
 						
 							try {
 								global.console.log("Page exited with code : " + types.toString(exitCode));
 							} catch(o) {
-								if (root.getOptions().debug) {
-									types.DEBUGGER();
-								};
 							};
 						
-							//if (!__Internal__.setCurrentLocationPending) {
-								try {
-									let reload = false;
-									let url = files.Url.parse(_shared.Natives.windowLocation.href);
+							if (root.getOptions().debug) {
+								types.DEBUGGER();
+
+								__Internal__.catchAndExitCalled = true;
+
+							} else {
+								//if (!__Internal__.setCurrentLocationPending) {
+									try {
+										let reload = false;
+										let url = files.Url.parse(_shared.Natives.windowLocation.href);
 							
-									// TODO: Better user message, with translation
-									_shared.Natives.windowDocument.open('text/plain', false);
-									if (exitCode !== 0) {
-										if (types.toBoolean(url.args.get('crashReport', true))) {
-											_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
-										} else {
-											reload = true;
-											_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
+										// TODO: Better user message, with translation
+										_shared.Natives.windowDocument.open('text/plain', 'replace');
+										if (exitCode !== 0) {
+											if (types.toBoolean(url.args.get('crashReport', true))) {
+												_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+											} else {
+												reload = true;
+												_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
+											};
 										};
-									};
-									_shared.Natives.windowDocument.close();
+										_shared.Natives.windowDocument.close();
 							
-									if (reload) {
-										url = url.setArgs({crashReport: true})
-										tools.setCurrentLocation(url, true);
+										if (reload) {
+											url = url.setArgs({crashReport: true})
+											tools.setCurrentLocation(url, true);
+										};
+
+										__Internal__.catchAndExitCalled = true;
+
+									} catch(o) {
+										//if (root.getOptions().debug) {
+										//	types.DEBUGGER();
+										//};
 									};
+								//};
+
+								if (!__Internal__.catchAndExitCalled) {
+									// TODO: Better handle that case
 
 									__Internal__.catchAndExitCalled = true;
 
-								} catch(o) {
-									if (root.getOptions().debug) {
-										types.DEBUGGER();
+									//if (root.getOptions().debug) {
+									//	types.DEBUGGER();
+									//};
+
+									try {
+										// Try to blank the page.
+										_shared.Natives.windowDocument.open('text/plain', 'replace');
+										_shared.Natives.windowDocument.write("");
+										_shared.Natives.windowDocument.close();
+									} catch(o) {
 									};
 								};
-							//};
-						};
-					
-						if (!__Internal__.catchAndExitCalled) {
-							// TODO: Better handle that case
-
-							__Internal__.catchAndExitCalled = true;
-
-							if (root.getOptions().debug) {
-								types.DEBUGGER();
-							};
-
-							try {
-								// Try to blank the page.
-								_shared.Natives.windowDocument.open('text/plain', false);
-								_shared.Natives.windowDocument.write("");
-								_shared.Natives.windowDocument.close();
-							} catch(o) {
 							};
 						};
 					};
