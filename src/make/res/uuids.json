@@ -127,5 +127,6 @@
     "JsEvents": "a2ea4835-3a9d-46e4-814e-a130cfc52a49",
     "JsEventHandler": "e90a855b-cd86-4c45-9ca8-ae5d6e31ad2b",
     "JsEventExtender": "c83f2bf6-f0c3-46de-a08a-e71f99280490",
-    "MissingDependencies": "3ebb68c8-d4f6-433f-bea6-12fb2058e4dc"
+    "MissingDependencies": "3ebb68c8-d4f6-433f-bea6-12fb2058e4dc",
+    "SYMBOL_INIT_INSTANCE": "84898bad-b2e7-4a5c-a57f-375fc3985617"
 }
