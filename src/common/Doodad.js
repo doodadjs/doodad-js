@@ -5318,7 +5318,7 @@ module.exports = {
 
 					generator.DynamicValue.prototype.release = function() {
 						if ((this.__index === null) || (generator.__dvarsReleased.indexOf(this.__index) >= 0)) {
-							throw new types.Error("Invalid DynamicValue release.");
+							throw new types.Error("Invalid 'release' call for the dynamic value.");
 						} else {
 							generator.__dvarsReleased.push(this.__index);
 							this.__index = null;
@@ -5404,7 +5404,12 @@ module.exports = {
 						for (let i = 0; i < dvars; i++) {
 							dvarsStr += '$' + types.toString(i) + (i < dvars - 1 ? ',' : '');
 						};
-						const code = "(function(" + generator.objId + ", " + generator.storageId + ") {" + (dvarsStr ? "let " + dvarsStr + "; " : "") + (generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") + generator.__code + (generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + "})";
+						const code = "(function(" + generator.objId + "," + generator.storageId + ") {" + 
+								(dvarsStr ? "let " + dvarsStr + ";" : "") + 
+								(generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") + 
+								generator.__code + 
+								(generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + 
+							"})";
 						const evalFn = types.createEval(['doodad', 'types', 'tools', '_shared', generator.varsId], true)(doodad, types, tools, _shared, types.freezeObject(generator.__vars));
 						const fn = evalFn(code);
 						return fn;
