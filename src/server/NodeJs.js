@@ -3144,8 +3144,8 @@ module.exports = {
 						return this._super(attr, destAttributes, destAttribute);
 					}),
 
-					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto) {
-						this._super(attr, attributes, forType, attribute, value, generator, isProto);
+					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 
 						const handler = attribute[__Internal__.symbolHandlerExtended];
 						if (handler) {
@@ -3155,7 +3155,7 @@ module.exports = {
 								generator.objId = generator.vars.fromKey(attr);
 								const oldKeyVars = generator.__kvars;
 								generator.__kvars = types.nullObject();
-								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto);
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
 								generator.objId = oldObjId;
 								generator.__kvars = oldKeyVars;
 							};
