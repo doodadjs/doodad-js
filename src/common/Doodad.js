@@ -1473,8 +1473,8 @@ module.exports = {
 							getValue: types.READ_ONLY(null), // function getValue(attr, attribute, forType)
 							extend: types.READ_ONLY(null),   // function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName)
 							postExtend: types.READ_ONLY(null), // function postExtend(attr, destAttributes, destAttribute)
-							preInit: types.READ_ONLY(null), // function preInit(attr, attributes, forType, attribute, value, generator, isProto)
-							init: types.READ_ONLY(null), // function init(attr, attributes, forType, attribute, value, generator, isProto)
+							preInit: types.READ_ONLY(null), // function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes)
+							init: types.READ_ONLY(null), // function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes)
 							remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 						}
 					)));
@@ -1781,7 +1781,7 @@ module.exports = {
 								);
 							},
 
-						preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto) {
+						preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								return !((isProto === null) || (this.isProto === null) || (this.isProto === isProto)); // true === Cancel
 							},
 
@@ -1789,7 +1789,7 @@ module.exports = {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: {
 										attr: {
 											type: 'string,symbol',
@@ -1826,58 +1826,73 @@ module.exports = {
 											optional: false,
 											description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
 										},
+										existingAttributes: {
+											type: 'arrayof(string,symbol)',
+											optional: true,
+											description: "List of already existing object attributes. Reserved for expanding objects only when in storage mode.",
+										},
 									},
 									returns: 'undefined',
 									description: "Initializes an attribute for a new object instance.",
 							}
 							//! END_REPLACE()
-							, function init(attr, attributes, forType, attribute, value, generator, isProto) {
+							, function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								const attrId = generator.vars.add(attr);
 								const valueId = (attr === __Internal__.symbolAttributesStorage ? generator.storageId : generator.vars.add(value, attr));
 
 								if (this.__isFromStorage(attribute)) {
 									generator.code.add(generator.storageId + "[" + attrId + "] = " + valueId);
 
-									const extender = this;
-									const extenderId = generator.vars.add(extender);
+									// NOTE: Using "existingAttributes" to optimize
+									if (tools.indexOf(existingAttributes, attr) < 0) {
+										const extender = this;
+										const extenderId = generator.vars.add(extender);
 
-									const attrDesc = new generator.DynamicValue("types.getOwnPropertyDescriptor(" + generator.objId + ", " + attrId + ")");
-									const attrDescId = generator.vars.add(attrDesc);
+										// NOTE: Commented out since using "existingAttributes"
+										//const attrDesc = new generator.DynamicValue("types.getOwnPropertyDescriptor(" + generator.objId + ", " + attrId + ")");
+										//const attrDescId = generator.vars.add(attrDesc);
 
-									const attributeId = generator.vars.add(attribute);
+										const attributeId = generator.vars.add(attribute);
 
-									const get = new generator.DynamicValue(extenderId + ".getterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")");
-									const set = (
-										this.isReadOnly ?
-											new generator.DynamicValue("undefined")
-										:
-											new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")")
-										);
+										const get = new generator.DynamicValue(extenderId + ".getterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")");
+										const set = (
+											this.isReadOnly ?
+												undefined
+											:
+												new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")")
+											);
 
-									const getId = generator.vars.add(get);
-									const setId = generator.vars.add(set);
+										const getId = generator.vars.add(get);
+										const setId = generator.vars.add(set);
 
-									generator.code.add(
-										"if (" +
-											"!" + attrDescId + " || " +
-											attrDescId + ".configurable || " +
-											"!types.isPrototypeOf(doodad.AttributeGetter, " + attrDescId + ".get) || " +
-											"(!types.isNothing(" + attrDescId + ".set) && !types.isPrototypeOf(doodad.AttributeSetter, " + attrDescId + ".set))" +
-										") {"
-									, true);
+										// NOTE: Commented out since using "existingAttributes"
+										//generator.code.add(
+										//	"if (" +
+										//		"!" + attrDescId + " || " +
+										//		attrDescId + ".configurable || " +
+										//		"!types.isPrototypeOf(doodad.AttributeGetter, " + attrDescId + ".get) || " +
+										//		"(!types.isNothing(" + attrDescId + ".set) && !types.isPrototypeOf(doodad.AttributeSetter, " + attrDescId + ".set))" +
+										//	") {"
+										//, true);
 
-									attrDesc.release();
+										// NOTE: Commented out since using "existingAttributes"
+										//attrDesc.release();
 
-									const desc = new generator.DynamicValue("{configurable: false, enumerable: " + types.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
-									const descId = generator.vars.add(desc);
-									generator.define(attrId, descId);
+										const desc = new generator.DynamicValue("{configurable: false, enumerable: " + types.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
+										const descId = generator.vars.add(desc);
+										generator.define(attrId, descId);
 
-									get.release();
-									set.release();
+										get.release();
 
-									generator.code.add(
-										"}"
-									, false);
+										if (set) {
+											set.release();
+										};
+
+										// NOTE: Commented out since using "existingAttributes"
+										//generator.code.add(
+										//	"}"
+										//, false);
+									};
 
 								} else {
 									const ro = this.isReadOnly;
@@ -1949,8 +1964,8 @@ module.exports = {
 						
 						extend: types.READ_ONLY(null),
 
-						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto) {
-								this._super(attr, attributes, forType, attribute, null, generator, isProto);
+						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+								this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
 							}),
 					})));
 				
@@ -2021,17 +2036,17 @@ module.exports = {
 								return attribute;
 							}),
 
-						preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto) {
-								return this._super(attr, attributes, forType, attribute, value, generator, isProto) && !(this.cloneOnInit && types.isClonable(value)); // true === Cancel
+						preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+								return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.cloneOnInit && types.isClonable(value)); // true === Cancel
 							}),
 
-						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto) {
+						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								if (this.cloneOnInit && types.isClonable(value)) {
 									const valueId = generator.vars.add(value);
 									value = new generator.DynamicValue("types.clone(" + valueId + ", " + types.toSource(this.maxDepth) + ", false, " + types.toSource(this.keepUnlocked) + ", true)");
 								};
 								
-								this._super(attr, attributes, forType, attribute, value, generator, isProto);
+								this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 							}),
 					})));
 
@@ -2984,11 +2999,11 @@ module.exports = {
 								return destAttribute;
 							})),
 
-						preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto) {
-								return this._super(attr, attributes, forType, attribute, value, generator, isProto) && !(this.bindMethod && !types.isNothing(value)); // true === Cancel
+						preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+								return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.bindMethod && !types.isNothing(value)); // true === Cancel
 							}),
 
-						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto) {
+						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								////////////////////// TODO:
 								////if (root.getOptions().debug || __options__.enforcePolicies) {
 								////	if (typeStorage) {
@@ -3022,7 +3037,7 @@ module.exports = {
 									value = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
 								};
 
-								this._super(attr, attributes, forType, attribute, value, generator, isProto);
+								this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 							}),
 
 						remove: types.READ_ONLY(null),
@@ -3309,16 +3324,18 @@ module.exports = {
 								destSet = types.get(destDesc, 'set', null);
 
 								if (types.has(destDesc, 'value')) {
-									if (srcGet && !destGet) {
-										destGet = function get(value) {
-											return destDesc.value;
-										}
-									};
-									if (srcSet && !destSet) {
-										destSet = function set(value) {
-											destDesc.value = value;
+									(function(srcGet, srcSet, destGet, destSet, destVal) {
+										if (srcGet && !destGet) {
+											destGet = function get(value) {
+												return destVal;
+											}
 										};
-									};
+										if (srcSet && !destSet) {
+											destSet = function set(value) {
+												destVal = value;
+											};
+										};
+									})(srcGet, srcSet, destGet, destSet, destDesc.value);
 								};
 									
 								const descriptor = types.extend({}, srcDesc);
@@ -3334,12 +3351,16 @@ module.exports = {
 								return sourceAttribute.setValue(descriptor);  // copy attribute flags of "sourceAttribute"
 							}),
 
-						//preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto) {
+						//preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 						//		return false; // true === Cancel
 						//	},
 						preInit: null,
 
-						init: function init(attr, attributes, forType, attribute, value, generator, isProto) {
+						init: function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+								if (tools.indexOf(existingAttributes, attr) >= 0) {
+									throw new types.Error("Property attributes can't be extended within an expandable object.");
+								};
+
 								const extenderId = generator.vars.add(this);
 								const attrId = generator.vars.add(attr);
 								const attributeId = generator.vars.add(attribute);
@@ -5240,7 +5261,7 @@ module.exports = {
 					};
 				};
 
-				__Internal__.initializeAttributes = function initializeAttributes(attributes, forType, values, extendedAttributes, isProto) {
+				__Internal__.initializeAttributes = function initializeAttributes(attributes, forType, values, extendedAttributes, isProto, existingAttributes) {
 					const generator = {
 						DynamicValue: function DynamicValue(code) {
 							this.__code = code;
@@ -5317,7 +5338,7 @@ module.exports = {
 					};
 
 					generator.DynamicValue.prototype.release = function() {
-						if ((this.__index === null) || (generator.__dvarsReleased.indexOf(this.__index) >= 0)) {
+						if ((this.__index == null) || (generator.__dvarsReleased.indexOf(this.__index) >= 0)) {
 							throw new types.Error("Invalid 'release' call for the dynamic value.");
 						} else {
 							generator.__dvarsReleased.push(this.__index);
@@ -5335,11 +5356,11 @@ module.exports = {
 								if ((forType && extender.isType) || (!forType && extender.isInstance)) {
 									if (extender.preExtend && extender.init) {
 										const value = types.get(values, attr, types.unbox(attribute));
-										if (!extender.preInit || !extender.preInit(attr, attributes, forType, attribute, value, generator, isProto)) {
-											extender.init(attr, attributes, forType, attribute, value, generator, isProto);
+										if (!extender.preInit || !extender.preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes)) {
+											extender.init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 											if (extender.isPreserved && !types.isSymbol(attr)) {
 												const presAttr = '__' + attr + '_preserved__';
-												extender.init(presAttr, attributes, forType, attribute, value, generator, isProto);
+												extender.init(presAttr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 											};
 										};
 										attrs[i] = null; //delete attrs[i]; //attrs.splice(i, 1);
@@ -5363,11 +5384,11 @@ module.exports = {
 							
 								if (extender.init) {
 									const value = types.get(values, attr, types.unbox(attribute));
-									if (!extender.preInit || !extender.preInit(attr, attributes, forType, attribute, value, generator, isProto)) {
-										extender.init(attr, attributes, forType, attribute, value, generator, isProto);
+									if (!extender.preInit || !extender.preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes)) {
+										extender.init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 										if (extender.isPreserved && !types.isSymbol(attr)) {
 											const presAttr = '__' + attr + '_preserved__';
-											extender.init(presAttr, attributes, forType, attribute, value, generator, isProto);
+											extender.init(presAttr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 										};
 									};
 								};
@@ -5504,9 +5525,11 @@ module.exports = {
 						return type;
 
 					} else {
-						// Expandable object
+						// Expandable objects
+						
+						const existingAttributes = types.append(types.keys(base), types.symbols(base));
 
-						const init = __Internal__.initializeAttributes(destAttributes, false, null, extendedAttributes, null);
+						const init = __Internal__.initializeAttributes(destAttributes, false, null, extendedAttributes, null, existingAttributes);
 						init(base, instanceStorage);
 
 						if (base._implements(mixIns.Creatable)) {
@@ -5950,7 +5973,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated];
 								values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-								const initType = __Internal__.initializeAttributes(attributes, true, values, null, null);
+								const initType = __Internal__.initializeAttributes(attributes, true, values, null, null, null);
 								initType(this, typeStorage);
 
 								attributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
@@ -5960,10 +5983,10 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
 								values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-								const initProto = __Internal__.initializeAttributes(attributes, false, values, null, true);
+								const initProto = __Internal__.initializeAttributes(attributes, false, values, null, true, null);
 								initProto(this.prototype, instanceStorage);
 
-								const initInstance = __Internal__.initializeAttributes(attributes, false, values, null, false);
+								const initInstance = __Internal__.initializeAttributes(attributes, false, values, null, false, null);
 								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
 
 							} else {
@@ -6401,7 +6424,7 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated];
 								values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-								const initType = __Internal__.initializeAttributes(attributes, true, values, null, null);
+								const initType = __Internal__.initializeAttributes(attributes, true, values, null, null, null);
 								initType(this, typeStorage);
 
 								attributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
@@ -6411,10 +6434,10 @@ module.exports = {
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
 								values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
 								values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-								const initProto = __Internal__.initializeAttributes(attributes, false, values, null, true);
+								const initProto = __Internal__.initializeAttributes(attributes, false, values, null, true, null);
 								initProto(this.prototype, instanceStorage);
 
-								const initInstance = __Internal__.initializeAttributes(attributes, false, values, null, false);
+								const initInstance = __Internal__.initializeAttributes(attributes, false, values, null, false, null);
 								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
 
 							} else {
