@@ -5317,7 +5317,12 @@ module.exports = {
 					};
 
 					generator.DynamicValue.prototype.release = function() {
-						generator.__dvarsReleased.push(this.__index);
+						if ((this.__index === null) || (generator.__dvarsReleased.indexOf(this.__index) >= 0)) {
+							throw new types.Error("Invalid DynamicValue release.");
+						} else {
+							generator.__dvarsReleased.push(this.__index);
+							this.__index = null;
+						};
 					};
 
 					const preLoopAttrs = function _preLoopAttrs(attrs) {
