@@ -106,6 +106,7 @@ module.exports = {
 					symbolStack: types.getSymbol('__STACK__'),
 					symbolSorted: types.getSymbol('__SORTED__'),
 					symbolClonedStack: types.getSymbol('__CLONED_STACK__'),
+					symbolEventClass: types.getSymbol('__EVENT_CLASS__'),
 
 					// Methods (Dispatches)
 					symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
@@ -6765,14 +6766,18 @@ module.exports = {
 									};
 									return false;
 								} else if (stack.length < this.stackSize) {
+									const eventObj = this[__Internal__.symbolObject];
 									let cb = fn;
 									if (obj) {
-										cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
+										if ((obj === eventObj) || (types.getType(obj) === this[__Internal__.symbolEventClass])) {
+											cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
+										} else {
+											cb = doodad.Callback(obj, cb, true);
+										};
 									};
 									stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 									this[__Internal__.symbolSorted] = false;
 									this[__Internal__.symbolClonedStack] = null;
-									const eventObj = this[__Internal__.symbolObject];
 									const ev = new doodad.Event({event: this[_shared.NameSymbol], obj: obj, handler: fn, datas: datas});
 									//if (types.isEntrant(eventObj, 'onEventAttached')) {
 										_shared.invoke(eventObj, eventObj.onEventAttached, [ev], _shared.SECRET);
@@ -6982,6 +6987,7 @@ module.exports = {
 				__Internal__.eventHandlerProto[__Internal__.symbolStack] = doodad.PROTECTED(null);
 				__Internal__.eventHandlerProto[__Internal__.symbolSorted] = doodad.PROTECTED(false);
 				__Internal__.eventHandlerProto[__Internal__.symbolClonedStack] = doodad.PROTECTED(null);
+				__Internal__.eventHandlerProto[__Internal__.symbolEventClass] = doodad.PROTECTED(null);
 
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7046,6 +7052,15 @@ module.exports = {
 									options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
 								};
 								return options;
+							}),
+
+						getterTemplate: types.SUPER(function getterTemplate(attr, boxed, forType, storage) {
+								const getter = this._super(attr, boxed, forType, storage);
+								return types.INHERIT(doodad.AttributeGetter, function eventGetter() {
+									const eventHandler = getter.call(this);
+									_shared.setAttribute(eventHandler, __Internal__.symbolEventClass, __Internal__.invokedClass);
+									return eventHandler;
+								});
 							}),
 
 						extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
@@ -7278,12 +7293,12 @@ module.exports = {
 								for (let i = 0; i < stackLen; i++) {
 									const data = clonedStack[i],
 										obj = data[0],
-										fn = data[1];
+										cb = data[5];
 									
 									if (data[4] > 0) {
 										data[4]--;
 
-										_shared.invoke(obj, fn, arguments, _shared.SECRET);
+										cb.apply(obj, arguments);
 
 										emitted = true;
 									};
