@@ -2818,7 +2818,7 @@
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'any',
@@ -2827,7 +2827,7 @@
 							},
 						},
 						returns: 'boolean',
-						description: "Returns 'true' if the object is a direct instance of 'Object'. Returns 'false' otherwise.",
+						description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
 			, function isObject(obj) {
@@ -2836,6 +2836,9 @@
 						let proto = types.getPrototypeOf(obj);
 						if (proto) {
 							return types.isObject(proto);
+						} else {
+							// Null object
+							return true;
 						};
 					} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
 						return true;
