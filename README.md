@@ -120,6 +120,25 @@ Doodad must be built using [doodad-js-make][make-url] and its dependencies.
   - **doodad.PROTECTED_DEBUG**: Like "doodad.PROTECTED", but will be "doodad.PUBLIC" on debug mode.
   - **doodad.PRIVATE_DEBUG**:  Like "doodad.PRIVATE", but will be "doodad.PUBLIC" on debug mode.
 
+#### Protection level
+
+First, for the private and the protected scopes to work, Doodad must use Javascript object properties, which have big impacts on performances. That's why they are disabled in production mode.
+
+Also, Doodad allows reflection on every fields and methods to all loaded Doodad modules, but NOT to external scripts.
+
+If you want absolutely want private and protected scopes in production, and don't care about performances, you can pass these options to "createRoot" :
+
+```js
+{
+    startup: {
+        enableProperties: true
+    },
+    Doodad: {
+        enforceScopes: true
+    }
+}
+```
+
 ## Class Modifiers
 
   - **doodad.BASE**: The class is not ready for object instantiation and must be extended.
