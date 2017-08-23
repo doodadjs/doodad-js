@@ -652,38 +652,60 @@ module.exports = {
 						return !notReentrantMap || !notReentrantMap.get(name);
 					}));
 
-				__Internal__.isInside = function(obj, /*optional*/state) {
-					const forType = types.isType(obj);
-					if (state) {
-						if (forType) {
-							const currentType = state[1];
-							return !!currentType && (currentType === obj);
+				__Internal__.isInside = (__Internal__.hasScopes ?
+					function isInside(obj, /*optional*/state) {
+						const forType = types.isType(obj);
+						if (state) {
+							if (forType) {
+								const currentType = state[1];
+								return !!currentType && (currentType === obj);
+							} else {
+								const currentInstance = state[0];
+								return !!currentInstance && (currentInstance === obj);
+							};
 						} else {
-							const currentInstance = state[0];
-							return !!currentInstance && (currentInstance === obj);
+							if (forType) {
+								return !!__Internal__.currentType && (__Internal__.currentType === obj);
+							} else {
+								return !!__Internal__.currentInstance && (__Internal__.currentInstance === obj);
+							};
 						};
-					} else {
-						if (forType) {
-							return !!__Internal__.currentType && (__Internal__.currentType === obj);
-						} else {
-							return !!__Internal__.currentInstance && (__Internal__.currentInstance === obj);
-						};
-					};
-				};
+					}
+				:
+					function isInside(obj, /*optional*/state) {
+						return true;
+					}
+				);
 
-				__Internal__.setInside = function(obj) {
-					__Internal__.currentInstance = obj;
-					__Internal__.currentType = types.getType(obj);
-				};
+				__Internal__.setInside = (__Internal__.hasScopes ?
+					function setInside(obj) {
+						__Internal__.currentInstance = obj;
+						__Internal__.currentType = types.getType(obj);
+					}
+				:
+					function setInside(obj) {
+					}
+				);
 
-				__Internal__.preserveInside = function() {
-					return [__Internal__.currentInstance, __Internal__.currentType];
-				};
+				__Internal__.preserveInside = (__Internal__.hasScopes ?
+					function preserveInside() {
+						return [__Internal__.currentInstance, __Internal__.currentType];
+					}
+				:
+					function preserveInside() {
+						return null;
+					}
+				);
 
-				__Internal__.restoreInside = function(state) {
-					__Internal__.currentInstance = state[0];
-					__Internal__.currentType = state[1];
-				};
+				__Internal__.restoreInside = (__Internal__.hasScopes ?
+					function restoreInside(state) {
+						__Internal__.currentInstance = state[0];
+						__Internal__.currentType = state[1];
+					}
+				:
+					function restoreInside(state) {
+					}
+				);
 
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
