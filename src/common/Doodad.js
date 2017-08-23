@@ -186,6 +186,17 @@ module.exports = {
 				});
 
 
+				__Internal__.hasScopes = types.hasDefinePropertyEnabled() && (root.getOptions().debug || __options__.enforceScopes);
+				__Internal__.hasPolicies = __Internal__.hasScopes && (root.getOptions().debug || __options__.enforcePolicies);
+	
+				doodad.ADD('hasScopes', function hasScopes() {
+					return __Internal__.hasScopes;
+				});
+
+				doodad.ADD('hasPolicies', function hasPolicies() {
+					return __Internal__.hasPolicies;
+				});
+
 				//=======================
 				// Hooks
 				//=======================
@@ -646,36 +657,48 @@ module.exports = {
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 					let _insider = null;
 					const fnApply = fn.apply.bind(fn);
-					if (types.isNothing(obj)) {
-						_insider = function insider(/*paramarray*/) {
-							const type = types.getType(this);
+					if (__Internal__.hasScopes) {
+						if (types.isNothing(obj)) {
+							_insider = function insider(/*paramarray*/) {
+								const type = types.getType(this);
+								if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+									throw new types.Error("Invalid secret.");
+								};
+								const oldInvokedClass = __Internal__.invokedClass;
+								__Internal__.invokedClass = type;
+								try {
+									return fnApply(this, arguments);
+								} catch(ex) {
+									throw ex;
+								} finally {
+									__Internal__.invokedClass = oldInvokedClass;
+								};
+							};
+						} else {
+							const type = types.getType(obj);
 							if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
 								throw new types.Error("Invalid secret.");
 							};
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
-							try {
-								return fnApply(this, arguments);
-							} catch(ex) {
-								throw ex;
-							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+							_insider = function insider(/*paramarray*/) {
+								const oldInvokedClass = __Internal__.invokedClass;
+								__Internal__.invokedClass = type;
+								try {
+									return fnApply(obj, arguments);
+								} catch(ex) {
+									throw ex;
+								} finally {
+									__Internal__.invokedClass = oldInvokedClass;
+								};
 							};
 						};
 					} else {
-						const type = types.getType(obj);
-						if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
-							throw new types.Error("Invalid secret.");
-						};
-						_insider = function insider(/*paramarray*/) {
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
-							try {
+						if (types.isNothing(obj)) {
+							_insider = function insider(/*paramarray*/) {
+								return fnApply(this, arguments);
+							};
+						} else {
+							_insider = function insider(/*paramarray*/) {
 								return fnApply(obj, arguments);
-							} catch(ex) {
-								throw ex;
-							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
 							};
 						};
 					};
@@ -684,17 +707,21 @@ module.exports = {
 				};
 				
 				__Internal__.makeInsideForNew = function makeInsideForNew() {
-					return (
-						"const oldInvokedClass = ctx.internal.invokedClass;" +
-						"ctx.internal.invokedClass = ctx.getType(this);" +
-						"try {" +
-							"return this._new.apply(this, arguments) || this;" +
-						"} catch(ex) {" +
-							"throw ex;" +
-						"} finally {" +
-							"ctx.internal.invokedClass = oldInvokedClass;" +
-						"};"
-					);
+					if (__Internal__.hasScopes) {
+						return (
+							"const oldInvokedClass = ctx.internal.invokedClass;" +
+							"ctx.internal.invokedClass = ctx.getType(this);" +
+							"try {" +
+								"return this._new.apply(this, arguments) || this;" +
+							"} catch(ex) {" +
+								"throw ex;" +
+							"} finally {" +
+								"ctx.internal.invokedClass = oldInvokedClass;" +
+							"};"
+						);
+					} else {
+						return "return this._new.apply(this, arguments) || this;";
+					};
 				};
 				
 				__Internal__.oldMakeInside = _shared.makeInside;
@@ -722,7 +749,7 @@ module.exports = {
 								},
 							},
 							returns: 'function',
-							description: "Makes a function like called from inside an object.",
+							description: "Makes a function called like from inside an object.",
 					}
 					//! END_REPLACE()
 					, function makeInside(/*optional*/obj, fn, /*optional*/secret) {
@@ -1022,7 +1049,7 @@ module.exports = {
 							newType = types.INIT(type);
 						};
 
-						if ((root.getOptions().debug || __options__.enforcePolicies)) {
+						if (__Internal__.hasPolicies) {
 							if (isClass && !types.isMixIn(newType) && !types.isInterface(newType) && !types.isBase(newType)) {
 								const mustOverride = newType[__Internal__.symbolMustOverride];
 								if (mustOverride) {
@@ -1551,7 +1578,7 @@ module.exports = {
 									storage: null,
 								});
 								return types.INHERIT(doodad.AttributeGetter, function getter() {
-									if (root.getOptions().debug || __options__.enforceScopes) {
+									if (__Internal__.hasScopes) {
 										if (extender.enableScopes) {
 											const type = types.getType(this);
 											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
@@ -1620,7 +1647,7 @@ module.exports = {
 									storage: null,
 								});
 								return types.INHERIT(doodad.AttributeSetter, function setter(value) {
-									if (root.getOptions().debug || __options__.enforceScopes) {
+									if (__Internal__.hasScopes) {
 										if (extender.enableScopes) {
 											const type = types.getType(this);
 											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
@@ -1639,7 +1666,7 @@ module.exports = {
 											};
 										};
 									};
-									if ((root.getOptions().debug || __options__.enforcePolicies) && extender.isReadOnly) {
+									if (__Internal__.hasPolicies && extender.isReadOnly) {
 										throw new types.Error("Attribute '~0~' of '~1~' is read-only.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									} else {
 										if (attr !== __Internal__.symbolAttributesStorage) {
@@ -1747,7 +1774,7 @@ module.exports = {
 							}
 							//! END_REPLACE()
 							, function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-								if (root.getOptions().debug || __options__.enforcePolicies) {
+								if (__Internal__.hasPolicies) {
 									if (sourceIsProto) {
 										if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private)) {
 											throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.unbox(destAttribute[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
@@ -1764,19 +1791,17 @@ module.exports = {
 								return (
 										this.enableStorage
 										&&
-										types.hasDefinePropertyEnabled()
-										&&
 										(
 											(
-												(root.getOptions().debug || __options__.enforceScopes) 
+												__Internal__.hasScopes 
 												&& 
 												(this.enableScopes && (destAttribute[__Internal__.symbolScope] !== doodad.Scopes.Public))
 											) 
 											||
 											(
-												(root.getOptions().debug || __options__.enforcePolicies)
+												__Internal__.hasPolicies
 												&&
-												(this.isReadOnly)
+												this.isReadOnly
 											)
 										) 
 								);
@@ -2251,7 +2276,7 @@ module.exports = {
 											retVal = Promise.resolve(retVal);
 										};
 										
-										if (root.getOptions().debug || __options__.enforcePolicies) {
+										if (__Internal__.hasPolicies) {
 											if ((_caller[__Internal__.symbolModifiers] & doodad.MethodModifiers.Override) && !_super[__Internal__.symbolCalled]) {
 												throw new types.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 											};
@@ -2295,7 +2320,7 @@ module.exports = {
 									// Asynchronous methods must always return a Promise
 									const Promise = types.getPromise();
 									result = Promise.resolve(result);
-									if (root.getOptions().debug || __options__.enforcePolicies) {
+									if (__Internal__.hasPolicies) {
 										const validator = attribute[__Internal__.symbolReturns];
 										if (validator) {
 											result = result.then(function(val) {
@@ -2307,7 +2332,7 @@ module.exports = {
 										};
 									};
 								} else {
-									if (root.getOptions().debug || __options__.enforcePolicies) {
+									if (__Internal__.hasPolicies) {
 										const validator = attribute[__Internal__.symbolReturns];
 										// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 										if (validator && !validator.call(obj, result)) {
@@ -2428,7 +2453,7 @@ module.exports = {
 									const host = (types.baseof(doodad.Interface, type) ? this[__Internal__.symbolHost] : null),
 										hostType = types.getType(host);
 
-									if (root.getOptions().debug || __options__.enforceScopes) {
+									if (__Internal__.hasScopes) {
 										// Private methods
 										if (!oldInvokedClass || (type !== oldInvokedClass)) {
 											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
@@ -2444,7 +2469,7 @@ module.exports = {
 										};
 									};
 									
-									if (root.getOptions().debug || __options__.enforcePolicies) {
+									if (__Internal__.hasPolicies) {
 										// External methods (can't be called internally)
 										if (extender.isExternal && (type === oldInvokedClass)) {
 											throw new types.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
@@ -2768,7 +2793,7 @@ module.exports = {
 									let start = destAttribute[__Internal__.symbolCallFirstLength];
 									if (callersOrFn) {
 										if (sourceIsProto) {
-											if (root.getOptions().debug || __options__.enforcePolicies) {
+											if (__Internal__.hasPolicies) {
 												if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
 													throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
@@ -2799,7 +2824,7 @@ module.exports = {
 								} else {
 									// Create
 									if (sourceIsProto) {
-										if (root.getOptions().debug || __options__.enforcePolicies) {
+										if (__Internal__.hasPolicies) {
 											if (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)) {
 												if (!hasDestCallers && !(modifiers & doodad.MethodModifiers.ForceCreate)) {
 													throw new types.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, protoName || __Internal__.ANONYMOUS]);
@@ -2812,7 +2837,7 @@ module.exports = {
 										};
 									} else if (srcIsInterface) {
 										if (callersOrFn && (sourceAttribute[__Internal__.symbolPrototype] === sourceProto)) {
-											if (root.getOptions().debug || __options__.enforcePolicies) {
+											if (__Internal__.hasPolicies) {
 												if (hasDestCallers) {
 													throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
 												};
@@ -3006,7 +3031,7 @@ module.exports = {
 
 						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								////////////////////// TODO:
-								////if (root.getOptions().debug || __options__.enforcePolicies) {
+								////if (__Internal__.hasPolicies) {
 								////	if (typeStorage) {
 								////		if (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride) {
 								////			if (!typeStorage[__Internal__.symbolMustOverride]) {
@@ -3206,7 +3231,7 @@ module.exports = {
 								};
 								
 								if (sourceIsProto) {
-									if (root.getOptions().debug || __options__.enforcePolicies) {
+									if (__Internal__.hasPolicies) {
 										if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
 											throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 										};
@@ -3577,7 +3602,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function MIX_IN(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
+						if (__Internal__.hasPolicies) {
 							const base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
 								throw new types.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
@@ -3608,7 +3633,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function INTERFACE(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
+						if (__Internal__.hasPolicies) {
 							const base = types.getBase(cls);
 							if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
 								throw new types.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
@@ -3689,7 +3714,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function ISOLATED(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
+						if (__Internal__.hasPolicies) {
 							if (!types.isInterface(cls) && !types.isMixIn(cls)) {
 								throw new types.Error("Isolation can only be applied on interfaces and mix-ins.");
 							};
@@ -3719,7 +3744,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function EXPANDABLE(cls) {
 						root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
-						if (root.getOptions().debug || __options__.enforcePolicies) {
+						if (__Internal__.hasPolicies) {
 							if (types.isInterface(cls) || types.isMixIn(cls)) {
 								throw new types.Error("Expandable can't be applied on interfaces and mix-ins.");
 							};
@@ -4789,7 +4814,7 @@ module.exports = {
 								//};
 							// </FUTURE>
 						} else {
-							if (root.getOptions().debug || __options__.enforcePolicies) {
+							if (__Internal__.hasPolicies) {
 								let pos = 0;
 								// <FUTURE> When transpiling "ddclass" to "class"...
 									//if (scope === doodad.Scopes.Private) {
@@ -5171,7 +5196,7 @@ module.exports = {
 						sourceUUID = (sourceType ? _shared.getUUID(sourceType) : types.unbox(source.$TYPE_UUID));
 					if (!sourceIsClass || (!_implements.has(sourceType) && (!sourceUUID || !_implements.has(sourceUUID)))) {
 						if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
-							if (root.getOptions().debug || __options__.enforcePolicies) {
+							if (__Internal__.hasPolicies) {
 								if (sourceType !== baseType) {
 									//if (!baseIsBase && types.isBase(source)) {
 									//	throw new types.Error("Can't implement base type '~0~' in non-base type '~1~'.", [sourceName || __Internal__.ANONYMOUS, types.getTypeName(base) || __Internal__.ANONYMOUS]);
@@ -5925,6 +5950,38 @@ module.exports = {
 							}).bind(this);
 						}))))));
 */
+
+				__Internal__.callOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
+						function callOutside(fn, /*optional*/args) {
+							const oldValues = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, '_super']);
+							const dispatch = oldValues[__Internal__.symbolCurrentDispatch];
+							const callers = dispatch[__Internal__.symbolCallers];
+							const caller = callers && callers[oldValues[__Internal__.symbolCurrentCallerIndex] - 1];
+							const oldCallerCalled = caller && caller[__Internal__.symbolCalled];
+							const oldInvokedClass = __Internal__.invokedClass;
+							const newValues = {};
+							newValues[__Internal__.symbolCurrentDispatch] = null;
+							newValues[__Internal__.symbolCurrentCallerIndex] = 0;
+							newValues['_super'] = null;
+							_shared.setAttributes(this, newValues);
+							__Internal__.invokedClass = null;
+							try {
+								if (args) {
+									return fn.apply(null, args);
+								} else {
+									return fn();
+								};
+							} catch(ex) {
+								throw ex;
+							} finally {
+								__Internal__.invokedClass = oldInvokedClass;
+								if (caller) {
+									caller[__Internal__.symbolCalled] = oldCallerCalled;
+								};
+								_shared.setAttributes(this, oldValues);
+							};
+						})))));
+
 				__Internal__.classProto = {
 					$TYPE_NAME: "Class",
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
@@ -6233,6 +6290,7 @@ module.exports = {
 					overrideSuper: __Internal__.overrideSuper,
 					_superFrom: __Internal__._superFrom,
 //					_superAsync: __Internal__._superAsync,
+					callOutside: __Internal__.callOutside,
 
 					_implements: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6492,6 +6550,7 @@ module.exports = {
 					overrideSuper: __Internal__.overrideSuper,
 					_superFrom: __Internal__._superFrom,
 //					_superAsync: __Internal__.superAsync,
+					callOutside: __Internal__.callOutside,
 				};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
