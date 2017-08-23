@@ -1104,10 +1104,11 @@ module.exports = {
 						};
 
 						if (__Internal__.hasPolicies) {
-							if (isClass && !types.isMixIn(newType) && !types.isInterface(newType) && !types.isBase(newType)) {
-								const mustOverride = newType[__Internal__.symbolMustOverride];
+							const newTypeType = types.getType(newType);  // "newType" can be a Singleton
+							if (isClass && !types.isMixIn(newTypeType) && !types.isInterface(newTypeType) && !types.isBase(newTypeType)) {
+								const mustOverride = newTypeType[__Internal__.symbolMustOverride] || newTypeType.prototype[__Internal__.symbolMustOverride];
 								if (mustOverride) {
-									throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(newType) || __Internal__.ANONYMOUS]);
+									throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(newTypeType) || __Internal__.ANONYMOUS]);
 								};
 							};
 						};
@@ -2041,6 +2042,7 @@ module.exports = {
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
 						
 						extend: types.READ_ONLY(null),
+						postExtend: types.READ_ONLY(null),
 
 						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
@@ -2762,14 +2764,14 @@ module.exports = {
 								_shared.setAttribute(dispatch, _shared.NameSymbol, attr, {});
 								_shared.setAttribute(dispatch, __Internal__.symbolCallers, callers, {});
 								
-								let modifiers = attribute[__Internal__.symbolModifiers];
+								let modifiers = attribute[__Internal__.symbolModifiers] || 0;
 
 								// Clear "MustOverride" if method has been overriden
 								let caller = callers[0];
 								if (caller && !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
 									caller = (callers.length > attribute[__Internal__.symbolCallFirstLength]) && callers[attribute[__Internal__.symbolCallFirstLength]];
 									if (!caller || !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
-										modifiers = (modifiers || 0) & (~ doodad.MethodModifiers.MustOverride);
+										modifiers = modifiers & (~ doodad.MethodModifiers.MustOverride);
 									};
 								};
 
@@ -3082,40 +3084,40 @@ module.exports = {
 							}),
 
 						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-								////////////////////// TODO:
-								////if (__Internal__.hasPolicies) {
-								////	if (typeStorage) {
-								////		if (value[__Internal__.symbolModifiers] & doodad.MethodModifiers.MustOverride) {
-								////			if (!typeStorage[__Internal__.symbolMustOverride]) {
-								////				typeStorage[__Internal__.symbolMustOverride] = attr;
-								////			};
-								////		} else if (typeStorage[__Internal__.symbolMustOverride] === attr) {
-								////			typeStorage[__Internal__.symbolMustOverride] = null;
-								////		};
-								////	};
-								////};
-								//////////////////////
+								const attrId = generator.vars.add(attr);
 
 								if (this.bindMethod && !types.isNothing(value)) {
 									const extender = this;
 									const extenderId = generator.vars.add(extender);
-									const attrId = generator.vars.add(attr);
 									const attributeId = generator.vars.add(attribute);
 									const valueId = generator.vars.add(value);
-									const value2 = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
-									const value2Id = generator.vars.add(value2);
-									value = new generator.DynamicValue("types.INHERIT(" + value2Id + ", types.bind(" + generator.objId + ", " + value2Id + "))");
-									value2.release();
+									const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
+									const dispatchId = generator.vars.add(dispatch);
+									value = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+									dispatch.release();
 								} else {
 									const extender = this;
 									const extenderId = generator.vars.add(extender);
-									const attrId = generator.vars.add(attr);
 									const attributeId = generator.vars.add(attribute);
 									const valueId = generator.vars.add(value);
 									value = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
 								};
 
 								this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
+
+								if (__Internal__.hasPolicies) {
+									const valueId = generator.vars.fromKey(attr);
+									const symbolModifiersId = generator.vars.add(__Internal__.symbolModifiers);
+									const symbolMustOverrideId = generator.vars.add(__Internal__.symbolMustOverride);
+
+									generator.code.add(
+										"if (" + valueId + "[" + symbolModifiersId + "] & doodad.MethodModifiers.MustOverride) {" +
+											"if (!" + generator.storageId + "[" + symbolMustOverrideId + "]) {" +
+												generator.storageId + "[" + symbolMustOverrideId + "] = " + attrId + ";" +
+											"};" +
+										"};"
+									);
+								};
 							}),
 
 						remove: types.READ_ONLY(null),
@@ -3432,7 +3434,7 @@ module.exports = {
 						//preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 						//		return false; // true === Cancel
 						//	},
-						preInit: null,
+						preInit: types.READ_ONLY(null),
 
 						init: function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								if (tools.indexOf(existingAttributes, attr) >= 0) {
@@ -5505,7 +5507,7 @@ module.exports = {
 						};
 						const code = "(function(" + generator.objId + "," + generator.storageId + ") {" + 
 								(dvarsStr ? "let " + dvarsStr + ";" : "") + 
-								(generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") + 
+								(generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") +
 								generator.__code + 
 								(generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + 
 							"})";
