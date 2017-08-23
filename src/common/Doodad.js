@@ -8513,6 +8513,10 @@ module.exports = {
 							return this.__value;
 						},
 					})));
+
+			
+
+				types.preventExtensions(__Internal__);
 			},
 		};
 		return DD_MODULES;

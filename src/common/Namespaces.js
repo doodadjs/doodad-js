@@ -1626,6 +1626,10 @@ module.exports = {
 				}, /*! REPLACE_BY(TO_SOURCE(UUID('MissingDependencies')), true) */ null /*! END_REPLACE() */));
 
 
+
+				types.preventExtensions(__Internal__);
+
+
 				//===================================
 				// Init
 				//===================================

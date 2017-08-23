@@ -98,6 +98,9 @@
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
 			
 			DD_ASSERT: null,
+
+			safeIntegerLen: null,
+			bitwiseIntegerLen: null,
 		};
 
 		__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
@@ -6976,6 +6979,9 @@
 		//===================================
 		// Root
 		//===================================
+
+		types.preventExtensions(__Internal__);
+
 
 		//! IF_UNSET("serverSide")
 			if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {
