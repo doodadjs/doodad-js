@@ -779,7 +779,7 @@ module.exports = {
 							description: "Creates a callback handler for DDPromise.",
 					}
 					//! END_REPLACE()
-					, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
+					, types.INHERIT(types.Callback, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						let attr = null;
 						if (types.isString(fn) || types.isSymbol(fn)) {
@@ -793,7 +793,7 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
 						const checkDestroyed = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
 						const insideFn = _shared.makeInside(obj, fn, secret);
-						const callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
+						const callback = types.INHERIT(_shared.PromiseCallback, function callbackHandler(/*paramarray*/) {
 							if (checkDestroyed && _shared.DESTROYED(obj)) {
 								// NOTE: We absolutly must reject the Promise.
 								throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
@@ -807,11 +807,11 @@ module.exports = {
 								throw ex;
 							};
 						});
-						callback[_shared.BoundObjectSymbol] = obj;
-						callback[_shared.OriginalValueSymbol] = fn;
+						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 						callback.promise = null; // will be provided later
 						return callback;
-					});
+					}));
 				
 					
 
