@@ -73,7 +73,8 @@ module.exports = {
 
 				// <FUTURE> Thread context
 				const __Internal__ = {
-					invokedClass: null,	// <FUTURE> thread level
+					currentInstance: null,	// <FUTURE> thread level
+					currentType: null,	// <FUTURE> thread level
 					inTrapException: false, // <FUTURE> thread level
 					
 					// Class
@@ -106,7 +107,7 @@ module.exports = {
 					symbolStack: types.getSymbol('__STACK__'),
 					symbolSorted: types.getSymbol('__SORTED__'),
 					symbolClonedStack: types.getSymbol('__CLONED_STACK__'),
-					symbolEventClass: types.getSymbol('__EVENT_CLASS__'),
+					symbolEventInside: types.getSymbol('__EVENT_INSIDE__'),
 
 					// Methods (Dispatches)
 					symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
@@ -651,6 +652,39 @@ module.exports = {
 						return !notReentrantMap || !notReentrantMap.get(name);
 					}));
 
+				__Internal__.isInside = function(obj, /*optional*/state) {
+					const forType = types.isType(obj);
+					if (state) {
+						if (forType) {
+							const currentType = state[1];
+							return !!currentType && (currentType === obj);
+						} else {
+							const currentInstance = state[0];
+							return !!currentInstance && (currentInstance === obj);
+						};
+					} else {
+						if (forType) {
+							return !!__Internal__.currentType && (__Internal__.currentType === obj);
+						} else {
+							return !!__Internal__.currentInstance && (__Internal__.currentInstance === obj);
+						};
+					};
+				};
+
+				__Internal__.setInside = function(obj) {
+					__Internal__.currentInstance = obj;
+					__Internal__.currentType = types.getType(obj);
+				};
+
+				__Internal__.preserveInside = function() {
+					return [__Internal__.currentInstance, __Internal__.currentType];
+				};
+
+				__Internal__.restoreInside = function(state) {
+					__Internal__.currentInstance = state[0];
+					__Internal__.currentType = state[1];
+				};
+
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
 					fn = types.unbind(fn) || fn;
@@ -660,34 +694,32 @@ module.exports = {
 					if (__Internal__.hasScopes) {
 						if (types.isNothing(obj)) {
 							_insider = function insider(/*paramarray*/) {
-								const type = types.getType(this);
-								if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+								if ((secret !== _shared.SECRET) && this && !__Internal__.isInside(this)) {
 									throw new types.Error("Invalid secret.");
 								};
-								const oldInvokedClass = __Internal__.invokedClass;
-								__Internal__.invokedClass = type;
+								const oldInside = __Internal__.preserveInside();
+								__Internal__.setInside(this);
 								try {
 									return fnApply(this, arguments);
 								} catch(ex) {
 									throw ex;
 								} finally {
-									__Internal__.invokedClass = oldInvokedClass;
+									__Internal__.restoreInside(oldInside);
 								};
 							};
 						} else {
-							const type = types.getType(obj);
-							if (type && (type !== __Internal__.invokedClass) && (secret !== _shared.SECRET)) {
+							if ((secret !== _shared.SECRET) && obj && !__Internal__.isInside(obj)) {
 								throw new types.Error("Invalid secret.");
 							};
 							_insider = function insider(/*paramarray*/) {
-								const oldInvokedClass = __Internal__.invokedClass;
-								__Internal__.invokedClass = type;
+								const oldInside = __Internal__.preserveInside();
+								__Internal__.setInside(obj);
 								try {
 									return fnApply(obj, arguments);
 								} catch(ex) {
 									throw ex;
 								} finally {
-									__Internal__.invokedClass = oldInvokedClass;
+									__Internal__.restoreInside(oldInside);
 								};
 							};
 						};
@@ -709,14 +741,14 @@ module.exports = {
 				__Internal__.makeInsideForNew = function makeInsideForNew() {
 					if (__Internal__.hasScopes) {
 						return (
-							"const oldInvokedClass = ctx.internal.invokedClass;" +
-							"ctx.internal.invokedClass = ctx.getType(this);" +
+							"const oldInside = ctx.internal.preserveInside();" +
+							"ctx.internal.setInside(this);" +
 							"try {" +
 								"return this._new.apply(this, arguments) || this;" +
 							"} catch(ex) {" +
 								"throw ex;" +
 							"} finally {" +
-								"ctx.internal.invokedClass = oldInvokedClass;" +
+								"ctx.internal.restoreInside(oldInside);" +
 							"};"
 						);
 					} else {
@@ -792,8 +824,8 @@ module.exports = {
 							};
 							//const type = types.getType(obj);
 							//if (types.isClass(type) || types.isInterfaceClass(type)) {
-								const oldInvokedClass = __Internal__.invokedClass;
-								__Internal__.invokedClass = types.getType(obj);
+								const oldInside = __Internal__.preserveInside();
+								__Internal__.setInside(obj);
 								try {
 									if (types.isString(fn) || types.isSymbol(fn)) {
 										fn = thisObj[fn];
@@ -810,7 +842,7 @@ module.exports = {
 								} catch(ex) {
 									throw ex;
 								} finally {
-									__Internal__.invokedClass = oldInvokedClass;
+									__Internal__.restoreInside(oldInside);
 								};
 							//} else {
 							//	return __Internal__.oldInvoke(obj, fn, args);
@@ -823,8 +855,8 @@ module.exports = {
 					function getAttribute(obj, attr, /*optional*/options) {
 						const type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
+							const oldInside = __Internal__.preserveInside();
+							__Internal__.setInside(obj);
 							try {
 								const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
 								if (types.hasIn(storage, attr)) {
@@ -835,7 +867,7 @@ module.exports = {
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+								__Internal__.restoreInside(oldInside);
 							};
 						} else {
 							return __Internal__.oldGetAttribute(obj, attr);
@@ -847,8 +879,8 @@ module.exports = {
 					function getAttributes(obj, attrs, /*optional*/options) {
 						const type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
+							const oldInside = __Internal__.preserveInside();
+							__Internal__.setInside(obj);
 							try {
 								const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
 								const attrsLen = attrs.length,
@@ -867,7 +899,7 @@ module.exports = {
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+								__Internal__.restoreInside(oldInside);
 							};
 						} else {
 							return __Internal__.oldGetAttributes(obj, attrs);
@@ -879,8 +911,8 @@ module.exports = {
 					function setAttribute(obj, attr, value, /*optional*/options) {
 						const type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
+							const oldInside = __Internal__.preserveInside();
+							__Internal__.setInside(obj);
 							try {
 								const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
 								if (types.hasIn(storage, attr)) {
@@ -892,7 +924,7 @@ module.exports = {
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+								__Internal__.restoreInside(oldInside);
 							};
 						} else {
 							return __Internal__.oldSetAttribute(obj, attr, value, options);
@@ -904,8 +936,8 @@ module.exports = {
 					function setAttributes(obj, values, /*optional*/options) {
 						const type = types.getType(obj);
 						if (types.isClass(type) || types.isInterfaceClass(type)) {
-							const oldInvokedClass = __Internal__.invokedClass;
-							__Internal__.invokedClass = type;
+							const oldInside = __Internal__.preserveInside();
+							__Internal__.setInside(obj);
 							try {
 								const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
 								const loopKeys = function _loopKeys(keys) {
@@ -925,7 +957,7 @@ module.exports = {
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+								__Internal__.restoreInside(oldInside);
 							};
 						} else {
 							return __Internal__.oldSetAttributes(obj, values, options);
@@ -1580,8 +1612,7 @@ module.exports = {
 								return types.INHERIT(doodad.AttributeGetter, function getter() {
 									if (__Internal__.hasScopes) {
 										if (extender.enableScopes) {
-											const type = types.getType(this);
-											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
+											if (!__Internal__.isInside(this)) {
 												const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
 												const dispatch = result[__Internal__.symbolCurrentDispatch],
 													caller = result[__Internal__.symbolCurrentCallerIndex];
@@ -1649,8 +1680,7 @@ module.exports = {
 								return types.INHERIT(doodad.AttributeSetter, function setter(value) {
 									if (__Internal__.hasScopes) {
 										if (extender.enableScopes) {
-											const type = types.getType(this);
-											if (!__Internal__.invokedClass || (type !== __Internal__.invokedClass)) {
+											if (!__Internal__.isInside(this)) {
 												const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
 												const dispatch = result[__Internal__.symbolCurrentDispatch],
 													caller = result[__Internal__.symbolCurrentCallerIndex];
@@ -2448,21 +2478,21 @@ module.exports = {
 										oldCaller = result[__Internal__.symbolCurrentCallerIndex],
 										attributes = result[__Internal__.symbolAttributes];
 
-									const oldInvokedClass = __Internal__.invokedClass;
+									const oldInside = __Internal__.preserveInside();
 
 									const host = (types.baseof(doodad.Interface, type) ? this[__Internal__.symbolHost] : null),
 										hostType = types.getType(host);
 
 									if (__Internal__.hasScopes) {
 										// Private methods
-										if (!oldInvokedClass || (type !== oldInvokedClass)) {
+										if (!__Internal__.isInside(this)) {
 											if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
 												throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
 											};
 										};
 
 										// Non-public methods
-										if (!oldInvokedClass || (!host && (type !== oldInvokedClass)) || (host && (type !== oldInvokedClass) && (hostType !== oldInvokedClass))) {
+										if ((!host && !__Internal__.isInside(this)) || (host && !__Internal__.isInside(this) && !__Internal__.isInside(host))) {
 											if ((attribute[__Internal__.symbolScope] !== doodad.Scopes.Public) && !oldDispatch) {
 												throw new types.Error("Method '~0~' of '~1~' is not public.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 											};
@@ -2471,7 +2501,7 @@ module.exports = {
 									
 									if (__Internal__.hasPolicies) {
 										// External methods (can't be called internally)
-										if (extender.isExternal && (type === oldInvokedClass)) {
+										if (extender.isExternal && __Internal__.isInside(this)) {
 											throw new types.Error("Method '~0~' of '~1~' is external-only.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 
@@ -2551,7 +2581,7 @@ module.exports = {
 
 										caller[__Internal__.symbolCalled] = false;
 										
-										__Internal__.invokedClass = type;
+										__Internal__.setInside(this);
 
 										retVal = caller.apply(this, arguments);
 
@@ -2599,7 +2629,7 @@ module.exports = {
 											};
 //										};
 
-										__Internal__.invokedClass = oldInvokedClass;
+										__Internal__.restoreInside(oldInside);
 										caller[__Internal__.symbolCalled] = oldCallerCalled;
 
 										const values = {};										
@@ -5880,11 +5910,11 @@ module.exports = {
 									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 								};
 
-								const oldInvokedClass = __Internal__.invokedClass;
+								const oldInside = __Internal__.preserveInside();
 								const oldValues = _shared.getAttributes(this, ['_super', __Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
 								const oldCallerCalled = _super[__Internal__.symbolCalled];
 
-								__Internal__.invokedClass = types.getType(this);
+								__Internal__.setInside(this);
 
 								let retVal = undefined;
 
@@ -5939,7 +5969,7 @@ module.exports = {
 											}, this);
 									};
 
-									__Internal__.invokedClass = oldInvokedClass;
+									__Internal__.restoreInside(oldInside);
 									_super[__Internal__.symbolCalled] = oldCallerCalled;
 
 									_shared.setAttributes(this, oldValues);
@@ -5958,13 +5988,13 @@ module.exports = {
 							const callers = dispatch[__Internal__.symbolCallers];
 							const caller = callers && callers[oldValues[__Internal__.symbolCurrentCallerIndex] - 1];
 							const oldCallerCalled = caller && caller[__Internal__.symbolCalled];
-							const oldInvokedClass = __Internal__.invokedClass;
+							const oldInside = __Internal__.preserveInside();
 							const newValues = {};
 							newValues[__Internal__.symbolCurrentDispatch] = null;
 							newValues[__Internal__.symbolCurrentCallerIndex] = 0;
 							newValues['_super'] = null;
 							_shared.setAttributes(this, newValues);
-							__Internal__.invokedClass = null;
+							__Internal__.setInside(null);
 							try {
 								if (args) {
 									return fn.apply(null, args);
@@ -5974,7 +6004,7 @@ module.exports = {
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.invokedClass = oldInvokedClass;
+								__Internal__.restoreInside(oldInside);
 								if (caller) {
 									caller[__Internal__.symbolCalled] = oldCallerCalled;
 								};
@@ -6048,7 +6078,7 @@ module.exports = {
 								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
 
 							} else {
-								const instanceStorage = types.clone(cls.prototype[__Internal__.symbolAttributesStorage]);
+								const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, __Internal__.symbolAttributesStorage));
 
 								cls[__Internal__.symbolInitInstance](this, instanceStorage);
 							};
@@ -6464,9 +6494,6 @@ module.exports = {
 							};
 
 							// Initialize attributes
-							const typeStorage = cls[__Internal__.symbolAttributesStorage],
-								instanceStorage = cls.prototype[__Internal__.symbolAttributesStorage];
-
 							if (forType) {
 								// Initialize attributes
 								const typeStorage = this[__Internal__.symbolAttributesStorage];
@@ -6500,7 +6527,7 @@ module.exports = {
 								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
 
 							} else {
-								const instanceStorage = types.clone(cls.prototype[__Internal__.symbolAttributesStorage]);
+								const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, __Internal__.symbolAttributesStorage));
 
 								cls[__Internal__.symbolInitInstance](this, instanceStorage);
 
@@ -6828,7 +6855,7 @@ module.exports = {
 									const eventObj = this[__Internal__.symbolObject];
 									let cb = fn;
 									if (obj) {
-										if ((obj === eventObj) || (types.getType(obj) === this[__Internal__.symbolEventClass])) {
+										if ((obj === eventObj) || __Internal__.isInside(obj, this[__Internal__.symbolEventInside])) {
 											cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
 										} else {
 											cb = doodad.Callback(obj, cb, true);
@@ -7117,7 +7144,7 @@ module.exports = {
 								const getter = this._super(attr, boxed, forType, storage);
 								return types.INHERIT(doodad.AttributeGetter, function eventGetter() {
 									const eventHandler = getter.call(this);
-									_shared.setAttribute(eventHandler, __Internal__.symbolEventClass, __Internal__.invokedClass);
+									_shared.setAttribute(eventHandler, __Internal__.symbolEventInside, __Internal__.preserveInside());
 									return eventHandler;
 								});
 							}),
@@ -8229,7 +8256,7 @@ module.exports = {
 						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
 						const type = types.getType(obj),
 							isClass = (types.isClass(type) || types.isInterfaceClass(type));
-						if (isClass && (type === __Internal__.invokedClass)) {
+						if (isClass && __Internal__.isInside(obj)) {
 							secret = _shared.SECRET;
 						};
 						const fnApply = fn.apply.bind(fn),
