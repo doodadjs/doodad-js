@@ -6005,19 +6005,15 @@ module.exports = {
 						}))))));
 */
 
-				__Internal__.callOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
+				__Internal__.callOutsideFn = (__Internal__.hasScopes ?
 						function callOutside(fn, /*optional*/args) {
-							const oldValues = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, '_super']);
-							const dispatch = oldValues[__Internal__.symbolCurrentDispatch];
-							const callers = dispatch[__Internal__.symbolCallers];
+							const isInside = __Internal__.isInside(this);
+							const oldValues = isInside && _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, '_super']);
+							const dispatch = isInside && oldValues[__Internal__.symbolCurrentDispatch];
+							const callers = dispatch && dispatch[__Internal__.symbolCallers];
 							const caller = callers && callers[oldValues[__Internal__.symbolCurrentCallerIndex] - 1];
 							const oldCallerCalled = caller && caller[__Internal__.symbolCalled];
 							const oldInside = __Internal__.preserveInside();
-							const newValues = {};
-							newValues[__Internal__.symbolCurrentDispatch] = null;
-							newValues[__Internal__.symbolCurrentCallerIndex] = 0;
-							newValues['_super'] = null;
-							_shared.setAttributes(this, newValues);
 							__Internal__.setInside(null);
 							try {
 								if (args) {
@@ -6032,9 +6028,52 @@ module.exports = {
 								if (caller) {
 									caller[__Internal__.symbolCalled] = oldCallerCalled;
 								};
-								_shared.setAttributes(this, oldValues);
+								if (dispatch) {
+									_shared.setAttributes(this, oldValues);
+								};
 							};
-						})))));
+						}
+					:
+						function callOutside(fn, /*optional*/args) {
+							if (args) {
+								return fn.apply(null, args);
+							} else {
+								return fn();
+							};
+						}
+					);
+
+				__Internal__.callOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(__Internal__.callOutsideFn)))));
+
+				__Internal__.outsiders = new types.WeakMap();
+
+				__Internal__.makeOutsideFn = (__Internal__.hasScopes ?
+						function makeOutside(fn) {
+							const obj = this;
+							if (!obj) {
+								return fn;
+							};
+							if (__Internal__.outsiders.get(fn) === obj) {
+								// Prevents "makeOutside" over "makeOutside".
+								return fn;
+							};
+							const cb = function outside(/*paramarray*/) {
+								if (__Internal__.isInside(obj)) {
+									return __Internal__.callOutsideFn.call(obj, fn, types.toArray(arguments));
+								} else {
+									return fn.apply(null, arguments);
+								};
+							};
+							__Internal__.outsiders.set(cb, obj);
+							return cb;
+						}
+					:
+						function makeOutside(fn) {
+							return fn;
+						}
+					);
+
+				__Internal__.makeOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(__Internal__.makeOutsideFn)))));
 
 				__Internal__.classProto = {
 					$TYPE_NAME: "Class",
@@ -6345,6 +6384,7 @@ module.exports = {
 					_superFrom: __Internal__._superFrom,
 //					_superAsync: __Internal__._superAsync,
 					callOutside: __Internal__.callOutside,
+					makeOutside: __Internal__.makeOutside,
 
 					_implements: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6602,6 +6642,7 @@ module.exports = {
 					_superFrom: __Internal__._superFrom,
 //					_superAsync: __Internal__.superAsync,
 					callOutside: __Internal__.callOutside,
+					makeOutside: __Internal__.makeOutside,
 				};
 				
 				// <FUTURE> Use syntax for variable key in object declaration
@@ -8175,7 +8216,7 @@ module.exports = {
 							description: "Creates a callback handler.",
 					}
 					//! END_REPLACE()
-					, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+					, types.INHERIT(types.Callback, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						let attr = null;
 						if (types.isString(fn) || types.isSymbol(fn)) {
@@ -8196,7 +8237,7 @@ module.exports = {
 						if (callBubble && types.isBindable(bubbleError)) {
 							bubbleError = _shared.makeInside(obj, bubbleError, secret);
 						};
-						let callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
+						let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/) {
 							callback.lastError = null;
 							try {
 								if (!obj || !_shared.DESTROYED(obj)) {
@@ -8223,11 +8264,11 @@ module.exports = {
 								};
 							};
 						});
-						callback[_shared.BoundObjectSymbol] = obj;
-						callback[_shared.OriginalValueSymbol] = fn;
+						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 						callback.lastError = null;
 						return callback;
-					}));
+					})));
 				
 				doodad.ADD('AsyncCallback', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8265,7 +8306,7 @@ module.exports = {
 							description: "Creates an asynchronous callback handler.",
 					}
 					//! END_REPLACE()
-					, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+					, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
 						const Promise = types.getPromise();
 						let attr = null;
@@ -8288,7 +8329,7 @@ module.exports = {
 						if (callBubble && types.isBindable(bubbleError)) {
 							bubbleError = _shared.makeInside(obj, bubbleError, secret);
 						};
-						let callback = types.INHERIT(types.Callback, function callbackHandler(/*paramarray*/) {
+						let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/) {
 							if (!args) {
 								args = types.toArray(arguments);
 							}
@@ -8320,11 +8361,11 @@ module.exports = {
 								};
 							}, 0, null, args);
 						});
-						callback[_shared.BoundObjectSymbol] = obj;
-						callback[_shared.OriginalValueSymbol] = fn;
+						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 						callback.lastError = null;
 						return callback;
-					}));
+					})));
 				
 				//==================================
 				// Serializable objects
