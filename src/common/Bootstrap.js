@@ -5564,6 +5564,7 @@
 			
 		_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
 		_shared.reservedAttributes[__Internal__.symbol$IsSingleton] = null;
+		_shared.reservedAttributes[__Internal__.symbolSingleton] = null;
 		
 		// <PRB> Proxy checks existence of the property in the target AFTER the handler instead of BEFORE. That prevents us to force non-configurable and non-writable on a NEW NON-EXISTING property with a different value.
 		//       Error given is "TypeError: 'set' on proxy: trap returned truish for property 'doodad' which exists in the proxy target as a non-configurable and non-writable data property with a different value"
