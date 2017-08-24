@@ -813,7 +813,6 @@ module.exports = {
 					//! END_REPLACE()
 					, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
-						const Promise = types.getPromise();
 						let attr = null;
 						if (types.isString(fn) || types.isSymbol(fn)) {
 							attr = fn;
@@ -933,17 +932,13 @@ module.exports = {
 					}
 				);
 
-				//==================================
-				// Reflection
-				//==================================
-
-				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
-					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
-					fn = types.unbind(fn) || fn;
-					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-					let _insider = null;
-					const fnApply = fn.apply.bind(fn);
-					if (__Internal__.hasScopes) {
+				__Internal__.makeInside = (__Internal__.hasScopes ?
+					function makeInside(/*optional*/obj, fn, /*optional*/secret) {
+						root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
+						fn = types.unbind(fn) || fn;
+						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
+						let _insider = null;
+						const fnApply = fn.apply.bind(fn);
 						if (types.isNothing(obj)) {
 							_insider = function insider(/*paramarray*/) {
 								if ((secret !== _shared.SECRET) && this && !__Internal__.isInside(this)) {
@@ -975,7 +970,17 @@ module.exports = {
 								};
 							};
 						};
-					} else {
+						_shared.setAttribute(_insider, _shared.BoundObjectSymbol, obj);
+						_shared.setAttribute(_insider, _shared.OriginalValueSymbol, fn);
+						return _insider;
+					}
+				:
+					function makeInside(/*optional*/obj, fn, /*optional*/secret) {
+						root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
+						fn = types.unbind(fn) || fn;
+						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
+						let _insider = null;
+						const fnApply = fn.apply.bind(fn);
 						if (types.isNothing(obj)) {
 							_insider = function insider(/*paramarray*/) {
 								return fnApply(this, arguments);
@@ -985,13 +990,14 @@ module.exports = {
 								return fnApply(obj, arguments);
 							};
 						};
-					};
-					_insider[_shared.OriginalValueSymbol] = fn;
-					return _insider;
-				};
+						_shared.setAttribute(_insider, _shared.BoundObjectSymbol, obj);
+						_shared.setAttribute(_insider, _shared.OriginalValueSymbol, fn);
+						return _insider;
+					}
+				);
 				
-				__Internal__.makeInsideForNew = function makeInsideForNew() {
-					if (__Internal__.hasScopes) {
+				__Internal__.makeInsideForNew = (__Internal__.hasScopes ?
+					function makeInsideForNew() {
 						return (
 							"const oldInside = ctx.internal.preserveInside();" +
 							"ctx.internal.setInside(this);" +
@@ -1003,10 +1009,12 @@ module.exports = {
 								"ctx.internal.restoreInside(oldInside);" +
 							"};"
 						);
-					} else {
+					}
+				:
+					function makeInsideForNew() {
 						return "return this._new.apply(this, arguments) || this;";
-					};
-				};
+					}
+				);
 				
 				__Internal__.oldMakeInside = _shared.makeInside;
 				
@@ -1052,6 +1060,10 @@ module.exports = {
 						};
 					});
 				
+				//==================================
+				// Reflection
+				//==================================
+
 				__Internal__.oldInvoke = _shared.invoke;
 				__Internal__.oldGetAttribute = _shared.getAttribute;
 				__Internal__.oldGetAttributes = _shared.getAttributes;
