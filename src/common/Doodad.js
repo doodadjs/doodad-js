@@ -77,6 +77,7 @@ module.exports = {
 					currentType: null,	// <FUTURE> thread level
 					inTrapException: false, // <FUTURE> thread level
 
+					// <FUTURE> Change to a WeakSet when IE will no longer be a thing.
 					callbacks: new types.WeakMap(), // <FUTURE> global to threads
 
 					extendersCache: new types.WeakMap(), // <FUTURE> global to threads
@@ -92,6 +93,7 @@ module.exports = {
 					symbolCurrentDispatch: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_DISPATCH')), true) */ '__DD_CURRENT_DISPATCH' /*! END_REPLACE() */, true),
 					symbolCurrentCallerIndex: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_CALLER_INDEX')), true) */ '__DD_CURRENT_CALLER_INDEX' /*! END_REPLACE() */, true),
 					symbolInitInstance: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INIT_INSTANCE')), true) */ '__DD_INIT_INSTANCE' /*! END_REPLACE() */, true),
+					symbolCreator: (root.getOptions().debug ? types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CREATOR')), true) */ '__DD_CREATOR' /*! END_REPLACE() */, true) : null),  // debug only
 					
 					// Class, Methods, Callers, AttributeBox
 					symbolPrototype: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROTOTYPE')), true) */ '__DD_PROTOTYPE' /*! END_REPLACE() */, true),
@@ -160,6 +162,7 @@ module.exports = {
 
 				// Class				
 				_shared.CurrentDispatchSymbol = __Internal__.symbolCurrentDispatch;
+				_shared.CreatorSymbol = __Internal__.symbolCreator; // debug only
 
 				// AttributeBox
 				_shared.ExtenderSymbol = __Internal__.symbolExtender;
@@ -1002,7 +1005,13 @@ module.exports = {
 							"const oldInside = ctx.internal.preserveInside();" +
 							"ctx.internal.setInside(this);" +
 							"try {" +
-								"return this._new.apply(this, arguments) || this;" +
+								"const obj = this._new.apply(this, arguments) || this;" +
+								(__Internal__.symbolCreator ? 
+									"obj[ctx.internal.symbolCreator] = oldInside[0];"
+								:
+									""
+								) +
+								"return obj;" +
 							"} catch(ex) {" +
 								"throw ex;" +
 							"} finally {" +
