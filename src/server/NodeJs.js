@@ -2978,8 +2978,9 @@ module.exports = {
 
 							for (let j = 0; j < emitters.length; j++) {
 								if (types.has(emitters, j)) {
-									const emitter = emitters[j],
-										handler = createHandler(emitter, eventType);
+									const emitter = emitters[j];
+									root.DD_ASSERT && root.DD_ASSERT(types.isEmitter(emitter), "Invalid emitter.");
+									const handler = createHandler(emitter, eventType);
 									if (this._super(this[_shared.ObjectSymbol], this, (prepend ? 10 : null), [emitter, eventType, handler])) {
 										if (once) {
 											if (prepend) {
