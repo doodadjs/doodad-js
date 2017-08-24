@@ -1631,26 +1631,8 @@ module.exports = {
 				
 				
 				//===================================
-				// Callback base type
+				// Make inside
 				//===================================
-				
-				types.ADD('Callback', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'undefined',
-							description: "Base of every callback handlers.",
-					}
-					//! END_REPLACE()
-					, function(/*optional*/obj, fn) {
-						throw new types.NotSupported("Type is a base type.");
-					}));
-				
-				types.ADD('isCallback', function isCallback(obj) {
-					return types.isCallable(obj) && types.baseof(types.Callback, obj);
-				});
 				
 				// NOTE: Will be replaced by "Doodad.js"
 				_shared.makeInside = function makeInside(/*optional*/obj, fn) {

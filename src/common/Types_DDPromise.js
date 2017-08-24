@@ -29,7 +29,7 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Doodad.Types/DDPromise'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: ['Doodad.Tools'],
+			dependencies: ['Doodad'],
 			bootstrap: true,
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -786,8 +786,8 @@ module.exports = {
 							attr = fn;
 							fn = obj[attr]; // must throw on invalid scope
 						};
-						if (types.isNothing(obj) && types.isCallback(fn)) {
-							return fn;
+						if (types.isCallback(fn)) {
+							throw new types.TypeError("The function is already a Callback.");
 						};
 						fn = types.unbind(fn) || fn;
 						root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
@@ -810,6 +810,7 @@ module.exports = {
 						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 						callback.promise = null; // will be provided later
+						_shared.registerCallback(callback);
 						return callback;
 					}));
 				

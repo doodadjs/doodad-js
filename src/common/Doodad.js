@@ -76,6 +76,10 @@ module.exports = {
 					currentInstance: null,	// <FUTURE> thread level
 					currentType: null,	// <FUTURE> thread level
 					inTrapException: false, // <FUTURE> thread level
+
+					callbacks: new types.WeakMap(), // <FUTURE> global to threads
+
+					extendersCache: new types.WeakMap(), // <FUTURE> global to threads
 					
 					// Class
 					symbolAttributes: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES')), true) */ '__DD_ATTRIBUTES' /*! END_REPLACE() */, true),
@@ -652,6 +656,228 @@ module.exports = {
 						return !notReentrantMap || !notReentrantMap.get(name);
 					}));
 
+				//==================================
+				// Callbacks
+				//==================================
+
+				types.ADD('Callback', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Base of every callback handlers.",
+					}
+					//! END_REPLACE()
+					, function(/*optional*/obj, fn) {
+						throw new types.NotSupported("Type is a base type.");
+					}));
+
+				_shared.registerCallback = function registerCallback(cb) {
+					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Callback, cb), "Invalid callback.");
+
+					__Internal__.callbacks.set(cb, true);
+				};
+
+				types.ADD('isCallback', function isCallback(obj) {
+					return __Internal__.callbacks.has(obj);
+				});
+
+				doodad.ADD('Callback', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 7,
+							params: {
+								obj: {
+									type: 'object,Object',
+									optional: true,
+									description: "Object to bind with the callback function.",
+								},
+								fn: {
+									type: 'function,string,symbol',
+									optional: false,
+									description: "Callback function.",
+								},
+								bubbleError: {
+									type: 'bool,function',
+									optional: true,
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Callback arguments.",
+								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Secret.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a callback handler.",
+					}
+					//! END_REPLACE()
+					, types.INHERIT(types.Callback, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
+						let attr = null;
+						if (types.isString(fn) || types.isSymbol(fn)) {
+							attr = fn;
+							fn = obj[attr];
+						};
+						if (types.isCallback(fn)) {
+							throw new types.TypeError("The function is already a Callback.");
+						};
+						if (types.isNothing(bubbleError)) {
+							bubbleError = true;
+						};
+						fn = types.unbind(fn) || fn;
+						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
+						const insideFn = _shared.makeInside(obj, fn, secret),
+							insideFnApply = insideFn.apply.bind(insideFn),
+							callBubble = types.isFunction(bubbleError);
+						if (callBubble && types.isBindable(bubbleError)) {
+							bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						};
+						let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/) {
+							callback.lastError = null;
+							try {
+								if (!obj || !_shared.DESTROYED(obj)) {
+									if (args) {
+										return insideFnApply(obj, args);
+									} else {
+										return insideFnApply(obj, arguments);
+									};
+								};
+							} catch(ex) {
+								callback.lastError = ex;
+								if (callBubble && !ex.bubble) {
+									return bubbleError(ex); // call error handler
+								} else if (bubbleError || ex.critical) {
+									throw ex;
+								} else {
+									try {
+										doodad.trapException(ex, obj, attr);
+									} catch(o) {
+										if (root.getOptions().debug) {
+											types.DEBUGGER();
+										};
+									};
+								};
+							};
+						});
+						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+						callback.lastError = null;
+						_shared.registerCallback(callback);
+						return callback;
+					})));
+				
+				doodad.ADD('AsyncCallback', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 9,
+							params: {
+								obj: {
+									type: 'object,Object',
+									optional: true,
+									description: "Object to bind with the callback function.",
+								},
+								fn: {
+									type: 'function,string,symbol',
+									optional: false,
+									description: "Callback function.",
+								},
+								bubbleError: {
+									type: 'bool,function',
+									optional: true,
+									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Callback arguments.",
+								},
+								secret: {
+									type: 'any',
+									optional: true,
+									description: "Secret.",
+								},
+							},
+							returns: 'function',
+							description: "Creates an asynchronous callback handler.",
+					}
+					//! END_REPLACE()
+					, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
+						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
+						const Promise = types.getPromise();
+						let attr = null;
+						if (types.isString(fn) || types.isSymbol(fn)) {
+							attr = fn;
+							fn = obj[attr];
+						};
+						if (types.isCallback(fn)) {
+							throw new types.TypeError("The function is already a Callback.");
+						};
+						fn = types.unbind(fn) || fn;
+						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
+						const type = types.getType(obj),
+							isClass = (types.isClass(type) || types.isInterfaceClass(type));
+						if (isClass && __Internal__.isInside(obj)) {
+							secret = _shared.SECRET;
+						};
+						const fnApply = fn.apply.bind(fn),
+							callBubble = types.isFunction(bubbleError);
+						if (callBubble && types.isBindable(bubbleError)) {
+							bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						};
+						let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/) {
+							if (!args) {
+								args = types.toArray(arguments);
+							}
+							callback.lastError = null;
+							tools.callAsync(function async(/*paramarray*/) {
+								try {
+									if (!obj || !_shared.DESTROYED(obj)) {
+										if (isClass) {
+											_shared.invoke(obj, fn, args, secret);
+										} else {
+											fnApply(obj, args);
+										};
+									};
+								} catch(ex) {
+									callback.lastError = ex;
+									if (callBubble && !ex.bubble) {
+										bubbleError(ex); // call error handler
+									} else if (bubbleError || ex.critical) {
+										throw ex;
+									} else {
+										try {
+											doodad.trapException(ex, obj, attr);
+										} catch (o) {
+											if (root.getOptions().debug) {
+												types.DEBUGGER();
+											};
+										};
+									};
+								};
+							}, 0, null, args);
+						});
+						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+						callback.lastError = null;
+						_shared.registerCallback(callback);
+						return callback;
+					})));
+				
+
+				//==================================
+				// Inside
+				//==================================
+
 				__Internal__.isInside = (__Internal__.hasScopes ?
 					function isInside(obj, /*optional*/state) {
 						const forType = types.isType(obj);
@@ -706,6 +932,10 @@ module.exports = {
 					function restoreInside(state) {
 					}
 				);
+
+				//==================================
+				// Reflection
+				//==================================
 
 				__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
@@ -1000,6 +1230,10 @@ module.exports = {
 					};
 				};
 				
+				//==================================
+				// Utilities
+				//==================================
+
 				_shared.getAttributeDescriptor = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -1211,7 +1445,6 @@ module.exports = {
 						return true;
 					});
 				
-				
 				//==================================
 				// Exceptions
 				//==================================
@@ -1339,8 +1572,6 @@ module.exports = {
 							$TYPE_NAME: "Extender",
 							$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Extender')), true) */,
 							
-							$cache: types.READ_ONLY(null),  // TODO: Protect from the outside
-							
 							$inherit: root.DD_DOC(
 								//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
@@ -1380,9 +1611,7 @@ module.exports = {
 
 							_new: types.SUPER(function _new() {
 									this._super();
-									_shared.setAttributes(this, {
-										$cache: types.nullObject(),
-									});
+									__Internal__.extendersCache.set(this, types.nullObject());
 								}),
 						},
 						/*instanceProto*/
@@ -1476,11 +1705,12 @@ module.exports = {
 									const type = types.getType(this),
 										name = this.getCacheName(options);
 									let extender;
-									if (name in type.$cache) {
-										extender = type.$cache[name];
+									const cache = __Internal__.extendersCache.get(type);
+									if (name in cache) {
+										extender = cache[name];
 									} else {
 										extender = new type(options);
-										_shared.setAttribute(type.$cache, name, extender, {});
+										cache[name] = extender;
 									};
 									return extender;
 								}),
@@ -6045,27 +6275,47 @@ module.exports = {
 
 				__Internal__.callOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(__Internal__.callOutsideFn)))));
 
-				__Internal__.outsiders = new types.WeakMap();
+				doodad.ADD('OutsideCallback', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'Class,Object',
+									optional: false,
+									description: "Target.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Callback function.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a callback running outside of a class or class instance.",
+					}
+					//! END_REPLACE()
+					, types.INHERIT(types.Callback, function OutsideCallback(obj, fn) {
+						if (types.isCallback(fn)) {
+							throw new types.TypeError("The function is already a Callback.");
+						};
+						const cb = types.INHERIT(doodad.OutsideCallback, function outside(/*paramarray*/) {
+							return __Internal__.callOutsideFn.call(obj, fn, types.toArray(arguments));
+						});
+						_shared.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
+						_shared.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
+						_shared.registerCallback(cb);
+						return cb;
+					})));
 
 				__Internal__.makeOutsideFn = (__Internal__.hasScopes ?
 						function makeOutside(fn) {
-							const obj = this;
-							if (!obj) {
+							if (types.isCallback(fn)) {
+								// Already a safe callback.
 								return fn;
 							};
-							if (__Internal__.outsiders.get(fn) === obj) {
-								// Prevents "makeOutside" over "makeOutside".
-								return fn;
-							};
-							const cb = function outside(/*paramarray*/) {
-								if (__Internal__.isInside(obj)) {
-									return __Internal__.callOutsideFn.call(obj, fn, types.toArray(arguments));
-								} else {
-									return fn.apply(null, arguments);
-								};
-							};
-							__Internal__.outsiders.set(cb, obj);
-							return cb;
+							return doodad.OutsideCallback(this, fn);
 						}
 					:
 						function makeOutside(fn) {
@@ -8175,197 +8425,6 @@ module.exports = {
 						$TYPE_NAME: "Object",
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
 					}))));
-				
-				//==================================
-				// Callbacks objects
-				//==================================
-
-				doodad.ADD('Callback', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 7,
-							params: {
-								obj: {
-									type: 'object,Object',
-									optional: true,
-									description: "Object to bind with the callback function.",
-								},
-								fn: {
-									type: 'function,string,symbol',
-									optional: false,
-									description: "Callback function.",
-								},
-								bubbleError: {
-									type: 'bool,function',
-									optional: true,
-									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
-								},
-								args: {
-									type: 'arrayof(any)',
-									optional: true,
-									description: "Callback arguments.",
-								},
-								secret: {
-									type: 'any',
-									optional: true,
-									description: "Secret.",
-								},
-							},
-							returns: 'function',
-							description: "Creates a callback handler.",
-					}
-					//! END_REPLACE()
-					, types.INHERIT(types.Callback, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
-						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
-						let attr = null;
-						if (types.isString(fn) || types.isSymbol(fn)) {
-							attr = fn;
-							fn = obj[attr];
-						};
-						if (types.isNothing(obj) && types.isCallback(fn)) {
-							return fn;
-						};
-						if (types.isNothing(bubbleError)) {
-							bubbleError = true;
-						};
-						fn = types.unbind(fn) || fn;
-						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
-						const insideFn = _shared.makeInside(obj, fn, secret),
-							insideFnApply = insideFn.apply.bind(insideFn),
-							callBubble = types.isFunction(bubbleError);
-						if (callBubble && types.isBindable(bubbleError)) {
-							bubbleError = _shared.makeInside(obj, bubbleError, secret);
-						};
-						let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/) {
-							callback.lastError = null;
-							try {
-								if (!obj || !_shared.DESTROYED(obj)) {
-									if (args) {
-										return insideFnApply(obj, args);
-									} else {
-										return insideFnApply(obj, arguments);
-									};
-								};
-							} catch(ex) {
-								callback.lastError = ex;
-								if (callBubble && !ex.bubble) {
-									return bubbleError(ex); // call error handler
-								} else if (bubbleError || ex.critical) {
-									throw ex;
-								} else {
-									try {
-										doodad.trapException(ex, obj, attr);
-									} catch(o) {
-										if (root.getOptions().debug) {
-											types.DEBUGGER();
-										};
-									};
-								};
-							};
-						});
-						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
-						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
-						callback.lastError = null;
-						return callback;
-					})));
-				
-				doodad.ADD('AsyncCallback', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 9,
-							params: {
-								obj: {
-									type: 'object,Object',
-									optional: true,
-									description: "Object to bind with the callback function.",
-								},
-								fn: {
-									type: 'function,string,symbol',
-									optional: false,
-									description: "Callback function.",
-								},
-								bubbleError: {
-									type: 'bool,function',
-									optional: true,
-									description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
-								},
-								args: {
-									type: 'arrayof(any)',
-									optional: true,
-									description: "Callback arguments.",
-								},
-								secret: {
-									type: 'any',
-									optional: true,
-									description: "Secret.",
-								},
-							},
-							returns: 'function',
-							description: "Creates an asynchronous callback handler.",
-					}
-					//! END_REPLACE()
-					, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
-						// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
-						const Promise = types.getPromise();
-						let attr = null;
-						if (types.isString(fn) || types.isSymbol(fn)) {
-							attr = fn;
-							fn = obj[attr];
-						};
-						if (types.isNothing(obj) && types.isCallback(fn)) {
-							return fn;
-						};
-						fn = types.unbind(fn) || fn;
-						root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
-						const type = types.getType(obj),
-							isClass = (types.isClass(type) || types.isInterfaceClass(type));
-						if (isClass && __Internal__.isInside(obj)) {
-							secret = _shared.SECRET;
-						};
-						const fnApply = fn.apply.bind(fn),
-							callBubble = types.isFunction(bubbleError);
-						if (callBubble && types.isBindable(bubbleError)) {
-							bubbleError = _shared.makeInside(obj, bubbleError, secret);
-						};
-						let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/) {
-							if (!args) {
-								args = types.toArray(arguments);
-							}
-							callback.lastError = null;
-							tools.callAsync(function async(/*paramarray*/) {
-								try {
-									if (!obj || !_shared.DESTROYED(obj)) {
-										if (isClass) {
-											_shared.invoke(obj, fn, args, secret);
-										} else {
-											fnApply(obj, args);
-										};
-									};
-								} catch(ex) {
-									callback.lastError = ex;
-									if (callBubble && !ex.bubble) {
-										bubbleError(ex); // call error handler
-									} else if (bubbleError || ex.critical) {
-										throw ex;
-									} else {
-										try {
-											doodad.trapException(ex, obj, attr);
-										} catch (o) {
-											if (root.getOptions().debug) {
-												types.DEBUGGER();
-											};
-										};
-									};
-								};
-							}, 0, null, args);
-						});
-						_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
-						_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
-						callback.lastError = null;
-						return callback;
-					})));
 				
 				//==================================
 				// Serializable objects
