@@ -126,7 +126,7 @@ First, for the private and the protected scopes to work, Doodad must use Javascr
 
 Also, Doodad allows reflection on every fields and methods to all loaded Doodad modules, but NOT to external scripts.
 
-If you want absolutely want private and protected scopes in production, and don't care about performances, you can pass these options to "createRoot" :
+If you absolutely want private and protected scopes in production, and don't care about performances, you can pass these options to "createRoot" :
 
 ```js
 {
