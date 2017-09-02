@@ -126,7 +126,9 @@ First, for the private and the protected scopes to work, Doodad must use Javascr
 
 Also, Doodad allows reflection on every fields and methods to all loaded Doodad modules, but NOT to external scripts.
 
-If you absolutely want private and protected scopes in production, and don't care about performances, you can pass these options to "createRoot" :
+Last, the efficiency of these scopes depends on an internal flag that remembers in which class instance we are while executing a method. Unfortunatly, __because Javascript's strict mode refuses access to the caller's object, Doodad can't know with precision when we leave the framework's context__. To rectify this issue, I've recently (since the version 9.0.0) added a new method accessible by "this.callOutside" with a new callback type accessible by "doodad.OutsideCallback". You have to use one of them when you are inside a method and calling something, or getting called by something, that should be external to the object, like a callback function, or an external library if it can hold a reference to your object. I'm sorry for the inconveniences.
+
+If you absolutely want private and protected scopes on production, and don't care about performances, you can pass these options to "createRoot" :
 
 ```js
 {
@@ -379,13 +381,17 @@ Example 4 (traits) :
 
 Example 5 (expandable objects) :
 ```js
+    const ExpandableObject = types.INIT(doodad.EXPANDABLE(doodad.Object.$extend({
+        $TYPE_NAME: 'ExpandableObject',
+    })));
+
+    const perrot = new ExpandableObject();
+
     const IAnimal = types.INIT(doodad.INTERFACE(doodad.Class.$extend({
         $TYPE_NAME: 'IAnimal',
 
         makeNoise: doodad.MUST_OVERRIDE(),
     })));
-
-    const perrot = new doodad.Object();
 
     perrot.extend(
             IAnimal, // Implements "IAnimal"
@@ -431,6 +437,8 @@ Maybe I'll try to write a Babel plugin to get something like the following :
 ```
 
 But I have to wait on what will be feasible after current proposals like "decorators", "public fields" and "private fields".
+
+I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doen't like, with the addition of my own (and, I believe, more realistic) classes.
 
 ## Other available packages
 
