@@ -3127,19 +3127,19 @@
 				return false;
 			})));
 			
-		__Internal__.ADD('hasGetSymbolEnabled', __Internal__.DD_DOC(
+		__Internal__.ADD('hasSymbolsEnabled', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'bool',
-						description: "Returns 'true' if 'getSymbolFor' is available and enabled. Returns 'false' otherwise.",
+						description: "Returns 'true' if symbols are enabled. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function hasGetSymbolEnabled() {
+			, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function hasSymbolsEnabled() {
 				return true;
-			} : function hasGetSymbolEnabled() {
+			} : function hasSymbolsEnabled() {
 				return false;
 			})));
 			
