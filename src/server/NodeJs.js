@@ -3107,7 +3107,6 @@ module.exports = {
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 						if (sourceIsProto) {
 							const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
-							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
 							if (handlerSrc) {
 								const extender = handlerSrc[_shared.ExtenderSymbol];
 								if (extender.extend) {
@@ -3115,6 +3114,7 @@ module.exports = {
 									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
 								};
 							} else {
+								const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
 								const extender = handlerDest[_shared.ExtenderSymbol];
 								if (extender.extend) {
 									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
