@@ -768,7 +768,9 @@
 			// Something weird just happened. Please see the call stack.
 
 			// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
-			debugger;
+			if (__options__.debug) {
+				debugger;
+			};
 		});
 
 		//===================================
@@ -6338,7 +6340,7 @@
 			, function _delete() {
 				if (this[__Internal__.symbolInitialized]) {
 					_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
-				} else if (__options__.debug) {
+				} else {
 					// Object already deleted, should not happens.
 					types.DEBUGGER();
 				};
