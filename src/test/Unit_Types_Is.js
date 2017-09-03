@@ -68,7 +68,7 @@ module.exports = {
 					global.d = types.createObject(null);
 
 					
-					global.symbol = types.hasGetSymbolEnabled() && types.getSymbol("symbol") || undefined;
+					global.symbol = types.hasSymbolsEnabled() && types.getSymbol("symbol") || undefined;
 					
 
 					let command;

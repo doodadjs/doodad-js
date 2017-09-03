@@ -52,8 +52,8 @@ module.exports = {
 						options = {};
 					};
 
-					global.symbol1 = types.hasGetSymbolEnabled() && types.getSymbol("symbol1") || undefined;
-					global.symbol2 = types.hasGetSymbolEnabled() && types.getSymbol("symbol2") || undefined;
+					global.symbol1 = types.hasSymbolsEnabled() && types.getSymbol("symbol1") || undefined;
+					global.symbol2 = types.hasSymbolsEnabled() && types.getSymbol("symbol2") || undefined;
 					
 					const createDicts = function createDicts() {
 						global.dict1 = {
