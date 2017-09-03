@@ -381,17 +381,13 @@ Example 4 (traits) :
 
 Example 5 (expandable objects) :
 ```js
-    const ExpandableObject = types.INIT(doodad.EXPANDABLE(doodad.Object.$extend({
-        $TYPE_NAME: 'ExpandableObject',
-    })));
-
-    const perrot = new ExpandableObject();
-
     const IAnimal = types.INIT(doodad.INTERFACE(doodad.Class.$extend({
         $TYPE_NAME: 'IAnimal',
 
         makeNoise: doodad.MUST_OVERRIDE(),
     })));
+
+    const perrot = new doodad.Object();
 
     perrot.extend(
             IAnimal, // Implements "IAnimal"
