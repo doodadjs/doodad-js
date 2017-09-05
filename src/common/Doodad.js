@@ -5927,6 +5927,8 @@ module.exports = {
 					} else {
 						// Expandable objects
 						
+						// NOTE: If we need to extend the Type, don't forget to remove "EXPANDABLE" from "Object" and change the example in README.md.
+
 						if (instanceToInitialize.length) {
 							const initInstance = __Internal__.initializeAttributes(destAttributes, false, null, null, existingAttributes, instanceToInitialize);
 							initInstance(base, instanceStorage);
