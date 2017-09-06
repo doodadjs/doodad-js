@@ -32,6 +32,7 @@ module.exports = {
 			namespaces: ['Entries'],
 			dependencies: [
 				'Doodad.Types', 
+				'Doodad.Types/Iterators', 
 				'Doodad.Tools',
 			],
 			bootstrap: true,
