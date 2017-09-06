@@ -128,5 +128,9 @@
     "JsEventHandler": "e90a855b-cd86-4c45-9ca8-ae5d6e31ad2b",
     "JsEventExtender": "c83f2bf6-f0c3-46de-a08a-e71f99280490",
     "MissingDependencies": "3ebb68c8-d4f6-433f-bea6-12fb2058e4dc",
-    "SYMBOL_INIT_INSTANCE": "84898bad-b2e7-4a5c-a57f-375fc3985617"
+    "SYMBOL_INIT_INSTANCE": "84898bad-b2e7-4a5c-a57f-375fc3985617",
+    "SYMBOL_CREATOR": "97238e30-41b4-48f8-995f-2adfe05a9b80",
+    "SYMBOL_TO_INITIALIZE": "37a8d011-afb9-4293-bb75-1a186592429d",
+    "SYMBOL_TO_EXTEND_LATER": "f7827716-2f5e-473e-b98f-5bbb00c34a21",
+    "SYMBOL_WHEN": "97a9bb30-c936-47b4-87c9-34005fcc5634"
 }
