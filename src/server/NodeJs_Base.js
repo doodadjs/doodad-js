@@ -54,7 +54,7 @@ module.exports = {
 				// Natives
 				//===================================
 				
-				//types.complete(_shared.Natives, {
+				//tools.complete(_shared.Natives, {
 				//});
 				
 				//===================================

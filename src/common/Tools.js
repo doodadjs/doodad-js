@@ -55,7 +55,7 @@ module.exports = {
 				};
 				
 
-				tools.ADD('LogLevels', types.freezeObject(types.nullObject({
+				tools.ADD('LogLevels', types.freezeObject(tools.nullObject({
 					Debug: 0,
 					Info: 1,
 					Warning: 2,
@@ -67,7 +67,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				const __options__ = types.nullObject({
+				const __options__ = tools.nullObject({
 					logLevel: tools.LogLevels.Error,
 					unhandledRejectionsTimeout: 5000,
 					unhandledRejectionsMaxSize: 20,
@@ -137,7 +137,7 @@ module.exports = {
 					
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// Prototype functions
 					stringIndexOfCall: global.String.prototype.indexOf.call.bind(global.String.prototype.indexOf),
 					stringLastIndexOfCall: global.String.prototype.lastIndexOf.call.bind(global.String.prototype.lastIndexOf),
@@ -268,40 +268,26 @@ module.exports = {
 				// Array Tools
 				//===================================
 	
-				tools.ADD('map', root.DD_DOC(
+				tools.ADD('indexOf', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 2,
 							params: {
 								obj: {
-									type: 'arraylike,object,Map,Set',
+									type: 'arraylike',
 									optional: false,
-									description: "An object to scan.",
+									description: "Array value.",
 								},
-								fn: {
-									type: 'function',
-									optional: false,
-									description: 
-										"A function to call. Arguments passed to the function are : \n" +
-										"  value (any): The current value\n" +
-										"  key (integer,string): The current index or attribute name\n" +
-										"  obj (arraylike,object,Map,Set): A reference to the object"
-								},
-								thisObj: {
+								item: {
 									type: 'any',
-									optional: true,
-									description: "Value of 'this' when calling the function. Default is 'undefined'.",
+									optional: false,
+									description: "Value to search for.",
 								},
-								start: {
+								from: {
 									type: 'integer',
 									optional: true,
-									description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
-								},
-								end: {
-									type: 'integer',
-									optional: true,
-									description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
+									description: "Index to start searching from. Default is '0'.",
 								},
 								sparsed: {
 									type: 'bool',
@@ -309,73 +295,432 @@ module.exports = {
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
 							},
-							returns: 'array,object',
-							description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
+							returns: 'integer',
+							description: "Returns the index of the first occurrence of the item. Returns '-1' when item is not found.",
 					}
 					//! END_REPLACE()
-					, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed) {
-						if (!types.isNothing(obj)) {
+					, function indexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
+						if (types.isArrayLike(obj)) {
+							from = (+from || 0);
 							if (types.isNothing(sparsed)) {
 								sparsed = true;
 							};
-							obj = _shared.Natives.windowObject(obj);
-							if (types._instanceof(obj, types.Set)) {
-								const result = new types.Set();
-								obj.forEach(function(value, key, obj) {
-									result.add(fn.call(thisObj, value, key, obj));
-								});
-								return result;
-							} else if (types._instanceof(obj, types.Map)) {
-								const result = new types.Map();
-								obj.forEach(function(value, key, obj) {
-									result.set(key, fn.call(thisObj, value, key, obj));
-								});
-								return result;
-							} else if (types.isArrayLike(obj)) {
-								if (types.isNothing(start) || (start < 0)) {
-									start = 0;
-								};
-								const len = obj.length;
-								if (types.isNothing(end) || (end > len)) {
-									end = len;
-								};
-								if (_shared.Natives.arrayMapCall && (start === 0) && (end >= len) && !sparsed) {
-									return _shared.Natives.arrayMapCall(obj, fn, thisObj);
+							if (types.isString(obj)) {
+								return _shared.Natives.stringIndexOfCall(obj, item, from);
+							} else {
+								if (!sparsed && _shared.Natives.arrayIndexOfCall) {
+									// JS 1.6
+									return _shared.Natives.arrayIndexOfCall(obj, item, from);
 								} else {
-									const result = (sparsed ? [] : types.createArray(end - start));
-									let pos = 0;
-									for (let key = start; key < end; key++) {
+									obj = _shared.Natives.windowObject(obj);
+									const len = obj.length;
+									from = Math.max(from >= 0 ? from : len - Math.abs(from), 0);
+									for (let key = from; key < len; key++) {
 										if (!sparsed || types.has(obj, key)) {
-											result[pos] = fn.call(thisObj, obj[key], key, obj);
-											pos++;
+											if (obj[key] === item) {
+												return key;
+											};
 										};
 									};
-									return result;
 								};
-							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								const result = [];
-								let key = 0,
-									data;
-								// <FUTURE> for...of
-								while ((data = iter.next()) && !data.done) {
-									result[key] = fn.call(thisObj, data.value, key, obj);
-									key++;
-								};
-								return result;
+							};
+						};
+						return -1;
+					}));
+				
+				tools.ADD('lastIndexOf', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								obj: {
+									type: 'arraylike',
+									optional: false,
+									description: "Array value.",
+								},
+								item: {
+									type: 'any',
+									optional: false,
+									description: "Value to search for.",
+								},
+								from: {
+									type: 'integer',
+									optional: true,
+									description: "Index to start searching from. Default is 'end of array'.",
+								},
+								sparsed: {
+									type: 'bool',
+									optional: true,
+									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+								},
+							},
+							returns: 'integer',
+							description: "Returns the index of the last occurrence of the item. Returns '-1' when item is not found.",
+					}
+					//! END_REPLACE()
+					, function lastIndexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
+						if (types.isArrayLike(obj)) {
+							const len = obj.length;
+							from = (+from || (len - 1));
+							if (types.isNothing(sparsed)) {
+								sparsed = true;
+							};
+							if (types.isString(obj)) {
+								return _shared.Natives.stringLastIndexOfCall(obj, item, from);
 							} else {
-								const result = types.createObject(types.getPrototypeOf(obj));
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									result[key] = fn.call(thisObj, obj[key], key, obj);
+								if (_shared.Natives.arrayLastIndexOfCall && !sparsed) {
+									// JS 1.6
+									return _shared.Natives.arrayLastIndexOfCall(obj, item, from);
+								} else {
+									obj = _shared.Natives.windowObject(obj);
+									from = Math.min(from >= 0 ? from : len - Math.abs(from), len - 1);
+									for (let key = len - 1; key >= from; key--) {
+										if (!sparsed || types.has(obj, key)) {
+											if (obj[key] === item) {
+												return key;
+											};
+										};
+									};
 								};
-								return result;
+							};
+						};
+						return -1;
+					}));
+				
+				tools.ADD('getFirstIndex', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'arraylike',
+										optional: false,
+										description: "An array-like object.",
+									},
+								},
+								returns: 'integer',
+								description: "Returns the index of the first available value (the index of the first non-empty slot).",
+					}
+					//! END_REPLACE()
+					, function getFirstIndex(obj) {
+						if (types.isArrayLike(obj)) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
+									return key;
+								};
 							};
 						};
 					}));
-
+				
+				tools.ADD('getFirstValue', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'arraylike',
+										optional: false,
+										description: "An array-like object.",
+									},
+								},
+								returns: 'any',
+								description: "Returns the first available value (the value of the first non-empty slot).",
+					}
+					//! END_REPLACE()
+					, function getFirstValue(obj) {
+						if (types.isArrayLike(obj)) {
+							const len = obj.length;
+							for (let key = 0; key < len; key++) {
+								if (types.has(obj, key)) {
+									return obj[key];
+								};
+							};
+						};
+					}));
+				
+				tools.ADD('popAt', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'object,array',
+										optional: false,
+										description: "An object or an array.",
+									},
+									key: {
+										type: 'string,integer',
+										optional: false,
+										description: "An attribute name or an array index.",
+									},
+								},
+								returns: 'any',
+								description: "Deletes the named own property of an object and returns its value. If object is an array, splices at the specified array index if 'key' is any existing array index.",
+					}
+					//! END_REPLACE()
+					, function popAt(obj, key) {
+						let item;
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (types.has(obj, key)) {
+								if (types.isArray(obj)) {
+									const number = _shared.Natives.windowNumber(key);
+									if ((number >= 0) && (number < obj.length)) {
+										item = obj[key];
+										_shared.Natives.arraySpliceCall(obj, key, 1);
+									} else {
+										item = obj[key];
+										delete obj[key];
+									};
+								} else {
+									item = obj[key];
+									delete obj[key];
+								};
+							};
+						};
+						return item;
+					}));
+				
+				tools.ADD('popItem', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									obj: {
+										type: 'object,array',
+										optional: false,
+										description: "An object or an array.",
+									},
+									item: {
+										type: 'any,function',
+										optional: false,
+										description: "The value of the item to pop out. When it is a function, calls it to get the item to pop out.",
+									},
+									thisObj: {
+										type: 'any',
+										optional: true,
+										description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+									},
+									includeFunctions: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+									},
+								},
+								returns: 'any',
+								description: "Search the first occurrence of the specified value among owned properties of an object, than deletes it and returns that value. When not found, returns 'undefined'. If object is an array, splices at the index of the first occurrence.",
+					}
+					//! END_REPLACE()
+					, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+							if (!includeFunctions && types.isFunction(item)) {
+								if (types.isArray(obj)) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (item.call(thisObj, val, key, obj)) {
+												_shared.Natives.arraySpliceCall(obj, key, 1);
+												return val;
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (item.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											return val;
+										};
+									};
+								};
+							} else {
+								if (types.isArray(obj)) {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (val === item) {
+												_shared.Natives.arraySpliceCall(obj, key, 1);
+												return val;
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (val === item) {
+											delete obj[key];
+											return val;
+										};
+									};
+								};
+							};
+						};
+					}));
+				
+				tools.ADD('popItems', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 5,
+								params: {
+									obj: {
+										type: 'object,array',
+										optional: false,
+										description: "An object or an array.",
+									},
+									items: {
+										type: 'any,arrayof(any),function',
+										optional: false,
+										description: "The values of the items to pop out. When it is a function, calls it to get the items to pop out.",
+									},
+									thisObj: {
+										type: 'any',
+										optional: true,
+										description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
+									},
+								},
+								returns: 'arrayof(any)',
+								description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
+					}
+					//! END_REPLACE()
+					, function popItems(obj, items, /*optional*/thisObj) {
+						const result = [];
+						if (!types.isNothing(obj)) {
+							obj = _shared.Natives.windowObject(obj);
+								
+							if (types.isFunction(items)) {
+								if (types.isArray(obj)) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (items.call(thisObj, val, key, obj)) {
+												_shared.Natives.arraySpliceCall(obj, key, 1);
+												result.push(val);
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (items.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											result.push(val);
+										};
+									};
+								};
+							} else if (types.isArray(items)) {
+								const itemsLen = items.length;
+								if (types.isArray(obj)) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											for (let j = 0; j < itemsLen; j++) {
+												if (types.has(items, j)) {
+													if (items[j] === val) {
+														_shared.Natives.arraySpliceCall(obj, key, 1);
+														result.push(val);
+													};
+												};
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										for (let j = 0; j < itemsLen; j++) {
+											if (types.has(items, j)) {
+												if (items[j] === val) {
+													delete obj[key];
+													result.push(val);
+												};
+											};
+										};
+									};
+								};
+							} else {
+								if (types.isArray(obj)) {
+									for (let key = obj.length - 1; key >= 0; key--) {
+										if (types.has(obj, key)) {
+											const val = obj[key];
+											if (items === val) {
+												_shared.Natives.arraySpliceCall(obj, key, 1);
+												result.push(val);
+											};
+										};
+									};
+								} else {
+									const keys = types.keys(obj),
+										len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (items === val) {
+											delete obj[key];
+											result.push(val);
+										};
+									};
+								};
+							};
+						};
+						return result;
+					}));
+				
+				tools.ADD('prepend', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'arraylike',
+										optional: false,
+										description: "Target array.",
+									},
+									paramarray: {
+										type: 'arrayof(arraylike)',
+										optional: true,
+										description: "An array.",
+									},
+								},
+								returns: 'array',
+								description: "Prepends the items of each array to the first argument than returns that array.",
+					}
+					//! END_REPLACE()
+					, function prepend(obj /*paramarray*/) {
+						if (!types.isArrayLike(obj)) {
+							return null;
+						};
+						const len = arguments.length;
+						for (let i = 1; i < len; i++) {
+							const arg = arguments[i];
+							if (!types.isNothing(arg)) {
+								_shared.Natives.arrayUnshiftApply(obj, arg);
+							};
+						};
+						return obj;
+					}));
+				
 				//===================================
 				// Search functions
 				//===================================
@@ -1484,26 +1829,148 @@ module.exports = {
 				// Object functions
 				//===================================
 					
-				tools.ADD('indexOf', root.DD_DOC(
+				tools.ADD('depthComplete', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									depth: {
+										type: 'integer',
+										optional: false,
+										description: "Depth.",
+									},
+									paramarray: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'object',
+								description: "Extends the first object with owned properties of the other objects using the specified depth. Existing owned properties are excluded.",
+					}
+					//! END_REPLACE()
+					, function depthComplete(depth, /*paramarray*/obj) {
+						let result;
+						if (!types.isNothing(obj)) {
+							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+							if (depth >= -1) {
+								result = _shared.Natives.windowObject(obj);
+								const len = arguments.length;
+								for (let i = 2; i < len; i++) {
+									obj = arguments[i];
+									if (types.isNothing(obj)) {
+										continue;
+									};
+									// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+									obj = _shared.Natives.windowObject(obj);
+									const keys = tools.append(types.keys(obj), types.symbols(obj)),
+										keysLen = keys.length; // performance
+									for (let j = 0; j < keysLen; j++) {
+										const key = keys[j];
+										const objVal = obj[key];
+										if ((depth >= 0) && types.isObjectLike(objVal)) {
+											const resultVal = result[key];
+											if (types.isNothing(resultVal)) {
+												result[key] = tools.depthComplete(depth, {}, objVal);
+											} else if (types.isObjectLike(resultVal)) {
+												tools.depthComplete(depth, resultVal, objVal);
+											};
+										} else if (!types.has(result, key)) {
+											result[key] = objVal;
+										};
+									};
+								};
+							};
+						};
+
+						return result;
+					}));
+				
+				tools.ADD('fill', root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									keys: {
+										type: 'arrayof(string,symbol),string,symbol',
+										optional: false,
+										description: "Attribute names.",
+									},
+									paramarray: {
+										type: 'any',
+										optional: false,
+										description: "An object.",
+									},
+								},
+								returns: 'object',
+								description: "Extends the first object with named owned properties of the other objects.",
+					}
+					//! END_REPLACE()
+					, function fill(keys, /*paramarray*/obj) {
+						let result;
+						if (!types.isNothing(obj)) {
+							if (types.isNothing(keys)) {
+								keys = [];
+							} else if (!types.isArray(keys)) {
+								keys = [keys];
+							};
+							result = _shared.Natives.windowObject(obj);
+							const argumentsLen = arguments.length,
+								keysLen = keys.length;
+							for (let i = 1; i < argumentsLen; i++) {
+								obj = arguments[i];
+								if (!types.isNothing(obj)) {
+									obj = _shared.Natives.windowObject(obj);
+									for (let k = 0; k < keysLen; k++) {
+										if (types.has(keys, k)) {
+											const key = keys[k];
+											if (types.has(obj, key)) {
+												result[key] = obj[key];
+											};
+										};
+									};
+								};
+							};
+						};
+						return result;
+					}));
+				
+				tools.ADD('map', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 4,
 							params: {
 								obj: {
-									type: 'arraylike',
+									type: 'arraylike,object,Map,Set',
 									optional: false,
-									description: "Array value.",
+									description: "An object to scan.",
 								},
-								item: {
+								fn: {
+									type: 'function',
+									optional: false,
+									description: 
+										"A function to call. Arguments passed to the function are : \n" +
+										"  value (any): The current value\n" +
+										"  key (integer,string): The current index or attribute name\n" +
+										"  obj (arraylike,object,Map,Set): A reference to the object"
+								},
+								thisObj: {
 									type: 'any',
-									optional: false,
-									description: "Value to search for.",
+									optional: true,
+									description: "Value of 'this' when calling the function. Default is 'undefined'.",
 								},
-								from: {
+								start: {
 									type: 'integer',
 									optional: true,
-									description: "Index to start searching from. Default is '0'.",
+									description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
+								},
+								end: {
+									type: 'integer',
+									optional: true,
+									description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
 								},
 								sparsed: {
 									type: 'bool',
@@ -1511,99 +1978,73 @@ module.exports = {
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
 							},
-							returns: 'integer',
-							description: "Returns the index of the first occurrence of the item. Returns '-1' when item is not found.",
+							returns: 'array,object',
+							description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
 					}
 					//! END_REPLACE()
-					, function indexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
-						if (types.isArrayLike(obj)) {
-							from = (+from || 0);
+					, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed) {
+						if (!types.isNothing(obj)) {
 							if (types.isNothing(sparsed)) {
 								sparsed = true;
 							};
-							if (types.isString(obj)) {
-								return _shared.Natives.stringIndexOfCall(obj, item, from);
-							} else {
-								if (!sparsed && _shared.Natives.arrayIndexOfCall) {
-									// JS 1.6
-									return _shared.Natives.arrayIndexOfCall(obj, item, from);
+							obj = _shared.Natives.windowObject(obj);
+							if (types._instanceof(obj, types.Set)) {
+								const result = new types.Set();
+								obj.forEach(function(value, key, obj) {
+									result.add(fn.call(thisObj, value, key, obj));
+								});
+								return result;
+							} else if (types._instanceof(obj, types.Map)) {
+								const result = new types.Map();
+								obj.forEach(function(value, key, obj) {
+									result.set(key, fn.call(thisObj, value, key, obj));
+								});
+								return result;
+							} else if (types.isArrayLike(obj)) {
+								if (types.isNothing(start) || (start < 0)) {
+									start = 0;
+								};
+								const len = obj.length;
+								if (types.isNothing(end) || (end > len)) {
+									end = len;
+								};
+								if (_shared.Natives.arrayMapCall && (start === 0) && (end >= len) && !sparsed) {
+									return _shared.Natives.arrayMapCall(obj, fn, thisObj);
 								} else {
-									obj = _shared.Natives.windowObject(obj);
-									const len = obj.length;
-									from = Math.max(from >= 0 ? from : len - Math.abs(from), 0);
-									for (let key = from; key < len; key++) {
+									const result = (sparsed ? [] : tools.createArray(end - start));
+									let pos = 0;
+									for (let key = start; key < end; key++) {
 										if (!sparsed || types.has(obj, key)) {
-											if (obj[key] === item) {
-												return key;
-											};
+											result[pos] = fn.call(thisObj, obj[key], key, obj);
+											pos++;
 										};
 									};
+									return result;
 								};
-							};
-						};
-						return -1;
-					}));
-				
-				tools.ADD('lastIndexOf', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "Array value.",
-								},
-								item: {
-									type: 'any',
-									optional: false,
-									description: "Value to search for.",
-								},
-								from: {
-									type: 'integer',
-									optional: true,
-									description: "Index to start searching from. Default is 'end of array'.",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-							},
-							returns: 'integer',
-							description: "Returns the index of the last occurrence of the item. Returns '-1' when item is not found.",
-					}
-					//! END_REPLACE()
-					, function lastIndexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
-						if (types.isArrayLike(obj)) {
-							const len = obj.length;
-							from = (+from || (len - 1));
-							if (types.isNothing(sparsed)) {
-								sparsed = true;
-							};
-							if (types.isString(obj)) {
-								return _shared.Natives.stringLastIndexOfCall(obj, item, from);
+							} else if (types.isIterable(obj)) {
+								const iter = obj[_shared.Natives.symbolIterator]();
+								const result = [];
+								let key = 0,
+									data;
+								// <FUTURE> for...of
+								while ((data = iter.next()) && !data.done) {
+									result[key] = fn.call(thisObj, data.value, key, obj);
+									key++;
+								};
+								return result;
 							} else {
-								if (_shared.Natives.arrayLastIndexOfCall && !sparsed) {
-									// JS 1.6
-									return _shared.Natives.arrayLastIndexOfCall(obj, item, from);
-								} else {
-									obj = _shared.Natives.windowObject(obj);
-									from = Math.min(from >= 0 ? from : len - Math.abs(from), len - 1);
-									for (let key = len - 1; key >= from; key--) {
-										if (!sparsed || types.has(obj, key)) {
-											if (obj[key] === item) {
-												return key;
-											};
-										};
-									};
+								const result = tools.createObject(types.getPrototypeOf(obj));
+								const keys = types.keys(obj),
+									len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
+									result[key] = fn.call(thisObj, obj[key], key, obj);
 								};
+								return result;
 							};
 						};
-						return -1;
 					}));
-				
+
 				tools.ADD('forEach', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{

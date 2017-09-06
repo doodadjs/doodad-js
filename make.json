@@ -70,6 +70,12 @@
       "browserify": true
     },
     {
+      "src": "common/Tools_ToSource.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Tools_Version.js",
       "client": true,
       "server": true,
@@ -77,12 +83,6 @@
     },
     {
       "src": "common/Types.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_ToSource.js",
       "client": true,
       "server": true,
       "browserify": true
@@ -241,6 +241,13 @@
       "test": true
     },
     {
+      "src": "test/Unit_Tools_ToSource.js",
+      "client": true,
+      "server": true,
+      "browserify": true,
+      "test": true
+    },
+    {
       "src": "test/Unit_Types.js",
       "client": true,
       "server": true,
@@ -270,13 +277,6 @@
     },
     {
       "src": "test/Unit_Types_Is.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_ToSource.js",
       "client": true,
       "server": true,
       "browserify": true,

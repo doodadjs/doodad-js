@@ -63,7 +63,7 @@ module.exports = {
 					
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// "trapUnhandledErrors"
 					mathAbs: global.Math.abs,
 					windowSetTimeout: global.setTimeout.bind(global),

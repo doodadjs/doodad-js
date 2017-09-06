@@ -182,7 +182,7 @@ module.exports = {
 						const Promise = types.getPromise();
 
 						if (types.isArray(options)) {
-							options = types.depthExtend.apply(null, types.append([15, {}], options));
+							options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 						};
 
 						const trapMissingDeps = function _trapMissingDeps(err) {
@@ -193,7 +193,7 @@ module.exports = {
 									}) === null);
 								});
 								if (missingDeps.length) {
-									const newOptions = types.extend({}, options, {ignoredMissingDeps: missingDeps});
+									const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
 									return modules.load(missingDeps, newOptions)
 										.then(function(dummy) {
 											return namespaces.load(err.modules, newOptions)
@@ -244,7 +244,7 @@ module.exports = {
 								if (files && files.length) {
 									tools.forEach(files, function(file) {
 										if (file && file.isConfig) {
-											types.depthExtend(15, options, file.exports, options);
+											tools.depthExtend(15, options, file.exports, options);
 										};
 									});
 									tools.forEach(files, function(file) {
@@ -289,7 +289,7 @@ module.exports = {
 										dependencies: tools.filter(makeManifest.dependencies, function(dep) {
 											return dep.server && !dep.test;
 										}).map(function(dep) {
-											return types.extend({}, dep, {type: types.get(dep, 'type', 'Package')});
+											return tools.extend({}, dep, {type: types.get(dep, 'type', 'Package')});
 										}),
 										
 										create: function create(root, /*optional*/_options, _shared) {
@@ -322,7 +322,7 @@ module.exports = {
 												isConfig: true,
 											});
 
-											return modules.load(files, types.depthExtend(15, {}, _options, {startup: {secret: _shared.SECRET}}))
+											return modules.load(files, tools.depthExtend(15, {}, _options, {startup: {secret: _shared.SECRET}}))
 												.then(function() {
 													// Returns nothing.
 												});

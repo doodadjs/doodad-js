@@ -63,7 +63,7 @@ module.exports = {
 				// Shared
 				//===================================
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
 
@@ -87,7 +87,7 @@ module.exports = {
 					};
 				};
 
-				namespaces.ADD('VersionIdentifiers', types.freezeObject(types.nullObject({
+				namespaces.ADD('VersionIdentifiers', types.freezeObject(tools.nullObject({
 					development: -4, dev: -4, d: -4, 
 					alpha: -3, a: -3, 
 					beta: -2, b: -2, 
@@ -436,7 +436,7 @@ module.exports = {
 								if (!namespace) {
 									if (prevNamespace && !types._instanceof(prevNamespace, namespaceType)) {
 										const proto = {};
-										const keys = types.append(types.keys(prevNamespace), types.symbols(prevNamespace));
+										const keys = tools.append(types.keys(prevNamespace), types.symbols(prevNamespace));
 										const keysLen = keys.length;
 										for (let i = 0; i < keysLen; i++) {
 											const key = keys[i];
@@ -520,7 +520,7 @@ module.exports = {
 								const baseName = entry.spec.name.split('/', 2)[0];
 								let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
 								if (globalOptions) {
-									opts = types.extend({}, globalOptions, opts);
+									opts = tools.extend({}, globalOptions, opts);
 								};
 								if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
 									let retval = null;
@@ -669,7 +669,7 @@ module.exports = {
 							options = types.get(options, baseName);
 
 							if (globalOptions) {
-								options = types.extend({}, globalOptions, options);
+								options = tools.extend({}, globalOptions, options);
 							};
 						
 							if (entry.objectInit) {
@@ -754,7 +754,7 @@ module.exports = {
 						const dontThrow = types.get(options, 'dontThrow');
 
 						if (types.isArray(options)) {
-							options = types.depthExtend.apply(null, types.append([15, {}], options));
+							options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 						};
 
 						if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
@@ -834,7 +834,7 @@ module.exports = {
 									if (state.missingDeps[0].versionMismatch) {
 										throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.consumer, entry.module, (entry.version || '<unspecified>')]);
 									} else {
-										const missingDeps = types.unique(function(dep1, dep2) {
+										const missingDeps = tools.unique(function(dep1, dep2) {
 												return (dep1.module === dep2.module) && (dep1.path === dep2.path);
 											}, state.missingDeps);
 										throw new types.MissingDependencies(missingDeps, modules);
@@ -854,7 +854,7 @@ module.exports = {
 											} else {
 												state.missings++;
 											};
-											types.append(state.missingDeps, entry);
+											tools.append(state.missingDeps, entry);
 											names.push(name);
 										} else {
 											state.missings = 0;
@@ -1097,7 +1097,7 @@ module.exports = {
 						
 						_new: types.SUPER(function _new() {
 							this._super();
-							this.registry = types.nullObject();
+							this.registry = tools.nullObject();
 						}),
 						
 						get: root.DD_DOC(
@@ -1200,7 +1200,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 						, function remove(name, /*optional*/type, /*optional*/options) {
-							options = types.nullObject(options);
+							options = tools.nullObject(options);
 							if (options.secret !== _shared.SECRET) {
 								throw new types.AccessDenied("Secrets mismatch.");
 							};
@@ -1261,7 +1261,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 						, function add(name, entry, /*optional*/options) {
-							options = types.nullObject(options);
+							options = tools.nullObject(options);
 							if (options.secret !== _shared.SECRET) {
 								throw new types.AccessDenied("Secrets mismatch.");
 							};
@@ -1272,7 +1272,7 @@ module.exports = {
 								return false;
 							};
 							if (types.get(entry.spec, 'name') !== name) {
-								entry.spec = types.extend({}, entry.spec, {
+								entry.spec = tools.extend({}, entry.spec, {
 									name: name,
 								});
 							};
@@ -1353,14 +1353,14 @@ module.exports = {
 						_new: types.SUPER(function _new(root, spec, namespace, /*optional*/options) {
 							this._super();
 							this.root = root;
-							this.spec = types.extend({}, spec, {
+							this.spec = tools.extend({}, spec, {
 								type: types.getType(this),
 								namespaceType: types.getType(namespace),
 							});
 							this.namespace = namespace;
 							this.version = this.spec.version && tools.Version.parse(this.spec.version, namespaces.VersionIdentifiers);
 							
-							this.options = types.nullObject(options);
+							this.options = tools.nullObject(options);
 							
 							const val = types.getIn(this.options, 'protect', true);
 							this.options.protect = types.toBoolean(val);

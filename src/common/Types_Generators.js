@@ -30,6 +30,10 @@ module.exports = {
 		DD_MODULES['Doodad.Types/Generators'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
+			dependencies: [
+				'Doodad.Tools',
+			],
+
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
@@ -38,6 +42,7 @@ module.exports = {
 				//===================================
 
 				const doodad = root.Doodad,
+					tools = doodad.Tools,
 					types = doodad.Types;
 				
 				//===================================
@@ -51,7 +56,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
 					functionIsGeneratorCall: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : undefined),
 				});
@@ -65,7 +70,7 @@ module.exports = {
 				// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
 				try {
-					_shared.Natives.GeneratorFunction = types.getPrototypeOf(types.eval("function*(){}")).constructor;
+					_shared.Natives.GeneratorFunction = types.getPrototypeOf(tools.eval("function*(){}")).constructor;
 
 					// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
 					_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;

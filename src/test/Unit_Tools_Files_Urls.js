@@ -404,7 +404,7 @@ module.exports = {
 							const command = test.prepareCommand.call(this, function(url) {
 									return files.Url.parse(url).toString();
 								}, "Doodad.Test.Tools.Files.Url.parse.test2");
-							return types.extend({}, command, {
+							return tools.extend({}, command, {
 								run: function(url, /*optional*/expected /*paramarray*/) {
 									const params =  Array.prototype.slice.call(arguments, 0, arguments.length - 2);
 									params.unshift(((expected === undefined) ? url : expected), {}, url);

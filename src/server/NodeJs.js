@@ -82,7 +82,7 @@ module.exports = {
 				// Natives
 				//===================================
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// "isBuffer"
 					globalBuffer: global.Buffer,
 					globalBufferIsBuffer: types.isFunction(global.Buffer.isBuffer) && global.Buffer.isBuffer,
@@ -567,7 +567,7 @@ module.exports = {
 							return (arg.split('=')[0] !== '--debug-brk');
 						});
 
-						args = types.append([], execArgs, [url], args);
+						args = tools.append([], execArgs, [url], args);
 
 						const child = nodeChildProcess.spawn(process.execPath, args, {
 							env: process.env,
@@ -756,7 +756,7 @@ module.exports = {
 						if (!os) {
 							const type = nodeOs.type(),
 								platform = nodeOs.platform();
-							os = types.freezeObject(types.nullObject({
+							os = types.freezeObject(tools.nullObject({
 								name: platform,
 								type: ((type === 'Windows_NT') ? 'windows' : ((type === 'Linux') ? 'linux' : 'unix')),
 								//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
@@ -2594,7 +2594,7 @@ module.exports = {
 							callback.__OPTIONS__ = options;
 						});
 							
-						data.callbacks = types.unique(data.callbacks, callbacks);
+						data.callbacks = tools.unique(data.callbacks, callbacks);
 							
 					} else {
 						throw new types.NotSupported("Remote files are not supported.");
@@ -2645,7 +2645,7 @@ module.exports = {
 						if (types.isNothing(callbacks)) {
 							data.callbacks = null;
 						} else {
-							types.popItems(data.callbacks, callbacks);
+							tools.popItems(data.callbacks, callbacks);
 						};
 						if (!data.callbacks || !data.callbacks.length) {
 							data.watcher.close();
@@ -2687,8 +2687,8 @@ module.exports = {
 				}
 				//! END_REPLACE()
 				, function forkSync(modulePath, /*optional*/args, /*optional*/options) {
-					args = types.append([], process.execArgv, [modulePath], args);
-					options = types.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
+					args = tools.append([], process.execArgv, [modulePath], args);
+					options = tools.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
 					return nodeChildProcess.spawnSync(process.execPath, args, options);
 				}));
 						
@@ -2969,7 +2969,7 @@ module.exports = {
 											type: eventType,
 											data: context,
 										};
-										return handler.apply(this, types.append([ctx], arguments));
+										return handler.apply(this, tools.append([ctx], arguments));
 									};
 								}, null, null, _shared.SECRET);
 							};
@@ -3096,7 +3096,7 @@ module.exports = {
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 						options = this._super(options, newOptions, replace);
 						if (replace) {
-							types.fill(['canReject', 'eventType'], options, this, newOptions);
+							tools.fill(['canReject', 'eventType'], options, this, newOptions);
 						} else {
 							options.canReject = !!newOptions.canReject || this.canReject;
 							options.eventType = newOptions.eventType || this.eventType;
@@ -3155,7 +3155,7 @@ module.exports = {
 								const oldObjId = generator.objId;
 								generator.objId = generator.vars.fromKey(attr);
 								const oldKeyVars = generator.__kvars;
-								generator.__kvars = types.nullObject();
+								generator.__kvars = tools.nullObject();
 								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
 								generator.objId = oldObjId;
 								generator.__kvars = oldKeyVars;

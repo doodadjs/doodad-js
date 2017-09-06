@@ -56,7 +56,7 @@ module.exports = {
 				
 
 
-				const __options__ = types.extend({
+				const __options__ = tools.extend({
 					modulesUri: './',
 				}, _options);
 
@@ -180,7 +180,7 @@ module.exports = {
 										.then(function(code) {
 											const DD_MODULE = {exports: {}};
 											const locals = {DD_MODULE: DD_MODULE, DD_MODULES: undefined};
-											const evalFn = types.createEval(types.keys(locals), false).apply(null, types.values(locals));
+											const evalFn = tools.createEval(types.keys(locals), false).apply(null, types.values(locals));
 											evalFn(code);
 											return DD_MODULE.exports;
 										})
@@ -239,7 +239,7 @@ module.exports = {
 						//const Promise = types.getPromise();
 
 						if (types.isArray(options)) {
-							options = types.depthExtend.apply(null, types.append([15, {}], options));
+							options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 						};
 
 						const trapMissingDeps = function _trapMissingDeps(err) {
@@ -250,7 +250,7 @@ module.exports = {
 									}) === null);
 								});
 								if (missingDeps.length) {
-									const newOptions = types.extend({}, options, {ignoredMissingDeps: missingDeps});
+									const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
 									return modules.load(missingDeps, newOptions)
 										.then(function(dummy) {
 											return namespaces.load(err.modules, newOptions)
@@ -270,7 +270,7 @@ module.exports = {
 								// Load configuration files.
 								tools.forEach(files, function(file) {
 									if (file && file.isConfig) {
-										types.depthExtend(15, options, file.exports, options);
+										tools.depthExtend(15, options, file.exports, options);
 									};
 								});
 

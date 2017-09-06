@@ -30,6 +30,10 @@ module.exports = {
 		DD_MODULES['Doodad.Types/Buffers'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
+			dependencies: [
+				'Doodad.Tools',
+			],
+
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
@@ -38,6 +42,7 @@ module.exports = {
 				//===================================
 
 				const doodad = root.Doodad,
+					tools = doodad.Tools,
 					types = doodad.Types;
 				
 				//===================================
@@ -51,7 +56,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// "isArrayBuffer"
 					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
 

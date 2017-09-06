@@ -57,7 +57,7 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 				// NOTE: Store everything because third-parties can override them.
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowSet: (types.isNativeFunction(global.Set) && types.isNativeFunction(global.Set.prototype.values) && types.isNativeFunction(global.Set.prototype.keys) ? global.Set : undefined),
 					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});
@@ -145,12 +145,12 @@ module.exports = {
 								const mapAr = ar.__keys,
 									mapVals = ar.__values,
 									len = mapAr.length;
-								ar = types.createArray(len);
+								ar = tools.createArray(len);
 								for (let i = 0; i < len; i++) {
 									ar[i] = [mapAr[i], mapVals[i]];
 								};
 							} else if (types.isArrayLike(ar)) {
-								ar = types.unique(ar);
+								ar = tools.unique(ar);
 							} else {
 								throw types.TypeError("Invalid array.");
 							};

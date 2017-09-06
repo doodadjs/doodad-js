@@ -53,7 +53,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				const __options__ = types.nullObject({
+				const __options__ = tools.nullObject({
 					toSourceItemsCount: 255,		// Max number of items
 				}, _options);
 
@@ -72,7 +72,7 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 				// NOTE: Store everything because third-parties can override them.
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// No polyfills
 
 					// "toArray"
@@ -134,14 +134,14 @@ module.exports = {
 				};
 				
 				types.ADD('Undefined', function Undefined() {});
-				types.extend(types.Undefined.prototype, {
+				tools.extend(types.Undefined.prototype, {
 					valueOf: __Internal__.returnUndefined,
 					toString: __Internal__.returnUndefinedString,
 					toSource: __Internal__.returnUndefinedString,
 				});
 
 				types.ADD('Null', function Null() {});
-				types.extend(types.Null.prototype, {
+				tools.extend(types.Null.prototype, {
 					valueOf: __Internal__.returnNull,
 					toString: __Internal__.returnNullString,
 					toSource: __Internal__.returnNullString,
@@ -244,7 +244,7 @@ module.exports = {
 
 				__Internal__.hasArrows = false;
 				try {
-					types.eval("a => a");
+					tools.eval("a => a");
 					__Internal__.hasArrows = true;
 				} catch(ex) {
 				};
@@ -296,11 +296,11 @@ module.exports = {
 				__Internal__.hasAsyncAwait = false;
 				__Internal__.hasAsyncAwaitBug = false;
 				try {
-					types.eval("async function test() {}");
+					tools.eval("async function test() {}");
 					__Internal__.hasAsyncAwait = true;
 
 					// <PRB> Once again, ES specs are wrong because we SHOULD reuse Thenables instead of coercing them to an ES6 native Promise.
-					types.eval(
+					tools.eval(
 						"(async function() {return {then: (res, rej) => {" + 
 							"ctx.Internal.hasAsyncAwaitBug = true;" +
 							"res(1);" +
@@ -391,7 +391,7 @@ module.exports = {
 				// Test for my dream to realize !
 				__Internal__.arrowIsBindable = false;
 				try {
-					__Internal__.arrowIsBindable = (types.eval("() => this.doodad").bind({doodad: 1})() === 1);
+					__Internal__.arrowIsBindable = (tools.eval("() => this.doodad").bind({doodad: 1})() === 1);
 				} catch(ex) {
 				};
 				
@@ -812,7 +812,7 @@ module.exports = {
 							return result;
 						};
 						obj = _shared.Natives.windowObject(obj);
-						const keys = types.append(types.keys(values), types.symbols(values)),
+						const keys = tools.append(types.keys(values), types.symbols(values)),
 							keysLen = keys.length,
 							hasKey = (inherited ? types.hasInherited : types.has);
 						for (let i = 0; i < keysLen; i++) {
@@ -906,7 +906,7 @@ module.exports = {
 						if (obj === _shared.Natives.objectPrototype) {
 							return [];
 						};
-						return types.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
+						return tools.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
 					}));
 				
 				types.ADD('symbolsInherited', root.DD_DOC(
@@ -933,115 +933,7 @@ module.exports = {
 						if (obj === _shared.Natives.objectPrototype) {
 							return [];
 						};
-						return types.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
-					}));
-				
-				types.ADD('depthComplete', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									depth: {
-										type: 'integer',
-										optional: false,
-										description: "Depth.",
-									},
-									paramarray: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'object',
-								description: "Extends the first object with owned properties of the other objects using the specified depth. Existing owned properties are excluded.",
-					}
-					//! END_REPLACE()
-					, function depthComplete(depth, /*paramarray*/obj) {
-						let result;
-						if (!types.isNothing(obj)) {
-							depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-							if (depth >= -1) {
-								result = _shared.Natives.windowObject(obj);
-								const len = arguments.length;
-								for (let i = 2; i < len; i++) {
-									obj = arguments[i];
-									if (types.isNothing(obj)) {
-										continue;
-									};
-									// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-									obj = _shared.Natives.windowObject(obj);
-									const keys = types.append(types.keys(obj), types.symbols(obj)),
-										keysLen = keys.length; // performance
-									for (let j = 0; j < keysLen; j++) {
-										const key = keys[j];
-										const objVal = obj[key];
-										if ((depth >= 0) && types.isObjectLike(objVal)) {
-											const resultVal = result[key];
-											if (types.isNothing(resultVal)) {
-												result[key] = types.depthComplete(depth, {}, objVal);
-											} else if (types.isObjectLike(resultVal)) {
-												types.depthComplete(depth, resultVal, objVal);
-											};
-										} else if (!types.has(result, key)) {
-											result[key] = objVal;
-										};
-									};
-								};
-							};
-						};
-
-						return result;
-					}));
-				
-				types.ADD('fill', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									keys: {
-										type: 'arrayof(string,symbol),string,symbol',
-										optional: false,
-										description: "Attribute names.",
-									},
-									paramarray: {
-										type: 'any',
-										optional: false,
-										description: "An object.",
-									},
-								},
-								returns: 'object',
-								description: "Extends the first object with named owned properties of the other objects.",
-					}
-					//! END_REPLACE()
-					, function fill(keys, /*paramarray*/obj) {
-						let result;
-						if (!types.isNothing(obj)) {
-							if (types.isNothing(keys)) {
-								keys = [];
-							} else if (!types.isArray(keys)) {
-								keys = [keys];
-							};
-							result = _shared.Natives.windowObject(obj);
-							const argumentsLen = arguments.length,
-								keysLen = keys.length;
-							for (let i = 1; i < argumentsLen; i++) {
-								obj = arguments[i];
-								if (!types.isNothing(obj)) {
-									obj = _shared.Natives.windowObject(obj);
-									for (let k = 0; k < keysLen; k++) {
-										if (types.has(keys, k)) {
-											const key = keys[k];
-											if (types.has(obj, key)) {
-												result[key] = obj[key];
-											};
-										};
-									};
-								};
-							};
-						};
-						return result;
+						return tools.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
 					}));
 				
 				//========================================
@@ -1295,340 +1187,6 @@ module.exports = {
 						};
 						return keys;
 					}));
-				
-				types.ADD('getFirstIndex', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'arraylike',
-										optional: false,
-										description: "An array-like object.",
-									},
-								},
-								returns: 'integer',
-								description: "Returns the index of the first available value (the index of the first non-empty slot).",
-					}
-					//! END_REPLACE()
-					, function getFirstIndex(obj) {
-						if (types.isArrayLike(obj)) {
-							const len = obj.length;
-							for (let key = 0; key < len; key++) {
-								if (types.has(obj, key)) {
-									return key;
-								};
-							};
-						};
-					}));
-				
-				types.ADD('getFirstValue', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'arraylike',
-										optional: false,
-										description: "An array-like object.",
-									},
-								},
-								returns: 'any',
-								description: "Returns the first available value (the value of the first non-empty slot).",
-					}
-					//! END_REPLACE()
-					, function getFirstValue(obj) {
-						if (types.isArrayLike(obj)) {
-							const len = obj.length;
-							for (let key = 0; key < len; key++) {
-								if (types.has(obj, key)) {
-									return obj[key];
-								};
-							};
-						};
-					}));
-				
-				types.ADD('popAt', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'object,array',
-										optional: false,
-										description: "An object or an array.",
-									},
-									key: {
-										type: 'string,integer',
-										optional: false,
-										description: "An attribute name or an array index.",
-									},
-								},
-								returns: 'any',
-								description: "Deletes the named own property of an object and returns its value. If object is an array, splices at the specified array index if 'key' is any existing array index.",
-					}
-					//! END_REPLACE()
-					, function popAt(obj, key) {
-						let item;
-						if (!types.isNothing(obj)) {
-							obj = _shared.Natives.windowObject(obj);
-							if (types.has(obj, key)) {
-								if (types.isArray(obj)) {
-									const number = _shared.Natives.windowNumber(key);
-									if ((number >= 0) && (number < obj.length)) {
-										item = obj[key];
-										_shared.Natives.arraySpliceCall(obj, key, 1);
-									} else {
-										item = obj[key];
-										delete obj[key];
-									};
-								} else {
-									item = obj[key];
-									delete obj[key];
-								};
-							};
-						};
-						return item;
-					}));
-				
-				types.ADD('popItem', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									obj: {
-										type: 'object,array',
-										optional: false,
-										description: "An object or an array.",
-									},
-									item: {
-										type: 'any,function',
-										optional: false,
-										description: "The value of the item to pop out. When it is a function, calls it to get the item to pop out.",
-									},
-									thisObj: {
-										type: 'any',
-										optional: true,
-										description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-									},
-									includeFunctions: {
-										type: 'bool',
-										optional: true,
-										description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-									},
-								},
-								returns: 'any',
-								description: "Search the first occurrence of the specified value among owned properties of an object, than deletes it and returns that value. When not found, returns 'undefined'. If object is an array, splices at the index of the first occurrence.",
-					}
-					//! END_REPLACE()
-					, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
-						if (!types.isNothing(obj)) {
-							obj = _shared.Natives.windowObject(obj);
-							if (!includeFunctions && types.isFunction(item)) {
-								if (types.isArray(obj)) {
-									const len = obj.length;
-									for (let key = 0; key < len; key++) {
-										if (types.has(obj, key)) {
-											const val = obj[key];
-											if (item.call(thisObj, val, key, obj)) {
-												_shared.Natives.arraySpliceCall(obj, key, 1);
-												return val;
-											};
-										};
-									};
-								} else {
-									const keys = types.keys(obj),
-										len = keys.length; // performance
-									for (let i = 0; i < len; i++) {
-										const key = keys[i];
-										const val = obj[key];
-										if (item.call(thisObj, val, key, obj)) {
-											delete obj[key];
-											return val;
-										};
-									};
-								};
-							} else {
-								if (types.isArray(obj)) {
-									const len = obj.length;
-									for (let key = 0; key < len; key++) {
-										if (types.has(obj, key)) {
-											const val = obj[key];
-											if (val === item) {
-												_shared.Natives.arraySpliceCall(obj, key, 1);
-												return val;
-											};
-										};
-									};
-								} else {
-									const keys = types.keys(obj),
-										len = keys.length; // performance
-									for (let i = 0; i < len; i++) {
-										const key = keys[i];
-										const val = obj[key];
-										if (val === item) {
-											delete obj[key];
-											return val;
-										};
-									};
-								};
-							};
-						};
-					}));
-				
-				types.ADD('popItems', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									obj: {
-										type: 'object,array',
-										optional: false,
-										description: "An object or an array.",
-									},
-									items: {
-										type: 'any,arrayof(any),function',
-										optional: false,
-										description: "The values of the items to pop out. When it is a function, calls it to get the items to pop out.",
-									},
-									thisObj: {
-										type: 'any',
-										optional: true,
-										description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
-									},
-								},
-								returns: 'arrayof(any)',
-								description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
-					}
-					//! END_REPLACE()
-					, function popItems(obj, items, /*optional*/thisObj) {
-						const result = [];
-						if (!types.isNothing(obj)) {
-							obj = _shared.Natives.windowObject(obj);
-								
-							if (types.isFunction(items)) {
-								if (types.isArray(obj)) {
-									for (let key = obj.length - 1; key >= 0; key--) {
-										if (types.has(obj, key)) {
-											const val = obj[key];
-											if (items.call(thisObj, val, key, obj)) {
-												_shared.Natives.arraySpliceCall(obj, key, 1);
-												result.push(val);
-											};
-										};
-									};
-								} else {
-									const keys = types.keys(obj),
-										len = keys.length; // performance
-									for (let i = 0; i < len; i++) {
-										const key = keys[i];
-										const val = obj[key];
-										if (items.call(thisObj, val, key, obj)) {
-											delete obj[key];
-											result.push(val);
-										};
-									};
-								};
-							} else if (types.isArray(items)) {
-								const itemsLen = items.length;
-								if (types.isArray(obj)) {
-									for (let key = obj.length - 1; key >= 0; key--) {
-										if (types.has(obj, key)) {
-											const val = obj[key];
-											for (let j = 0; j < itemsLen; j++) {
-												if (types.has(items, j)) {
-													if (items[j] === val) {
-														_shared.Natives.arraySpliceCall(obj, key, 1);
-														result.push(val);
-													};
-												};
-											};
-										};
-									};
-								} else {
-									const keys = types.keys(obj),
-										len = keys.length; // performance
-									for (let i = 0; i < len; i++) {
-										const key = keys[i];
-										const val = obj[key];
-										for (let j = 0; j < itemsLen; j++) {
-											if (types.has(items, j)) {
-												if (items[j] === val) {
-													delete obj[key];
-													result.push(val);
-												};
-											};
-										};
-									};
-								};
-							} else {
-								if (types.isArray(obj)) {
-									for (let key = obj.length - 1; key >= 0; key--) {
-										if (types.has(obj, key)) {
-											const val = obj[key];
-											if (items === val) {
-												_shared.Natives.arraySpliceCall(obj, key, 1);
-												result.push(val);
-											};
-										};
-									};
-								} else {
-									const keys = types.keys(obj),
-										len = keys.length; // performance
-									for (let i = 0; i < len; i++) {
-										const key = keys[i];
-										const val = obj[key];
-										if (items === val) {
-											delete obj[key];
-											result.push(val);
-										};
-									};
-								};
-							};
-						};
-						return result;
-					}));
-				
-				types.ADD('prepend', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'arraylike',
-										optional: false,
-										description: "Target array.",
-									},
-									paramarray: {
-										type: 'arrayof(arraylike)',
-										optional: true,
-										description: "An array.",
-									},
-								},
-								returns: 'array',
-								description: "Prepends the items of each array to the first argument than returns that array.",
-					}
-					//! END_REPLACE()
-					, function prepend(obj /*paramarray*/) {
-						if (!types.isArrayLike(obj)) {
-							return null;
-						};
-						const len = arguments.length;
-						for (let i = 1; i < len; i++) {
-							const arg = arguments[i];
-							if (!types.isNothing(arg)) {
-								_shared.Natives.arrayUnshiftApply(obj, arg);
-							};
-						};
-						return obj;
-					}));
-				
 				
 				//===================================
 				// Make inside

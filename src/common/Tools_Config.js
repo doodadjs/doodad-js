@@ -63,7 +63,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				const __options__ = types.nullObject({
+				const __options__ = tools.nullObject({
 					configPath: null,
 				}, _options);
 
@@ -80,7 +80,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowJSON: global.JSON,
 				});
 				
@@ -94,7 +94,7 @@ module.exports = {
 						
 					const Promise = types.getPromise();
 						
-					options = types.nullObject(options);
+					options = tools.nullObject(options);
 
 					if (callbacks) {
 						if (types.isArray(callbacks)) {
@@ -123,7 +123,7 @@ module.exports = {
 						
 					if (__Internal__.loadedConfigFiles.has(key)) {
 						const def = __Internal__.loadedConfigFiles.get(key);
-						def.callbacks = types.unique(def.callbacks, callbacks);
+						def.callbacks = tools.unique(def.callbacks, callbacks);
 						if (options.force) {
 							promise = def.read();
 						} else if (def.ready) {

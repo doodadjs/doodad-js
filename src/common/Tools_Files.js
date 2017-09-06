@@ -61,7 +61,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				//const __options__ = types.nullObject({
+				//const __options__ = tools.nullObject({
 				//}, _options);
 
 				//types.freezeObject(__options__);
@@ -84,7 +84,7 @@ module.exports = {
 				_shared.urlParser = function urlParser(url, /*optional*/options) {
 					if (!types.isNothing(url)) {
 						if (!types._instanceof(url, files.Url)) {
-							//options = types.extend({
+							//options = tools.extend({
 							//}, options);
 							url = files.Url.parse(url, options);
 						};
@@ -102,7 +102,7 @@ module.exports = {
 					if (!types.isNothing(path)) {
 						if (!types._instanceof(path, files.Path)) {
 							if (types.get(options, 'isRelative', false)) {
-								options = types.extend({
+								options = tools.extend({
 									os: 'linux',
 									dirChar: '/',
 								}, options);
@@ -152,7 +152,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowRegExp: (global.RegExp || RegExp),
 
 					windowUnescape: (global.unescape || unescape),					
@@ -378,8 +378,8 @@ module.exports = {
 
 				__Internal__.pathNonStoredKeys = ['dontThrow'];
 
-				__Internal__.pathAllKeys = types.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
-				__Internal__.pathAllKeysAndNonStoredKeys = types.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
+				__Internal__.pathAllKeys = tools.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
+				__Internal__.pathAllKeysAndNonStoredKeys = tools.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
 
 				// NOTE: To prevent using "delete"
 				__Internal__.pathSetExcludedKeys = ['extension'];
@@ -437,8 +437,8 @@ module.exports = {
 									const dontThrow = types.get(options, 'dontThrow', false);
 
 									if (types._instanceof(path, files.Path)) {
-										const data = types.fill(__Internal__.pathAllKeys, {}, path);
-										options = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, data, {extension: null}, options);
+										const data = tools.fill(__Internal__.pathAllKeys, {}, path);
+										options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, data, {extension: null}, options);
 										path = null;
 										
 									} else if (types._instanceof(path, files.Url)) {
@@ -454,14 +454,14 @@ module.exports = {
 										const pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
 										
 										if (path.isWindows) {
-											options = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
+											options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
 												os: 'windows',
 												drive: pathTmp.shift()[0],
 												file: path.file,
 												extension: null,
 											}, options);
 										} else {
-											options = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
+											options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
 												os: 'linux',
 												file: path.file,
 												extension: null,
@@ -718,7 +718,7 @@ module.exports = {
 											dirRoot = dirRoot.split(dirChar);
 										};
 									} else if (types.isArray(dirRoot)) {
-										dirRoot = types.append([], dirRoot);
+										dirRoot = tools.append([], dirRoot);
 									};
 									
 									if (pathIsString) {
@@ -726,13 +726,13 @@ module.exports = {
 											path = path.split(dirChar);
 										};
 									} else if (types.isArray(path)) {
-										path = types.append([], path);
+										path = tools.append([], path);
 									};
 									
 									if (fileIsString) {
 										file = file.split(dirChar);
 									} else if (types.isArray(file)) {
-										file = types.append([], file);
+										file = tools.append([], file);
 									};
 
 									// Get and validate host and drive
@@ -785,7 +785,7 @@ module.exports = {
 										if (host || drive) {
 											isRelative = false;
 											if (!dirRoot || !dirRoot.length || (dirRoot[0] !== '')) {
-												dirRoot = types.append([''], dirRoot);
+												dirRoot = tools.append([''], dirRoot);
 											};
 	
 											// Validate host
@@ -1075,14 +1075,14 @@ module.exports = {
 								
 						},
 						/*instanceProto*/
-						types.extend({
+						tools.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								const attrs = types.fill(__Internal__.pathAllKeys, {}, options);
+								const attrs = tools.fill(__Internal__.pathAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
-									types.extend(this, attrs);
+									tools.extend(this, attrs);
 								};
 							}),
 							
@@ -1103,9 +1103,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									let newOptions = types.fill(__Internal__.pathAllKeysForSet, {}, this);
+									let newOptions = tools.fill(__Internal__.pathAllKeysForSet, {}, this);
 										//delete newOptions.extension;
-									newOptions = types.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
+									newOptions = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
@@ -1135,7 +1135,7 @@ module.exports = {
 									const dontValidate = types.get(options, 'dontValidate', false);
 									
 									if (options) {
-										options = types.nullObject(options);
+										options = tools.nullObject(options);
 										if (types.has(options, 'os')) {
 											if (!types.has(options, 'dirChar')) {
 												options.dirChar = null;
@@ -1143,7 +1143,7 @@ module.exports = {
 										};
 										
 										if (dontValidate) {
-											options = types.extend({}, this, options);
+											options = tools.extend({}, this, options);
 										} else {
 											// Validate
 											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
@@ -1179,7 +1179,7 @@ module.exports = {
 										path = tools.trim(path, '');
 									};
 
-									path = types.append([], dirRoot, path, [file]);
+									path = tools.append([], dirRoot, path, [file]);
 
 									if (!options.noEscapes && !options.quote) {
 										if (options.shell === 'bash') {
@@ -1231,7 +1231,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toApiString(/*optional*/options) {
-									return this.toString(types.extend({}, options, {os: null, dirChar: null, shell: 'api'}));
+									return this.toString(tools.extend({}, options, {os: null, dirChar: null, shell: 'api'}));
 								}),
 							
 							combine: root.DD_DOC(
@@ -1256,7 +1256,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(/*optional*/location, /*optional*/options) {
-									//options = types.extend({isRelative: true}, options);
+									//options = tools.extend({isRelative: true}, options);
 
 									location = files.parseLocation(location, options);
 									
@@ -1270,7 +1270,7 @@ module.exports = {
 
 									let includePathInRoot = types.get(options, 'includePathInRoot', null);
 									
-									const data = types.fill(__Internal__.pathAllKeys, {}, this);
+									const data = tools.fill(__Internal__.pathAllKeys, {}, this);
 
 									const thisRoot = tools.trim(this.root || [], '');
 									
@@ -1347,14 +1347,14 @@ module.exports = {
 									};
 
 									if (includePathInRoot) {
-										data.root = types.append([], thisRoot, thisPath);
-										data.path = types.append([], dirRoot, dir);
+										data.root = tools.append([], thisRoot, thisPath);
+										data.path = tools.append([], dirRoot, dir);
 									} else if (isRelative) {
 										data.root = thisRoot;
-										data.path = types.append([], thisPath, dirRoot, dir);
+										data.path = tools.append([], thisPath, dirRoot, dir);
 									} else {
 										data.root = thisRoot;
-										data.path = types.append([], dirRoot, dir);
+										data.path = tools.append([], dirRoot, dir);
 									};
 									
 									data.file = types.get(options, 'file', location.file || thisFile);
@@ -1410,7 +1410,7 @@ module.exports = {
 										path = this.path.slice(0, i + 1);
 									};
 									const type = types.getType(this);
-									return type.parse(null, types.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
+									return type.parse(null, tools.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -1425,7 +1425,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function pushFile() {
 									if (this.file) {
-										return this.set({file: '', path: types.append([], this.path, [this.file])});
+										return this.set({file: '', path: tools.append([], this.path, [this.file])});
 									} else {
 										return this;
 									};
@@ -1445,7 +1445,7 @@ module.exports = {
 									if (this.file) {
 										return this;
 									} else if (this.path && this.path.length) {
-										const newPath = types.append([], this.path);
+										const newPath = tools.append([], this.path);
 										const newFile = newPath.pop();
 										return this.set({file: newFile, path: newPath});
 									} else {
@@ -1508,7 +1508,7 @@ module.exports = {
 										path = null;
 									};
 
-									const newPath = types.append([], root, path);
+									const newPath = tools.append([], root, path);
 
 									if (pushFile && file) {
 										newPath.push(file);
@@ -1596,7 +1596,7 @@ module.exports = {
 									pathAr.push(thisAr[j]);
 								};
 								
-								return type.parse(null, types.extend(types.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
+								return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
 							},
 
 							toDataObject: root.DD_DOC(
@@ -1616,15 +1616,15 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toDataObject(/*optional*/options) {
-									const obj = types.nullObject();
+									const obj = tools.nullObject();
 
-									types.fill(__Internal__.pathDataKeys, obj, this, options);
+									tools.fill(__Internal__.pathDataKeys, obj, this, options);
 
 									const type = types.getType(this);
 
 									obj.toPath = function toPath(/*optional*/options) {
 										if (options) {
-											return type.parse(null, types.extend({}, this, options));
+											return type.parse(null, tools.extend({}, this, options));
 										} else {
 											return type.parse(null, this);
 										};
@@ -1808,7 +1808,7 @@ module.exports = {
 
 										return result;
 
-									}, types.nullObject())
+									}, tools.nullObject())
 								}),
 
 							toDataObject: root.DD_DOC(
@@ -1872,7 +1872,7 @@ module.exports = {
 										return '';
 									};
 
-									options = types.extend({}, this.options, options);
+									options = tools.extend({}, this.options, options);
 
 									const len = this.__args.length;
 
@@ -2190,7 +2190,7 @@ module.exports = {
 								, function combine(args, /*optional*/options) {
 									const type = types.getType(this);
 
-									options = types.extend({}, this.options, options);
+									options = tools.extend({}, this.options, options);
 
 									const mode = types.get(options, 'argsMode', 'merge');
 
@@ -2242,7 +2242,7 @@ module.exports = {
 										};
 
 									} else { // if (mode === 'append')
-										args = types.append([], this.__args, args.__args);
+										args = tools.append([], this.__args, args.__args);
 
 									};
 
@@ -2275,8 +2275,8 @@ module.exports = {
 
 				__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'pathname', 'username', 'search', 'hash'];
 
-				__Internal__.urlAllKeys = types.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
-				__Internal__.urlAllKeysAndNonStoredKeys = types.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
+				__Internal__.urlAllKeys = tools.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
+				__Internal__.urlAllKeysAndNonStoredKeys = tools.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
 
 				// NOTE: To prevent using "delete"
 				__Internal__.urlSetExcludedKeys = ['extension', 'host', 'path', 'file'];
@@ -2284,7 +2284,7 @@ module.exports = {
 							return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
 						});
 
-				__Internal__.defaultPorts = types.nullObject({
+				__Internal__.defaultPorts = tools.nullObject({
 					http: 80,
 					https: 443,
 					ftp: 21,
@@ -2357,8 +2357,8 @@ module.exports = {
 									} else if (types._instanceof(url, files.Url)) {
 										const args = types.get(options, 'args', null);
 
-										const data = types.fill(__Internal__.urlAllKeys, {}, url);
-										options = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, data, {host: null, extension: null}, options);
+										const data = tools.fill(__Internal__.urlAllKeys, {}, url);
+										options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, data, {host: null, extension: null}, options);
 
 										if (types.isJsObject(args)) {
 											options.args = url.args.combine(args, options);
@@ -2371,10 +2371,10 @@ module.exports = {
 										
 										let pathTmp = url.path;
 										if (isWindows) {
-											pathTmp = types.append([], [url.drive + ':'], pathTmp)
+											pathTmp = tools.append([], [url.drive + ':'], pathTmp)
 										};
 										
-										options = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
+										options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
 											protocol: 'file',
 											host: null,
 											path: pathTmp,
@@ -2612,7 +2612,7 @@ module.exports = {
 										};
 									} else { // isArray
 										if (noEscapes) {
-											//path = types.append([], path);
+											//path = tools.append([], path);
 										} else {
 											path = tools.map(path, __Internal__.decodeURIComponent);
 										};
@@ -2628,7 +2628,7 @@ module.exports = {
 										file = file.split('/');
 									} else { // isArray
 										if (noEscapes) {
-											file = types.append([], file);
+											file = tools.append([], file);
 										} else {
 											file = tools.map(file, __Internal__.decodeURIComponent);
 										};
@@ -2778,14 +2778,14 @@ module.exports = {
 								}),
 						},
 						/*instanceProto*/
-						types.extend({
+						tools.extend({
 							_new: types.SUPER(function _new(options) {
 								this._super();
-								const attrs = types.fill(__Internal__.urlAllKeys, {}, options);
+								const attrs = tools.fill(__Internal__.urlAllKeys, {}, options);
 								if (types.hasDefinePropertyEnabled()) {
 									_shared.setAttributes(this, attrs);
 								} else {
-									types.extend(this, attrs);
+									tools.extend(this, attrs);
 								};
 							}),
 							
@@ -2806,7 +2806,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function set(options) {
-									let newOptions = types.fill(__Internal__.urlAllKeysForSet, {}, this);
+									let newOptions = tools.fill(__Internal__.urlAllKeysForSet, {}, this);
 										//delete newOptions.extension;
 										//delete newOptions.host;
 									if (!types.has(options, 'url')) {
@@ -2815,7 +2815,7 @@ module.exports = {
 											//delete newOptions.path;
 											//delete newOptions.file;
 									};
-									newOptions = types.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
+									newOptions = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
 									const type = types.getType(this);
 									return type.parse(null, newOptions);
 								}),
@@ -2948,7 +2948,7 @@ module.exports = {
 									
 									if (options) {
 										if (dontValidate) {
-											options = types.extend({}, this, options);
+											options = tools.extend({}, this, options);
 										} else {
 											// Validate
 											// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
@@ -3050,7 +3050,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toApiString(/*optional*/options) {
-									return this.toString(types.extend({}, options, {noEscapes: true}));
+									return this.toString(tools.extend({}, options, {noEscapes: true}));
 								}),
 
 							compare: root.DD_DOC(
@@ -3102,7 +3102,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function combine(location, /*optional*/options) {
-									//options = types.extend({isRelative: true}, options);
+									//options = tools.extend({isRelative: true}, options);
 
 									location = files.parseLocation(location, options);
 
@@ -3114,7 +3114,7 @@ module.exports = {
 
 									const dontThrow = types.get(options, 'dontThrow', false);
 									
-									const data = types.fill(__Internal__.urlAllKeys, {}, this);
+									const data = tools.fill(__Internal__.urlAllKeys, {}, this);
 
 									const thisPath = tools.trim(this.path || [], '');
 									const thisFile = this.file;
@@ -3184,14 +3184,14 @@ module.exports = {
 									if (file && file.length) {
 										const tmp = file.pop();
 										file = tools.trim(file, '');
-										path = types.append(path, file);
+										path = tools.append(path, file);
 										file = tmp;
 									};
 
 									if (isRelative) {
-										data.path = types.append([], thisPath, pathRoot, path);
+										data.path = tools.append([], thisPath, pathRoot, path);
 									} else if ((pathRoot && pathRoot.length) || (path && path.length)) {
-										data.path = types.append([], pathRoot, path);
+										data.path = tools.append([], pathRoot, path);
 									} else {
 										data.path = [];
 										if (!file) {
@@ -3250,7 +3250,7 @@ module.exports = {
 										path = this.path.slice(0, i + 1);
 									};
 									const type = types.getType(this);
-									return type.parse(null, types.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
+									return type.parse(null, tools.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
 								}),
 							
 							pushFile: root.DD_DOC(
@@ -3265,7 +3265,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function pushFile() {
 									if (this.file) {
-										return this.set({file: '', path: types.append([], this.path, [this.file])});
+										return this.set({file: '', path: tools.append([], this.path, [this.file])});
 									} else {
 										return this;
 									};
@@ -3285,7 +3285,7 @@ module.exports = {
 									if (this.file) {
 										return this;
 									} else if (this.path && this.path.length) {
-										const newPath = types.append([], this.path);
+										const newPath = tools.append([], this.path);
 										const newFile = newPath.pop();
 										return this.set({file: newFile, path: newPath});
 									} else {
@@ -3341,7 +3341,7 @@ module.exports = {
 										if (types.isString(path)) {
 											path = tools.split('/');
 										} else if (types.isArray(path)) {
-											path = types.append([], path);
+											path = tools.append([], path);
 										};
 
 										path = tools.trim(path, '');
@@ -3472,7 +3472,7 @@ module.exports = {
 										pathAr.push(thisAr[j]);
 									};
 								
-									return type.parse(null, types.extend(types.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true, isWindows: false}));
+									return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true, isWindows: false}));
 								},
 
 							toDataObject: root.DD_DOC(
@@ -3492,9 +3492,9 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toDataObject(/*optional*/options) {
-									const obj = types.nullObject();
+									const obj = tools.nullObject();
 
-									types.fill(__Internal__.urlDataKeys, obj, this, options);
+									tools.fill(__Internal__.urlDataKeys, obj, this, options);
 
 									if (types.isNothing(obj.domain)) {
 										obj.protocol = null;
@@ -3504,7 +3504,7 @@ module.exports = {
 									};
 
 									if (types.isNothing(obj.args)) {
-										obj.args = types.nullObject();
+										obj.args = tools.nullObject();
 									} else {
 										if (!types._instanceof(obj.args, files.UrlArguments)) {
 											obj.args = _shared.urlArgumentsParser(obj.args);
@@ -3516,7 +3516,7 @@ module.exports = {
 
 									obj.toUrl = function toUrl(/*optional*/options) {
 										if (options) {
-											return type.parse(null, types.extend({}, this, options));
+											return type.parse(null, tools.extend({}, this, options));
 										} else {
 											return type.parse(null, this);
 										};

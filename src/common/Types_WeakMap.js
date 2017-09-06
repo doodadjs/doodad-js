@@ -31,7 +31,7 @@ module.exports = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			bootstrap: true,
 			dependencies: [
-				'Doodad.Types',
+				'Doodad.Tools',
 			],
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -42,6 +42,7 @@ module.exports = {
 				//===================================
 
 				const doodad = root.Doodad,
+					tools = doodad.Tools,
 					types = doodad.Types;
 				
 				//===================================
@@ -54,7 +55,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowWeakMap: (types.isNativeFunction(global.WeakMap) && types.isNativeFunction(global.WeakMap.prototype.get) && types.isNativeFunction(global.WeakMap.prototype.set) ? global.WeakMap : undefined),
 				});
 				

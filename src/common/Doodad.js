@@ -42,8 +42,8 @@ module.exports = {
 			namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 			dependencies: [
 				'Doodad.Tools',
+				'Doodad.Tools/ToSource',
 				'Doodad.Types',
-				'Doodad.Types/ToSource',
 				'Doodad.Namespaces',
 				{
 					name: 'Doodad.NodeJs',
@@ -149,7 +149,7 @@ module.exports = {
 					notReentrantMap: new types.WeakMap(),
 				};
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 					arraySpliceApply: global.Array.prototype.splice.apply.bind(global.Array.prototype.splice),
 					arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
@@ -180,7 +180,7 @@ module.exports = {
 				// Options
 				//=====================
 				
-				const __options__ = types.nullObject({
+				const __options__ = tools.nullObject({
 					enforceScopes: false,    // for performance, set it to "false"
 					enforcePolicies: false,  // for performance, set it to "false"
 					publicOnDebug: false,    // to be able to read core attributes in debug mode, set it to "true"
@@ -1627,7 +1627,7 @@ module.exports = {
 
 							_new: types.SUPER(function _new() {
 									this._super();
-									__Internal__.extendersCache.set(this, types.nullObject());
+									__Internal__.extendersCache.set(this, tools.nullObject());
 								}),
 						},
 						/*instanceProto*/
@@ -1759,7 +1759,7 @@ module.exports = {
 								//! END_REPLACE()
 								, function overrideOptions(options, newOptions, /*optional*/replace) {
 									if (replace) {
-										types.fill(['notInherited', 'preExtend', 'isType', 'isInstance', 'isPersistent', 'isPreserved', 'isProto'], options, this, newOptions);
+										tools.fill(['notInherited', 'preExtend', 'isType', 'isInstance', 'isPersistent', 'isPreserved', 'isProto'], options, this, newOptions);
 									} else {
 										options.notInherited = !!newOptions.notInherited || this.notInherited;
 										options.preExtend = !!newOptions.preExtend || this.preExtend;
@@ -1814,7 +1814,7 @@ module.exports = {
 				doodad.ADD('AttributeGetter', function AttributeGetter() {});
 				doodad.ADD('AttributeSetter', function AttributeSetter() {});
 
-				__Internal__.attributeDescriptors = types.nullObject();
+				__Internal__.attributeDescriptors = tools.nullObject();
 
 				root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2001,7 +2001,7 @@ module.exports = {
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['isReadOnly', 'isEnumerable', 'enableScopes', 'enableStorage'], options, this, newOptions);
+									tools.fill(['isReadOnly', 'isEnumerable', 'enableScopes', 'enableStorage'], options, this, newOptions);
 								} else {
 									options.isReadOnly = !!newOptions.isReadOnly || this.isReadOnly;
 									options.isEnumerable = !!newOptions.isEnumerable || this.isEnumerable;
@@ -2177,12 +2177,12 @@ module.exports = {
 
 										const attributeId = generator.vars.add(attribute);
 
-										const get = new generator.DynamicValue(extenderId + ".getterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")");
+										const get = new generator.DynamicValue(extenderId + ".getterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")");
 										const set = (
 											this.isReadOnly ?
 												undefined
 											:
-												new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + types.toSource(forType) + ", " + generator.storageId + ")")
+												new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")")
 											);
 
 										const getId = generator.vars.add(get);
@@ -2201,7 +2201,7 @@ module.exports = {
 										// NOTE: Commented out since using "existingAttributes"
 										//attrDesc.release();
 
-										const desc = new generator.DynamicValue("{configurable: false, enumerable: " + types.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
+										const desc = new generator.DynamicValue("{configurable: false, enumerable: " + tools.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
 										const descId = generator.vars.add(desc);
 										generator.define(attrId, descId);
 
@@ -2339,7 +2339,7 @@ module.exports = {
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['maxDepth', 'keepUnlocked', 'cloneOnInit', 'cloneOnGetValue'], options, this, newOptions);
+									tools.fill(['maxDepth', 'keepUnlocked', 'cloneOnInit', 'cloneOnGetValue'], options, this, newOptions);
 								} else {
 									options.maxDepth = Math.max(newOptions.maxDepth | 0, this.maxDepth);
 									options.keepUnlocked = !!newOptions.keepUnlocked || this.keepUnlocked;
@@ -2367,7 +2367,7 @@ module.exports = {
 						init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 								if (this.cloneOnInit && types.isClonable(value)) {
 									const valueId = generator.vars.add(value);
-									value = new generator.DynamicValue("types.clone(" + valueId + ", " + types.toSource(this.maxDepth) + ", false, " + types.toSource(this.keepUnlocked) + ", true)");
+									value = new generator.DynamicValue("types.clone(" + valueId + ", " + tools.toSource(this.maxDepth) + ", false, " + tools.toSource(this.keepUnlocked) + ", true)");
 								};
 								
 								this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
@@ -2404,7 +2404,7 @@ module.exports = {
 									
 								const src = types.unbox(sourceAttribute);
 								if (src) {
-									types.depthExtend(this.maxDepth, dest, src);
+									tools.depthExtend(this.maxDepth, dest, src);
 								};
 								
 								sourceAttribute = sourceAttribute.setValue(dest);  // keep attribute flags of "sourceAttribute"
@@ -2443,7 +2443,7 @@ module.exports = {
 									
 								const src = types.unbox(sourceAttribute);
 								if (src) {
-									types.append(dest, src);
+									tools.append(dest, src);
 								};
 								
 								sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
@@ -2456,7 +2456,7 @@ module.exports = {
 
 							const val = types.unbox(destAttribute);
 							if (!types.isNothing(val)) {
-								destAttribute = destAttribute.setValue(types.unique(val));
+								destAttribute = destAttribute.setValue(tools.unique(val));
 							};
 
 							return destAttribute;
@@ -3045,7 +3045,7 @@ module.exports = {
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['bindMethod', 'notReentrant', 'byReference', 'isExternal'], options, this, newOptions);
+									tools.fill(['bindMethod', 'notReentrant', 'byReference', 'isExternal'], options, this, newOptions);
 								} else {
 									options.bindMethod = !!newOptions.bindMethod || this.bindMethod;
 									options.notReentrant = !!newOptions.notReentrant || this.notReentrant;
@@ -3075,7 +3075,7 @@ module.exports = {
 								const hasDestCallers = types.isArray(destCallers);
 								if (hasDestCallers) {
 									if (types.isFrozen(destCallers)) {
-										destCallers = types.append([], destCallers);
+										destCallers = tools.append([], destCallers);
 										destAttribute = destAttribute.setValue(destCallers);  // copy attribute flags of "destAttribute"
 									};
 								} else {
@@ -3085,7 +3085,7 @@ module.exports = {
 								
 								let replacedCallers = sourceAttribute[__Internal__.symbolReplacedCallers];
 								if (replacedCallers) {
-									destAttribute[__Internal__.symbolReplacedCallers] = replacedCallers = types.unique(replacedCallers);
+									destAttribute[__Internal__.symbolReplacedCallers] = replacedCallers = tools.unique(replacedCallers);
 								} else {
 									replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
 								};
@@ -3121,8 +3121,8 @@ module.exports = {
 											// Replace non "call firsts"
 											toRemove = destCallers.length - start;
 										};
-										const removed = _shared.Natives.arraySpliceApply(destCallers, types.append([start, toRemove], callersOrFn));
-										destAttribute[__Internal__.symbolReplacedCallers] = types.append(replacedCallers, removed);
+										const removed = _shared.Natives.arraySpliceApply(destCallers, tools.append([start, toRemove], callersOrFn));
+										destAttribute[__Internal__.symbolReplacedCallers] = tools.append(replacedCallers, removed);
 										destAttribute[__Internal__.symbolCallFirstLength] = start + (sourceAttribute[__Internal__.symbolCallFirstLength] || 0);
 									};
 								} else {
@@ -3161,7 +3161,7 @@ module.exports = {
 												callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 											};
 											destCallers.length = 0;
-											types.append(destCallers, callersOrFn);
+											tools.append(destCallers, callersOrFn);
 										};
 										destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[__Internal__.symbolCallFirstLength] || 0);
 									};
@@ -3410,7 +3410,7 @@ module.exports = {
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['dontSetSuper'], options, this, newOptions);
+									tools.fill(['dontSetSuper'], options, this, newOptions);
 								} else {
 									options.dontSetSuper = !!newOptions.dontSetSuper || this.dontSetSuper;
 								};
@@ -3424,7 +3424,7 @@ module.exports = {
 									root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 								};
 
-								const _caller = types.nullObject();
+								const _caller = tools.nullObject();
 
 								fn = types.INHERIT(doodad.CallerFunction, fn);
 
@@ -3668,7 +3668,7 @@ module.exports = {
 									})(srcGet, srcSet, destGet, destSet, destDesc.value);
 								};
 									
-								const descriptor = types.extend({}, srcDesc);
+								const descriptor = tools.extend({}, srcDesc);
 
 								if (srcGet) {
 									descriptor.get = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcGet), types.AttributeBox(destGet), sourceIsProto);
@@ -3696,7 +3696,7 @@ module.exports = {
 								const attributeId = generator.vars.add(attribute);
 								
 								const valueId = generator.vars.add(value);
-								const descriptorId = generator.vars.add(new generator.DynamicValue("types.extend({}, " + valueId + ")"));
+								const descriptorId = generator.vars.add(new generator.DynamicValue("tools.extend({}, " + valueId + ")"));
 
 								const get = types.get(value, 'get');
 								if (get) {
@@ -3724,13 +3724,13 @@ module.exports = {
 									generator.code.add(descriptorId + ".set = " + dispatchId);
 								};
 									
-								generator.code.add(descriptorId + ".enumerable = " + types.toSource(this.isEnumerable));
+								generator.code.add(descriptorId + ".enumerable = " + tools.toSource(this.isEnumerable));
 									
 								if (get || set) {
 									generator.code.add(descriptorId + ".configurable = false");
 								} else {
-									generator.code.add(descriptorId + ".configurable = " + types.toSource(this.isReadOnly));
-									generator.code.add(descriptorId + ".writable = " + types.toSource(!this.isReadOnly));
+									generator.code.add(descriptorId + ".configurable = " + tools.toSource(this.isReadOnly));
+									generator.code.add(descriptorId + ".writable = " + tools.toSource(!this.isReadOnly));
 								};
 									
 								generator.define(attrId, descriptorId);
@@ -3745,7 +3745,7 @@ module.exports = {
 				// Scopes
 				//==================================
 				
-				doodad.ADD('Scopes', types.freezeObject(types.nullObject({
+				doodad.ADD('Scopes', types.freezeObject(tools.nullObject({
 					Public: 1,
 					Protected: 2,
 					Private: 3,
@@ -3850,7 +3850,7 @@ module.exports = {
 				//==================================
 				
 				// Can be combined
-				doodad.ADD('ClassModifiers', types.freezeObject(types.nullObject({
+				doodad.ADD('ClassModifiers', types.freezeObject(tools.nullObject({
 					Base: 1,
 					MixIn: 2,
 					Interface: 4,
@@ -4088,7 +4088,7 @@ module.exports = {
 					//! END_REPLACE()
 					, function WHEN(type, /*optional*/value) {
 						value = types.AttributeBox(value);
-						value[__Internal__.symbolWhen] = types.unique(value[__Internal__.symbolWhen], (types.isArrayLike(type) ? type : [type]));
+						value[__Internal__.symbolWhen] = tools.unique(value[__Internal__.symbolWhen], (types.isArrayLike(type) ? type : [type]));
 						return value;
 					}));
 				
@@ -4622,7 +4622,7 @@ module.exports = {
 				//==================================
 				
 				// Can be combined
-				doodad.ADD('MethodModifiers', types.freezeObject(types.nullObject({
+				doodad.ADD('MethodModifiers', types.freezeObject(tools.nullObject({
 					Replace: 1,
 					Override: 2,
 					MustOverride: 4,
@@ -5010,7 +5010,7 @@ module.exports = {
 				// Class
 				//==================================
 				
-				__Internal__.defaultAttributes = types.nullObject();
+				__Internal__.defaultAttributes = tools.nullObject();
 				__Internal__.defaultAttributes[__Internal__.symbolAttributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
 				__Internal__.defaultAttributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null}))))))));
 				__Internal__.defaultAttributes[__Internal__.symbolPrototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
@@ -5188,7 +5188,7 @@ module.exports = {
 							if (extender.notInherited || (source === base) || (destAttribute[__Internal__.symbolPrototype] !== sourceAttribute[__Internal__.symbolPrototype])) {
 
 								if (sourceAttribute[__Internal__.symbolWhen] || destAttribute[__Internal__.symbolWhen]) {
-									const whenTypes = types.unique(sourceAttribute[__Internal__.symbolWhen], destAttribute[__Internal__.symbolWhen]);
+									const whenTypes = tools.unique(sourceAttribute[__Internal__.symbolWhen], destAttribute[__Internal__.symbolWhen]);
 									if (tools.every(whenTypes, function(type) {
 												if (_implements.has(type)) {
 													return true;
@@ -5262,7 +5262,7 @@ module.exports = {
 									destAttributes[attr] = destAttribute;
 									extendedAttributes.push(attr);
 									toInitialize.push(attr);
-									types.popItem(toExtendLater, attr);
+									tools.popItem(toExtendLater, attr);
 									if (extender.isPreserved && !types.isSymbol(attr)) {
 										const presAttr = '__' + attr + '_preserved__';
 										destAttribute = destAttribute.clone();
@@ -5418,7 +5418,7 @@ module.exports = {
 							destAttributes[attr] = destAttribute;
 							extendedAttributes.push(attr);
 							toInitialize.push(attr);
-							types.popItem(toExtendLater, attr);
+							tools.popItem(toExtendLater, attr);
 							if (extender.isPreserved && !types.isSymbol(attr)) {
 								const presAttr = '__' + attr + '_preserved__';
 								destAttribute = destAttribute.clone();
@@ -5486,7 +5486,7 @@ module.exports = {
 					};
 
 					//if (sourceAttributes) {
-					//	types.complete(attributes, sourceAttributes);
+					//	tools.complete(attributes, sourceAttributes);
 					//};
 
 					if (sourceBase) {
@@ -5623,9 +5623,9 @@ module.exports = {
 									baseIsType = true;
 									baseIsClass = true;
 									_implements = new types.Set();
-									typeStorage = types.nullObject();
-									instanceStorage = types.nullObject();
-									destAttributes = types.nullObject();
+									typeStorage = tools.nullObject();
+									instanceStorage = tools.nullObject();
+									destAttributes = tools.nullObject();
 									extendedAttributes = [];
 									typeToExtendLater = [];
 									instanceToInitialize = [];
@@ -5707,7 +5707,7 @@ module.exports = {
 						__dvarsReleased: [],
 						__props: [],
 						__hasProps: false,
-						__kvars: types.nullObject(),
+						__kvars: tools.nullObject(),
 						objId: 'obj',
 						storageId: 'storage',
 						varsId: 'vars',
@@ -5784,7 +5784,7 @@ module.exports = {
 					const valuesKeys = types.keys(values);
 					const valuesSymbols = types.symbols(values);
 
-					toInitialize = types.unique(toInitialize, valuesKeys, valuesSymbols);
+					toInitialize = tools.unique(toInitialize, valuesKeys, valuesSymbols);
 
 					const toInitializeLen = toInitialize.length;
 
@@ -5828,11 +5828,11 @@ module.exports = {
 					};
 					const code = "(function(" + generator.objId + "," + generator.storageId + ") {" + 
 							(dvarsStr ? "let " + dvarsStr + ";" : "") + 
-							(generator.__hasProps ? "const " + generator.propsId + " = types.nullObject();" : "") +
+							(generator.__hasProps ? "const " + generator.propsId + " = tools.nullObject();" : "") +
 							generator.__code + 
 							(generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + 
 						"})";
-					const evalFn = types.createEval(['doodad', 'types', 'tools', '_shared', generator.varsId], true)(doodad, types, tools, _shared, types.freezeObject(generator.__vars));
+					const evalFn = tools.createEval(['doodad', 'types', 'tools', '_shared', generator.varsId], true)(doodad, types, tools, _shared, types.freezeObject(generator.__vars));
 					const fn = evalFn(code);
 					return fn;
 				};
@@ -5855,11 +5855,11 @@ module.exports = {
 				};
 				
 				__Internal__.createType = function createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes) {
-					extendedAttributes = types.unique(extendedAttributes);
-					//typeToInitialize = types.unique(typeToInitialize, __Internal__.defaultTypeAttributesKeys, __Internal__.defaultTypeAttributesSymbols);
-					//instanceToInitialize = types.unique(instanceToInitialize, __Internal__.defaultInstanceAttributesKeys, __Internal__.defaultInstanceAttributesSymbols);
-					typeToInitialize = types.unique(typeToInitialize);
-					instanceToInitialize = types.unique(instanceToInitialize);
+					extendedAttributes = tools.unique(extendedAttributes);
+					//typeToInitialize = tools.unique(typeToInitialize, __Internal__.defaultTypeAttributesKeys, __Internal__.defaultTypeAttributesSymbols);
+					//instanceToInitialize = tools.unique(instanceToInitialize, __Internal__.defaultInstanceAttributesKeys, __Internal__.defaultInstanceAttributesSymbols);
+					typeToInitialize = tools.unique(typeToInitialize);
+					instanceToInitialize = tools.unique(instanceToInitialize);
 
 					// Post-Extend
 					__Internal__.postExtend(destAttributes, extendedAttributes);
@@ -5993,10 +5993,10 @@ module.exports = {
 
 						_implements = new types.Set();
 						_isolated = new types.Map();
-						destAttributes = types.nullObject();
+						destAttributes = tools.nullObject();
 
-						typeStorage = types.nullObject();
-						instanceStorage = types.nullObject();
+						typeStorage = tools.nullObject();
+						instanceStorage = tools.nullObject();
 
 						typeToExtendLater = [];
 						instanceToExtendLater = [];
@@ -6034,7 +6034,7 @@ module.exports = {
 						instanceStorage = baseData[__Internal__.symbolAttributesStorage];
 						instanceToExtendLater = baseData[__Internal__.symbolToExtendLater];
 
-						existingAttributes = types.append(types.keys(destAttributes), types.symbols(destAttributes));
+						existingAttributes = tools.append(types.keys(destAttributes), types.symbols(destAttributes));
 
 						if (base._implements(mixIns.Creatable)) {
 							const injected = {
@@ -6048,9 +6048,9 @@ module.exports = {
 
 						_implements = new types.Set();
 						_isolated = new types.Map();
-						destAttributes = types.nullObject();
-						typeStorage = types.nullObject();
-						instanceStorage = types.nullObject();
+						destAttributes = tools.nullObject();
+						typeStorage = tools.nullObject();
+						instanceStorage = tools.nullObject();
 						typeToExtendLater = [];
 						instanceToExtendLater = [];
 					}
@@ -6483,7 +6483,7 @@ module.exports = {
 
 								const typeAttributes = this[__Internal__.symbolAttributes]; // NOTE: Will be cloned
 								const typeToInitialize = this[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
-								values = types.nullObject();
+								values = tools.nullObject();
 								values[__Internal__.symbolAttributes] = typeAttributes; // NOTE: Will be cloned
 								values[__Internal__.symbolModifiers] = modifiers;
 								values[__Internal__.symbolImplements] = this[__Internal__.symbolImplements]; // NOTE: Will be cloned
@@ -6497,7 +6497,7 @@ module.exports = {
 
 								const instanceAttributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
 								const instanceToInitialize = this.prototype[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
-								values = types.nullObject();
+								values = tools.nullObject();
 								values[__Internal__.symbolAttributes] = instanceAttributes; // NOTE: Will be cloned
 								values[__Internal__.symbolImplements] = this.prototype[__Internal__.symbolImplements]; // NOTE: Will be cloned
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
@@ -6860,7 +6860,7 @@ module.exports = {
 
 				};
 
-				types.extend(__Internal__.classProto, __Internal__.defaultAttributes);
+				tools.extend(__Internal__.classProto, __Internal__.defaultAttributes);
 				
 				//! IF_SET("serverSide")
 				(function() {
@@ -6956,7 +6956,7 @@ module.exports = {
 
 								const typeAttributes = this[__Internal__.symbolAttributes]; // NOTE: Will be cloned
 								const typeToInitialize = this[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
-								values = types.nullObject();
+								values = tools.nullObject();
 								values[__Internal__.symbolAttributes] = typeAttributes; // NOTE: Will be cloned
 								values[__Internal__.symbolModifiers] = (types.get(this, __Internal__.symbolModifiers) || 0);
 								values[__Internal__.symbolImplements] = this[__Internal__.symbolImplements]; // NOTE: Will be cloned
@@ -6970,7 +6970,7 @@ module.exports = {
 
 								const instanceAttributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
 								const instanceToInitialize = this.prototype[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
-								values = types.nullObject();
+								values = tools.nullObject();
 								values[__Internal__.symbolAttributes] = instanceAttributes; // NOTE: Will be cloned
 								values[__Internal__.symbolImplements] = this.prototype[__Internal__.symbolImplements]; // NOTE: Will be cloned
 								values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
@@ -7041,7 +7041,7 @@ module.exports = {
 					makeOutside: __Internal__.makeOutside,
 				};
 				
-				types.extend(__Internal__.interfaceProto, __Internal__.defaultAttributes);
+				tools.extend(__Internal__.interfaceProto, __Internal__.defaultAttributes);
 
 				// <FUTURE> Use syntax for variable key in object declaration
 				__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))));
@@ -7386,7 +7386,7 @@ module.exports = {
 
 								const stack = this[__Internal__.symbolStack];
 
-								const evs = types.popItems(stack, function(ev) {
+								const evs = tools.popItems(stack, function(ev) {
 									const evData = ev[3];
 									return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
 										return types.hasIndex(evData, key) && (evData[key] === value);
@@ -7610,7 +7610,7 @@ module.exports = {
 						overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
 								options = this._super(options, newOptions, replace);
 								if (replace) {
-									types.fill(['errorEvent'], options, this, newOptions);
+									tools.fill(['errorEvent'], options, this, newOptions);
 								} else {
 									options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
 								};
@@ -7662,7 +7662,7 @@ module.exports = {
 						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
 				}));
 
-				__Internal__.EVENT_CACHE = types.nullObject();
+				__Internal__.EVENT_CACHE = tools.nullObject();
 
 				__Internal__.EVENT = function EVENT(/*optional*/cancellable, /*optional*/eventTypeName, /*optional*/fn) {
 					cancellable = (types.isNothing(cancellable) ? true : !!cancellable);
@@ -7769,7 +7769,7 @@ module.exports = {
 									throw ex;
 
 								} finally {
-									const removed = types.popItems(stack, function(data) {
+									const removed = tools.popItems(stack, function(data) {
 										return (data[4] <= 0);
 									});
 									if (removed.length) {
@@ -7813,7 +7813,7 @@ module.exports = {
 					return eventFn;
 				};
 				
-				__Internal__.RAW_EVENT_CACHE = types.nullObject();
+				__Internal__.RAW_EVENT_CACHE = tools.nullObject();
 
 				__Internal__.RAW_EVENT = function RAW_EVENT(errorEvent, /*optional*/fn) {
 					const key = (errorEvent ? 'y' : 'n');
@@ -7871,7 +7871,7 @@ module.exports = {
 								throw ex;
 
 							} finally {
-								const removed = types.popItems(stack, function(data) {
+								const removed = tools.popItems(stack, function(data) {
 									return (data[4] <= 0);
 								});
 								if (removed.length) {
@@ -8384,7 +8384,7 @@ module.exports = {
 						$TYPE_NAME: 'Translatable',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Translatable')), true) */,
 					
-						$__translations: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
+						$__translations: doodad.PROTECTED(doodad.ATTRIBUTE(tools.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
 						$getTranslation: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8449,7 +8449,7 @@ module.exports = {
 							function $setTranslation(value, /*optional*/name) {
 								if (types.isNothing(name)) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
-									types.depthExtend(this[__Internal__.symbolAttributes].$__translations[__Internal__.symbolExtender].maxDepth, this.$__translations, value);
+									tools.depthExtend(this[__Internal__.symbolAttributes].$__translations[__Internal__.symbolExtender].maxDepth, this.$__translations, value);
 									
 								} else if (types.isStringAndNotEmpty(name)) {
 									const names = name.split('.'),
@@ -8488,7 +8488,7 @@ module.exports = {
 						$TYPE_NAME: 'Configurable',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Configurable')), true) */,
 					
-						$__config: doodad.PROTECTED(doodad.ATTRIBUTE(types.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
+						$__config: doodad.PROTECTED(doodad.ATTRIBUTE(tools.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
 					
 						$getConfig: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8552,7 +8552,7 @@ module.exports = {
 							, doodad.PUBLIC(function $setConfig(value, /*optional*/name) {
 								if (types.isNothing(name)) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid configuration value.");
-									types.depthExtend(this[__Internal__.symbolAttributes].$__config[__Internal__.symbolExtender].maxDepth, this.$__config, value);
+									tools.depthExtend(this[__Internal__.symbolAttributes].$__config[__Internal__.symbolExtender].maxDepth, this.$__config, value);
 									
 								} else if (types.isStringAndNotEmpty(name)) {
 									const names = name.split('.'),

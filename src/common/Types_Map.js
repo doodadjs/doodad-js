@@ -57,7 +57,7 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 				// NOTE: Store everything because third-parties can override them.
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowMap: (types.isNativeFunction(global.Map) && types.isNativeFunction(global.Map.prototype.values) && types.isNativeFunction(global.Map.prototype.keys) ? global.Map : undefined),
 					symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
 				});

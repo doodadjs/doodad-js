@@ -61,7 +61,7 @@ module.exports = {
 				const __Internal__ = {
 					//documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
 					
-					loadedScripts: types.nullObject(),   // <FUTURE> global to every thread
+					loadedScripts: tools.nullObject(),   // <FUTURE> global to every thread
 
 					symbolHandler: types.getSymbol('__HANDLER__'),
 					symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
@@ -73,7 +73,7 @@ module.exports = {
 				// Options
 				//=====================
 				
-				const __options__ = types.extend({
+				const __options__ = tools.extend({
 					enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 					defaultScriptTimeout: 1000 * 60 * 2,		// milliseconds
 				}, _options);
@@ -91,7 +91,7 @@ module.exports = {
 				// Natives
 				//========================
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					//windowObject: global.Object,
 					windowDocument: global.document,
 
@@ -937,7 +937,7 @@ module.exports = {
 								const oldObjId = generator.objId;
 								generator.objId = generator.vars.fromKey(attr);
 								const oldKeyVars = generator.__kvars;
-								generator.__kvars = types.nullObject();
+								generator.__kvars = tools.nullObject();
 								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
 								generator.objId = oldObjId;
 								generator.__kvars = oldKeyVars;
@@ -1045,7 +1045,7 @@ module.exports = {
 							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
 							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
 							caseSensitive = tools.getOptions().caseSensitive;
-						__Internal__.os = os = types.freezeObject(types.nullObject({
+						__Internal__.os = os = types.freezeObject(tools.nullObject({
 							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
 							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
 							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
@@ -1718,7 +1718,7 @@ module.exports = {
 				__Internal__.oldLoadConfig = _shared.loadConfig;
 				
 				_shared.loadConfig = function loadConfig(url, /*optional*/options, /*optional*/callbacks) {
-						options = types.nullObject(options);
+						options = tools.nullObject(options);
 						if (types.isString(url)) {
 							url = files.parseUrl(url, options.parseOptions);
 						};
@@ -1738,7 +1738,7 @@ module.exports = {
 
 						const type = types.get(options, 'type', null);
 
-						return files.readFileAsync(url, types.extend({}, options, {method: 'HEAD'}))
+						return files.readFileAsync(url, tools.extend({}, options, {method: 'HEAD'}))
 							.nodeify(function(err, dummy) {
 								if (err) {
 									if (types._instanceof(err, types.HttpError) && (err.code === types.HttpStatus.NotFound)) {
@@ -1815,7 +1815,7 @@ module.exports = {
 				, function readFileAsync(url, /*optional*/options) {
 					const Promise = types.getPromise();
 					return Promise.try(function readFilePromise() {
-						options = types.nullObject(options);
+						options = tools.nullObject(options);
 
 						url = files.parseUrl(url);
 

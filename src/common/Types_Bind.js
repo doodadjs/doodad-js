@@ -30,6 +30,9 @@ module.exports = {
 		DD_MODULES['Doodad.Types/Bind'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			bootstrap: true,
+			dependencies: [
+				'Doodad.Tools',
+			],
 
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
@@ -39,6 +42,7 @@ module.exports = {
 				//===================================
 
 				const doodad = root.Doodad,
+					tools = doodad.Tools, 
 					types = doodad.Types;
 				
 				//===================================
@@ -52,7 +56,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					// "bind"
 					functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
 					functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
@@ -95,11 +99,11 @@ module.exports = {
 						};
 						let newFn;
 						if (args) {
-							newFn = _shared.Natives.functionBindApply(fn, types.append([obj], args));
+							newFn = _shared.Natives.functionBindApply(fn, tools.append([obj], args));
 						} else {
 							newFn = _shared.Natives.functionBindCall(fn, obj);
 						};
-						types.extend(newFn, fn);
+						tools.extend(newFn, fn);
 						newFn[_shared.BoundObjectSymbol] = obj;
 						newFn[_shared.OriginalValueSymbol] = fn;
 						return newFn;
@@ -130,7 +134,7 @@ module.exports = {
 							if (!types.isBindable(oldFn)) {
 								return null;
 							};
-							const keys = types.append(types.keys(fn), types.symbols(fn)),
+							const keys = tools.append(types.keys(fn), types.symbols(fn)),
 								keysLen = keys.length;
 							for (let i = 0; i < keysLen; i++) {
 								const key = keys[i];

@@ -38,7 +38,7 @@ module.exports = {
 					types = doodad.Types,
 					tools = doodad.Tools;
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowParseInt: global.parseInt,
 					windowIsNaN: global.isNaN,
 				});
@@ -135,7 +135,7 @@ module.exports = {
 									
 									root.DD_ASSERT && root.DD_ASSERT(types.isNothing(options) || types.isObject(options), "Invalid options.");
 									
-									options = types.nullObject(options);
+									options = tools.nullObject(options);
 									
 									//const dontThrow = types.getDefault(options, 'dontThrow', false);
 
@@ -196,7 +196,7 @@ module.exports = {
 								this._super();
 								_shared.setAttributes(this, {
 									data: data,
-									options: types.nullObject(options),
+									options: tools.nullObject(options),
 								});
 							}),
 							
@@ -222,7 +222,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function compare(version, /*optional*/options) {
-									options = types.nullObject(this.options, options);
+									options = tools.nullObject(this.options, options);
 									if (!types._instanceof(version, tools.Version)) {
 										version = types.getType(this).parse(version, options);
 									};
@@ -270,7 +270,7 @@ module.exports = {
 								}
 								//! END_REPLACE()
 								, function toString(/*optional*/options) {
-									//options = types.nullObject(options);
+									//options = tools.nullObject(options);
 									//const identifiers = types.getIn(options, 'identifiers', this.options.identifiers);
 									let result = '';
 									const data = this.data,

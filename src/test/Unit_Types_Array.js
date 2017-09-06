@@ -311,20 +311,20 @@ module.exports = {
 					command.end();
 					
 					
-					command = test.prepareCommand(types.getFirstIndex, "Doodad.Types.getFirstIndex");
+					command = test.prepareCommand(tools.getFirstIndex, "Doodad.Tools.getFirstIndex");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(0,          {eval: true},    /**/ "ar1");
 					command.run(1,          {eval: true},    /**/ "ar2");
 					command.end();
 					
 					
-					command = test.prepareCommand(types.getFirstValue, "Doodad.Types.getFirstValue");
+					command = test.prepareCommand(tools.getFirstValue, "Doodad.Tools.getFirstValue");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(1,          {eval: true},    /**/ "ar1");
 					command.run(2,          {eval: true},    /**/ "ar2");
 					command.end();
 					
-					command = test.prepareCommand(types.popAt, "Doodad.Types.popAt");
+					command = test.prepareCommand(tools.popAt, "Doodad.Tools.popAt");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "ar1");
 					command.chain(function(dummy) {
@@ -360,7 +360,7 @@ module.exports = {
 						createArrays();
 					});
 
-					command = test.prepareCommand(types.popItem, "Doodad.Types.popItem");
+					command = test.prepareCommand(tools.popItem, "Doodad.Tools.popItem");
 					command.run(undefined,  {eval: true}     /**/ );
 					command.run(undefined,  {eval: true},    /**/  "ar1");
 					command.run(undefined,  {eval: true},    /**/  "ar1", 0);
@@ -381,7 +381,7 @@ module.exports = {
 						createArrays();
 					});
 
-					command = test.prepareCommand(types.popItems, "Doodad.Types.popItems");
+					command = test.prepareCommand(tools.popItems, "Doodad.Tools.popItems");
 					command.run("[]",       {eval: true, contains: true}  /**/ );
 					command.run("[]",       {eval: true, contains: true}, /**/  "ar1");
 					command.run("[]",       {eval: true, contains: true}, /**/  "ar1", "[0]");
@@ -402,7 +402,7 @@ module.exports = {
 						createArrays();
 					});
 					
-					command = test.prepareCommand(types.append, "Doodad.Types.append");
+					command = test.prepareCommand(tools.append, "Doodad.Tools.append");
 					command.run(null,                                           {eval: true}     /**/ );
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]",       {eval: true},    /**/ "ar1");
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot, 3, 4]", {eval: true},    /**/ "ar1", "[3, 4]");
@@ -419,7 +419,7 @@ module.exports = {
 						createArrays();
 					});
 					
-					command = test.prepareCommand(types.prepend, "Doodad.Types.prepend");
+					command = test.prepareCommand(tools.prepend, "Doodad.Tools.prepend");
 					command.run(null,                                           {eval: true}     /**/ );
 					command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]",       {eval: true},    /**/ "ar1");
 					command.run("[3, 4, 1, 2, ctx.EmptySlot, ctx.EmptySlot]", {eval: true},    /**/ "ar1", "[3, 4]");
@@ -436,7 +436,7 @@ module.exports = {
 						createArrays();
 					});
 					
-					command = test.prepareCommand(types.unique, "Doodad.Types.unique");
+					command = test.prepareCommand(tools.unique, "Doodad.Tools.unique");
 					command.run([],                                               {repetitions: 100}     /**/);
 					command.run(['a', 'b', 'c'],                                  {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"]);
 					command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100},    /**/ ["a", "b", "c", "a", "b", "c"], ["d", "e", "f", "d", "e", "f"]);

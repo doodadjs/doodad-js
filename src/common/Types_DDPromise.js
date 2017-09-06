@@ -61,7 +61,7 @@ module.exports = {
 				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 				// NOTE: Store everything because third-parties can override them.
 				
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
 					arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 				});
@@ -136,8 +136,8 @@ module.exports = {
 					const state2 = promise2[__Internal__.symbolPromiseCancelState] || {callbacks: [], canceled: false, reason: false};
 					if (state2 !== state1) {
 						if (state2.callbacks !== state1.callbacks) {
-							state2.callbacks = state1.callbacks = types.append(state1.callbacks, state2.callbacks);
-							//state1.callbacks = state2.callbacks = types.unique(state1.callbacks, state2.callbacks);
+							state2.callbacks = state1.callbacks = tools.append(state1.callbacks, state2.callbacks);
+							//state1.callbacks = state2.callbacks = tools.unique(state1.callbacks, state2.callbacks);
 						};
 						if (state2.canceled && !state1.canceled) {
 							state1.canceled = true;
@@ -223,7 +223,7 @@ module.exports = {
 							return P.try(function tryMap() {
 								const len = ar.length | 0;
 
-								options = types.nullObject({
+								options = tools.nullObject({
 									concurrency: Infinity,
 								}, options);
 							
@@ -236,7 +236,7 @@ module.exports = {
 										return P.resolve(fn.call(undefined, val, key, obj));
 									}));
 								} else {
-									const result = types.createArray(len);
+									const result = tools.createArray(len);
 									const state = {start: 0};
 									const mapFn = function _mapFn(val, key, obj) {
 										state.start++;
@@ -309,7 +309,7 @@ module.exports = {
 							};
 							let promises;
 							if (types.isArrayLike(promise)) {
-								promises = types.append([this], promise);
+								promises = tools.append([this], promise);
 							} else {
 								promises = [this, promise];
 							}
@@ -385,7 +385,7 @@ module.exports = {
 							if (count <= 0) {
 								resolve([]);
 							} else {
-								const result = types.createArray(count);
+								const result = tools.createArray(count);
 								let successes = 0;
 								let errors = 0;
 								let firstError = null;
@@ -715,7 +715,7 @@ module.exports = {
 						if (types.isNativeFunction(Promise)) {
 							// ES6 Promise
 							// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
-							DDPromise = types.eval("class DDPromise extends ctx.Promise {constructor(callback) {let res, rej; super(function(resolve, reject) {res = resolve; rej = reject;}); ctx.DDPromiseConstructor.call(this, callback, res, rej);}}", {Promise: Promise, DDPromiseConstructor: __Internal__.DDPromiseConstructor});
+							DDPromise = tools.eval("class DDPromise extends ctx.Promise {constructor(callback) {let res, rej; super(function(resolve, reject) {res = resolve; rej = reject;}); ctx.DDPromiseConstructor.call(this, callback, res, rej);}}", {Promise: Promise, DDPromiseConstructor: __Internal__.DDPromiseConstructor});
 						} else {
 							// Librairies
 							const promiseCall = Promise.call.bind(Promise);

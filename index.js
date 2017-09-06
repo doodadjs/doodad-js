@@ -37,7 +37,6 @@ module.exports = {
 		
 		DD_MODULES = (DD_MODULES || {});
 		require(sourceDir + "common/Types.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_ToSource.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Bind.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Generators.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Iterators.js").add(DD_MODULES);
@@ -52,6 +51,7 @@ module.exports = {
 		require(sourceDir + "common/Tools_Config.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Scripts.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Version.js").add(DD_MODULES);
+		require(sourceDir + "common/Tools_ToSource.js").add(DD_MODULES);
 		require(sourceDir + "common/Namespaces.js").add(DD_MODULES);
 		require(sourceDir + "common/Doodad.js").add(DD_MODULES);
 		require(sourceDir + "server/Modules.js").add(DD_MODULES);

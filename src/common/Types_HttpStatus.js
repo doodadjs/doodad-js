@@ -30,6 +30,10 @@ module.exports = {
 		DD_MODULES['Doodad.Types/HttpStatus'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
+			dependencies: [
+				'Doodad.Tools',
+			],
+
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
@@ -38,6 +42,7 @@ module.exports = {
 				//===================================
 
 				const doodad = root.Doodad,
+					tools = doodad.Tools,
 					types = doodad.Types;
 				
 				//===================================
@@ -52,7 +57,7 @@ module.exports = {
 				// TODO: Add other non-standard or strange status ?
 				//===================================
 				
-				types.ADD('HttpStatus', types.freezeObject(types.nullObject({
+				types.ADD('HttpStatus', types.freezeObject(tools.nullObject({
 					// Information
 					Continue: 100,
 					SwitchingProtocol: 101,

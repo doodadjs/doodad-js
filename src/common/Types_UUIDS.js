@@ -55,7 +55,7 @@ module.exports = {
 				// Options
 				//===================================
 					
-				//let __options__ = types.nullObject({
+				//let __options__ = tools.nullObject({
 				//}, _options);
 
 				//__options__. = types.to...(__options__.);
@@ -71,7 +71,7 @@ module.exports = {
 				// Native functions
 				//===================================
 					
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
 				});
 				
@@ -87,9 +87,9 @@ module.exports = {
 							//! END_IF()
 						],
 
-						uuids = types.nullObject();
+						uuids = tools.nullObject();
 
-					const problematicAliases = types.nullObject({
+					const problematicAliases = tools.nullObject({
 						// Firefox
 						'Option': 'HTMLOptionElement',
 						'HTMLOptionElement': 'Option',

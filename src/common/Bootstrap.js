@@ -546,7 +546,7 @@
 				return (obj == null);
 			}));
 		
-		__Internal__.ADD('append', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -581,7 +581,7 @@
 				return obj;
 			}));
 			
-		__Internal__.ADD('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
@@ -609,7 +609,7 @@
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 					obj = _shared.Natives.windowObject(obj);
-					const keys = types.append(types.keys(obj), types.symbols(obj));
+					const keys = tools.append(types.keys(obj), types.symbols(obj));
 					for (let j = 0; j < keys.length; j++) {
 						const key = keys[j];
 						result[key] = obj[key];
@@ -624,7 +624,7 @@
 		// Natives
 		//===================================
 
-		types.extend(_shared.Natives, {
+		tools.extend(_shared.Natives, {
 			// General
 			windowFunction: global.Function,
 			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
@@ -782,7 +782,7 @@
 		__Internal__.evals = getEvals(_shared.Natives.windowEval);
 		getEvals = null; // free memory
 		
-		__Internal__.ADD('eval', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('eval', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -812,7 +812,7 @@
 				};
 			}));
 
-		__Internal__.ADD('evalStrict', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('evalStrict', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -841,7 +841,7 @@
 				};
 			}));
 
-		__Internal__.ADD('createEval', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('createEval', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -1414,7 +1414,7 @@
 			//! END_REPLACE()
 			, function getSafeIntegerBounds() {
 				if (!__Internal__.safeIntegerLen) {
-					__Internal__.safeIntegerLen = types.freezeObject(types.nullObject({
+					__Internal__.safeIntegerLen = types.freezeObject(tools.nullObject({
 						len: __Internal__.SAFE_INTEGER_LEN, 
 						min: _shared.Natives.numberMinSafeInteger, 
 						max: _shared.Natives.numberMaxSafeInteger,
@@ -1435,7 +1435,7 @@
 			//! END_REPLACE()
 			, function getBitwiseIntegerBounds() {
 				if (!__Internal__.bitwiseIntegerLen) {
-					__Internal__.bitwiseIntegerLen = types.freezeObject(types.nullObject({
+					__Internal__.bitwiseIntegerLen = types.freezeObject(tools.nullObject({
 						len: __Internal__.BITWISE_INTEGER_LEN, 
 						min: __Internal__.MIN_BITWISE_INTEGER, 
 						max: __Internal__.MAX_BITWISE_INTEGER,
@@ -1778,7 +1778,7 @@
 		// Arrays
 		//===================================
 
-		__Internal__.ADD('createArray', function(length, /*optional*/defaultValue) {
+		__Internal__.ADD_TOOL('createArray', function(length, /*optional*/defaultValue) {
 			length = +length || 0;
 			if ((length <= 0) || types.isInfinite(length)) {
 				return [];
@@ -2120,7 +2120,7 @@
 					return [];
 				};
 				obj = _shared.Natives.windowObject(obj);
-				return types.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
+				return tools.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
 			}));
 		
 		__Internal__.ADD('allSymbolsInherited', __Internal__.DD_DOC(
@@ -2144,7 +2144,7 @@
 					return [];
 				};
 				obj = _shared.Natives.windowObject(obj);
-				return types.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
+				return tools.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 			}));
 		
 		__Internal__.hasGetOwnPropertyRestrictionOnCaller = false;
@@ -2153,7 +2153,7 @@
 			const ctx = {
 				getOwnPropertyDescriptor: _shared.Natives.objectGetOwnPropertyDescriptor,
 			};
-			ctx.f = types.eval(
+			ctx.f = tools.eval(
 				"function() {" +
 					"return ctx.getOwnPropertyDescriptor(ctx.f, 'caller');" +
 				"}", ctx);
@@ -2192,7 +2192,7 @@
 			//! END_REPLACE()
 			, function defineProperty(obj, name, descriptor) {
 				// <PRB> "Object.defineProperty" stupidly takes inherited properties instead of just own properties. So we fix that because of "Object.prototype".
-				descriptor = types.nullObject(descriptor);
+				descriptor = tools.nullObject(descriptor);
 				return _shared.Natives.objectDefineProperty(obj, name, descriptor);
 			}));
 
@@ -2271,7 +2271,7 @@
 				return descriptor;
 			}));
 		
-		__Internal__.ADD('createObject', _shared.Natives.objectCreate);
+		__Internal__.ADD_TOOL('createObject', _shared.Natives.objectCreate);
 
 		__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2311,9 +2311,9 @@
 				let obj;
 				if (args && args.length) {
 					if (__Internal__.classesNotCallable && types.isJsClass(type)) {
-						obj = types.eval("new ctx.type(...ctx.args)", {type: type, args: args});
+						obj = tools.eval("new ctx.type(...ctx.args)", {type: type, args: args});
 					} else {
-						obj = types.createObject(type.prototype, {
+						obj = tools.createObject(type.prototype, {
 							constructor: {
 								value: type,
 							},
@@ -2369,14 +2369,14 @@
 					if (types.isFunction(obj)) {
 						throw new global.Error("Browser not supported.");
 					} else {
-						tmp = types.createObject(proto, {
+						tmp = tools.createObject(proto, {
 							constructor: {
 								configurable: true,
 								value: obj.constructor,
 								writable: true,
 							},
 						});
-						types.extend(tmp, obj);
+						tools.extend(tmp, obj);
 					};
 					
 					return tmp;
@@ -2388,7 +2388,7 @@
 				return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 			});
 
-		__Internal__.ADD('nullObject', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2405,7 +2405,7 @@
 			}
 			//! END_REPLACE()
 			, function nullObject(/*paramarray*/) {
-				return types.extend.apply(types, types.append([types.createObject(null)], arguments));
+				return tools.extend.apply(types, tools.append([tools.createObject(null)], arguments));
 			}));
 
 		__Internal__.ADD('getIn', __Internal__.DD_DOC(
@@ -2489,7 +2489,7 @@
 				return false;
 			}));
 		
-		__Internal__.ADD('extendProperties', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('extendProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2517,7 +2517,7 @@
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 						obj = _shared.Natives.windowObject(obj);
-						const keys = types.append(types.keys(obj), types.symbols(obj));
+						const keys = tools.append(types.keys(obj), types.symbols(obj));
 						for (let j = 0; j < keys.length; j++) {
 							const key = keys[j];
 							const descriptor = types.getOwnPropertyDescriptor(obj, key);
@@ -2528,7 +2528,7 @@
 				return result;
 			}));
 			
-		__Internal__.ADD('depthExtend', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2590,11 +2590,11 @@
 							};
 							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 							obj = _shared.Natives.windowObject(obj);
-							const keys = types.append(types.keys(obj), types.symbols(obj)),
+							const keys = tools.append(types.keys(obj), types.symbols(obj)),
 								keysLen = keys.length; // performance
 							for (let j = 0; j < keysLen; j++) {
 								const key = keys[j];
-								extender(result, obj[key], key, _shared.Natives.functionBindCall(types.depthExtend, types, extender));
+								extender(result, obj[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
 							};
 						};
 					};
@@ -2602,7 +2602,7 @@
 				return result;
 			}));
 				
-		__Internal__.ADD('complete', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('complete', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2630,7 +2630,7 @@
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 						obj = _shared.Natives.windowObject(obj);
-						const keys = types.append(types.keys(obj), types.symbols(obj));
+						const keys = tools.append(types.keys(obj), types.symbols(obj));
 						for (let j = 0; j < keys.length; j++) {
 							const key = keys[j];
 							if (!types.has(result, key)) {
@@ -2643,7 +2643,7 @@
 				return result;
 			}));
 		
-		__Internal__.ADD('completeProperties', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('completeProperties', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2672,7 +2672,7 @@
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 						obj = _shared.Natives.windowObject(obj);
-						const keys = types.append(types.keys(obj), types.symbols(obj));
+						const keys = tools.append(types.keys(obj), types.symbols(obj));
 						for (let j = 0; j < keys.length; j++) {
 							const key = keys[j];
 							if (!types.has(result, key)) {
@@ -2686,8 +2686,8 @@
 				return result;
 			}));
 		
-		__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'types.concat'.
-		__Internal__.ADD('concat', __Internal__.DD_DOC(
+		__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'tools.concat'.
+		__Internal__.ADD_TOOL('concat', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
@@ -2725,7 +2725,7 @@
 				}
 			)));
 			
-		__Internal__.ADD('unique', __Internal__.DD_DOC(
+		__Internal__.ADD_TOOL('unique', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 					author: "Claude Petit",
@@ -3025,14 +3025,14 @@
 		//==============
 		
 		if (types.isArray(_options)) {
-			_options = types.depthExtend.apply(null, types.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ],  _options));
+			_options = tools.depthExtend.apply(null, tools.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ],  _options));
 		//! IF_UNSET("serverSide")
 		} else {
-			_options = types.depthExtend(15, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
+			_options = tools.depthExtend(15, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
 		//! END_IF()
 		};
 
-		const __options__ = types.depthExtend(15, {
+		const __options__ = tools.depthExtend(15, {
 			//! BEGIN_REMOVE()
 				fromSource: true,				// When 'true', loads source code instead of built code
 			//! END_REMOVE()
@@ -4179,7 +4179,7 @@
 			}
 			//! END_REPLACE()
 			, function setAttribute(obj, attr, value, /*optional*/options) {
-				options = options && types.nullObject(options);
+				options = options && tools.nullObject(options);
 				const hasOwn = types.has(obj, attr);
 				let descriptor = types.getPropertyDescriptor(obj, attr);
 				const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
@@ -4248,7 +4248,7 @@
 			}
 			//! END_REPLACE()
 			, function setAttributes(obj, values, /*optional*/options) {
-				const keys = types.append(types.keys(values), types.symbols(values)),
+				const keys = tools.append(types.keys(values), types.symbols(values)),
 					keysLen = keys.length;
 				for (let i = 0; i < keysLen; i++) {
 					const key = keys[i];
@@ -4358,11 +4358,11 @@
 					"}";
 
 					// NOTE: Use of "eval" to give the name to the class
-					type = types.evalStrict(expr, {
+					type = tools.evalStrict(expr, {
 						base: base,
 						constructor: constructor,
 						name: name,
-						extend: types.extend,
+						extend: tools.extend,
 					});
 
 				} else {
@@ -4405,22 +4405,22 @@
 					"}";
 				
 					// NOTE: Use of "eval" to give the name to the function				
-					type = types.eval(expr, {
+					type = tools.eval(expr, {
 						base: base,
 						constructor: constructor,
 						name: name,
-						extend: types.extend,
+						extend: tools.extend,
 					});
 				
 					// For "instanceof".
-					type.prototype = types.createObject(base.prototype, {
+					type.prototype = tools.createObject(base.prototype, {
 						constructor: {
 							value: type,
 						},
 					});
 				};
 				
-				types.extend(type.prototype, {
+				tools.extend(type.prototype, {
 					name: name,
 					throwLevel: 0,
 					parsed: false,
@@ -4932,9 +4932,9 @@
 				};
 			}));
 
-		types.extend(types.box.prototype, {
+		tools.extend(types.box.prototype, {
 			setAttributes: function setAttributes(dest, /*optional*/override) {
-				const keys = types.append(types.keys(this), types.symbols(this));
+				const keys = tools.append(types.keys(this), types.symbols(this));
 				for (let i = 0; i < keys.length; i++) {
 					const key = keys[i];
 					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
@@ -4983,7 +4983,7 @@
 		//===================================
 		
 		// TODO: Find another way
-		_shared.reservedAttributes = types.nullObject({
+		_shared.reservedAttributes = tools.nullObject({
 			//name: null, 
 			//apply: null, 
 			//call: null, 
@@ -5098,7 +5098,7 @@
 				if (isArray) {
 					obj = _shared.Natives.windowObject(obj);
 					if (depth >= 0) {
-						result = types.createArray(obj.length);
+						result = tools.createArray(obj.length);
 						const len = obj.length;
 						for (let key = 0; key < len; key++) {
 							if (types.has(obj, key)) {
@@ -5109,9 +5109,9 @@
 						result = _shared.Natives.arraySliceCall(obj, 0);
 					};
 				} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
-					result = types.eval(_shared.Natives.functionToStringCall(obj));
+					result = tools.eval(_shared.Natives.functionToStringCall(obj));
 				} else if (types.isObject(obj)) {
-					result = types.createObject(types.getPrototypeOf(obj));
+					result = tools.createObject(types.getPrototypeOf(obj));
 				} else if (keepNonClonables) {
 					return obj;
 				} else {
@@ -5119,7 +5119,7 @@
 				};
 
 				// Copy properties
-				const keys = types.append(types.allKeys(obj), types.allSymbols(obj)),
+				const keys = tools.append(types.allKeys(obj), types.allSymbols(obj)),
 					arrayLen = isArray && obj.length,
 					props = {};
 				for (let i = 0; i < keys.length; i++) {
@@ -5274,7 +5274,7 @@
 				
 				type = types.setPrototypeOf(type, base);
 
-				type.prototype = types.createObject(base.prototype, {
+				type.prototype = tools.createObject(base.prototype, {
 					constructor: {
 						value: type,
 					},
@@ -5319,7 +5319,7 @@
 					return new types.AttributeBox(value);
 				};
 			})));
-			//types.extend(types.AttributeBox.prototype, {
+			//tools.extend(types.AttributeBox.prototype, {
 			//});
 			
 		__Internal__.emptyFunction = function empty() {};
@@ -5574,7 +5574,7 @@
 		_shared.proxyHasSetHandlerBug = false;
 		(function() {
 			if (types.hasProxies()) {
-				const proxy = types.createProxy(types.createObject(null), {
+				const proxy = tools.createProxy(tools.createObject(null), {
 					set: function(target, prop, val) {
 						// Should set NEW NON-EXISTING property as non-configurable and non-writable with a different value.
 						types.defineProperty(target, prop, {
@@ -5995,7 +5995,7 @@
 			let fn = null;
 
 			if (generateFnName) {
-				const evalFn = types.createEval(['types', 'tools', '_shared', '__Internal__', 'protoSymbols'], true)(types, tools, _shared, __Internal__, protoSymbols);
+				const evalFn = tools.createEval(['types', 'tools', '_shared', '__Internal__', 'protoSymbols'], true)(types, tools, _shared, __Internal__, protoSymbols);
 				fn = evalFn(code);
 			};
 
@@ -6067,11 +6067,11 @@
 				};
 				
 				if (types.isString(constructor)) {
-					constructorContext = types.extend({}, constructorContext, {
+					constructorContext = tools.extend({}, constructorContext, {
 						base: base,
 					});
 					// TODO: Avoid this extra function ?
-					constructor = types.eval("function(/*paramarray*/) {" + constructor + "}", constructorContext);
+					constructor = tools.eval("function(/*paramarray*/) {" + constructor + "}", constructorContext);
 				};
 				
 				// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
@@ -6185,7 +6185,7 @@
 				
 				const instanceBase = (base ? base.prototype : null);
 
-				const ctx = types.nullObject({
+				const ctx = tools.nullObject({
 					base: base,
 					constructor: constructor,
 					typeProto: typeProto, 
@@ -6200,7 +6200,7 @@
 					applyProtoToInstance: instanceProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
 				});
 
-				let type = types.eval(expr, ctx);
+				let type = tools.eval(expr, ctx);
 				
 				// Inherit base
 				let proto;
@@ -6488,7 +6488,7 @@
 					
 					_new: types.SUPER(function _new(type, /*optional*/init) {
 						this._super();
-						init = types.nullObject(init);
+						init = tools.nullObject(init);
 						_shared.setAttributes(this, {
 							type: type,
 							// NOTE: Event targets are responsible to bubble events to their parent when "bubbling" is true.
@@ -6571,7 +6571,7 @@
 				{
 					_new: types.SUPER(function _new() {
 						this._super();
-						_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject(), {configurable: true});
+						_shared.setAttribute(this, __Internal__.symbolEventListeners, tools.nullObject(), {configurable: true});
 					}),
 
 					_delete: types.SUPER(function _delete() {
@@ -6772,7 +6772,7 @@
 								}
 								//! END_REPLACE()
 						, function clearListeners() {
-							_shared.setAttribute(this, __Internal__.symbolEventListeners, types.nullObject());
+							_shared.setAttribute(this, __Internal__.symbolEventListeners, tools.nullObject());
 						}),
 				}
 			)));
@@ -6988,7 +6988,7 @@
 
 		//! IF_UNSET("serverSide")
 			if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {
-				modules = types.extend({}, DD_MODULES, modules);
+				modules = tools.extend({}, DD_MODULES, modules);
 			};
 		//! END_IF()
 
@@ -7030,7 +7030,7 @@
 					_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 						this._super(null, 'Root', 'Root');
 
-						options = types.nullObject(options);
+						options = tools.nullObject(options);
 						
 						const root = this;
 
@@ -7076,7 +7076,7 @@
 						__Internal__.REGISTER = null;
 						__Internal__.ADD_TOOL = null;
 
-						const nsObjs = types.nullObject({
+						const nsObjs = tools.nullObject({
 							'Doodad': root.Doodad,
 							'Doodad.Types': root.Doodad.Types,
 							'Doodad.Tools': root.Doodad.Tools,
@@ -7110,7 +7110,7 @@
 						};
 						
 						const names = types.keys(modules),
-							inits = types.nullObject();
+							inits = tools.nullObject();
 
 						let namespaces = null,
 							entries = null,

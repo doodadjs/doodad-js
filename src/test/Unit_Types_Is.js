@@ -65,7 +65,7 @@ module.exports = {
 					
 					global.textNode = global.document && document.createTextNode("Hello World");
 					
-					global.d = types.createObject(null);
+					global.d = tools.createObject(null);
 
 					
 					global.symbol = types.hasSymbolsEnabled() && types.getSymbol("symbol") || undefined;
@@ -1347,7 +1347,7 @@ module.exports = {
 					
 					let hasGen = false;
 					try {
-						types.eval("function*(){}");
+						tools.eval("function*(){}");
 						hasGen = true;
 					} catch(ex) {
 					};
