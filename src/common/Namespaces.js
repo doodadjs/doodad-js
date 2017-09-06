@@ -48,8 +48,7 @@ module.exports = {
 					types = doodad.Types,
 					tools = doodad.Tools,
 					namespaces = doodad.Namespaces,
-					entries = namespaces.Entries,
-					nodejs = tools.NodeJs;
+					entries = namespaces.Entries;
 					
 				//===================================
 				// Internals
