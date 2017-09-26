@@ -24,137 +24,136 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/uuids'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: [],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/uuids'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: [],
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 					
-				const doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools;
+			const doodad = root.Doodad,
+				types = doodad.Types,
+				tools = doodad.Tools;
 					
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 					
-				//// <FUTURE> Thread context
-				//const __Internal__ = {
-				//};
+			//// <FUTURE> Thread context
+			//const __Internal__ = {
+			//};
 				
 				
-				//===================================
-				// Options
-				//===================================
+			//===================================
+			// Options
+			//===================================
 					
-				//let __options__ = tools.nullObject({
-				//}, _options);
+			//let __options__ = tools.nullObject({
+			//}, _options);
 
-				//__options__. = types.to...(__options__.);
+			//__options__. = types.to...(__options__.);
 
-				//types.freezeObject(__options__);
+			//types.freezeObject(__options__);
 
-				//config.ADD('getOptions', function getOptions() {
-				//	return __options__;
-				//});
+			//config.ADD('getOptions', function getOptions() {
+			//	return __options__;
+			//});
 				
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
+			tools.complete(_shared.Natives, {
+				windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
+			});
+				
+			//===================================
+			// Init
+			//===================================
+			return function init(/*optional*/options) {
+				const tempNatives = [
+						//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
+							//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
+						//! ELSE()
+							//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
+						//! END_IF()
+					],
+
+					uuids = tools.nullObject();
+
+				const problematicAliases = tools.nullObject({
+					// Firefox
+					'Option': 'HTMLOptionElement',
+					'HTMLOptionElement': 'Option',
+					'Audio': 'HTMLAudioElement',
+					'HTMLAudioElement': 'Audio',
+					'Image': 'HTMLImageElement',
+					'HTMLImageElement': 'Image',
+
+					// Safari
+					'AnimationEvent': 'WebKitAnimationEvent',
+					'WebKitAnimationEvent': 'AnimationEvent',
+					'TransitionEvent': 'WebKitTransitionEvent',
+					'WebKitTransitionEvent': 'TransitionEvent',
+
+					// Edge
+					'DOMTokenList': 'DOMSettableTokenList',
+					'DOMSettableTokenList': 'DOMTokenList',
 				});
-				
-				//===================================
-				// Init
-				//===================================
-				return function init(/*optional*/options) {
-					const tempNatives = [
-							//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
-								//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
-							//! ELSE()
-								//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
-							//! END_IF()
-						],
 
-						uuids = tools.nullObject();
+				for (let i = 0; i < tempNatives.length; i++) {
+					const item = tempNatives[i],
+						name = item[0],
+						native = (name === 'Promise' && _shared.Natives.windowPromise || global[name]);
 
-					const problematicAliases = tools.nullObject({
-						// Firefox
-						'Option': 'HTMLOptionElement',
-						'HTMLOptionElement': 'Option',
-						'Audio': 'HTMLAudioElement',
-						'HTMLAudioElement': 'Audio',
-						'Image': 'HTMLImageElement',
-						'HTMLImageElement': 'Image',
-
-						// Safari
-						'AnimationEvent': 'WebKitAnimationEvent',
-						'WebKitAnimationEvent': 'AnimationEvent',
-						'TransitionEvent': 'WebKitTransitionEvent',
-						'WebKitTransitionEvent': 'TransitionEvent',
-
-						// Edge
-						'DOMTokenList': 'DOMSettableTokenList',
-						'DOMSettableTokenList': 'DOMTokenList',
-					});
-
-					for (let i = 0; i < tempNatives.length; i++) {
-						const item = tempNatives[i],
-							name = item[0],
-							native = (name === 'Promise' && _shared.Natives.windowPromise || global[name]);
-
-						if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
-							if (types.has(problematicAliases, name)) {
-								const alias = global[problematicAliases[name]];
-								if (alias && (native !== alias)) {
-									// <PRB> Some natives share the same prototype, or are duplicated.
-									continue;
-								};
+					if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
+						if (types.has(problematicAliases, name)) {
+							const alias = global[problematicAliases[name]];
+							if (alias && (native !== alias)) {
+								// <PRB> Some natives share the same prototype, or are duplicated.
+								continue;
 							};
-
-							const uuid = item[1],
-								nativeUUID = /*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + uuid;
-
-							if (types.has(native, _shared.UUIDSymbol) || types.has(native.prototype, _shared.UUIDSymbol)) {
-								// Aliases
-								if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
-									continue;
-								} else {
-									//console.log(name);
-									//continue;
-									throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
-								};
-							};
-
-							if (types.has(uuids, uuid)) {
-								throw new types.Error("Duplicated UUID : ~0~.", [uuid]);
-							};
-
-							uuids[uuid] = true;
-
-							//try {
-								_shared.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
-								_shared.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
-							//} catch(ex) {
-							//	console.log(name);
-							//};
 						};
+
+						const uuid = item[1],
+							nativeUUID = /*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + uuid;
+
+						if (types.has(native, _shared.UUIDSymbol) || types.has(native.prototype, _shared.UUIDSymbol)) {
+							// Aliases
+							if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
+								continue;
+							} else {
+								//console.log(name);
+								//continue;
+								throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
+							};
+						};
+
+						if (types.has(uuids, uuid)) {
+							throw new types.Error("Duplicated UUID : ~0~.", [uuid]);
+						};
+
+						uuids[uuid] = true;
+
+						//try {
+							_shared.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
+							_shared.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
+						//} catch(ex) {
+						//	console.log(name);
+						//};
 					};
 				};
-			},
-		};
-		return DD_MODULES;
-	},
+			};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

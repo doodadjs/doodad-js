@@ -24,141 +24,140 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/Bind'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			bootstrap: true,
-			dependencies: [
-				'Doodad.Tools',
-			],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/Bind'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		bootstrap: true,
+		dependencies: [
+			'Doodad.Tools',
+		],
 
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools, 
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools, 
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				//const __Internal__ = {
-				//};
+			//const __Internal__ = {
+			//};
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					// "bind"
-					functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
-					functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
-				});
+			tools.complete(_shared.Natives, {
+				// "bind"
+				functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
+				functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
+			});
 
-				//===================================
-				// Bind/Unbind
-				//===================================
+			//===================================
+			// Bind/Unbind
+			//===================================
 
-				types.ADD('bind', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									obj: {
-										type: 'object',
-										optional: false,
-										description: "An object.",
-									},
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "A function.",
-									},
-									args: {
-										type: 'arrayof(any)',
-										optional: true,
-										description: "Function arguments.",
-									},
+			types.ADD('bind', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 4,
+							params: {
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "An object.",
 								},
-								returns: 'object',
-								description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
-					}
-					//! END_REPLACE()
-					, function bind(obj, fn, /*optional*/args) {
-						fn = types.unbind(fn) || fn;
-						if (!types.isBindable(fn)) {
-							return null;
-						};
-						let newFn;
-						if (args) {
-							newFn = _shared.Natives.functionBindApply(fn, tools.append([obj], args));
-						} else {
-							newFn = _shared.Natives.functionBindCall(fn, obj);
-						};
-						tools.extend(newFn, fn);
-						newFn[_shared.BoundObjectSymbol] = obj;
-						newFn[_shared.OriginalValueSymbol] = fn;
-						return newFn;
-					}));
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "A function.",
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Function arguments.",
+								},
+							},
+							returns: 'object',
+							description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
+				}
+				//! END_REPLACE()
+				, function bind(obj, fn, /*optional*/args) {
+					fn = types.unbind(fn) || fn;
+					if (!types.isBindable(fn)) {
+						return null;
+					};
+					let newFn;
+					if (args) {
+						newFn = _shared.Natives.functionBindApply(fn, tools.append([obj], args));
+					} else {
+						newFn = _shared.Natives.functionBindCall(fn, obj);
+					};
+					tools.extend(newFn, fn);
+					newFn[_shared.BoundObjectSymbol] = obj;
+					newFn[_shared.OriginalValueSymbol] = fn;
+					return newFn;
+				}));
 				
-				types.ADD('unbind', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 6,
-								params: {
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "A function.",
-									},
+			types.ADD('unbind', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 6,
+							params: {
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "A function.",
 								},
-								returns: 'object',
-								description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
-					}
-					//! END_REPLACE()
-					, function unbind(fn) {
-						if (!types.isFunction(fn)) {
+							},
+							returns: 'object',
+							description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
+				}
+				//! END_REPLACE()
+				, function unbind(fn) {
+					if (!types.isFunction(fn)) {
+						return null;
+					};
+					if (types.has(fn, _shared.BoundObjectSymbol)) {
+						const oldFn = types.get(fn, _shared.OriginalValueSymbol);
+						if (!types.isBindable(oldFn)) {
 							return null;
 						};
-						if (types.has(fn, _shared.BoundObjectSymbol)) {
-							const oldFn = types.get(fn, _shared.OriginalValueSymbol);
-							if (!types.isBindable(oldFn)) {
-								return null;
-							};
-							const keys = tools.append(types.keys(fn), types.symbols(fn)),
-								keysLen = keys.length;
-							for (let i = 0; i < keysLen; i++) {
-								const key = keys[i];
-								if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
-									if (types.has(oldFn, key)) {
-										oldFn[key] = fn[key];
-									};
+						const keys = tools.append(types.keys(fn), types.symbols(fn)),
+							keysLen = keys.length;
+						for (let i = 0; i < keysLen; i++) {
+							const key = keys[i];
+							if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
+								if (types.has(oldFn, key)) {
+									oldFn[key] = fn[key];
 								};
 							};
-							return oldFn;
-						} else {
-							return null;
 						};
-					}));
+						return oldFn;
+					} else {
+						return null;
+					};
+				}));
 
 
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

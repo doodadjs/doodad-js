@@ -24,141 +24,140 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/Buffers'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/Buffers'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
-			dependencies: [
-				'Doodad.Tools',
-			],
+		dependencies: [
+			'Doodad.Tools',
+		],
 
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools,
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools,
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				const __Internal__ = {
-				};
+			const __Internal__ = {
+			};
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					// "isArrayBuffer"
-					arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
+			tools.complete(_shared.Natives, {
+				// "isArrayBuffer"
+				arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
 
-					// "isTypesArray"
-					windowTypedArray: undefined,
-				});
+				// "isTypesArray"
+				windowTypedArray: undefined,
+			});
 				
-				//===================================
-				// Buffers
-				//===================================
+			//===================================
+			// Buffers
+			//===================================
 
-				types.ADD('isArrayBuffer', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
+			types.ADD('isArrayBuffer', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
 								},
-								returns: 'bool',
-								description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
-						return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
-					}) : (function isArrayBuffer(obj) {
-						// ArrayBuffer is not implemented.
-						return false;
-					}))));
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
+					return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
+				}) : (function isArrayBuffer(obj) {
+					// ArrayBuffer is not implemented.
+					return false;
+				}))));
 				
-				//===================================
-				// Typed Arrays
-				//===================================
+			//===================================
+			// Typed Arrays
+			//===================================
 				
-				__Internal__.TypedArrays = null;
-				if (global.Int8Array) {
-					try {
-						_shared.Natives.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
+			__Internal__.TypedArrays = null;
+			if (global.Int8Array) {
+				try {
+					_shared.Natives.windowTypedArray = types.getPrototypeOf(global.Int8Array.prototype).constructor;
 						
-						if (_shared.Natives.windowTypedArray === global.Object) {
-							// <PRB> NodeJs has no TypedArray constructor.
-							//delete _shared.Natives.windowTypedArray;
-							_shared.Natives.windowTypedArray = null;
-							__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
-													global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
-													global.Float64Array];
-						} else {
-							// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-							_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */ ;
-						};
-					} catch(ex) {
-					};
-				};
-					
-				types.ADD('isTypedArray', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {
-						return types._instanceof(obj, _shared.Natives.windowTypedArray);
-						
-					}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
+					if (_shared.Natives.windowTypedArray === global.Object) {
 						// <PRB> NodeJs has no TypedArray constructor.
-						for (let i = 0; i < __Internal__.TypedArrays.length; i++) {
-							const type = __Internal__.TypedArrays[i];
-							if (type && types._instanceof(obj, type)) {
-								return true;
-							};
+						//delete _shared.Natives.windowTypedArray;
+						_shared.Natives.windowTypedArray = null;
+						__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array, 
+												global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array, 
+												global.Float64Array];
+					} else {
+						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+						_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */ ;
+					};
+				} catch(ex) {
+				};
+			};
+					
+			types.ADD('isTypedArray', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {
+					return types._instanceof(obj, _shared.Natives.windowTypedArray);
+						
+				}) : (__Internal__.TypedArrays ? (function isTypedArray(obj) {
+					// <PRB> NodeJs has no TypedArray constructor.
+					for (let i = 0; i < __Internal__.TypedArrays.length; i++) {
+						const type = __Internal__.TypedArrays[i];
+						if (type && types._instanceof(obj, type)) {
+							return true;
 						};
-						return false;
+					};
+					return false;
 						
-					}) : (function isTypedArray(obj) {
-						// Typed arrays are not implemented.
-						return false;
+				}) : (function isTypedArray(obj) {
+					// Typed arrays are not implemented.
+					return false;
 						
-					})))));
+				})))));
 
 
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

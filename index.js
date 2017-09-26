@@ -57,6 +57,7 @@ module.exports = {
 		require(sourceDir + "server/Modules.js").add(DD_MODULES);
 		require(sourceDir + "server/NodeJs_Base.js").add(DD_MODULES);
 		require(sourceDir + "server/NodeJs.js").add(DD_MODULES);
+		require(sourceDir + "server/NodeJs_Platform.js").add(DD_MODULES);
 
 		const bootstrap = require(sourceDir + "common/Bootstrap.js");
 

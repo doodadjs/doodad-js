@@ -24,77 +24,76 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Test.Tools.Misc'] = {
-			type: 'TestModule',
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: ['Doodad.Test.Tools'],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Test.Tools.Misc'] = {
+		type: 'TestModule',
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: ['Doodad.Test.Tools'],
 
-			// Unit
-			priority: null,
+		// Unit
+		priority: null,
 
-			proto: {
-				run: function run(root, /*optional*/options) {
-					"use strict";
+		proto: {
+			run: function run(root, /*optional*/options) {
+				"use strict";
 
-					const doodad = root.Doodad,
-						types = doodad.Types,
-						tools = doodad.Tools,
-						namespaces = doodad.Namespaces,
-						test = doodad.Test,
-						unit = test.Types.Is,
-						io = doodad.IO;
+				const doodad = root.Doodad,
+					types = doodad.Types,
+					tools = doodad.Tools,
+					namespaces = doodad.Namespaces,
+					test = doodad.Test,
+					unit = test.Types.Is,
+					io = doodad.IO;
 
 						
-					if (!options) {
-						options = {};
-					};
+				if (!options) {
+					options = {};
+				};
 					
 
-					let command;
+				let command;
 
 					
-					command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
+				command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
 					
-					command.run(undefined,                                       {repetitions: 100}  /**/);
-					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
-					command.run("",                                              {repetitions: 100}, /**/ "");
-					command.run("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
+				command.run(undefined,                                       {repetitions: 100}  /**/);
+				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+				command.run("",                                              {repetitions: 100}, /**/ "");
+				command.run("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
 
-					command.end();
+				command.end();
 					
 				
-					command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
+				command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
 					
-					command.run(undefined,                                       {repetitions: 100}  /**/);
-					command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
-					command.run("",                                              {repetitions: 100}, /**/ "");
-					command.run("\\[\\(\\$1\\+\\$2\\)\\|\\(\\^\\$3\\)\\]",       {repetitions: 100}, /**/ '[($1+$2)|(^$3)]');
+				command.run(undefined,                                       {repetitions: 100}  /**/);
+				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+				command.run("",                                              {repetitions: 100}, /**/ "");
+				command.run("\\[\\(\\$1\\+\\$2\\)\\|\\(\\^\\$3\\)\\]",       {repetitions: 100}, /**/ '[($1+$2)|(^$3)]');
 
-					command.end();
+				command.end();
 					
 				
-					command = test.prepareCommand(tools.sign, "Doodad.Tools.sign");
+				command = test.prepareCommand(tools.sign, "Doodad.Tools.sign");
 					
-					command.run(NaN,                                             {repetitions: 100}  /**/);
-					command.run(0,                                               {repetitions: 100}, /**/ null);
-					command.run(NaN,                                             {repetitions: 100}, /**/ NaN);
-					command.run(1,                                               {repetitions: 100}, /**/ Infinity);
-					command.run(-1,                                              {repetitions: 100}, /**/ -Infinity);
-					command.run(0,                                               {repetitions: 100}, /**/ 0);
-					command.run(-0,                                              {repetitions: 100}, /**/ -0);
-					command.run(1,                                               {repetitions: 100}, /**/ 2);
-					command.run(-1,                                              {repetitions: 100}, /**/ -2);
+				command.run(NaN,                                             {repetitions: 100}  /**/);
+				command.run(0,                                               {repetitions: 100}, /**/ null);
+				command.run(NaN,                                             {repetitions: 100}, /**/ NaN);
+				command.run(1,                                               {repetitions: 100}, /**/ Infinity);
+				command.run(-1,                                              {repetitions: 100}, /**/ -Infinity);
+				command.run(0,                                               {repetitions: 100}, /**/ 0);
+				command.run(-0,                                              {repetitions: 100}, /**/ -0);
+				command.run(1,                                               {repetitions: 100}, /**/ 2);
+				command.run(-1,                                              {repetitions: 100}, /**/ -2);
 
-					command.end();
+				command.end();
 					
 				
-				},
 			},
-		};
-		return DD_MODULES;
-	},
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

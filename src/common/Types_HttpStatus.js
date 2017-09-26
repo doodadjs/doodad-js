@@ -24,124 +24,123 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/HttpStatus'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/HttpStatus'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
-			dependencies: [
-				'Doodad.Tools',
-			],
+		dependencies: [
+			'Doodad.Tools',
+		],
 
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools,
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools,
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				//const __Internal__ = {
-				//};
+			//const __Internal__ = {
+			//};
 
-				//===================================
-				// HTTP Status Codes
-				// TODO: Add other non-standard or strange status ?
-				//===================================
+			//===================================
+			// HTTP Status Codes
+			// TODO: Add other non-standard or strange status ?
+			//===================================
 				
-				types.ADD('HttpStatus', types.freezeObject(tools.nullObject({
-					// Information
-					Continue: 100,
-					SwitchingProtocol: 101,
+			types.ADD('HttpStatus', types.freezeObject(tools.nullObject({
+				// Information
+				Continue: 100,
+				SwitchingProtocol: 101,
 					
-					// Success
-					OK: 200,
-					Created: 201,
-					Accepted: 202,
-					NonAuthoritativeInformation: 203,
-					NoContent: 204,
-					ResetContent: 205,
-					PartialContent: 206,
+				// Success
+				OK: 200,
+				Created: 201,
+				Accepted: 202,
+				NonAuthoritativeInformation: 203,
+				NoContent: 204,
+				ResetContent: 205,
+				PartialContent: 206,
 					
-					// Redirect
-					MultipleChoices: 300,
-					MovedPermanently: 301,
-					Found: 302,
-					SeeOther : 303,
-					NotModified: 304,
-					UseProxy: 305,
-					TemporaryRedirect: 307,
+				// Redirect
+				MultipleChoices: 300,
+				MovedPermanently: 301,
+				Found: 302,
+				SeeOther : 303,
+				NotModified: 304,
+				UseProxy: 305,
+				TemporaryRedirect: 307,
 					
-					// Client errors
-					BadRequest: 400,
-					Unauthorized: 401,
-					Forbidden: 403,
-					NotFound: 404,
-					MethodNotAllowed: 405,
-					NotAcceptable: 406,
-					ProxyAuthenticationRequired: 407,
-					RequestTimeout: 408,
-					Conflict: 409,
-					Gone: 410,
-					LengthRequired: 411,
-					PreconditionFailed: 412,
-					EntityTooLarge: 413,
-					UrlTooLong: 414,
-					UnsupportedMediaType: 415,
-					RangeNotSatisfiable: 416,
-					ExpectationFailed: 417,
+				// Client errors
+				BadRequest: 400,
+				Unauthorized: 401,
+				Forbidden: 403,
+				NotFound: 404,
+				MethodNotAllowed: 405,
+				NotAcceptable: 406,
+				ProxyAuthenticationRequired: 407,
+				RequestTimeout: 408,
+				Conflict: 409,
+				Gone: 410,
+				LengthRequired: 411,
+				PreconditionFailed: 412,
+				EntityTooLarge: 413,
+				UrlTooLong: 414,
+				UnsupportedMediaType: 415,
+				RangeNotSatisfiable: 416,
+				ExpectationFailed: 417,
 
-					// Server errors
-					InternalError: 500,
-					NotImplemented: 501,
-					BadGateway: 502,
-					ServiceUnavailable: 503,
-					GatewayTimeout: 504,
-					VersionNotSupported: 505,
+				// Server errors
+				InternalError: 500,
+				NotImplemented: 501,
+				BadGateway: 502,
+				ServiceUnavailable: 503,
+				GatewayTimeout: 504,
+				VersionNotSupported: 505,
 
-					// Utilities
-					isInformative: function isInformative(status) {
-						return (status >= 100) && (status < 200);
-					},
+				// Utilities
+				isInformative: function isInformative(status) {
+					return (status >= 100) && (status < 200);
+				},
 					
-					isSuccessful: function isSuccessful(status) {
-						return (status >= 200) && (status < 300);
-					},
+				isSuccessful: function isSuccessful(status) {
+					return (status >= 200) && (status < 300);
+				},
 					
-					isRedirect: function isRedirect(status) {
-						return (status >= 300) && (status < 400);
-					},
+				isRedirect: function isRedirect(status) {
+					return (status >= 300) && (status < 400);
+				},
 					
-					isClientError: function isClientError(status) {
-						return (status >= 400) && (status < 500);
-					},
+				isClientError: function isClientError(status) {
+					return (status >= 400) && (status < 500);
+				},
 					
-					isServerError: function isServerError(status) {
-						return (status >= 500);
-					},
+				isServerError: function isServerError(status) {
+					return (status >= 500);
+				},
 					
-					isError: function isError(status) {
-						return (status >= 400);
-					},
-				})));
+				isError: function isError(status) {
+					return (status >= 400);
+				},
+			})));
 					
 				
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

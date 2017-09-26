@@ -24,147 +24,146 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/Iterators'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			bootstrap: true,
-			dependencies: [
-				'Doodad.Tools',
-			],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/Iterators'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		bootstrap: true,
+		dependencies: [
+			'Doodad.Tools',
+		],
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools,
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools,
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				//const __Internal__ = {
-				//};
+			//const __Internal__ = {
+			//};
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					// "hasIterators", "isIterable"
-					symbolIterator: (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
-				});
+			tools.complete(_shared.Natives, {
+				// "hasIterators", "isIterable"
+				symbolIterator: (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+			});
 
-				//===================================
-				// Iterators
-				//===================================
+			//===================================
+			// Iterators
+			//===================================
 
-				types.ADD('hasIterators', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'bool',
-								description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.symbolIterator ? function hasIterators(obj) {
-						return true;
-					} : function hasIterators(obj) {
-						return false;
-					})));
+			types.ADD('hasIterators', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'bool',
+							description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.symbolIterator ? function hasIterators(obj) {
+					return true;
+				} : function hasIterators(obj) {
+					return false;
+				})));
 				
 				
-				types.ADD('isIterable', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
+			types.ADD('isIterable', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
 								},
-								returns: 'bool',
-								description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.symbolIterator ? function isIterable(obj) {
-						if (types.isNothing(obj)) {
-							return false;
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.symbolIterator ? function isIterable(obj) {
+					if (types.isNothing(obj)) {
+						return false;
+					};
+					return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
+				} : function isIterable(obj) {
+					return false;
+				})));
+				
+				
+			// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
+			types.ADD('isIteratorLike', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
+								},
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isIteratorLike(obj) {
+					return types.isObjectLike(obj) && types.isFunction(obj.next);
+				}));
+				
+				
+			types.ADD('Iterator', types.Type.$inherit(
+				{
+					$TYPE_NAME: 'Iterator',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Iterator')), true) */,
+				},
+				{
+					_new: types.SUPER(function _new() {
+						this._super();
+
+						// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
+						if (_shared.Natives.symbolIterator) {
+							const self = this;
+							_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
+								return self;
+							}, {});
 						};
-						return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
-					} : function isIterable(obj) {
-						return false;
-					})));
-				
-				
-				// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
-				types.ADD('isIteratorLike', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, function isIteratorLike(obj) {
-						return types.isObjectLike(obj) && types.isFunction(obj.next);
-					}));
-				
-				
-				types.ADD('Iterator', types.Type.$inherit(
-					{
-						$TYPE_NAME: 'Iterator',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Iterator')), true) */,
-					},
-					{
-						_new: types.SUPER(function _new() {
-							this._super();
+					}),
 
-							// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
-							if (_shared.Natives.symbolIterator) {
-								const self = this;
-								_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
-									return self;
-								}, {});
-							};
-						}),
-
-						close: null, // function()
+					close: null, // function()
 						
-						next: function next() {
-							return {
-								done: true,
-							};
-						},
-					}));
+					next: function next() {
+						return {
+							done: true,
+						};
+					},
+				}));
 
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

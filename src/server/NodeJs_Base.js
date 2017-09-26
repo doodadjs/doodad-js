@@ -24,53 +24,59 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.NodeJs'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: ['Doodad.Types', 'Doodad.Tools'],
-			bootstrap: true,
+//! IF_SET("mjs")
+	//! INJECT("import * as nodeUtil from 'util';");
+//! ELSE()
+	const nodeUtil = require('util');
+//! END_IF()
+
+const nodeUtilInspect = nodeUtil.inspect;
+
+
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.NodeJs'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: ['Doodad.Types', 'Doodad.Tools'],
+		bootstrap: true,
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 				
-				const doodad = root.Doodad,
-					types = doodad.Types,
-					nodejs = doodad.NodeJs,
-					
-					nodeUtil = require('util');
+			const doodad = root.Doodad,
+				types = doodad.Types,
+				nodejs = doodad.NodeJs;
 
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				const __Internal__ = {
-					customInspectSymbol: ((typeof nodeUtil.inspect.custom === 'symbol') ? nodeUtil.inspect.custom : 'inspect'),
-				};
+			const __Internal__ = {
+				customInspectSymbol: ((typeof nodeUtilInspect.custom === 'symbol') ? nodeUtilInspect.custom : 'inspect'),
+			};
 				
-				//===================================
-				// Natives
-				//===================================
+			//===================================
+			// Natives
+			//===================================
 				
-				//tools.complete(_shared.Natives, {
-				//});
+			//tools.complete(_shared.Natives, {
+			//});
 				
-				//===================================
-				// Util Extension
-				//===================================
+			//===================================
+			// Util Extension
+			//===================================
 
-				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
-					return __Internal__.customInspectSymbol;
-				});
+			nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
+				return __Internal__.customInspectSymbol;
+			});
 
 
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

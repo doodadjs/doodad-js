@@ -24,110 +24,109 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/WeakMap'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			bootstrap: true,
-			dependencies: [
-				'Doodad.Tools',
-			],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/WeakMap'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		bootstrap: true,
+		dependencies: [
+			'Doodad.Tools',
+		],
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools,
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools,
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				//const __Internal__ = {};
+			//const __Internal__ = {};
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					windowWeakMap: (types.isNativeFunction(global.WeakMap) && types.isNativeFunction(global.WeakMap.prototype.get) && types.isNativeFunction(global.WeakMap.prototype.set) ? global.WeakMap : undefined),
-				});
+			tools.complete(_shared.Natives, {
+				windowWeakMap: (types.isNativeFunction(global.WeakMap) && types.isNativeFunction(global.WeakMap.prototype.get) && types.isNativeFunction(global.WeakMap.prototype.set) ? global.WeakMap : undefined),
+			});
 				
-				types.ADD('WeakMap', (_shared.Natives.windowWeakMap || types.Type.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'WeakMap',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('WeakMap')), true) */,
-					},
-					/*instanceProto*/
-					{
-						__symbol: types.NOT_ENUMERABLE(types.READ_ONLY(null)),
+			types.ADD('WeakMap', (_shared.Natives.windowWeakMap || types.Type.$inherit(
+				/*typeProto*/
+				{
+					$TYPE_NAME: 'WeakMap',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('WeakMap')), true) */,
+				},
+				/*instanceProto*/
+				{
+					__symbol: types.NOT_ENUMERABLE(types.READ_ONLY(null)),
 
-						_new: types.SUPER(function _new(ar) {
-							this._super();
+					_new: types.SUPER(function _new(ar) {
+						this._super();
 
-							_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP_VALUE__'));
+						_shared.setAttribute(this, '__symbol', types.getSymbol('__WEAPMAP_VALUE__'));
 
-							if (types.isNothing(ar)) {
-								// Do nothing
-							} else if (types._instanceof(ar, types.Map) || types._instanceof(ar, types.Set)) {
-								ar.forEach(function(val, key) {
-									this.set(key, val);
-								}, this);
-							} else if (types.isArrayLike(ar)) {
-								for (let i = 0; i < ar.length; i++) {
-									if (types.has(ar, i)) {
-										const item = ar[i];
-										this.set(item[0], item[1]);
-									};
+						if (types.isNothing(ar)) {
+							// Do nothing
+						} else if (types._instanceof(ar, types.Map) || types._instanceof(ar, types.Set)) {
+							ar.forEach(function(val, key) {
+								this.set(key, val);
+							}, this);
+						} else if (types.isArrayLike(ar)) {
+							for (let i = 0; i < ar.length; i++) {
+								if (types.has(ar, i)) {
+									const item = ar[i];
+									this.set(item[0], item[1]);
 								};
-							} else {
-								throw types.TypeError("Invalid array.");
 							};
-						}),
+						} else {
+							throw types.TypeError("Invalid array.");
+						};
+					}),
 
-						has: function has(key) {
-							return types.has(key, this.__symbol);
-						},
-						get: function get(key) {
-							if (types.has(key, this.__symbol)) {
-								return key[this.__symbol];
-							};
-						},
-						set: function set(key, value) {
-							if ((key !== null) && ((typeof key === 'object') || (typeof key === 'function'))) {
-								_shared.setAttribute(key, this.__symbol, value, {configurable: true});
-							} else {
-								throw new types.TypeError("'key' is not an object.");
-							};
-							return this;
-						},
-						'delete': function _delete(key) {
-							if (types.has(key, this.__symbol)) {
-								delete key[this.__symbol];
-								return true;
-							} else {
-								return false;
-							};
-						},
-					}
-				)));
+					has: function has(key) {
+						return types.has(key, this.__symbol);
+					},
+					get: function get(key) {
+						if (types.has(key, this.__symbol)) {
+							return key[this.__symbol];
+						};
+					},
+					set: function set(key, value) {
+						if ((key !== null) && ((typeof key === 'object') || (typeof key === 'function'))) {
+							_shared.setAttribute(key, this.__symbol, value, {configurable: true});
+						} else {
+							throw new types.TypeError("'key' is not an object.");
+						};
+						return this;
+					},
+					'delete': function _delete(key) {
+						if (types.has(key, this.__symbol)) {
+							delete key[this.__symbol];
+							return true;
+						} else {
+							return false;
+						};
+					},
+				}
+			)));
 				
 
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

@@ -24,69 +24,68 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.NodeJs'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: [
-				'Doodad.Types', 
-				'Doodad.Tools', 
-			],
-			bootstrap: true,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.NodeJs'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: [
+			'Doodad.Types', 
+			'Doodad.Tools', 
+		],
+		bootstrap: true,
 					
-			create: function create(root, /*optional*/_options) {
-				"use strict";
+		create: function create(root, /*optional*/_options) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools,
-					nodejs = doodad.NodeJs;
+			const doodad = root.Doodad,
+				types = doodad.Types,
+				tools = doodad.Tools,
+				nodejs = doodad.NodeJs;
 
-		//		tools.complete(_shared.Natives, {
-		//		});
+	//		tools.complete(_shared.Natives, {
+	//		});
 					
-				//===================================
-				// Util Extension
-				//===================================
+			//===================================
+			// Util Extension
+			//===================================
 
-				nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
-					// Not supported
-					return null;
-				});
+			nodejs.ADD('getCustomInspectSymbol', function getCustomInspectSymbol() {
+				// Not supported
+				return null;
+			});
 
-				//===================================
-				// Init
-				//===================================
-				return function init(/*optional*/options) {
+			//===================================
+			// Init
+			//===================================
+			return function init(/*optional*/options) {
+				try {
+					types.getPromise();
+				} catch(ex) {
+					let Promise = null;
 					try {
-						types.getPromise();
-					} catch(ex) {
-						let Promise = null;
+						const mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
+						Promise = require(mod); // tiny Promise/A+ implementation
+					} catch(o) {
+					};
+					if (!types.isFunction(Promise)) {
 						try {
-							const mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
-							Promise = require(mod); // tiny Promise/A+ implementation
+							const mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
+							Promise = require(mod); // subset of RSVP
 						} catch(o) {
 						};
-						if (!types.isFunction(Promise)) {
-							try {
-								const mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
-								Promise = require(mod); // subset of RSVP
-							} catch(o) {
-							};
-						};
-						if (types.isFunction(Promise)) {
-							types.setPromise(Promise);
-						};
+					};
+					if (types.isFunction(Promise)) {
+						types.setPromise(Promise);
 					};
 				};
-			},
-		};
-		return DD_MODULES;
-	},
+			};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

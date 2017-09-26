@@ -24,157 +24,156 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Types/Generators'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Types/Generators'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			
-			dependencies: [
-				'Doodad.Tools',
-			],
+		dependencies: [
+			'Doodad.Tools',
+		],
 
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 
-				const doodad = root.Doodad,
-					tools = doodad.Tools,
-					types = doodad.Types;
+			const doodad = root.Doodad,
+				tools = doodad.Tools,
+				types = doodad.Types;
 				
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 				
-				//const __Internal__ = {
-				//};
+			//const __Internal__ = {
+			//};
 
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				tools.complete(_shared.Natives, {
-					// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
-					functionIsGeneratorCall: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : undefined),
-				});
+			tools.complete(_shared.Natives, {
+				// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
+				functionIsGeneratorCall: (global.Function && global.Function.prototype && types.isNativeFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : undefined),
+			});
 
-				//===================================
-				// Generators
-				//===================================
+			//===================================
+			// Generators
+			//===================================
 				
-				// <PRB> "Generator" and "GeneratorFunction" are not in the global space !!!
-				// <PRB> "Generator" looks like not having a class !!!
-				// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
+			// <PRB> "Generator" and "GeneratorFunction" are not in the global space !!!
+			// <PRB> "Generator" looks like not having a class !!!
+			// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
-				try {
-					_shared.Natives.GeneratorFunction = types.getPrototypeOf(tools.eval("function*(){}")).constructor;
+			try {
+				_shared.Natives.GeneratorFunction = types.getPrototypeOf(tools.eval("function*(){}")).constructor;
 
-					// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-					_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;
-				} catch(ex) {
-				};
+				// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+				_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;
+			} catch(ex) {
+			};
 
-				types.ADD('hasGenerators', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'bool',
-								description: "Returns 'true' if the engine supports generators. 'false' otherwise.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.GeneratorFunction ? function hasGenerators() {
-						return true;
-					} : function hasGenerators() {
-						return false;
-					})));
+			types.ADD('hasGenerators', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'bool',
+							description: "Returns 'true' if the engine supports generators. 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.GeneratorFunction ? function hasGenerators() {
+					return true;
+				} : function hasGenerators() {
+					return false;
+				})));
 				
-				types.ADD('getGeneratorFunction', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'function',
-								description: "Returns the 'GeneratorFunction' constructor.",
-					}
-					//! END_REPLACE()
-					, function getGeneratorFunction() {
-						return (_shared.Natives.GeneratorFunction || null);
-					}));
+			types.ADD('getGeneratorFunction', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'function',
+							description: "Returns the 'GeneratorFunction' constructor.",
+				}
+				//! END_REPLACE()
+				, function getGeneratorFunction() {
+					return (_shared.Natives.GeneratorFunction || null);
+				}));
 				
-				types.ADD('isGeneratorFunction', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
+			types.ADD('isGeneratorFunction', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
 								},
-								returns: 'bool',
-								description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.functionIsGeneratorCall ? function isGeneratorFunction(obj) {
-						return _shared.Natives.functionIsGeneratorCall(obj);
-					} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
-						return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
-					} : function isGeneratorFunction(obj) {
-						return false;
-					}))));
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.functionIsGeneratorCall ? function isGeneratorFunction(obj) {
+					return _shared.Natives.functionIsGeneratorCall(obj);
+				} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
+					return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
+				} : function isGeneratorFunction(obj) {
+					return false;
+				}))));
 				
-				types.ADD('isGenerator', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'any',
-										optional: false,
-										description: "An object to test for.",
-									},
+			types.ADD('isGenerator', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'any',
+									optional: false,
+									description: "An object to test for.",
 								},
-								returns: 'bool',
-								description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
-					}
-					//! END_REPLACE()
-					, (_shared.Natives.GeneratorFunction ? function isGenerator(obj) {
-						if (types.isNothing(obj)) {
-							return false;
-						};
-						if (typeof obj !== 'object') {
-							return false;
-						};
-						let proto = types.getPrototypeOf(obj);
-						if (proto) {
-							proto = types.getPrototypeOf(proto);
-						};
-						if (!proto || !proto.constructor) {
-							return false;
-						};
-						return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
-					} : function isGenerator(obj) {
+							},
+							returns: 'bool',
+							description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.GeneratorFunction ? function isGenerator(obj) {
+					if (types.isNothing(obj)) {
 						return false;
-					})));
+					};
+					if (typeof obj !== 'object') {
+						return false;
+					};
+					let proto = types.getPrototypeOf(obj);
+					if (proto) {
+						proto = types.getPrototypeOf(proto);
+					};
+					if (!proto || !proto.constructor) {
+						return false;
+					};
+					return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
+				} : function isGenerator(obj) {
+					return false;
+				})));
 				
 
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

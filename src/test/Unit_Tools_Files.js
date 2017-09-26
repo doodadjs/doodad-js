@@ -24,22 +24,21 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Test.Tools.Files'] = {
-			type: 'TestModule',
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: ['Doodad.Test.Tools'],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Test.Tools.Files'] = {
+		type: 'TestModule',
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: ['Doodad.Test.Tools'],
 			
-			// Unit
-			priority: null,
+		// Unit
+		priority: null,
 			
-			proto: {
-				run: null,
-			},
-		};
-		return DD_MODULES;
-	},
+		proto: {
+			run: null,
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

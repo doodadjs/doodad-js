@@ -25,6 +25,7 @@
   "//": "",
   "version": "9.0.0",
   "stage": "r",
+  "mjs": true,
   "modules": [
     {
       "src": "common/Bootstrap.js",
@@ -161,6 +162,12 @@
       "browserify": true
     },
     {
+      "src": "client/Client_Platform.js",
+      "client": true,
+      "server": false,
+      "browserify": true
+    },
+    {
       "src": "client/Modules.js",
       "client": true,
       "server": false,
@@ -180,6 +187,12 @@
     },
     {
       "src": "server/NodeJs.js",
+      "client": false,
+      "server": true,
+      "browserify": false
+    },
+    {
+      "src": "server/NodeJs_Platform.js",
       "client": false,
       "server": true,
       "browserify": false
@@ -295,7 +308,8 @@
       "operations": [
         {
           "class": "Make.Generate.Package",
-          "indexTemplate": "%SOURCEDIR%/make/res/index.templ.js"
+          "indexTemplate": "%SOURCEDIR%/make/res/index.templ.js",
+          "indexTemplateMjs": "%SOURCEDIR%/make/res/index.templ.mjs"
         },
 
         {
@@ -316,7 +330,8 @@
       "operations": [
         {
           "class": "Make.Generate.Package",
-          "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js"
+          "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js",
+          "indexTemplateMjs": "%SOURCEDIR%/make/res/package.templ.mjs"
         },
         {
           "class": "Make.Folder.Create",

@@ -24,232 +24,222 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.Tools/Scripts'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: [
-				'Doodad.Tools',
-				'Doodad.Types',
-				'Doodad.Tools.Files',
-			],
-			bootstrap: true,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.Tools/Scripts'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: [
+			'Doodad.Tools',
+			'Doodad.Types',
+			'Doodad.Tools.Files',
+		],
+		bootstrap: true,
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 					
-				const doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools,
-					files = tools.Files;
+			const doodad = root.Doodad,
+				types = doodad.Types,
+				tools = doodad.Tools,
+				files = tools.Files;
 					
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 					
-				// <FUTURE> Thread context
-				const __Internal__ = {
-				};
+			// <FUTURE> Thread context
+			const __Internal__ = {
+			};
 				
 				
-				//===================================
-				// Native functions
-				//===================================
+			//===================================
+			// Native functions
+			//===================================
 					
-				// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
+			// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
-				tools.complete(_shared.Natives, {
-					// "trapUnhandledErrors"
-					mathAbs: global.Math.abs,
-					windowSetTimeout: global.setTimeout.bind(global),
+			tools.complete(_shared.Natives, {
+				// "trapUnhandledErrors"
+				mathAbs: global.Math.abs,
+				windowSetTimeout: global.setTimeout.bind(global),
 
-					// "getCurrentScript"
-					windoError: global.Error,
-				});
+				// "getCurrentScript"
+				windoError: global.Error,
+			});
 				
 
-				//===================================
-				// Script functions
-				//===================================
+			//===================================
+			// Script functions
+			//===================================
 				
-				tools.ADD('getCurrentScript', root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									currentScript: {
-										type: 'string,object,error',
-										optional: true,
-										description: "Some Javascript engines provide a way to get the information. You should give it here.",
-									},
-								},
-								returns: 'Url,Path',
-								description:
-									"Returns location of the current running script. Multiple usages :\n" + 
-									'- Client-side only: Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-									'- Client-side and server-side: Doodad.Tools.getCurrentScript((global.document?document.currentScript:module.filename)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-									'- Server-side only: Don\'t use this function. Instead, do : Doodad.Tools.Files.Path.parse(module.filename)\n',
-						}
-						//! END_REPLACE()
-					, function getCurrentScript(/*optional*/currentScript) {
-						let url,
-							ex,
-							exLevel = 0;
-					
-						if (types.isError(currentScript)) {
-							ex = currentScript;
-						} else if (types.isString(currentScript)) {
-							// NodeJs
-							url = files.Path.parse(currentScript);
-						} else if (types.isObject(currentScript) && types.isString(currentScript.src)) {
-							// NOTE: currentScript is 'document.currentScript'
-							// Google Chrome 39 Windows: OK
-							// Firefox 34: undefined
-							// IE 11: undefined
-							// Opera 26 Windows: OK
-							// Safari 5: undefined
-							url = files.Url.parse(currentScript.src);
-						};
-						
-						if (!url) {
-							if (ex && types.isString(ex.sourceURL)) {
-								// Safari
-								url = files.Url.parse(ex.sourceURL);
-							} else {
-								// Other browsers
-								if (!ex) {
-									exLevel = 1;
-									try {
-										throw new _shared.Natives.windowError("");
-									} catch(o) {
-										ex = o;
-									};
-								};
-								const stack = tools.parseStack(ex);
-								if (stack && (stack.length > exLevel)) {
-									const trace = stack[exLevel];
-									if (trace.isSystemPath) {
-										url = files.Path.parse(trace.path);
-									} else {
-										url = files.Url.parse(trace.path);
-									};
-								};
-							};
-						};
-						
-						return url;
-					}));
-					
-				
-				//===================================
-				// Abort functions
-				//===================================
-				
-				tools.ADD('abortScript', root.DD_DOC(
+			tools.ADD('getCurrentScript', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
 							revision: 1,
 							params: {
-								exitCode: {
-									type: 'integer',
+								currentScript: {
+									type: 'string,object,error',
 									optional: true,
-									description: "Exit code",
+									description: "Some Javascript engines provide a way to get the information. You should give it here.",
 								},
 							},
-							returns: 'error',
-							description: "Emits \"script aborted\" signal.",
+							returns: 'Url,Path',
+							description:
+								"Returns location of the current running script. Multiple usages :\n" + 
+								'- Client-side only: Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
+								'- Client-side and server-side: Doodad.Tools.getCurrentScript((global.document?document.currentScript:module.filename)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
+								'- Server-side only: Don\'t use this function. Instead, do : Doodad.Tools.Files.Path.parse(module.filename)\n',
 					}
 					//! END_REPLACE()
-					, function abortScript(/*optional*/exitCode) {
-						throw new types.ScriptAbortedError(exitCode);
-					}));
-
-				//====================================
-				// Unhandled errors
-				//====================================
-
-				tools.ADD('trapUnhandledErrors', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Trap unhandled errors and unhandled Promise rejections.",
-					}
-					//! END_REPLACE()
-					, function trapUnhandledErrors() {
-						if (!__Internal__.unhandledRejections) {
-							__Internal__.unhandledRejections = new types.Map();
-							
-							const options = tools.getOptions();
-
-							types.addAppEventListener('unhandlederror', function(ev) {
+				, function getCurrentScript(/*optional*/currentScript) {
+					let url,
+						ex,
+						exLevel = 0;
+					
+					if (types.isError(currentScript)) {
+						ex = currentScript;
+					} else if (types.isString(currentScript)) {
+						// NodeJs
+						url = files.Path.parse(currentScript);
+					} else if (types.isObject(currentScript) && types.isString(currentScript.src)) {
+						// NOTE: currentScript is 'document.currentScript'
+						// Google Chrome 39 Windows: OK
+						// Firefox 34: undefined
+						// IE 11: undefined
+						// Opera 26 Windows: OK
+						// Safari 5: undefined
+						url = files.Url.parse(currentScript.src);
+					};
+						
+					if (!url) {
+						if (ex && types.isString(ex.sourceURL)) {
+							// Safari
+							url = files.Url.parse(ex.sourceURL);
+						} else {
+							// Other browsers
+							if (!ex) {
+								exLevel = 1;
 								try {
-									tools.catchAndExit(ev.detail.error);
+									throw new _shared.Natives.windowError("");
 								} catch(o) {
+									ex = o;
 								};
-							});
-							
-							types.addAppEventListener('unhandledrejection', function(ev) {
-								if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
-									if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
-										 __Internal__.unhandledRejections.set(ev.detail.promise, {
-											reason: ev.detail.reason,
-											time: (new Date()).valueOf(),
-										 });
-									};
-								};
-							});
-							
-							types.addAppEventListener('rejectionhandled', function(ev) {
-								if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
-									__Internal__.unhandledRejections.delete(ev.detail.promise);
-								};
-							});
-							
-							const dumpRejections = function dumpRejections() {
-								try {
-									const curTime = (new Date()).valueOf(),
-										iter = __Internal__.unhandledRejections.entries();
-									
-									let result;
-									
-									// <FUTURE> for ... of
-									while (result = iter.next()) {
-										if (result.done) {
-											break;
-										};
-										const promise = result.value[0],
-											val = result.value[1];
-										if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
-											tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
-											if (val.reason) {
-												tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
-											};
-											__Internal__.unhandledRejections.delete(promise);
-										};
-									};
-								} catch(o) {
-									__Internal__.unhandledRejections.clear();
-								};
-								
-								const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
-								//! IF_SET("serverSide")
-									if (types.isObject(timer) && types.isFunction(timer.unref)) {
-										// Node.Js: Allows the process to exit
-										timer.unref();
-									};
-								//! END_IF()
 							};
+							const stack = tools.parseStack(ex);
+							if (stack && (stack.length > exLevel)) {
+								const trace = stack[exLevel];
+								if (trace.isSystemPath) {
+									url = files.Path.parse(trace.path);
+								} else {
+									url = files.Url.parse(trace.path);
+								};
+							};
+						};
+					};
+						
+					return url;
+				}));
+					
+				
+			//===================================
+			// Abort functions
+			//===================================
+				
+			tools.ADD('abortScript', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							exitCode: {
+								type: 'integer',
+								optional: true,
+								description: "Exit code",
+							},
+						},
+						returns: 'error',
+						description: "Emits \"script aborted\" signal.",
+				}
+				//! END_REPLACE()
+				, function abortScript(/*optional*/exitCode) {
+					throw new types.ScriptAbortedError(exitCode);
+				}));
+
+			//====================================
+			// Unhandled errors
+			//====================================
+
+			tools.ADD('trapUnhandledErrors', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'undefined',
+						description: "Trap unhandled errors and unhandled Promise rejections.",
+				}
+				//! END_REPLACE()
+				, function trapUnhandledErrors() {
+					if (!__Internal__.unhandledRejections) {
+						__Internal__.unhandledRejections = new types.Map();
 							
+						const options = tools.getOptions();
+
+						types.addAppEventListener('unhandlederror', function(ev) {
+							try {
+								tools.catchAndExit(ev.detail.error);
+							} catch(o) {
+							};
+						});
+							
+						types.addAppEventListener('unhandledrejection', function(ev) {
+							if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
+								if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
+										__Internal__.unhandledRejections.set(ev.detail.promise, {
+										reason: ev.detail.reason,
+										time: (new Date()).valueOf(),
+										});
+								};
+							};
+						});
+							
+						types.addAppEventListener('rejectionhandled', function(ev) {
+							if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
+								__Internal__.unhandledRejections.delete(ev.detail.promise);
+							};
+						});
+							
+						const dumpRejections = function dumpRejections() {
+							try {
+								const curTime = (new Date()).valueOf(),
+									iter = __Internal__.unhandledRejections.entries();
+									
+								let result;
+									
+								// <FUTURE> for ... of
+								while (result = iter.next()) {
+									if (result.done) {
+										break;
+									};
+									const promise = result.value[0],
+										val = result.value[1];
+									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
+										tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
+										if (val.reason) {
+											tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
+										};
+										__Internal__.unhandledRejections.delete(promise);
+									};
+								};
+							} catch(o) {
+								__Internal__.unhandledRejections.clear();
+							};
+								
 							const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
@@ -258,17 +248,26 @@ module.exports = {
 								};
 							//! END_IF()
 						};
-					}));
+							
+						const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
+						//! IF_SET("serverSide")
+							if (types.isObject(timer) && types.isFunction(timer.unref)) {
+								// Node.Js: Allows the process to exit
+								timer.unref();
+							};
+						//! END_IF()
+					};
+				}));
 
 	
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()
