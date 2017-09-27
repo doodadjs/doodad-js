@@ -910,61 +910,6 @@ exports.add = function add(DD_MODULES) {
 				command.end();
 					
 					
-				command = test.prepareCommand(tools.complete, "Doodad.Tools.complete");
-				command.run("undefined",                      {eval: true}     /**/ );
-				command.run("{a: 1, b: 2, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-					
-					
-				command = test.prepareCommand(tools.depthComplete, "Doodad.Tools.depthComplete");
-				command.run("undefined",                               {eval: true}     /**/ );
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}",         {eval: true, depth: 2},    /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}, ee: 5}}",  {eval: true, depth: 2},    /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.extend, "Doodad.Tools.extend");
-				command.run("{a: 2, b: 3, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-					
-					
-				command = test.prepareCommand(tools.depthExtend, "Doodad.Tools.depthExtend");
-				command.run("undefined",                                              {eval: true}            /**/ );
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5, bbb: 5}}}",  {eval: true, depth: 2}, /**/ "2", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-					
-					
-				command = test.prepareCommand(tools.fill, "Doodad.Tools.fill");
-				command.run("undefined",                        {eval: true}     /**/ );
-				command.run("{a: 1, b: 2}",                     {eval: true},    /**/ "undefined", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("{a: 2, b: 2}",                     {eval: true},    /**/ "'a'", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("{a: 2, b: 2, c: 4}",               {eval: true},    /**/ "['a', 'c']", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-					
-					
 				command = test.prepareCommand(types.values, "Doodad.Types.values");
 				command.run("[]",                    {eval: true, contains: true}     /**/ );
 				command.run("[1, 2]",                {eval: true, contains: true},    /**/ "dict1");
@@ -979,73 +924,6 @@ exports.add = function add(DD_MODULES) {
 				command.run("[]",                    {eval: true, contains: true, depth: 1},    /**/ "dict2");
 				command.run("[['e', 5], ['f', 6]]",  {eval: true, contains: true, depth: 1},    /**/ "dict3");
 				command.end();
-					
-					
-				command = test.prepareCommand(tools.popAt, "Doodad.Tools.popAt");
-				command.run(undefined,  {eval: true}     /**/ );
-				command.run(undefined,  {eval: true},    /**/  "dict1");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(1,          {eval: true},    /**/  "dict1", "'a'");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(2,          {eval: true},    /**/  "dict1", "'b'");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(undefined,  {eval: true},    /**/  "dict1", "'c'");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-
-				command = test.prepareCommand(tools.popItem, "Doodad.Tools.popItem");
-				command.run(undefined,  {eval: true}     /**/ );
-				command.run(undefined,  {eval: true},    /**/  "dict1");
-				command.run(undefined,  {eval: true},    /**/  "dict1", 0);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(1,          {eval: true},    /**/  "dict1", 1);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(2,          {eval: true},    /**/  "dict1", 2);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(undefined,  {eval: true},    /**/  "dict1", 3);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(1,          {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-
-				command = test.prepareCommand(tools.popItems, "Doodad.Tools.popItems");
-				command.run("[]",       {eval: true, contains: true}  /**/ );
-				command.run("[]",       {eval: true, contains: true}, /**/  "dict1");
-				command.run("[]",       {eval: true, contains: true}, /**/  "dict1", "[0]");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "[0, 1]");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "[0, 1, 2]");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
 					
 					
 				command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
