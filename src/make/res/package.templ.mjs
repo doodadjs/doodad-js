@@ -21,47 +21,44 @@
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
 //! END_REPLACE()
-const exports = {
-	createRoot: function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
-		const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
-		const DD_MODULES = {};
-		const DD_BOOTSTRAP = {};
 
-		(function() {
-			const has = function(obj, key) {
-				return obj && Object.prototype.hasOwnProperty.call(obj, key);
-			};
+export function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
+	const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
+	const DD_MODULES = {};
+	const DD_BOOTSTRAP = {};
 
-			if (!has(DD_OPTIONS, 'startup')) {
-				DD_OPTIONS.startup = {};
-			};
-			if (!has(DD_OPTIONS, 'Doodad.Tools')) {
-				DD_OPTIONS['Doodad.Tools'] = {};
-			};
+	(function() {
+		const has = function(obj, key) {
+			return obj && Object.prototype.hasOwnProperty.call(obj, key);
+		};
 
-			// Can't load modules from source on the client
-			DD_OPTIONS.startup.fromSource = false;
+		if (!has(DD_OPTIONS, 'startup')) {
+			DD_OPTIONS.startup = {};
+		};
+		if (!has(DD_OPTIONS, 'Doodad.Tools')) {
+			DD_OPTIONS['Doodad.Tools'] = {};
+		};
 
-			//! IF_SET('debug')
-				// Debug mode
-				DD_OPTIONS.startup.debug = true;
+		// Can't load modules from source on the client
+		DD_OPTIONS.startup.fromSource = false;
 
-				// Enable some validations on debug
-				DD_OPTIONS.startup.enableAsserts = true;
-				DD_OPTIONS.startup.enableProperties = true;
+		//! IF_SET('debug')
+			// Debug mode
+			DD_OPTIONS.startup.debug = true;
 
-				// Ease debug
-				DD_OPTIONS.startup.enableSymbols = false;
+			// Enable some validations on debug
+			DD_OPTIONS.startup.enableAsserts = true;
+			DD_OPTIONS.startup.enableProperties = true;
 
-				// Enable all log levels
-				DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
-			//! END_IF()
-		})();
+			// Ease debug
+			DD_OPTIONS.startup.enableSymbols = false;
 
-		//! INCLUDE(VAR("bundle"), 'utf-8', true)
+			// Enable all log levels
+			DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+		//! END_IF()
+	})();
 
-		return DD_BOOTSTRAP.createRoot(modules, options, startup)
-	},
+	//! INCLUDE(VAR("bundle"), 'utf-8', true)
+
+	return DD_BOOTSTRAP.createRoot(modules, options, startup)
 };
-
-export default exports;

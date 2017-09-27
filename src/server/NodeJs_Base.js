@@ -25,7 +25,7 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import * as nodeUtil from 'util';");
+	//! INJECT("import {default as nodeUtil} from 'util';");
 //! ELSE()
 	const nodeUtil = require('util');
 //! END_IF()

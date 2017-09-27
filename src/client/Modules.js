@@ -125,7 +125,8 @@ exports.add = function add(DD_MODULES) {
 							};
 						};
 						if (location.file) {
-							if (!root.getOptions().debug) {
+							const ddOptions = root.getOptions();
+							if (!ddOptions.debug && !ddOptions.fromSource) {
 								// Force minified files.
 								const parts = location.file.split('.'),
 									len = parts.length;
@@ -200,7 +201,7 @@ exports.add = function add(DD_MODULES) {
 								});
 						})
 						.catch(function(err) {
-							if (module) {
+							if (file.module) {
 								if (file.path) {
 									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
 								} else {

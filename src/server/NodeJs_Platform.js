@@ -26,8 +26,8 @@
 
 
 //! IF_SET("mjs")
-	//! INJECT("import * as nodeOs from 'os';");
-	//! INJECT("import * as nodePath from 'path';");
+	//! INJECT("import {default as nodeOs} from 'os';");
+	//! INJECT("import {default as nodePath} from 'path';");
 //! ELSE()
 	const nodeOs = require('os'),
 		nodePath = require('path');

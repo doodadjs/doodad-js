@@ -3,9 +3,7 @@
 		//! INJECT("const exports = {};")
 	//! END_IF()
 //! ELSE()
-	//! IF_SET("mjs")
-		//! INJECT("const global = window, exports = {};")
-	//! END_IF()
+	//! INJECT("const global = window, exports = {};")
 //! END_IF()
 
 
@@ -34,7 +32,7 @@
 //! END_REPLACE()
 
 //! IF(IS_SET("serverSide") && IS_SET("mjs"))
-	//! INJECT("import * as nodeUUID from 'uuid';");
+	//! INJECT("import {default as nodeUUID} from 'uuid';");
 //! ELSE()
 	// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
 	//       Also it works with Node.js and bundlers.

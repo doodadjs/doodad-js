@@ -25,9 +25,9 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import * as nodeModule from 'module';");
-	//! INJECT("import * as nodeProcess from 'process';");
-	//! INJECT("import * as nodeFs from 'fs';");
+	//! INJECT("import {default as nodeModule} from 'module';");
+	//! INJECT("import {default as nodeProcess} from 'process';");
+	//! INJECT("import {default as nodeFs} from 'fs';");
 //! ELSE()
 	const nodeModule = require('module'),
 		nodeProcess = require('process'),
@@ -40,6 +40,7 @@ const nodeModuleModule = nodeModule.Module,
 	nodeProcessArgv = nodeProcess.argv,
 
 	nodeFsStatSync = nodeFs.statSync;
+
 
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
@@ -69,25 +70,47 @@ exports.add = function add(DD_MODULES) {
 				config = tools.Config,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
+
 				
 			const __Internal__ = {
 			};
 
 
-			(function() {
-				let mainPath = nodeProcessArgv[1];
-				if (mainPath) {
-					const stats = nodeFsStatSync(mainPath);
-					if (!stats.isDirectory()) {
-						mainPath = files.Path.parse(mainPath).set({file: ''}).toApiString();
-					};
-				} else {
-					mainPath = nodeProcessCwd();
-				};
-				__Internal__.locatorModule = new nodeModuleModule('<locator>', null);
-				__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
-			})();
+			//! BEGIN_REMOVE()
+			if (typeof require !== 'function') {
+			//! END_REMOVE()
 
+				//! IF_SET("mjs")
+
+				// TODO: Find a way to get 'require.main'
+
+				(function() {
+					let mainPath = nodeProcessArgv[1];
+					if (mainPath) {
+						const stats = nodeFsStatSync(mainPath);
+						if (!stats.isDirectory()) {
+							mainPath = files.Path.parse(mainPath).set({file: ''}).toApiString();
+						};
+					} else {
+						mainPath = nodeProcessCwd();
+					};
+					__Internal__.locatorModule = new nodeModuleModule('<locator>', null);
+					__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
+				})();
+
+			//! BEGIN_REMOVE()
+			} else {
+			//! END_REMOVE()
+
+				//! ELSE()
+				
+				__Internal__.locatorModule = require.main || module.parent;
+	
+				//! END_IF()
+
+			//! BEGIN_REMOVE()
+			};
+			//! END_REMOVE()
 				
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -139,7 +162,8 @@ exports.add = function add(DD_MODULES) {
 						};
 
 						if (location.file) {
-							if (!root.getOptions().debug) {
+							const ddOptions = root.getOptions();
+							if (!ddOptions.debug && !ddOptions.fromSource) {
 								// Force minified files.
 								const parts = location.file.split('.'),
 									len = parts.length;
@@ -162,7 +186,7 @@ exports.add = function add(DD_MODULES) {
 
 				return Promise.map(files, function(file) {
 					types.getDefault(file, 'module', null);
-					types.getDefault(file, 'path', (file.module ? 'index.js' : null));
+					types.getDefault(file, 'path', null);
 					types.getDefault(file, 'optional', false);
 					types.getDefault(file, 'isConfig', false);
 

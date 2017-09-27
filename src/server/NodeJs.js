@@ -25,11 +25,11 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import * as nodeOs from 'os';");
-	//! INJECT("import * as nodeChildProcess from 'child_process';");
-	//! INJECT("import * as nodeFs from 'fs';");
-	//! INJECT("import * as nodeHttp from 'http';");
-	//! INJECT("import * as nodeConsole from 'console';");
+	//! INJECT("import {default as nodeOs} from 'os';");
+	//! INJECT("import {default as nodeChildProcess} from 'child_process';");
+	//! INJECT("import {default as nodeFs} from 'fs';");
+	//! INJECT("import {default as nodeHttp} from 'http';");
+	//! INJECT("import {default as nodeConsole} from 'console';");
 //! ELSE()
 	const nodeOs = require('os'),
 		nodeChildProcess = require('child_process'),

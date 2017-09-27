@@ -24,73 +24,69 @@
 
 //! FOR_EACH(VAR("modules"), "mod", "index")
 	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-		import * as /*! INJECT("module" + VAR("index")) */ from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
+		import {default as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
 	//! END_IF()
 //! END_FOR()
 
-import * as bootstrap from /*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.mjs")) */;
+import {default as bootstrap} from /*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.mjs")) */;
 
-import * as config from './config.json';
+import {default as config} from './config.json';
 
-const exports = {
-	createRoot: function(/*optional*/modules, /*optional*/options, /*optional*/startup) {
-		const has = function(obj, key) {
-			return obj && Object.prototype.hasOwnProperty.call(obj, key);
-		};
-		const get = function(obj, key, /*optional*/_default) {
-			return (obj && has(obj, key) ? obj[key] : _default);
-		};
-		const bool = function(val) {
-			return (val === "true") || !!(+val);
-		};
+export function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
+	const has = function(obj, key) {
+		return obj && Object.prototype.hasOwnProperty.call(obj, key);
+	};
+	const get = function(obj, key, /*optional*/_default) {
+		return (obj && has(obj, key) ? obj[key] : _default);
+	};
+	const bool = function(val) {
+		return (val === "true") || !!(+val);
+	};
 
-		modules = (modules || {});
+	modules = (modules || {});
 
-		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
-			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
+	const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+		env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 		
-		let dev = false;
+	let dev = false;
 			
-		for (let i = 0; i < dev_values.length; i++) {
-			if (dev_values[i] === env) {
-				dev = true;
-				break;
-			};
+	for (let i = 0; i < dev_values.length; i++) {
+		if (dev_values[i] === env) {
+			dev = true;
+			break;
 		};
+	};
 			
-		if (dev) {
-			if (!has(config, 'startup')) {
-				config.startup = {};
-			};
-			if (!has(config, 'Doodad.Tools')) {
-				config['Doodad.Tools'] = {};
-			};
-
-			// Debug mode
-			config.startup.debug = true;
-
-			// Will load modules from source
-			config.startup.fromSource = true;
-
-			// Enable some validations on debug
-			config.startup.enableAsserts = true;
-			config.startup.enableProperties = true;
-
-			// Ease debug
-			config.startup.enableSymbols = false;
-
-			// Enable all log levels
-			config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+	if (dev) {
+		if (!has(config, 'startup')) {
+			config.startup = {};
+		};
+		if (!has(config, 'Doodad.Tools')) {
+			config['Doodad.Tools'] = {};
 		};
 
-		//! FOR_EACH(VAR("modules"), "mod", "index")
-			//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-				/*! INJECT("module" + VAR("index")) */.add(DD_MODULES);
-			//! END_IF()
-		//! END_FOR()
+		// Debug mode
+		config.startup.debug = true;
 
-		return bootstrap.createRoot(modules, [config, options], startup);
-	},
+		// Will load modules from source
+		config.startup.fromSource = true;
+
+		// Enable some validations on debug
+		config.startup.enableAsserts = true;
+		config.startup.enableProperties = true;
+
+		// Ease debug
+		config.startup.enableSymbols = false;
+
+		// Enable all log levels
+		config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+	};
+
+	//! FOR_EACH(VAR("modules"), "mod", "index")
+		//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
+			/*! INJECT("module" + VAR("index")) */.add(DD_MODULES);
+		//! END_IF()
+	//! END_FOR()
+
+	return bootstrap.createRoot(modules, [config, options], startup);
 };
-
-export default exports;
