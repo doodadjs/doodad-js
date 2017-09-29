@@ -33,10 +33,6 @@
 
 //! IF(IS_SET("serverSide") && IS_SET("mjs"))
 	//! INJECT("import {default as nodeUUID} from 'uuid';");
-//! ELSE()
-	// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
-	//       Also it works with Node.js and bundlers.
-	const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
 //! END_IF()
 
 
@@ -77,6 +73,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	if (global.Error.stackTraceLimit < 50) {
 		global.Error.stackTraceLimit = 50;
 	};
+	//! END_IF()
+
+	//! IF(IS_UNSET("serverSide") || IS_UNSET("mjs"))
+		// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
+		//       Also it works with Node.js and bundlers.
+		const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
 	//! END_IF()
 
 	const _shared = {
