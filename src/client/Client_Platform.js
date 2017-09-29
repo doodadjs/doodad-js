@@ -118,7 +118,7 @@ exports.add = function add(DD_MODULES) {
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							alt: {
 								type: 'bool',
@@ -134,8 +134,11 @@ exports.add = function add(DD_MODULES) {
 				// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
 				const navigator = _shared.Natives.windowNavigator;
 				const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
-				tmp[1] = tmp[1].toUpperCase();
-				return tmp.join('_');
+				if (tmp.length < 2) {
+					return tmp[0];
+				} else {
+					return tmp[0] + '_' + tmp[1].toUpperCase();
+				};
 			}));
 		},
 	};
