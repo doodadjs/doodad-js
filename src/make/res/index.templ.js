@@ -25,7 +25,7 @@
 "use strict";
 
 module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/options, /*optional*/startup) {
+	createRoot: function(/*optional*/modules, /*optional*/options, /*optional*/startup) {
 		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
@@ -46,7 +46,7 @@ module.exports = {
 			config = {};
 		};
 
-		DD_MODULES = (DD_MODULES || {});
+		modules = (modules || {});
 
 		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
@@ -91,7 +91,7 @@ module.exports = {
 
 			//! FOR_EACH(VAR("modulesSrc"), "mod")
 				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(modules);
 				//! END_IF()
 			//! END_FOR()
 
@@ -100,13 +100,13 @@ module.exports = {
 		} else {
 			//! FOR_EACH(VAR("modules"), "mod")
 				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+					require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(modules);
 				//! END_IF()
 			//! END_FOR()
 
 			bootstrap = require(/*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.js")) */);
 		};
 
-		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
+		return bootstrap.createRoot(modules, [config, options], startup);
 	},
 };
