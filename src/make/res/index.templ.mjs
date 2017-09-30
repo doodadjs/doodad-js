@@ -84,7 +84,7 @@ export function createRoot(/*optional*/modules, /*optional*/options, /*optional*
 
 	//! FOR_EACH(VAR("modules"), "mod", "index")
 		//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-			/*! INJECT("module" + VAR("index")) */.add(DD_MODULES);
+			/*! INJECT("module" + VAR("index")) */.add(modules);
 		//! END_IF()
 	//! END_FOR()
 
