@@ -6870,7 +6870,7 @@ exports.add = function add(DD_MODULES) {
 					if (customSymbol) {
 						__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
 							const isType = types.isType(this),
-								attrs = this[__Internal__.symbolAttributes],
+								attrs = _shared.getAttribute(this, __Internal__.symbolAttributes) || {},
 								result = {};
 							const loopKeys = function _loopKeys(keys) {
 								for (let i = 0; i < keys.length; i++) {
