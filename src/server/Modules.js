@@ -28,10 +28,12 @@
 	//! INJECT("import {default as nodeModule} from 'module';");
 	//! INJECT("import {default as nodeProcess} from 'process';");
 	//! INJECT("import {default as nodeFs} from 'fs';");
+	//! INJECT("import {default as amp} from 'app-module-path';")
 //! ELSE()
 	const nodeModule = require('module'),
 		nodeProcess = require('process'),
-		nodeFs = require('fs');
+		nodeFs = require('fs'),
+		amp = require('app-module-path');
 //! END_IF()
 
 const nodeModuleModule = nodeModule.Module,
@@ -39,7 +41,9 @@ const nodeModuleModule = nodeModule.Module,
 	nodeProcessCwd = nodeProcess.cwd,
 	nodeProcessArgv = nodeProcess.argv,
 
-	nodeFsStatSync = nodeFs.statSync;
+	nodeFsStatSync = nodeFs.statSync,
+
+	ampAddPath = amp.addPath;
 
 
 exports.add = function add(DD_MODULES) {
@@ -111,7 +115,32 @@ exports.add = function add(DD_MODULES) {
 			//! BEGIN_REMOVE()
 			};
 			//! END_REMOVE()
-				
+
+			
+			// TODO: Replace by native ??? when implemented.
+			modules.ADD('addSearchPath', function addSearchPath(path) {
+				path = files.parsePath(path).toApiString();
+
+				ampAddPath(path, __Internal__.locatorModule);
+			});
+
+			// TODO: Replace by native "import()" when implemented.
+			modules.ADD('import', function _import(location) {
+				const Promise = types.getPromise();
+				return Promise.try(function tryImport() {
+					location = types.toString(location);
+					return {
+						default: nodeModuleModule._load(location, __Internal__.locatorModule, false)
+					};
+				});
+			});
+
+			// TODO: Replace by native ??? when implemented.
+			modules.ADD('resolve', function _resolve(location) {
+				location = types.toString(location);
+				return nodeModuleModule._resolveFilename(location, __Internal__.locatorModule, false);
+			});
+
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -150,7 +179,8 @@ exports.add = function add(DD_MODULES) {
 						if (_module && (!path || path.isRelative)) {
 							location = files.Path.parse(_module, {file: 'package.json'})
 								.toApiString({isRelative: true});
-							location = nodeModuleModule._resolveFilename(location, __Internal__.locatorModule, false);
+							// TODO: Replace "modules.resolve" by ??? when implemented.
+							location = modules.resolve(location);
 							location = files.Path.parse(location)
 								.set({file: ''});
 							if (path) {
@@ -180,7 +210,7 @@ exports.add = function add(DD_MODULES) {
 						return location;
 					});
 				}));
-				
+			
 			modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
 				const Promise = types.getPromise();
 
@@ -194,16 +224,19 @@ exports.add = function add(DD_MODULES) {
 
 					return modules.locate(file.module, file.path, options)
 						.then(function(location) {
-							try {
-								file.exports = nodeModuleModule._load(location.toApiString(), __Internal__.locatorModule, false);
-								return file;
-							} catch(err) {
-								if (!file.optional) {
-									throw err;
-								} else {
-									return null;
-								};
+							// TODO: Use native "import()" when implemented.
+							return modules.import(location.toApiString());
+						})
+						.catch(function(err) {
+							if (file.optional) {
+								return null;
+							} else {
+								throw err;
 							};
+						})
+						.then(function(exports) {
+							file.exports = exports;
+							return file;
 						})
 						.catch(function(err) {
 							if (file.module) {
@@ -306,12 +339,12 @@ exports.add = function add(DD_MODULES) {
 							if (files && files.length) {
 								tools.forEach(files, function(file) {
 									if (file && file.isConfig) {
-										tools.depthExtend(15, options, file.exports, options);
+										tools.depthExtend(15, options, file.exports.default, options);
 									};
 								});
 								tools.forEach(files, function(file) {
 									if (file && !file.isConfig) {
-										file.exports.add(DD_MODULES);
+										file.exports.default.add(DD_MODULES);
 									};
 								});
 							};
@@ -334,8 +367,8 @@ exports.add = function add(DD_MODULES) {
 					], options)
 					.then(function(files) {
 						return {
-							manifest: files[0].exports,
-							makeManifest: files[1].exports,
+							manifest: files[0].exports.default,
+							makeManifest: files[1].exports.default,
 						};
 					})
 					.then(function(manifests) {
