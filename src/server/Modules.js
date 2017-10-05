@@ -338,12 +338,12 @@ exports.add = function add(DD_MODULES) {
 						.then(function(files) {
 							if (files && files.length) {
 								tools.forEach(files, function(file) {
-									if (file && file.isConfig) {
+									if (file && file.isConfig && file.exports) {
 										tools.depthExtend(15, options, file.exports.default, options);
 									};
 								});
 								tools.forEach(files, function(file) {
-									if (file && !file.isConfig) {
+									if (file && !file.isConfig && file.exports) {
 										file.exports.default.add(DD_MODULES);
 									};
 								});
