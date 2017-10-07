@@ -80,6 +80,19 @@ exports.add = function add(DD_MODULES) {
 			};
 
 
+			__Internal__.throwFileError = function throwFileError(file, err) {
+				if (file.module) {
+					if (file.path) {
+						throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
+					} else {
+						throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
+					};
+				} else {
+					throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
+				};
+			};
+
+
 			//! BEGIN_REMOVE()
 			if (typeof require !== 'function') {
 			//! END_REMOVE()
@@ -244,15 +257,7 @@ exports.add = function add(DD_MODULES) {
 							return file;
 						})
 						.catch(function(err) {
-							if (file.module) {
-								if (file.path) {
-									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
-								} else {
-									throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
-								};
-							} else {
-								throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
-							};
+							__Internal__.throwFileError(file, err);
 						});
 				});
 			});
@@ -349,6 +354,9 @@ exports.add = function add(DD_MODULES) {
 								});
 								tools.forEach(files, function(file) {
 									if (file && !file.isConfig && file.exports) {
+										if (!types.isFunction(file.exports.default.add)) {
+											__Internal__.throwFileError(file, new types.Error("Missing 'add' export function."));
+										};
 										file.exports.default.add(DD_MODULES);
 									};
 								});
