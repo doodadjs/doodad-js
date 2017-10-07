@@ -200,7 +200,7 @@ exports.add = function add(DD_MODULES) {
 							};
 							listener(new types.CustomEvent('unhandlederror', {
 								detail: {
-									error: error,
+									error: (types.isError(error) ? error : error.error),
 								}
 							}));
 						};
