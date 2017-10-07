@@ -116,10 +116,15 @@ exports.add = function add(DD_MODULES) {
 			};
 			//! END_REMOVE()
 
-			
+
+			// TODO: Find a better way.
+			modules.ADD('getLocator', function getLocator() {
+				return __Internal__.locatorModule;
+			});
+
 			// TODO: Replace by native ??? when implemented.
 			modules.ADD('addSearchPath', function addSearchPath(path) {
-				path = files.parsePath(path).toApiString();
+				path = types.toString(path);
 
 				ampAddPath(path, __Internal__.locatorModule);
 			});
