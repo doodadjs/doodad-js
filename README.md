@@ -273,9 +273,9 @@ Example 1 (inheritance):
         }),
     }));
 
-    let turtle = new Turtle1();
+    const turtle1 = new Turtle1();
 
-    turtle.talk();
+    console.log(turtle1.talk());
 
     const Turtle2 = types.INIT(Turtle1.$extend({
         $TYPE_NAME: 'Turtle2',
@@ -285,9 +285,9 @@ Example 1 (inheritance):
         }),
     }));
 
-    turtle = new Turtle2();
+    const turtle2 = new Turtle2();
 
-    console.log(turtle.talk());
+    console.log(turtle2.talk());
 ```
 
 Example 2 (interfaces):
