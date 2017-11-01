@@ -2272,13 +2272,13 @@ exports.add = function add(DD_MODULES) {
 			};
 			__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
-			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'pathname', 'username', 'search', 'hash'];
+			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash'];
 
 			__Internal__.urlAllKeys = tools.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 			__Internal__.urlAllKeysAndNonStoredKeys = tools.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
 
 			// NOTE: To prevent using "delete"
-			__Internal__.urlSetExcludedKeys = ['extension', 'host', 'path', 'file'];
+			__Internal__.urlSetExcludedKeys = ['host', 'path', 'file', 'extension'];
 			__Internal__.urlAllKeysForSet = tools.filter(__Internal__.urlAllKeys, function(key) {
 						return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
 					});
@@ -2341,7 +2341,7 @@ exports.add = function add(DD_MODULES) {
 								// TODO: Domain encoding/decoding to/from Punycode
 									
 								if (types.isNothing(url)) {
-									url = types.get(options, 'url', null);
+									url = types.get(options, 'url', types.get(options, 'href', null));
 								};
 									
 								// Flags
@@ -2421,13 +2421,28 @@ exports.add = function add(DD_MODULES) {
 									password = types.get(options, 'password', null), // Default is Auto-detect
 									file = types.get(options, 'file', null), // Default is Auto-detect
 									extension = types.get(options, 'extension', null), // Default is "file" 's extension
-									args = types.get(options, 'args', types.get(options, 'search', null)), // Default is Auto-detect
-									anchor = types.get(options, 'anchor', types.get(options, 'hash', null)), // Default is Auto-detect
+									args = types.get(options, 'args', types.get(options, 'query', null)), // Default is Auto-detect
+									anchor = types.get(options, 'anchor', null), // Default is Auto-detect
 									isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
 									noEscapes = types.get(options, 'noEscapes', false),
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
-									
-									
+								
+
+								if (types.isNothing(args)) {
+									args = types.get(options, 'search', null);
+									if (types.isString(args)) {
+										args = tools.trim(args, '?', 1, 1);
+									};
+								};
+
+								if (types.isNothing(anchor)) {
+									anchor = types.get(options, 'hash', null);
+									if (types.isString(anchor)) {
+										anchor = tools.trim(anchor, '#', 1, 1);
+									};
+								};
+
+
 								if (url) {
 									url = tools.trim(url);
 										
