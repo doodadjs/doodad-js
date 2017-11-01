@@ -714,7 +714,17 @@ exports.add = function add(DD_MODULES) {
 					if (types.isNativeFunction(Promise)) {
 						// ES6 Promise
 						// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
-						DDPromise = tools.eval("class DDPromise extends ctx.Promise {constructor(callback) {let res, rej; super(function(resolve, reject) {res = resolve; rej = reject;}); ctx.DDPromiseConstructor.call(this, callback, res, rej);}}", {Promise: Promise, DDPromiseConstructor: __Internal__.DDPromiseConstructor});
+						DDPromise = tools.eval(
+							"class DDPromise extends ctx.Promise {" +
+								"constructor(callback) {" +
+									"let res, rej;" +
+									"super(function(resolve, reject) {" +
+										"res = resolve;" +
+										"rej = reject;" +
+									"});" +
+									"ctx.DDPromiseConstructor.call(this, callback, res, rej);" +
+								"}" +
+							"}", {Promise: Promise, DDPromiseConstructor: __Internal__.DDPromiseConstructor});
 					} else {
 						// Librairies
 						const promiseCall = Promise.call.bind(Promise);
