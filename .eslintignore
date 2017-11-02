@@ -1,0 +1,10 @@
+﻿node_modules
+
+browserify
+build
+dist
+lib
+test
+
+*.templ.js
+webpack.config.js
