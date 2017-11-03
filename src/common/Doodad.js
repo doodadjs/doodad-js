@@ -4068,7 +4068,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: {
 							type: {
 								type: 'Class,Interface,arrayof(Class,Interface)',
@@ -4082,7 +4082,7 @@ exports.add = function add(DD_MODULES) {
 							},
 						},
 						returns: 'AttributeBox',
-						description: "Specifies that this attribute is ignored if (all) the specified class(es) or interface(s) is(are) not implemented.",
+						description: "Specifies that the attribute is skipped until every specified types gets implemented.",
 				}
 				//! END_REPLACE()
 				, function WHEN(type, /*optional*/value) {
