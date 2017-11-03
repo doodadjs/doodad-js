@@ -167,6 +167,7 @@ If you absolutely want private and protected scopes on production, and don't car
   - **doodad.PROPERTY**: Defines a property (with getter and setter).
   - **doodad.EVENT**: Defines an event attribute.
   - **doodad.ERROR_EVENT**: Defines an error event attribute.
+  - **doodad.WHEN**: Specifies that the attribute is skipped until every specified types gets implemented.
   - (client-side only) **doodad.JS_EVENT**: Defines a DOM event attribute.
   - (server-side only) **doodad.NODE_EVENT**: Defines a Node.Js event attribute.
 
