@@ -359,6 +359,7 @@ exports.add = function add(DD_MODULES) {
 					root: types.READ_ONLY( null ),   // null = auto-detect
 					path: types.READ_ONLY( null ),
 					file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
+					isNull: types.READ_ONLY( false ), // Read-only
 				};
 			__Internal__.pathDataKeys = types.keys(__Internal__.pathData);
 
@@ -1060,7 +1061,7 @@ exports.add = function add(DD_MODULES) {
 									dirChar: dirChar,
 									host: host || null,
 									drive: drive || null,
-									root: dirRoot || null,
+									root: dirRoot && types.freezeObject(dirRoot) || null,
 									path: types.freezeObject(path || []),
 									file: file,
 									extension: extension,
@@ -1069,6 +1070,7 @@ exports.add = function add(DD_MODULES) {
 									noEscapes: noEscapes,
 									shell: shell,
 									forceDrive: forceDrive,
+									isNull: !host && !drive && (!root || !root.length) && (!path || !path.length) && !file,
 								});
 							}),
 								
@@ -2260,6 +2262,7 @@ exports.add = function add(DD_MODULES) {
 				file: types.READ_ONLY( null ),   // when set, changes 'extension'.
 				args: types.READ_ONLY( null ),
 				anchor: types.READ_ONLY( null ),
+				isNull: types.READ_ONLY( false ), // Read-only
 			};
 			__Internal__.urlDataKeys = types.keys(__Internal__.urlData);
 					
@@ -2788,6 +2791,7 @@ exports.add = function add(DD_MODULES) {
 									isRelative: !!isRelative,
 									isWindows: !!isWindows,
 									host: (domain ? domain + (port ? ':' + port : (protocol && (protocol in __Internal__.defaultPorts) ? ':' + __Internal__.defaultPorts[protocol] : '')) : null),
+									isNull: !protocol && !domain && (!path || !path.length) && !file && (!args || !args.__args || !args.__args.length) && !anchor,
 								});
 							}),
 					},
