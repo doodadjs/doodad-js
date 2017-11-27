@@ -70,9 +70,9 @@ exports.add = function add(DD_MODULES) {
 			// Native functions
 			//===================================
 					
-			tools.complete(_shared.Natives, {
-				windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
-			});
+			//tools.complete(_shared.Natives, {
+			//	windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
+			//});
 				
 			//===================================
 			// Init
@@ -88,52 +88,58 @@ exports.add = function add(DD_MODULES) {
 
 					uuids = tools.nullObject();
 
-				const problematicAliases = tools.nullObject({
-					// Firefox
-					'Option': 'HTMLOptionElement',
-					'HTMLOptionElement': 'Option',
-					'Audio': 'HTMLAudioElement',
-					'HTMLAudioElement': 'Audio',
-					'Image': 'HTMLImageElement',
-					'HTMLImageElement': 'Image',
-
-					// Safari
-					'AnimationEvent': 'WebKitAnimationEvent',
-					'WebKitAnimationEvent': 'AnimationEvent',
-					'TransitionEvent': 'WebKitTransitionEvent',
-					'WebKitTransitionEvent': 'TransitionEvent',
-
-					// Edge
-					'DOMTokenList': 'DOMSettableTokenList',
-					'DOMSettableTokenList': 'DOMTokenList',
-				});
+				//const problematicAliases = tools.nullObject({
+				//	// Firefox
+				//	'Option': 'HTMLOptionElement',
+				//	'HTMLOptionElement': 'Option',
+				//	'Audio': 'HTMLAudioElement',
+				//	'HTMLAudioElement': 'Audio',
+				//	'Image': 'HTMLImageElement',
+				//	'HTMLImageElement': 'Image',
+				//
+				//	// Safari
+				//	'AnimationEvent': 'WebKitAnimationEvent',
+				//	'WebKitAnimationEvent': 'AnimationEvent',
+				//	'TransitionEvent': 'WebKitTransitionEvent',
+				//	'WebKitTransitionEvent': 'TransitionEvent',
+				//
+				//	// Edge
+				//	'DOMTokenList': 'DOMSettableTokenList',
+				//	'DOMSettableTokenList': 'DOMTokenList',
+				//
+				//	// Chrome
+				//	'DOMMatrix': 'WebKitCSSMatrix',
+				//	'WebKitCSSMatrix': 'DOMMatrix',
+				//});
 
 				for (let i = 0; i < tempNatives.length; i++) {
 					const item = tempNatives[i],
 						name = item[0],
-						native = (name === 'Promise' && _shared.Natives.windowPromise || global[name]);
+						//native = (name === 'Promise' && _shared.Natives.windowPromise || global[name]);
+						native = global[name];
 
 					if (types.isFunction(native) && types.isObjectLike(native.prototype) && types.isExtensible(native) && types.isExtensible(native.prototype)) {
-						if (types.has(problematicAliases, name)) {
-							const alias = global[problematicAliases[name]];
-							if (alias && (native !== alias)) {
-								// <PRB> Some natives share the same prototype, or are duplicated.
-								continue;
-							};
-						};
+						//if (types.has(problematicAliases, name)) {
+						//	const alias = global[problematicAliases[name]];
+						//	if (alias && (native !== alias)) {
+						//		// <PRB> Some natives share the same prototype, or are duplicated.
+						//		continue;
+						//	};
+						//};
 
 						const uuid = item[1],
 							nativeUUID = /*! REPLACE_BY(TO_SOURCE(UUID('NATIVE_TYPE')), true) */ '__NATIVE_TYPE__' /*! END_REPLACE() */ + uuid;
 
 						if (types.has(native, _shared.UUIDSymbol) || types.has(native.prototype, _shared.UUIDSymbol)) {
-							// Aliases
-							if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
-								continue;
-							} else {
-								//console.log(name);
-								//continue;
-								throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
-							};
+							continue;
+						//	// Aliases
+						//	if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
+						//		continue;
+						//	} else {
+						//		//console.log(name);
+						//		//continue;
+						//		throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
+						//	};
 						};
 
 						if (types.has(uuids, uuid)) {
