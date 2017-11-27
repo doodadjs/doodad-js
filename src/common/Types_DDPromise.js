@@ -830,20 +830,6 @@ exports.add = function add(DD_MODULES) {
 			//===================================
 			return function init(/*optional*/options) {
 				if (_shared.Natives.windowPromise) {
-					types.defineProperty(global, 'Promise', {
-						get: function() {
-							console.warn(new global.Error("Reference to 'global.Promise' detected."));
-							types.defineProperty(global, 'Promise', {value: _shared.Natives.windowPromise, configurable: true, enumerable: true, writable: true});
-							return _shared.Natives.windowPromise;
-						},
-						set: function(Promise) {
-							console.warn(new global.Error("Reference to 'global.Promise' detected."));
-							types.defineProperty(global, 'Promise', {value: Promise, configurable: true, enumerable: true, writable: true});
-						},
-						configurable: true,
-						enumerable: true
-					});
-
 					try {
 						types.setPromise(_shared.Natives.windowPromise);
 					} catch(ex) {
