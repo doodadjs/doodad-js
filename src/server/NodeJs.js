@@ -278,7 +278,7 @@ exports.add = function add(DD_MODULES) {
 
 						// 1) Try "destroy"
 
-						if (types.isFunction(obj.destroy) && (!isStream || !obj.destroyed)) {
+						if (types.isFunction(obj.destroy)) {
 							if (isStream) {
 								// NOTE: Since Node.js v. 8, "destroy" takes an "error" argument.
 								obj.destroy(new types.ScriptInterruptedError("Stream is about to be destroyed."));
@@ -292,7 +292,7 @@ exports.add = function add(DD_MODULES) {
 
 						// 2) Try "end"
 
-						if (isStream && types.isFunction(obj.end) && !obj.destroyed && (!(ws = obj._writableState) || (!ws.ending && !ws.ended))) {
+						if (isStream && types.isFunction(obj.end) && (!(ws = obj._writableState) || (!ws.ending && !ws.ended))) {
 							// NOTE: Since Node.js v. 9, "close" in writables streams seems to be replaced by "end".
 							obj.end();
 						};
@@ -300,10 +300,10 @@ exports.add = function add(DD_MODULES) {
 
 						// 3) Try "close"
 
-						// <PRB> There are a different flags meaning "closed" stream types and Node.js releases.
-						// <PRB> Node.js v. 9 : A callback argument is needed when the stream is ending or ended.
+						// <PRB> There are different flags meaning "closed" stream types and Node.js releases.
+						// <PRB> Node.js v. 9 : A callback argument is needed to "close" when the stream is ending or ended.
 						// NOTE: Since Node.js v. 9, "close" seems to be replaced by "destroy".
-						if (isStream && types.isFunction(obj.close) && !obj.destroyed && (!(ws = obj._writableState) || (!ws.ending && !ws.ended)) && !obj._closed && !obj.closed) {
+						if (isStream && types.isFunction(obj.close) && (!(ws = obj._writableState) || (!ws.ending && !ws.ended)) && !obj._closed && !obj.closed) {
 							obj.close();
 						};
 
