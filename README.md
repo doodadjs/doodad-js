@@ -28,6 +28,12 @@ Object-oriented programming framework for Javascript.
 
 ## Quick Start
 
+### Browsers (with a bundler)
+
+Use the package "doodad-js" in your code and create your bundle with "browserify" or "webpack".
+
+NOTE: The entry point should automatically be set to "browserify/browserify.min.js".
+
 ### Browsers (without a bundler)
 
 Download and extract the .zip file from the [latest release][latest-url].
@@ -435,7 +441,7 @@ Maybe I'll try to write a Babel plugin to get something like the following :
 
 But I have to wait on what will be feasible after current proposals like "decorators", "public fields" and "private fields".
 
-I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doen't like, with the addition of my own (and, I believe, more realistic) classes.
+I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doesn't like, with the addition of my own (and, I believe, more realistic) classes.
 
 ## Other available packages
 
