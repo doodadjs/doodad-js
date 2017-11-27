@@ -52,16 +52,20 @@ exports.evalWithCtx = function evalWithCtx(ctx /*, expr*/) {
 	return eval('(' + arguments[1] + ')');
 };
 
-exports.createEval = function createEval(/*arrayJoinCall,locals*/) {
-	return eval(
-		"(function(" + arguments[0](arguments[1], ',') + ") {" +
-			"return function(/*expression*/) {" +
-				'"use strict";' +
-				"return eval(arguments[0]);" +
-			"};" +
-		"})"
-	);
+exports.generateCreateEval = function generateCreateEval() {
+	return "(function createEval(/*locals*/) {" +
+		"return eval(" +
+			'"(function(" + arguments[0].join(",") + ") {" + ' +
+				'"return function(/*expression*/) {" + ' +
+					'\'"use strict";\' + ' +
+					'"return eval(arguments[0]);" + ' +
+				'"};" + ' +
+			'"})"' +
+		");" +
+	"})"
 };
+
+exports.createEval = eval(exports.generateCreateEval());
 
 
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
@@ -841,11 +845,25 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 		}));
 
+
+	__Internal__.ADD_TOOL('generateCreateEval', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'string',
+					description: "Generates a 'createEval' function string to be evaluated so that it inherits desired scoped variables.",
+		}
+		//! END_REPLACE()
+		, exports.generateCreateEval));
+
+
 	__Internal__.ADD_TOOL('createEval', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 2,
+					revision: 3,
 					params: {
 						locals: {
 							type: 'object',
@@ -856,9 +874,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Create a function to evaluate expressions with the given variables.",
 		}
 		//! END_REPLACE()
-		, function createEval(locals) {
-			return exports.createEval(_shared.Natives.arrayJoinCall, locals);
-		}));
+		, exports.createEval));
 
 
 	//==================================
