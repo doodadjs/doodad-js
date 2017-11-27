@@ -123,6 +123,8 @@ exports.add = function add(DD_MODULES) {
 
 				symbolHandler: types.getSymbol('__HANDLER__'),
 				symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
+
+				symbolDestroyed: types.getSymbol('__NODE_OBJ_DESTROYED__'),
 			};
 				
 			//===================================
@@ -209,11 +211,11 @@ exports.add = function add(DD_MODULES) {
 					types.isFunction(stream.pipe) &&
 					types.isFunction(stream.read) &&
 					types.isFunction(stream.resume) &&
-					types.isFunction(stream.setEncoding) &&
+					//types.isFunction(stream.setEncoding) &&
 					types.isFunction(stream.unpipe) &&
 					types.isFunction(stream.push) &&
-					types.isFunction(stream.unshift) &&
-					types.isFunction(stream.wrap)
+					types.isFunction(stream.unshift)
+					//types.isFunction(stream.wrap)
 			});
 				
 			types.ADD('isWritableStream', function isWritableStream(stream) {
@@ -252,42 +254,72 @@ exports.add = function add(DD_MODULES) {
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types.isObject(obj) && !types.getType(obj)) {
 					// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
-					if (!obj.destroyed) {
-						if (types.isFunction(obj.unpipe)) {
+					if (!obj[__Internal__.symbolDestroyed]) {
+						const isEmitter = types.isEmitter(obj);
+						const isStream = types.isStream(obj);
+
+						// 0) Extra needed step
+
+						if (isStream && types.isFunction(obj.unpipe)) {
 							// <PRB> After destroy/close, pipes may still exist.
 							obj.unpipe();
 						};
 
-						if (types.isFunction(obj.removeAllListeners)) {
+						if ((isEmitter || isStream) && types.isFunction(obj.removeAllListeners)) {
 							// <PRB> Events could still occur even after a destroy/close.
 							obj.removeAllListeners();
 						};
 
-						if (types.isFunction(obj.on)) {
+						if ((isEmitter || isStream) && types.isFunction(obj.on)) {
 							// <PRB> The 'error' event could emits even after a destroy/close.
 							obj.on('error', function noop() {})
 						};
 
-						if (types.isFunction(obj.close) && !obj._closed) {
+
+						// 1) Try "destroy"
+
+						if (types.isFunction(obj.destroy) && (!isStream || !obj.destroyed)) {
+							if (isStream) {
+								// NOTE: Since Node.js v. 8, "destroy" takes an "error" argument.
+								obj.destroy(new types.ScriptInterruptedError("Stream is about to be destroyed."));
+							} else {
+								obj.destroy();
+							};
+						};
+
+						let ws = null;
+
+
+						// 2) Try "end"
+
+						if (isStream && types.isFunction(obj.end) && !obj.destroyed && (!(ws = obj._writableState) || (!ws.ending && !ws.ended))) {
+							// NOTE: Since Node.js v. 9, "close" in writables streams seems to be replaced by "end".
+							obj.end();
+						};
+
+
+						// 3) Try "close"
+
+						// <PRB> There are a different flags meaning "closed" stream types and Node.js releases.
+						// <PRB> Node.js v. 9 : A callback argument is needed when the stream is ending or ended.
+						// NOTE: Since Node.js v. 9, "close" seems to be replaced by "destroy".
+						if (isStream && types.isFunction(obj.close) && !obj.destroyed && (!(ws = obj._writableState) || (!ws.ending && !ws.ended)) && !obj._closed && !obj.closed) {
 							obj.close();
 						};
 
-						if (types.isFunction(obj.destroy)) {
-							obj.destroy();
-						};
+
+						// 4) Set "destroyed" flag(s)
 
 						// <PRB> Not every NodeJs destroyable object has/maintains the "destroyed" flag.
-						// <PRB> Not every NodeJs closable object has/maintains the "_closed" flag.
+						// <PRB> Not every NodeJs closable object has/maintains the "_closed" or the "closed" flag.
 						// <PRB> The "_closed" flag can be a read-only property. So we use "destroyed" instead.
-						// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
-						if (!obj.destroyed) {
-							obj.destroyed = true;
-						};
+						// NOTE: Node.js v. 8 : 'destroyed' is a getter/setter.
+						obj[__Internal__.symbolDestroyed] = true;
 
-						// <PRB> ZLib may have a callback that crashes when the stream is closed (Node.Js v7.7.1) :
-						// TypeError: Cannot read property 'write' of null
-						//	at Zlib.callback (zlib.js:609:32)
-						if ((typeof obj.constructor === 'function') && (obj.constructor.name === 'Gzip')) {
+						// <PRB> Node.Js v 7.7.1: ZLib may have a callback that crashes when the stream is closed :
+						//		TypeError: Cannot read property 'write' of null
+						//			at Zlib.callback (zlib.js:609:32)
+						if (isStream && (typeof obj.constructor === 'function') && (obj.constructor.name === 'Gzip')) {
 							obj._hadError = true;
 						};
 					};
@@ -301,7 +333,7 @@ exports.add = function add(DD_MODULES) {
 			_shared.DESTROYED = function DESTROYED(obj) {
 				if (types.isObject(obj) && !types.getType(obj)) {
 					// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
-					return !!obj.destroyed;
+					return !!obj[__Internal__.symbolDestroyed];
 				} else {
 					return __Internal__.oldDESTROYED(obj);
 				};
