@@ -621,7 +621,7 @@ exports.add = function add(DD_MODULES) {
 			, (__options__.enableDomObjectsModel && _shared.Natives.windowHtmlElement ? (function isElement(obj) {
 				return types._instanceof(obj, _shared.Natives.windowHtmlElement);
 			}) : (function isElement(obj) {
-					return !!obj && (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.nodeName === "string");
+				return !!obj && (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.nodeName === "string");
 			}))));
 				
 				
