@@ -197,8 +197,16 @@ exports.add = function add(DD_MODULES) {
 					types.isFunction(emitter.removeAllListeners) &&
 					types.isFunction(emitter.removeListener) &&
 					types.isFunction(emitter.setMaxListeners)
+					//types.isFunction(emitter.eventNames) // NOTE: "eventNames" is new since Node.js v. 6.0.0
 			});
-				
+
+			// <PRB> Some libraries don't inherit from EventEmitter, but use it internally and exposes only a few of its methods.
+			types.ADD('isEmitterLike', function isEmitterLike(emitter) {
+				return types.isFunction(emitter.on) &&
+					types.isFunction(emitter.once) &&
+					types.isFunction(emitter.removeListener)
+			});
+
 			//===================================
 			// Streams
 			//===================================
@@ -211,19 +219,15 @@ exports.add = function add(DD_MODULES) {
 					types.isFunction(stream.pipe) &&
 					types.isFunction(stream.read) &&
 					types.isFunction(stream.resume) &&
-					//types.isFunction(stream.setEncoding) &&
 					types.isFunction(stream.unpipe) &&
 					types.isFunction(stream.push) &&
 					types.isFunction(stream.unshift)
-					//types.isFunction(stream.wrap)
 			});
 				
+			// <PRB> Some libraries don't inherit from EventEmitter and expose only a few of its methods.
 			types.ADD('isWritableStream', function isWritableStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isEmitter(stream) &&
-					//types.isFunction(stream.cork) &&
-					//types.isFunction(stream.uncork) &&
-					//types.isFunction(stream.setDefaultEncoding) &&
 					types.isFunction(stream.write) &&
 					types.isFunction(stream.end)
 			});
@@ -255,7 +259,7 @@ exports.add = function add(DD_MODULES) {
 				if (types.isObject(obj) && !types.getType(obj)) {
 					// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
 					if (!obj[__Internal__.symbolDestroyed]) {
-						const isEmitter = types.isEmitter(obj);
+						const isEmitter = types.isEmitterLike(obj);
 						const isStream = types.isStream(obj);
 
 						// 0) Extra needed step
@@ -300,7 +304,7 @@ exports.add = function add(DD_MODULES) {
 
 						// 3) Try "close"
 
-						// <PRB> There are different flags meaning "closed" stream types and Node.js releases.
+						// <PRB> There are different flags meaning "closed" accross stream types and Node.js releases.
 						// <PRB> Node.js v. 9 : A callback argument is needed to "close" when the stream is ending or ended.
 						// NOTE: Since Node.js v. 9, "close" seems to be replaced by "destroy".
 						if (isStream && types.isFunction(obj.close) && (!(ws = obj._writableState) || (!ws.ending && !ws.ended)) && !obj._closed && !obj.closed) {
