@@ -125,7 +125,12 @@ exports.add = function add(DD_MODULES) {
 				symbolHandlerExtended: types.getSymbol('__HANDLER_EXTENDED__'),
 
 				symbolDestroyed: types.getSymbol('__NODE_OBJ_DESTROYED__'),
+
+				newListener: 'newListener',
+				removeListener: 'removeListener',
 			};
+
+			__Internal__.removeListenerPrefixed = _shared.EVENT_NAME_PREFIX + __Internal__.removeListener;
 				
 			//===================================
 			// Natives
@@ -3086,7 +3091,8 @@ exports.add = function add(DD_MODULES) {
 			, extenders.RawEvent.$inherit({
 				$TYPE_NAME: "NodeEvent",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
-					
+
+				eventsPrefixed: types.READ_ONLY(false),
 				eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
 				eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
 				eventProto: types.READ_ONLY(doodad.NodeEventHandler),
@@ -3262,12 +3268,8 @@ exports.add = function add(DD_MODULES) {
 			// Emitter
 			//*********************************************
 				
-			const EVENT_NAME_PREFIX = 'on',
-				EVENT_NAME_PREFIX_LEN = EVENT_NAME_PREFIX.length;
-
-
 			nodejsInterfaces.REGISTER(doodad.ISOLATED(doodad.MIX_IN(doodad.Class.$extend(
-									mixIns.Events,
+									mixIns.RawEvents,
 			{
 				$TYPE_NAME: 'IEmitter',
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('IEmitter')), true) */,
@@ -3279,36 +3281,36 @@ exports.add = function add(DD_MODULES) {
 
 				prependListener: doodad.PUBLIC(function prependListener(event, listener) {
 					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].attach(null, listener, 10);
-						this.emit('newListener', event, listener);
+						this.emit(__Internal__.newListener, event, listener);
 					};
 					return this;
 				}),
 					
 				prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].attach(null, listener, 10, null, 1);
-						this.emit('newListener', event, listener);
+						this.emit(__Internal__.newListener, event, listener);
 					};
 					return this;
 				}),
 					
 				addListener: doodad.PUBLIC(function addListener(event, listener) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].attach(null, listener);
-						this.emit('newListener', event, listener);
+						this.emit(__Internal__.newListener, event, listener);
 					};
 					return this;
 				}),
 					
 				emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
 					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						const oldCurrentlyEmitted = this.__currentlyEmitted;
 						const isOnError = (event === 'error');
 						if (!isOnError || (oldCurrentlyEmitted !== event)) {
@@ -3332,15 +3334,15 @@ exports.add = function add(DD_MODULES) {
 					
 				getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
 					let max = 10; // NodeJs default value
-					if (this.__EVENTS.length) {
-						max = this[this.__EVENTS[0]].stackSize;
+					if (this.__RAW_EVENTS.length) {
+						max = this[this.__RAW_EVENTS[0]].stackSize;
 					};
 					return max;
 				}),
 					
 				listenerCount: doodad.PUBLIC(function listenerCount(event) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						const stack = _shared.getAttribute(this[name], _shared.StackSymbol, null);
 						return (stack ? tools.reduce(stack, function(result, data) {
 							if (data[4] > 0) {
@@ -3353,8 +3355,8 @@ exports.add = function add(DD_MODULES) {
 				}),
 					
 				listeners: doodad.PUBLIC(function listeners(event) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						const stack = _shared.getAttribute(this[name], _shared.StackSymbol, null);
 						return (stack ? tools.reduce(stack, function(result, data) {
 							if (data[4] > 0) {
@@ -3368,44 +3370,65 @@ exports.add = function add(DD_MODULES) {
 					
 				on: doodad.PUBLIC(function on(event, listener) {
 					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].attach(null, listener);
-						this.emit('newListener', event, listener);
+						this.emit(__Internal__.newListener, event, listener);
 					};
 					return this;
 				}),
 					
 				once: doodad.PUBLIC(function once(event, listener) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].attachOnce(null, listener);
-						this.emit('newListener', event, listener);
+						this.emit(__Internal__.newListener, event, listener);
 					};
 					return this;
 				}),
 					
 				removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
-					const listeners = this.listeners(event);
-					if (listeners) {
-						for (let i = 0; i < listeners.length; i++) {
-							this.removeListener(event, listeners[i]);
+					const removeListeners = function _removeListeners(name) {
+						const eventFn = this[name];
+						const stack = _shared.getAttribute(eventFn, _shared.StackSymbol, null);
+						for (let j = 0; j < stack.length; j++) {
+							const data = stack[j];
+							if (data[4] > 0) {
+								const listener = data[1];
+								eventFn.detach(null, listener);
+								if (name !== __Internal__.removeListenerPrefixed) {
+									const event = name.slice(_shared.EVENT_NAME_PREFIX_LEN);
+									this.emit(__Internal__.removeListener, event, listener);
+								};
+							};
 						};
+					};
+					const events = (event ? [_shared.EVENT_NAME_PREFIX + event] : this.__RAW_EVENTS);
+					for (let i = 0; i < events.length; i++) {
+						const name = events[i];
+						if (name !== __Internal__.removeListenerPrefixed) {
+							removeListeners.call(this, name);
+						};
+					};
+					if (!event || (event === __Internal__.removeListener)) {
+						removeListeners.call(this, __Internal__.removeListenerPrefixed);
 					};
 					return this;
 				}),
 					
 				removeListener: doodad.PUBLIC(function removeListener(event, listener) {
-					const name = EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__EVENTS, name) >= 0) {
+					const name = _shared.EVENT_NAME_PREFIX + event;
+					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 						this[name].detach(null, listener);
-						this.emit('removeListener', event, listener);
+						if (event !== __Internal__.removeListener) {
+							this.emit(__Internal__.removeListener, event, listener);
+						};
 					};
 					return this;
 				}),
 					
 				setMaxListeners: doodad.PUBLIC(function setMaxListeners(number) {
-					const events = this.__EVENTS;
+					const events = this.__RAW_EVENTS;
 					for (let i = 0; i < events.length; i++) {
 						this[events[i]].stackSize = number;
 					};
@@ -3415,14 +3438,14 @@ exports.add = function add(DD_MODULES) {
 				// New since Node.js v. 6.0.0
 				eventNames: doodad.PUBLIC(function eventNames() {
 					const names = [];
-					const events = this.__EVENTS;
+					const events = this.__RAW_EVENTS;
 					for (let i = 0; i < events.length; i++) {
 						const name = events[i];
 						const stack = _shared.getAttribute(this[name], _shared.StackSymbol, null);
 						if (stack && tools.some(stack, function(data) {
 							return (data[4] > 0);
 						})) {
-							names.push(name.slice(EVENT_NAME_PREFIX_LEN));
+							names.push(name.slice(_shared.EVENT_NAME_PREFIX_LEN));
 						};
 					};
 					return names;

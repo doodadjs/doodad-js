@@ -2852,9 +2852,9 @@ exports.add = function add(DD_MODULES) {
 
 									retVal = caller.apply(this, arguments);
 
-//										if (!_dispatch[__Internal__.symbolSuperAsync]) {
+//									if (!_dispatch[__Internal__.symbolSuperAsync]) {
 										retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
-//										};
+//									};
 
 								} catch(ex) {
 									if (attr === 'toString') {
@@ -7086,6 +7086,9 @@ exports.add = function add(DD_MODULES) {
 			// Events
 			//==================================
 
+			_shared.EVENT_NAME_PREFIX = 'on';
+			_shared.EVENT_NAME_PREFIX_LEN = _shared.EVENT_NAME_PREFIX.length;
+
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -7586,6 +7589,7 @@ exports.add = function add(DD_MODULES) {
 					$TYPE_NAME: "Event",
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
 
+					eventsPrefixed: types.READ_ONLY(false),
 					eventsAttr: types.READ_ONLY('__EVENTS'),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.Events'),
 					eventProto: types.READ_ONLY(doodad.EventHandler),
@@ -7630,6 +7634,12 @@ exports.add = function add(DD_MODULES) {
 								if (!types.has(destAttributes, this.eventsAttr)) {
 									throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
 								};
+
+								if (this.eventsPrefixed) {
+									if (attr.slice(0, _shared.EVENT_NAME_PREFIX_LEN) !== _shared.EVENT_NAME_PREFIX) {
+										throw new types.Error("The event named '~0~' must be prefixed by '~1~.", [attr, _shared.EVENT_NAME_PREFIX]);
+									};
+								};
 							};
 								
 							const events = types.unbox(destAttributes[this.eventsAttr]);
@@ -7659,6 +7669,10 @@ exports.add = function add(DD_MODULES) {
 			extenders.REGISTER([], extenders.Event.$inherit({
 					$TYPE_NAME: "RawEvent",
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
+
+					eventsPrefixed: types.READ_ONLY(true),
+					eventsAttr: types.READ_ONLY('__RAW_EVENTS'),
+					eventsImplementation: types.READ_ONLY('Doodad.MixIns.RawEvents'),
 			}));
 
 			__Internal__.EVENT_CACHE = tools.nullObject();
@@ -8133,13 +8147,13 @@ exports.add = function add(DD_MODULES) {
 								description: "Detaches the callback function from every events.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachEvents(obj, fn, /*optional*/datas) {
+						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function detachEvents(obj, fn, /*optional*/datas) {
 							const events = this.__EVENTS,
 								eventsLen = events.length;
 							for (let i = 0; i < eventsLen; i++) {
 								this[events[i]].detach(obj, fn, datas);
 							};
-						}))))),
+						})))),
 						
 					clearEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8157,7 +8171,7 @@ exports.add = function add(DD_MODULES) {
 								description: "Detaches every callback functions from every events.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearEvents(/*optional*/objs) {
+						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function clearEvents(/*optional*/objs) {
 							const events = this.__EVENTS,
 								eventsLen = events.length;
 							if (types.isNothing(objs)) {
@@ -8178,7 +8192,60 @@ exports.add = function add(DD_MODULES) {
 									this[events[i]].detach(objs);
 								};
 							};
-						}))))),
+						})))),
+				}))));
+				
+
+			root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Mix-in that implements raw events (and normal events) in a class.",
+				}
+				//! END_REPLACE()
+				, mixIns.REGISTER(doodad.MIX_IN(mixIns.Events.$extend({
+					$TYPE_NAME: "RawEvents",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Events')), true) */,
+					
+					__RAW_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray))))))),
+					
+					detachEvents: doodad.OVERRIDE(function detachEvents(obj, fn, /*optional*/datas) {
+							const rawEvents = this.__RAW_EVENTS,
+								rawEventsLen = rawEvents.length;
+							for (let i = 0; i < rawEventsLen; i++) {
+								this[rawEvents[i]].detach(obj, fn);
+							};
+
+							this._super(obj, fn, datas);
+						}),
+						
+					clearEvents: doodad.OVERRIDE(function clearEvents(/*optional*/objs) {
+							const events = this.__RAW_EVENTS,
+								eventsLen = events.length;
+							if (types.isNothing(objs)) {
+								for (let i = 0; i < eventsLen; i++) {
+									this[events[i]].clear();
+								};
+							} else if (types.isArray(objs)) {
+								const objsLen = objs.length;
+								for (let i = 0; i < eventsLen; i++) {
+									for (let j = 0; j < objsLen; j++) {
+										if (types.has(objs, j)) {
+											this[events[i]].detach(objs[j]);
+										};
+									};
+								};
+							} else {
+								for (let i = 0; i < eventsLen; i++) {
+									this[events[i]].detach(objs);
+								};
+							};
+
+							this._super(objs);
+						}),
 				}))));
 				
 

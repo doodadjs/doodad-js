@@ -838,6 +838,7 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: "JsEvent",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
 					
+				eventsPrefixed: types.READ_ONLY(false),
 				eventsAttr: types.READ_ONLY('__JS_EVENTS'),
 				errorEventAttr: types.READ_ONLY(null),
 				eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
