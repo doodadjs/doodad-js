@@ -2661,12 +2661,20 @@ exports.add = function add(DD_MODULES) {
 											const errorAttr = attributes[errorEvent];
 											const onError = obj[errorEvent];
 											if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
-												// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
 												if (onError.getCount() > 0) {
 													// <PRB> Node.Js re-emits 'error'.
-													onError.attachOnce(null, function noop(err) {});
+													const noop = function _noop(err) {};
+													try {
+														onError.attachOnce(null, noop);
+														emitted = onError.call(obj, ex);
+													} catch(o) {
+														throw o;
+													} finally {
+														onError.detach(null, noop);
+													};
+												} else {
+													emitted = onError.call(obj, ex);
 												};
-												emitted = onError.call(obj, ex);
 											} else {
 												const ev = new doodad.ErrorEvent(ex);
 												onError.call(obj, ev);
@@ -2681,6 +2689,7 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							};
+							// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
 							if (!emitted) {
 								throw ex;
 							};
