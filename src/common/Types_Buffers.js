@@ -57,10 +57,10 @@ exports.add = function add(DD_MODULES) {
 					
 			tools.complete(_shared.Natives, {
 				// "isArrayBuffer"
-				arrayBuffer: (types.isNativeFunction(global.ArrayBuffer) ? global.ArrayBuffer : undefined),
+				windowArrayBuffer: (global.ArrayBuffer ? global.ArrayBuffer : null),
 
 				// "isTypesArray"
-				windowTypedArray: undefined,
+				windowTypedArray: null,
 			});
 				
 			//===================================
@@ -83,8 +83,8 @@ exports.add = function add(DD_MODULES) {
 							description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (_shared.Natives.arrayBuffer ? (function isArrayBuffer(obj) {
-					return (typeof obj === 'object') && types._instanceof(obj, _shared.Natives.arrayBuffer);
+				, (_shared.Natives.windowArrayBuffer ? (function isArrayBuffer(obj) {
+					return types._instanceof(obj, _shared.Natives.windowArrayBuffer);
 				}) : (function isArrayBuffer(obj) {
 					// ArrayBuffer is not implemented.
 					return false;

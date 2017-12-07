@@ -164,19 +164,19 @@ exports.add = function add(DD_MODULES) {
 				//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
 					
 				// ES5
-				stringRepeatCall: (types.isNativeFunction(global.String.prototype.repeat) ? global.String.prototype.repeat.call.bind(global.String.prototype.repeat) : undefined),
-				arrayIndexOfCall: (types.isNativeFunction(global.Array.prototype.indexOf) ? global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf) : undefined),
-				arrayLastIndexOfCall: (types.isNativeFunction(global.Array.prototype.lastIndexOf) ? global.Array.prototype.lastIndexOf.call.bind(global.Array.prototype.lastIndexOf) : undefined),
-				arrayForEachCall: (types.isNativeFunction(global.Array.prototype.forEach) ? global.Array.prototype.forEach.call.bind(global.Array.prototype.forEach) : undefined),
-				arrayMapCall: (types.isNativeFunction(global.Array.prototype.map) ? global.Array.prototype.map.call.bind(global.Array.prototype.map) : undefined),
-				arrayFilterCall: (types.isNativeFunction(global.Array.prototype.filter) ? global.Array.prototype.filter.call.bind(global.Array.prototype.filter) : undefined),
-				arrayEveryCall: (types.isNativeFunction(global.Array.prototype.every) ? global.Array.prototype.every.call.bind(global.Array.prototype.every) : undefined),
-				arraySomeCall: (types.isNativeFunction(global.Array.prototype.some) ? global.Array.prototype.some.call.bind(global.Array.prototype.some) : undefined),
-				arrayReduceCall: (types.isNativeFunction(global.Array.prototype.reduce) ? global.Array.prototype.reduce.call.bind(global.Array.prototype.reduce) : undefined),
-				arrayReduceRightCall: (types.isNativeFunction(global.Array.prototype.reduceRight) ? global.Array.prototype.reduceRight.call.bind(global.Array.prototype.reduceRight) : undefined),
+				stringRepeatCall: global.String.prototype.repeat.call.bind(global.String.prototype.repeat),
+				arrayIndexOfCall: global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf),
+				arrayLastIndexOfCall: global.Array.prototype.lastIndexOf.call.bind(global.Array.prototype.lastIndexOf),
+				arrayForEachCall: global.Array.prototype.forEach.call.bind(global.Array.prototype.forEach),
+				arrayMapCall: global.Array.prototype.map.call.bind(global.Array.prototype.map),
+				arrayFilterCall: global.Array.prototype.filter.call.bind(global.Array.prototype.filter),
+				arrayEveryCall: global.Array.prototype.every.call.bind(global.Array.prototype.every),
+				arraySomeCall: global.Array.prototype.some.call.bind(global.Array.prototype.some),
+				arrayReduceCall: global.Array.prototype.reduce.call.bind(global.Array.prototype.reduce),
+				arrayReduceRightCall: global.Array.prototype.reduceRight.call.bind(global.Array.prototype.reduceRight),
 					
 				// ES7
-				regExpEscape: (types.isNativeFunction(global.RegExp.escape) ? global.RegExp.escape : undefined),
+				regExpEscape: global.RegExp.escape || null,
 			});
 				
 			//===================================
