@@ -3135,6 +3135,7 @@ exports.add = function add(DD_MODULES) {
 							const extender = handlerSrc[_shared.ExtenderSymbol];
 							if (extender.extend) {
 								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+								handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
 								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
 							};
 						} else {
@@ -3210,11 +3211,11 @@ exports.add = function add(DD_MODULES) {
 						description: "NodeJs event attribute modifier.",
 			}
 			//! END_REPLACE()
-			, function NODE_EVENT(eventType, fn) {
+			, function NODE_EVENT(eventType, /*optional*/fn) {
 				if (root.DD_ASSERT) {
 					root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid type.");
 					const val = types.unbox(fn);
-					root.DD_ASSERT(types.isJsFunction(val), "Invalid function.");
+					root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 				};
 
 				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx /*paramarray*/) {

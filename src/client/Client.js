@@ -891,6 +891,7 @@ exports.add = function add(DD_MODULES) {
 							const extender = handlerSrc[_shared.ExtenderSymbol];
 							if (extender.extend) {
 								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+								handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
 								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
 							};
 						} else {
