@@ -71,7 +71,7 @@ exports.add = function add(DD_MODULES) {
 
 
 			// <FUTURE> Thread context
-			const __Internal__ = {
+			const __Internal__ = tools.safeObject({
 				currentInstance: null,	// <FUTURE> thread level
 				currentType: null,	// <FUTURE> thread level
 				inTrapException: false, // <FUTURE> thread level
@@ -80,76 +80,14 @@ exports.add = function add(DD_MODULES) {
 				callbacks: new types.WeakMap(), // <FUTURE> global to threads
 
 				extendersCache: new types.WeakMap(), // <FUTURE> global to threads
-					
-				// Class
-				symbolAttributes: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES')), true) */ '__DD_ATTRIBUTES' /*! END_REPLACE() */, true),
-				symbolImplements: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IMPLEMENTS')), true) */ '__DD_IMPLEMENTS' /*! END_REPLACE() */, true),
-				symbolMustOverride: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MUST_OVERRIDE')), true) */ '__DD_MUST_OVERRIDE' /*! END_REPLACE() */, true),
-				symbolBase: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true),
-				symbolIsolated: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED')), true) */ '__DD_ISOLATED' /*! END_REPLACE() */, true),
-				symbolIsolatedCache: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED_CACHE')), true) */ '__DD_ISOLATED_CACHE' /*! END_REPLACE() */, true),
-				symbolAttributesStorage: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES_STORAGE')), true) */ '__DD_ATTRIBUTES_STORAGE' /*! END_REPLACE() */, true),
-				symbolCurrentDispatch: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_DISPATCH')), true) */ '__DD_CURRENT_DISPATCH' /*! END_REPLACE() */, true),
-				symbolCurrentCallerIndex: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_CALLER_INDEX')), true) */ '__DD_CURRENT_CALLER_INDEX' /*! END_REPLACE() */, true),
-				symbolInitInstance: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INIT_INSTANCE')), true) */ '__DD_INIT_INSTANCE' /*! END_REPLACE() */, true),
-				symbolToInitialize: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_INITIALIZE')), true) */ '__DD_TO_INITIALIZE' /*! END_REPLACE() */, true),
-				symbolToExtendLater: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_EXTEND_LATER')), true) */ '__DD_TO_EXTEND_LATER' /*! END_REPLACE() */, true),
-				symbolCreator: (root.getOptions().debug ? types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CREATOR')), true) */ '__DD_CREATOR' /*! END_REPLACE() */, true) : null),  // debug only
-					
-				// Class, Methods, Callers, AttributeBox
-				symbolPrototype: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROTOTYPE')), true) */ '__DD_PROTOTYPE' /*! END_REPLACE() */, true),
-				symbolModifiers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MODIFIERS')), true) */ '__DD_MODIFIERS' /*! END_REPLACE() */, true),
-
-				// Methods, Callers, AttributeBox
-				symbolCallers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLERS')), true) */ '__DD_CALLERS' /*! END_REPLACE() */, true),
-
-				// Interface
-				symbolHost: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_HOST')), true) */ '__DD_HOST' /*! END_REPLACE() */, true),
-					
-				// EventHandler, AttributeBox
-				symbolExtender: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_EXTENDER')), true) */ '__DD_EXTENDER' /*! END_REPLACE() */, true),
-
-				// EventHandler
-				symbolObject: types.getSymbol('__OBJECT__'),
-				symbolStack: types.getSymbol('__STACK__'),
-				symbolSorted: types.getSymbol('__SORTED__'),
-				symbolClonedStack: types.getSymbol('__CLONED_STACK__'),
-				symbolEventInside: types.getSymbol('__EVENT_INSIDE__'),
-
-				// Methods (Dispatches)
-				symbolObsoleteWarned: types.getSymbol('__OBSOLETE_WARNED__'),
-//					symbolSuperAsync: types.getSymbol('__ASYNC_SUPER__'),
-
-				// Callers
-				symbolOk: types.getSymbol('__OK__'),
-				symbolFunction: types.getSymbol('__FUNCTION__'),
-
-				// Callers & AttributeBox
-				symbolCalled: types.getSymbol('__CALLED__'),
-				symbolPosition: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_POSITION')), true) */ '__DD_POSITION' /*! END_REPLACE() */, true),
-				symbolUsageMessage: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_USAGE_MESSAGE')), true) */ '__DD_USAGE_MESSAGE' /*! END_REPLACE() */, true),
-					
-				// AttributeBox
-				symbolScope: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SCOPE')), true) */ '__DD_SCOPE' /*! END_REPLACE() */, true),
-				symbolReturns: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RETURNS')), true) */ '__DD_RETURNS' /*! END_REPLACE() */, true),
-				symbolInterface: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INTERFACE')), true) */ '__DD_INTERFACE' /*! END_REPLACE() */, true),
-				symbolCallFirstLength: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALL_FIRST_LENGTH')), true) */ '__DD_CALL_FIRST_LENGTH' /*! END_REPLACE() */, true),
-				symbolRenamedFrom: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_FROM')), true) */ '__DD_RENAMED_FROM' /*! END_REPLACE() */, true),
-				symbolRenamedTo: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_TO')), true) */ '__DD_RENAMED_TO' /*! END_REPLACE() */, true),
-				symbolOverrideWith: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OVERRIDE_WITH')), true) */ '__DD_OVERRIDE_WITH' /*! END_REPLACE() */, true),
-				symbolReplacedCallers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_REPLACED_CALLERS')), true) */ '__DD_REPLACED_CALLERS' /*! END_REPLACE() */, true),
-				symbolWhen: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_WHEN')), true) */ '__DD_WHEN' /*! END_REPLACE() */, true),
-
-				// Prototype
-				symbolType: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE')), true) */ '__DD_TYPE' /*! END_REPLACE() */, true),
-					
-				// Creatable
-				symbolDestroyed: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DESTROYED')), true) */ '__DD_DESTROYED' /*! END_REPLACE() */, true),
 
 				ANONYMOUS: '<anonymous>',
 
 				notReentrantMap: new types.WeakMap(),
-			};
+
+				CLASS_OR_INTERFACE: [], // Will get filled later
+			});
+
 
 			tools.complete(_shared.Natives, {
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
@@ -161,25 +99,76 @@ exports.add = function add(DD_MODULES) {
 				functionBind: global.Function.prototype.bind,
 				windowObject: global.Object,
 			});
-				
+
+
+			// Class
+			_shared.AttributesSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES')), true) */ '__DD_ATTRIBUTES' /*! END_REPLACE() */, true);
+			_shared.ImplementsSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IMPLEMENTS')), true) */ '__DD_IMPLEMENTS' /*! END_REPLACE() */, true);
+			_shared.MustOverrideSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MUST_OVERRIDE')), true) */ '__DD_MUST_OVERRIDE' /*! END_REPLACE() */, true);
+			_shared.BaseSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true);
+			_shared.IsolatedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED')), true) */ '__DD_ISOLATED' /*! END_REPLACE() */, true);
+			_shared.IsolatedCacheSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ISOLATED_CACHE')), true) */ '__DD_ISOLATED_CACHE' /*! END_REPLACE() */, true);
+			_shared.AttributesStorageSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ATTRIBUTES_STORAGE')), true) */ '__DD_ATTRIBUTES_STORAGE' /*! END_REPLACE() */, true);
+			_shared.CurrentDispatchSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_DISPATCH')), true) */ '__DD_CURRENT_DISPATCH' /*! END_REPLACE() */, true);
+			_shared.CurrentCallerIndexSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CURRENT_CALLER_INDEX')), true) */ '__DD_CURRENT_CALLER_INDEX' /*! END_REPLACE() */, true);
+			_shared.InitInstanceSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INIT_INSTANCE')), true) */ '__DD_INIT_INSTANCE' /*! END_REPLACE() */, true);
+			_shared.ToInitializeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_INITIALIZE')), true) */ '__DD_TO_INITIALIZE' /*! END_REPLACE() */, true);
+			_shared.ToExtendLaterSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_EXTEND_LATER')), true) */ '__DD_TO_EXTEND_LATER' /*! END_REPLACE() */, true);
+			_shared.CreatorSymbol = (root.getOptions().debug ? types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CREATOR')), true) */ '__DD_CREATOR' /*! END_REPLACE() */, true) : null);  // debug only
+					
+			// Class, Methods, Callers, AttributeBox
+			_shared.PrototypeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROTOTYPE')), true) */ '__DD_PROTOTYPE' /*! END_REPLACE() */, true);
+			_shared.ModifiersSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MODIFIERS')), true) */ '__DD_MODIFIERS' /*! END_REPLACE() */, true);
+
+			// Methods, Callers, AttributeBox
+			_shared.CallersSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLERS')), true) */ '__DD_CALLERS' /*! END_REPLACE() */, true);
+
 			// Interface
-			doodad.ADD('HostSymbol', __Internal__.symbolHost);
-
-			// Class				
-			_shared.CurrentDispatchSymbol = __Internal__.symbolCurrentDispatch;
-			_shared.CreatorSymbol = __Internal__.symbolCreator; // debug only
-
-			// AttributeBox
-			_shared.ExtenderSymbol = __Internal__.symbolExtender;
+			_shared.HostSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_HOST')), true) */ '__DD_HOST' /*! END_REPLACE() */, true);
+					
+			// EventHandler, AttributeBox
+			_shared.ExtenderSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_EXTENDER')), true) */ '__DD_EXTENDER' /*! END_REPLACE() */, true);
 
 			// EventHandler
-			_shared.ObjectSymbol = __Internal__.symbolObject;
-			_shared.StackSymbol = __Internal__.symbolStack;
-			_shared.ClonedStackSymbol = __Internal__.symbolClonedStack;
-			_shared.SortedSymbol = __Internal__.symbolSorted;
+			_shared.ObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OBJECT')), true) */ '__DD_OBJECT__' /*! END_REPLACE() */, true);
+			_shared.StackSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_STACK')), true) */ '__DD_STACK__' /*! END_REPLACE() */, true);
+			_shared.SortedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SORTED')), true) */ '__DD_SORTED__' /*! END_REPLACE() */, true);
+			_shared.ClonedStackSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CLONED_STACK')), true) */ '__DD_CLONED_STACK__' /*! END_REPLACE() */, true);
+			_shared.EventInsideSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_EVENT_INSIDE')), true) */ '__DD_EVENT_INSIDE__' /*! END_REPLACE() */, true);
 
-			// Class, Methods, Callers, AttributeBox
-			_shared.PrototypeSymbol = __Internal__.symbolPrototype;
+			// Methods (Dispatches)
+			_shared.ObsoleteWarnedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('OBSOLETE_WARNED')), true) */ '__DD_OBSOLETE_WARNED__' /*! END_REPLACE() */, true);
+//			_shared.SuperAsyncSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ASYNC_SUPER')), true) */ '__DD_ASYNC_SUPER__' /*! END_REPLACE() */, true);
+
+			// Callers
+			_shared.OkSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OK')), true) */ '__DD_OK__' /*! END_REPLACE() */, true);
+			_shared.FunctionSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_FUNCTION')), true) */ '__DD_FUNCTION__' /*! END_REPLACE() */, true);
+
+			// Callers & AttributeBox
+			_shared.CalledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLED')), true) */ '__DD_CALLED__' /*! END_REPLACE() */, true);
+			_shared.PositionSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_POSITION')), true) */ '__DD_POSITION' /*! END_REPLACE() */, true);
+			_shared.UsageMessageSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_USAGE_MESSAGE')), true) */ '__DD_USAGE_MESSAGE' /*! END_REPLACE() */, true);
+					
+			// AttributeBox
+			_shared.ScopeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SCOPE')), true) */ '__DD_SCOPE' /*! END_REPLACE() */, true);
+			_shared.ReturnsSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RETURNS')), true) */ '__DD_RETURNS' /*! END_REPLACE() */, true);
+			_shared.InterfaceSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INTERFACE')), true) */ '__DD_INTERFACE' /*! END_REPLACE() */, true);
+			_shared.CallFirstLengthSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALL_FIRST_LENGTH')), true) */ '__DD_CALL_FIRST_LENGTH' /*! END_REPLACE() */, true);
+			_shared.RenamedFromSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_FROM')), true) */ '__DD_RENAMED_FROM' /*! END_REPLACE() */, true);
+			_shared.RenamedToSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RENAMED_TO')), true) */ '__DD_RENAMED_TO' /*! END_REPLACE() */, true);
+			_shared.OverrideWithSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OVERRIDE_WITH')), true) */ '__DD_OVERRIDE_WITH' /*! END_REPLACE() */, true);
+			_shared.ReplacedCallersSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_REPLACED_CALLERS')), true) */ '__DD_REPLACED_CALLERS' /*! END_REPLACE() */, true);
+			_shared.WhenSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_WHEN')), true) */ '__DD_WHEN' /*! END_REPLACE() */, true);
+
+			// Prototype
+			_shared.TypeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE')), true) */ '__DD_TYPE' /*! END_REPLACE() */, true);
+					
+			// Creatable
+			_shared.DestroyedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DESTROYED')), true) */ '__DD_DESTROYED' /*! END_REPLACE() */, true);
+
+
+			// Interface
+			doodad.ADD('HostSymbol', _shared.HostSymbol);
 
 
 			//=====================
@@ -345,7 +334,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isBase(obj) {
-					return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Base);
+					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Base);
 				}));
 				
 			types.ADD('isMixIn', root.DD_DOC(
@@ -365,7 +354,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isMixIn(obj) {
-					return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.MixIn);
+					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.MixIn);
 				}));
 
 			types.ADD('isInterface', root.DD_DOC(
@@ -385,7 +374,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isInterface(obj) {
-					return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Interface);
+					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Interface);
 				}));
 
 			types.ADD('isIsolated', root.DD_DOC(
@@ -405,7 +394,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isIsolated(obj) {
-					return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Isolated);
+					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Isolated);
 				}));
 
 			types.ADD('isNewable', root.DD_DOC(
@@ -425,7 +414,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isNewable(obj) {
-					return types.isClass(obj) && !((obj[__Internal__.symbolModifiers] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
+					return types.isClass(obj) && !((obj[_shared.ModifiersSymbol] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 				}));
 				
 			types.ADD('isSealedClass', root.DD_DOC(
@@ -445,7 +434,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isSealedClass(obj) {
-					return types.isClass(obj) && !!((obj[__Internal__.symbolModifiers] || 0) & doodad.ClassModifiers.Sealed);
+					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Sealed);
 				}));
 				
 			types.ADD('isSerializable', root.DD_DOC(
@@ -493,7 +482,7 @@ exports.add = function add(DD_MODULES) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return false;
 					};
-					const impls = _shared.getAttribute(obj, __Internal__.symbolImplements);
+					const impls = _shared.getAttribute(obj, _shared.ImplementsSymbol);
 					if (types.isArray(cls)) {
 						const clsLen = cls.length;
 						for (let i = 0; i < clsLen; i++) {
@@ -554,7 +543,7 @@ exports.add = function add(DD_MODULES) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return null;
 					};
-					return types.toArray(_shared.getAttribute(obj, __Internal__.symbolImplements));
+					return types.toArray(_shared.getAttribute(obj, _shared.ImplementsSymbol));
 				}));
 				
 			types.ADD('isMethod', root.DD_DOC(
@@ -583,12 +572,12 @@ exports.add = function add(DD_MODULES) {
 						return false;
 					};
 					const isType = types.isType(obj);
-					const attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+					const attrs = _shared.getAttribute(obj, _shared.AttributesSymbol);
 					if (!(name in attrs)) {
 						return false;
 					};
 					const attr = attrs[name],
-						extender = attr[__Internal__.symbolExtender];
+						extender = attr[_shared.ExtenderSymbol];
 					if (!types.isLike(extender, extenders.Method)) {
 						return false;
 					};
@@ -623,12 +612,12 @@ exports.add = function add(DD_MODULES) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return false;
 					};
-					const attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+					const attrs = _shared.getAttribute(obj, _shared.AttributesSymbol);
 					if (!(name in attrs)) {
 						return false;
 					};
 					const attr = attrs[name],
-						extender = attr[__Internal__.symbolExtender];
+						extender = attr[_shared.ExtenderSymbol];
 					if (!types.isLike(extender, extenders.Method)) {
 						return false;
 					};
@@ -637,7 +626,7 @@ exports.add = function add(DD_MODULES) {
 						return false;
 					};
 					const method = _shared.getAttribute(obj, name);
-					return !((method[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.NotImplemented);
+					return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
 				}));
 				
 			types.ADD('isEntrant', root.DD_DOC(
@@ -751,14 +740,14 @@ exports.add = function add(DD_MODULES) {
 					if (callBubble && types.isBindable(bubbleError)) {
 						bubbleError = _shared.makeInside(obj, bubbleError, secret);
 					};
-					let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/) {
+					let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/...params) {
 						callback.lastError = null;
 						try {
 							if (!obj || !_shared.DESTROYED(obj)) {
 								if (args) {
 									return insideFnApply(obj, args);
 								} else {
-									return insideFnApply(obj, arguments);
+									return insideFnApply(obj, params);
 								};
 							};
 						} catch(ex) {
@@ -841,10 +830,10 @@ exports.add = function add(DD_MODULES) {
 					if (callBubble && types.isBindable(bubbleError)) {
 						bubbleError = _shared.makeInside(obj, bubbleError, secret);
 					};
-					let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/) {
+					let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/...params) {
 						if (!args) {
-							args = types.toArray(arguments);
-						}
+							args = params;
+						};
 						callback.lastError = null;
 						tools.callAsync(function async(/*paramarray*/) {
 							try {
@@ -946,14 +935,14 @@ exports.add = function add(DD_MODULES) {
 					let _insider = null;
 					const fnApply = fn.apply.bind(fn);
 					if (types.isNothing(obj)) {
-						_insider = function insider(/*paramarray*/) {
+						_insider = function insider(/*paramarray*/...params) {
 							if ((secret !== _shared.SECRET) && this && !__Internal__.isInside(this)) {
 								throw new types.Error("Invalid secret.");
 							};
 							const oldInside = __Internal__.preserveInside();
 							__Internal__.setInside(this);
 							try {
-								return fnApply(this, arguments);
+								return fnApply(this, params);
 							} catch(ex) {
 								throw ex;
 							} finally {
@@ -964,11 +953,11 @@ exports.add = function add(DD_MODULES) {
 						if ((secret !== _shared.SECRET) && obj && !__Internal__.isInside(obj)) {
 							throw new types.Error("Invalid secret.");
 						};
-						_insider = function insider(/*paramarray*/) {
+						_insider = function insider(/*paramarray*/...params) {
 							const oldInside = __Internal__.preserveInside();
 							__Internal__.setInside(obj);
 							try {
-								return fnApply(obj, arguments);
+								return fnApply(obj, params);
 							} catch(ex) {
 								throw ex;
 							} finally {
@@ -988,12 +977,12 @@ exports.add = function add(DD_MODULES) {
 					let _insider = null;
 					const fnApply = fn.apply.bind(fn);
 					if (types.isNothing(obj)) {
-						_insider = function insider(/*paramarray*/) {
-							return fnApply(this, arguments);
+						_insider = function insider(/*paramarray*/...params) {
+							return fnApply(this, params);
 						};
 					} else {
-						_insider = function insider(/*paramarray*/) {
-							return fnApply(obj, arguments);
+						_insider = function insider(/*paramarray*/...params) {
+							return fnApply(obj, params);
 						};
 					};
 					_shared.setAttribute(_insider, _shared.BoundObjectSymbol, obj);
@@ -1008,9 +997,9 @@ exports.add = function add(DD_MODULES) {
 						"const oldInside = ctx.internal.preserveInside();" +
 						"ctx.internal.setInside(this);" +
 						"try {" +
-							"const obj = this._new.apply(this, arguments) || this;" +
-							(__Internal__.symbolCreator ? 
-								"obj[ctx.internal.symbolCreator] = oldInside[0];"
+							"const obj = this._new(...args) || this;" +
+							(_shared.CreatorSymbol ? 
+								"obj[ctx._shared.CreatorSymbol] = oldInside[0];"
 							:
 								""
 							) +
@@ -1024,7 +1013,7 @@ exports.add = function add(DD_MODULES) {
 				}
 			:
 				function makeInsideForNew() {
-					return "return this._new.apply(this, arguments) || this;";
+					return "return this._new(...args) || this;";
 				}
 			);
 				
@@ -1134,7 +1123,7 @@ exports.add = function add(DD_MODULES) {
 						const oldInside = __Internal__.preserveInside();
 						__Internal__.setInside(obj);
 						try {
-							const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
+							const storage = (types.get(options, 'direct', false) ? undefined : obj[_shared.AttributesStorageSymbol]);
 							if (types.hasIn(storage, attr)) {
 								return storage[attr];
 							} else {
@@ -1158,7 +1147,7 @@ exports.add = function add(DD_MODULES) {
 						const oldInside = __Internal__.preserveInside();
 						__Internal__.setInside(obj);
 						try {
-							const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
+							const storage = (types.get(options, 'direct', false) ? undefined : obj[_shared.AttributesStorageSymbol]);
 							const attrsLen = attrs.length,
 								result = {};
 							for (let i = 0; i < attrsLen; i++) {
@@ -1190,7 +1179,7 @@ exports.add = function add(DD_MODULES) {
 						const oldInside = __Internal__.preserveInside();
 						__Internal__.setInside(obj);
 						try {
-							const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
+							const storage = (types.get(options, 'direct', false) ? undefined : obj[_shared.AttributesStorageSymbol]);
 							if (types.hasIn(storage, attr)) {
 								storage[attr] = value;
 								return value;
@@ -1215,7 +1204,7 @@ exports.add = function add(DD_MODULES) {
 						const oldInside = __Internal__.preserveInside();
 						__Internal__.setInside(obj);
 						try {
-							const storage = (types.get(options, 'direct', false) ? undefined : obj[__Internal__.symbolAttributesStorage]);
+							const storage = (types.get(options, 'direct', false) ? undefined : obj[_shared.AttributesStorageSymbol]);
 							const loopKeys = function _loopKeys(keys) {
 								const keysLen = keys.length;
 								for (let i = 0; i < keysLen; i++) {
@@ -1284,7 +1273,7 @@ exports.add = function add(DD_MODULES) {
 					if (!types.isClass(type) && !types.isInterfaceClass(type)) {
 						return undefined;
 					};
-					const attrs = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+					const attrs = _shared.getAttribute(obj, _shared.AttributesSymbol);
 					const attr = attrs[name];
 					return attr;
 				});
@@ -1292,7 +1281,7 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.oldDESTROY = _shared.DESTROY;
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types._implements(obj, mixIns.Creatable)) {
-					const destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+					const destroyed = _shared.getAttribute(obj, _shared.DestroyedSymbol);
 					if (destroyed === false) { // NOTE: Can be "null" for "not created".
 						if (types.isType(obj)) {
 							obj.$destroy();
@@ -1308,7 +1297,7 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.oldDESTROYED = _shared.DESTROYED;
 			_shared.DESTROYED = function DESTROYED(obj) {
 				if (types._implements(obj, mixIns.Creatable)) {
-					const destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+					const destroyed = _shared.getAttribute(obj, _shared.DestroyedSymbol);
 					return (types.isType(obj) ? !!destroyed : (destroyed !== false)); // NOTE: Can be "null" for "not created".
 				} else {
 					return __Internal__.oldDESTROYED(obj);
@@ -1364,7 +1353,7 @@ exports.add = function add(DD_MODULES) {
 					if (__Internal__.hasPolicies) {
 						const newTypeType = types.getType(newType);  // "newType" can be a Singleton
 						if (isClass && !types.isMixIn(newTypeType) && !types.isInterface(newTypeType) && !types.isBase(newTypeType)) {
-							const mustOverride = newTypeType[__Internal__.symbolMustOverride] || newTypeType.prototype[__Internal__.symbolMustOverride];
+							const mustOverride = newTypeType[_shared.MustOverrideSymbol] || newTypeType.prototype[_shared.MustOverrideSymbol];
 							if (mustOverride) {
 								throw new types.Error("You must override the method '~0~' of type '~1~'.", [mustOverride, types.getTypeName(newTypeType) || __Internal__.ANONYMOUS]);
 							};
@@ -1880,7 +1869,7 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, function getterTemplate(attr, boxed, forType, storage) {
 							const extender = this;
-							const cache = (attr === __Internal__.symbolAttributesStorage ? undefined : {
+							const cache = (attr === _shared.AttributesStorageSymbol ? undefined : {
 								obj: null,
 								storage: null,
 							});
@@ -1888,14 +1877,14 @@ exports.add = function add(DD_MODULES) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-											const dispatch = result[__Internal__.symbolCurrentDispatch],
-												caller = result[__Internal__.symbolCurrentCallerIndex];
-											if (boxed[__Internal__.symbolScope] === doodad.Scopes.Private) {
-												if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbolPrototype] !== boxed[__Internal__.symbolPrototype])) {
+											const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol]);
+											const dispatch = result[_shared.CurrentDispatchSymbol],
+												caller = result[_shared.CurrentCallerIndexSymbol];
+											if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Private) {
+												if (!dispatch || (dispatch[_shared.CallersSymbol][caller][_shared.PrototypeSymbol] !== boxed[_shared.PrototypeSymbol])) {
 													throw new types.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 												};
-											} else if (boxed[__Internal__.symbolScope] === doodad.Scopes.Protected) {
+											} else if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Protected) {
 												if (!dispatch) {
 													throw new types.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 												};
@@ -1903,12 +1892,12 @@ exports.add = function add(DD_MODULES) {
 										};
 									};
 								};
-								if (attr === __Internal__.symbolAttributesStorage) {
+								if (attr === _shared.AttributesStorageSymbol) {
 									return storage;
 								} else {
 									if (cache.obj !== this) {
 										cache.obj = this;
-										cache.storage = _shared.invoke(this, function() {return this[__Internal__.symbolAttributesStorage]}, null, _shared.SECRET);
+										cache.storage = _shared.invoke(this, function() {return this[_shared.AttributesStorageSymbol]}, null, _shared.SECRET);
 									};
 									return cache.storage[attr];
 								};
@@ -1948,7 +1937,7 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, function setterTemplate(attr, boxed, forType, storage) {
 							const extender = this;
-							const cache = (attr === __Internal__.symbolAttributesStorage ? undefined : {
+							const cache = (attr === _shared.AttributesStorageSymbol ? undefined : {
 								obj: null,
 								storage: null,
 							});
@@ -1956,14 +1945,14 @@ exports.add = function add(DD_MODULES) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-											const dispatch = result[__Internal__.symbolCurrentDispatch],
-												caller = result[__Internal__.symbolCurrentCallerIndex];
-											if (boxed[__Internal__.symbolScope] === doodad.Scopes.Private) {
-												if (!dispatch || (dispatch[__Internal__.symbolCallers][caller][__Internal__.symbolPrototype] !== boxed[__Internal__.symbolPrototype])) {
+											const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol]);
+											const dispatch = result[_shared.CurrentDispatchSymbol],
+												caller = result[_shared.CurrentCallerIndexSymbol];
+											if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Private) {
+												if (!dispatch || (dispatch[_shared.CallersSymbol][caller][_shared.PrototypeSymbol] !== boxed[_shared.PrototypeSymbol])) {
 													throw new types.Error("Attribute '~0~' of '~1~' is private.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 												};
-											} else if (boxed[__Internal__.symbolScope] === doodad.Scopes.Protected) {
+											} else if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Protected) {
 												if (!dispatch) {
 													throw new types.Error("Attribute '~0~' of '~1~' is protected.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 												};
@@ -1974,10 +1963,10 @@ exports.add = function add(DD_MODULES) {
 								if (__Internal__.hasPolicies && extender.isReadOnly) {
 									throw new types.Error("Attribute '~0~' of '~1~' is read-only.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 								} else {
-									if (attr !== __Internal__.symbolAttributesStorage) {
+									if (attr !== _shared.AttributesStorageSymbol) {
 										if (cache.obj !== this) {
 											cache.obj = this;
-											cache.storage = _shared.invoke(this, function() {return this[__Internal__.symbolAttributesStorage]}, null, _shared.SECRET);
+											cache.storage = _shared.invoke(this, function() {return this[_shared.AttributesStorageSymbol]}, null, _shared.SECRET);
 										};
 										cache.storage[attr] = value;
 									};
@@ -2081,8 +2070,8 @@ exports.add = function add(DD_MODULES) {
 						, function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							if (__Internal__.hasPolicies) {
 								if (sourceIsProto) {
-									if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private)) {
-										throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.getTypeName(destAttribute[__Internal__.symbolPrototype][__Internal__.symbolType]) || __Internal__.ANONYMOUS]);
+									if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private)) {
+										throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.getTypeName(destAttribute[_shared.PrototypeSymbol][_shared.TypeSymbol]) || __Internal__.ANONYMOUS]);
 									};
 								};
 							};
@@ -2098,7 +2087,7 @@ exports.add = function add(DD_MODULES) {
 										(
 											__Internal__.hasScopes 
 											&& 
-											(this.enableScopes && (destAttribute[__Internal__.symbolScope] !== doodad.Scopes.Public))
+											(this.enableScopes && (destAttribute[_shared.ScopeSymbol] !== doodad.Scopes.Public))
 										) 
 										||
 										(
@@ -2167,7 +2156,7 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 							const attrId = generator.vars.add(attr);
-							const valueId = (attr === __Internal__.symbolAttributesStorage ? generator.storageId : generator.vars.add(value, attr));
+							const valueId = (attr === _shared.AttributesStorageSymbol ? generator.storageId : generator.vars.add(value, attr));
 
 							if (this.__isFromStorage(attribute)) {
 								generator.code.add(generator.storageId + "[" + attrId + "] = " + valueId);
@@ -2539,14 +2528,14 @@ exports.add = function add(DD_MODULES) {
 							};
 							_shared.setAttributes(fn, values, {ignoreWhenReadOnly: true});
 
-							const _caller = types.INHERIT(doodad.CallerFunction, function caller(/*paramarray*/) {
+							const _caller = types.INHERIT(doodad.CallerFunction, function caller(/*paramarray*/...params) {
 								const type = types.getType(this);
 										
-								const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, '_super']),
-									currentDispatch = result[__Internal__.symbolCurrentDispatch],
-									currentCaller = result[__Internal__.symbolCurrentCallerIndex] + 1,
+								const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super']),
+									currentDispatch = result[_shared.CurrentDispatchSymbol],
+									currentCaller = result[_shared.CurrentCallerIndexSymbol] + 1,
 									oldSuper = result._super,
-									modifiers = currentDispatch[__Internal__.symbolModifiers];
+									modifiers = currentDispatch[_shared.ModifiersSymbol];
 
 								let _super = null,
 									oldCalled = false;
@@ -2557,24 +2546,24 @@ exports.add = function add(DD_MODULES) {
 									//	throw new types.Error("Current dispatch and caller don't match together.");
 									//};
 
-									const callers = currentDispatch[__Internal__.symbolCallers];
+									const callers = currentDispatch[_shared.CallersSymbol];
 
 									if (currentCaller < callers.length) {
 										_super = callers[currentCaller];
-										oldCalled = _super[__Internal__.symbolCalled];
-										_super[__Internal__.symbolCalled] = false;
+										oldCalled = _super[_shared.CalledSymbol];
+										_super[_shared.CalledSymbol] = false;
 									} else {
 										_super = function() {};
-										_super[__Internal__.symbolCalled] = true;
+										_super[_shared.CalledSymbol] = true;
 									};
 									_shared.setAttribute(this, '_super', _super);
-									_shared.setAttribute(this, __Internal__.symbolCurrentCallerIndex, currentCaller);
+									_shared.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller);
 										
-									const callFn = (extender.byReference ? fn : types.unbox(_caller[__Internal__.symbolPrototype][attr]));
+									const callFn = (extender.byReference ? fn : types.unbox(_caller[_shared.PrototypeSymbol][attr]));
 										
-									_caller[__Internal__.symbolCalled] = true;
+									_caller[_shared.CalledSymbol] = true;
 										
-									let retVal = callFn.apply(this, arguments);
+									let retVal = callFn.apply(this, params);
 
 									if (modifiers & doodad.MethodModifiers.Async) {
 										const Promise = types.getPromise();
@@ -2582,7 +2571,7 @@ exports.add = function add(DD_MODULES) {
 									};
 										
 									if (__Internal__.hasPolicies) {
-										if ((_caller[__Internal__.symbolModifiers] & doodad.MethodModifiers.Override) && !_super[__Internal__.symbolCalled]) {
+										if ((_caller[_shared.ModifiersSymbol] & doodad.MethodModifiers.Override) && !_super[_shared.CalledSymbol]) {
 											throw new types.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 										};
 									};
@@ -2609,10 +2598,10 @@ exports.add = function add(DD_MODULES) {
 								} finally {
 									_shared.setAttribute(this, '_super', oldSuper);
 									if (!types.isNothing(currentCaller)) {
-										_shared.setAttribute(this, __Internal__.symbolCurrentCallerIndex, currentCaller - 1);
+										_shared.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller - 1);
 									};
 									if (!types.isNothing(_super)) {
-										_super[__Internal__.symbolCalled] = oldCalled;
+										_super[_shared.CalledSymbol] = oldCalled;
 									};
 								};
 							});
@@ -2626,7 +2615,7 @@ exports.add = function add(DD_MODULES) {
 								const Promise = types.getPromise();
 								result = Promise.resolve(result);
 								if (__Internal__.hasPolicies) {
-									const validator = attribute[__Internal__.symbolReturns];
+									const validator = attribute[_shared.ReturnsSymbol];
 									if (validator) {
 										result = result.then(function(val) {
 											if (!validator.call(obj, val)) {
@@ -2638,7 +2627,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							} else {
 								if (__Internal__.hasPolicies) {
-									const validator = attribute[__Internal__.symbolReturns];
+									const validator = attribute[_shared.ReturnsSymbol];
 									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 									if (validator && !validator.call(obj, result)) {
 										if (attr === 'toString') {
@@ -2654,21 +2643,21 @@ exports.add = function add(DD_MODULES) {
 
 					handleDispatchError: function handleDispatchError(ex, attr, obj) {
 							const type = types.getType(obj);
-							const attributes = _shared.getAttribute(obj, __Internal__.symbolAttributes);
+							const attributes = _shared.getAttribute(obj, _shared.AttributesSymbol);
 							const notReentrantMap = __Internal__.notReentrantMap.get(obj);
 							let emitted = false;
 							if (!ex.bubble /*&& !ex.trapped*/) {
 								if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
 									let destroyed = false;
 									if (obj._implements(mixIns.Creatable)) {
-										destroyed = _shared.getAttribute(obj, __Internal__.symbolDestroyed);
+										destroyed = _shared.getAttribute(obj, _shared.DestroyedSymbol);
 									};
 									if (destroyed === false) { // NOTE: Can be 'null' for "not created".
 										const errorEvent = obj.__ERROR_EVENT;
 										if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
 											const errorAttr = attributes[errorEvent];
 											const onError = obj[errorEvent];
-											if (types.isLike(errorAttr[__Internal__.symbolExtender], extenders.RawEvent)) {
+											if (types.isLike(errorAttr[_shared.ExtenderSymbol], extenders.RawEvent)) {
 												if (onError.getCount() > 0) {
 													// <PRB> Node.Js re-emits 'error'.
 													const noop = function _noop(err) {};
@@ -2732,10 +2721,10 @@ exports.add = function add(DD_MODULES) {
 						, function dispatchTemplate(attr, attribute, callers) {
 							const extender = this;
 
-							const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/) {
+							const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/...params) {
 								const type = types.getType(this),
 									forType = types.isType(this),
-									modifiers = _dispatch[__Internal__.symbolModifiers],
+									modifiers = _dispatch[_shared.ModifiersSymbol],
 									canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed);
 									
 								if (!canBeDestroyed) {
@@ -2743,7 +2732,7 @@ exports.add = function add(DD_MODULES) {
 									//	throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 									//};
 									if (types._implements(this, mixIns.Creatable)) {
-										const destroyed = _shared.getAttribute(this, __Internal__.symbolDestroyed);
+										const destroyed = _shared.getAttribute(this, _shared.DestroyedSymbol);
 										if ((destroyed === null) && !forType) {
 											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
@@ -2757,27 +2746,27 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 
-								const result = _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, __Internal__.symbolAttributes]), 
-									oldDispatch = result[__Internal__.symbolCurrentDispatch], 
-									oldCaller = result[__Internal__.symbolCurrentCallerIndex],
-									attributes = result[__Internal__.symbolAttributes];
+								const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, _shared.AttributesSymbol]), 
+									oldDispatch = result[_shared.CurrentDispatchSymbol], 
+									oldCaller = result[_shared.CurrentCallerIndexSymbol],
+									attributes = result[_shared.AttributesSymbol];
 
 								const oldInside = __Internal__.preserveInside();
 
-								const host = (types.baseof(doodad.Interface, type) ? this[__Internal__.symbolHost] : null),
+								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null),
 									hostType = types.getType(host);
 
 								if (__Internal__.hasScopes) {
 									// Private methods
 									if (!__Internal__.isInside(this)) {
-										if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
-											throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.getTypeName(caller[__Internal__.symbolPrototype][__Internal__.symbolType]) || __Internal__.ANONYMOUS]);
+										if ((attribute[_shared.ScopeSymbol] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[_shared.CallersSymbol][oldCaller - 1][_shared.PrototypeSymbol] !== caller[_shared.PrototypeSymbol])) {
+											throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.getTypeName(caller[_shared.PrototypeSymbol][_shared.TypeSymbol]) || __Internal__.ANONYMOUS]);
 										};
 									};
 
 									// Non-public methods
 									if ((!host && !__Internal__.isInside(this)) || (host && !__Internal__.isInside(this) && !__Internal__.isInside(host))) {
-										if ((attribute[__Internal__.symbolScope] !== doodad.Scopes.Public) && !oldDispatch) {
+										if ((attribute[_shared.ScopeSymbol] !== doodad.Scopes.Public) && !oldDispatch) {
 											throw new types.Error("Method '~0~' of '~1~' is not public.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
 									};
@@ -2801,9 +2790,9 @@ exports.add = function add(DD_MODULES) {
 								};
 
 								// Obsolete methods
-								if ((modifiers & doodad.MethodModifiers.Obsolete) && !_dispatch[__Internal__.symbolObsoleteWarned]) {
-									tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS, attribute[__Internal__.symbolUsageMessage] || '']);
-									_dispatch[__Internal__.symbolObsoleteWarned] = true;
+								if ((modifiers & doodad.MethodModifiers.Obsolete) && !_dispatch[_shared.ObsoleteWarnedSymbol]) {
+									tools.log(tools.LogLevels.Warning, "Method '~0~' of '~1~' is obsolete. ~2~", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS, attribute[_shared.UsageMessageSymbol] || '']);
+									_dispatch[_shared.ObsoleteWarnedSymbol] = true;
 								};
 
 								// Non-reentrant methods
@@ -2828,48 +2817,48 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 
-								const caller = _dispatch[__Internal__.symbolCallers][0];
+								const caller = _dispatch[_shared.CallersSymbol][0];
 								if (!caller) {
 									// No caller
 									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 								};
 									
-								const oldCallerCalled = caller[__Internal__.symbolCalled];
+								const oldCallerCalled = caller[_shared.CalledSymbol];
 
 								//let oldHostDispatch,
 								//	oldHostCaller;
 
 								//if (host) {
-								//	const result = _shared.getAttributes(host, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-								//	oldHostDispatch = result[__Internal__.symbolCurrentDispatch];
-								//	oldHostCaller = result[__Internal__.symbolCurrentCallerIndex];
+								//	const result = _shared.getAttributes(host, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol]);
+								//	oldHostDispatch = result[_shared.CurrentDispatchSymbol];
+								//	oldHostCaller = result[_shared.CurrentCallerIndexSymbol];
 								//};
 
 								let retVal = undefined;
 
 								try {
 									const values = {};										
-									values[__Internal__.symbolCurrentDispatch] = _dispatch;
-									values[__Internal__.symbolCurrentCallerIndex] = 0;
+									values[_shared.CurrentDispatchSymbol] = _dispatch;
+									values[_shared.CurrentCallerIndexSymbol] = 0;
 									_shared.setAttributes(this, values);
 									
 									//if (host) {
 									//	_shared.setAttributes(host, values);
 									//};
 									
-//										_dispatch[__Internal__.symbolSuperAsync] = false;
+//										_dispatch[_shared.SuperAsyncSymbol] = false;
 
 									if (notReentrant) {
 										notReentrantMap.set(attr, true);
 									};
 
-									caller[__Internal__.symbolCalled] = false;
+									caller[_shared.CalledSymbol] = false;
 										
 									__Internal__.setInside(this);
 
-									retVal = caller.apply(this, arguments);
+									retVal = caller.apply(this, params);
 
-//									if (!_dispatch[__Internal__.symbolSuperAsync]) {
+//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
 										retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
 //									};
 
@@ -2892,7 +2881,7 @@ exports.add = function add(DD_MODULES) {
 									};
 										
 								} finally {
-//										if (!_dispatch[__Internal__.symbolSuperAsync]) {
+//										if (!_dispatch[_shared.SuperAsyncSymbol]) {
 										if (notReentrant) {
 											if (async && retVal) {
 												retVal = retVal.nodeify(function resetCalled(err, result) {
@@ -2914,17 +2903,17 @@ exports.add = function add(DD_MODULES) {
 //										};
 
 									__Internal__.restoreInside(oldInside);
-									caller[__Internal__.symbolCalled] = oldCallerCalled;
+									caller[_shared.CalledSymbol] = oldCallerCalled;
 
 									const values = {};										
-									values[__Internal__.symbolCurrentDispatch] = oldDispatch;
-									values[__Internal__.symbolCurrentCallerIndex] = oldCaller;
+									values[_shared.CurrentDispatchSymbol] = oldDispatch;
+									values[_shared.CurrentCallerIndexSymbol] = oldCaller;
 									_shared.setAttributes(this, values);
 										
 									//if (host) {
 									//	const values = {};										
-									//	values[__Internal__.symbolCurrentDispatch] = oldHostDispatch;
-									//	values[__Internal__.symbolCurrentCallerIndex] = oldHostCaller;
+									//	values[_shared.CurrentDispatchSymbol] = oldHostDispatch;
+									//	values[_shared.CurrentCallerIndexSymbol] = oldHostCaller;
 									//	_shared.setAttributes(host, values);
 									//};
 								};
@@ -2970,13 +2959,13 @@ exports.add = function add(DD_MODULES) {
 
 							const caller = this.callerTemplate(attr, sourceAttribute, destAttribute);
 
-							caller[__Internal__.symbolCalled] = false;
+							caller[_shared.CalledSymbol] = false;
 
 							const values = {};
-							values[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
-							values[__Internal__.symbolModifiers] = (sourceAttribute[__Internal__.symbolModifiers] || 0);
-							values[__Internal__.symbolPosition] = sourceAttribute[__Internal__.symbolPosition];
-							values[__Internal__.symbolUsageMessage] = sourceAttribute[__Internal__.symbolUsageMessage];
+							values[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
+							values[_shared.ModifiersSymbol] = (sourceAttribute[_shared.ModifiersSymbol] || 0);
+							values[_shared.PositionSymbol] = sourceAttribute[_shared.PositionSymbol];
+							values[_shared.UsageMessageSymbol] = sourceAttribute[_shared.UsageMessageSymbol];
 							_shared.setAttributes(caller, values, {});
 								
 							return caller;
@@ -3022,20 +3011,20 @@ exports.add = function add(DD_MODULES) {
 							const dispatch = this.dispatchTemplate(attr, attribute, callers);
 
 							_shared.setAttribute(dispatch, _shared.NameSymbol, attr, {});
-							_shared.setAttribute(dispatch, __Internal__.symbolCallers, callers, {});
+							_shared.setAttribute(dispatch, _shared.CallersSymbol, callers, {});
 								
-							let modifiers = attribute[__Internal__.symbolModifiers] || 0;
+							let modifiers = attribute[_shared.ModifiersSymbol] || 0;
 
 							// Clear "MustOverride" if method has been overriden
 							let caller = callers[0];
-							if (caller && !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
-								caller = (callers.length > attribute[__Internal__.symbolCallFirstLength]) && callers[attribute[__Internal__.symbolCallFirstLength]];
-								if (!caller || !((caller[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.MustOverride)) {
+							if (caller && !((caller[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.MustOverride)) {
+								caller = (callers.length > attribute[_shared.CallFirstLengthSymbol]) && callers[attribute[_shared.CallFirstLengthSymbol]];
+								if (!caller || !((caller[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.MustOverride)) {
 									modifiers = modifiers & (~ doodad.MethodModifiers.MustOverride);
 								};
 							};
 
-							_shared.setAttribute(dispatch, __Internal__.symbolModifiers, modifiers, {});
+							_shared.setAttribute(dispatch, _shared.ModifiersSymbol, modifiers, {});
 
 							return dispatch;
 						}),
@@ -3099,22 +3088,22 @@ exports.add = function add(DD_MODULES) {
 								destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
 							};
 								
-							let replacedCallers = sourceAttribute[__Internal__.symbolReplacedCallers];
+							let replacedCallers = sourceAttribute[_shared.ReplacedCallersSymbol];
 							if (replacedCallers) {
-								destAttribute[__Internal__.symbolReplacedCallers] = replacedCallers = tools.unique(replacedCallers);
+								destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers = tools.unique(replacedCallers);
 							} else {
-								replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
+								replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
 							};
 
-							let modifiers = ((destAttribute[__Internal__.symbolModifiers] || 0) & _shared.preservedMethodModifiers) | (sourceAttribute[__Internal__.symbolModifiers] || 0);
+							let modifiers = ((destAttribute[_shared.ModifiersSymbol] || 0) & _shared.preservedMethodModifiers) | (sourceAttribute[_shared.ModifiersSymbol] || 0);
 								
 							if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
 								// Override or replace
-								let start = destAttribute[__Internal__.symbolCallFirstLength];
+								let start = destAttribute[_shared.CallFirstLengthSymbol];
 								if (callersOrFn) {
 									if (sourceIsProto) {
 										if (__Internal__.hasPolicies) {
-											if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
+											if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
 												throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 											};
 										};
@@ -3123,7 +3112,7 @@ exports.add = function add(DD_MODULES) {
 									};
 									let toRemove = 0;
 									let caller = callersOrFn[start - 1];
-									let callerModifiers = caller && caller[__Internal__.symbolModifiers] || 0;
+									let callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
 									if ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) {
 										// Replace "call firsts"
 										if (sourceIsProto) {
@@ -3132,14 +3121,14 @@ exports.add = function add(DD_MODULES) {
 										start = 0;
 									};
 									caller = callersOrFn[callersOrFn.length - 1];
-									callerModifiers = caller && caller[__Internal__.symbolModifiers] || 0;
+									callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
 									if (sourceIsProto && ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === doodad.MethodModifiers.Replace)) {
 										// Replace non "call firsts"
 										toRemove = destCallers.length - start;
 									};
 									const removed = _shared.Natives.arraySpliceApply(destCallers, tools.append([start, toRemove], callersOrFn));
-									destAttribute[__Internal__.symbolReplacedCallers] = tools.append(replacedCallers, removed);
-									destAttribute[__Internal__.symbolCallFirstLength] = start + (sourceAttribute[__Internal__.symbolCallFirstLength] || 0);
+									destAttribute[_shared.ReplacedCallersSymbol] = tools.append(replacedCallers, removed);
+									destAttribute[_shared.CallFirstLengthSymbol] = start + (sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
 								};
 							} else {
 								// Create
@@ -3156,7 +3145,7 @@ exports.add = function add(DD_MODULES) {
 										};
 									};
 								} else if (srcIsInterface) {
-									if (callersOrFn && (sourceAttribute[__Internal__.symbolPrototype] === sourceProto)) {
+									if (callersOrFn && (sourceAttribute[_shared.PrototypeSymbol] === sourceProto)) {
 										if (__Internal__.hasPolicies) {
 											if (hasDestCallers) {
 												throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
@@ -3179,15 +3168,15 @@ exports.add = function add(DD_MODULES) {
 										destCallers.length = 0;
 										tools.append(destCallers, callersOrFn);
 									};
-									destAttribute[__Internal__.symbolCallFirstLength] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[__Internal__.symbolCallFirstLength] || 0);
+									destAttribute[_shared.CallFirstLengthSymbol] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
 								};
 							};
 
 							if (!srcIsInterface) {
-								destAttribute[__Internal__.symbolModifiers] = modifiers;
-								destAttribute[__Internal__.symbolReturns] = (sourceAttribute[__Internal__.symbolReturns] || destAttribute[__Internal__.symbolReturns]);
-								destAttribute[__Internal__.symbolUsageMessage] = (sourceAttribute[__Internal__.symbolUsageMessage] || destAttribute[__Internal__.symbolUsageMessage]);
-								destAttribute[__Internal__.symbolRenamedTo] = sourceAttribute[__Internal__.symbolRenamedTo];
+								destAttribute[_shared.ModifiersSymbol] = modifiers;
+								destAttribute[_shared.ReturnsSymbol] = (sourceAttribute[_shared.ReturnsSymbol] || destAttribute[_shared.ReturnsSymbol]);
+								destAttribute[_shared.UsageMessageSymbol] = (sourceAttribute[_shared.UsageMessageSymbol] || destAttribute[_shared.UsageMessageSymbol]);
+								destAttribute[_shared.RenamedToSymbol] = sourceAttribute[_shared.RenamedToSymbol];
 							};
 
 							return destAttribute;
@@ -3224,27 +3213,27 @@ exports.add = function add(DD_MODULES) {
 								
 							const callers = types.unbox(destAttribute);
 
-							const replacedCallers = destAttribute[__Internal__.symbolReplacedCallers] || [];
+							const replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
 
 							// Remove duplicated callers and update "call first" length
-							destAttribute[__Internal__.symbolCallFirstLength] = callers.length;
+							destAttribute[_shared.CallFirstLengthSymbol] = callers.length;
 
 							let i = 0;
 
 							while (i < callers.length) {
 								const callerI = callers[i];
-								const modifiersI = callerI[__Internal__.symbolModifiers];
+								const modifiersI = callerI[_shared.ModifiersSymbol];
 								if (!(modifiersI & doodad.MethodModifiers.CallFirst)) {
-									destAttribute[__Internal__.symbolCallFirstLength] = i;
+									destAttribute[_shared.CallFirstLengthSymbol] = i;
 									break;
 								};
-								const protoI = callerI[__Internal__.symbolPrototype];
-								const typeI = protoI[__Internal__.symbolType];
+								const protoI = callerI[_shared.PrototypeSymbol];
+								const typeI = protoI[_shared.TypeSymbol];
 								let deleted = false;
 								for (let j = 0; j < replacedCallers.length; j++) {
 									const callerJ = replacedCallers[j];
-									const protoJ = callerJ[__Internal__.symbolPrototype];
-									const typeJ = protoJ[__Internal__.symbolType];
+									const protoJ = callerJ[_shared.PrototypeSymbol];
+									const typeJ = protoJ[_shared.TypeSymbol];
 									if ((protoJ === protoI) || types.baseof(protoJ, protoI)) {
 										callers.splice(i, 1);
 										deleted = true;
@@ -3255,8 +3244,8 @@ exports.add = function add(DD_MODULES) {
 									let j = i + 1;
 									while (j < callers.length) {
 										const callerJ = callers[j];
-										const protoJ = callerJ[__Internal__.symbolPrototype];
-										const typeJ = protoJ[__Internal__.symbolType];
+										const protoJ = callerJ[_shared.PrototypeSymbol];
+										const typeJ = protoJ[_shared.TypeSymbol];
 										if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 											callers.splice(j, 1);
 										} else {
@@ -3268,15 +3257,15 @@ exports.add = function add(DD_MODULES) {
 							};
 
 							i = callers.length - 1;
-							while (i >= destAttribute[__Internal__.symbolCallFirstLength]) {
+							while (i >= destAttribute[_shared.CallFirstLengthSymbol]) {
 								const callerI = callers[i];
-								const protoI = callerI[__Internal__.symbolPrototype];
-								const typeI = protoI[__Internal__.symbolType];
+								const protoI = callerI[_shared.PrototypeSymbol];
+								const typeI = protoI[_shared.TypeSymbol];
 								let deleted = false;
 								for (let j = 0; j < replacedCallers.length; j++) {
 									const callerJ = replacedCallers[j];
-									const protoJ = callerJ[__Internal__.symbolPrototype];
-									const typeJ = protoJ[__Internal__.symbolType];
+									const protoJ = callerJ[_shared.PrototypeSymbol];
+									const typeJ = protoJ[_shared.TypeSymbol];
 									if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 										callers.splice(i, 1);
 										deleted = true;
@@ -3285,10 +3274,10 @@ exports.add = function add(DD_MODULES) {
 								};
 								if (!deleted) {
 									let j = i - 1;
-									while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
+									while (j >= destAttribute[_shared.CallFirstLengthSymbol]) {
 										const callerJ = callers[j];
-										const protoJ = callerJ[__Internal__.symbolPrototype];
-										const typeJ = protoJ[__Internal__.symbolType];
+										const protoJ = callerJ[_shared.PrototypeSymbol];
+										const typeJ = protoJ[_shared.TypeSymbol];
 										if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 											_shared.Natives.arraySpliceCall(callers, j, 1);
 											i--;
@@ -3303,15 +3292,15 @@ exports.add = function add(DD_MODULES) {
 							i = 0;
 							while (i < callers.length) {
 								const callerI = callers[i],
-									positionI = callerI[__Internal__.symbolPosition];
+									positionI = callerI[_shared.PositionSymbol];
 
 								let found = false;
 
-								if (positionI && !positionI[__Internal__.symbolOk]) {
+								if (positionI && !positionI[_shared.OkSymbol]) {
 									for (let j = 0; j < callers.length; j++) {
 										const callerJ = callers[j];
-										const protoJ = callerJ[__Internal__.symbolPrototype];
-										const typeJ = protoJ[__Internal__.symbolType];
+										const protoJ = callerJ[_shared.PrototypeSymbol];
+										const typeJ = protoJ[_shared.TypeSymbol];
 										if ((i !== j) && (typeJ === positionI.cls)) {
 											let pos = j;
 											if (positionI.position > 0) {
@@ -3322,17 +3311,17 @@ exports.add = function add(DD_MODULES) {
 												toRemove = 1;
 											};
 											_shared.Natives.arraySpliceCall(callers, i, 1);
-											if (i < destAttribute[__Internal__.symbolCallFirstLength]) {
-												destAttribute[__Internal__.symbolCallFirstLength]--;
+											if (i < destAttribute[_shared.CallFirstLengthSymbol]) {
+												destAttribute[_shared.CallFirstLengthSymbol]--;
 											};
 											if (pos > i) {
 												pos--;
 											};
 											_shared.Natives.arraySpliceCall(callers, pos, toRemove, callerI);
-											if (pos < destAttribute[__Internal__.symbolCallFirstLength]) {
-												destAttribute[__Internal__.symbolCallFirstLength]++;
+											if (pos < destAttribute[_shared.CallFirstLengthSymbol]) {
+												destAttribute[_shared.CallFirstLengthSymbol]++;
 											};
-											positionI[__Internal__.symbolOk] = true;
+											positionI[_shared.OkSymbol] = true;
 											found = true;
 											break;
 										};
@@ -3349,10 +3338,10 @@ exports.add = function add(DD_MODULES) {
 							// TODO: Find a better way than "symbolOk"
 							for (let j = 0; j < callers.length; j++) {
 								const callerI = callers[j],
-									positionI = callerI[__Internal__.symbolPosition];
+									positionI = callerI[_shared.PositionSymbol];
 								if (positionI) {
-									//delete positionI[__Internal__.symbolOk];
-									positionI[__Internal__.symbolOk] = false;
+									//delete positionI[_shared.OkSymbol];
+									positionI[_shared.OkSymbol] = false;
 								};
 							};
 
@@ -3389,8 +3378,8 @@ exports.add = function add(DD_MODULES) {
 
 							if (__Internal__.hasPolicies) {
 								const valueId = generator.vars.fromKey(attr);
-								const symbolModifiersId = generator.vars.add(__Internal__.symbolModifiers);
-								const symbolMustOverrideId = generator.vars.add(__Internal__.symbolMustOverride);
+								const symbolModifiersId = generator.vars.add(_shared.ModifiersSymbol);
+								const symbolMustOverrideId = generator.vars.add(_shared.MustOverrideSymbol);
 
 								generator.code.add(
 									"if (" + valueId + "[" + symbolModifiersId + "] & doodad.MethodModifiers.MustOverride) {" +
@@ -3460,7 +3449,7 @@ exports.add = function add(DD_MODULES) {
 
 							fn = types.INHERIT(doodad.CallerFunction, fn);
 
-							_caller[__Internal__.symbolFunction] = fn;
+							_caller[_shared.FunctionSymbol] = fn;
 
 							return _caller;
 						},
@@ -3497,10 +3486,10 @@ exports.add = function add(DD_MODULES) {
 							const fnApply = fn.apply.bind(fn);
 
 							if (this.dontSetSuper) {
-								_caller = function caller(/*paramarray*/) {
+								_caller = function caller(/*paramarray*/...params) {
 									const oldSuper = _shared.getAttribute(this, '_super');
 									try {
-										return fnApply(this, arguments);
+										return fnApply(this, params);
 									} catch(ex) {
 										throw ex;
 									} finally {
@@ -3509,11 +3498,11 @@ exports.add = function add(DD_MODULES) {
 								};
 							} else {
 								_super = _super || (function(){});
-								_caller = function caller(/*paramarray*/) {
+								_caller = function caller(/*paramarray*/...params) {
 									const oldSuper = _shared.getAttribute(this, '_super');
 									_shared.setAttribute(this, '_super', _super);
 									try {
-										return fnApply(this, arguments);
+										return fnApply(this, params);
 									} catch(ex) {
 										throw ex;
 									} finally {
@@ -3534,9 +3523,9 @@ exports.add = function add(DD_MODULES) {
 							for (let i = callersLen - 1; i >= 0; i--) {
 								const caller = callers[i];
 
-								_super = this.jsCallerTemplate(attr, caller[__Internal__.symbolFunction], _super);
+								_super = this.jsCallerTemplate(attr, caller[_shared.FunctionSymbol], _super);
 
-								_shared.setAttribute(_super, __Internal__.symbolPrototype, caller[__Internal__.symbolPrototype], {});
+								_shared.setAttribute(_super, _shared.PrototypeSymbol, caller[_shared.PrototypeSymbol], {});
 							};
 
 							let _dispatch = __Internal__.makeInside(null, _super, _shared.SECRET);
@@ -3568,7 +3557,7 @@ exports.add = function add(DD_MODULES) {
 								
 							if (sourceIsProto) {
 								if (__Internal__.hasPolicies) {
-									if (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private) {
+									if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
 										throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 									};
 								};
@@ -3615,14 +3604,14 @@ exports.add = function add(DD_MODULES) {
 							let i = callers.length - 1;
 							while (i >= 0) {
 								const callerI = callers[i];
-								const protoI = callerI[__Internal__.symbolPrototype];
-								const typeI = protoI[__Internal__.symbolType];
+								const protoI = callerI[_shared.PrototypeSymbol];
+								const typeI = protoI[_shared.TypeSymbol];
 
 								let j = i - 1;
 								while (j >= 0) {
 									const callerJ = callers[j];
-									const protoJ = callerJ[__Internal__.symbolPrototype];
-									const typeJ = protoJ[__Internal__.symbolType];
+									const protoJ = callerJ[_shared.PrototypeSymbol];
+									const typeJ = protoJ[_shared.TypeSymbol];
 									if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 										_shared.Natives.arraySpliceCall(callers, j, 1);
 										i--;
@@ -3810,9 +3799,9 @@ exports.add = function add(DD_MODULES) {
 						value = undefined;
 					};
 					value = types.AttributeBox(value);
-					value[__Internal__.symbolScope] = doodad.Scopes.Public;
+					value[_shared.ScopeSymbol] = doodad.Scopes.Public;
 					if (extender) {
-						value[__Internal__.symbolExtender] = extender;
+						value[_shared.ExtenderSymbol] = extender;
 					};
 					return value;
 				}));
@@ -3840,9 +3829,9 @@ exports.add = function add(DD_MODULES) {
 						value = undefined;
 					};
 					value = types.AttributeBox(value);
-					value[__Internal__.symbolScope] = doodad.Scopes.Protected;
+					value[_shared.ScopeSymbol] = doodad.Scopes.Protected;
 					if (extender) {
-						value[__Internal__.symbolExtender] = extender;
+						value[_shared.ExtenderSymbol] = extender;
 					};
 					return value;
 				}));
@@ -3871,9 +3860,9 @@ exports.add = function add(DD_MODULES) {
 						value = undefined;
 					};
 					value = types.AttributeBox(value);
-					value[__Internal__.symbolScope] = doodad.Scopes.Private;
+					value[_shared.ScopeSymbol] = doodad.Scopes.Private;
 					if (extender) {
-						value[__Internal__.symbolExtender] = extender;
+						value[_shared.ExtenderSymbol] = extender;
 					};
 					return value;
 				}));
@@ -3920,7 +3909,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Base, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Base, {configurable: true});
 					return cls;
 				}));
 				
@@ -3952,7 +3941,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
 					return cls;
 				})));
 				
@@ -3983,7 +3972,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, ((cls[__Internal__.symbolModifiers] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
 					return cls;
 				}));
 				
@@ -4008,7 +3997,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
 					return cls;
 				}));
 				
@@ -4033,7 +4022,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Static, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Static, {configurable: true});
 					return cls;
 				}));
 				
@@ -4063,7 +4052,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
 					return cls;
 				}));
 				
@@ -4093,7 +4082,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					_shared.setAttribute(cls, __Internal__.symbolModifiers, (cls[__Internal__.symbolModifiers] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
+					_shared.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
 					return cls;
 				}));
 				
@@ -4124,7 +4113,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function WHEN(type, /*optional*/value) {
 					value = types.AttributeBox(value);
-					value[__Internal__.symbolWhen] = tools.unique(value[__Internal__.symbolWhen], (types.isArrayLike(type) ? type : [type]));
+					value[_shared.WhenSymbol] = tools.unique(value[_shared.WhenSymbol], (types.isArrayLike(type) ? type : [type]));
 					return value;
 				}));
 				
@@ -4158,7 +4147,7 @@ exports.add = function add(DD_MODULES) {
 				, function ATTRIBUTE(value, /*optional*/extender, /*optional*/options) {
 					value = types.AttributeBox(value);
 
-					let oldExtender = value[__Internal__.symbolExtender];
+					let oldExtender = value[_shared.ExtenderSymbol];
 					if (!oldExtender) {
 						oldExtender = extenders.Attribute;
 					};
@@ -4174,7 +4163,7 @@ exports.add = function add(DD_MODULES) {
 						oldExtender = oldExtender.get(options);
 					};
 						
-					value[__Internal__.symbolExtender] = oldExtender;
+					value[_shared.ExtenderSymbol] = oldExtender;
 					return value;
 				}));
 
@@ -4211,7 +4200,7 @@ exports.add = function add(DD_MODULES) {
 						value = undefined;
 					} else {
 						value = types.AttributeBox(value);
-						extender = value[__Internal__.symbolExtender];
+						extender = value[_shared.ExtenderSymbol];
 					};
 						
 					if (!extender) {
@@ -4230,7 +4219,7 @@ exports.add = function add(DD_MODULES) {
 					if (valueIsExtender) {
 						return extender;
 					} else {
-						value[__Internal__.symbolExtender] = extender;
+						value[_shared.ExtenderSymbol] = extender;
 						return value;
 					};
 				}));
@@ -4473,7 +4462,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function METHOD(/*optional*/fn) {
 					if (types._instanceof(fn, types.AttributeBox)) {
-						if (types.is(fn[__Internal__.symbolExtender], extenders.Method)) {
+						if (types.is(fn[_shared.ExtenderSymbol], extenders.Method)) {
 							return fn;
 						};
 					};
@@ -4596,7 +4585,7 @@ exports.add = function add(DD_MODULES) {
 				, function POSITION(position, cls, value) {
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(doodad.Class, cls), "Invalid class.");
 					value = types.AttributeBox(value);
-					value[__Internal__.symbolPosition] = {
+					value[_shared.PositionSymbol] = {
 						position: position,
 						cls: cls,
 					};
@@ -4704,8 +4693,8 @@ exports.add = function add(DD_MODULES) {
 						root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
 					};
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
-					fn[__Internal__.symbolInterface] = _interface;
+					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
+					fn[_shared.InterfaceSymbol] = _interface;
 					return fn;
 				}));
 				
@@ -4741,8 +4730,8 @@ exports.add = function add(DD_MODULES) {
 						root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
 					};
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
-					fn[__Internal__.symbolInterface] = _interface;
+					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
+					fn[_shared.InterfaceSymbol] = _interface;
 					return fn;
 				}));
 				
@@ -4768,9 +4757,9 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will create or replace the existing one.",
 				}
 				//! END_REPLACE()
-				, function CREATE_REPLACE(/*<<< optional[_interface]*/ /*optional*/fn) {
-					fn = doodad.REPLACE.apply(this, arguments);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.ForceCreate;
+				, function CREATE_REPLACE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
+					const fn = doodad.REPLACE(...args);
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.ForceCreate;
 					return fn;
 				}));
 				
@@ -4796,9 +4785,9 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will create or override the existing one.",
 				}
 				//! END_REPLACE()
-				, function CREATE_OVERRIDE(/*<<< optional[_interface]*/ /*optional*/fn) {
-					fn = doodad.OVERRIDE.apply(this, arguments);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.ForceCreate;
+				, function CREATE_OVERRIDE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
+					const fn = doodad.OVERRIDE(...args);
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.ForceCreate;
 					return fn;
 				}));
 				
@@ -4820,7 +4809,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function MUST_OVERRIDE(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.MustOverride;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.MustOverride;
 					return fn;
 				}));
 				
@@ -4846,13 +4835,13 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method is obsolete.",
 				}
 				//! END_REPLACE()
-				, function OBSOLETE(/* <<< optional[message], optional[fn]*/) {
-					const argsLen = arguments.length;
-					let fn = arguments[argsLen - 1];
-					const message = arguments[argsLen - 2];
+				, function OBSOLETE(/* <<< optional[message], optional[fn]*/...args) {
+					const argsLen = args.length;
+					let fn = args[argsLen - 1];
+					const message = args[argsLen - 2];
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Obsolete;
-					fn[__Internal__.symbolUsageMessage] = message;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.Obsolete;
+					fn[_shared.UsageMessageSymbol] = message;
 					return fn;
 				}));
 
@@ -4874,7 +4863,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function CALL_FIRST(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CallFirst;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.CallFirst;
 					return fn;
 				}));
 				
@@ -4896,7 +4885,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function CAN_BE_DESTROYED(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.CanBeDestroyed;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.CanBeDestroyed;
 					return fn;
 				}));
 				
@@ -4912,7 +4901,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function NOT_IMPLEMENTED(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.NotImplemented;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.NotImplemented;
 					return fn;
 				})));
 				
@@ -4940,7 +4929,7 @@ exports.add = function add(DD_MODULES) {
 				, function RETURNS(validator, /*optional*/fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(validator), "Invalid validator.");
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolReturns] = validator;
+					fn[_shared.ReturnsSymbol] = validator;
 					return fn;
 				}));
 
@@ -4956,7 +4945,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function ASYNC(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
-					fn[__Internal__.symbolModifiers] = (fn[__Internal__.symbolModifiers] || 0) | doodad.MethodModifiers.Async;
+					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.Async;
 					return fn;
 				}));
 				
@@ -4982,11 +4971,12 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will override the existing one with a new name.",
 				}
 				//! END_REPLACE()
-				, function RENAME_OVERRIDE(/*<<< optional[name]*/ fn) {
+				, function RENAME_OVERRIDE(/*<<< optional[name], optional[fn]*/...args) {
 					let name = null;
-					if (arguments.length > 1) {
+					let fn = args[0];
+					if (args.length > 1) {
 						name = fn;
-						fn = arguments[1];
+						fn = args[1];
 					};
 					fn = doodad.METHOD(fn);
 					const val = types.unbox(fn);
@@ -4996,8 +4986,8 @@ exports.add = function add(DD_MODULES) {
 							throw new types.TypeError("A function name is required.");
 						};
 					};
-					fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
-					fn[__Internal__.symbolRenamedTo] = name;
+					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
+					fn[_shared.RenamedToSymbol] = name;
 					return fn;
 				}));
 				
@@ -5023,11 +5013,12 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will be renamed and replace the previous one.",
 				}
 				//! END_REPLACE()
-				, function RENAME_REPLACE(/*<<< optional[name]*/ /*optional*/fn) {
+				, function RENAME_REPLACE(/*<<< optional[name]*/ /*optional[fn]*/...args) {
 					let name = null;
-					if (arguments.length > 1) {
+					let fn = args[0];
+					if (args.length > 1) {
 						name = fn;
-						fn = arguments[1];
+						fn = args[1];
 					};
 					fn = doodad.METHOD(fn);
 					const val = types.unbox(fn);
@@ -5037,8 +5028,8 @@ exports.add = function add(DD_MODULES) {
 							throw new types.TypeError("A function name is required.");
 						};
 					};
-					fn[__Internal__.symbolModifiers] = ((fn[__Internal__.symbolModifiers] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
-					fn[__Internal__.symbolRenamedTo] = name;
+					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
+					fn[_shared.RenamedToSymbol] = name;
 					return fn;
 				}));
 
@@ -5047,20 +5038,20 @@ exports.add = function add(DD_MODULES) {
 			//==================================
 				
 			__Internal__.defaultAttributes = tools.nullObject();
-			__Internal__.defaultAttributes[__Internal__.symbolAttributes] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolAttributesStorage] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolPrototype] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[__Internal__.symbolModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))));
-			__Internal__.defaultAttributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[__Internal__.symbolCurrentDispatch] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolCurrentCallerIndex] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolInitInstance] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[__Internal__.symbolToInitialize] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolToExtendLater] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
-			__Internal__.defaultAttributes[__Internal__.symbolIsolated] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))));
-			__Internal__.defaultAttributes[__Internal__.symbolIsolatedCache] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes[_shared.AttributesSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
+			__Internal__.defaultAttributes[_shared.AttributesStorageSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null}))))))));
+			__Internal__.defaultAttributes[_shared.PrototypeSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes[_shared.ModifiersSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes[_shared.ImplementsSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
+			__Internal__.defaultAttributes[_shared.BaseSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))));
+			__Internal__.defaultAttributes[_shared.MustOverrideSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes[_shared.CurrentDispatchSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
+			__Internal__.defaultAttributes[_shared.CurrentCallerIndexSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
+			__Internal__.defaultAttributes[_shared.InitInstanceSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes[_shared.ToInitializeSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
+			__Internal__.defaultAttributes[_shared.ToExtendLaterSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
+			__Internal__.defaultAttributes[_shared.IsolatedSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))));
+			__Internal__.defaultAttributes[_shared.IsolatedCacheSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
 			types.freezeObject(__Internal__.defaultAttributes);
 
 /*
@@ -5068,17 +5059,17 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.defaultAttributesSymbols = types.freezeObject(types.symbols(__Internal__.defaultAttributes));
 
 			__Internal__.defaultTypeAttributesKeys = types.freezeObject(tools.map(__Internal__.defaultAttributesKeys, function(key) {
-				return __Internal__.defaultAttributes[key][__Internal__.symbolExtender].isType;
+				return __Internal__.defaultAttributes[key][_shared.ExtenderSymbol].isType;
 			}));
 			__Internal__.defaultTypeAttributesSymbols = types.freezeObject(tools.map(__Internal__.defaultAttributesSymbols, function(key) {
-				return __Internal__.defaultAttributes[key][__Internal__.symbolExtender].isType;
+				return __Internal__.defaultAttributes[key][_shared.ExtenderSymbol].isType;
 			}));
 
 			__Internal__.defaultInstanceAttributesKeys = types.freezeObject(tools.map(__Internal__.defaultAttributesKeys, function(key) {
-				return __Internal__.defaultAttributes[key][__Internal__.symbolExtender].isInstance;
+				return __Internal__.defaultAttributes[key][_shared.ExtenderSymbol].isInstance;
 			}));
 			__Internal__.defaultInstanceAttributesSymbols = types.freezeObject(tools.map(__Internal__.defaultAttributesSymbols, function(key) {
-				return __Internal__.defaultAttributes[key][__Internal__.symbolExtender].isInstance;
+				return __Internal__.defaultAttributes[key][_shared.ExtenderSymbol].isInstance;
 			}));
 */
 
@@ -5086,12 +5077,12 @@ exports.add = function add(DD_MODULES) {
 				// NOTE: The contract must be fullfilled (source: Sorella in freenode) : `compose({ a(){ return 1 }, b(){ return a() + 1 }, {a renamed to _a(){ return 3 } }).b()` should returns 2
 
 				const sourceAttribute = types.AttributeBox(destAttribute);
-				sourceAttribute[__Internal__.symbolRenamedTo] = null;
-				sourceAttribute[__Internal__.symbolRenamedFrom] = attr;
+				sourceAttribute[_shared.RenamedToSymbol] = null;
+				sourceAttribute[_shared.RenamedFromSymbol] = attr;
 
 				if (types.has(destAttributes, newAttr)) {
 					destAttribute = destAttributes[newAttr];
-					extender = destAttribute[__Internal__.symbolExtender];
+					extender = destAttribute[_shared.ExtenderSymbol];
 				} else {
 					destAttribute = types.AttributeBox(undefined);
 				};
@@ -5120,11 +5111,11 @@ exports.add = function add(DD_MODULES) {
 					sourceAttribute = types.AttributeBox(undefined);
 				};
 
-				if (!isExtendLater && sourceIsProto && !sourceAttribute[__Internal__.symbolPrototype]) {
-					sourceAttribute[__Internal__.symbolPrototype] = sourceProto;
+				if (!isExtendLater && sourceIsProto && !sourceAttribute[_shared.PrototypeSymbol]) {
+					sourceAttribute[_shared.PrototypeSymbol] = sourceProto;
 				};
 
-				const _interface = types.get(sourceAttribute, __Internal__.symbolInterface);
+				const _interface = types.get(sourceAttribute, _shared.InterfaceSymbol);
 				if (_interface) {
 					const uuid = _shared.getUUID(_interface);
 					if (!_isolated.has(_interface) && (!uuid || !_isolated.has(uuid))) {
@@ -5145,10 +5136,10 @@ exports.add = function add(DD_MODULES) {
 				let destAttribute;
 				if (!isExtendLater && types.has(destAttributes, attr)) {
 					destAttribute = destAttributes[attr].clone();
-					extender = destAttribute[__Internal__.symbolExtender];
+					extender = destAttribute[_shared.ExtenderSymbol];
 				} else if (!isExtendLater && (source !== base) && baseAttributes && (attr in baseAttributes)) {
 					destAttribute = types.AttributeBox(baseAttributes[attr]);
-					extender = destAttribute[__Internal__.symbolExtender];
+					extender = destAttribute[_shared.ExtenderSymbol];
 					if (extender && extender.getValue) {
 						destAttribute = extender.getValue(attr, destAttribute, forType);
 					};
@@ -5156,7 +5147,7 @@ exports.add = function add(DD_MODULES) {
 					destAttribute = types.AttributeBox(undefined);
 				};
 
-				const sourceExtender = types.get(sourceAttribute, __Internal__.symbolExtender);
+				const sourceExtender = types.get(sourceAttribute, _shared.ExtenderSymbol);
 				if (sourceExtender)  {
 					if (extender && extender.override) {
 						extender = extender.override(sourceExtender);
@@ -5221,10 +5212,10 @@ exports.add = function add(DD_MODULES) {
 
 					if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 
-						if (extender.notInherited || (source === base) || !types._implements(destAttribute[__Internal__.symbolPrototype] && destAttribute[__Internal__.symbolPrototype][__Internal__.symbolType], sourceAttribute[__Internal__.symbolPrototype] && sourceAttribute[__Internal__.symbolPrototype][__Internal__.symbolType])) {
+						if (extender.notInherited || (source === base) || !types._implements(destAttribute[_shared.PrototypeSymbol] && destAttribute[_shared.PrototypeSymbol][_shared.TypeSymbol], sourceAttribute[_shared.PrototypeSymbol] && sourceAttribute[_shared.PrototypeSymbol][_shared.TypeSymbol])) {
 
-							if (sourceAttribute[__Internal__.symbolWhen] || destAttribute[__Internal__.symbolWhen]) {
-								const whenTypes = tools.unique(sourceAttribute[__Internal__.symbolWhen], destAttribute[__Internal__.symbolWhen]);
+							if (sourceAttribute[_shared.WhenSymbol] || destAttribute[_shared.WhenSymbol]) {
+								const whenTypes = tools.unique(sourceAttribute[_shared.WhenSymbol], destAttribute[_shared.WhenSymbol]);
 								if (tools.every(whenTypes, function(type) {
 											if (_implements.has(type)) {
 												return true;
@@ -5243,7 +5234,7 @@ exports.add = function add(DD_MODULES) {
 											return false;
 										})) {
 
-									destAttribute[__Internal__.symbolWhen] = null;
+									destAttribute[_shared.WhenSymbol] = null;
 
 								} else {
 									if (tools.indexOf(toExtendLater, attr) < 0) {
@@ -5251,8 +5242,8 @@ exports.add = function add(DD_MODULES) {
 									};
 
 									destAttribute = destAttribute.setValue(sourceAttribute);
-									destAttribute[__Internal__.symbolExtender] = extender;
-									destAttribute[__Internal__.symbolWhen] = whenTypes;
+									destAttribute[_shared.ExtenderSymbol] = extender;
+									destAttribute[_shared.WhenSymbol] = whenTypes;
 									destAttributes[attr] = destAttribute;
 									return;
 								};
@@ -5262,39 +5253,39 @@ exports.add = function add(DD_MODULES) {
 								sourceAttribute = extender.getValue(attr, sourceAttribute, forType);
 							};
 
-							if (types.isNothing(destAttribute[__Internal__.symbolScope])) {
-								const scope = types.get(sourceAttribute, __Internal__.symbolScope);
+							if (types.isNothing(destAttribute[_shared.ScopeSymbol])) {
+								const scope = types.get(sourceAttribute, _shared.ScopeSymbol);
 								if (types.isNothing(scope)) {
 									// <FUTURE> When transpiling "ddclass" to "class"...
 										//if (!types.isSymbol(attr) && (attr[0] === '#')) {
-										//	destAttribute[__Internal__.symbolScope] = doodad.Scopes.Private;
+										//	destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Private;
 									// </FUTURE>
 									if (!types.isSymbol(attr) && ( (attr.slice(0, 2) === '__') || (attr.slice(0, 3) === '$__') )) {
-										destAttribute[__Internal__.symbolScope] = doodad.Scopes.Protected;
+										destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Protected;
 									} else {
-										destAttribute[__Internal__.symbolScope] = doodad.Scopes.Public;
+										destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Public;
 									};
 								} else {
-									destAttribute[__Internal__.symbolScope] = scope;
+									destAttribute[_shared.ScopeSymbol] = scope;
 								};
 							};
 									
 							if (extender.preExtend) {
 								const result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								destAttribute = destAttribute.setValue(result);
-								const newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
+								const newAttr = sourceIsProto && destAttribute[_shared.RenamedToSymbol];
 								if (newAttr) {
 									destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName);
 									attr = newAttr;
 								};
-								let overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
+								let overrideWith = sourceAttribute[_shared.OverrideWithSymbol];
 								if (overrideWith) {
 									overrideWith = doodad.OVERRIDE(overrideWith);
 									const result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, sourceIsProto, proto, protoName);
 									destAttribute = destAttribute.setValue(result);
 								};
-								destAttribute[__Internal__.symbolExtender] = extender;
-								destAttribute[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
+								destAttribute[_shared.ExtenderSymbol] = extender;
+								destAttribute[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
 								destAttributes[attr] = destAttribute;
 								extendedAttributes.push(attr);
 								toInitialize.push(attr);
@@ -5302,7 +5293,7 @@ exports.add = function add(DD_MODULES) {
 								if (extender.isPreserved && !types.isSymbol(attr)) {
 									const presAttr = '__' + attr + '_preserved__';
 									destAttribute = destAttribute.clone();
-									destAttribute[__Internal__.symbolExtender] = extender.get({isPreserved: false});
+									destAttribute[_shared.ExtenderSymbol] = extender.get({isPreserved: false});
 									destAttributes[presAttr] = destAttribute;
 									extendedAttributes.push(presAttr);
 									toInitialize.push(presAttr);
@@ -5327,7 +5318,7 @@ exports.add = function add(DD_MODULES) {
 				//if (baseType) {
 					if (baseIsClass) {
 						// doodad-js Class / Class Object
-						baseTypeAttributes = baseInstanceAttributes = baseAttributes; //_shared.getAttribute(baseType, __Internal__.symbolAttributes);
+						baseTypeAttributes = baseInstanceAttributes = baseAttributes; //_shared.getAttribute(baseType, _shared.AttributesSymbol);
 					} else {
 						// doodad-js Type / JS Class
 						baseTypeAttributes = baseType;
@@ -5350,7 +5341,7 @@ exports.add = function add(DD_MODULES) {
 
 				if (sourceIsClass) {
 					// doodad-js Class
-					sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, __Internal__.symbolPrototype);
+					sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, _shared.PrototypeSymbol);
 					sourceToExtend1 = types.keys(sourceAttributes);
 					sourceToExtend2 = types.symbols(sourceAttributes);
 				} else if (types.isFunction(source)) {
@@ -5438,20 +5429,20 @@ exports.add = function add(DD_MODULES) {
 							destAttribute = params[6];
 						const result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 						destAttribute = destAttribute.setValue(result);
-						const newAttr = sourceIsProto && destAttribute[__Internal__.symbolRenamedTo];
+						const newAttr = sourceIsProto && destAttribute[_shared.RenamedToSymbol];
 						if (newAttr) {
 							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName);
 							attr = newAttr;
 						};
-						let overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
+						let overrideWith = sourceAttribute[_shared.OverrideWithSymbol];
 						if (overrideWith) {
 							overrideWith = doodad.OVERRIDE(overrideWith);
-							overrideWith[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
+							overrideWith[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
 							const result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, true, proto, protoName, false);
 							destAttribute = destAttribute.setValue(result);
 						};
-						destAttribute[__Internal__.symbolExtender] = extender;
-						destAttribute[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
+						destAttribute[_shared.ExtenderSymbol] = extender;
+						destAttribute[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
 						destAttributes[attr] = destAttribute;
 						extendedAttributes.push(attr);
 						toInitialize.push(attr);
@@ -5459,7 +5450,7 @@ exports.add = function add(DD_MODULES) {
 						if (extender.isPreserved && !types.isSymbol(attr)) {
 							const presAttr = '__' + attr + '_preserved__';
 							destAttribute = destAttribute.clone();
-							destAttribute[__Internal__.symbolExtender] = extender.get({isPreserved: false});
+							destAttribute[_shared.ExtenderSymbol] = extender.get({isPreserved: false});
 							destAttributes[presAttr] = destAttribute;
 							extendedAttributes.push(presAttr);
 							toInitialize.push(presAttr);
@@ -5567,7 +5558,7 @@ exports.add = function add(DD_MODULES) {
 									_isolated.set(uuid, data);
 								};
 
-								const impls = _shared.getAttribute(_interface, __Internal__.symbolImplements).values();
+								const impls = _shared.getAttribute(_interface, _shared.ImplementsSymbol).values();
 
 								let impl;
 									
@@ -5652,7 +5643,7 @@ exports.add = function add(DD_MODULES) {
 
 								destImplements.add(source);
 									
-								const sourceData = _shared.getAttributes(sourceType, [__Internal__.symbolImplements, __Internal__.symbolToExtendLater]);
+								const sourceData = _shared.getAttributes(sourceType, [_shared.ImplementsSymbol, _shared.ToExtendLaterSymbol]);
 
 								const proto = {};
 								const protoName = (sourceName ? sourceName + '_Interface' : null);
@@ -5680,7 +5671,7 @@ exports.add = function add(DD_MODULES) {
 									_isolated.set(uuid, data);
 								};
 
-								const impls = sourceData[__Internal__.symbolImplements].values();
+								const impls = sourceData[_shared.ImplementsSymbol].values();
 
 								let impl;
 								while (impl = impls.next()) {
@@ -5707,12 +5698,12 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 									
-								const baseData = _shared.getAttributes(base, [__Internal__.symbolBase, __Internal__.symbolImplements, __Internal__.symbolAttributes, __Internal__.symbolIsolated, __Internal__.symbolToInitialize, __Internal__.symbolToExtendLater]);
-								baseAttributes = baseData[__Internal__.symbolAttributes];
+								const baseData = _shared.getAttributes(base, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+								baseAttributes = baseData[_shared.AttributesSymbol];
 
-								const baseInstanceData = _shared.getAttributes(base.prototype, [__Internal__.symbolToInitialize, __Internal__.symbolToExtendLater]);
+								const baseInstanceData = _shared.getAttributes(base.prototype, [_shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
 
-								__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, base, baseData[__Internal__.symbolBase], baseAttributes, baseData[__Internal__.symbolImplements], baseData[__Internal__.symbolIsolated], baseIsType, baseData[__Internal__.symbolToInitialize], baseInstanceData[__Internal__.symbolToInitialize], baseData[__Internal__.symbolToExtendLater], baseInstanceData[__Internal__.symbolToExtendLater]);
+								__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, base, baseData[_shared.BaseSymbol], baseAttributes, baseData[_shared.ImplementsSymbol], baseData[_shared.IsolatedSymbol], baseIsType, baseData[_shared.ToInitializeSymbol], baseInstanceData[_shared.ToInitializeSymbol], baseData[_shared.ToExtendLaterSymbol], baseInstanceData[_shared.ToExtendLaterSymbol]);
 
 								__Internal__.extendSource(base, baseAttributes, base, baseAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
 							};
@@ -5721,12 +5712,12 @@ exports.add = function add(DD_MODULES) {
 						let sourceAttributes = null;
 
 						if (sourceIsType && sourceIsClass) {
-							const sourceData = _shared.getAttributes(source, [__Internal__.symbolBase, __Internal__.symbolImplements, __Internal__.symbolAttributes, __Internal__.symbolIsolated, __Internal__.symbolToInitialize, __Internal__.symbolToExtendLater]);
-							sourceAttributes = sourceData[__Internal__.symbolAttributes];
+							const sourceData = _shared.getAttributes(source, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+							sourceAttributes = sourceData[_shared.AttributesSymbol];
 
-							const sourceInstanceData = _shared.getAttributes(source.prototype, [__Internal__.symbolToInitialize, __Internal__.symbolToExtendLater]);
+							const sourceInstanceData = _shared.getAttributes(source.prototype, [_shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
 
-							__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceData[__Internal__.symbolBase], sourceAttributes, sourceData[__Internal__.symbolImplements], sourceData[__Internal__.symbolIsolated], baseIsType, sourceData[__Internal__.symbolToInitialize], sourceInstanceData[__Internal__.symbolToInitialize], sourceData[__Internal__.symbolToExtendLater], sourceInstanceData[__Internal__.symbolToExtendLater]);
+							__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceData[_shared.BaseSymbol], sourceAttributes, sourceData[_shared.ImplementsSymbol], sourceData[_shared.IsolatedSymbol], baseIsType, sourceData[_shared.ToInitializeSymbol], sourceInstanceData[_shared.ToInitializeSymbol], sourceData[_shared.ToExtendLaterSymbol], sourceInstanceData[_shared.ToExtendLaterSymbol]);
 						};
 							
 						__Internal__.extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
@@ -5830,7 +5821,7 @@ exports.add = function add(DD_MODULES) {
 					const attr = toInitialize[i],
 						attribute = attributes[attr];
 
-					const extender = attribute[__Internal__.symbolExtender];
+					const extender = attribute[_shared.ExtenderSymbol];
 						
 					if (extender && extender.init && extender.preExtend) {
 						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
@@ -5846,7 +5837,7 @@ exports.add = function add(DD_MODULES) {
 					const attr = toInitialize[i];
 						
 					const attribute = attributes[attr],
-						extender = attribute[__Internal__.symbolExtender];
+						extender = attribute[_shared.ExtenderSymbol];
 							
 					if (extender && extender.init && !extender.preExtend) {
 						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
@@ -5881,7 +5872,7 @@ exports.add = function add(DD_MODULES) {
 
 					let attribute = attributes[attr];
 						
-					const extender = attribute[__Internal__.symbolExtender];
+					const extender = attribute[_shared.ExtenderSymbol];
 					const newAttribute = extender.postExtend && extender.postExtend(attr, attributes, attribute) || attribute;
 
 					if (newAttribute !== attribute) {
@@ -5928,38 +5919,38 @@ exports.add = function add(DD_MODULES) {
 						__Internal__.makeInsideForNew(),
 						
 						/*constructorContext*/
-						{internal: __Internal__, getType: types.getType}
+						{_shared: _shared, internal: __Internal__, getType: types.getType}
 					);
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
 					
-					_shared.setAttribute(proto, __Internal__.symbolType, type, {});
+					_shared.setAttribute(proto, _shared.TypeSymbol, type, {});
 
 					let values;
 
 					// Set values (NOTE: will be initialized in "_new")
 
 					values = {};
-					values[__Internal__.symbolAttributesStorage] = typeStorage;
-					values[__Internal__.symbolAttributes] = destAttributes;
-					values[__Internal__.symbolBase] = base;
-					values[__Internal__.symbolIsolated] = _isolated;
-					values[__Internal__.symbolImplements] = _implements;
-					values[__Internal__.symbolPrototype] = proto;
-					values[__Internal__.symbolModifiers] = modifiers;
-					values[__Internal__.symbolToInitialize] = typeToInitialize;
-					values[__Internal__.symbolToExtendLater] = typeToExtendLater;
+					values[_shared.AttributesStorageSymbol] = typeStorage;
+					values[_shared.AttributesSymbol] = destAttributes;
+					values[_shared.BaseSymbol] = base;
+					values[_shared.IsolatedSymbol] = _isolated;
+					values[_shared.ImplementsSymbol] = _implements;
+					values[_shared.PrototypeSymbol] = proto;
+					values[_shared.ModifiersSymbol] = modifiers;
+					values[_shared.ToInitializeSymbol] = typeToInitialize;
+					values[_shared.ToExtendLaterSymbol] = typeToExtendLater;
 					_shared.setAttributes(type, values, {configurable: true, direct: true});
 
 					values = {};
-					values[__Internal__.symbolAttributesStorage] = instanceStorage;
-					values[__Internal__.symbolAttributes] = destAttributes;
-					values[__Internal__.symbolBase] = base;
-					values[__Internal__.symbolIsolated] = _isolated;
-					values[__Internal__.symbolImplements] = _implements;
-					values[__Internal__.symbolPrototype] = proto;
-					values[__Internal__.symbolToInitialize] = instanceToInitialize;
-					values[__Internal__.symbolToExtendLater] = instanceToExtendLater;
+					values[_shared.AttributesStorageSymbol] = instanceStorage;
+					values[_shared.AttributesSymbol] = destAttributes;
+					values[_shared.BaseSymbol] = base;
+					values[_shared.IsolatedSymbol] = _isolated;
+					values[_shared.ImplementsSymbol] = _implements;
+					values[_shared.PrototypeSymbol] = proto;
+					values[_shared.ToInitializeSymbol] = instanceToInitialize;
+					values[_shared.ToExtendLaterSymbol] = instanceToExtendLater;
 					_shared.setAttributes(type.prototype, values, {configurable: true, direct: true});
 
 					return type;
@@ -5975,14 +5966,14 @@ exports.add = function add(DD_MODULES) {
 					};
 
 					if (base._implements(mixIns.Creatable)) {
-						_shared.setAttribute(base, __Internal__.symbolDestroyed, null);
+						_shared.setAttribute(base, _shared.DestroyedSymbol, null);
 					};
 
 					return base;
 				};
 			};
 				
-			__Internal__.$extend = function $extend(/*paramarray*/) {
+			__Internal__.$extend = function $extend(/*paramarray*/...args) {
 				let base = ((this === global) ? undefined : this),
 					baseType = types.getType(base);
 				
@@ -5992,8 +5983,8 @@ exports.add = function add(DD_MODULES) {
 					base = types.Type;
 				};
 					
-				const index = tools.findLastItem(arguments, types.isJsObject),
-					proto = (index !== null) && arguments[index] || {};
+				const index = tools.findLastItem(args, types.isJsObject),
+					proto = (index !== null) && args[index] || {};
 					
 				let protoName = '', 
 					protoUUID = '';
@@ -6026,7 +6017,7 @@ exports.add = function add(DD_MODULES) {
 					modifiers = 0,
 					existingAttributes = null;
 
-				const sources = types.toArray(arguments);
+				const sources = types.toArray(args);
 
 				if (baseIsType) {
 					// Doodad Class / Doodad Type
@@ -6044,35 +6035,35 @@ exports.add = function add(DD_MODULES) {
 					if (baseIsClass) {
 						// Doodad Class
 
-						const baseTypeData = _shared.getAttributes(baseType, [__Internal__.symbolAttributes, __Internal__.symbolModifiers]);
+						const baseTypeData = _shared.getAttributes(baseType, [_shared.AttributesSymbol, _shared.ModifiersSymbol]);
 
-						baseAttributes = baseTypeData[__Internal__.symbolAttributes];
+						baseAttributes = baseTypeData[_shared.AttributesSymbol];
 
-						//??? modifiers = (proto && types.unbox(proto[__Internal__.symbolModifiers]) || 0) | ((baseTypeData[__Internal__.symbolModifiers] || 0) & _shared.preservedClassModifiers);
-						modifiers = ((baseTypeData[__Internal__.symbolModifiers] || 0) & _shared.preservedClassModifiers);
+						//??? modifiers = (proto && types.unbox(proto[_shared.ModifiersSymbol]) || 0) | ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
+						modifiers = ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
 					};
 
 				} else if (baseIsClass) {
 					// Doodad Expandable Object
 
-					const baseTypeData = _shared.getAttributes(baseType, [__Internal__.symbolModifiers, __Internal__.symbolAttributesStorage, __Internal__.symbolToExtendLater]);
+					const baseTypeData = _shared.getAttributes(baseType, [_shared.ModifiersSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol]);
 
-					modifiers = baseTypeData[__Internal__.symbolModifiers] || 0;
+					modifiers = baseTypeData[_shared.ModifiersSymbol] || 0;
 
 					if (!(modifiers & doodad.ClassModifiers.Expandable)) {
 						throw new types.TypeError("Object is not expandable.");
 					};
 
-					typeStorage = baseTypeData[__Internal__.symbolAttributesStorage];
-					typeToExtendLater = baseTypeData[__Internal__.symbolToExtendLater];
+					typeStorage = baseTypeData[_shared.AttributesStorageSymbol];
+					typeToExtendLater = baseTypeData[_shared.ToExtendLaterSymbol];
 
-					const baseData = _shared.getAttributes(base, [__Internal__.symbolAttributes, __Internal__.symbolImplements, __Internal__.symbolIsolated, __Internal__.symbolAttributesStorage, __Internal__.symbolToExtendLater]);
+					const baseData = _shared.getAttributes(base, [_shared.AttributesSymbol, _shared.ImplementsSymbol, _shared.IsolatedSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol]);
 
-					destAttributes = baseData[__Internal__.symbolAttributes];
-					_implements = baseData[__Internal__.symbolImplements];
-					_isolated = baseData[__Internal__.symbolIsolated];
-					instanceStorage = baseData[__Internal__.symbolAttributesStorage];
-					instanceToExtendLater = baseData[__Internal__.symbolToExtendLater];
+					destAttributes = baseData[_shared.AttributesSymbol];
+					_implements = baseData[_shared.ImplementsSymbol];
+					_isolated = baseData[_shared.IsolatedSymbol];
+					instanceStorage = baseData[_shared.AttributesStorageSymbol];
+					instanceToExtendLater = baseData[_shared.ToExtendLaterSymbol];
 
 					existingAttributes = tools.append(types.keys(destAttributes), types.symbols(destAttributes));
 
@@ -6120,7 +6111,7 @@ exports.add = function add(DD_MODULES) {
 
 			__Internal__._delete = types.SUPER(
 					function _delete() {
-						const cache = this[__Internal__.symbolIsolatedCache];
+						const cache = this[_shared.IsolatedCacheSymbol];
 						if (cache) {
 							cache.forEach(function destroyEachInterface(_interface) {
 								types.DESTROY(_interface);
@@ -6129,15 +6120,15 @@ exports.add = function add(DD_MODULES) {
 
 						const forType = types.isType(this),
 							cls = types.getType(this),
-							attributes = this[__Internal__.symbolAttributes],
-							storage = this[__Internal__.symbolAttributesStorage],
+							attributes = this[_shared.AttributesSymbol],
+							storage = this[_shared.AttributesStorageSymbol],
 							sealed = types.isSealedClass(cls);
 							
 						const preLoopAttrs = function _preLoopAttrs(attrs) {
 							for (let i = attrs.length - 1; i >= 0; i--) {
 								const attr = attrs[i],
 									attribute = attributes[attr],
-									extender = attribute[__Internal__.symbolExtender];
+									extender = attribute[_shared.ExtenderSymbol];
 								
 								if (extender) {
 									if (extender.isPersistent) {
@@ -6163,7 +6154,7 @@ exports.add = function add(DD_MODULES) {
 
 								if (attr) {
 									const attribute = attributes[attr],
-										extender = attribute[__Internal__.symbolExtender];
+										extender = attribute[_shared.ExtenderSymbol];
 									
 									// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
 									if ((extender.isType && forType) || (extender.isInstance && !forType)) {
@@ -6202,7 +6193,7 @@ exports.add = function add(DD_MODULES) {
 					//! END_REPLACE()
 					, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function superFrom(cls) {
-						const dispatch = this && this[__Internal__.symbolCurrentDispatch];
+						const dispatch = this && this[_shared.CurrentDispatchSymbol];
 
 						if (!dispatch) {
 							throw new types.TypeError("Invalid call to '_superFrom'.");
@@ -6231,7 +6222,7 @@ exports.add = function add(DD_MODULES) {
 							notReentrantMap = __Internal__.notReentrantMap.get(this),
 							self = this; // NOTE: That prevents to do "return _superFrom.bind(this)"
 
-						return function _superFrom(/*paramarray*/) {
+						return function _superFrom(/*paramarray*/...params) {
 							// NOTE: We now override super only when "_superFrom" is called.
 							// NOTE: Will throw if "_superFrom" called from the outside, that's what we expect.
 							self.overrideSuper();
@@ -6242,7 +6233,7 @@ exports.add = function add(DD_MODULES) {
 							};
 
 							try {
-								return newDispatch.apply(self, arguments);
+								return newDispatch.apply(self, params);
 
 							} catch(ex) {
 								throw ex;
@@ -6269,7 +6260,7 @@ exports.add = function add(DD_MODULES) {
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
 					function overrideSuper() {
 						if (this._super) {
-							this._super[__Internal__.symbolCalled] = true;
+							this._super[_shared.CalledSymbol] = true;
 						};
 					}))))));
 
@@ -6289,27 +6280,27 @@ exports.add = function add(DD_MODULES) {
 					function _superAsync() {
 						const _super = this._super;
 
-						const attributes = this[__Internal__.symbolAttributes],
-							dispatch = this[__Internal__.symbolCurrentDispatch],
-							index = this[__Internal__.symbolCurrentCallerIndex];
+						const attributes = this[_shared.AttributesSymbol],
+							dispatch = this[_shared.CurrentDispatchSymbol],
+							index = this[_shared.CurrentCallerIndexSymbol];
 
-						const modifiers = dispatch[__Internal__.symbolModifiers],
+						const modifiers = dispatch[_shared.ModifiersSymbol],
 							async = !!(modifiers & doodad.MethodModifiers.Async),
 							canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed);
 
 						const attr = dispatch[_shared.NameSymbol],
 							attribute = attributes[attr],
-							extender = attribute[__Internal__.symbolExtender];
+							extender = attribute[_shared.ExtenderSymbol];
 
 						const notReentrant = __Internal__.notReentrantMap.get(this);
 
 						if (_super) {
-							_super[__Internal__.symbolCalled] = true;
+							_super[_shared.CalledSymbol] = true;
 						};
 
-						dispatch[__Internal__.symbolSuperAsync] = true;
+						dispatch[_shared.SuperAsyncSymbol] = true;
 
-						return (function superAsync(/*paramarray* /) {
+						return (function superAsync(/*paramarray* /...params) {
 							if (!canBeDestroyed && types.DESTROYED(this)) {
 								throw new types.TypeError("Object is destroyed.");
 							};
@@ -6320,8 +6311,8 @@ exports.add = function add(DD_MODULES) {
 							};
 
 							const oldInside = __Internal__.preserveInside();
-							const oldValues = _shared.getAttributes(this, ['_super', __Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex]);
-							const oldCallerCalled = _super[__Internal__.symbolCalled];
+							const oldValues = _shared.getAttributes(this, ['_super', _shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol]);
+							const oldCallerCalled = _super[_shared.CalledSymbol];
 
 							__Internal__.setInside(this);
 
@@ -6330,13 +6321,13 @@ exports.add = function add(DD_MODULES) {
 							try {
 								const attrs = {};
 								attrs._super = _super;
-								attrs[__Internal__.symbolCurrentDispatch] = dispatch;
-								attrs[__Internal__.symbolCurrentCallerIndex] = index;
+								attrs[_shared.CurrentDispatchSymbol] = dispatch;
+								attrs[_shared.CurrentCallerIndexSymbol] = index;
 								_shared.setAttributes(this, attrs);
 										
-								_super[__Internal__.symbolCalled] = false;
+								_super[_shared.CalledSymbol] = false;
 
-								retVal = _super.apply(this, arguments);
+								retVal = _super.apply(this, params);
 
 								retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
 
@@ -6379,7 +6370,7 @@ exports.add = function add(DD_MODULES) {
 								};
 
 								__Internal__.restoreInside(oldInside);
-								_super[__Internal__.symbolCalled] = oldCallerCalled;
+								_super[_shared.CalledSymbol] = oldCallerCalled;
 
 								_shared.setAttributes(this, oldValues);
 							};
@@ -6393,11 +6384,11 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.callOutsideFn = (__Internal__.hasScopes ?
 					function callOutside(fn, /*optional*/args) {
 						const isInside = __Internal__.isInside(this);
-						const oldValues = isInside && _shared.getAttributes(this, [__Internal__.symbolCurrentDispatch, __Internal__.symbolCurrentCallerIndex, '_super']);
-						const dispatch = isInside && oldValues[__Internal__.symbolCurrentDispatch];
-						const callers = dispatch && dispatch[__Internal__.symbolCallers];
-						const caller = callers && callers[oldValues[__Internal__.symbolCurrentCallerIndex] - 1];
-						const oldCallerCalled = caller && caller[__Internal__.symbolCalled];
+						const oldValues = isInside && _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super']);
+						const dispatch = isInside && oldValues[_shared.CurrentDispatchSymbol];
+						const callers = dispatch && dispatch[_shared.CallersSymbol];
+						const caller = callers && callers[oldValues[_shared.CurrentCallerIndexSymbol] - 1];
+						const oldCallerCalled = caller && caller[_shared.CalledSymbol];
 						const oldInside = __Internal__.preserveInside();
 						__Internal__.setInside(null);
 						try {
@@ -6411,7 +6402,7 @@ exports.add = function add(DD_MODULES) {
 						} finally {
 							__Internal__.restoreInside(oldInside);
 							if (caller) {
-								caller[__Internal__.symbolCalled] = oldCallerCalled;
+								caller[_shared.CalledSymbol] = oldCallerCalled;
 							};
 							if (dispatch) {
 								_shared.setAttributes(this, oldValues);
@@ -6455,8 +6446,8 @@ exports.add = function add(DD_MODULES) {
 					if (types.isCallback(fn)) {
 						throw new types.TypeError("The function is already a Callback.");
 					};
-					const cb = types.INHERIT(doodad.OutsideCallback, function outside(/*paramarray*/) {
-						return __Internal__.callOutsideFn.call(obj, fn, types.toArray(arguments));
+					const cb = types.INHERIT(doodad.OutsideCallback, function outside(/*paramarray*/...params) {
+						return __Internal__.callOutsideFn.call(obj, fn, params);
 					});
 					_shared.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
 					_shared.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
@@ -6485,7 +6476,7 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
 					
 				_new: types.SUPER(
-					function _new() {
+					function _new(/*paramarray*/...args) {
 						const cls = types.getType(this),
 							forType = types.isType(this);
 
@@ -6496,7 +6487,7 @@ exports.add = function add(DD_MODULES) {
 							throw new types.Error("Invalid class.");
 						};
 
-						const modifiers = (types.get(cls, __Internal__.symbolModifiers) || 0);
+						const modifiers = (types.get(cls, _shared.ModifiersSymbol) || 0);
 							
 						// Must not be a base class
 						const isBase = !!(modifiers & (doodad.ClassModifiers.Base | doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface));
@@ -6516,56 +6507,56 @@ exports.add = function add(DD_MODULES) {
 							
 						if (forType) {
 							// Initialize attributes
-							const typeStorage = this[__Internal__.symbolAttributesStorage];
-							const instanceStorage = this.prototype[__Internal__.symbolAttributesStorage];
+							const typeStorage = this[_shared.AttributesStorageSymbol];
+							const instanceStorage = this.prototype[_shared.AttributesStorageSymbol];
 
 							let values;
 
-							const typeAttributes = this[__Internal__.symbolAttributes]; // NOTE: Will be cloned
-							const typeToInitialize = this[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
+							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
+							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
 							values = tools.nullObject();
-							values[__Internal__.symbolAttributes] = typeAttributes; // NOTE: Will be cloned
-							values[__Internal__.symbolModifiers] = modifiers;
-							values[__Internal__.symbolImplements] = this[__Internal__.symbolImplements]; // NOTE: Will be cloned
-							values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated]; // NOTE: Will be cloned
-							values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
-							values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-							values[__Internal__.symbolToInitialize] = typeToInitialize; // NOTE: Will be cloned
-							values[__Internal__.symbolToExtendLater] = this[__Internal__.symbolToExtendLater]; // NOTE: Will be cloned
+							values[_shared.AttributesSymbol] = typeAttributes; // NOTE: Will be cloned
+							values[_shared.ModifiersSymbol] = modifiers;
+							values[_shared.ImplementsSymbol] = this[_shared.ImplementsSymbol]; // NOTE: Will be cloned
+							values[_shared.IsolatedSymbol] = this[_shared.IsolatedSymbol]; // NOTE: Will be cloned
+							values[_shared.PrototypeSymbol] = this[_shared.PrototypeSymbol];
+							values[_shared.BaseSymbol] = this[_shared.BaseSymbol];
+							values[_shared.ToInitializeSymbol] = typeToInitialize; // NOTE: Will be cloned
+							values[_shared.ToExtendLaterSymbol] = this[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
-							const instanceAttributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
-							const instanceToInitialize = this.prototype[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
+							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
+							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
 							values = tools.nullObject();
-							values[__Internal__.symbolAttributes] = instanceAttributes; // NOTE: Will be cloned
-							values[__Internal__.symbolImplements] = this.prototype[__Internal__.symbolImplements]; // NOTE: Will be cloned
-							values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
-							values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
-							values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-							values[__Internal__.symbolToInitialize] = instanceToInitialize; // NOTE: Will be cloned
-							values[__Internal__.symbolToExtendLater] = this.prototype[__Internal__.symbolToExtendLater]; // NOTE: Will be cloned
+							values[_shared.AttributesSymbol] = instanceAttributes; // NOTE: Will be cloned
+							values[_shared.ImplementsSymbol] = this.prototype[_shared.ImplementsSymbol]; // NOTE: Will be cloned
+							values[_shared.IsolatedSymbol] = this.prototype[_shared.IsolatedSymbol]; // NOTE: Will be cloned
+							values[_shared.PrototypeSymbol] = this.prototype[_shared.PrototypeSymbol];
+							values[_shared.BaseSymbol] = this.prototype[_shared.BaseSymbol];
+							values[_shared.ToInitializeSymbol] = instanceToInitialize; // NOTE: Will be cloned
+							values[_shared.ToExtendLaterSymbol] = this.prototype[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
 
 							if (!isBase && !isStatic) {
 								const initInstance = __Internal__.initializeAttributes(instanceAttributes, false, values, false, null, instanceToInitialize);
-								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
+								_shared.setAttribute(this, _shared.InitInstanceSymbol, initInstance);
 							};
 
 						} else {
-							const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, __Internal__.symbolAttributesStorage));
+							const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, _shared.AttributesStorageSymbol));
 
-							cls[__Internal__.symbolInitInstance](this, instanceStorage);
+							cls[_shared.InitInstanceSymbol](this, instanceStorage);
 						};
 	
 						// Call constructor
 						if (!isBase) {
 							if (this._implements(mixIns.Creatable)) {
 								if (forType) {
-									this.$create.apply(this, _shared.Natives.arraySliceCall(arguments, 3));
+									this.$create(...args);
 								} else {
-									this.create.apply(this, arguments);
+									this.create(...args);
 								};
 							};
 						};
@@ -6659,9 +6650,9 @@ exports.add = function add(DD_MODULES) {
 							return null;
 						};
 
-						let cache = this[__Internal__.symbolIsolatedCache];
+						let cache = this[_shared.IsolatedCacheSymbol];
 						if (!cache) {
-							cache = _shared.setAttribute(this, __Internal__.symbolIsolatedCache, new types.Map());
+							cache = _shared.setAttribute(this, _shared.IsolatedCacheSymbol, new types.Map());
 						}
 
 						if (cache.has(type)) {
@@ -6674,7 +6665,7 @@ exports.add = function add(DD_MODULES) {
 							return cache.get(uuid);
 						};
 
-						const _isolated = this[__Internal__.symbolIsolated];
+						const _isolated = this[_shared.IsolatedSymbol];
 
 						let data = _isolated.get(type);
 						if (!data) {
@@ -6719,7 +6710,7 @@ exports.add = function add(DD_MODULES) {
 
 						const obj = new _interface(this);
 
-						const _implements = _shared.getAttribute(_interface, __Internal__.symbolImplements);
+						const _implements = _shared.getAttribute(_interface, _shared.ImplementsSymbol);
 
 						_implements.forEach(function(impl) {
 							if (!types.isString(impl)) {
@@ -6757,9 +6748,9 @@ exports.add = function add(DD_MODULES) {
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function getPreserved(attr) {
 						if (!types.isSymbol(attr)) {
-							const attributes = this[__Internal__.symbolAttributes],
+							const attributes = this[_shared.AttributesSymbol],
 								attribute = attributes[attr],
-								extender = attribute[__Internal__.symbolExtender];
+								extender = attribute[_shared.ExtenderSymbol];
 							if (extender && extender.isPreserved) {
 								const preservedAttr = '__' + attr + '_preserved__';
 								return this[preservedAttr];
@@ -6786,9 +6777,9 @@ exports.add = function add(DD_MODULES) {
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function restorePreserved(attr) {
 						if (!types.isSymbol(attr)) {
-							const attributes = this[__Internal__.symbolAttributes],
+							const attributes = this[_shared.AttributesSymbol],
 								attribute = attributes[attr],
-								extender = attribute[__Internal__.symbolExtender];
+								extender = attribute[_shared.ExtenderSymbol];
 							if (extender && extender.isPreserved) {
 								const preservedAttr = '__' + attr + '_preserved__';
 								_shared.setAttribute(obj, attr, this[preservedAttr]);
@@ -6822,7 +6813,7 @@ exports.add = function add(DD_MODULES) {
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function _implements(cls) {
-						const impls = this[__Internal__.symbolImplements];
+						const impls = this[_shared.ImplementsSymbol];
 						if (types.isArray(cls)) {
 							const clsLen = cls.length;
 							for (let i = 0; i < clsLen; i++) {
@@ -6882,12 +6873,12 @@ exports.add = function add(DD_MODULES) {
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function isImplemented(name) {
 						const isType = types.isType(this),
-							attrs = this[__Internal__.symbolAttributes];
+							attrs = this[_shared.AttributesSymbol];
 						if (!(name in attrs)) {
 							return false;
 						};
 						const attr = attrs[name],
-							extender = attr[__Internal__.symbolExtender];
+							extender = attr[_shared.ExtenderSymbol];
 						if (!types.isLike(extender, extenders.Method)) {
 							return false;
 						};
@@ -6895,7 +6886,7 @@ exports.add = function add(DD_MODULES) {
 							return false;
 						};
 						const method = _shared.getAttribute(this, name);
-						return !((method[__Internal__.symbolModifiers] || 0) & doodad.MethodModifiers.NotImplemented);
+						return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
 					}))))),
 
 			};
@@ -6911,16 +6902,16 @@ exports.add = function add(DD_MODULES) {
 					if (customSymbol) {
 						__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
 							const isType = types.isType(this),
-								attrs = _shared.getAttribute(this, __Internal__.symbolAttributes) || {},
+								attrs = _shared.getAttribute(this, _shared.AttributesSymbol) || {},
 								result = {};
 							const loopKeys = function _loopKeys(keys) {
 								for (let i = 0; i < keys.length; i++) {
 									const key = keys[i];
 									if (key !== customSymbol) {
 										const attr = attrs[key],
-											extender = attr[__Internal__.symbolExtender];
+											extender = attr[_shared.ExtenderSymbol];
 										if (extender) {
-											if ((attr[__Internal__.symbolScope] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
+											if ((attr[_shared.ScopeSymbol] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
 												result[key] = _shared.getAttribute(this, key);
 											};
 										};
@@ -6976,7 +6967,7 @@ exports.add = function add(DD_MODULES) {
 							throw new types.Error("Invalid class.");
 						};
 
-						const modifiers = (types.get(cls, __Internal__.symbolModifiers) || 0);
+						const modifiers = (types.get(cls, _shared.ModifiersSymbol) || 0);
 							
 						// Must not be a base class
 						const isBase = !!(modifiers & doodad.ClassModifiers.Base);
@@ -6988,50 +6979,50 @@ exports.add = function add(DD_MODULES) {
 						// Initialize attributes
 						if (forType) {
 							// Initialize attributes
-							const typeStorage = this[__Internal__.symbolAttributesStorage];
-							const instanceStorage = this.prototype[__Internal__.symbolAttributesStorage];
+							const typeStorage = this[_shared.AttributesStorageSymbol];
+							const instanceStorage = this.prototype[_shared.AttributesStorageSymbol];
 
 							let values,
 								attributes;
 
-							const typeAttributes = this[__Internal__.symbolAttributes]; // NOTE: Will be cloned
-							const typeToInitialize = this[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
+							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
+							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
 							values = tools.nullObject();
-							values[__Internal__.symbolAttributes] = typeAttributes; // NOTE: Will be cloned
-							values[__Internal__.symbolModifiers] = (types.get(this, __Internal__.symbolModifiers) || 0);
-							values[__Internal__.symbolImplements] = this[__Internal__.symbolImplements]; // NOTE: Will be cloned
-							values[__Internal__.symbolIsolated] = this[__Internal__.symbolIsolated]; // NOTE: Will be cloned
-							values[__Internal__.symbolPrototype] = this[__Internal__.symbolPrototype];
-							values[__Internal__.symbolBase] = this[__Internal__.symbolBase];
-							values[__Internal__.symbolToInitialize] = typeToInitialize; // NOTE: Will be cloned
-							values[__Internal__.symbolToExtendLater] = this[__Internal__.symbolToExtendLater]; // NOTE: Will be cloned
+							values[_shared.AttributesSymbol] = typeAttributes; // NOTE: Will be cloned
+							values[_shared.ModifiersSymbol] = (types.get(this, _shared.ModifiersSymbol) || 0);
+							values[_shared.ImplementsSymbol] = this[_shared.ImplementsSymbol]; // NOTE: Will be cloned
+							values[_shared.IsolatedSymbol] = this[_shared.IsolatedSymbol]; // NOTE: Will be cloned
+							values[_shared.PrototypeSymbol] = this[_shared.PrototypeSymbol];
+							values[_shared.BaseSymbol] = this[_shared.BaseSymbol];
+							values[_shared.ToInitializeSymbol] = typeToInitialize; // NOTE: Will be cloned
+							values[_shared.ToExtendLaterSymbol] = this[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
-							const instanceAttributes = this.prototype[__Internal__.symbolAttributes]; // NOTE: Will be cloned
-							const instanceToInitialize = this.prototype[__Internal__.symbolToInitialize]; // NOTE: Will be cloned
+							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
+							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
 							values = tools.nullObject();
-							values[__Internal__.symbolAttributes] = instanceAttributes; // NOTE: Will be cloned
-							values[__Internal__.symbolImplements] = this.prototype[__Internal__.symbolImplements]; // NOTE: Will be cloned
-							values[__Internal__.symbolIsolated] = this.prototype[__Internal__.symbolIsolated]; // NOTE: Will be cloned
-							values[__Internal__.symbolPrototype] = this.prototype[__Internal__.symbolPrototype];
-							values[__Internal__.symbolBase] = this.prototype[__Internal__.symbolBase];
-							values[__Internal__.symbolToInitialize] = instanceToInitialize; // NOTE: Will be cloned
-							values[__Internal__.symbolToExtendLater] = this.prototype[__Internal__.symbolToExtendLater]; // NOTE: Will be cloned
+							values[_shared.AttributesSymbol] = instanceAttributes; // NOTE: Will be cloned
+							values[_shared.ImplementsSymbol] = this.prototype[_shared.ImplementsSymbol]; // NOTE: Will be cloned
+							values[_shared.IsolatedSymbol] = this.prototype[_shared.IsolatedSymbol]; // NOTE: Will be cloned
+							values[_shared.PrototypeSymbol] = this.prototype[_shared.PrototypeSymbol];
+							values[_shared.BaseSymbol] = this.prototype[_shared.BaseSymbol];
+							values[_shared.ToInitializeSymbol] = instanceToInitialize; // NOTE: Will be cloned
+							values[_shared.ToExtendLaterSymbol] = this.prototype[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
 
 							if (!isBase) {
 								const initInstance = __Internal__.initializeAttributes(instanceAttributes, false, values, false, null, instanceToInitialize);
-								_shared.setAttribute(this, __Internal__.symbolInitInstance, initInstance);
+								_shared.setAttribute(this, _shared.InitInstanceSymbol, initInstance);
 							};
 
 						} else {
-							const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, __Internal__.symbolAttributesStorage));
+							const instanceStorage = types.clone(_shared.getAttribute(cls.prototype, _shared.AttributesStorageSymbol));
 
-							cls[__Internal__.symbolInitInstance](this, instanceStorage);
+							cls[_shared.InitInstanceSymbol](this, instanceStorage);
 
-							_shared.setAttribute(this, __Internal__.symbolHost, host);
+							_shared.setAttribute(this, _shared.HostSymbol, host);
 						};
 	
 						return this;
@@ -7084,7 +7075,7 @@ exports.add = function add(DD_MODULES) {
 			tools.extend(__Internal__.interfaceProto, __Internal__.defaultAttributes);
 
 			// <FUTURE> Use syntax for variable key in object declaration
-			__Internal__.interfaceProto[__Internal__.symbolHost] = doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))));
+			__Internal__.interfaceProto[_shared.HostSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))));
 				
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7270,9 +7261,9 @@ exports.add = function add(DD_MODULES) {
 						this._super();
 							
 						if (!types.isType(this)) {
-							this[__Internal__.symbolObject] = obj;
-							this[__Internal__.symbolExtender] = extender;
-							this[__Internal__.symbolStack] = [];
+							this[_shared.ObjectSymbol] = obj;
+							this[_shared.ExtenderSymbol] = extender;
+							this[_shared.StackSymbol] = [];
 						};
 					}),
 
@@ -7281,7 +7272,7 @@ exports.add = function add(DD_MODULES) {
 					bind: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionBind)),
 
 					getCount: function getCount() {
-						const stack = this[__Internal__.symbolStack];
+						const stack = this[_shared.StackSymbol];
 						return tools.reduce(stack, function(result, data) {
 							if (data[4] > 0) {
 								result++;
@@ -7347,7 +7338,7 @@ exports.add = function add(DD_MODULES) {
 								root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
 							};
 								
-							const stack = this[__Internal__.symbolStack];
+							const stack = this[_shared.StackSymbol];
 
 							const indexes = tools.findItems(stack, function(ev) {
 								const evData = ev[3];
@@ -7367,23 +7358,23 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 								if (clearSorted) {
-									this[__Internal__.symbolSorted] = false;
-									this[__Internal__.symbolClonedStack] = null;
+									this[_shared.SortedSymbol] = false;
+									this[_shared.ClonedStackSymbol] = null;
 								};
 								return false;
 							} else if (stack.length < this.stackSize) {
-								const eventObj = this[__Internal__.symbolObject];
+								const eventObj = this[_shared.ObjectSymbol];
 								let cb = fn;
 								if (obj) {
-									if ((obj === eventObj) || __Internal__.isInside(obj, this[__Internal__.symbolEventInside])) {
+									if ((obj === eventObj) || __Internal__.isInside(obj, this[_shared.EventInsideSymbol])) {
 										cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
 									} else {
 										cb = doodad.Callback(obj, cb, true);
 									};
 								};
 								stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
-								this[__Internal__.symbolSorted] = false;
-								this[__Internal__.symbolClonedStack] = null;
+								this[_shared.SortedSymbol] = false;
+								this[_shared.ClonedStackSymbol] = null;
 								const ev = new doodad.Event({event: this[_shared.NameSymbol], obj: obj, handler: fn, datas: datas});
 								//if (types.isEntrant(eventObj, 'onEventAttached')) {
 									_shared.invoke(eventObj, eventObj.onEventAttached, [ev], _shared.SECRET);
@@ -7427,7 +7418,7 @@ exports.add = function add(DD_MODULES) {
 								root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
 							};
 
-							const stack = this[__Internal__.symbolStack];
+							const stack = this[_shared.StackSymbol];
 
 							const evs = tools.popItems(stack, function(ev) {
 								const evData = ev[3];
@@ -7438,10 +7429,10 @@ exports.add = function add(DD_MODULES) {
 
 							const evsLen = evs.length;
 							if (evsLen) {
-								this[__Internal__.symbolSorted] = false;
-								this[__Internal__.symbolClonedStack] = null;
+								this[_shared.SortedSymbol] = false;
+								this[_shared.ClonedStackSymbol] = null;
 
-								const eventObj = this[__Internal__.symbolObject];
+								const eventObj = this[_shared.ObjectSymbol];
 
 								if (!_shared.DESTROYED(eventObj)) {
 									//if (types.isEntrant(eventObj, 'onEventDetached')) {
@@ -7524,11 +7515,11 @@ exports.add = function add(DD_MODULES) {
 							const Promise = types.getPromise();
 							return Promise.create(function eventPromise(resolve, reject) {
 									if (callback) {
-										callback = _shared.PromiseCallback(thisObj, callback, secret || (thisObj === this[__Internal__.symbolObject] ? _shared.SECRET : null));
+										callback = _shared.PromiseCallback(thisObj, callback, secret || (thisObj === this[_shared.ObjectSymbol] ? _shared.SECRET : null));
 									};
 
 									const self = this,
-										obj = this[__Internal__.symbolObject],
+										obj = this[_shared.ObjectSymbol],
 										errorEvent = obj.__ERROR_EVENT,
 										destroy = types.isImplemented(obj, 'onDestroy');
 
@@ -7588,12 +7579,12 @@ exports.add = function add(DD_MODULES) {
 				};
 
 			// FUTURE: Syntax for variable keys in object declaration
-			__Internal__.eventHandlerProto[__Internal__.symbolObject] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[__Internal__.symbolExtender] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[__Internal__.symbolStack] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[__Internal__.symbolSorted] = doodad.PROTECTED(false);
-			__Internal__.eventHandlerProto[__Internal__.symbolClonedStack] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[__Internal__.symbolEventInside] = doodad.PROTECTED(null);
+			__Internal__.eventHandlerProto[_shared.ObjectSymbol] = doodad.PROTECTED(null);
+			__Internal__.eventHandlerProto[_shared.ExtenderSymbol] = doodad.PROTECTED(null);
+			__Internal__.eventHandlerProto[_shared.StackSymbol] = doodad.PROTECTED(null);
+			__Internal__.eventHandlerProto[_shared.SortedSymbol] = doodad.PROTECTED(false);
+			__Internal__.eventHandlerProto[_shared.ClonedStackSymbol] = doodad.PROTECTED(null);
+			__Internal__.eventHandlerProto[_shared.EventInsideSymbol] = doodad.PROTECTED(null);
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7665,7 +7656,7 @@ exports.add = function add(DD_MODULES) {
 							const getter = this._super(attr, boxed, forType, storage);
 							return types.INHERIT(doodad.AttributeGetter, function eventGetter() {
 								const eventHandler = getter.call(this);
-								_shared.setAttribute(eventHandler, __Internal__.symbolEventInside, __Internal__.preserveInside());
+								_shared.setAttribute(eventHandler, _shared.EventInsideSymbol, __Internal__.preserveInside());
 								return eventHandler;
 							});
 						}),
@@ -7753,19 +7744,19 @@ exports.add = function add(DD_MODULES) {
 
 						const evObj = ev && ev.obj,
 							evName = ev && ev.name,
-							dispatch = this[__Internal__.symbolCurrentDispatch];
+							dispatch = this[_shared.CurrentDispatchSymbol];
 
 						ev && _shared.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]});
 
 						let cancelled = !!this._super(ev) && cancellable;
 
 						if (!cancelled) {
-							const values = _shared.getAttributes(dispatch, [__Internal__.symbolStack, __Internal__.symbolSorted, __Internal__.symbolClonedStack]);
-							const stack = values[__Internal__.symbolStack];
+							const values = _shared.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+							const stack = values[_shared.StackSymbol];
 
 							let clonedStack;
-							if (values[__Internal__.symbolSorted]) {
-								clonedStack = values[__Internal__.symbolClonedStack];
+							if (values[_shared.SortedSymbol]) {
+								clonedStack = values[_shared.ClonedStackSymbol];
 							} else {
 								if (stack.length) {
 									stack.sort(function(value1, value2) {
@@ -7776,8 +7767,8 @@ exports.add = function add(DD_MODULES) {
 									clonedStack = [];
 								};
 								const values = {};
-								values[__Internal__.symbolSorted] = true;
-								values[__Internal__.symbolClonedStack] = clonedStack;
+								values[_shared.SortedSymbol] = true;
+								values[_shared.ClonedStackSymbol] = clonedStack;
 								_shared.setAttributes(dispatch, values);
 							};
 
@@ -7828,8 +7819,8 @@ exports.add = function add(DD_MODULES) {
 								});
 								if (removed.length) {
 									const values = {};
-									values[__Internal__.symbolSorted] = false;
-									values[__Internal__.symbolClonedStack] = null;
+									values[_shared.SortedSymbol] = false;
+									values[_shared.ClonedStackSymbol] = null;
 									_shared.setAttributes(dispatch, values);
 								};
 
@@ -7861,7 +7852,7 @@ exports.add = function add(DD_MODULES) {
 				eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.Event, {enableScopes: false, errorEvent: errorEvent}))));
 
 				if (fn) {
-					eventFn[__Internal__.symbolOverrideWith] = fn;
+					eventFn[_shared.OverrideWithSymbol] = fn;
 				};
 
 				return eventFn;
@@ -7878,17 +7869,17 @@ exports.add = function add(DD_MODULES) {
 					eventFn = __Internal__.RAW_EVENT_CACHE[key];
 
 				} else {
-					eventFn = function handleEvent(/*paramarray*/) {
-						let emitted = !!this._super.apply(this, arguments);
+					eventFn = function handleEvent(/*paramarray*/...params) {
+						let emitted = !!this._super(...params);
 
-						const dispatch = _shared.getAttribute(this, __Internal__.symbolCurrentDispatch);
+						const dispatch = _shared.getAttribute(this, _shared.CurrentDispatchSymbol);
 
-						const values = _shared.getAttributes(dispatch, [__Internal__.symbolStack, __Internal__.symbolSorted, __Internal__.symbolClonedStack]);
-						const stack = values[__Internal__.symbolStack];
+						const values = _shared.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+						const stack = values[_shared.StackSymbol];
 						
 						let clonedStack;
-						if (values[__Internal__.symbolSorted]) {
-							clonedStack = values[__Internal__.symbolClonedStack];
+						if (values[_shared.SortedSymbol]) {
+							clonedStack = values[_shared.ClonedStackSymbol];
 						} else {
 							if (stack.length) {
 								stack.sort(function(value1, value2) {
@@ -7899,8 +7890,8 @@ exports.add = function add(DD_MODULES) {
 								clonedStack = [];
 							};
 							const values = {};
-							values[__Internal__.symbolSorted] = true;
-							values[__Internal__.symbolClonedStack] = clonedStack;
+							values[_shared.SortedSymbol] = true;
+							values[_shared.ClonedStackSymbol] = clonedStack;
 							_shared.setAttributes(dispatch, values);
 						};
 							
@@ -7915,7 +7906,7 @@ exports.add = function add(DD_MODULES) {
 								if (data[4] > 0) {
 									data[4]--;
 
-									cb.apply(obj, arguments);
+									cb.apply(obj, params);
 
 									emitted = true;
 								};
@@ -7930,13 +7921,13 @@ exports.add = function add(DD_MODULES) {
 							});
 							if (removed.length) {
 								const values = {};
-								values[__Internal__.symbolSorted] = false;
-								values[__Internal__.symbolClonedStack] = null;
+								values[_shared.SortedSymbol] = false;
+								values[_shared.ClonedStackSymbol] = null;
 								_shared.setAttributes(dispatch, values);
 							};
 
 							if (errorEvent) {
-								const ex = arguments[0];
+								const ex = params[0];
 
 								if (emitted) {
 									ex.trapped = true;
@@ -7957,7 +7948,7 @@ exports.add = function add(DD_MODULES) {
 				eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(eventFn, extenders.RawEvent, {enableScopes: false, errorEvent: errorEvent}))));
 
 				if (fn) {
-					eventFn[__Internal__.symbolOverrideWith] = fn;
+					eventFn[_shared.OverrideWithSymbol] = fn;
 				};
 
 				return eventFn;
@@ -8301,7 +8292,7 @@ exports.add = function add(DD_MODULES) {
 					// onDestroy: doodad.IF_IMPLEMENTS(doodad.Events, doodad.EVENT(false)),
 
 					isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function isDestroyed() {
-						const destroyed = this[__Internal__.symbolDestroyed];
+						const destroyed = this[_shared.DestroyedSymbol];
 						return (destroyed !== false); // NOTE: Can be "null" for "not created".
 					}))))),
 
@@ -8322,13 +8313,13 @@ exports.add = function add(DD_MODULES) {
 								description: "Creates the class.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/) {
-							if (this[__Internal__.symbolDestroyed] !== null) {
+						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/...args) {
+							if (this[_shared.DestroyedSymbol] !== null) {
 								throw new types.Error("Object already created.");
 							};
-							_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
+							_shared.setAttribute(this, _shared.DestroyedSymbol, false);
 							try {
-								this._super.apply(this, arguments);
+								this._super(...args);
 							} catch(ex) {
 								_shared.invoke(null, this.$destroy, null, _shared.SECRET, this);
 								throw ex;
@@ -8347,14 +8338,14 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function $destroy() {
-							if (this[__Internal__.symbolDestroyed] === false) {
+							if (this[_shared.DestroyedSymbol] === false) {
 								if (this._implements(mixIns.Events)) {
 									this.$onDestroy();
 								};
 
 								this._super();
 
-								_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+								_shared.setAttribute(this, _shared.DestroyedSymbol, true);
 
 								this._delete();
 							};
@@ -8378,8 +8369,8 @@ exports.add = function add(DD_MODULES) {
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.CALL_FIRST(
-						function $createInstance(/*paramarray*/) {
-							return types.newInstance(this, arguments);
+						function $createInstance(/*paramarray*/...args) {
+							return types.newInstance(this, args);
 						}))),
 
 
@@ -8399,13 +8390,13 @@ exports.add = function add(DD_MODULES) {
 								description: "Creates the class object instance.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/) {
-							if (this[__Internal__.symbolDestroyed] !== null) {
+						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/...args) {
+							if (this[_shared.DestroyedSymbol] !== null) {
 								throw new types.Error("Object already created.");
 							};
-							_shared.setAttribute(this, __Internal__.symbolDestroyed, false);
+							_shared.setAttribute(this, _shared.DestroyedSymbol, false);
 							try {
-								this._super.apply(this, arguments);
+								this._super(...args);
 							} catch(ex) {
 								_shared.invoke(null, this.destroy, null, _shared.SECRET, this);
 								throw ex;
@@ -8424,10 +8415,10 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function fastDestroy() {
-							if (this[__Internal__.symbolDestroyed] === false) {
+							if (this[_shared.DestroyedSymbol] === false) {
 								this._super();
 
-								_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+								_shared.setAttribute(this, _shared.DestroyedSymbol, true);
 
 								types.Type.prototype._delete.call(this);
 							};
@@ -8445,14 +8436,14 @@ exports.add = function add(DD_MODULES) {
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function destroy() {
-							if (this[__Internal__.symbolDestroyed] === false) {
+							if (this[_shared.DestroyedSymbol] === false) {
 								if (this._implements(mixIns.Events)) {
 									this.onDestroy();
 								};
 
 								this._super();
 
-								_shared.setAttribute(this, __Internal__.symbolDestroyed, true);
+								_shared.setAttribute(this, _shared.DestroyedSymbol, true);
 
 								this._delete();
 							};
@@ -8461,7 +8452,7 @@ exports.add = function add(DD_MODULES) {
 				};
 
 			// <FUTURE> Use syntax for variable key in object declaration
-			__Internal__.creatablePrototype[__Internal__.symbolDestroyed] = doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null}))))));
+			__Internal__.creatablePrototype[_shared.DestroyedSymbol] = doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null}))))));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8556,7 +8547,7 @@ exports.add = function add(DD_MODULES) {
 						function $setTranslation(value, /*optional*/name) {
 							if (types.isNothing(name)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
-								tools.depthExtend(this[__Internal__.symbolAttributes].$__translations[__Internal__.symbolExtender].maxDepth, this.$__translations, value);
+								tools.depthExtend(this[_shared.AttributesSymbol].$__translations[_shared.ExtenderSymbol].maxDepth, this.$__translations, value);
 									
 							} else if (types.isStringAndNotEmpty(name)) {
 								const names = name.split('.'),
@@ -8659,7 +8650,7 @@ exports.add = function add(DD_MODULES) {
 						, doodad.PUBLIC(function $setConfig(value, /*optional*/name) {
 							if (types.isNothing(name)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid configuration value.");
-								tools.depthExtend(this[__Internal__.symbolAttributes].$__config[__Internal__.symbolExtender].maxDepth, this.$__config, value);
+								tools.depthExtend(this[_shared.AttributesSymbol].$__config[_shared.ExtenderSymbol].maxDepth, this.$__config, value);
 									
 							} else if (types.isStringAndNotEmpty(name)) {
 								const names = name.split('.'),
@@ -8898,7 +8889,7 @@ exports.add = function add(DD_MODULES) {
 
 			
 
-			types.preventExtensions(__Internal__);
+			types.preventExtensions(__Internal__[_shared.TargetSymbol]);
 		},
 	};
 	return DD_MODULES;
