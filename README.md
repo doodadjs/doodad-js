@@ -22,7 +22,7 @@ Object-oriented programming framework for Javascript.
   -  Static classes
   -  Useful utility functions
   -  Namespaces and a registry
-  -  Compatible with most recent browsers (kept updated) and Node.Js (6, 7 and 8).
+  -  Compatible with most recent browsers (excepted Microsoft Internet Explorer) and Node.Js (6, 7, 8 and 9).
   -  Compatible with Windows, Linux and MacOS X (and Android).
   -  Supports browserify and webpack (beta).
 
