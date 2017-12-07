@@ -71,6 +71,16 @@ exports.createEval = eval(exports.generateCreateEval());
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 	"use strict";
 		
+	// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
+	try {
+		if (typeof global.Event === 'function') {
+			_shared.Natives.functionToStringCall(global.Event);
+		};
+	} catch(ex) {
+		throw new global.Error("Browser version not supported.");
+	};
+		
+
 	//! IF_SET('debug')
 	// V8: Increment maximum number of stack frames
 	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
@@ -85,9 +95,134 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
 	//! END_IF()
 
-	const _shared = {
+	const __bootFunctions__ = {
+		toBoolean: function toBoolean(obj) {
+			return (obj === 'true') || !!(+obj);
+		},
+	};
+
+	const __options__ = (function(__options__) {
+		const DEPTH = 15;
+
+		const extendObj = function(level, obj1, obj2, keys2) {
+			const keys2Len = keys2.length;
+			for (let i = 0; i < keys2Len; i++) {
+				const key = keys2[i];
+				if (global.Object.prototype.hasOwnProperty.call(obj2, key)) {
+					const val2 = obj2[key];
+					if ((val2 !== null) && (typeof val2 === 'object') && (level < DEPTH)) {
+						if (global.Object.prototype.hasOwnProperty.call(obj1, key)) {
+							const val1 = obj1[key];
+							obj1[key] = extend(level + 1, ((val1 !== null) && (typeof val1 === 'object') ? val1 : {}), val2);
+						} else {
+							obj1[key] = extend(level + 1, {}, val2);
+						};
+					} else {
+						obj1[key] = val2;
+					};
+				};
+			};
+		};
+
+		const extend = function _extend(level, obj1, ...objs) {
+			const objsLen = objs.length;
+			for (let i = 0; i < objsLen; i++) {
+				if (global.Object.prototype.hasOwnProperty.call(objs, i)) {
+					const obj2 = objs[i];
+					if (obj2 != null) { // Yes, '!=', not '!=='
+						const keys2 = global.Object.keys(obj2);
+						const symbols2 = global.Object.getOwnPropertySymbols(obj2);
+						extendObj(level, obj1, obj2, keys2);
+						extendObj(level, obj1, obj2, symbols2);
+					};
+				};
+			};
+			return obj1;
+		};
+
+		if (global.Array.isArray(_options)) {
+			_options = extend.apply(null, Array.prototype.concat.apply([0, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
+		//! IF_UNSET("serverSide")
+		} else {
+			_options = extend({}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
+		//! END_IF()
+		};
+
+		extend(0, __options__, _options.startup);
+		
+		__options__.debug = __bootFunctions__.toBoolean(__options__.debug);
+		__options__.fromSource = __bootFunctions__.toBoolean(__options__.fromSource);
+		__options__.enableProperties = __bootFunctions__.toBoolean(__options__.enableProperties);
+		__options__.enableSymbols = __bootFunctions__.toBoolean(__options__.enableSymbols);
+		__options__.enableAsserts = __bootFunctions__.toBoolean(__options__.enableAsserts);
+		__options__.enableSafeObjects = __bootFunctions__.toBoolean(__options__.enableSafeObjects);
+
+		return __options__;
+	})({
+		//! BEGIN_REMOVE()
+			fromSource: true,					// When 'true', loads source code instead of built code
+		//! END_REMOVE()
+
+		//! IF_SET('debug')
+			debug: true,						// When 'true', will be in 'debug mode'.
+			enableProperties: true,				// When 'true', enables "defineProperty"
+			enableAsserts: true,				// When 'true', enables asserts.
+		//! ELSE()
+		//!	INJECT("debug: false,")				// When 'true', will be in 'debug mode'.
+		//!	INJECT("enableProperties: false,")	// When 'true', enables "defineProperty"
+		//!	INJECT("enableAsserts: false,")		// When 'true', enables asserts.
+		//! END_IF()
+			
+		enableSymbols: true,					// When 'true', symbols are enabled.
+		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will slow down everything significatively. For intensive debug only.
+	});
+
+
+	const _shared = (function(_shared) {
+		const natives = _shared.Natives;
+
+		// NOTE: Proxies are too slow. Please enable "safeObject" just when needed then disable it.
+		_shared.safeObject = function _safeObject(obj) {
+			//! IF_SET('debug')
+			if (__options__.enableSafeObjects && natives.windowProxy) {
+				return new natives.windowProxy(obj || {}, {
+					get: function(target, property, receiver) {
+						if (property === _shared.TargetSymbol) {
+							return target;
+						};
+						if (!natives.objectHasOwnPropertyCall(target, property)) {
+							throw new _shared.Natives.windowTypeError("Unknown safe object attribute : " + natives.windowString(property));
+						};
+						return target[property];
+					},
+					set: function(target, property, value, receiver) {
+						if (property === _shared.TargetSymbol) {
+							throw new _shared.Natives.windowTypeError("The target symbol can't be set.");
+						};
+						if (value === undefined) {
+							throw new _shared.Natives.windowTypeError("The attribute '" + natives.windowString(property) + "' was set to 'undefined'.");
+						};
+						target[property] = value;
+						return true;
+					}
+				});
+			} else {
+				return obj || {};
+			};
+			//! ELSE()
+				//!	INJECT("return obj || {};");
+			//! END_IF()
+		};
+
+		_shared.Natives = _shared.safeObject(natives);
+
+		return _shared.safeObject(_shared);
+	})({
 		// Secret value used to load modules, ...
 		SECRET: null,
+
+		// "safeObject"
+		TargetSymbol: (nodeUUID ? nodeUUID() : global.Symbol('__DD_TARGET__')),
 
 		// NOTE: Preload of immediatly needed natives.
 		Natives: {
@@ -95,9 +230,151 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			windowObject: global.Object,
 			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 			numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
+			windowFunction: global.Function,
+			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+			windowMap: global.Map,
+			windowWeakMap: global.WeakMap,
+			windowSet: global.Set,
+			windowWeakSet: global.WeakSet,
+
+			// "eval"
+			windowEval: global.eval,
+
+			// "hasInherited"
+			objectPrototype: global.Object.prototype,
+			
+			// "createObject"
+			objectCreate: global.Object.create,
+			
+			// "hasDefinePropertyEnabled" and "defineProperty"
+			objectDefineProperty: global.Object.defineProperty,
+			
+			// "defineProperties"
+			objectDefineProperties: global.Object.defineProperties,
+			
+			// "allKeys"
+			objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
+			
+			// "getOwnPropertyDescriptor"
+			objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
+			
+			// "getPrototypeOf"
+			objectGetPrototypeOf: global.Object.getPrototypeOf,
+			
+			// "isPrototypeOf"
+			objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
+
+			// "setPrototypeOf"
+			objectSetPrototypeOf: global.Object.setPrototypeOf,
+			
+			// "isArray"
+			arrayIsArray: global.Array.isArray,
+			arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+
+			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+
+			// "createArray"
+			windowArray: global.Array,
+			//arrayFrom: global.Array.from,
+			arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
+			
+			// "createErrorType", "isError"
+			windowError: global.Error,
+
+			// "isNumber", "toInteger"
+			windowNumber: global.Number,
+			
+			// "hasSymbols", "isSymbol", "getSymbol"
+			windowSymbol: global.Symbol,
+			
+			// "getSymbolFor"
+			symbolFor: global.Symbol.for,
+			
+			// "getSymbolKey", "symbolIsGlobal"
+			symbolToStringCall: global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString),
+			symbolValueOfCall: global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf),
+			symbolKeyFor: global.Symbol.keyFor,
+			
+			// "createType", "_instanceof"
+			symbolHasInstance: global.Symbol.hasInstance,
+			functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
 
 			// "is*"
-			symbolToStringTag: (global.Symbol && (typeof global.Symbol.toStringTag === 'symbol') ? global.Symbol.toStringTag : undefined),
+			numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
+			booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
+			dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
+
+			// "isNaN"
+			numberIsNaN: global.Number.isNaN,
+
+			// "isFinite"
+			numberIsFinite: global.Number.isFinite,
+			
+			// "concat"
+			arrayConcatApply: global.Array.prototype.concat.apply.bind(global.Array.prototype.concat),
+
+			// "concat"
+			arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
+
+			// "trim"
+			stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
+
+			// "depthExtend"
+			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
+			
+			// "isInteger", "isSafeInteger", "toInteger", "toFloat"
+			mathFloor: global.Math.floor,
+			mathAbs: global.Math.abs,
+
+			// "isInteger"
+			numberIsInteger: global.Number.isInteger,
+
+			// "isSafeInteger"
+			numberIsSafeInteger: global.Number.isSafeInteger,
+
+			// "toFloat"
+			mathPow: global.Math.pow,
+			
+			// "sealObject"
+			objectSeal: global.Object.seal,
+			
+			// "isFrozen"
+			objectIsFrozen: global.Object.isFrozen,
+			
+			// "freezeObject"
+			objectFreeze: global.Object.freeze,
+			
+			// "isExtensible"
+			objectIsExtensible: global.Object.isExtensible,
+
+			// "preventExtensions"
+			objectPreventExtensions: global.Object.preventExtensions,
+			
+			// "isSafeInteger", "getSafeIntegerBounds"
+			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER, // global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1
+			numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER, // -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1
+			
+			// generateUUID
+			mathRandom: global.Math.random,
+
+			// AssertionError
+			//consoleAssert: (global.console.assert ? global.console.assert.bind(global.console) : undefined),
+
+			// "createEval"
+			arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
+
+			// "safeObject"
+			windowProxy: global.Proxy,
+			windowTypeError: global.TypeError,
+
+			// "toString"
+			windowString: global.String,
+
+			// "has", "isCustomFunction", "isNativeFunction"
+			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
+
+			// "is*"
+			symbolToStringTag: global.Symbol.toStringTag,
 			stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
 
 			// "isArray", "isObject", "isJsObject", "isCallable"
@@ -107,10 +384,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
 
 			// "allSymbols", "symbols"
-			objectGetOwnPropertySymbols: (global.Object.getOwnPropertySymbols ? global.Object.getOwnPropertySymbols : undefined),
-
-			// "has", "isCustomFunction", "isNativeFunction"
-			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
+			objectGetOwnPropertySymbols: global.Object.getOwnPropertySymbols,
 
 			// "keys"
 			objectKeys: global.Object.keys,
@@ -124,12 +398,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			// "isCustomFunction", "isNativeFunction", getFunctionName"
 			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 		},
-	};
+	});
 
-		
-	const __Internal__ = {
+
+	const __Internal__ = _shared.safeObject({
 		// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
-		SAFE_INTEGER_LEN: (global.Number.MAX_VALUE ? _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length : 53),   // TODO: Find a mathematical way
+		SAFE_INTEGER_LEN: _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length,   // TODO: Find a mathematical way
 
 		MIN_BITWISE_INTEGER: 0,
 		MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
@@ -138,16 +412,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		safeIntegerLen: null,
 		bitwiseIntegerLen: null,
-	};
+	});
 
 	__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 
-	const types = {
-		},
-			
-		tools = {
-		};
+	const types = _shared.safeObject(), // Will get filled later
+		tools = _shared.safeObject(); // Will get filled later
 
 			
 	//===================================
@@ -166,9 +437,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	__Internal__.tempTypesAdded = [];
 
 	__Internal__.ADD = function ADD(name, obj) {
-		if (types.isType && types.isType(obj)) {
-			obj = types.INIT(obj);
-		};
 		types[name] = obj;
 		__Internal__.tempTypesAdded.push([name, obj]);
 		return obj;
@@ -189,617 +457,18 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// ES6 Classes support
 	//===================================
 
-	__Internal__.hasClasses = false;
 	__Internal__.hasFirefoxClassesToStringBug = false;
 	__Internal__.classesNotCallable = true;
 		
-	try {
-		const cls = global.eval("(class A {})"); // Will throw an error if ES6 classes are not supported.
-		__Internal__.hasClasses = true;
+	(function() {
+		const cls = (class A {});
 
 		__Internal__.hasFirefoxClassesToStringBug = (_shared.Natives.functionToStringCall(cls).slice(0, 6) !== 'class ');  // Check for Firefox's bug
+	})();
 
-		// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
-		//cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
-		//__Internal__.classesNotCallable = false;
-	} catch(o) {
-	};
-
-	__Internal__.ADD('hasClasses', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 0,
-				params: null,
-				returns: 'bool',
-				description: "Returns 'true' if the Javascript engine has ES6 classes, 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function hasClasses() {
-			return __Internal__.hasClasses;
-		}));
-
-	//===================================
-	// Functions
-	//===================================
-	// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
-	try {
-		if (typeof global.Event === 'function') {
-			_shared.Natives.functionToStringCall(global.Event);
-		};
-	} catch(ex) {
-		throw new global.Error("Browser version not supported.");
-	};
-		
-	__Internal__.ADD('isFunction', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 0,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
-					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is a function, 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isFunction(obj) {
-			return (typeof obj === 'function');
-		}));
-		
-	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a Javascript class function, 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, __Internal__.hasClasses && !__Internal__.hasFirefoxClassesToStringBug ? function isJsClass(obj) {
-			if (types.isFunction(obj)) {
-				return (_shared.Natives.functionToStringCall(obj).slice(0, 6) === 'class ');
-			};
-			return false;
-		} : function isJsClass(obj) {
-			return false;
-		}));
-		
-	__Internal__.ADD('isNativeFunction', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 2,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
-					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is a native function, 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isNativeFunction(obj) {
-			if (types.isJsClass(obj)) {
-				return true;
-			} else if (types.isFunction(obj)) {
-				const str = _shared.Natives.functionToStringCall(obj),
-					index1 = str.indexOf('{') + 1,
-					index2 = str.indexOf('[native code]', index1);
-				if (index2 < 0) {
-					return false;
-				};
-				for (let i = index1; i < index2; i++) {
-					const chr = str[i];
-					if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
-						return false;
-					};
-				};
-				return true;
-			} else {
-				return false;
-			};
-		}));
-		
-
-	//===================================
-	// Extend
-	// <FUTURE> Simply use "Object.assign" when IE will be no longer a thing.
-	// <FUTURE> Move all these functions where appropriated once "Object.assign" will be available everywhere.
-	//===================================
-
-	__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-						key: {
-							type: 'string,Symbol',
-							optional: false,
-							description: "A property name to test for.",
-						},
-					},
-					returns: 'boolean',
-					description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isEnumerable(obj, key) {
-			return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
-		}));
-		
-	__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'arrayof(symbol)',
-					description: "Returns an array of enumerable and non-enumerable own property symbols.",
-		}
-		//! END_REPLACE()
-		, (_shared.Natives.objectGetOwnPropertySymbols ? 
-		function allSymbols(obj) {
-			if (types.isNothing(obj)) {
-				return [];
-			};
-			return _shared.Natives.objectGetOwnPropertySymbols(obj);
-		}
-		:
-		function allSymbols(obj) {
-			// Not supported
-			return [];
-		})));
-
-	__Internal__.ADD('symbols', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'arrayof(symbol)',
-					description: "Returns an array of enumerable own property symbols.",
-		}
-		//! END_REPLACE()
-		, function symbols(obj) {
-			// FUTURE: "Object.symbols" ? (like "Object.keys")
-			// FUTURE: Use "filter"
-			if (types.isNothing(obj)) {
-				return [];
-			};
-			const all = types.allSymbols(obj);
-			const symbols = [];
-			for (let i = 0; i < all.length; i++) {
-				const symbol = all[i];
-				if (types.isEnumerable(obj, symbol)) {
-					symbols.push(symbol);
-				};
-			};
-			return symbols;
-		}));
-		
-	__Internal__.ADD('has', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-						keys: {
-							type: 'arrayof(string,Symbol),string,Symbol',
-							optional: false,
-							description: "Key(s) to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if one of the specified keys is an owned property of the object.",
-		}
-		//! END_REPLACE()
-		, function has(obj, keys) {
-			if (!types.isNothing(obj)) {
-				obj = _shared.Natives.windowObject(obj);
-				if (!types.isArray(keys)) {
-					return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
-				};
-				const len = keys.length;
-				if (!len) {
-					return false;
-				};
-				for (let i = 0; i < len; i++) {
-					if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
-						const key = keys[i];
-						if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
-							return true;
-						};
-					};
-				};
-			};
-			return false;
-		}));
-		
-	// <PRB> JS has no function to test for strings
-	__Internal__.ADD('isString', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isString(obj) {
-			if (types.isNothing(obj)) {
-				return false;
-			};
-			const type = typeof obj;
-			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'String')) {
-					try {
-						_shared.Natives.stringValueOfCall(obj);
-						return true;
-					} catch(o) {
-					};
-				} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
-					return true;
-				};
-			} else if (type === 'string') {
-				return true;
-			};
-			return false;
-		}));
-		
-	__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isArrayLike(obj) {
-			// Unbelievable : There is not an official way to detect an array-like object !!!!
-			if (types.isNothing(obj)) {
-				return false;
-			};
-			if (typeof obj === 'object') {
-				const len = obj.length;
-				return (typeof len === 'number') && ((len >>> 0) === len);
-			} else if (types.isString(obj)) {
-				return true;
-			} else {
-				return false;
-			};
-		}));
-		
-	__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
-
-	__Internal__.ADD('keys', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'arrayof(string)',
-					description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
-		}
-		//! END_REPLACE()
-		, function keys(obj) {
-			// Returns enumerable own properties (those not inherited).
-			// Doesn't not include array items.
-			if (types.isNothing(obj)) {
-				return [];
-			};
-				
-			obj = _shared.Natives.windowObject(obj);
-
-			let result;
-				
-			if (types.isArrayLike(obj)) {
-				result = [];
-				for (let key in obj) {
-					if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
-						result.push(key);
-					};
-				};
-			} else {
-					result = _shared.Natives.objectKeys(obj);
-			};
-				
-			return result;
-		}));
-		
-	__Internal__.ADD('isNothing', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isNothing(obj) {
-			return (obj == null);
-		}));
-		
-	__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'arraylike',
-							optional: false,
-							description: "Target array.",
-						},
-						paramarray: {
-							type: 'arrayof(arraylike)',
-							optional: true,
-							description: "Arrays to append.",
-						},
-					},
-					returns: 'array',
-					description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
-		}
-		//! END_REPLACE()
-		, function append(obj /*paramarray*/) {
-			if (!types.isArrayLike(obj)) {
-				return null;
-			};
-			const len = arguments.length;
-			for (let i = 1; i < len; i++) {
-				const arg = arguments[i];
-				if (!types.isNothing(arg)) {
-					_shared.Natives.arrayPushApply(obj, arg);
-				};
-			};
-			return obj;
-		}));
-			
-	__Internal__.ADD_TOOL('extend', (_shared.Natives.objectAssign || __Internal__.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 3,
-				params: {
-					paramarray: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
-					},
-				},
-				returns: 'object',
-				description: "Extends the first object with owned properties of the other objects.",
-			}
-			//! END_REPLACE()
-	, function extend(/*paramarray*/obj) {
-		let result;
-		if (!types.isNothing(obj)) {
-			result = _shared.Natives.windowObject(obj);
-			const len = arguments.length;
-			for (let i = 1; i < len; i++) {
-				obj = arguments[i];
-				if (types.isNothing(obj)) {
-					continue;
-				};
-				// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-				obj = _shared.Natives.windowObject(obj);
-				const keys = tools.append(types.keys(obj), types.symbols(obj));
-				for (let j = 0; j < keys.length; j++) {
-					const key = keys[j];
-					result[key] = obj[key];
-				};
-			};
-		};
-		return result;
-	})));
-
-
-	//===================================
-	// Natives
-	//===================================
-
-	tools.extend(_shared.Natives, {
-		// General
-		windowFunction: global.Function,
-		stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
-
-		// "eval"
-		windowEval: global.eval,
-
-		// "hasInherited"
-		objectPrototype: global.Object.prototype,
-			
-		// "createObject"
-		objectCreate: global.Object.create,
-			
-		// "hasDefinePropertyEnabled" and "defineProperty"
-		objectDefineProperty: global.Object.defineProperty,
-			
-		// "defineProperties"
-		objectDefineProperties: global.Object.defineProperties,
-			
-		// "allKeys"
-		objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
-			
-		// "getOwnPropertyDescriptor"
-		objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
-			
-		// "getPrototypeOf"
-		objectGetPrototypeOf: global.Object.getPrototypeOf,
-			
-		// "isPrototypeOf"
-		objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
-
-		// "setPrototypeOf"
-		objectSetPrototypeOf: global.Object.setPrototypeOf,
-			
-		// "isArray"
-		arrayIsArray: (types.isNativeFunction(global.Array.isArray) ? global.Array.isArray : undefined),
-		arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
-
-		arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
-
-		// "createArray"
-		windowArray: global.Array,
-		//arrayFrom: global.Array.from,
-		arrayFillCall: (types.isNativeFunction(global.Array.prototype.fill) ? global.Array.prototype.fill.call.bind(global.Array.prototype.fill) : undefined),
-			
-		// "createErrorType", "isError"
-		windowError: (global.Error || Error), // NOTE: "node.js" v4 does not include "Error" in "global".
-
-		windowTypeError: (global.TypeError || TypeError),
-			
-		// "isNumber", "toInteger"
-		windowNumber: global.Number,
-			
-		// "isString"
-		windowString: (types.isNativeFunction(global.String) ? global.String : undefined),
-			
-		// "hasSymbols", "isSymbol", "getSymbol"
-		windowSymbol: (types.isNativeFunction(global.Symbol) ? global.Symbol : undefined),
-			
-		// "getSymbolFor"
-		symbolFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.for) ? global.Symbol.for : undefined),
-			
-		// "getSymbolKey", "symbolIsGlobal"
-		symbolToStringCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.toString) ? global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString) : undefined),
-		symbolValueOfCall: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.prototype.valueOf) ? global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf) : undefined),
-		symbolKeyFor: (types.isNativeFunction(global.Symbol) && types.isNativeFunction(global.Symbol.keyFor) ? global.Symbol.keyFor : undefined),
-			
-		// "createType", "_instanceof"
-		symbolHasInstance: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.hasInstance === 'symbol') ? global.Symbol.hasInstance : undefined),
-
-		// "is*"
-		numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
-		booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
-		dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
-
-		// "isNaN"
-		numberIsNaN: (types.isNativeFunction(global.Number.isNaN) ? global.Number.isNaN : undefined),
-
-		// "isFinite"
-		numberIsFinite: (types.isNativeFunction(global.Number.isFinite) ? global.Number.isFinite : undefined),
-			
-		// "concat"
-		arrayConcatApply: (types.isNativeFunction(global.Array.prototype.concat) ? global.Array.prototype.concat.apply.bind(global.Array.prototype.concat) : undefined),
-
-		// "concat"
-		arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
-
-		// "trim"
-		stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
-
-		// "depthExtend"
-		functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
-			
-		// "isInteger", "isSafeInteger", "toInteger", "toFloat"
-		mathFloor: global.Math.floor,
-		mathAbs: global.Math.abs,
-
-		// "isInteger"
-		numberIsInteger: (types.isNativeFunction(global.Number.isInteger) ? global.Number.isInteger : undefined),
-
-		// "isSafeInteger"
-		numberIsSafeInteger: (types.isNativeFunction(global.Number.isSafeInteger) ? global.Number.isSafeInteger : undefined),
-
-		// "toFloat"
-		mathPow: global.Math.pow,
-			
-		// "sealObject"
-		objectSeal: global.Object.seal,
-			
-		// "isFrozen"
-		objectIsFrozen: global.Object.isFrozen,
-			
-		// "freezeObject"
-		objectFreeze: global.Object.freeze,
-			
-		// "isExtensible"
-		objectIsExtensible: global.Object.isExtensible,
-
-		// "preventExtensions"
-		objectPreventExtensions: global.Object.preventExtensions,
-			
-		// "isSafeInteger", "getSafeIntegerBounds"
-		numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER || global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1,
-		numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER || -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1,
-			
-		// generateUUID
-		mathRandom: global.Math.random,
-
-		// AssertionError
-		//consoleAssert: (types.isNativeFunction(global.console.assert) ? global.console.assert.bind(global.console) : undefined),
-
-		// "createEval"
-		arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
-	});
-
-	// "_instanceof"
-	_shared.Natives.functionHasInstance = (_shared.Natives.symbolHasInstance ? global.Function.prototype[_shared.Natives.symbolHasInstance] : undefined);
-
+	// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
+	//cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
+	//__Internal__.classesNotCallable = false;
 
 	__Internal__.ADD('DEBUGGER', function() {
 		// Something weird just happened. Please see the call stack.
@@ -878,45 +547,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 
 	//==================================
-	// is*
+	// Collection Objects
 	//==================================
-		
-	__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isCustomFunction(obj) {
-			if (types.isJsClass(obj)) {
-				return false;
-			} else if (types.isFunction(obj)) {
-				const str = _shared.Natives.functionToStringCall(obj),
-					index1 = str.indexOf('{') + 1,
-					index2 = str.indexOf('[native code]', index1);
-				if (index2 < 0) {
-					return true;
-				};
-				for (let i = index1; i < index2; i++) {
-					const chr = str[i];
-					if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
-						return true;
-					};
-				};
-			};
-			return false;
-		}));
-		
+
+	__Internal__.ADD('Map', _shared.Natives.windowMap);
+	__Internal__.ADD('WeakMap', _shared.Natives.windowWeakMap);
+	__Internal__.ADD('Set', _shared.Natives.windowSet);
+	__Internal__.ADD('WeakSet', _shared.Natives.windowWeakSet);
+
+
 	//==================================
 	// String Tools
 	//==================================
@@ -1037,9 +676,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Converts a value to a boolean.",
 		}
 		//! END_REPLACE()
-		, function toBoolean(obj) {
-			return (obj === 'true') || !!(+obj);
-		}));
+		, __bootFunctions__.toBoolean));
 
 	__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1223,6 +860,216 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Utilities
 	//==================
 		
+	__Internal__.ADD('isNothing', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isNothing(obj) {
+			return (obj == null); // Yes, "==", not "==="
+		}));
+		
+	// <PRB> JS has no function to test for strings
+	__Internal__.ADD('isString', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isString(obj) {
+			if (types.isNothing(obj)) {
+				return false;
+			};
+			const type = typeof obj;
+			if (type === 'object') {
+				if (obj[_shared.Natives.symbolToStringTag] === 'String') {
+					try {
+						_shared.Natives.stringValueOfCall(obj);
+						return true;
+					} catch(o) {
+					};
+				} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
+					return true;
+				};
+			} else if (type === 'string') {
+				return true;
+			};
+			return false;
+		}));
+		
+	__Internal__.ADD('isFunction', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is a function, 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isFunction(obj) {
+			return (typeof obj === 'function');
+		}));
+		
+	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an ES6 class, 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, !__Internal__.hasFirefoxClassesToStringBug ? function isJsClass(obj) {
+			if (types.isFunction(obj)) {
+				return (_shared.Natives.functionToStringCall(obj).slice(0, 6) === 'class ');
+			};
+			return false;
+		} : function isJsClass(obj) {
+			return false;
+		}));
+		
+	__Internal__.ADD('isNativeFunction', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is a native function, 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isNativeFunction(obj) {
+			if (types.isJsClass(obj)) {
+				return true;
+			} else if (types.isFunction(obj)) {
+				const str = _shared.Natives.functionToStringCall(obj),
+					index1 = str.indexOf('{') + 1,
+					index2 = str.indexOf('[native code]', index1);
+				if (index2 < 0) {
+					return false;
+				};
+				for (let i = index1; i < index2; i++) {
+					const chr = str[i];
+					if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
+						return false;
+					};
+				};
+				return true;
+			} else {
+				return false;
+			};
+		}));
+
+	__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isCustomFunction(obj) {
+			if (types.isJsClass(obj)) {
+				return false;
+			} else if (types.isFunction(obj)) {
+				const str = _shared.Natives.functionToStringCall(obj),
+					index1 = str.indexOf('{') + 1,
+					index2 = str.indexOf('[native code]', index1);
+				if (index2 < 0) {
+					return true;
+				};
+				for (let i = index1; i < index2; i++) {
+					const chr = str[i];
+					if ((chr !== '\n') && (chr !== '\r') && (chr !== '\t') && (chr !== ' ')) {
+						return true;
+					};
+				};
+			};
+			return false;
+		}));
+		
+	__Internal__.ADD('isArray', _shared.Natives.arrayIsArray);
+
+	__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isArrayLike(obj) {
+			// Unbelievable : There is not an official way to detect an array-like object !!!!
+			if (types.isNothing(obj)) {
+				return false;
+			};
+			if (typeof obj === 'object') {
+				const len = obj.length;
+				return (typeof len === 'number') && ((len >>> 0) === len);
+			} else if (types.isString(obj)) {
+				return true;
+			} else {
+				return false;
+			};
+		}));
+		
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1271,7 +1118,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === obj); // Not NaN
@@ -1336,7 +1183,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsInteger(obj);
@@ -1394,7 +1241,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsSafeInteger(obj);
@@ -1474,7 +1321,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFinite(obj);
@@ -1512,7 +1359,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === Infinity) || (obj === -Infinity);
@@ -1559,7 +1406,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFloat(obj);
@@ -1598,7 +1445,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Boolean')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Boolean') {
 					try {
 						_shared.Natives.booleanValueOfCall(obj);
 						return true;
@@ -1632,7 +1479,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function isDate(obj) {
 			if (obj && (typeof obj === 'object')) {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Date')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Date') {
 					try {
 						_shared.Natives.dateValueOfCall(obj);
 						return true;
@@ -1645,37 +1492,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return false;
 		}));
 		
-	__Internal__.ADD('isArray', (_shared.Natives.arrayIsArray || __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 5,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is an array. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, function isArray(obj) {
-			if (obj && (typeof obj === 'object')) {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Array')) {
-					try {
-						_shared.Natives.arraySpliceCall(obj, 0, 0);
-						return true;
-					} catch(o) {
-					};
-				} else if (_shared.Natives.objectToStringCall(obj) === '[object Array]') {
-					return true;
-				};
-			};
-			return false;
-		})));
-
 	// <PRB> JS has no function to test for errors
 	__Internal__.ADD('isError', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1695,7 +1511,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function isError(obj) {
 			if (obj && (typeof obj === 'object')) {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Error')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Error') {
 					return types._instanceof(obj, _shared.Natives.windowError);
 				};
 				// <PRB> Object.prototype.toString ignores custom errors inherited from Error.
@@ -1726,7 +1542,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Number')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Number') {
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						// Explanation: NaN is the only value not equal to itself.
@@ -1767,7 +1583,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const type = typeof obj;
 			if (type === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Function')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Function') {
 					try {
 						_shared.Natives.functionToStringCall(obj);
 						return true;
@@ -1786,6 +1602,155 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Arrays
 	//===================================
 
+	__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "Target array.",
+						},
+						paramarray: {
+							type: 'arrayof(arraylike)',
+							optional: true,
+							description: "Arrays to append.",
+						},
+					},
+					returns: 'array',
+					description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
+		}
+		//! END_REPLACE()
+		, function append(obj, /*paramarray*/...args) {
+			if (!types.isArrayLike(obj)) {
+				return null;
+			};
+			const argsLen = args.length;
+			for (let i = 0; i < argsLen; i++) {
+				const arg = args[i];
+				if (!types.isNothing(arg)) {
+					_shared.Natives.arrayPushApply(obj, arg);
+				};
+			};
+			return obj;
+		}));
+			
+	__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'tools.concat'.
+	__Internal__.ADD_TOOL('concat', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						paramarray: {
+							type: 'arrayof(any)',
+							optional: false,
+							description: "Values or arrays to concatenate.",
+						},
+					},
+					returns: 'array',
+					description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
+		}
+		//! END_REPLACE()
+		, function concat(/*paramarray*/...args) {
+			return _shared.Natives.arrayConcatApply(__Internal__.emptyArray, args);
+		}));
+			
+	__Internal__.ADD_TOOL('unique', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					comparer: {
+						type: 'function',
+						optional: true,
+						description: 
+							"A comparer function. Arguments passed to the function are : \n" +
+							"  value1 (any): The value to compare from\n" +
+							"  value2 (any): The value to compare to\n" +
+							"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
+					},
+					paramarray: {
+						type: 'arraylike',
+						optional: true,
+						description: "Arrays.",
+					},
+				},
+				returns: 'arrayof(any)',
+				description: "Compare every items of every arrays, and returns a new array with unique items.",
+		}
+		//! END_REPLACE()
+		, function unique(/*paramarray*/...args) {
+			let start = 1;
+			let comparer = args[0];
+			if (!types.isFunction(comparer)) {
+				comparer = null;
+				start = 0;
+			};
+				
+			const result = [];
+
+			const argsLen = args.length;
+				
+			if (comparer) {
+				for (let i = start; i < argsLen; i++) {
+					let obj = args[i];
+					if (types.isNothing(obj)) {
+						continue;
+					};
+					obj = _shared.Natives.windowObject(obj);
+					const objLen = obj.length;
+					for (let key1 = 0; key1 < objLen; key1++) {
+						if (types.has(obj, key1)) {
+							const value1 = obj[key1];
+							const resultLen = result.length;
+							let found = false;
+							for (let key2 = 0; key2 < resultLen; key2++) {
+								const res = comparer(value1, result[key2]);
+								if ((res === true) || (res === 0)) {
+									found = true;
+									break;
+								};
+							};
+							if (!found) {
+								result.push(value1);
+							};
+						};
+					};
+				};
+			} else {
+				for (let i = start; i < argsLen; i++) {
+					let obj = args[i];
+					if (types.isNothing(obj)) {
+						continue;
+					};
+					obj = _shared.Natives.windowObject(obj);
+					const objLen = obj.length;
+					for (let key1 = 0; key1 < objLen; key1++) {
+						if (types.has(obj, key1)) {
+							const value1 = obj[key1];
+							const resultLen = result.length;
+							let found = false;
+							for (let key2 = 0; key2 < resultLen; key2++) {
+								if (value1 === result[key2]) {
+									found = true;
+									break;
+								};
+							};
+							if (!found) {
+								result.push(value1);
+							};
+						};
+					};
+				};
+			};
+				
+			return result;
+		}));
+			
 	__Internal__.ADD_TOOL('createArray', function(length, /*optional*/defaultValue) {
 		length = +length || 0;
 		if ((length <= 0) || types.isInfinite(length)) {
@@ -1852,8 +1817,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!stack) {
 				return null;
 			};
-				
-			// NOTE: Internet Explorer 11 doesn't return more than 10 call levels.
 				
 			__Internal__.parseStackRegEx.lastIndex = 0;
 			let call = __Internal__.parseStackRegEx.exec(stack);
@@ -1930,36 +1893,18 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return calls;
 		}));
 
-	// <PRB> Internet Explorer doesn't fill the stack on Error creation.
-	(function() {
-		// 'stack' is a property under Firefox.
-		const desc = _shared.Natives.objectGetOwnPropertyDescriptor(_shared.Natives.windowError.prototype, 'stack');
-		__Internal__.ieStack = !desc || !_shared.Natives.objectHasOwnPropertyCall(desc, 'get');
-		if (__Internal__.ieStack) {
-			const ex = new _shared.Natives.windowError("");
-			__Internal__.ieStack = !_shared.Natives.objectHasOwnPropertyCall(ex, 'stack');
-		};
-	})();
-
 	__Internal__.ADD_TOOL('getStackTrace', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 0,
+					revision: 1,
 					params: null,
 					returns: 'object',
 					description: "Returns the current stack trace, already parsed.",
 		}
 		//! END_REPLACE()
 		, function getStackTrace() {
-			let ex = new _shared.Natives.windowError("");
-			if (__Internal__.ieStack) {
-				try {
-					throw ex;
-				} catch(o) {
-					ex = o;
-				};
-			};
+			const ex = new _shared.Natives.windowError("");
 			const stack = tools.parseStack(ex.stack);
 			if (stack) {
 				stack.splice(0, 1);  // remove "getStackTrace" call entry
@@ -1971,6 +1916,49 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Objects
 	//===================================
 		
+	__Internal__.ADD('has', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+						keys: {
+							type: 'arrayof(string,Symbol),string,Symbol',
+							optional: false,
+							description: "Key(s) to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if one of the specified keys is an owned property of the object.",
+		}
+		//! END_REPLACE()
+		, function has(obj, keys) {
+			if (!types.isNothing(obj)) {
+				obj = _shared.Natives.windowObject(obj);
+				if (!types.isArray(keys)) {
+					return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
+				};
+				const len = keys.length;
+				if (!len) {
+					return false;
+				};
+				for (let i = 0; i < len; i++) {
+					if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
+						const key = keys[i];
+						if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
+							return true;
+						};
+					};
+				};
+			};
+			return false;
+		}));
+
 	__Internal__.ADD('hasInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2104,8 +2092,105 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 		}));
 		
+	__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
+	__Internal__.ADD('keys', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(string)',
+					description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
+		}
+		//! END_REPLACE()
+		, function keys(obj) {
+			// Returns enumerable own properties (those not inherited).
+			// Doesn't not include array items.
+			if (types.isNothing(obj)) {
+				return [];
+			};
+				
+			obj = _shared.Natives.windowObject(obj);
+
+			let result;
+				
+			if (types.isArrayLike(obj)) {
+				result = [];
+				for (let key in obj) {
+					if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
+						result.push(key);
+					};
+				};
+			} else {
+					result = _shared.Natives.objectKeys(obj);
+			};
+				
+			return result;
+		}));
+		
+	__Internal__.ADD('symbols', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(symbol)',
+					description: "Returns an array of enumerable own property symbols.",
+		}
+		//! END_REPLACE()
+		, function symbols(obj) {
+			// FUTURE: "Object.symbols" ? (like "Object.keys")
+			// FUTURE: Use "filter"
+			if (types.isNothing(obj)) {
+				return [];
+			};
+			const all = types.allSymbols(obj);
+			const symbols = [];
+			for (let i = 0; i < all.length; i++) {
+				const symbol = all[i];
+				if (types.isEnumerable(obj, symbol)) {
+					symbols.push(symbol);
+				};
+			};
+			return symbols;
+		}));
 		
 	__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
+
+	__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(symbol)',
+					description: "Returns an array of enumerable and non-enumerable own property symbols.",
+		}
+		//! END_REPLACE()
+		, function allSymbols(obj) {
+			if (types.isNothing(obj)) {
+				return [];
+			};
+			return _shared.Natives.objectGetOwnPropertySymbols(obj);
+		}));
 
 	__Internal__.ADD('allKeysInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2172,6 +2257,22 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		};
 	})();
 
+	__Internal__.ADD('hasDefinePropertyEnabled', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'boolean',
+					description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, (__options__.enableProperties ? function hasDefinePropertyEnabled() {
+			return true;
+		} : function hasDefinePropertyEnabled() {
+			return false;
+		})));
+		
 	__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2412,9 +2513,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns a null object extended by the provided objects.",
 		}
 		//! END_REPLACE()
-		, function nullObject(/*paramarray*/) {
-			return tools.extend.apply(types, tools.append([tools.createObject(null)], arguments));
+		, function nullObject(/*paramarray*/...args) {
+			return tools.extend.apply(types, tools.append([tools.createObject(null)], args));
 		}));
+
+	__Internal__.ADD_TOOL('safeObject', _shared.safeObject);
 
 	__Internal__.ADD('getIn', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2501,10 +2604,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
 						paramarray: {
-							type: 'any',
+							type: 'object',
 							optional: false,
 							description: "An object.",
 						},
@@ -2513,22 +2621,22 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Extends the first object with owned properties of the other objects.",
 		}
 		//! END_REPLACE()
-		, function extendProperties(/*paramarray*/obj) {
+		, function extendProperties(obj, /*paramarray*/...args) {
 			let result;
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
-				const len = arguments.length;
-				for (let i = 1; i < len; i++) {
-					obj = arguments[i];
-					if (types.isNothing(obj)) {
+				const argsLen = args.length;
+				for (let i = 0; i < argsLen; i++) {
+					let arg = args[i];
+					if (types.isNothing(arg)) {
 						continue;
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-					obj = _shared.Natives.windowObject(obj);
-					const keys = tools.append(types.keys(obj), types.symbols(obj));
+					arg = _shared.Natives.windowObject(arg);
+					const keys = tools.append(types.keys(arg), types.symbols(arg));
 					for (let j = 0; j < keys.length; j++) {
 						const key = keys[j];
-						const descriptor = types.getOwnPropertyDescriptor(obj, key);
+						const descriptor = types.getOwnPropertyDescriptor(arg, key);
 						types.defineProperty(result, key, descriptor);
 					};
 				};
@@ -2536,19 +2644,26 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return result;
 		}));
 			
+	__Internal__.ADD_TOOL('extend', _shared.Natives.objectAssign);
+
 	__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 4,
+					revision: 6,
 					params: {
 						depth: {
 							type: 'integer,function',
 							optional: false,
 							description: "Depth, or extender function.",
 						},
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
 						paramarray: {
-							type: 'any',
+							type: 'object',
 							optional: false,
 							description: "An object.",
 						},
@@ -2557,7 +2672,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Extends the first object with owned properties of the other objects using the specified depth.",
 		}
 		//! END_REPLACE()
-		, function depthExtend(depth, /*paramarray*/obj) {
+		, function depthExtend(depth, obj, /*paramarray*/...args) {
 			let result;
 			if (!types.isNothing(obj)) {
 				let extender;
@@ -2590,19 +2705,25 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				if (depth >= -1) {
 					result = _shared.Natives.windowObject(obj);
-					const len = arguments.length;
-					for (let i = 2; i < len; i++) {
-						obj = arguments[i];
-						if (types.isNothing(obj)) {
+					const argsLen = args.length;
+					for (let i = 0; i < argsLen; i++) {
+						let arg = args[i];
+						if (types.isNothing(arg)) {
 							continue;
 						};
 						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-						obj = _shared.Natives.windowObject(obj);
-						const keys = tools.append(types.keys(obj), types.symbols(obj)),
-							keysLen = keys.length; // performance
+						arg = _shared.Natives.windowObject(arg);
+						const keys = types.keys(arg)
+						const keysLen = keys.length; // performance
 						for (let j = 0; j < keysLen; j++) {
 							const key = keys[j];
-							extender(result, obj[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+						};
+						const symbols = types.symbols(arg);
+						const symbolsLen = symbols.length; // performance
+						for (let j = 0; j < symbolsLen; j++) {
+							const key = symbols[j];
+							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
 						};
 					};
 				};
@@ -2614,8 +2735,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 2,
+					revision: 4,
 					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
 						paramarray: {
 							type: 'any',
 							optional: false,
@@ -2626,23 +2752,32 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
 		}
 		//! END_REPLACE()
-		, function complete(/*paramarray*/obj) {
+		, function complete(obj, /*paramarray*/...args) {
 			let result;
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
-				const len = arguments.length;
-				for (let i = 1; i < len; i++) {
-					obj = arguments[i];
-					if (types.isNothing(obj)) {
+				const argsLen = args.length;
+				for (let i = 0; i < argsLen; i++) {
+					let arg = args[i];
+					if (types.isNothing(arg)) {
 						continue;
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-					obj = _shared.Natives.windowObject(obj);
-					const keys = tools.append(types.keys(obj), types.symbols(obj));
-					for (let j = 0; j < keys.length; j++) {
+					arg = _shared.Natives.windowObject(arg);
+					const keys = types.keys(arg);
+					const keysLen = keys.length; // performance
+					for (let j = 0; j < keysLen; j++) {
 						const key = keys[j];
 						if (!types.has(result, key)) {
-							result[key] = obj[key];
+							result[key] = arg[key];
+						};
+					};
+					const symbols = types.symbols(arg);
+					const symbolsLen = symbols.length; // performance
+					for (let j = 0; j < symbolsLen; j++) {
+						const key = symbols[j];
+						if (!types.has(result, key)) {
+							result[key] = arg[key];
 						};
 					};
 				};
@@ -2655,7 +2790,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
 					params: {
 						paramarray: {
 							type: 'any',
@@ -2667,165 +2807,41 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
 		}
 		//! END_REPLACE()
-		, function completeProperties(/*paramarray*/obj) {
+		, function completeProperties(obj, /*paramarray*/args) {
 			let result;
-
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
-				const len = arguments.length;
-				for (let i = 1; i < len; i++) {
-					obj = arguments[i];
-					if (types.isNothing(obj)) {
+				const argsLen = args.length;
+				for (let i = 0; i < argsLen; i++) {
+					let arg = args[i];
+					if (types.isNothing(arg)) {
 						continue;
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-					obj = _shared.Natives.windowObject(obj);
-					const keys = tools.append(types.keys(obj), types.symbols(obj));
-					for (let j = 0; j < keys.length; j++) {
+					arg = _shared.Natives.windowObject(arg);
+					const keys = types.keys(arg);
+					const keysLen = keys.length; // performance
+					for (let j = 0; j < keysLen; j++) {
 						const key = keys[j];
 						if (!types.has(result, key)) {
-							const descriptor = types.getOwnPropertyDescriptor(obj, key);
+							const descriptor = types.getOwnPropertyDescriptor(arg, key);
+							types.defineProperty(result, key, descriptor);
+						};
+					};
+					const symbols = types.symbols(arg);
+					const symbolsLen = symbols.length; // performance
+					for (let j = 0; j < symbolsLen; j++) {
+						const key = symbols[j];
+						if (!types.has(result, key)) {
+							const descriptor = types.getOwnPropertyDescriptor(arg, key);
 							types.defineProperty(result, key, descriptor);
 						};
 					};
 				};
 			};
-				
 			return result;
 		}));
 		
-	__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'tools.concat'.
-	__Internal__.ADD_TOOL('concat', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						paramarray: {
-							type: 'arrayof(any)',
-							optional: false,
-							description: "Values or arrays to concatenate.",
-						},
-					},
-					returns: 'array',
-					description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
-		}
-		//! END_REPLACE()
-		, (_shared.Natives.arrayConcatApply ? 
-			function concat(/*paramarray*/) {
-				return _shared.Natives.arrayConcatApply(__Internal__.emptyArray, arguments);
-			}
-		: 
-			function concat(/*paramarray*/) {
-				const result = [];
-				
-				const len = arguments.length;
-				for (let i = 0; i < len; i++) {
-					const obj = arguments[i];
-					if (types.isArray(obj)) {
-						_shared.Natives.arrayPushApply(result, obj);
-					} else {
-						_shared.Natives.arrayPushCall(result, obj);
-					};
-				};
-				
-				return result;
-			}
-		)));
-			
-	__Internal__.ADD_TOOL('unique', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 0,
-				params: {
-					comparer: {
-						type: 'function',
-						optional: true,
-						description: 
-							"A comparer function. Arguments passed to the function are : \n" +
-							"  value1 (any): The value to compare from\n" +
-							"  value2 (any): The value to compare to\n" +
-							"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
-					},
-					paramarray: {
-						type: 'arraylike',
-						optional: true,
-						description: "Arrays.",
-					},
-				},
-				returns: 'arrayof(any)',
-				description: "Compare every items of every arrays, and returns a new array with unique items.",
-		}
-		//! END_REPLACE()
-		, function unique(/*optional*/comparer, /*paramarray*/obj) {
-			let start = 1;
-			let comparerFn = comparer;
-			if (!types.isFunction(comparerFn)) {
-				comparerFn = null;
-				start = 0;
-			};
-				
-			const result = [];
-
-			const len = arguments.length;
-				
-			if (comparerFn) {
-				for (let i = start; i < len; i++) {
-					obj = arguments[i];
-					if (types.isNothing(obj)) {
-						continue;
-					};
-					obj = _shared.Natives.windowObject(obj);
-					const objLen = obj.length;
-					for (let key1 = 0; key1 < objLen; key1++) {
-						if (types.has(obj, key1)) {
-							const value1 = obj[key1];
-							const resultLen = result.length;
-							let found = false;
-							for (let key2 = 0; key2 < resultLen; key2++) {
-								const res = comparerFn(value1, result[key2]);
-								if ((res === true) || (res === 0)) {
-									found = true;
-									break;
-								};
-							};
-							if (!found) {
-								result.push(value1);
-							};
-						};
-					};
-				};
-			} else {
-				for (let i = start; i < len; i++) {
-					obj = arguments[i];
-					if (types.isNothing(obj)) {
-						continue;
-					};
-					obj = _shared.Natives.windowObject(obj);
-					const objLen = obj.length;
-					for (let key1 = 0; key1 < objLen; key1++) {
-						if (types.has(obj, key1)) {
-							const value1 = obj[key1];
-							const resultLen = result.length;
-							let found = false;
-							for (let key2 = 0; key2 < resultLen; key2++) {
-								if (value1 === result[key2]) {
-									found = true;
-									break;
-								};
-							};
-							if (!found) {
-								result.push(value1);
-							};
-						};
-					};
-				};
-			};
-				
-			return result;
-		}));
-			
 	// <PRB> JS has no function to test for objects ( new Object() )
 	__Internal__.ADD('isObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2845,7 +2861,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function isObject(obj) {
 			if (obj && (typeof obj === 'object')) {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Object')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
 					let proto = types.getPrototypeOf(obj);
 					if (proto) {
 						return types.isObject(proto);
@@ -2882,6 +2898,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 		
 	__Internal__.ADD('isExtensible', _shared.Natives.objectIsExtensible);
+		
+	__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+						key: {
+							type: 'string,Symbol',
+							optional: false,
+							description: "A property name to test for.",
+						},
+					},
+					returns: 'boolean',
+					description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
+		}
+		//! END_REPLACE()
+		, function isEnumerable(obj, key) {
+			return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
+		}));
 		
 	__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3004,8 +3045,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function freezeObject(obj, /*optional*/depth) {
 				depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 				const isArray = types.isArrayLike(obj);
-				const isObject = types.isJsObject || types.isObject;
-				if (isArray || isObject(obj)) {
+				const isObject = types.isJsObject(obj);
+				if (isArray || isObject) {
 					if (depth >= 0) {
 						if (isArray) {
 							const len = obj.length;
@@ -3029,59 +3070,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}));
 		
 	//==============
-	// Options
+	// SECRET
 	//==============
-		
-	if (types.isArray(_options)) {
-		_options = tools.depthExtend.apply(null, tools.append([15, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ],  _options));
-	//! IF_UNSET("serverSide")
-	} else {
-		_options = tools.depthExtend(15, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
-	//! END_IF()
-	};
-
-	const __options__ = tools.depthExtend(15, {
-		//! BEGIN_REMOVE()
-			fromSource: true,				// When 'true', loads source code instead of built code
-		//! END_REMOVE()
-
-		//! IF(IS_SET('debug'))
-			debug: true,					// When 'true', will be in 'debug mode'.
-			enableProperties: true,			// When 'true', enables "defineProperty"
-			enableAsserts: true,			// When 'true', enables asserts.
-		//! END_IF()
-			
-		enableSymbols: true,				// When 'true', symbols are enabled.
-	}, types.get(_options, 'startup'));
-		
-	__options__.debug = types.toBoolean(__options__.debug);
-	__options__.fromSource = types.toBoolean(__options__.fromSource);
-	__options__.enableProperties = types.toBoolean(__options__.enableProperties);
-	__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
-	__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		
 	_shared.SECRET = types.get(__options__, 'secret');
 	//delete __options__.secret;
 	__options__.secret = null;
 
-	types.freezeObject(__options__);
-		
-	__Internal__.ADD('hasDefinePropertyEnabled', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: 'boolean',
-					description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, (__options__.enableProperties ? function hasDefinePropertyEnabled() {
-			return true;
-		} : function hasDefinePropertyEnabled() {
-			return false;
-		})));
-		
 	//===================================
 	// UUIDs
 	//===================================
@@ -3109,22 +3104,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Symbols
 	//===================================
 		
-	__Internal__.ADD('hasSymbols', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'bool',
-					description: "Returns 'true' if the engine has symbols. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, (_shared.Natives.windowSymbol ? function hasSymbols() {
-			return true;
-		} : function hasSymbols() {
-			return false;
-		})));
-			
 	__Internal__.ADD('hasSymbolsEnabled', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3135,7 +3114,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if symbols are enabled. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function hasSymbolsEnabled() {
+		, (__options__.enableSymbols ? function hasSymbolsEnabled() {
 			return true;
 		} : function hasSymbolsEnabled() {
 			return false;
@@ -3157,12 +3136,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if object is a Symbol. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, (_shared.Natives.windowSymbol ? function isSymbol(obj) {
+		, function isSymbol(obj) {
 			if (types.isNothing(obj)) {
 				return false;
 			};
 			if (typeof obj === 'object') {
-				if (_shared.Natives.symbolToStringTag && (obj[_shared.Natives.symbolToStringTag] === 'Symbol')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Symbol') {
 					try {
 						obj = _shared.Natives.symbolValueOfCall(obj);
 					} catch(o) {
@@ -3175,11 +3154,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 			};
 			return (typeof obj === 'symbol');
-		} : function isSymbol(obj) {
-			return false;
-		})));
+		}));
 		
-	if (!__options__.enableSymbols || !_shared.Natives.windowSymbol) {
+	if (!__options__.enableSymbols) {
 		__Internal__.globalSymbolsUUID = /*! REPLACE_BY(TO_SOURCE(UUID('Symbol')), true) */ tools.generateUUID() /*! END_REPLACE() */;
 	};
 	
@@ -3204,7 +3181,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Gets or creates a Symbol.",
 		}
 		//! END_REPLACE()
-		, (__options__.enableSymbols && _shared.Natives.windowSymbol ? function getSymbol(key, /*optional*/isGlobal) {
+		, (__options__.enableSymbols ? function getSymbol(key, /*optional*/isGlobal) {
 			key = _shared.Natives.windowString(key);
 			let symbol;
 			if (isGlobal) {
@@ -3214,7 +3191,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return symbol;
 		} : function getSymbol(key, /*optional*/isGlobal) {
-			// Not supported
 			const genKey = (isGlobal ? __Internal__.globalSymbolsUUID : tools.generateUUID());
 			if (!isGlobal && types.isNothing(key)) {
 				return genKey;
@@ -3223,11 +3199,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 		})));
 			
+	__Internal__.extractSymbolKeyRegExp = /^Symbol[(]((.|\n)*)[)]$/gm;  // <FUTURE> Per thread
+
 	__Internal__.ADD('getSymbolKey', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 3,
+					revision: 4,
 					params: {
 						symbol: {
 							type: 'symbol',
@@ -3239,21 +3217,20 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns the key of the specified Symbol.",
 		}
 		//! END_REPLACE()
-		, (_shared.Natives.windowSymbol ? function getSymbolKey(symbol) {
+		, function getSymbolKey(symbol) {
 			if (!types.isSymbol(symbol)) {
 				return undefined;
 			};
-			let key = _shared.Natives.symbolKeyFor(symbol.valueOf());
+			const key = _shared.Natives.symbolKeyFor(symbol.valueOf());
 			if (types.isNothing(key)) {
 				key = _shared.Natives.symbolToStringCall(symbol);
-				key = /^Symbol[(]((.|\n)*)[)]$/gm.exec(key) || undefined;
-				key = key && key[1];
+				__Internal__.extractSymbolKeyRegExp.lastIndex = 0;
+				key = __Internal__.extractSymbolKeyRegExp.exec(key);
+				return key && key[1];
+			} else {
+				return key;
 			};
-			return key;
-		} : function getSymbolKey(symbol) {
-			// Not supported
-			return undefined;
-		})));
+		}));
 			
 	__Internal__.ADD('symbolIsGlobal', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3271,15 +3248,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if 'obj' is a global Symbol. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, (_shared.Natives.windowSymbol ? function symbolIsGlobal(symbol) {
+		, function symbolIsGlobal(symbol) {
 			if (!types.isSymbol(symbol)) {
 				return false;
 			};
 			return (_shared.Natives.symbolKeyFor(symbol.valueOf()) !== undefined);
-		} : function symbolIsGlobal(symbol) {
-			// Not supported
-			return false;
-		})));
+		}));
 			
 	//===================================
 	// Functions
@@ -3837,7 +3811,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							const t = type[i];
 							if (types.isFunction(t)) {
 								if (_shared.Natives.windowObject(t) instanceof _shared.Natives.windowFunction) {
-									const hasInstance = _shared.Natives.symbolHasInstance && t[_shared.Natives.symbolHasInstance];
+									const hasInstance = t[_shared.Natives.symbolHasInstance];
 									if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
 										// "hasInstance" has been messed, switch to cross-realm mode
 										crossRealm = true;
@@ -3882,7 +3856,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			} else if (types.isFunction(type)) {
 				if (!crossRealm) {
 					if (_shared.Natives.windowObject(type) instanceof _shared.Natives.windowFunction) {
-						const hasInstance = _shared.Natives.symbolHasInstance && type[_shared.Natives.symbolHasInstance];
+						const hasInstance = type[_shared.Natives.symbolHasInstance];
 						if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
 							// "hasInstance" has been messed, switch to cross-realm mode
 							crossRealm = true;
@@ -4336,87 +4310,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (types.isNothing(base)) {
 				base = _shared.Natives.windowError;
 			};
+
 			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
-			// <FUTURE> Declare classes directly (when ES6 will be everywhere)
-			let type;
-			if (__Internal__.hasClasses) {
-				const expr = "class " + name + " extends ctx.base {" +
-					"constructor(/*paramarray*/...args) {" +
-						"const context = {_this: {}, superArgs: null};" +
-						(constructor ? (
-							"ctx.constructor.apply(context, args);"
-						) : (
-							""
-						)) +
-						"super(...(context.superArgs || args));" +
-						"ctx.extend(this, context._this);" +
-						"this.name = ctx.name;" +
-						"this.description = this.message;" +
-					"}" +
-				"}";
 
-				// NOTE: Use of "eval" to give the name to the class
-				type = tools.eval(expr, {
-					base: base,
-					constructor: constructor,
-					name: name,
-					extend: tools.extend,
-				});
-
-			} else {
-				const expr = "function " + name + "(/*paramarray*/) {" +
+			const expr = "class " + name + " extends ctx.base {" +
+				"constructor(/*paramarray*/...args) {" +
 					"const context = {_this: {}, superArgs: null};" +
 					(constructor ? (
-						"ctx.constructor.apply(context, arguments);" +
-						"ctx.extend(this, context._this);" +
-						"this.throwLevel++;"
+						"ctx.constructor.apply(context, args);"
 					) : (
 						""
 					)) +
-					"const error = ctx.base.apply(this, (context.superArgs || arguments)) || this;" +
-					"if (error !== this) {" +
-						// <PRB> As of January 2015, "global.Error" doesn't behave like a normal constructor within any browser. This might be part of W3C specs.
-						//
-						//       Proof of concept :
-						//          let a = new Error("hello");
-						//          let b = Error.call(a, "bye");
-						//          a === b  // always returns "false"
-						//          a.constructor === b.constructor  // returns "true"
-						//          a.constructor === Error  // returns "true"
-						//          a instanceof Error  // returns "true"
-						//          b instanceof Error  // returns "true"
-						//
-						//       Moreover :
-						//          this instanceof Error  // returns "true"
-						"this.message = (error.message || error.description);" +
-						// NOTE: Internet Explorer doesn't fill the "stack" attribute because the "throw" operator has not been used yet.
-						// NOTE: Internet Explorer doesn't have the "stack" attribute in "Error.prototype". This attribute is not part of the object, but injected by the throwing mechanism.
-						// NOTE: With Internet Explorer, the "stack" attribute doesn't get filled on throwing if the attribute is present. This is to allow re-throwing the error.
-						"if (error.stack) {" +
-							"this.stack = error.stack;" +
-						"};" +
-					"};" +
-					"this.throwLevel++;" +
+					"super(...(context.superArgs || args));" +
+					"ctx.extend(this, context._this);" +
 					"this.name = ctx.name;" +
 					"this.description = this.message;" +
-					"return this;" +
-				"}";
-				
-				// NOTE: Use of "eval" to give the name to the function				
-				type = tools.eval(expr, {
-					base: base,
-					constructor: constructor,
-					name: name,
-					extend: tools.extend,
-				});
-				
-				// For "instanceof".
-				type.prototype = tools.createObject(base.prototype, {
-					constructor: {
-						value: type,
-					},
-				});
-			};
+				"}" +
+			"}";
+
+			// NOTE: Use of "eval" to give the name to the class
+			const type = tools.eval(expr, {
+				base: base,
+				constructor: constructor,
+				name: name,
+				extend: tools.extend,
+			});
 				
 			tools.extend(type.prototype, {
 				name: name,
@@ -4427,7 +4345,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				critical: false,
 				trapped: false,
 					
-				toString: function toString(/*paramarray*/) {
+				toString: function toString(/*paramarray*/...args) {
 					return this.message;
 				},
 					
@@ -4491,9 +4409,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				},
 			});
 
-			if (_shared.Natives.symbolToStringTag) {
-				_shared.setAttribute(type.prototype, _shared.Natives.symbolToStringTag, 'Error', {});
-			};
+			_shared.setAttribute(type.prototype, _shared.Natives.symbolToStringTag, 'Error', {});
 				
 			_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
 				
@@ -4917,8 +4833,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function box(value) {
-			//if (new.target) {
-			if (this instanceof types.box) {
+			if (types._instanceof(this, types.box)) {
 				if (types._instanceof(value, types.box)) {
 					value.setAttributes(this);
 					value = value[_shared.OriginalValueSymbol];
@@ -5005,9 +4920,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		$TYPE_UUID: null,
 	});
 
-	if (_shared.Natives.symbolToStringTag) {
-		_shared.reservedAttributes[_shared.Natives.symbolToStringTag] = null;
-	};
+	_shared.reservedAttributes[_shared.Natives.symbolToStringTag] = null;
 
 	//===================================
 	// DD_DOC
@@ -5305,8 +5218,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, types.INHERIT(types.box, function AttributeBox(value) {
-			//if (new.target) {
-			if (this instanceof types.AttributeBox) {
+			if (types._instanceof(this, types.AttributeBox)) {
 				if (types._instanceof(value, types.box)) {
 					value.setAttributes(this);
 					value = value[_shared.OriginalValueSymbol];
@@ -5317,8 +5229,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return new types.AttributeBox(value);
 			};
 		})));
-		//tools.extend(types.AttributeBox.prototype, {
-		//});
+
+	//tools.extend(types.AttributeBox.prototype, {
+	//});
 			
 	__Internal__.emptyFunction = function empty() {};
 		
@@ -5620,11 +5533,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
-			let _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/) {
+			let _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
 				const oldSuper = _shared.getAttribute(this, '_super');
 				_shared.setAttribute(this, '_super', superFn);
 				try {
-					return fn.apply(this, arguments);
+					return fn.apply(this, args);
 				} catch (ex) {
 					throw ex;
 				} finally {
@@ -6061,7 +5974,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 				
 			if (types.isNothing(constructor)) {
-				constructor = "return this._new && this._new.apply(this, arguments);";
+				constructor = "return this._new && this._new(...args);";
 			};
 				
 			if (types.isString(constructor)) {
@@ -6069,11 +5982,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					base: base,
 				});
 				// TODO: Avoid this extra function ?
-				constructor = tools.eval("function(/*paramarray*/) {" + constructor + "}", constructorContext);
+				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", constructorContext);
 			};
 				
 			// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-			const expr = "function " + name + "(/*paramarray*/) {" + 
+			const expr = "function " + name + "(/*paramarray*/...args) {" + 
 				//"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
 				//	"throw new ctx.types.Error('Object is already initialized.');" +
 				//"};" +
@@ -6088,7 +6001,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					"if (!ctx.types.get(ctx.type, ctx.__Internal__.symbolInitialized)) {" +
 						"throw new ctx.types.Error(\"Type '\" + ctx.types.getTypeName(ctx.type) + \"' is not initialized.\");" +
 					"};" +
-					"if (!(this instanceof ctx.type)) {" +
+					"if (!ctx.types._instanceof(this, ctx.type)) {" +
 						"throw new ctx.types.Error('Wrong constructor. Did you forget the \\'new\\' operator ?');" +
 					"};" +
 				"};" +
@@ -6099,7 +6012,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						"if (ctx.type.prototype !== ctx.proto) {" +
 							// Something has changed the prototype. Set it back to original and recreate the object.
 							"ctx.type.prototype = ctx.proto;" +
-							"return ctx.types.newInstance(ctx.type, arguments);" +
+							"return ctx.types.newInstance(ctx.type, args);" +
 						"};" +
 					"};"
 				:
@@ -6117,23 +6030,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 						"ctx._shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
 
-						(_shared.Natives.symbolToStringTag ?
-							// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
-							"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolToStringTag, 'Object', {});"
-						:
-							""
-						) +
+						// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
+						"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolToStringTag, 'Object', {});" +
 					"};" +
 
 					// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-					(_shared.Natives.symbolHasInstance ? 
-						"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolHasInstance, undefined, {});" 
-					: 
-						""
-					) +
+					"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolHasInstance, undefined, {});" +
 
 					"ctx._shared.setAttribute(this, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
-					"obj = ctx.constructor.apply(this, arguments) || this;" + // _new
+					"obj = ctx.constructor.apply(this, args) || this;" + // _new
 
 					"const isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
 					"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
@@ -6165,7 +6070,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				) +
 
 				(baseIsType ?
-					"ctx.base.apply(obj, arguments);"
+					"ctx.base.apply(obj, args);"
 				:
 					""
 				) +
@@ -6348,10 +6253,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 0,
+					revision: 1,
 					params: {
 						paramarray: {
-							type: 'arrayof(any)',
+							type: 'any',
 							optional: true,
 							description: "Arguments.",
 						},
@@ -6360,7 +6265,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Converts the object to a string using neutral locale and returns that string.",
 		}
 		//! END_REPLACE()
-		, function toString(/*paramarray*/) {
+		, function toString(/*paramarray*/...args) {
 			if (types.isType(this)) {
 				return '[type ' + types.getTypeName(this) + ']';
 			} else {
@@ -6368,7 +6273,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				if (name) {
 					return '[object ' + name + ']';
 				} else {
-					return this._super.apply(this, arguments);
+					return this._super(...args);
 				};
 			};
 		});
@@ -6377,10 +6282,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 0,
+					revision: 1,
 					params: {
 						paramarray: {
-							type: 'arrayof(any)',
+							type: 'any',
 							optional: true,
 							description: "Arguments.",
 						},
@@ -6389,8 +6294,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Converts the object to a string using current locale and returns that string.",
 		}
 		//! END_REPLACE()
-		, function toLocaleString(/*paramarray*/) {
-			return this.toString.apply(this, arguments);
+		, function toLocaleString(/*paramarray*/...args) {
+			return this.toString(...args);
 		});
 
 	__Internal__.typeTypeProto = {
@@ -6943,7 +6848,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				}
 				//! END_REPLACE()
 				, function REMOVE(name) {
-					return _shared.REMOVE.apply(this, arguments);
+					return _shared.REMOVE.call(this, name);
 				}),
 					
 				REGISTER: function REGISTER(/*<<< optional*/protect, /*optional*/args, type) {
@@ -6959,7 +6864,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				},
 					
 				UNREGISTER: function UNREGISTER(type) {
-					return _shared.UNREGISTER.apply(this, arguments);
+					return _shared.UNREGISTER.call(this, type);
 				},
 					
 				_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
@@ -6981,7 +6886,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Root
 	//===================================
 
-	types.preventExtensions(__Internal__);
+	types.freezeObject(__options__);
+
+	types.preventExtensions(__Internal__[_shared.TargetSymbol]);
 
 
 	//! IF_UNSET("serverSide")
@@ -7155,7 +7062,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								fullName += '.' + shortName;
 								const fn = fullName.slice(1);
 								const prevNsObj = types.get(parent, shortName);
-								if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !(prevNsObj instanceof types.Namespace)))) {
+								if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !types._instanceof(prevNsObj, types.Namespace)))) {
 									let nsType = types.getType(prevNsObj) || types.Namespace;
 									if (proto) {
 										let args = proto;
@@ -7182,7 +7089,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									nsObj = prevNsObj;
 								};
 								nsObjs[fn] = nsObj;
-								if ((parent !== root) || (!entries && (spec.type !== 'Package')) || (entries && !(entries[spec.type || 'Module'] instanceof entries.Package))) {
+								if ((parent !== root) || (!entries && (spec.type !== 'Package')) || (entries && !types._instanceof(entries[spec.type || 'Module'], entries.Package))) {
 									parent[shortName] = nsObj;
 								};
 								parent = nsObj;
