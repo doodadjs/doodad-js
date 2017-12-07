@@ -139,6 +139,9 @@ exports.add = function add(DD_MODULES) {
 				symbolOverrideWith: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OVERRIDE_WITH')), true) */ '__DD_OVERRIDE_WITH' /*! END_REPLACE() */, true),
 				symbolReplacedCallers: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_REPLACED_CALLERS')), true) */ '__DD_REPLACED_CALLERS' /*! END_REPLACE() */, true),
 				symbolWhen: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_WHEN')), true) */ '__DD_WHEN' /*! END_REPLACE() */, true),
+
+				// Prototype
+				symbolType: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE')), true) */ '__DD_TYPE' /*! END_REPLACE() */, true),
 					
 				// Creatable
 				symbolDestroyed: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DESTROYED')), true) */ '__DD_DESTROYED' /*! END_REPLACE() */, true),
@@ -174,6 +177,10 @@ exports.add = function add(DD_MODULES) {
 			_shared.StackSymbol = __Internal__.symbolStack;
 			_shared.ClonedStackSymbol = __Internal__.symbolClonedStack;
 			_shared.SortedSymbol = __Internal__.symbolSorted;
+
+			// Class, Methods, Callers, AttributeBox
+			_shared.PrototypeSymbol = __Internal__.symbolPrototype;
+
 
 			//=====================
 			// Options
@@ -2075,7 +2082,7 @@ exports.add = function add(DD_MODULES) {
 							if (__Internal__.hasPolicies) {
 								if (sourceIsProto) {
 									if (!types.isNothing(types.unbox(destAttribute)) && (destAttribute[__Internal__.symbolScope] === doodad.Scopes.Private)) {
-										throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.unbox(destAttribute[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
+										throw new types.Error("Private attribute '~0~' of '~1~' can't be overridden.", [attr, types.getTypeName(destAttribute[__Internal__.symbolPrototype][__Internal__.symbolType]) || __Internal__.ANONYMOUS]);
 									};
 								};
 							};
@@ -2284,8 +2291,9 @@ exports.add = function add(DD_MODULES) {
 					$TYPE_NAME: "Null",
 					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
 						
-					extend: types.READ_ONLY(null),
-					postExtend: types.READ_ONLY(null),
+					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
+						this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute.setValue(null), destAttribute, sourceIsProto, proto, protoName);
+					}),
 
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 							this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
@@ -2689,7 +2697,7 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							};
-							// <PRB> Node.Js doesn't trap errors. So we don't throw if error has been emitted.
+							// <PRB> Node.Js doesn't trap errors. So we don't throw if the error has been emitted.
 							if (!emitted) {
 								throw ex;
 							};
@@ -2763,7 +2771,7 @@ exports.add = function add(DD_MODULES) {
 									// Private methods
 									if (!__Internal__.isInside(this)) {
 										if ((attribute[__Internal__.symbolScope] === doodad.Scopes.Private) && oldDispatch && (oldDispatch[__Internal__.symbolCallers][oldCaller - 1][__Internal__.symbolPrototype] !== caller[__Internal__.symbolPrototype])) {
-											throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.unbox(caller[__Internal__.symbolPrototype].$TYPE_NAME) || __Internal__.ANONYMOUS]);
+											throw new types.Error("Method '~0~' of '~1~' is private.", [_dispatch[_shared.NameSymbol], types.getTypeName(caller[__Internal__.symbolPrototype][__Internal__.symbolType]) || __Internal__.ANONYMOUS]);
 										};
 									};
 
@@ -3189,7 +3197,7 @@ exports.add = function add(DD_MODULES) {
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 								author: "Claude Petit",
-								revision: 0,
+								revision: 1,
 								params: {
 									attr: {
 										type: 'string,symbol',
@@ -3221,19 +3229,23 @@ exports.add = function add(DD_MODULES) {
 							// Remove duplicated callers and update "call first" length
 							destAttribute[__Internal__.symbolCallFirstLength] = callers.length;
 
-							let caller,
-								i = 0;
+							let i = 0;
 
 							while (i < callers.length) {
-								caller = callers[i];
-								if (!(caller[__Internal__.symbolModifiers] & doodad.MethodModifiers.CallFirst)) {
+								const callerI = callers[i];
+								const modifiersI = callerI[__Internal__.symbolModifiers];
+								if (!(modifiersI & doodad.MethodModifiers.CallFirst)) {
 									destAttribute[__Internal__.symbolCallFirstLength] = i;
 									break;
 								};
-								const proto = caller[__Internal__.symbolPrototype];
+								const protoI = callerI[__Internal__.symbolPrototype];
+								const typeI = protoI[__Internal__.symbolType];
 								let deleted = false;
 								for (let j = 0; j < replacedCallers.length; j++) {
-									if (replacedCallers[j][__Internal__.symbolPrototype] === proto) {
+									const callerJ = replacedCallers[j];
+									const protoJ = callerJ[__Internal__.symbolPrototype];
+									const typeJ = protoJ[__Internal__.symbolType];
+									if ((protoJ === protoI) || types.baseof(protoJ, protoI)) {
 										callers.splice(i, 1);
 										deleted = true;
 										break;
@@ -3242,7 +3254,10 @@ exports.add = function add(DD_MODULES) {
 								if (!deleted) {
 									let j = i + 1;
 									while (j < callers.length) {
-										if (callers[j][__Internal__.symbolPrototype] === proto) {
+										const callerJ = callers[j];
+										const protoJ = callerJ[__Internal__.symbolPrototype];
+										const typeJ = protoJ[__Internal__.symbolType];
+										if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 											callers.splice(j, 1);
 										} else {
 											j++;
@@ -3254,10 +3269,15 @@ exports.add = function add(DD_MODULES) {
 
 							i = callers.length - 1;
 							while (i >= destAttribute[__Internal__.symbolCallFirstLength]) {
-								const proto = callers[i][__Internal__.symbolPrototype];
+								const callerI = callers[i];
+								const protoI = callerI[__Internal__.symbolPrototype];
+								const typeI = protoI[__Internal__.symbolType];
 								let deleted = false;
 								for (let j = 0; j < replacedCallers.length; j++) {
-									if (replacedCallers[j][__Internal__.symbolPrototype] === proto) {
+									const callerJ = replacedCallers[j];
+									const protoJ = callerJ[__Internal__.symbolPrototype];
+									const typeJ = protoJ[__Internal__.symbolType];
+									if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 										callers.splice(i, 1);
 										deleted = true;
 										break;
@@ -3266,7 +3286,10 @@ exports.add = function add(DD_MODULES) {
 								if (!deleted) {
 									let j = i - 1;
 									while (j >= destAttribute[__Internal__.symbolCallFirstLength]) {
-										if (callers[j][__Internal__.symbolPrototype] === proto) {
+										const callerJ = callers[j];
+										const protoJ = callerJ[__Internal__.symbolPrototype];
+										const typeJ = protoJ[__Internal__.symbolType];
+										if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 											_shared.Natives.arraySpliceCall(callers, j, 1);
 											i--;
 										};
@@ -3280,21 +3303,22 @@ exports.add = function add(DD_MODULES) {
 							i = 0;
 							while (i < callers.length) {
 								const callerI = callers[i],
-									position = callerI[__Internal__.symbolPosition];
+									positionI = callerI[__Internal__.symbolPosition];
 
 								let found = false;
 
-								if (position && !position[__Internal__.symbolOk]) {
-									const proto = _shared.getAttribute(position.cls, __Internal__.symbolPrototype);
+								if (positionI && !positionI[__Internal__.symbolOk]) {
 									for (let j = 0; j < callers.length; j++) {
 										const callerJ = callers[j];
-										if ((i !== j) && callerJ[__Internal__.symbolPrototype] === proto) {
+										const protoJ = callerJ[__Internal__.symbolPrototype];
+										const typeJ = protoJ[__Internal__.symbolType];
+										if ((i !== j) && (typeJ === positionI.cls)) {
 											let pos = j;
-											if (position.position > 0) {
+											if (positionI.position > 0) {
 												pos++;
 											};
 											let toRemove = 0;
-											if (position.position === 0) {
+											if (positionI.position === 0) {
 												toRemove = 1;
 											};
 											_shared.Natives.arraySpliceCall(callers, i, 1);
@@ -3308,7 +3332,7 @@ exports.add = function add(DD_MODULES) {
 											if (pos < destAttribute[__Internal__.symbolCallFirstLength]) {
 												destAttribute[__Internal__.symbolCallFirstLength]++;
 											};
-											position[__Internal__.symbolOk] = true;
+											positionI[__Internal__.symbolOk] = true;
 											found = true;
 											break;
 										};
@@ -3325,10 +3349,10 @@ exports.add = function add(DD_MODULES) {
 							// TODO: Find a better way than "symbolOk"
 							for (let j = 0; j < callers.length; j++) {
 								const callerI = callers[j],
-									position = callerI[__Internal__.symbolPosition];
-								if (position) {
-									//delete position[__Internal__.symbolOk];
-									position[__Internal__.symbolOk] = false;
+									positionI = callerI[__Internal__.symbolPosition];
+								if (positionI) {
+									//delete positionI[__Internal__.symbolOk];
+									positionI[__Internal__.symbolOk] = false;
 								};
 							};
 
@@ -3591,11 +3615,15 @@ exports.add = function add(DD_MODULES) {
 							let i = callers.length - 1;
 							while (i >= 0) {
 								const callerI = callers[i];
-									
-								const proto = callerI[__Internal__.symbolPrototype];
+								const protoI = callerI[__Internal__.symbolPrototype];
+								const typeI = protoI[__Internal__.symbolType];
+
 								let j = i - 1;
 								while (j >= 0) {
-									if (callers[j][__Internal__.symbolPrototype] === proto) {
+									const callerJ = callers[j];
+									const protoJ = callerJ[__Internal__.symbolPrototype];
+									const typeJ = protoJ[__Internal__.symbolType];
+									if ((typeJ === typeI) || types.baseof(typeJ, typeI)) {
 										_shared.Natives.arraySpliceCall(callers, j, 1);
 										i--;
 									};
@@ -5025,7 +5053,7 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.defaultAttributes[__Internal__.symbolModifiers] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false})))))));
 			__Internal__.defaultAttributes[__Internal__.symbolImplements] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
 			__Internal__.defaultAttributes[__Internal__.symbolBase] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))));
-			__Internal__.defaultAttributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))));
+			__Internal__.defaultAttributes[__Internal__.symbolMustOverride] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
 			__Internal__.defaultAttributes[__Internal__.symbolCurrentDispatch] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
 			__Internal__.defaultAttributes[__Internal__.symbolCurrentCallerIndex] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
 			__Internal__.defaultAttributes[__Internal__.symbolInitInstance] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
@@ -5093,7 +5121,7 @@ exports.add = function add(DD_MODULES) {
 				};
 
 				if (!isExtendLater && sourceIsProto && !sourceAttribute[__Internal__.symbolPrototype]) {
-					sourceAttribute[__Internal__.symbolPrototype] = source;
+					sourceAttribute[__Internal__.symbolPrototype] = sourceProto;
 				};
 
 				const _interface = types.get(sourceAttribute, __Internal__.symbolInterface);
@@ -5193,7 +5221,7 @@ exports.add = function add(DD_MODULES) {
 
 					if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 
-						if (extender.notInherited || (source === base) || (destAttribute[__Internal__.symbolPrototype] !== sourceAttribute[__Internal__.symbolPrototype])) {
+						if (extender.notInherited || (source === base) || !types._implements(destAttribute[__Internal__.symbolPrototype] && destAttribute[__Internal__.symbolPrototype][__Internal__.symbolType], sourceAttribute[__Internal__.symbolPrototype] && sourceAttribute[__Internal__.symbolPrototype][__Internal__.symbolType])) {
 
 							if (sourceAttribute[__Internal__.symbolWhen] || destAttribute[__Internal__.symbolWhen]) {
 								const whenTypes = tools.unique(sourceAttribute[__Internal__.symbolWhen], destAttribute[__Internal__.symbolWhen]);
@@ -5299,7 +5327,7 @@ exports.add = function add(DD_MODULES) {
 				//if (baseType) {
 					if (baseIsClass) {
 						// doodad-js Class / Class Object
-						baseTypeAttributes = baseInstanceAttributes = _shared.getAttribute(baseType, __Internal__.symbolAttributes);
+						baseTypeAttributes = baseInstanceAttributes = baseAttributes; //_shared.getAttribute(baseType, __Internal__.symbolAttributes);
 					} else {
 						// doodad-js Type / JS Class
 						baseTypeAttributes = baseType;
@@ -5418,6 +5446,7 @@ exports.add = function add(DD_MODULES) {
 						let overrideWith = sourceAttribute[__Internal__.symbolOverrideWith];
 						if (overrideWith) {
 							overrideWith = doodad.OVERRIDE(overrideWith);
+							overrideWith[__Internal__.symbolPrototype] = sourceAttribute[__Internal__.symbolPrototype];
 							const result = extender.extend(attr, source, sourceProto, destAttributes, forType, overrideWith, destAttribute, true, proto, protoName, false);
 							destAttribute = destAttribute.setValue(result);
 						};
@@ -5625,6 +5654,7 @@ exports.add = function add(DD_MODULES) {
 									
 								const sourceData = _shared.getAttributes(sourceType, [__Internal__.symbolImplements, __Internal__.symbolToExtendLater]);
 
+								const proto = {};
 								const protoName = (sourceName ? sourceName + '_Interface' : null);
 								base = doodad.Interface;
 								baseType = base;
@@ -5641,7 +5671,7 @@ exports.add = function add(DD_MODULES) {
 								instanceToExtendLater = [];
 
 								// Will be passed later to "__Internal__.createType".
-								const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ null, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater];
+								const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater];
 
 								_isolated.set(source, data);
 
@@ -5903,6 +5933,8 @@ exports.add = function add(DD_MODULES) {
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
 					
+					_shared.setAttribute(proto, __Internal__.symbolType, type, {});
+
 					let values;
 
 					// Set values (NOTE: will be initialized in "_new")
@@ -6048,7 +6080,7 @@ exports.add = function add(DD_MODULES) {
 						const injected = {
 							create: doodad.REPLACE(doodad.CALL_FIRST(__Internal__.creatablePrototype.create)),
 						};
-						injected.create[__Internal__.symbolPrototype] = __Internal__.creatablePrototype;
+						injected.create[_shared.PrototypeSymbol] = injected;
 						sources.unshift(injected);
 					};
 				} else {
