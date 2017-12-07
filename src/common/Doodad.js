@@ -76,8 +76,7 @@ exports.add = function add(DD_MODULES) {
 				currentType: null,	// <FUTURE> thread level
 				inTrapException: false, // <FUTURE> thread level
 
-				// <FUTURE> Change to a WeakSet when IE will no longer be a thing.
-				callbacks: new types.WeakMap(), // <FUTURE> global to threads
+				callbacks: new types.WeakSet(), // <FUTURE> global to threads
 
 				extendersCache: new types.WeakMap(), // <FUTURE> global to threads
 
@@ -676,7 +675,7 @@ exports.add = function add(DD_MODULES) {
 			_shared.registerCallback = function registerCallback(cb) {
 				root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Callback, cb), "Invalid callback.");
 
-				__Internal__.callbacks.set(cb, true);
+				__Internal__.callbacks.add(cb);
 			};
 
 			types.ADD('isCallback', function isCallback(obj) {
@@ -991,29 +990,25 @@ exports.add = function add(DD_MODULES) {
 				}
 			);
 				
-			__Internal__.makeInsideForNew = (__Internal__.hasScopes ?
-				function makeInsideForNew() {
-					return (
-						"const oldInside = ctx.internal.preserveInside();" +
-						"ctx.internal.setInside(this);" +
-						"try {" +
-							"const obj = this._new(...args) || this;" +
-							(_shared.CreatorSymbol ? 
-								"obj[ctx._shared.CreatorSymbol] = oldInside[0];"
-							:
-								""
-							) +
-							"return obj;" +
-						"} catch(ex) {" +
-							"throw ex;" +
-						"} finally {" +
-							"ctx.internal.restoreInside(oldInside);" +
-						"};"
-					);
+			__Internal__.insideNew = (__Internal__.hasScopes ?
+				function insideNew(...args) {
+					const oldInside = __Internal__.preserveInside();
+					__Internal__.setInside(this);
+					try {
+						const obj = this._new && this._new(...args) || this;
+						if (_shared.CreatorSymbol) {
+							obj[_shared.CreatorSymbol] = oldInside[0];
+						};
+						return obj;
+					} catch(ex) {
+						throw ex;
+					} finally {
+						__Internal__.restoreInside(oldInside);
+					};
 				}
 			:
-				function makeInsideForNew() {
-					return "return this._new(...args) || this;";
+				function insideNew(...args) {
+					return this._new && this._new(...args) || this;
 				}
 			);
 				
@@ -2837,9 +2832,10 @@ exports.add = function add(DD_MODULES) {
 								let retVal = undefined;
 
 								try {
-									const values = {};										
-									values[_shared.CurrentDispatchSymbol] = _dispatch;
-									values[_shared.CurrentCallerIndexSymbol] = 0;
+									const values = {
+										[_shared.CurrentDispatchSymbol]: _dispatch,
+										[_shared.CurrentCallerIndexSymbol]: 0,
+									};
 									_shared.setAttributes(this, values);
 									
 									//if (host) {
@@ -2905,15 +2901,17 @@ exports.add = function add(DD_MODULES) {
 									__Internal__.restoreInside(oldInside);
 									caller[_shared.CalledSymbol] = oldCallerCalled;
 
-									const values = {};										
-									values[_shared.CurrentDispatchSymbol] = oldDispatch;
-									values[_shared.CurrentCallerIndexSymbol] = oldCaller;
+									const values = {
+										[_shared.CurrentDispatchSymbol]: oldDispatch,
+										[_shared.CurrentCallerIndexSymbol]: oldCaller,
+									};
 									_shared.setAttributes(this, values);
 										
 									//if (host) {
-									//	const values = {};										
-									//	values[_shared.CurrentDispatchSymbol] = oldHostDispatch;
-									//	values[_shared.CurrentCallerIndexSymbol] = oldHostCaller;
+									//	const values = {
+									//		[_shared.CurrentDispatchSymbol]: oldHostDispatch,
+									//		[_shared.CurrentCallerIndexSymbol]: oldHostCaller,
+									//	};										
 									//	_shared.setAttributes(host, values);
 									//};
 								};
@@ -2961,11 +2959,12 @@ exports.add = function add(DD_MODULES) {
 
 							caller[_shared.CalledSymbol] = false;
 
-							const values = {};
-							values[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
-							values[_shared.ModifiersSymbol] = (sourceAttribute[_shared.ModifiersSymbol] || 0);
-							values[_shared.PositionSymbol] = sourceAttribute[_shared.PositionSymbol];
-							values[_shared.UsageMessageSymbol] = sourceAttribute[_shared.UsageMessageSymbol];
+							const values = {
+								[_shared.PrototypeSymbol]: sourceAttribute[_shared.PrototypeSymbol],
+								[_shared.ModifiersSymbol]: (sourceAttribute[_shared.ModifiersSymbol] || 0),
+								[_shared.PositionSymbol]: sourceAttribute[_shared.PositionSymbol],
+								[_shared.UsageMessageSymbol]: sourceAttribute[_shared.UsageMessageSymbol],
+							};
 							_shared.setAttributes(caller, values, {});
 								
 							return caller;
@@ -5037,21 +5036,22 @@ exports.add = function add(DD_MODULES) {
 			// Class
 			//==================================
 				
-			__Internal__.defaultAttributes = tools.nullObject();
-			__Internal__.defaultAttributes[_shared.AttributesSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[_shared.AttributesStorageSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[_shared.PrototypeSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[_shared.ModifiersSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[_shared.ImplementsSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))));
-			__Internal__.defaultAttributes[_shared.BaseSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))));
-			__Internal__.defaultAttributes[_shared.MustOverrideSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[_shared.CurrentDispatchSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
-			__Internal__.defaultAttributes[_shared.CurrentCallerIndexSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))));
-			__Internal__.defaultAttributes[_shared.InitInstanceSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))));
-			__Internal__.defaultAttributes[_shared.ToInitializeSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
-			__Internal__.defaultAttributes[_shared.ToExtendLaterSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true}))))))));
-			__Internal__.defaultAttributes[_shared.IsolatedSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))));
-			__Internal__.defaultAttributes[_shared.IsolatedCacheSymbol] = doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))));
+			__Internal__.defaultAttributes = tools.nullObject({
+				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.AttributesStorageSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
+				[_shared.PrototypeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
+				[_shared.ModifiersSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false}))))))),
+				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.BaseSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
+				[_shared.MustOverrideSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
+				[_shared.CurrentDispatchSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
+				[_shared.CurrentCallerIndexSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
+				[_shared.InitInstanceSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
+				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))),
+				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
+			});
 			types.freezeObject(__Internal__.defaultAttributes);
 
 /*
@@ -5915,11 +5915,11 @@ exports.add = function add(DD_MODULES) {
 						/*instanceProto*/
 						instanceProto,
 						
+						/*_super*/
+						null,
+
 						/*constructor*/
-						__Internal__.makeInsideForNew(),
-						
-						/*constructorContext*/
-						{_shared: _shared, internal: __Internal__, getType: types.getType}
+						__Internal__.insideNew
 					);
 					
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
@@ -5930,27 +5930,29 @@ exports.add = function add(DD_MODULES) {
 
 					// Set values (NOTE: will be initialized in "_new")
 
-					values = {};
-					values[_shared.AttributesStorageSymbol] = typeStorage;
-					values[_shared.AttributesSymbol] = destAttributes;
-					values[_shared.BaseSymbol] = base;
-					values[_shared.IsolatedSymbol] = _isolated;
-					values[_shared.ImplementsSymbol] = _implements;
-					values[_shared.PrototypeSymbol] = proto;
-					values[_shared.ModifiersSymbol] = modifiers;
-					values[_shared.ToInitializeSymbol] = typeToInitialize;
-					values[_shared.ToExtendLaterSymbol] = typeToExtendLater;
+					values = {
+						[_shared.AttributesStorageSymbol]: typeStorage,
+						[_shared.AttributesSymbol]: destAttributes,
+						[_shared.BaseSymbol]: base,
+						[_shared.IsolatedSymbol]: _isolated,
+						[_shared.ImplementsSymbol]: _implements,
+						[_shared.PrototypeSymbol]: proto,
+						[_shared.ModifiersSymbol]: modifiers,
+						[_shared.ToInitializeSymbol]: typeToInitialize,
+						[_shared.ToExtendLaterSymbol]: typeToExtendLater,
+					};
 					_shared.setAttributes(type, values, {configurable: true, direct: true});
 
-					values = {};
-					values[_shared.AttributesStorageSymbol] = instanceStorage;
-					values[_shared.AttributesSymbol] = destAttributes;
-					values[_shared.BaseSymbol] = base;
-					values[_shared.IsolatedSymbol] = _isolated;
-					values[_shared.ImplementsSymbol] = _implements;
-					values[_shared.PrototypeSymbol] = proto;
-					values[_shared.ToInitializeSymbol] = instanceToInitialize;
-					values[_shared.ToExtendLaterSymbol] = instanceToExtendLater;
+					values = {
+						[_shared.AttributesStorageSymbol]: instanceStorage,
+						[_shared.AttributesSymbol]: destAttributes,
+						[_shared.BaseSymbol]: base,
+						[_shared.IsolatedSymbol]: _isolated,
+						[_shared.ImplementsSymbol]: _implements,
+						[_shared.PrototypeSymbol]: proto,
+						[_shared.ToInitializeSymbol]: instanceToInitialize,
+						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
+					};
 					_shared.setAttributes(type.prototype, values, {configurable: true, direct: true});
 
 					return type;
@@ -6319,10 +6321,11 @@ exports.add = function add(DD_MODULES) {
 							let retVal = undefined;
 
 							try {
-								const attrs = {};
-								attrs._super = _super;
-								attrs[_shared.CurrentDispatchSymbol] = dispatch;
-								attrs[_shared.CurrentCallerIndexSymbol] = index;
+								const attrs = {
+									_super: _super,
+									[_shared.CurrentDispatchSymbol]: dispatch,
+									[_shared.CurrentCallerIndexSymbol]: index,
+								};
 								_shared.setAttributes(this, attrs);
 										
 								_super[_shared.CalledSymbol] = false;
@@ -6514,28 +6517,30 @@ exports.add = function add(DD_MODULES) {
 
 							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
 							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
-							values = tools.nullObject();
-							values[_shared.AttributesSymbol] = typeAttributes; // NOTE: Will be cloned
-							values[_shared.ModifiersSymbol] = modifiers;
-							values[_shared.ImplementsSymbol] = this[_shared.ImplementsSymbol]; // NOTE: Will be cloned
-							values[_shared.IsolatedSymbol] = this[_shared.IsolatedSymbol]; // NOTE: Will be cloned
-							values[_shared.PrototypeSymbol] = this[_shared.PrototypeSymbol];
-							values[_shared.BaseSymbol] = this[_shared.BaseSymbol];
-							values[_shared.ToInitializeSymbol] = typeToInitialize; // NOTE: Will be cloned
-							values[_shared.ToExtendLaterSymbol] = this[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
+							values = {
+								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
+								[_shared.ModifiersSymbol]: modifiers,
+								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
+								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
+								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: this[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+							};
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
 							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
 							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
-							values = tools.nullObject();
-							values[_shared.AttributesSymbol] = instanceAttributes; // NOTE: Will be cloned
-							values[_shared.ImplementsSymbol] = this.prototype[_shared.ImplementsSymbol]; // NOTE: Will be cloned
-							values[_shared.IsolatedSymbol] = this.prototype[_shared.IsolatedSymbol]; // NOTE: Will be cloned
-							values[_shared.PrototypeSymbol] = this.prototype[_shared.PrototypeSymbol];
-							values[_shared.BaseSymbol] = this.prototype[_shared.BaseSymbol];
-							values[_shared.ToInitializeSymbol] = instanceToInitialize; // NOTE: Will be cloned
-							values[_shared.ToExtendLaterSymbol] = this.prototype[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
+							values = {
+								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
+								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.PrototypeSymbol]: this.prototype[_shared.PrototypeSymbol],
+								[_shared.BaseSymbol]: this.prototype[_shared.BaseSymbol],
+								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+							};
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
 
@@ -6554,7 +6559,7 @@ exports.add = function add(DD_MODULES) {
 						if (!isBase) {
 							if (this._implements(mixIns.Creatable)) {
 								if (forType) {
-									this.$create(...args);
+									this.$create(...(_shared.Natives.arraySliceCall(args, 3)));
 								} else {
 									this.create(...args);
 								};
@@ -6987,28 +6992,30 @@ exports.add = function add(DD_MODULES) {
 
 							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
 							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
-							values = tools.nullObject();
-							values[_shared.AttributesSymbol] = typeAttributes; // NOTE: Will be cloned
-							values[_shared.ModifiersSymbol] = (types.get(this, _shared.ModifiersSymbol) || 0);
-							values[_shared.ImplementsSymbol] = this[_shared.ImplementsSymbol]; // NOTE: Will be cloned
-							values[_shared.IsolatedSymbol] = this[_shared.IsolatedSymbol]; // NOTE: Will be cloned
-							values[_shared.PrototypeSymbol] = this[_shared.PrototypeSymbol];
-							values[_shared.BaseSymbol] = this[_shared.BaseSymbol];
-							values[_shared.ToInitializeSymbol] = typeToInitialize; // NOTE: Will be cloned
-							values[_shared.ToExtendLaterSymbol] = this[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
+							values = {
+								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
+								[_shared.ModifiersSymbol]: (types.get(this, _shared.ModifiersSymbol) || 0),
+								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
+								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
+								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: this[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+							};
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
 							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
 							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
-							values = tools.nullObject();
-							values[_shared.AttributesSymbol] = instanceAttributes; // NOTE: Will be cloned
-							values[_shared.ImplementsSymbol] = this.prototype[_shared.ImplementsSymbol]; // NOTE: Will be cloned
-							values[_shared.IsolatedSymbol] = this.prototype[_shared.IsolatedSymbol]; // NOTE: Will be cloned
-							values[_shared.PrototypeSymbol] = this.prototype[_shared.PrototypeSymbol];
-							values[_shared.BaseSymbol] = this.prototype[_shared.BaseSymbol];
-							values[_shared.ToInitializeSymbol] = instanceToInitialize; // NOTE: Will be cloned
-							values[_shared.ToExtendLaterSymbol] = this.prototype[_shared.ToExtendLaterSymbol]; // NOTE: Will be cloned
+							values = {
+								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
+								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.PrototypeSymbol]: this.prototype[_shared.PrototypeSymbol],
+								[_shared.BaseSymbol]: this.prototype[_shared.BaseSymbol],
+								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+							};
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
 
@@ -7070,13 +7077,12 @@ exports.add = function add(DD_MODULES) {
 //					_superAsync: __Internal__.superAsync,
 				callOutside: __Internal__.callOutside,
 				makeOutside: __Internal__.makeOutside,
+
+				[_shared.HostSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))),
 			};
 				
 			tools.extend(__Internal__.interfaceProto, __Internal__.defaultAttributes);
 
-			// <FUTURE> Use syntax for variable key in object declaration
-			__Internal__.interfaceProto[_shared.HostSymbol] = doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false}))));
-				
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -7576,15 +7582,14 @@ exports.add = function add(DD_MODULES) {
 									});
 								}, this);
 						}),
-				};
 
-			// FUTURE: Syntax for variable keys in object declaration
-			__Internal__.eventHandlerProto[_shared.ObjectSymbol] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[_shared.ExtenderSymbol] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[_shared.StackSymbol] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[_shared.SortedSymbol] = doodad.PROTECTED(false);
-			__Internal__.eventHandlerProto[_shared.ClonedStackSymbol] = doodad.PROTECTED(null);
-			__Internal__.eventHandlerProto[_shared.EventInsideSymbol] = doodad.PROTECTED(null);
+					[_shared.ObjectSymbol]: doodad.PROTECTED(null),
+					[_shared.ExtenderSymbol]: doodad.PROTECTED(null),
+					[_shared.StackSymbol]: doodad.PROTECTED(null),
+					[_shared.SortedSymbol]: doodad.PROTECTED(false),
+					[_shared.ClonedStackSymbol]: doodad.PROTECTED(null),
+					[_shared.EventInsideSymbol]: doodad.PROTECTED(null),
+				};
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7766,9 +7771,10 @@ exports.add = function add(DD_MODULES) {
 								} else {
 									clonedStack = [];
 								};
-								const values = {};
-								values[_shared.SortedSymbol] = true;
-								values[_shared.ClonedStackSymbol] = clonedStack;
+								const values = {
+									[_shared.SortedSymbol]: true,
+									[_shared.ClonedStackSymbol]: clonedStack,
+								};
 								_shared.setAttributes(dispatch, values);
 							};
 
@@ -7818,9 +7824,10 @@ exports.add = function add(DD_MODULES) {
 									return (data[4] <= 0);
 								});
 								if (removed.length) {
-									const values = {};
-									values[_shared.SortedSymbol] = false;
-									values[_shared.ClonedStackSymbol] = null;
+									const values = {
+										[_shared.SortedSymbol]: false,
+										[_shared.ClonedStackSymbol]: null,
+									};
 									_shared.setAttributes(dispatch, values);
 								};
 
@@ -7889,9 +7896,10 @@ exports.add = function add(DD_MODULES) {
 							} else {
 								clonedStack = [];
 							};
-							const values = {};
-							values[_shared.SortedSymbol] = true;
-							values[_shared.ClonedStackSymbol] = clonedStack;
+							const values = {
+								[_shared.SortedSymbol]: true,
+								[_shared.ClonedStackSymbol]: clonedStack,
+							};
 							_shared.setAttributes(dispatch, values);
 						};
 							
@@ -7920,9 +7928,10 @@ exports.add = function add(DD_MODULES) {
 								return (data[4] <= 0);
 							});
 							if (removed.length) {
-								const values = {};
-								values[_shared.SortedSymbol] = false;
-								values[_shared.ClonedStackSymbol] = null;
+								const values = {
+									[_shared.SortedSymbol]: false,
+									[_shared.ClonedStackSymbol]: null,
+								};
 								_shared.setAttributes(dispatch, values);
 							};
 
@@ -8285,6 +8294,8 @@ exports.add = function add(DD_MODULES) {
 					$TYPE_NAME: 'Creatable',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
 
+					[_shared.DestroyedSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null})))))),
+
 					$onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
 					onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
 
@@ -8450,9 +8461,6 @@ exports.add = function add(DD_MODULES) {
 						})))),
 
 				};
-
-			// <FUTURE> Use syntax for variable key in object declaration
-			__Internal__.creatablePrototype[_shared.DestroyedSymbol] = doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null}))))));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")

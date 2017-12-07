@@ -2756,23 +2756,24 @@ exports.add = function add(DD_MODULES) {
 				/*base*/
 				nodeConsoleConsole, 
 
-				/*constructor*/
+				/*_super*/
 				function(hook, /*optional*/stdout, /*optional*/stderr) {
-					if (!types.isType(this)) {
-						if (!types.isJsFunction(hook)) {
-							throw new types.TypeError("Invalid hook function.");
-						};
-						this.__hook = hook;
-						this.__hasStd = !!stdout || !!stderr;
-						if (!stdout) {
-							stdout = process.stdout;
-						};
-						if (!stderr) {
-							stderr = stdout;
-						};
-						return nodeConsoleConsole.call(this, stdout, stderr);
+					if (!types.isJsFunction(hook)) {
+						throw new types.TypeError("Invalid hook function.");
 					};
+					this.__hook = hook;
+					this.__hasStd = !!stdout || !!stderr;
+					if (!stdout) {
+						stdout = process.stdout;
+					};
+					if (!stderr) {
+						stderr = stdout;
+					};
+					return [stdout, stderr];
 				},
+
+				/*constructor*/
+				null,
 					
 				/*typeProto*/
 				{
@@ -2810,8 +2811,8 @@ exports.add = function add(DD_MODULES) {
 						if (__Internal__.oldConsole) {
 							throw new types.Error("'global.console' already captured.")
 						};
-						const newConsole = new this(hook, stdout, stderr),
-							oldConsole = global.console;
+						const newConsole = new this(hook, stdout, stderr);
+						const oldConsole = global.console;
 						types.defineProperty(global, 'console', {
 							configurable: true,
 							enumerable: true,

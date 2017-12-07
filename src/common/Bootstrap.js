@@ -174,7 +174,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_IF()
 			
 		enableSymbols: true,					// When 'true', symbols are enabled.
-		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will slow down everything significatively. For intensive debug only.
+		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
 	});
 
 
@@ -220,9 +220,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	})({
 		// Secret value used to load modules, ...
 		SECRET: null,
-
-		// "safeObject"
-		TargetSymbol: (nodeUUID ? nodeUUID() : global.Symbol('__DD_TARGET__')),
 
 		// NOTE: Preload of immediatly needed natives.
 		Natives: {
@@ -417,8 +414,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 
-	const types = _shared.safeObject(), // Will get filled later
-		tools = _shared.safeObject(); // Will get filled later
+	const types = {}, // Will get filled later
+		tools = {}; // Will get filled later
 
 			
 	//===================================
@@ -2420,7 +2417,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			let obj;
 			if (args && args.length) {
 				if (__Internal__.classesNotCallable && types.isJsClass(type)) {
-					obj = tools.eval("new ctx.type(...ctx.args)", {type: type, args: args});
+					obj = new type(...args);
 				} else {
 					obj = tools.createObject(type.prototype, {
 						constructor: {
@@ -3097,8 +3094,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			} else {
 				throw new global.Error("Package 'uuid' is missing.");
 			};
-		})
-	);
+		}
+	));
 
 	//===================================
 	// Symbols
@@ -3197,7 +3194,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			} else {
 				return _shared.Natives.windowString(key) + '$' + genKey;
 			};
-		})));
+		})
+	));
 			
 	__Internal__.extractSymbolKeyRegExp = /^Symbol[(]((.|\n)*)[)]$/gm;  // <FUTURE> Per thread
 
@@ -3293,13 +3291,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Type functions
 	//===================================
+
+	// "safeObject"
+	_shared.TargetSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TARGET')), true) */ '__DD_TARGET' /*! END_REPLACE() */, true);
 		
-	__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE__' /*! END_REPLACE() */, true);
-	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID__' /*! END_REPLACE() */, true);
+	__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE' /*! END_REPLACE() */, true);
+	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID' /*! END_REPLACE() */, true);
 	__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
 	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
 	__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
-	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID__' /*! END_REPLACE() */, true);
+
+	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID' /*! END_REPLACE() */, true);
 
 	__Internal__.ADD('isType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4119,7 +4121,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return result;
 		});
 			
-	__Internal__.setAttribute = _shared.setAttribute = __Internal__.DD_DOC(
+	_shared.setAttribute = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
@@ -4224,7 +4226,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				keysLen = keys.length;
 			for (let i = 0; i < keysLen; i++) {
 				const key = keys[i];
-				__Internal__.setAttribute(obj, key, values[key], options);
+				_shared.setAttribute(obj, key, values[key], options);
 			};
 			return values;
 		});
@@ -5140,6 +5142,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	_shared.EnumerableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ENUMERABLE')), true) */ '__DD_ENUMERABLE' /*! END_REPLACE() */, true);
 	_shared.ReadOnlySymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_READ_ONLY')), true) */ '__DD_READ_ONLY' /*! END_REPLACE() */, true);
 	_shared.ConfigurableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONFIGURABLE')), true) */ '__DD_CONFIGURABLE' /*! END_REPLACE() */, true);
+	_shared.ConstructorSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONSTRUCTOR')), true) */ '__DD_CONSTRUCTOR' /*! END_REPLACE() */, true);
+
 	__Internal__.symbolGetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_GETTER')), true) */ '__DD_GETTER' /*! END_REPLACE() */, true);
 	__Internal__.symbolSetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SETTER')), true) */ '__DD_SETTER' /*! END_REPLACE() */, true);
 		
@@ -5581,7 +5585,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						type: {
 							type: 'type',
@@ -5602,7 +5606,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (types.isInitialized(type)) {
 				return type;
 			} else {
-				type = type.apply(type, args) || type;
+				type = type[_shared.ConstructorSymbol](args) || type;
 				if (types.isSingleton(type)) {
 					type = types.newInstance(type, args);
 				};
@@ -5668,7 +5672,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 	});
 		
-	__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, generateFnName) {
+	__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, functionName) {
 		const forType = types.isType(target);
 
 		const loopKeys = function _loopKeys(keys, isSymbol) {
@@ -5677,7 +5681,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
 					let keyStr;
-					if (generateFnName) {
+					if (functionName) {
 						if (isSymbol) {
 							code += "key = protoSymbols[" + types.toString(i) + "];";
 						} else {
@@ -5688,13 +5692,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					let hasKey = false;
 
-					if (generateFnName) {
+					if (functionName) {
 						code += "hasKey = types.has(target, key);";
 					} else {
 						hasKey = types.has(target, key);
 					};
 
-					if (generateFnName) {
+					if (functionName) {
 						if (skipExisting) {
 							code += "ok = !hasKey;"
 						} else {
@@ -5712,20 +5716,20 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						g = types.get(attr, __Internal__.symbolGetter),
 						s = types.get(attr, __Internal__.symbolSetter);
 
-					if (generateFnName) {
+					if (functionName) {
 						code += "attr = types.AttributeBox(proto[key]);";
 					};
 
 					let value = attr,
 						isFunction = false;
 
-					if (generateFnName) {
+					if (functionName) {
 						code += "value = attr;" +
 								"isFunction = false;";
 					};
 
 					if (!g && !s) {
-						if (generateFnName) {
+						if (functionName) {
 							code += "if (hasKey) {" +
 										"value = target[key];" +
 									"};" +
@@ -5745,7 +5749,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						cf = !isFunction;
 					};
 
-					if (generateFnName) {
+					if (functionName) {
 						if (cf && skipConfigurables) {
 							code += "ok = types.hasIn(target, key);";
 						} else {
@@ -5759,7 +5763,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					code += "if (ok) {";
 
-					if (generateFnName) {
+					if (functionName) {
 						if (types.get(attr, _shared.SuperEnabledSymbol)) {
 							code += "const createSuper = !hasKey && isFunction;" +
 									"if (createSuper) {" +
@@ -5775,7 +5779,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						};
 					};
 
-					if (generateFnName) {
+					if (functionName) {
 						code += "if (isFunction) {" +
 									"_shared.setAttributes(value, {" +
 										"apply: value.apply," +
@@ -5794,7 +5798,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					}
 
 					if (preApply) {
-						if (generateFnName) {
+						if (functionName) {
 							code += "_shared.setAttribute(target, key, value, {all: true});";
 						} else {
 							_shared.setAttribute(target, key, value, {all: true});
@@ -5807,7 +5811,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 						if (g || s) {
 							// TODO: SUPER
-							if (generateFnName) {
+							if (functionName) {
 								code += "types.defineProperty(target, key, {" +
 											"configurable: " + (!!cf ? 'true' : 'false') + "," +
 											"enumerable: " + (!!enu ? 'true' : 'false') + "," +
@@ -5825,7 +5829,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						} else {
 							let ro = types.get(attr, _shared.ReadOnlySymbol);
 
-							if (generateFnName) {
+							if (functionName) {
 								if (types.isNothing(ro)) {
 									code += "ro = isFunction;";
 								} else {
@@ -5883,8 +5887,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		let code = '';
 
-		if (generateFnName) {
-			code +=	"(function " + generateFnName + "(target, base, proto) {" +
+		if (functionName) {
+			code +=	"(function " + functionName + "(target, base, proto) {" +
 						"let key, hasKey, attr, value, isFunction, ok, ro;";
 		};
 
@@ -5893,19 +5897,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		loopKeys(types.keys(proto), false);
 		loopKeys(protoSymbols, true);
 
-		if (generateFnName) {
+		if (functionName) {
 			code += "types.defineProperty(target, '_super', {value: null, writable: true});";
 		} else {
 			types.defineProperty(target, '_super', {value: null, writable: true});
 		};
 
-		if (generateFnName) {
+		if (functionName) {
 			code += "})";
 		};
 
 		let fn = null;
 
-		if (generateFnName) {
+		if (functionName) {
 			const evalFn = tools.createEval(['types', 'tools', '_shared', '__Internal__', 'protoSymbols'], true)(types, tools, _shared, __Internal__, protoSymbols);
 			fn = evalFn(code);
 		};
@@ -5917,7 +5921,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 10,
+					revision: 12,
 					params: {
 						name: {
 							type: 'string',
@@ -5929,10 +5933,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: true,
 							description: "A Doodad type to inherit.",
 						},
-						constructor: {
-							type: ['string', 'function'],
+						_super: {
+							type: 'function',
 							optional: true,
-							description: "The constructor body, or the constructor function.",
+							description: "The super function.",
+						},
+						constructor: {
+							type: 'function',
+							optional: true,
+							description: "The constructor function.",
 						},
 						typeProto: {
 							type: 'object',
@@ -5944,11 +5953,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: true,
 							description: "An object to be used as the prototype of the instances of the new type.",
 						},
-						constructorContext: {
-							type: 'any',
-							optional: true,
-							description: "A variable that can be used by the constructor body.",
-						},
 						uuid: {
 							type: 'string',
 							optional: true,
@@ -5959,178 +5963,188 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
 		}
 		//! END_REPLACE()
-		, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructorContext, /*optional*/uuid) {
+		, function createType(/*optional*/name, /*optional*/base, /*optional*/_super, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
 			if (types.isNothing(name)) {
 				name = '';
 			};
 
 			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
-				
+
 			const baseIsType = types.isType(base);
 			if (baseIsType) {
 				if (!types.get(base, __Internal__.symbolInitialized)) {
 					throw new _shared.Natives.windowError("Base type '" + (types.getTypeName(base) || types.getFunctionName(base)) + "' is not initialized.");
 				};
 			};
-				
-			if (types.isNothing(constructor)) {
-				constructor = "return this._new && this._new(...args);";
-			};
-				
-			if (types.isString(constructor)) {
-				constructorContext = tools.extend({}, constructorContext, {
-					base: base,
-				});
-				// TODO: Avoid this extra function ?
-				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", constructorContext);
-			};
-				
-			// NOTE: 'eval' is the only way found to give a name to dynamicaly created functions.
-			const expr = "function " + name + "(/*paramarray*/...args) {" + 
-				//"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
-				//	"throw new ctx.types.Error('Object is already initialized.');" +
-				//"};" +
 
-				"const forType = ctx.types.isFunction(this);" +
+			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
 
-				"if (forType) {" +
-					"if ((this !== ctx.type) && (!ctx.types.baseof(ctx.type, this))) {" +
-						"throw new ctx.types.Error('Wrong constructor.');" +
+			// NOTE: 'eval' is the only way found to give a name to dynamicaly created classes.
+			const expr = "(class " + name + (base ? " extends ctx.base" : "") + " {" + 
+				"constructor(/*paramarray*/...args) {" +
+					// <PRB> grrrr, "this" is not available before we call "super" !!!
+					(base ?
+						"const superThis = {};" +
+						"const superArgs = ctx._super.apply(superThis, args) || args;" +
+						"let obj = super(...superArgs) || this;" +
+						"ctx.tools.extend(this, superThis);"
+					:
+						"let obj = this;"
+					) +
+					"if (ctx.types.getType(this) === ctx.type) {" +
+						"obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;" +
 					"};" +
-				"} else {" +
-					"if (!ctx.types.get(ctx.type, ctx.__Internal__.symbolInitialized)) {" +
-						"throw new ctx.types.Error(\"Type '\" + ctx.types.getTypeName(ctx.type) + \"' is not initialized.\");" +
-					"};" +
-					"if (!ctx.types._instanceof(this, ctx.type)) {" +
-						"throw new ctx.types.Error('Wrong constructor. Did you forget the \\'new\\' operator ?');" +
-					"};" +
-				"};" +
+					"return obj;" +
+				"}" +
+			"})";
 
-				(!__Internal__.prototypeIsConfigurable ?
-					// <PRB> "prototype" is not configurable, so we can't set it to read-only
-					"if (!forType) {" +
-						"if (ctx.type.prototype !== ctx.proto) {" +
-							// Something has changed the prototype. Set it back to original and recreate the object.
-							"ctx.type.prototype = ctx.proto;" +
-							"return ctx.types.newInstance(ctx.type, args);" +
-						"};" +
-					"};"
-				:
-					""
-				) +
-
-				"let obj;" +
-				"if (ctx.types.get(this, ctx.__Internal__.symbolInitialized)) {" +
-					"obj = this;" +
-				"} else {" +
-					"if (!forType) {" +
-						"if (ctx.types.get(ctx.type, ctx.__Internal__.symbolSingleton)) {" +
-							"throw new ctx.types.Error('Singleton object has already been created.');" +
-						"};" +
-
-						"ctx._shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});" +
-
-						// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
-						"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolToStringTag, 'Object', {});" +
-					"};" +
-
-					// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-					"ctx._shared.setAttribute(this, ctx._shared.Natives.symbolHasInstance, undefined, {});" +
-
-					"ctx._shared.setAttribute(this, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
-					"obj = ctx.constructor.apply(this, args) || this;" + // _new
-
-					"const isSingleton = !!ctx.type[ctx.__Internal__.symbol$IsSingleton];" +
-					"ctx._shared.setAttribute(obj, ctx.__Internal__.symbol$IsSingleton, isSingleton, {});" +
-					"if (isSingleton) {" +
-						"if (!forType) {" +
-							"ctx._shared.setAttribute(ctx.type, ctx.__Internal__.symbolSingleton, obj, {});" +
-						"};" +
-					"} else {" +
-						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbolSingleton, null, {});" +
-					"};" +
-				"};" +
-
-				(typeProto && types.hasDefinePropertyEnabled() ?
-					"if (forType) {" +
-						"ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);" +
-						//"ctx.__Internal__.applyProto(obj, ctx.base, ctx.typeProto, false, true, false, '');" +
-					"};"
-				: 
-					""
-				) +
-
-				(instanceProto && types.hasDefinePropertyEnabled() ?
-					"if (!forType) {" +
-						"ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);" +
-						//"ctx.__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, false, true, true, '');" +
-					"};"
-				: 
-					""
-				) +
-
-				(baseIsType ?
-					"ctx.base.apply(obj, args);"
-				:
-					""
-				) +
-
-				(baseIsType ? 
-					""
-				:
-					"if ((obj !== this) && !ctx.types.get(obj, ctx.__Internal__.symbolInitialized)) {" +
-						"ctx._shared.setAttribute(obj, ctx.__Internal__.symbolInitialized, true, {configurable: true});" +
-					"};"
-				) +
-
-				"return obj;" +
-			"}";
-				
 			const instanceBase = (base ? base.prototype : null);
 
 			const ctx = tools.nullObject({
+				_shared: _shared,
+				types: types,
+				tools: tools,
+
 				base: base,
-				constructor: constructor,
 				typeProto: typeProto, 
 				instanceProto: instanceProto,
 				instanceBase: instanceBase,
-				type: null, // will be set after type creation
-				proto: null, // will be set after type creation
-				_shared: _shared,
-				__Internal__: __Internal__,
-				types: types,
 				applyProtoToType: typeProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
 				applyProtoToInstance: instanceProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
+
+				_super: null, // Will be set after creation
+				constructor: null, // Will be set after creation
+				type: null, // will be set after type creation
+				proto: null, // will be set after type creation
 			});
 
-			let type = tools.eval(expr, ctx);
-				
-			// Inherit base
-			let proto;
-			if (base) {
-				type = types.INHERIT(base, type);
-				proto = type.prototype;
-			} else {
-				proto = type.prototype;
-				const values = {
-					call: type.call,
-					apply: type.apply,
-					bind: type.bind,
-				};
-				_shared.setAttributes(type, values, {});
-				_shared.setAttribute(proto, 'constructor', type, {});
+			const type = tools.eval(expr, ctx);
+			const proto = type.prototype;;
+
+			const typeValues = {
+				call: type.call,
+				apply: type.apply,
+				bind: type.bind,
+
+				$TYPE_NAME: name,
+				[__Internal__.symbolIsType]: true,
+				[__Internal__.symbolTypeUUID]: uuid,
+
+				[_shared.ConstructorSymbol]: (function(ctx) {
+					return (function(args) {
+						const forType = types.isFunction(this);
+
+						if (forType) {
+							if ((this !== ctx.type) && (!types.baseof(ctx.type, this))) {
+								throw new types.Error('Wrong constructor.');
+							};
+						} else {
+							if (!types.get(ctx.type, __Internal__.symbolInitialized)) {
+								throw new types.Error("Type '" + types.getTypeName(ctx.type) + "' is not initialized.");
+							};
+							if (!types._instanceof(this, ctx.type)) {
+								throw new types.Error("Wrong constructor. Did you forget the 'new' operator ?");
+							};
+						};
+
+						if (!__Internal__.prototypeIsConfigurable) {
+							// <PRB> "prototype" is not configurable, so we can't set it to read-only
+							if (!forType) {
+								if (ctx.type.prototype !== ctx.proto) {
+									// Something has changed the prototype. Set it back to original and recreate the object.
+									ctx.type.prototype = ctx.proto;
+									return types.newInstance(ctx.type, args);
+								};
+							};
+						};
+
+						let obj;
+						if (types.get(this, __Internal__.symbolInitialized)) {
+							obj = this;
+						} else {
+							if (!forType) {
+								if (types.get(ctx.type, __Internal__.symbolSingleton)) {
+									throw new types.Error('Singleton object has already been created.');
+								};
+
+								_shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});
+
+								// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
+								_shared.setAttribute(this, _shared.Natives.symbolToStringTag, 'Object', {});
+							};
+
+							// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
+							_shared.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {});
+
+							_shared.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true});
+							obj = ctx.constructor.apply(this, args) || this; // _new
+
+							const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
+							_shared.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {});
+							if (isSingleton) {
+								if (!forType) {
+									_shared.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {});
+								};
+							} else {
+								_shared.setAttribute(obj, __Internal__.symbolSingleton, null, {});
+							};
+						};
+
+						if (typeProto && types.hasDefinePropertyEnabled()) {
+							if (forType) {
+								ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);
+							};
+						};
+
+						if (instanceProto && types.hasDefinePropertyEnabled()) {
+							if (!forType) {
+								ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);
+							};
+						};
+
+						if (baseIsType) {
+							ctx.base[_shared.ConstructorSymbol].call(obj, args);
+						};
+
+						if (baseIsType) {
+							if ((obj !== this) && !types.get(obj, __Internal__.symbolInitialized)) {
+								_shared.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true});
+							};
+						};
+
+						return obj;
+					});
+				})(ctx),
 			};
+			_shared.setAttributes(type, typeValues, {});
+
+			const protoValues = {
+				constructor: type,
+				[__Internal__.symbolTypeUUID]: uuid,
+			};
+			_shared.setAttributes(proto, protoValues, {});
 			
 			ctx.type = type;
 			ctx.proto = proto;
-			
-			_shared.setAttribute(type, '$TYPE_NAME', name, {});
-			_shared.setAttribute(type, __Internal__.symbolIsType, true, {});
 
-			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
-			_shared.setAttribute(type, __Internal__.symbolTypeUUID, uuid, {});
-			_shared.setAttribute(proto, __Internal__.symbolTypeUUID, uuid, {});
-	
+			if (types.isNothing(_super)) {
+				_super = (function(/*paramarray*/...args) {
+					return args;
+				});
+			} else if (types.isString(constructor)) {
+				_super = tools.eval("function(/*paramarray*/...args) {" + _super + "}", ctx);
+			};
+			ctx._super = _super;
+
+			if (types.isNothing(constructor)) {
+				constructor = (function(/*paramarray*/...args) {
+					return this._new && this._new(...args) || this;
+				});
+			} else if (types.isString(constructor)) {
+				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", ctx);
+			};
+			ctx.constructor = constructor;
+			
 			if (typeProto) {
 				__Internal__.applyProto(type, base, typeProto, true, false, false, '');
 			};
@@ -6160,22 +6174,22 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: true,
 							description: "An object to be used as the prototype of the instances of the new type.",
 						},
-						constructor: {
-							type: ['string', 'function'],
+						_super: {
+							type: 'function',
 							optional: true,
-							description: "The constructor body, or the constructor function. Defaults to a call to the method '_new'.",
+							description: "The super function.",
 						},
-						constructorContext: {
-							type: 'any',
+						constructor: {
+							type: 'function',
 							optional: true,
-							description: "A variable that can be used by the constructor body.",
+							description: "The constructor constructor function. Defaults to a call to the method '_new'.",
 						},
 					},
 					returns: 'type',
 					description: "Creates and returns a new Doodad type that inherits from 'this'.",
 		}
 		//! END_REPLACE()
-		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/constructor, /*optional*/constructorContext) {
+		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/ _super, /*optional*/constructor) {
 			// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
 			const base = ((this === global) ? undefined: this);
 				
@@ -6198,6 +6212,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					/*base*/
 					base, 
 						
+					/*_super*/
+					_super,
+
 					/*constructor*/
 					constructor, 
 						
@@ -6207,9 +6224,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					/*instanceProto*/
 					instanceProto, 
 						
-					/*constructorContext*/
-					constructorContext,
-
 					/*uuid*/
 					uuid
 				);
@@ -7244,7 +7258,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	return root.Doodad.Namespaces.load(modules, _options, startup)
 		.catch(root.Doodad.Tools.catchAndExit);
 };
-	
+
 //! BEGIN_REMOVE()
 if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
 //! END_REMOVE()
