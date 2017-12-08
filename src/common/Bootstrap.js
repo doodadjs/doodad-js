@@ -3971,7 +3971,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!obj) {
 				return null;
 			};
-			return obj.$TYPE_NAME || types.getFunctionName(obj);
+			return types.getFunctionName(obj);
 		}));
 		
 	__Internal__.ADD('getBase', __Internal__.DD_DOC(
@@ -5974,7 +5974,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 12,
+					revision: 13,
 					params: {
 						name: {
 							type: 'string',
@@ -6092,11 +6092,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			//});
 
 			const typeValues = {
+				name: name,
+
 				call: type.call,
 				apply: type.apply,
 				bind: type.bind,
 
-				$TYPE_NAME: name,
 				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 
