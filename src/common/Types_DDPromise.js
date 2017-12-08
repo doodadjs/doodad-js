@@ -493,7 +493,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					let promise;
 					const catchCb = function(result) {
-						result = callback(result);
+						result = callback && callback(result);
 						if (types.isPromise(result)) {
 							__Internal__.mergeCancelStates(promise, result);
 						};
