@@ -184,9 +184,10 @@ exports.add = function add(DD_MODULES) {
 							description: "Path error.",
 				}
 				//! END_REPLACE()
-				, types.createErrorType("PathError", types.Error)
-				));
-					
+				, types.createErrorType("PathError", types.Error, function _super(message, /*optional*/params) {
+					return [message || 'Path error.', params];
+				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('PathError')), true) */ null /*! END_REPLACE() */)));
+
 			__Internal__.relativeToAbsolute = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1649,8 +1650,6 @@ exports.add = function add(DD_MODULES) {
 			// URLs
 			//===================================
 				
-			//files.REGISTER(types.createErrorType("UrlError", types.Error));
-
 			__Internal__.decodeURIComponent = function(uri) {
 				// <PRB> decodeURIComponent doesn't unescape "+"
 				uri = tools.replace(uri || '', /\+/g,  " ");
