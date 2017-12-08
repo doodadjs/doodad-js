@@ -4281,7 +4281,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 6,
+					revision: 7,
 					params: {
 						name: {
 							type: 'string',
@@ -4293,10 +4293,25 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: true,
 							description: "Error type from which to inherit. Defaults to 'Error'.",
 						},
+						_super: {
+							type: 'function',
+							optional: true,
+							description: "The super function.",
+						},
 						constructor: {
 							type: 'function',
 							optional: true,
 							description: "A function to be called to construct a new instance. Defaults to base's constructor.",
+						},
+						typeProto: {
+							type: 'object',
+							optional: true,
+							description: "Type prottype.",
+						},
+						instanceProto: {
+							type: 'object',
+							optional: true,
+							description: "Instance prototype.",
 						},
 						uuid: {
 							type: 'string',
@@ -4308,124 +4323,162 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Creates a new error type, based on another error type.",
 		}
 		//! END_REPLACE()
-		, function createErrorType(name, /*optional*/base, /*optional*/constructor, /*optional*/uuid) {
+		, function createErrorType(name, /*optional*/base, /*optional*/_super, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
+			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
+
 			if (types.isNothing(base)) {
 				base = _shared.Natives.windowError;
 			};
 
-			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
+			if (uuid) {
+				uuid = /*! REPLACE_BY(TO_SOURCE(UUID('ERROR_TYPE')), true) */ '__ERROR_TYPE__' /*! END_REPLACE() */ + uuid;
+			};
 
-			const expr = "class " + name + " extends ctx.base {" +
-				"constructor(/*paramarray*/...args) {" +
-					"const context = {_this: {}, superArgs: null};" +
-					(constructor ? (
-						"ctx.constructor.apply(context, args);"
-					) : (
-						""
-					)) +
-					"super(...(context.superArgs || args));" +
-					"ctx.extend(this, context._this);" +
-					"this.name = ctx.name;" +
-					"this.description = this.message;" +
-				"}" +
-			"}";
+			const ctx = {
+				_shared: _shared,
+				//types: types,
+				tools: tools,
 
-			// NOTE: Use of "eval" to give the name to the class
-			const type = tools.eval(expr, {
+				name: name,
 				base: base,
+				_super: _super,
 				constructor: constructor,
+			};
+
+			// <PRB> grrrr, "this" is not available before we call "super" !!!
+			const type = (function(ctx) {
+				// IMPORTANT: Always use the context, not the scope variables to prevent memory leaks.
+				return (
+					class extends ctx.base {
+						constructor(/*paramarray*/...args) {
+							if (ctx._super) {
+								const _this = {};
+								const superArgs = ctx._super.apply(_this, args) || args;
+								super(...superArgs);
+								ctx.tools.extend(this, _this);
+							} else {
+								super(...args);
+							};
+							if (this.constructor === ctx.type) {
+								if (ctx.constructor) {
+									ctx.constructor.apply(this, args);
+								};
+								const values = {
+									name: ctx.name,
+									message: this.message,
+									description: this.message,
+								};
+								_shared.setAttributes(this, values, {});
+							};
+						}
+
+						toString() {
+							return this.message;
+						}
+					
+						parse() {
+							// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
+							if (!this.parsed) {
+								let stack;
+								if (this.stack) {
+									stack = tools.parseStack(this.stack);
+									if (stack) {
+										stack.splice(0, this.throwLevel);
+										// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
+										if (!stack.length) {
+											stack = null;
+										};
+									};
+									this.parsedStack = stack;
+								};
+							
+								let fileName,
+									lineNumber,
+									columnNumber,
+									functionName;
+								if (this.fileName) {
+									// <FUTURE> Firefox
+									// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
+									fileName = this.fileName;
+									lineNumber = this.lineNumber;
+									functionName = "";
+								} else if (this.sourceURL) {
+									// Safari 5
+									// NOTE: "this.line" should be already set
+									fileName = this.sourceURL;
+									lineNumber = this.line;
+									columnNumber = 0;
+									functionName = "";
+								} else {
+									// Other browsers
+									// Set attributes from the stack.
+									if (stack) {
+										const trace = stack[0];
+										fileName = trace.path;
+										columnNumber = trace.columnNumber;
+										lineNumber = trace.lineNumber;
+										functionName = trace.functionName;
+									} else {
+										fileName = "";
+										columnNumber = 0;
+										lineNumber = 0;
+										functionName = "";
+									};
+								};
+								this.fileName = fileName;
+								this.sourceURL = fileName;
+								this.line = lineNumber;
+								this.lineNumber = lineNumber;
+								this.columnNumber = columnNumber;
+								this.functionName = functionName;
+								this.parsed = true;
+							};
+						}
+					}
+				);
+			})(ctx);
+
+			const proto = type.prototype;
+
+			ctx.type = type;
+
+			// <FUTURE> "Public static fields"
+			tools.extend(type, /*{
+				// ...
+			},*/ typeProto);
+
+			const typeValues = {
 				name: name,
-				extend: tools.extend,
-			});
-				
-			tools.extend(type.prototype, {
-				name: name,
+				[_shared.Natives.symbolHasInstance]: undefined,
+				[__Internal__.symbolIsErrorType]: true,
+				[_shared.UUIDSymbol]: uuid,
+			};
+			_shared.setAttributes(type, typeValues, {});
+
+			// <FUTURE> "Public instance fields"
+			tools.extend(proto, {
 				throwLevel: 0,
 				parsed: false,
 				parsedStack: null,
 				bubble: false,
 				critical: false,
 				trapped: false,
-					
-				toString: function toString(/*paramarray*/...args) {
-					return this.message;
-				},
-					
-				parse: function parse() {
-					// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
-					if (!this.parsed) {
-						let stack;
-						if (this.stack) {
-							stack = tools.parseStack(this.stack);
-							if (stack) {
-								stack.splice(0, this.throwLevel);
-								// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
-								if (!stack.length) {
-									stack = null;
-								};
-							};
-							this.parsedStack = stack;
-						};
-							
-						let fileName,
-							lineNumber,
-							columnNumber,
-							functionName;
-						if (this.fileName) {
-							// <FUTURE> Firefox
-							// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
-							fileName = this.fileName;
-							lineNumber = this.lineNumber;
-							functionName = "";
-						} else if (this.sourceURL) {
-							// Safari 5
-							// NOTE: "this.line" should be already set
-							fileName = this.sourceURL;
-							lineNumber = this.line;
-							columnNumber = 0;
-							functionName = "";
-						} else {
-							// Other browsers
-							// Set attributes from the stack.
-							if (stack) {
-								const trace = stack[0];
-								fileName = trace.path;
-								columnNumber = trace.columnNumber;
-								lineNumber = trace.lineNumber;
-								functionName = trace.functionName;
-							} else {
-								fileName = "";
-								columnNumber = 0;
-								lineNumber = 0;
-								functionName = "";
-							};
-						};
-						this.fileName = fileName;
-						this.sourceURL = fileName;
-						this.line = lineNumber;
-						this.lineNumber = lineNumber;
-						this.columnNumber = columnNumber;
-						this.functionName = functionName;
-						this.parsed = true;
-					};
-				},
-			});
+			}, instanceProto);
 
-			_shared.setAttribute(type.prototype, _shared.Natives.symbolToStringTag, 'Error', {});
-				
-			_shared.setAttribute(type, __Internal__.symbolIsErrorType, true, {});
-				
-			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('ERROR_TYPE')), true) */ '__ERROR_TYPE__' /*! END_REPLACE() */ + uuid : null);
-			_shared.setAttribute(type, _shared.UUIDSymbol, uuid, {});
-			_shared.setAttribute(type.prototype, _shared.UUIDSymbol, uuid, {});
+			const protoValues = {
+				name: name,
+				[_shared.Natives.symbolToStringTag]: 'Error',
+				[_shared.UUIDSymbol]: uuid,
+			};
+			_shared.setAttributes(proto, protoValues, {});
 
 			return type;
 		}));
 		
-	__Internal__.createErrorConstructor = function() {
-		return function _new(message, /*optional*/params) {
+	__Internal__.createErrorSuper = function() {
+		return function _super(message, /*optional*/params) {
 			message = tools.format(message, params);
-			this.superArgs = [message];
+			return [message];
 		};
 	};
 		
@@ -4439,7 +4492,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on invalid value type.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
+		, types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorSuper(), null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
 		));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -4463,7 +4516,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Generic error with message formatting.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorConstructor(), /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorSuper(), null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
 
 
 	//! IF_SET('serverSide')
@@ -4509,23 +4562,23 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	if (__Internal__.AssertionError) {
 		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
 			__Internal__.AssertionErrorDD_DOC
-			, types.createErrorType("AssertionError", __Internal__.AssertionError, function _new(/*optional*/message, /*optional*/params) {
+			, types.createErrorType("AssertionError", __Internal__.AssertionError, function _super(/*optional*/message, /*optional*/params) {
 					if (message) {
-						this.superArgs = [{
+						return [{
 							actual: false,
 							expected: true,
 							operator: '==',
 							message: tools.format("Assertion failed: " + message, params),
 						}];
 					} else {
-						this.superArgs = [{
+						return [{
 							actual: false,
 							expected: true,
 							operator: '==',
 							message: "Assertion failed.",
 						}];
 					};
-				}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
+				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
 	};
 	//! END_IF()
 
@@ -4534,13 +4587,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//! END_IF()
 		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
 			__Internal__.AssertionErrorDD_DOC
-			, types.createErrorType("AssertionError", types.Error, function _new(message, /*optional*/params) {
+			, types.createErrorType("AssertionError", types.Error, function _super(message, /*optional*/params) {
 				if (message) {
-					this.superArgs = ["Assertion failed: " + message, params];
+					return ["Assertion failed: " + message, params];
 				} else {
-					this.superArgs = ["Assertion failed."];
+					return ["Assertion failed."];
 				};
-			}, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
+			}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
 	//! IF_SET('serverSide')
 	};
 	//! END_IF()
@@ -4569,9 +4622,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on parse error.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("ParseError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Parse error.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType("ParseError", types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Parse error.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4594,9 +4647,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised when something is not supported.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("NotSupported", types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Not supported.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType("NotSupported", types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Not supported.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4619,9 +4672,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised when something is not available.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("NotAvailable", types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Not available.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType("NotAvailable", types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Not available.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4649,10 +4702,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on HTTP error.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('HttpError', types.Error, function _new(code, message, /*optional*/params) {
-			this._this.code = code;
-			this.superArgs = [message, params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('HttpError', types.Error, function _super(code, message, /*optional*/params) {
+			this.code = code;
+			return [message, params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4675,9 +4728,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on buffer overflow.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('BufferOverflow', types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Buffer overflow.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('BufferOverflow', types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Buffer overflow.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4700,9 +4753,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on timeout.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('TimeoutError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Operation timed out.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('TimeoutError', types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Operation timed out.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4725,9 +4778,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on cancel.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('CanceledError', types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Operation canceled.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('CanceledError', types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Operation canceled.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4750,9 +4803,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Raised on access denied or not allowed operation.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType('AccessDenied', types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this.superArgs = [message || "Access denied.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType('AccessDenied', types.Error, function _super(/*optional*/message, /*optional*/params) {
+			return [message || "Access denied.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4775,10 +4828,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Signals that script execution has been interrupted, but not aborted.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("ScriptInterruptedError", types.Error, function _new(/*optional*/message, /*optional*/params) {
-			this._this.bubble = true;
-			this.superArgs = [message || "Script interrupted.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType("ScriptInterruptedError", types.Error, function _super(/*optional*/message, /*optional*/params) {
+			this.bubble = true;
+			return [message || "Script interrupted.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4806,11 +4859,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
 		}
 		//! END_REPLACE()
-		, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _new(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-			this._this.exitCode = types.toInteger(exitCode) || 0;
-			this._this.critical = true;
-			this.superArgs = [message || "Script aborted.", params];
-		}, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
+		, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _super(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
+			this.exitCode = types.toInteger(exitCode) || 0;
+			this.critical = true;
+			return [message || "Script aborted.", params];
+		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
 				
 	//===================================
 	// Box/Unbox
@@ -5979,25 +6032,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
 
-			// NOTE: 'eval' is the only way found to give a name to dynamicaly created classes.
-			const expr = "(class " + name + (base ? " extends ctx.base" : "") + " {" + 
-				"constructor(/*paramarray*/...args) {" +
-					// <PRB> grrrr, "this" is not available before we call "super" !!!
-					(base ?
-						"const superThis = {};" +
-						"const superArgs = ctx._super.apply(superThis, args) || args;" +
-						"let obj = super(...superArgs) || this;" +
-						"ctx.tools.extend(this, superThis);"
-					:
-						"let obj = this;"
-					) +
-					"if (ctx.types.getType(this) === ctx.type) {" +
-						"obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;" +
-					"};" +
-					"return obj;" +
-				"}" +
-			"})";
-
 			const instanceBase = (base ? base.prototype : null);
 
 			const ctx = tools.nullObject({
@@ -6018,8 +6052,44 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				proto: null, // will be set after type creation
 			});
 
-			const type = tools.eval(expr, ctx);
+			// <PRB> grrrr, "this" is not available before we call "super" !!!
+			const type = (function(ctx) {
+				// IMPORTANT: Always use the context, not the scope variables to prevent memory leaks.
+				if (ctx.base) {
+					return (
+						class extends ctx.base {
+							constructor(/*paramarray*/...args) {
+								const superThis = {};
+								const superArgs = ctx._super.apply(superThis, args) || args;
+								let obj = super(...superArgs) || this;
+								ctx.tools.extend(this, superThis);
+								if (ctx.types.getType(this) === ctx.type) {
+									obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;
+								};
+								return obj;
+							}
+						}
+					);
+				} else {
+					return (
+						class {
+							constructor(/*paramarray*/...args) {
+								let obj = this;
+								if (ctx.types.getType(this) === ctx.type) {
+									obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;
+								};
+								return obj;
+							}
+						}
+					);
+				};
+			})(ctx);
+
 			const proto = type.prototype;;
+
+			// <FUTURE> "Public static fields"
+			//tools.extend(type, {
+			//});
 
 			const typeValues = {
 				call: type.call,
@@ -6118,12 +6188,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			_shared.setAttributes(type, typeValues, {});
 
+			// <FUTURE> "Public instance fields"
+			//tools.extend(proto, {
+			//});
+
 			const protoValues = {
 				constructor: type,
 				[__Internal__.symbolTypeUUID]: uuid,
 			};
 			_shared.setAttributes(proto, protoValues, {});
-			
+
 			ctx.type = type;
 			ctx.proto = proto;
 
@@ -6144,7 +6218,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", ctx);
 			};
 			ctx.constructor = constructor;
-			
+
 			if (typeProto) {
 				__Internal__.applyProto(type, base, typeProto, true, false, false, '');
 			};
