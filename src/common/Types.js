@@ -68,7 +68,6 @@ exports.add = function add(DD_MODULES) {
 			// Native functions
 			//===================================
 					
-			// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 			// NOTE: Store everything because third-parties can override them.
 				
 			tools.complete(_shared.Natives, {
@@ -103,16 +102,16 @@ exports.add = function add(DD_MODULES) {
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 
 				//// "hasProxies", "hasProxyEnabled", "createProxy"
-				//windowProxy: (types.isNativeFunction(global.Proxy) ? global.Proxy : undefined),
+				//windowProxy: global.Proxy,
 
 				// "values"
-				objectValues: (types.isNativeFunction(global.Object.values) ? global.Object.values : undefined),
+				objectValues: global.Object.values,
 					
 				// "entries"
-				objectEntries: (types.isNativeFunction(global.Object.entries) ? global.Object.entries : undefined),
+				objectEntries: global.Object.entries,
 					
 				// "toArray"
-				arrayFrom: ((global.Array && types.isNativeFunction(Array.from)) ? global.Array.from : undefined),
+				arrayFrom: global.Array.from,
 			});
 				
 			//===================================
@@ -172,63 +171,7 @@ exports.add = function add(DD_MODULES) {
 					};
 				}));
 				
-			types.ADD('toArray', (_shared.Natives.arrayFrom || root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'string,array,arraylike',
-									optional: false,
-									description: "A value to convert.",
-								},
-								mapFn: {
-									type: 'function',
-									optional: true,
-									description: "A transform function.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'mapFn' is specified, specifies 'this'. Default is 'undefined'.",
-								},
-							},
-							returns: 'array',
-							description: "Converts a value to an array.",
-				}
-				//! END_REPLACE()
-				, function toArray(obj, /*optional*/mapFn, /*optional*/thisObj) {
-					if (types.isNothing(obj)) {
-						throw new types.TypeError("can't convert " + ((obj === null) ? 'null' : 'undefined') + " to object");
-					};
-					obj = _shared.Natives.windowObject(obj);
-					let result,
-						len;
-					if (types.isString(obj)) {
-						result = _shared.Natives.arraySliceCall(obj);
-						len = result.length;
-					} else { //if (types.isArrayLike(obj)) {
-						len = +obj.length || 0;
-						if (types.isInfinite(len)) {
-							throw new types.TypeError("Invalid array length.");
-						};
-						if (len <= 0) {
-							result = [];
-						} else if (len === 1) {
-							// <PRB> With only one integer argument to the constructor, an Array of X empty slots is created
-							result = [obj[0]];
-						} else {
-							result = _shared.Natives.windowArrayApply(null, obj);
-						};
-					};
-					if (mapFn) {
-						for (let key = 0; key < len; key++) {
-							result[key] = mapFn.call(thisObj, result[key], key);
-						};
-					};
-					return result;
-				})));
+			types.ADD('toArray', _shared.Natives.arrayFrom);
 				
 			//===================================
 			// Shared Symbols
@@ -1018,7 +961,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'object,arraylike',
@@ -1034,9 +977,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isNothing(obj)) {
 						return [];
 					} else {
-						if (_shared.Natives.objectValues && !types.isArrayLike(obj)) {
-							return _shared.Natives.objectValues(obj);
-						} else {
+						if (types.isArrayLike(obj)) {
 							obj = _shared.Natives.windowObject(obj);
 							const result = [];
 							const keys = types.keys(obj),
@@ -1045,6 +986,8 @@ exports.add = function add(DD_MODULES) {
 								result.push(obj[keys[i]]);
 							};
 							return result;
+						} else {
+							return _shared.Natives.objectValues(obj);
 						};
 					};
 				}));
@@ -1053,7 +996,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								obj: {
 									type: 'any',
@@ -1070,17 +1013,7 @@ exports.add = function add(DD_MODULES) {
 						return [];
 					} else {
 						obj = _shared.Natives.windowObject(obj);
-						if (_shared.Natives.objectEntries) {
-							return _shared.Natives.objectEntries(obj);
-						} else {
-							const result = [];
-							for (let key in obj) {
-								if (types.has(obj, key)) {
-									result.push([key, obj[key]]);
-								};
-							};
-							return result;
-						};
+						return _shared.Natives.objectEntries(obj);
 					};
 				}));
 				
@@ -1114,16 +1047,8 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 							return result;
-						} else if (_shared.Natives.objectEntries) {
-							return _shared.Natives.objectEntries(obj);
 						} else {
-							const result = [];
-							for (let key in obj) {
-								if (types.has(obj, key)) {
-									result.push([key, obj[key]]);
-								};
-							};
-							return result;
+							return _shared.Natives.objectEntries(obj);
 						};
 					};
 				}));

@@ -73,11 +73,9 @@ exports.add = function add(DD_MODULES) {
 			//=====================
 				
 			const __options__ = tools.extend({
-				enableDomObjectsModel: true,	// "true" uses "instanceof" with DOM objects. "false" uses old "nodeType" and "nodeString" attributes.
 				defaultScriptTimeout: 1000 * 60 * 2,		// milliseconds
 			}, _options);
 
-			__options__.enableDomObjectsModel = types.toBoolean(__options__.enableDomObjectsModel);
 			__options__.defaultScriptTimeout = types.toInteger(__options__.defaultScriptTimeout);
 
 			types.freezeObject(__options__);
@@ -95,27 +93,25 @@ exports.add = function add(DD_MODULES) {
 				windowDocument: global.document,
 
 				// DOM
-				windowWindow: (types.isNativeFunction(global.Window) ? global.Window : undefined),
-				windowNode: (types.isNativeFunction(global.Node) ? global.Node : undefined),
-				windowHtmlDocument: (types.isNativeFunction(global.HTMLDocument) ? global.HTMLDocument : undefined),
-				windowHtmlElement: (types.isNativeFunction(global.HTMLElement) ? global.HTMLElement : undefined),
+				windowWindow: global.Window,
+				windowNode: global.Node,
+				windowHtmlDocument: global.HTMLDocument,
+				windowHtmlElement: global.HTMLElement,
 
-				//windowError: global.Error,
-					
 				// Script loader
-				windowURL: (types.isNativeFunction(global.URL) ? global.URL : undefined),
+				windowURL: (types.isFunction(global.URL) ? global.URL : null),
 					
 				// Script loader, readFile
-				windowBlob: (types.isNativeFunction(global.Blob) ? global.Blob : undefined),
+				windowBlob: (types.isFunction(global.Blob) ? global.Blob : null),
 
 				// readFile
-				windowFileReader: (types.isNativeFunction(global.FileReader) ? global.FileReader : undefined),
-				windowFetch: (types.isNativeFunction(global.fetch) ? global.fetch : undefined),
-				windowHeaders: (types.isNativeFunction(global.Headers) ? global.Headers : undefined),
+				windowFileReader: (types.isFunction(global.FileReader) ? global.FileReader : null),
+				windowFetch: (types.isFunction(global.fetch) ? global.fetch : null),
+				windowHeaders: (types.isFunction(global.Headers) ? global.Headers : null),
 				windowXMLHttpRequest: global.XMLHttpRequest,
 					
 				// isEventTarget
-				windowEventTarget: (types.isNativeFunction(global.EventTarget) ? global.EventTarget : undefined),
+				windowEventTarget: (types.isFunction(global.EventTarget) ? global.EventTarget : null),
 					
 				// isEvent
 				windowEvent: (types.isFunction(global.Event) ? global.Event : global.Event.constructor),
@@ -124,28 +120,23 @@ exports.add = function add(DD_MODULES) {
 				mathMax: global.Math.max,
 				windowSetTimeout: global.setTimeout.bind(global),
 				windowClearTimeout: global.clearTimeout.bind(global),
-				windowSetImmediate: (types.isNativeFunction(global.setImmediate) ? global.setImmediate.bind(global) : undefined), // IE 10
-				windowClearImmediate: (types.isNativeFunction(global.clearImmediate) ? global.clearImmediate.bind(global) : undefined), // IE 10
-				windowRequestAnimationFrame: (types.isNativeFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) || 
-                                            (types.isNativeFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) || 
-                                            (types.isNativeFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) || 
-                                            (types.isNativeFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
-											undefined,
-                windowCancelAnimationFrame: (types.isNativeFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
-                                            (types.isNativeFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
-											undefined,
-				windowMutationObserver: (types.isNativeFunction(global.MutationObserver) ? global.MutationObserver : undefined),
-
-				// setCurrentLocation
-				//historyPushState: (global.history && types.isNativeFunction(global.history.pushState) ? global.history.pushState.bind(global.history) : undefined),
+				windowRequestAnimationFrame: (types.isFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) || 
+                                            (types.isFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) || 
+                                            (types.isFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) || 
+                                            (types.isFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
+											null,
+                windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
+                                            (types.isFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
+											null,
+				windowMutationObserver: (types.isFunction(global.MutationObserver) ? global.MutationObserver : null),
 
 				windowLocation: global.location,
 
 				// catchAndExit
-				consoleError: (types.isNativeFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
+				consoleError: (types.isFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
 
 				// stringToBytes, bytesToString
-				globalBufferFrom: (types.isFunction(global.Buffer) && types.isFunction(global.Buffer.from) ? global.Buffer.from.bind(global.Buffer) : undefined), // For Node.Js polyfills
+				globalBufferFrom: (types.isFunction(global.Buffer) && types.isFunction(global.Buffer.from) ? global.Buffer.from.bind(global.Buffer) : null), // For Node.Js polyfills
 				windowArrayBuffer: global.ArrayBuffer,
 				windowUint16Array: global.Uint16Array,
 				windowUint8Array: global.Uint8Array,
@@ -352,15 +343,6 @@ exports.add = function add(DD_MODULES) {
 								frame = null;
 							},
 						} : undefined);
-					} else if (_shared.Natives.windowSetImmediate && (delay <= 0)) { // IE 10
-						// Raised after events queue process
-						let id = _shared.Natives.windowSetImmediate(fn);
-						return (cancelable ? {
-							cancel: function cancel() {
-								_shared.Natives.windowClearImmediate(id);
-								id = null;
-							},
-						} : undefined);
 					} else if (_shared.Natives.windowRequestAnimationFrame && (delay <= 0)) {
 						// Raised just before page re-paint
 						let id = _shared.Natives.windowRequestAnimationFrame(fn);
@@ -540,7 +522,7 @@ exports.add = function add(DD_MODULES) {
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -552,17 +534,15 @@ exports.add = function add(DD_MODULES) {
 						description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableDomObjectsModel && _shared.Natives.windowWindow ? (function isWindow(obj) {
+			, function isWindow(obj) {
 				return types._instanceof(obj, _shared.Natives.windowWindow);
-			}) : (function isWindow(obj) {
-					return !!obj && (typeof obj === "object") && types.isNativeFunction(obj.setTimeout) && types.isNativeFunction(obj.focus);
-			}))));
+			}));
 
 			client.ADD('isDocument', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -574,17 +554,15 @@ exports.add = function add(DD_MODULES) {
 						description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableDomObjectsModel && _shared.Natives.windowHtmlDocument ? (function isDocument(obj) {
+			, function isDocument(obj) {
 				return types._instanceof(obj, _shared.Natives.windowHtmlDocument);
-			}) : (function isDocument(obj) {
-					return !!obj && (typeof obj === "object") && (obj.nodeType === 9) && (typeof obj.nodeName === "string");
-			}))));
+			}));
 
 			client.ADD('isNode', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -596,17 +574,15 @@ exports.add = function add(DD_MODULES) {
 						description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableDomObjectsModel && _shared.Natives.windowNode ? (function isNode(obj) {
+			, function isNode(obj) {
 				return types._instanceof(obj, _shared.Natives.windowNode);
-			}) : (function isNode(obj) {
-				return !!obj && (typeof obj === "object") && (+obj.nodeType === obj.nodeType) && (typeof obj.nodeName === "string");
-			}))));
+			}));
 
 			client.ADD('isElement', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'any',
@@ -618,11 +594,9 @@ exports.add = function add(DD_MODULES) {
 						description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
 			}
 			//! END_REPLACE()
-			, (__options__.enableDomObjectsModel && _shared.Natives.windowHtmlElement ? (function isElement(obj) {
+			, function isElement(obj) {
 				return types._instanceof(obj, _shared.Natives.windowHtmlElement);
-			}) : (function isElement(obj) {
-				return !!obj && (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.nodeName === "string");
-			}))));
+			}));
 				
 				
 			client.ADD('isEventTarget', root.DD_DOC(
@@ -644,7 +618,7 @@ exports.add = function add(DD_MODULES) {
 			, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
 				return types._instanceof(obj, _shared.Natives.windowEventTarget);
 			}) : (function isElement(obj) {
-					return client.isDocument(obj) || client.isElement(obj);
+				return client.isDocument(obj) || client.isElement(obj);
 			}))));
 				
 			client.ADD('getFirstElement', root.DD_DOC(

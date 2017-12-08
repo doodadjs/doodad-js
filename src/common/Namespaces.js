@@ -63,7 +63,7 @@ exports.add = function add(DD_MODULES) {
 			//===================================
 
 			tools.complete(_shared.Natives, {
-				symbolIterator: (types.isNativeFunction(global.Symbol) && (typeof global.Symbol.iterator === 'symbol') ? global.Symbol.iterator : undefined),
+				symbolIterator: global.Symbol.iterator,
 			});
 
 			//===================================
@@ -96,11 +96,9 @@ exports.add = function add(DD_MODULES) {
 				established: 2, e: 2,
 			})));
 				
-			if (_shared.Natives.symbolIterator) {
-				_shared.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
-					return __Internal__.DD_REGISTRY.iter();
-				}, {});
-			};
+			_shared.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
+				return __Internal__.DD_REGISTRY.iter();
+			}, {});
 
 			namespaces.ADD('iter', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")

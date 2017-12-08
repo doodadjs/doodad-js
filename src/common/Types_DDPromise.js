@@ -57,11 +57,10 @@ exports.add = function add(DD_MODULES) {
 			// Native functions
 			//===================================
 					
-			// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 			// NOTE: Store everything because third-parties can override them.
 				
 			tools.complete(_shared.Natives, {
-				windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
+				windowPromise: global.Promise,
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 			});
 				
@@ -116,18 +115,14 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 0,
+						revision: 1,
 						params: null,
 						returns: 'Promise',
 						description: "Returns the ES6 Promise class or a polyfill.",
 				}
 				//! END_REPLACE()
 				, function getPromise() {
-					const Promise = __Internal__.Promise;
-					if (!Promise) {
-						throw new types.NotSupported("ES6 Promises are not supported. You must include the polyfill 'es6-promise' or 'rsvp' in your project. You can also use another polyfill (see 'types.setPromise').");
-					};
-					return Promise;
+					return __Internal__.Promise;
 				}));
 
 			__Internal__.mergeCancelStates = function mergeCancelStates(promise1, promise2) {
@@ -669,7 +664,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							Promise: {
 								type: 'Promise',
@@ -714,17 +709,23 @@ exports.add = function add(DD_MODULES) {
 					if (types.isNativeFunction(Promise)) {
 						// ES6 Promise
 						// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
-						DDPromise = tools.eval(
-							"class DDPromise extends ctx.Promise {" +
-								"constructor(callback) {" +
-									"let res, rej;" +
-									"super(function(resolve, reject) {" +
-										"res = resolve;" +
-										"rej = reject;" +
-									"});" +
-									"ctx.DDPromiseConstructor.call(this, callback, res, rej);" +
-								"}" +
-							"}", {Promise: Promise, DDPromiseConstructor: __Internal__.DDPromiseConstructor});
+						DDPromise = (function(ctx) {
+							return (
+								class DDPromise extends ctx.Promise {
+									constructor(callback) {
+										let res, rej;
+										super(function(resolve, reject) {
+											res = resolve;
+											rej = reject;
+										});
+										ctx.DDPromiseConstructor.call(this, callback, res, rej);
+									}
+								}
+							);
+						})({
+							Promise: Promise, 
+							DDPromiseConstructor: __Internal__.DDPromiseConstructor,
+						});
 					} else {
 						// Librairies
 						const promiseCall = Promise.call.bind(Promise);
@@ -829,12 +830,7 @@ exports.add = function add(DD_MODULES) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
-				if (_shared.Natives.windowPromise) {
-					try {
-						types.setPromise(_shared.Natives.windowPromise);
-					} catch(ex) {
-					};
-				};
+				types.setPromise(_shared.Natives.windowPromise);
 			};
 		},
 	};

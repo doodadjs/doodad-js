@@ -134,8 +134,6 @@ exports.add = function add(DD_MODULES) {
 			// Native functions
 			//===================================
 					
-			// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
-
 			tools.complete(_shared.Natives, {
 				// Prototype functions
 				stringIndexOfCall: global.String.prototype.indexOf.call.bind(global.String.prototype.indexOf),
@@ -150,19 +148,17 @@ exports.add = function add(DD_MODULES) {
 				// Polyfills
 
 				// "sign"
-				mathSign: (types.isNativeFunction(global.Math.sign) ? global.Math.sign : undefined),
+				mathSign: global.Math.sign,
 
 				// "round", "floor"
-				mathPow: (types.isNativeFunction(global.Math.pow) ? global.Math.pow : undefined),
+				mathPow: global.Math.pow,
 
 				// "round"
-				mathRound: (types.isNativeFunction(global.Math.round) ? global.Math.round : undefined),
+				mathRound: global.Math.round,
 
 				// "floor"
-				mathFloor: (types.isNativeFunction(global.Math.floor) ? global.Math.floor : undefined),
+				mathFloor: global.Math.floor,
 
-				//windowComponents: (types.isNativeFunction(global.Components) ? global.Components : undefined),
-					
 				// ES5
 				stringRepeatCall: global.String.prototype.repeat.call.bind(global.String.prototype.repeat),
 				arrayIndexOfCall: global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf),

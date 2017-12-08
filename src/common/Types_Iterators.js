@@ -57,35 +57,18 @@ exports.add = function add(DD_MODULES) {
 					
 			tools.complete(_shared.Natives, {
 				// "hasIterators", "isIterable"
-				symbolIterator: (types.isNativeFunction(global.Symbol) && types.isSymbol(global.Symbol.iterator) ? global.Symbol.iterator : undefined),
+				symbolIterator: global.Symbol.iterator,
 			});
 
 			//===================================
 			// Iterators
 			//===================================
 
-			types.ADD('hasIterators', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'bool',
-							description: "Returns 'true' if Javascript supports iterators. Returns 'false' otherwise.",
-				}
-				//! END_REPLACE()
-				, (_shared.Natives.symbolIterator ? function hasIterators(obj) {
-					return true;
-				} : function hasIterators(obj) {
-					return false;
-				})));
-				
-				
 			types.ADD('isIterable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -97,14 +80,12 @@ exports.add = function add(DD_MODULES) {
 							description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, (_shared.Natives.symbolIterator ? function isIterable(obj) {
+				, function isIterable(obj) {
 					if (types.isNothing(obj)) {
 						return false;
 					};
 					return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
-				} : function isIterable(obj) {
-					return false;
-				})));
+				}));
 				
 				
 			// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
@@ -139,12 +120,10 @@ exports.add = function add(DD_MODULES) {
 						this._super();
 
 						// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
-						if (_shared.Natives.symbolIterator) {
-							const self = this;
-							_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
-								return self;
-							}, {});
-						};
+						const self = this;
+						_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
+							return self;
+						}, {});
 					}),
 
 					close: null, // function()
