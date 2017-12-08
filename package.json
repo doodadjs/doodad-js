@@ -12,7 +12,8 @@
       "nodeEnvDevValues": "development,dev",
       "enableSymbols": true,
       "enableProperties": false,
-      "enableAsserts": false
+      "enableAsserts": false,
+      "enableSafeObjects": false
     },
     "Doodad__Types": {
       "toSourceItemsCount": 255
@@ -35,7 +36,6 @@
       "publicOnDebug": false
     },
 	"Doodad__Client": {
-	  "enableDomObjectsModel": true,
 	  "defaultScriptTimeout": 10000
 	}
   },
