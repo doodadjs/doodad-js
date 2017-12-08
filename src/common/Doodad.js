@@ -5530,7 +5530,6 @@ exports.add = function add(DD_MODULES) {
 					
 				if (sourceImplements) {
 					//const isIsolated = types.isIsolated(source);
-					// <FUTURE> for (let item of sourceImplements)
 					sourceImplements.forEach(function(item) {
 						if (!types.isString(item)) {
 							const uuid = _shared.getUUID(item);
@@ -5560,15 +5559,7 @@ exports.add = function add(DD_MODULES) {
 
 								const impls = _shared.getAttribute(_interface, _shared.ImplementsSymbol).values();
 
-								let impl;
-									
-								// <FUTURE> for (let impl of impls)
-								while (impl = impls.next()) {
-									if (impl.done) {
-										break;
-									};
-									impl = impl.value;
-
+								for (let impl of impls) {
 									if (!types.isString(impl)) {
 										const uuid = _shared.getUUID(impl);
 
@@ -5673,12 +5664,7 @@ exports.add = function add(DD_MODULES) {
 
 								const impls = sourceData[_shared.ImplementsSymbol].values();
 
-								let impl;
-								while (impl = impls.next()) {
-									if (impl.done) {
-										break;
-									};
-									impl = impl.value;
+								for (let impl of impls) {
 									if (types.isIsolated(impl)) {
 										const uuid = _shared.getUUID(impl);
 
