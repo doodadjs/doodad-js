@@ -3263,7 +3263,7 @@ exports.add = function add(DD_MODULES) {
 
 				eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
 
-				return eventFn;
+				return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
 			}));
 				
 			//*********************************************
