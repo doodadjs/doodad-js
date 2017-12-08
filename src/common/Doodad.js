@@ -1483,11 +1483,11 @@ exports.add = function add(DD_MODULES) {
 							description: "Application error with title and message formatting.",
 				}
 				//! END_REPLACE()
-				, types.createErrorType('Application', types.Error, function _new(title, message, /*optional*/params) {
+				, types.createErrorType('Application', types.Error, function _super(title, message, /*optional*/params) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
-					this._this.title = title;
-					this.superArgs = [message, params];
-				})));
+					this.title = title;
+					return [message, params];
+				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ApplicationException')), true) */ null /*! END_REPLACE() */)));
 
 			doodad.ADD('trapException', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")

@@ -1615,14 +1615,14 @@ exports.add = function add(DD_MODULES) {
 			)));
 				
 
-			types.REGISTER(types.createErrorType("MissingDependencies", types.Error, function _new(missingDeps, modules) {
-				this._this.missingDeps = missingDeps;
-				this._this.modules = modules;
+			types.REGISTER(types.createErrorType("MissingDependencies", types.Error, function _super(missingDeps, modules) {
+				this.missingDeps = missingDeps;
+				this.modules = modules;
 				const names = tools.map(missingDeps, function(dep) {
 					return dep.module;
 				});
-				this.superArgs = ["Missing dependencies: ~0~.", [names.join(', ')]];
-			}, /*! REPLACE_BY(TO_SOURCE(UUID('MissingDependencies')), true) */ null /*! END_REPLACE() */));
+				return ["Missing dependencies: ~0~.", [names.join(', ')]];
+			}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('MissingDependencies')), true) */ null /*! END_REPLACE() */));
 
 
 
