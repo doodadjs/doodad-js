@@ -5908,7 +5908,7 @@ exports.add = function add(DD_MODULES) {
 						instanceProto._delete = typeProto._delete = proto._delete;
 					};
 					
-					const type = base.$inherit(
+					const newType = base.$inherit(
 						/*typeProto*/
 						typeProto,
 						
@@ -5921,16 +5921,14 @@ exports.add = function add(DD_MODULES) {
 						/*constructor*/
 						__Internal__.insideNew
 					);
+
+					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, newType));
+
+					_shared.setAttribute(proto, _shared.TypeSymbol, newType, {});
+
+					const newProto = newType.prototype;
 					
-					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, type));
-					
-					_shared.setAttribute(proto, _shared.TypeSymbol, type, {});
-
-					let values;
-
-					// Set values (NOTE: will be initialized in "_new")
-
-					values = {
+					const newTypeValues = {
 						[_shared.AttributesStorageSymbol]: typeStorage,
 						[_shared.AttributesSymbol]: destAttributes,
 						[_shared.BaseSymbol]: base,
@@ -5941,9 +5939,9 @@ exports.add = function add(DD_MODULES) {
 						[_shared.ToInitializeSymbol]: typeToInitialize,
 						[_shared.ToExtendLaterSymbol]: typeToExtendLater,
 					};
-					_shared.setAttributes(type, values, {configurable: true, direct: true});
+					_shared.setAttributes(newType, newTypeValues, {configurable: true, direct: true});
 
-					values = {
+					const newProtoValues = {
 						[_shared.AttributesStorageSymbol]: instanceStorage,
 						[_shared.AttributesSymbol]: destAttributes,
 						[_shared.BaseSymbol]: base,
@@ -5953,9 +5951,9 @@ exports.add = function add(DD_MODULES) {
 						[_shared.ToInitializeSymbol]: instanceToInitialize,
 						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
 					};
-					_shared.setAttributes(type.prototype, values, {configurable: true, direct: true});
+					_shared.setAttributes(newProto, newProtoValues, {configurable: true, direct: true});
 
-					return type;
+					return newType;
 
 				} else {
 					// Expandable objects
