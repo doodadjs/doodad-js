@@ -191,16 +191,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							return target;
 						};
 						if (!natives.objectHasOwnPropertyCall(target, property)) {
-							throw new _shared.Natives.windowTypeError("Unknown safe object attribute : " + natives.windowString(property));
+							throw new natives.windowTypeError("Unknown safe object attribute : " + natives.windowString(property));
 						};
 						return target[property];
 					},
 					set: function(target, property, value, receiver) {
 						if (property === _shared.TargetSymbol) {
-							throw new _shared.Natives.windowTypeError("The target symbol can't be set.");
+							throw new natives.windowTypeError("The target symbol can't be set.");
 						};
 						if (value === undefined) {
-							throw new _shared.Natives.windowTypeError("The attribute '" + natives.windowString(property) + "' was set to 'undefined'.");
+							throw new natives.windowTypeError("The attribute '" + natives.windowString(property) + "' was set to 'undefined'.");
 						};
 						target[property] = value;
 						return true;
