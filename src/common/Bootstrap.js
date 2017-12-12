@@ -3203,7 +3203,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 4,
+					revision: 5,
 					params: {
 						symbol: {
 							type: 'symbol',
@@ -3216,12 +3216,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function getSymbolKey(symbol) {
+			if (typeof symbol === 'object') {
+				symbol = symbol.valueOf();
+			};
 			if (!types.isSymbol(symbol)) {
 				return undefined;
 			};
-			const key = _shared.Natives.symbolKeyFor(symbol.valueOf());
+			const key = _shared.Natives.symbolKeyFor(symbol);
 			if (types.isNothing(key)) {
-				key = _shared.Natives.symbolToStringCall(symbol);
+				let key = _shared.Natives.symbolToStringCall(symbol);
 				__Internal__.extractSymbolKeyRegExp.lastIndex = 0;
 				key = __Internal__.extractSymbolKeyRegExp.exec(key);
 				return key && key[1];
@@ -3234,7 +3237,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 3,
+					revision: 4,
 					params: {
 						symbol: {
 							type: 'symbol',
@@ -3247,10 +3250,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function symbolIsGlobal(symbol) {
+			if (typeof symbol === 'object') {
+				symbol = symbol.valueOf();
+			};
 			if (!types.isSymbol(symbol)) {
 				return false;
 			};
-			return (_shared.Natives.symbolKeyFor(symbol.valueOf()) !== undefined);
+			return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
 		}));
 			
 	//===================================
