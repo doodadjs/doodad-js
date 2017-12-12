@@ -4366,7 +4366,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								const values = {
 									name: ctx.name,
 									message: this.message,
-									description: this.message,
 								};
 								_shared.setAttributes(this, values, {});
 							};
@@ -4451,7 +4450,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				name: name,
 				[_shared.Natives.symbolHasInstance]: undefined,
 				[__Internal__.symbolIsErrorType]: true,
-				[_shared.UUIDSymbol]: uuid,
+				[_shared.UUIDSymbol]: uuid || null,
 			};
 			_shared.setAttributes(type, typeValues, {});
 
@@ -4466,11 +4465,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}, instanceProto);
 
 			const protoValues = {
-				name: name,
+				//name: name,
 				[_shared.Natives.symbolToStringTag]: 'Error',
-				[_shared.UUIDSymbol]: uuid,
+				[_shared.UUIDSymbol]: uuid || null,
 			};
 			_shared.setAttributes(proto, protoValues, {});
+
+			proto.name = name;
 
 			return type;
 		}));
