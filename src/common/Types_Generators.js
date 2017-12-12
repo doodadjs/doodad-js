@@ -58,6 +58,8 @@ exports.add = function add(DD_MODULES) {
 			tools.complete(_shared.Natives, {
 				// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
 				functionIsGeneratorCall: (global.Function.prototype.isGenerator ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : null),
+
+				GeneratorFunction: types.getPrototypeOf(function*(){}).constructor,
 			});
 
 			//===================================
@@ -68,30 +70,9 @@ exports.add = function add(DD_MODULES) {
 			// <PRB> "Generator" looks like not having a class !!!
 			// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
-			try {
-				_shared.Natives.GeneratorFunction = types.getPrototypeOf(tools.eval("function*(){}")).constructor;
+			// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+			_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;
 
-				// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-				_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */ ;
-			} catch(ex) {
-			};
-
-			types.ADD('hasGenerators', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'bool',
-							description: "Returns 'true' if the engine supports generators. 'false' otherwise.",
-				}
-				//! END_REPLACE()
-				, (_shared.Natives.GeneratorFunction ? function hasGenerators() {
-					return true;
-				} : function hasGenerators() {
-					return false;
-				})));
-				
 			types.ADD('getGeneratorFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -110,7 +91,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'any',
@@ -124,17 +105,15 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, (_shared.Natives.functionIsGeneratorCall ? function isGeneratorFunction(obj) {
 					return _shared.Natives.functionIsGeneratorCall(obj);
-				} : (_shared.Natives.GeneratorFunction ? function isGeneratorFunction(obj) {
-					return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
 				} : function isGeneratorFunction(obj) {
-					return false;
-				}))));
+					return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
+				})));
 				
 			types.ADD('isGenerator', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 0,
+							revision: 1,
 							params: {
 								obj: {
 									type: 'any',
@@ -146,7 +125,7 @@ exports.add = function add(DD_MODULES) {
 							description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
 				}
 				//! END_REPLACE()
-				, (_shared.Natives.GeneratorFunction ? function isGenerator(obj) {
+				, function isGenerator(obj) {
 					if (types.isNothing(obj)) {
 						return false;
 					};
@@ -161,9 +140,7 @@ exports.add = function add(DD_MODULES) {
 						return false;
 					};
 					return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
-				} : function isGenerator(obj) {
-					return false;
-				})));
+				}));
 				
 
 			//===================================
