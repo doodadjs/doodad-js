@@ -105,10 +105,10 @@ exports.add = function add(DD_MODULES) {
 				//windowProxy: global.Proxy,
 
 				// "values"
-				objectValues: global.Object.values,
+				objectValues: (types.isFunction(global.Object.values) ? global.Object.values : null),
 					
 				// "entries"
-				objectEntries: global.Object.entries,
+				objectEntries: (types.isFunction(global.Object.entries) ? global.Object.entries : null),
 					
 				// "toArray"
 				arrayFrom: global.Array.from,
@@ -961,7 +961,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'object,arraylike',
@@ -974,11 +974,9 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function values(obj) {
-					if (types.isNothing(obj)) {
-						return [];
-					} else {
+					if (!types.isNothing(obj)) {
+						obj = _shared.Natives.windowObject(obj);
 						if (types.isArrayLike(obj)) {
-							obj = _shared.Natives.windowObject(obj);
 							const result = [];
 							const keys = types.keys(obj),
 								len = keys.length; // performance
@@ -986,17 +984,27 @@ exports.add = function add(DD_MODULES) {
 								result.push(obj[keys[i]]);
 							};
 							return result;
-						} else {
+						} else if (_shared.Natives.objectValues) {
 							return _shared.Natives.objectValues(obj);
+						} else {
+							const result = [];
+							const keys = types.keys(obj),
+ 								len = keys.length; // performance
+							for (let i = 0; i < len; i++) {
+								const key = keys[i];
+								result.push(obj[key]);
+							};
+							return result;
 						};
 					};
+					return [];
 				}));
 				
 			types.ADD('entries', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'any',
@@ -1009,12 +1017,21 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function entries(obj) {
-					if (types.isNothing(obj)) {
-						return [];
-					} else {
+					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
-						return _shared.Natives.objectEntries(obj);
+						if (_shared.Natives.objectEntries) {
+							return _shared.Natives.objectEntries(obj);
+						} else {
+							const result = [];
+							for (let key in obj) {
+								if (types.has(obj, key)) {
+									result.push([key, obj[key]]);
+								};
+							};
+							return result;
+						};
 					};
+					return [];
 				}));
 				
 			types.ADD('items', root.DD_DOC(
