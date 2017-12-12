@@ -1353,11 +1353,6 @@ exports.add = function add(DD_MODULES) {
 					
 															
 					
-				command = test.prepareCommand(types.hasIterators, "Doodad.Types.hasIterators");
-				command.run(hasIter, {repetitions: 100}                   /**/);
-				command.end();
-					
-					
 				command = test.prepareCommand(types.isIterable, "Doodad.Types.isIterable");
 				command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
 				command.run(false, {eval: true, repetitions: 100},        /**/ "null");
@@ -1445,10 +1440,6 @@ exports.add = function add(DD_MODULES) {
 				global.symbol && command.run(false, {eval: true, repetitions: 100},        /**/ "symbol");
 				command.end();
 					
-
-				command = test.prepareCommand(types.hasGenerators, "Doodad.Types.hasGenerators");
-				command.run(hasGen, {repetitions: 100}                    /**/);
-				command.end();
 
 				command = test.prepareCommand(types.isGeneratorFunction, "Doodad.Types.isGeneratorFunction");
 				command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
