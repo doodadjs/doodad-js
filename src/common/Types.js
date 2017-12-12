@@ -1038,7 +1038,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'object,arraylike',
@@ -1065,7 +1065,7 @@ exports.add = function add(DD_MODULES) {
 							};
 							return result;
 						} else {
-							return _shared.Natives.objectEntries(obj);
+							return types.entries(obj);
 						};
 					};
 				}));
