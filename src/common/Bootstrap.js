@@ -65,7 +65,7 @@ exports.generateCreateEval = function generateCreateEval() {
 	"})"
 };
 
-exports.createEval = eval(exports.generateCreateEval());
+exports.createEval = exports.eval(exports.generateCreateEval());
 
 
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
@@ -74,7 +74,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 	try {
 		if (typeof global.Event === 'function') {
-			_shared.Natives.functionToStringCall(global.Event);
+			global.Function.prototype.toString.call(global.Event);
 		};
 	} catch(ex) {
 		throw new global.Error("Browser version not supported.");
