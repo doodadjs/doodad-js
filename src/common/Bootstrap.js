@@ -4687,7 +4687,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						code: {
 							type: 'integer',
@@ -4711,7 +4711,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, types.createErrorType('HttpError', types.Error, function _super(code, message, /*optional*/params) {
 			this.code = code;
-			return [message, params];
+			return ['HTTP error. The status code is : ~0~.' || message, params || [code]];
 		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
