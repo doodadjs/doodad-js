@@ -5125,8 +5125,8 @@ exports.add = function add(DD_MODULES) {
 					if (!data) {
 						data = _isolated.get(uuid);
 					};
-					extendedAttributes = data[1];
-					destAttributes = data[2];
+					extendedAttributes = (forType ? data[1] : data[18]);
+					destAttributes = (forType ? data[2] : data[17]);
 					toInitialize = (forType ? data[13] : data[14]);
 					toExtendLater = (forType ? data[15] : data[16]);
 				};
@@ -5212,7 +5212,10 @@ exports.add = function add(DD_MODULES) {
 
 					if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 
-						if (extender.notInherited || (source === base) || !types._implements(destAttribute[_shared.PrototypeSymbol] && destAttribute[_shared.PrototypeSymbol][_shared.TypeSymbol], sourceAttribute[_shared.PrototypeSymbol] && sourceAttribute[_shared.PrototypeSymbol][_shared.TypeSymbol])) {
+						const sourceAttrProto = sourceAttribute[_shared.PrototypeSymbol];
+						const destAttrProto = destAttribute[_shared.PrototypeSymbol];
+
+						if (extender.notInherited || (source === base) || !types._implements(destAttrProto && destAttrProto[_shared.TypeSymbol], sourceAttrProto && sourceAttrProto[_shared.TypeSymbol])) {
 
 							if (sourceAttribute[_shared.WhenSymbol] || destAttribute[_shared.WhenSymbol]) {
 								const whenTypes = tools.unique(sourceAttribute[_shared.WhenSymbol], destAttribute[_shared.WhenSymbol]);
@@ -5310,53 +5313,48 @@ exports.add = function add(DD_MODULES) {
 				};
 			};
 				
-			__Internal__.extendSource = function extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources) {
-				let baseIsProto = false,
-					baseTypeAttributes,
-					baseInstanceAttributes;
+			__Internal__.extendSource = function extendSource(base, baseTypeAttributes, baseInstanceAttributes, source, sourceTypeAttributes, sourceInstanceAttributes, destTypeAttributes, destInstanceAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources) {
+				let baseIsProto = false;
 
-				//if (baseType) {
-					if (baseIsClass) {
-						// doodad-js Class / Class Object
-						baseTypeAttributes = baseInstanceAttributes = baseAttributes; //_shared.getAttribute(baseType, _shared.AttributesSymbol);
-					} else {
-						// doodad-js Type / JS Class
-						baseTypeAttributes = baseType;
-						baseInstanceAttributes = baseType.prototype;
-					};
-				//} else {
-				//	// Prototype
-				//	baseTypeProto = baseInstanceProto = base;
-				//	baseIsProto = true;
-				//};
+				if (!baseIsClass) {
+					// doodad-js Type / JS Class
+					baseTypeAttributes = baseType;
+					baseInstanceAttributes = baseType.prototype;
+				};
 					
 				let sourceIsProto = false,
 					sourceTypeProto,
 					sourceInstanceProto;
 
-				let sourceToExtend1 = null,
-					sourceToExtend2 = null,
-					sourceToExtend3 = null,
-					sourceToExtend4 = null;
+				let sourceTypeToExtend1 = null,
+					sourceTypeToExtend2 = null,
+					sourceInstanceToExtend1 = null,
+					sourceInstanceToExtend2 = null;
 
 				if (sourceIsClass) {
 					// doodad-js Class
 					sourceTypeProto = sourceInstanceProto = _shared.getAttribute(source, _shared.PrototypeSymbol);
-					sourceToExtend1 = types.keys(sourceAttributes);
-					sourceToExtend2 = types.symbols(sourceAttributes);
+					sourceTypeToExtend1 = types.keys(sourceTypeAttributes);
+					sourceTypeToExtend2 = types.symbols(sourceTypeAttributes);
+					sourceInstanceToExtend1 = types.keys(sourceInstanceAttributes);
+					sourceInstanceToExtend2 = types.symbols(sourceInstanceAttributes);
 				} else if (types.isFunction(source)) {
 					// doodad-js Type / JS class
 					sourceTypeProto = source;
 					sourceInstanceProto = source.prototype;
-					sourceToExtend1 = types.keys(sourceTypeProto);
-					sourceToExtend2 = types.symbols(sourceTypeProto);
-					sourceToExtend3 = types.keys(sourceInstanceProto);
-					sourceToExtend4 = types.symbols(sourceInstanceProto);
+					sourceTypeToExtend1 = types.keys(sourceTypeProto);
+					sourceTypeToExtend2 = types.symbols(sourceTypeProto);
+					sourceInstanceToExtend1 = types.keys(sourceInstanceProto);
+					sourceInstanceToExtend2 = types.symbols(sourceInstanceProto);
 				} else {
 					// Prototype
 					sourceTypeProto = sourceInstanceProto = source;
-					sourceToExtend1 = types.keys(source);
-					sourceToExtend2 = types.symbols(source);
+					const sourceKeys = types.keys(source);
+					const sourceSymbols = types.symbols(source);
+					sourceTypeToExtend1 = sourceKeys;
+					sourceTypeToExtend2 = sourceSymbols;
+					sourceInstanceToExtend1 = sourceKeys;
+					sourceInstanceToExtend2 = sourceSymbols;
 					sourceIsProto = true;
 				};
 					
@@ -5372,40 +5370,22 @@ exports.add = function add(DD_MODULES) {
 							continue;
 						};
 
-						if (isExtendLater) {
-							if (forType) {
-								const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseTypeAttributes, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, typeToInitialize, proto, protoName, _implements, typeToExtendLater, sources, true);
-								if (params) {
-									toExtend.push(params);
-								};
-							} else {
-								const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseInstanceAttributes, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, instanceToInitialize, proto, protoName, _implements, instanceToExtendLater, sources, true);
-								if (params) {
-									toExtend.push(params);
-								};
+						if (forType) {
+							const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseTypeAttributes, source, sourceTypeProto, sourceTypeAttributes, destTypeAttributes, baseIsProto, sourceIsProto, true, _isolated, typeExtendedAttributes, typeToInitialize, proto, protoName, _implements, typeToExtendLater, sources, isExtendLater);
+							if (params) {
+								toExtend.push(params);
 							};
 						} else {
-							if (baseIsType) {
-								//if (tools.indexOf(typeToExtendLater, attr) < 0) {
-									const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseTypeAttributes, source, sourceTypeProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, true, _isolated, extendedAttributes, typeToInitialize, proto, protoName, _implements, typeToExtendLater, sources, false);
-									if (params) {
-										toExtend.push(params);
-									};
-								//};
+							const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseInstanceAttributes, source, sourceInstanceProto, sourceInstanceAttributes, destInstanceAttributes, baseIsProto, sourceIsProto, false, _isolated, instanceExtendedAttributes, instanceToInitialize, proto, protoName, _implements, instanceToExtendLater, sources, isExtendLater);
+							if (params) {
+								toExtend.push(params);
 							};
-						
-							//if (tools.indexOf(instanceToExtendLater, attr) < 0) {
-								const params = __Internal__.preExtendAttribute(attr, base, baseIsClass, baseInstanceAttributes, source, sourceInstanceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, false, _isolated, extendedAttributes, instanceToInitialize, proto, protoName, _implements, instanceToExtendLater, sources, false);
-								if (params) {
-									toExtend.push(params);
-								};
-							//};
 						};
 					};
 
 					return toExtend;
 				};
-					
+
 				// Extend
 				const extendLoop = function _extendLoop(toExtend) {
 					const toExtendLen = toExtend.length;
@@ -5431,7 +5411,7 @@ exports.add = function add(DD_MODULES) {
 						destAttribute = destAttribute.setValue(result);
 						const newAttr = sourceIsProto && destAttribute[_shared.RenamedToSymbol];
 						if (newAttr) {
-							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName);
+							destAttribute = __Internal__.extendRenamed(attr, newAttr, source, sourceProto, (forType ? destTypeAttributes : destInstanceAttributes), forType, destAttribute, extender, proto, protoName);
 							attr = newAttr;
 						};
 						let overrideWith = sourceAttribute[_shared.OverrideWithSymbol];
@@ -5465,29 +5445,31 @@ exports.add = function add(DD_MODULES) {
 					toExtend3 = null,
 					toExtend4 = null;
 
-				if (sourceIsProto && typeToExtendLater) {
-					typeToExtend0 = preExtendLoop(typeToExtendLater, true, true);
+				if (sourceIsProto) {
+					if (typeToExtendLater) {
+						typeToExtend0 = preExtendLoop(typeToExtendLater, true, true);
+					};
+					if (instanceToExtendLater) {
+						instanceToExtend0 = preExtendLoop(instanceToExtendLater, true, false);
+					};
 				};
-				if (sourceIsProto && instanceToExtendLater) {
-					instanceToExtend0 = preExtendLoop(instanceToExtendLater, true, false);
+				if (sourceTypeToExtend1) {
+					toExtend1 = preExtendLoop(sourceTypeToExtend1, false, true);
 				};
-				if (sourceToExtend1) {
-					toExtend1 = preExtendLoop(sourceToExtend1, false, null);
+				if (sourceTypeToExtend2) {
+					toExtend2 = preExtendLoop(sourceTypeToExtend2, false, true);
 				};
-				if (sourceToExtend2) {
-					toExtend2 = preExtendLoop(sourceToExtend2, false, null);
+				if (sourceInstanceToExtend1) {
+					toExtend3 = preExtendLoop(sourceInstanceToExtend1, false, false);
 				};
-				if (sourceToExtend3) {
-					toExtend3 = preExtendLoop(sourceToExtend3, false, null);
-				};
-				if (sourceToExtend4) {
-					toExtend4 = preExtendLoop(sourceToExtend4, false, null);
+				if (sourceInstanceToExtend2) {
+					toExtend4 = preExtendLoop(sourceInstanceToExtend2, false, false);
 				};
 
-				if (sourceIsProto && typeToExtend0) {
+				if (typeToExtend0) {
 					extendLoop(typeToExtend0);
 				};
-				if (sourceIsProto && instanceToExtend0) {
+				if (instanceToExtend0) {
 					extendLoop(instanceToExtend0);
 				};
 				if (toExtend1) {
@@ -5504,7 +5486,7 @@ exports.add = function add(DD_MODULES) {
 				};
 			};
 				
-			__Internal__.addImplements = function addImplements(attributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceBase, sourceAttributes, sourceImplements, sourceIsolated, baseIsType, sourceTypeToInitialize, sourceInstanceToInitialize, sourceTypeToExtendLater, sourceInstanceToExtendLater) {
+			__Internal__.addImplements = function addImplements(_implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceBase, sourceTypeAttributes, sourceInstanceAttributes, sourceImplements, sourceIsolated, baseIsType, sourceTypeToInitialize, sourceInstanceToInitialize, sourceTypeToExtendLater, sourceInstanceToExtendLater) {
 				// Add new implement
 				_implements.add(source);
 
@@ -5512,10 +5494,6 @@ exports.add = function add(DD_MODULES) {
 				if (uuid) {
 					_implements.add(uuid);
 				};
-
-				//if (sourceAttributes) {
-				//	tools.complete(attributes, sourceAttributes);
-				//};
 
 				if (sourceBase) {
 					if (types.isInterface(sourceBase) || types.isMixIn(sourceBase)) {
@@ -5602,15 +5580,19 @@ exports.add = function add(DD_MODULES) {
 				});
 			};
 				
-			__Internal__.implementSource = function implementSource(base, baseAttributes, source, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources) {
-				const sourceType = types.getType(source),
-					sourceIsType = sourceType && types.isType(source),
-					sourceIsClass = sourceType && (types.isClass(sourceType) || types.isInterfaceClass(sourceType)),
-					sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME)),
-					sourceUUID = (sourceType ? _shared.getUUID(sourceType) : types.unbox(source.$TYPE_UUID));
+			__Internal__.implementSource = function implementSource(base, baseTypeAttributes, baseInstanceAttributes, source, destTypeAttributes, destInstanceAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources) {
+				const sourceType = types.getType(source);
 
-				if (!sourceIsClass || (!_implements.has(sourceType) && (!sourceUUID || !_implements.has(sourceUUID)))) {
-					if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
+				if (baseType && !types.baseof(sourceType, baseType)) { // prevents cyclic extend
+					const hasSourceType = !!sourceType,
+						sourceIsType = hasSourceType && types.isType(source),
+						sourceIsClass = hasSourceType && (types.isClass(sourceType) || types.isInterfaceClass(sourceType)),
+						sourceName = (sourceType ? types.getTypeName(sourceType) : types.unbox(source.$TYPE_NAME)),
+						sourceUUID = (sourceType ? _shared.getUUID(sourceType) : types.unbox(source.$TYPE_UUID)),
+						sourceHasUUID = !!sourceUUID,
+						isImplemented = sourceIsClass && (_implements.has(sourceType) || (sourceHasUUID && _implements.has(sourceUUID)));
+
+					if (!isImplemented) {
 						if (__Internal__.hasPolicies) {
 							if (sourceType !== baseType) {
 								//if (!baseIsBase && types.isBase(source)) {
@@ -5629,84 +5611,92 @@ exports.add = function add(DD_MODULES) {
 						};
 							
 						if (types.isIsolated(sourceType) && !types.isIsolated(baseType)) {
-							if (!_implements.has(sourceType) && (!sourceUUID || !_implements.has(sourceUUID))) {
-								const destImplements = _implements;
+							const destImplements = _implements;
 
-								destImplements.add(source);
-									
-								const sourceData = _shared.getAttributes(sourceType, [_shared.ImplementsSymbol, _shared.ToExtendLaterSymbol]);
+							const proto = {};
+							const protoName = (sourceName ? sourceName + '_Interface' : null);
+							base = doodad.Interface;
+							baseType = types.getType(base);
+							baseIsType = true;
+							baseIsClass = true;
+							baseIsBase = true;
+							baseIsMixIn = false;
+							baseIsInterface = false;
+							_implements = new types.Set();
+							typeStorage = tools.nullObject();
+							instanceStorage = tools.nullObject();
+							destTypeAttributes = tools.nullObject();
+							destInstanceAttributes = tools.nullObject();
+							typeExtendedAttributes = [];
+							instanceExtendedAttributes = [];
+							typeToInitialize = [];
+							instanceToInitialize = [];
+							typeToExtendLater = [];
+							instanceToExtendLater = [];
 
-								const proto = {};
-								const protoName = (sourceName ? sourceName + '_Interface' : null);
-								base = doodad.Interface;
-								baseType = base;
-								baseIsType = true;
-								baseIsClass = true;
-								_implements = new types.Set();
-								typeStorage = tools.nullObject();
-								instanceStorage = tools.nullObject();
-								destAttributes = tools.nullObject();
-								extendedAttributes = [];
-								typeToExtendLater = [];
-								instanceToInitialize = [];
-								typeToInitialize = [];
-								instanceToExtendLater = [];
+							// Will be passed later to "__Internal__.createType".
+							const data = [/*0*/ protoName, /*1*/ typeExtendedAttributes, /*2*/ destTypeAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater, /*17*/ destInstanceAttributes, /*18*/ instanceExtendedAttributes];
 
-								// Will be passed later to "__Internal__.createType".
-								const data = [/*0*/ protoName, /*1*/ extendedAttributes, /*2*/ destAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater];
+							const sourceData = _shared.getAttributes(source, [_shared.ImplementsSymbol]);
 
-								_isolated.set(source, data);
+							if (!destImplements.has(sourceType) && (!sourceHasUUID || !destImplements.has(sourceUUID))) {
+								destImplements.add(sourceType);
 
-								const uuid = _shared.getUUID(source);
-								if (uuid) {
-									_isolated.set(uuid, data);
+								if (sourceHasUUID) {
+									destImplements.add(sourceUUID);
 								};
+							};
 
-								const impls = sourceData[_shared.ImplementsSymbol].values();
+							_isolated.set(sourceType, data);
 
-								for (let impl of impls) {
-									if (types.isIsolated(impl)) {
-										const uuid = _shared.getUUID(impl);
+							if (sourceHasUUID) {
+								_isolated.set(sourceUUID, data);
+							};
 
-										if (!destImplements.has(impl) && (!uuid || !destImplements.has(uuid))) {
-											destImplements.add(impl);
+							for (let impl of sourceData[_shared.ImplementsSymbol].values()) {
+								if (types.isIsolated(impl)) {
+									const uuid = _shared.getUUID(impl);
 
-											if (uuid) {
-												destImplements.add(uuid);
-											};
-										};
-
-										_isolated.set(impl, data);
+									if (!destImplements.has(impl) && (!uuid || !destImplements.has(uuid))) {
+										destImplements.add(impl);
 
 										if (uuid) {
-											_isolated.set(uuid, data);
+											destImplements.add(uuid);
 										};
 									};
+
+									_isolated.set(impl, data);
+
+									if (uuid) {
+										_isolated.set(uuid, data);
+									};
 								};
-									
-								const baseData = _shared.getAttributes(base, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
-								baseAttributes = baseData[_shared.AttributesSymbol];
-
-								const baseInstanceData = _shared.getAttributes(base.prototype, [_shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
-
-								__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, base, baseData[_shared.BaseSymbol], baseAttributes, baseData[_shared.ImplementsSymbol], baseData[_shared.IsolatedSymbol], baseIsType, baseData[_shared.ToInitializeSymbol], baseInstanceData[_shared.ToInitializeSymbol], baseData[_shared.ToExtendLaterSymbol], baseInstanceData[_shared.ToExtendLaterSymbol]);
-
-								__Internal__.extendSource(base, baseAttributes, base, baseAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
 							};
+
+							const baseTypeData = _shared.getAttributes(baseType, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+							const baseInstanceData = _shared.getAttributes(baseType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+
+							baseTypeAttributes = baseTypeData[_shared.AttributesSymbol];
+							baseInstanceAttributes = baseInstanceData[_shared.AttributesSymbol];
+
+							__Internal__.addImplements(_implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, base, baseTypeData[_shared.BaseSymbol], baseTypeAttributes, baseInstanceAttributes, baseTypeData[_shared.ImplementsSymbol], baseTypeData[_shared.IsolatedSymbol], baseIsType, baseTypeData[_shared.ToInitializeSymbol], baseInstanceData[_shared.ToInitializeSymbol], baseTypeData[_shared.ToExtendLaterSymbol], baseInstanceData[_shared.ToExtendLaterSymbol]);
+							__Internal__.extendSource(base, baseTypeAttributes, baseInstanceAttributes, base, baseTypeAttributes, baseInstanceAttributes, destTypeAttributes, destInstanceAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
 						};
-							
-						let sourceAttributes = null;
 
-						if (sourceIsType && sourceIsClass) {
-							const sourceData = _shared.getAttributes(source, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
-							sourceAttributes = sourceData[_shared.AttributesSymbol];
+						let sourceTypeAttributes = null;
+						let sourceInstanceAttributes = null;
 
-							const sourceInstanceData = _shared.getAttributes(source.prototype, [_shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+						if (sourceIsClass) {
+							const sourceTypeData = _shared.getAttributes(sourceType, [_shared.BaseSymbol, _shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
+							const sourceInstanceData = _shared.getAttributes(sourceType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol]);
 
-							__Internal__.addImplements(destAttributes, _implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceData[_shared.BaseSymbol], sourceAttributes, sourceData[_shared.ImplementsSymbol], sourceData[_shared.IsolatedSymbol], baseIsType, sourceData[_shared.ToInitializeSymbol], sourceInstanceData[_shared.ToInitializeSymbol], sourceData[_shared.ToExtendLaterSymbol], sourceInstanceData[_shared.ToExtendLaterSymbol]);
+							sourceTypeAttributes = sourceTypeData[_shared.AttributesSymbol];
+							sourceInstanceAttributes = sourceInstanceData[_shared.AttributesSymbol];
+
+							__Internal__.addImplements(_implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceTypeData[_shared.BaseSymbol], sourceTypeAttributes, sourceInstanceAttributes, sourceTypeData[_shared.ImplementsSymbol], sourceTypeData[_shared.IsolatedSymbol], baseIsType, sourceTypeData[_shared.ToInitializeSymbol], sourceInstanceData[_shared.ToInitializeSymbol], sourceTypeData[_shared.ToExtendLaterSymbol], sourceInstanceData[_shared.ToExtendLaterSymbol]);
 						};
-							
-						__Internal__.extendSource(base, baseAttributes, source, sourceAttributes, destAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, extendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
+
+						__Internal__.extendSource(base, baseTypeAttributes, baseInstanceAttributes, source, sourceTypeAttributes, sourceInstanceAttributes, destTypeAttributes, destInstanceAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources);
 					};
 				};
 			};
@@ -5856,28 +5846,32 @@ exports.add = function add(DD_MODULES) {
 				for (let k = 0; k < extendedAttributes.length; k++) {
 					const attr = extendedAttributes[k];
 
-					let attribute = attributes[attr];
-						
-					const extender = attribute[_shared.ExtenderSymbol];
-					const newAttribute = extender.postExtend && extender.postExtend(attr, attributes, attribute) || attribute;
+					const attribute = attributes[attr];
+					if (attribute) {
+						const extender = attribute[_shared.ExtenderSymbol];
 
-					if (newAttribute !== attribute) {
-						attributes[attr] = attribute = newAttribute;
-					};
+						const newAttribute = extender.postExtend && extender.postExtend(attr, attributes, attribute) || attribute;
+
+						if (newAttribute !== attribute) {
+							attributes[attr] = newAttribute;
+						};
 						
-					types.freezeObject(attribute);
+						types.freezeObject(newAttribute);
+					};
 				};
 			};
 				
-			__Internal__.createType = function createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes) {
-				extendedAttributes = tools.unique(extendedAttributes);
+			__Internal__.createType = function createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destTypeAttributes, destInstanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes) {
+				typeExtendedAttributes = tools.unique(typeExtendedAttributes);
+				instanceExtendedAttributes = tools.unique(instanceExtendedAttributes);
 				//typeToInitialize = tools.unique(typeToInitialize, __Internal__.defaultTypeAttributesKeys, __Internal__.defaultTypeAttributesSymbols);
 				//instanceToInitialize = tools.unique(instanceToInitialize, __Internal__.defaultInstanceAttributesKeys, __Internal__.defaultInstanceAttributesSymbols);
 				typeToInitialize = tools.unique(typeToInitialize);
 				instanceToInitialize = tools.unique(instanceToInitialize);
 
 				// Post-Extend
-				__Internal__.postExtend(destAttributes, extendedAttributes);
+				__Internal__.postExtend(destTypeAttributes, typeExtendedAttributes);
+				__Internal__.postExtend(destInstanceAttributes, instanceExtendedAttributes);
 					
 				if (baseIsType) {
 					const typeProto = {},
@@ -5916,7 +5910,7 @@ exports.add = function add(DD_MODULES) {
 					
 					const newTypeValues = {
 						[_shared.AttributesStorageSymbol]: typeStorage,
-						[_shared.AttributesSymbol]: destAttributes,
+						[_shared.AttributesSymbol]: destTypeAttributes,
 						[_shared.BaseSymbol]: base,
 						[_shared.IsolatedSymbol]: _isolated,
 						[_shared.ImplementsSymbol]: _implements,
@@ -5929,11 +5923,9 @@ exports.add = function add(DD_MODULES) {
 
 					const newProtoValues = {
 						[_shared.AttributesStorageSymbol]: instanceStorage,
-						[_shared.AttributesSymbol]: destAttributes,
-						[_shared.BaseSymbol]: base,
+						[_shared.AttributesSymbol]: destInstanceAttributes,
 						[_shared.IsolatedSymbol]: _isolated,
 						[_shared.ImplementsSymbol]: _implements,
-						[_shared.PrototypeSymbol]: proto,
 						[_shared.ToInitializeSymbol]: instanceToInitialize,
 						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
 					};
@@ -5947,7 +5939,7 @@ exports.add = function add(DD_MODULES) {
 					// NOTE: If we need to extend the Type, don't forget to remove "EXPANDABLE" from "Object" and change the example in README.md.
 
 					if (instanceToInitialize.length) {
-						const initInstance = __Internal__.initializeAttributes(destAttributes, false, null, null, existingAttributes, instanceToInitialize);
+						const initInstance = __Internal__.initializeAttributes(destInstanceAttributes, false, null, null, existingAttributes, instanceToInitialize);
 						initInstance(base, instanceStorage);
 					};
 
@@ -5960,15 +5952,11 @@ exports.add = function add(DD_MODULES) {
 			};
 				
 			__Internal__.$extend = function $extend(/*paramarray*/...args) {
-				let base = ((this === global) ? undefined : this),
+				const base = ((this === global) ? undefined : this) || types.Type,
 					baseType = types.getType(base);
-				
-				root.DD_ASSERT && root.DD_ASSERT(!base || (baseType === types.Type) || types.baseof(types.Type, baseType), "Base must be a type.");
 
-				if (!base) {
-					base = types.Type;
-				};
-					
+				root.DD_ASSERT && root.DD_ASSERT((baseType === types.Type) || types.baseof(types.Type, baseType), "Base must be a type.");
+
 				const index = tools.findLastItem(args, types.isJsObject),
 					proto = (index !== null) && args[index] || {};
 					
@@ -5984,8 +5972,6 @@ exports.add = function add(DD_MODULES) {
 				//	throw new types.Error("Prototype has no name. You must define the '$TYPE_NAME' attribute.");
 				//};
 
-				baseType = types.getType(base);
-
 				const baseIsType = baseType && types.isType(base),
 					baseIsClass = baseType && (types.isClass(baseType) || types.isInterfaceClass(baseType)),
 					baseIsBase = baseIsClass && types.isBase(baseType),
@@ -5994,12 +5980,14 @@ exports.add = function add(DD_MODULES) {
 						
 				let _implements = null,
 					_isolated = null,
-					destAttributes = null,
+					destTypeAttributes = null,
+					destInstanceAttributes = null,
 					typeStorage,
 					instanceStorage,
 					typeToExtendLater = null,
 					instanceToExtendLater = null,
-					baseAttributes = null,
+					baseTypeAttributes = null,
+					baseInstanceAttributes = null,
 					modifiers = 0,
 					existingAttributes = null;
 
@@ -6010,7 +5998,8 @@ exports.add = function add(DD_MODULES) {
 
 					_implements = new types.Set();
 					_isolated = new types.Map();
-					destAttributes = tools.nullObject();
+					destTypeAttributes = tools.nullObject();
+					destInstanceAttributes = tools.nullObject();
 
 					typeStorage = tools.nullObject();
 					instanceStorage = tools.nullObject();
@@ -6022,11 +6011,15 @@ exports.add = function add(DD_MODULES) {
 						// Doodad Class
 
 						const baseTypeData = _shared.getAttributes(baseType, [_shared.AttributesSymbol, _shared.ModifiersSymbol]);
-
-						baseAttributes = baseTypeData[_shared.AttributesSymbol];
-
+						baseTypeAttributes = baseTypeData[_shared.AttributesSymbol];
 						//??? modifiers = (proto && types.unbox(proto[_shared.ModifiersSymbol]) || 0) | ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
 						modifiers = ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
+
+						const baseInstanceData = _shared.getAttributes(baseType.prototype, [_shared.AttributesSymbol]);
+						baseInstanceAttributes = baseInstanceData[_shared.AttributesSymbol];
+					} else {
+						baseTypeAttributes = baseType;
+						baseInstanceAttributes = baseType.prototype;
 					};
 
 				} else if (baseIsClass) {
@@ -6045,13 +6038,13 @@ exports.add = function add(DD_MODULES) {
 
 					const baseData = _shared.getAttributes(base, [_shared.AttributesSymbol, _shared.ImplementsSymbol, _shared.IsolatedSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol]);
 
-					destAttributes = baseData[_shared.AttributesSymbol];
+					destInstanceAttributes = baseData[_shared.AttributesSymbol];
 					_implements = baseData[_shared.ImplementsSymbol];
 					_isolated = baseData[_shared.IsolatedSymbol];
 					instanceStorage = baseData[_shared.AttributesStorageSymbol];
 					instanceToExtendLater = baseData[_shared.ToExtendLaterSymbol];
 
-					existingAttributes = tools.append(types.keys(destAttributes), types.symbols(destAttributes));
+					existingAttributes = tools.append(/*types.keys(destTypeAttributes), types.symbols(destTypeAttributes),*/ types.keys(destInstanceAttributes), types.symbols(destInstanceAttributes));
 
 					if (base._implements(mixIns.Creatable)) {
 						const injected = {
@@ -6065,20 +6058,22 @@ exports.add = function add(DD_MODULES) {
 
 					_implements = new types.Set();
 					_isolated = new types.Map();
-					destAttributes = tools.nullObject();
+					destTypeAttributes = tools.nullObject();
+					destInstanceAttributes = tools.nullObject();
 					typeStorage = tools.nullObject();
 					instanceStorage = tools.nullObject();
 					typeToExtendLater = [];
 					instanceToExtendLater = [];
 				}
 
-				const extendedAttributes = [];
+				const typeExtendedAttributes = [];
+				const instanceExtendedAttributes = [];
 				const typeToInitialize = [];
 				const instanceToInitialize = [];
 
 				// Implement base
 				if (baseIsClass && baseIsType) { // Doodad Class
-					__Internal__.implementSource(base, baseAttributes, base, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources);
+					__Internal__.implementSource(base, baseTypeAttributes, baseInstanceAttributes, base, destTypeAttributes, destInstanceAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources);
 				};
 
 				// Implement sources
@@ -6086,11 +6081,11 @@ exports.add = function add(DD_MODULES) {
 				for (let i = 0; i < sourcesLen; i++) {
 					const source = sources[i];
 					root.DD_ASSERT && root.DD_ASSERT(types.getType(source) || types.isJsObject(source));
-					__Internal__.implementSource(base, baseAttributes, source, destAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, extendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources);
+					__Internal__.implementSource(base, baseTypeAttributes, baseInstanceAttributes, source, destTypeAttributes, destInstanceAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources);
 				};
 
 				// Create and return extended version of "base"
-				const type = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destAttributes, extendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes);
+				const type = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destTypeAttributes, destInstanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes);
 
 				return type;
 			};
@@ -6520,8 +6515,6 @@ exports.add = function add(DD_MODULES) {
 								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
 								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
 								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
-								[_shared.PrototypeSymbol]: this.prototype[_shared.PrototypeSymbol],
-								[_shared.BaseSymbol]: this.prototype[_shared.BaseSymbol],
 								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
 								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
 							};
@@ -6669,8 +6662,8 @@ exports.add = function add(DD_MODULES) {
 
 						if (!_interface) {
 							const protoName = data[0],
-								extendedAttributes = data[1],
-								attributes = data[2],
+								typeExtendedAttributes = data[1],
+								typeAttributes = data[2],
 								typeStorage = data[4],
 								instanceStorage = data[5],
 								base = data[7],
@@ -6684,9 +6677,11 @@ exports.add = function add(DD_MODULES) {
 								typeToInitialize = data[13],
 								instanceToInitialize = data[14],
 								typeToExtendLater = data[15],
-								instanceToExtendLater = data[16];
+								instanceToExtendLater = data[16],
+								instanceAttributes = data[17],
+								instanceExtendedAttributes = data[18];
 
-							_interface = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, attributes, extendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, null);
+							_interface = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, typeAttributes, instanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, null);
 
 							_interface = types.INIT(_interface, [cls]);
 
@@ -6995,8 +6990,6 @@ exports.add = function add(DD_MODULES) {
 								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
 								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
 								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
-								[_shared.PrototypeSymbol]: this.prototype[_shared.PrototypeSymbol],
-								[_shared.BaseSymbol]: this.prototype[_shared.BaseSymbol],
 								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
 								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
 							};
