@@ -8690,7 +8690,7 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							value: {
 								type: 'any',
@@ -8834,7 +8834,7 @@ exports.add = function add(DD_MODULES) {
 								const tmp = new cls();
 								tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 									if (types.has(value, key)) {
-										tmp[key] = this.$unpack(value[key]);
+										_shared.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true});
 									};
 								}, this);
 								value = tmp;
