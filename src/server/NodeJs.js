@@ -1129,7 +1129,7 @@ exports.add = function add(DD_MODULES) {
 							const path = parent.combine(names[index]);
 							const pathStr = path.toApiString();
 							const promise = unlink(pathStr);
-							return (cancelable ? state.cancelable.race(promise) : promise)
+							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function manageUnlinkResult(err, dummy) {
 									if (err) {
 										if (err.code === 'ENOENT') {
@@ -1695,7 +1695,7 @@ exports.add = function add(DD_MODULES) {
 												});
 										};
 									});
-								return (cancelable ? state.cancelable.race(promise) : promise);
+								return (state.cancelable ? state.cancelable.race(promise) : promise);
 							};
 
 							const copyFile = function _copyFile(stats) {
@@ -1753,7 +1753,7 @@ exports.add = function add(DD_MODULES) {
 											});
 									};
 								});
-								return (cancelable ? state.cancelable.race(promise) : promise);
+								return (state.cancelable ? state.cancelable.race(promise) : promise);
 							};
 
 							const copyDirectory = function _copyDirectory(stats) {
@@ -1997,7 +1997,7 @@ exports.add = function add(DD_MODULES) {
 							const name = names[index],
 								path = parent.combine(name);
 							const promise = getStats(path.toApiString());
-							return (cancelable ? state.cancelable.race(promise) : promise)
+							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function thenAddAndProceed(err, stats) {
 									if (err) {
 										if (!skipOnDeniedPermission || (err.code !== 'EPERM')) {
@@ -2020,7 +2020,7 @@ exports.add = function add(DD_MODULES) {
 					const proceed = function proceed(result, path, base, depth) {
 						if (depth >= 0) {
 							const promise = readDir(path.toApiString());
-							return (cancelable ? state.cancelable.race(promise) : promise)
+							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.then(function thenParseNames(names) {
 									return parseNames(result, path, base, names, 0, depth);
 								});
