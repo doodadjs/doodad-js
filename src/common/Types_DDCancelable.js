@@ -127,9 +127,10 @@ exports.add = function add(DD_MODULES) {
 							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'wait' callback.");
 							root.DD_ASSERT(types.isJsFunction(cancelCb), "Invalid 'cancel' callback.");
 						};
-// root.Doodad.Tools.Files.readdirAsync('F:\\VM\\doodad.bak',{timeout:5000});
-// root.Doodad.Tools.Files.readdirAsync('F:\\VM\\doodad.bak',{cancelable:true}).then(cancelable => cancelable.start());
-// root.Doodad.Tools.Files.readdirAsync('F:\\VM\\doodad.bak',{cancelable:true, timeout: 5000}).then(cancelable => cancelable.start());
+// root.Doodad.Tools.Files.readdirAsync('F:\\',{timeout:5000,depth:Infinity});
+// root.Doodad.Tools.Files.readdirAsync('F:\\',{cancelable:true,depth:Infinity}).then(cancelable => cancelable.start());
+// root.Doodad.Tools.Files.readdirAsync('F:\\',{cancelable:true, timeout:5000,depth:Infinity}).then(cancelable => cancelable.start());
+// tools.Files.readdirAsync('F:\\',{cancelable:true,depth:Infinity}).then(toto => {tools.callAsync(()=>toto.cancel(), 1000); return toto.start()});
 						state.startCb = startCb;
 						state.cancelCb = cancelCb;
 
@@ -148,7 +149,7 @@ exports.add = function add(DD_MODULES) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryStart() {
 								const state = __Internal__.cancelableStates.get(this);
-								const startCb = state && state.startCb;
+								const startCb = state.startCb;
 								let promise = null;
 								if (startCb) {
 									state.startCb = null;
@@ -171,30 +172,28 @@ exports.add = function add(DD_MODULES) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryCancel() {
 								const state = __Internal__.cancelableStates.get(this);
-								if (state) {
-									if (types.isNothing(reason)) {
-										reason = new types.OperationCanceled("Cancelable object '~0~' has been canceled.", [this.name || '<anonymous>']);
-									};
-									const cancelCb = !state.startCb && state.cancelCb;
-									if (cancelCb) {
-										state.cancelCb = null;
-										return Promise.try(cancelCb)
-											.then(function thenReturnRacer() {
-												return state.rejectCb(reason);
-											}, null, this)
-											.catch(function(err) {
-												if (err !== reason) {
-													throw err;
-												};
-											});
-									} else {
-										return state.rejectCb(reason)
-											.catch(function(err) {
-												if (err !== reason) {
-													throw err;
-												};
-											});
-									};
+								if (types.isNothing(reason)) {
+									reason = new types.CanceledError("Cancelable object '~0~' has been canceled.", [this.name || '<anonymous>']);
+								};
+								const cancelCb = !state.startCb && state.cancelCb;
+								if (cancelCb) {
+									state.cancelCb = null;
+									return Promise.try(cancelCb)
+										.then(function thenReturnRacer() {
+											return state.rejectCb(reason);
+										}, null, this)
+										.catch(function(err) {
+											if (err !== reason) {
+												throw err;
+											};
+										});
+								} else {
+									return state.rejectCb(reason)
+										.catch(function(err) {
+											if (err !== reason) {
+												throw err;
+											};
+										});
 								};
 							}, this);
 					},
@@ -203,9 +202,7 @@ exports.add = function add(DD_MODULES) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryRace() {
 								const state = __Internal__.cancelableStates.get(this);
-								if (state) {
-									return state.getRacer().race(promise);
-								};
+								return state.getRacer().race(promise);
 							}, this);
 					},
 
