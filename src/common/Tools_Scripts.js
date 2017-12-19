@@ -229,7 +229,7 @@ exports.add = function add(DD_MODULES) {
 									const promise = result.value[0],
 										val = result.value[1];
 									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
-										tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || '<anonymous>'));
+										tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || "<anonymous>") + ". You can enable Node.js's '--trace-warnings' flag to get more details.");
 										if (val.reason) {
 											tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
 										};
