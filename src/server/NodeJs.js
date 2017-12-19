@@ -1192,7 +1192,7 @@ exports.add = function add(DD_MODULES) {
 							});
 					};
 
-					const startCb = function _startCb() {
+					const startCb = function startRmdirAsync() {
 						return proceed(path)
 							.nodeify(function(err, result) {
 								if (state.timeoutId) {
@@ -1799,7 +1799,7 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const startCb = function _startCb() {
+					const startCb = function startCopyAsync() {
 						return copyInternal(source, destination)
 							.nodeify(function(err, result) {
 								if (state.timeoutId) {
@@ -2028,7 +2028,7 @@ exports.add = function add(DD_MODULES) {
 						return result;
 					};
 
-					const startCb = function _startCb() {
+					const startCb = function startReaddirAsync() {
 						return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth)
 							.nodeify(function(err, result) {
 								if (state.timeoutId) {
