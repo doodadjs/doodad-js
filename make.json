@@ -125,6 +125,12 @@
       "browserify": true
     },
     {
+      "src": "common/Types_DDCancelable.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Types_UUIDS.js",
       "client": true,
       "server": true,

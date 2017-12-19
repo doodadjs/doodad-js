@@ -49,7 +49,6 @@ exports.add = function add(DD_MODULES) {
 			const __Internal__ = {
 				Promise: null,
 				symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_PROMISE_EXTENDED')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
-				symbolPromiseCancelState: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROMISE_CANCEL_STATE')), true) */ '__DD_PROMISE_CANCEL_STATE__' /*! END_REPLACE() */, true),
 			};
 
 				
@@ -124,26 +123,6 @@ exports.add = function add(DD_MODULES) {
 				, function getPromise() {
 					return __Internal__.Promise;
 				}));
-
-			__Internal__.mergeCancelStates = function mergeCancelStates(promise1, promise2) {
-				const state1 = promise1[__Internal__.symbolPromiseCancelState] || {callbacks: [], canceled: false, reason: false};
-				const state2 = promise2[__Internal__.symbolPromiseCancelState] || {callbacks: [], canceled: false, reason: false};
-				if (state2 !== state1) {
-					if (state2.callbacks !== state1.callbacks) {
-						state2.callbacks = state1.callbacks = tools.append(state1.callbacks, state2.callbacks);
-						//state1.callbacks = state2.callbacks = tools.unique(state1.callbacks, state2.callbacks);
-					};
-					if (state2.canceled && !state1.canceled) {
-						state1.canceled = true;
-						state1.reason = state2.reason;
-					} else if (state1.canceled && !state2.canceled) {
-						state2.canceled = true;
-						state2.reason = state1.reason;
-					};
-					promise2[__Internal__.symbolPromiseCancelState] = state1;
-				};
-				return state1;
-			};
 
 			__Internal__.getPromiseName = function getPromiseName(callback) {
 				let original;
@@ -287,6 +266,7 @@ exports.add = function add(DD_MODULES) {
 						state.res = null;
 						state.rej = null;
 						res(value);
+						return this;
 					};
 					racer.reject = function reject(err) {
 						const rej = state.rej;
@@ -296,6 +276,7 @@ exports.add = function add(DD_MODULES) {
 						state.res = null;
 						state.rej = null;
 						rej(err);
+						return this;
 					};
 					racer.race = function race(promise) {
 						if (types.isNothing(promise)) {
@@ -314,30 +295,6 @@ exports.add = function add(DD_MODULES) {
 						return !state.res || !state.rej;
 					};
 					return racer;
-				};
-
-				// NOTE: Experimental
-				// Add "cancel"
-				const oldResolveCall = Promise.resolve.call.bind(Promise.resolve);
-				Promise.resolve = function _resolve(value) {
-					const P = this || Promise;
-					const promise = oldResolveCall(P, value);
-					if (types.isPromise(value)) {
-						__Internal__.mergeCancelStates(promise, value);
-					};
-					return promise;
-				};
-
-				// NOTE: Experimental
-				// Add "cancel"
-				const oldRejectCall = Promise.reject.call.bind(Promise.reject);
-				Promise.reject = function _reject(value) {
-					const P = this || Promise;
-					const promise = oldRejectCall(P, value);
-					if (types.isPromise(value)) {
-						__Internal__.mergeCancelStates(promise, value);
-					};
-					return promise;
 				};
 
 				// Add "thisObj" argument
@@ -418,7 +375,6 @@ exports.add = function add(DD_MODULES) {
 
 				// Add "thisObj" argument
 				// Add promise name
-				// Add "cancel" // Experimental
 				const oldThenCall = Promise.prototype.then.call.bind(Promise.prototype.then);
 				Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 					if (!thisObj && !types.isFunction(rejectedCb)) {
@@ -431,41 +387,27 @@ exports.add = function add(DD_MODULES) {
 					if (rejectedCb && thisObj) {
 						rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
 					};
-					let promise;
-					const merge = function _merge(cb) {
-						return function(result) {
-							result = cb(result);
-							if (types.isPromise(result)) {
-								__Internal__.mergeCancelStates(promise, result);
-							};
-							return result;
-						};
-					};
-					const res = resolvedCb && merge(resolvedCb);
-					const rej = rejectedCb && merge(rejectedCb);
-					promise = oldThenCall(this, res, rej);
+					const promise = oldThenCall(this, resolvedCb, rejectedCb);
 					let name = this[_shared.NameSymbol];
-					if (res) {
+					if (resolvedCb) {
 						resolvedCb.promise = promise;
 						if (!name) {
 							name = __Internal__.getPromiseName(resolvedCb);
 						};
 					};
-					if (rej) {
+					if (rejectedCb) {
 						rejectedCb.promise = promise;
 						if (!name) {
 							name = __Internal__.getPromiseName(rejectedCb);
 						};
 					};
 					promise[_shared.NameSymbol] = name;
-					__Internal__.mergeCancelStates(this, promise);
 					return promise;
 				};
 					
 				// Add "thisObj" argument
 				// Add promise name
 				// Add Bluebird polyfill for catch (must be done there).
-				// Add "cancel" // Experimental
 				// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 				// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
 				const oldCatchCall = Promise.prototype.catch.call.bind(Promise.prototype.catch);
@@ -487,13 +429,6 @@ exports.add = function add(DD_MODULES) {
 						callback = _shared.PromiseCallback(thisObj, callback);
 					};
 					let promise;
-					const catchCb = function(result) {
-						result = callback && callback(result);
-						if (types.isPromise(result)) {
-							__Internal__.mergeCancelStates(promise, result);
-						};
-						return result;
-					};;
 					if (filters) {
 						// Usage: .catch(IOError, NetworkError, {code: 'ENOENTITY'}, ..., function(err){...}, this)
 						promise = oldCatchCall(this, function filterCatch(ex) {
@@ -521,13 +456,13 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 							if (ok) {
-								return catchCb(ex);
+								return callback(ex);
 							} else {
 								throw ex;
 							};
 						});
 					} else {
-						promise = oldCatchCall(this, catchCb);
+						promise = oldCatchCall(this, callback);
 					};
 					if (callback) {
 						callback.promise = promise;
@@ -535,13 +470,11 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 					};
-					__Internal__.mergeCancelStates(this, promise);
 					return promise;
 				};
 					
 				// Add "thisObj" argument
 				// Add promise name
-				// Add "cancel"
 				const oldAsCallbackCall = Promise.prototype.asCallback.call.bind(Promise.prototype.asCallback);
 				Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(callback, /*optional*/thisObj) {
 					if (callback && thisObj) {
@@ -550,13 +483,11 @@ exports.add = function add(DD_MODULES) {
 					const promise = oldAsCallbackCall(this, callback);
 					callback.promise = promise;
 					promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
-					__Internal__.mergeCancelStates(this, promise);
 					return promise;
 				};
 					
 				// Add "thisObj" argument
 				// Add promise name
-				// Add "cancel"
 				const oldFinallyCall = Promise.prototype.finally.call.bind(Promise.prototype.finally);
 				Promise.prototype.finally = function _finally(/*optional*/callback, /*optional*/thisObj) {
 					if (callback && thisObj) {
@@ -569,7 +500,6 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						promise[_shared.NameSymbol] = this[_shared.NameSymbol];
 					};
-					__Internal__.mergeCancelStates(this, promise);
 					return promise;
 				};
 
@@ -581,75 +511,25 @@ exports.add = function add(DD_MODULES) {
 								return callback.call(thisObj, result, resolve, reject);
 							}, thisObj);
 						}, null, thisObj);
-					__Internal__.mergeCancelStates(this, promise);
 					return promise;
 				};
-
-				// Experimental
-				Promise.prototype.addCancel = function _addCancel(callback) {
-					if (!types.isFunction(callback)) {
-						throw new types.TypeError("Invalid cancel function.");
-					};
-					const state = this[__Internal__.symbolPromiseCancelState];
-					if (state.canceled) {
-						callback(state.reason);
-					} else {
-						const callbacks = state.callbacks;
-						if (tools.indexOf(callbacks, callback) < 0) {
-							callbacks.push(callback);
-						};
-					};
-				};
-				Promise.prototype.cancel = function _cancel(/*optional*/reason) {
-					const state = this[__Internal__.symbolPromiseCancelState];
-					if (!state.canceled) {
-						state.canceled = true;
-						reason = (types.isNothing(reason) ? new types.CanceledError() : reason);
-						state.reason = reason;
-						const callbacks = state.callbacks;
-						if (types.isArrayAndNotEmpty(callbacks)) {
-							let err = null;
-							tools.forEach(callbacks, function(callback) {
-								try {
-									callback(reason);
-								} catch(o) {
-									err = o;
-								};
-							});
-							if (err) {
-								throw err;
-							};
-						};
-					};
-				};
 			};
-				
+
 			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject) {
 				const Promise = this;
 				let solved = false;
-				const self = this;
+				//const self = this;
 				const res = function(value) {
 					if (!solved) {
 						solved = true;
-						if (types.isPromise(value)) {
-							__Internal__.mergeCancelStates(self, value);
-						};
 						resolve(value);
 					};
 				};
 				const rej = function(value) {
 					if (!solved) {
 						solved = true;
-						if (types.isPromise(value)) {
-							__Internal__.mergeCancelStates(self, value);
-						};
 						reject(value);
 					};
-				};
-				this[__Internal__.symbolPromiseCancelState] = {
-					callbacks: [],
-					canceled: false,
-					reason: null,
 				};
 				try {
 					callback(res, rej);

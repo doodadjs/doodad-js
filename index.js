@@ -42,6 +42,7 @@ module.exports = {
 		require(sourceDir + "common/Types_Iterators.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_HttpStatus.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_DDPromise.js").add(DD_MODULES);
+		require(sourceDir + "common/Types_DDCancelable.js").add(DD_MODULES);
 		require(sourceDir + "common/Types_Buffers.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools.js").add(DD_MODULES);
 		require(sourceDir + "common/Tools_Files.js").add(DD_MODULES);
