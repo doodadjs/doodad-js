@@ -24,6 +24,15 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+
+// Examples :
+//			root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
+//			root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => cancelable.start());
+//			root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, timeout: 5000, depth:Infinity}).then(cancelable => cancelable.start());
+//			tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => {tools.callAsync(() => cancelable.cancel(), 1000); return cancelable.start()});
+
+
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Doodad.Types/DDCancelable'] = {
@@ -78,7 +87,7 @@ exports.add = function add(DD_MODULES) {
 				{
 					name: types.READ_ONLY( null ),
 
-					_new: types.SUPER(function _new(callback, /*optional*/name) {
+					_new: types.SUPER(function _new(callback) {
 						this._super();
 
 						const state = {};
@@ -121,16 +130,13 @@ exports.add = function add(DD_MODULES) {
 							cancelCb: null,
 						});
 
-						const { startCb, cancelCb } = callback(state.resolveCb, state.rejectCb);
+						const { startCb, cancelCb, name = null } = callback(state.resolveCb, state.rejectCb);
 
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'start' callback.");
 							root.DD_ASSERT(types.isJsFunction(cancelCb), "Invalid 'cancel' callback.");
 						};
-// root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
-// root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => cancelable.start());
-// root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, timeout: 5000, depth:Infinity}).then(cancelable => cancelable.start());
-// tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => {tools.callAsync(() => cancelable.cancel(), 1000); return cancelable.start()});
+
 						state.startCb = startCb;
 						state.cancelCb = cancelCb;
 
