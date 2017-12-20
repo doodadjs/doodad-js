@@ -124,13 +124,13 @@ exports.add = function add(DD_MODULES) {
 						const { startCb, cancelCb } = callback(state.resolveCb, state.rejectCb);
 
 						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'wait' callback.");
+							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'start' callback.");
 							root.DD_ASSERT(types.isJsFunction(cancelCb), "Invalid 'cancel' callback.");
 						};
-// root.Doodad.Tools.Files.readdirAsync('F:\\',{timeout:5000,depth:Infinity});
-// root.Doodad.Tools.Files.readdirAsync('F:\\',{cancelable:true,depth:Infinity}).then(cancelable => cancelable.start());
-// root.Doodad.Tools.Files.readdirAsync('F:\\',{cancelable:true, timeout:5000,depth:Infinity}).then(cancelable => cancelable.start());
-// tools.Files.readdirAsync('F:\\',{cancelable:true,depth:Infinity}).then(toto => {tools.callAsync(()=>toto.cancel(), 1000); return toto.start()});
+// root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
+// root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => cancelable.start());
+// root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, timeout: 5000, depth:Infinity}).then(cancelable => cancelable.start());
+// tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => {tools.callAsync(() => cancelable.cancel(), 1000); return cancelable.start()});
 						state.startCb = startCb;
 						state.cancelCb = cancelCb;
 
