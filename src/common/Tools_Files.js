@@ -388,7 +388,7 @@ exports.add = function add(DD_MODULES) {
 						return (tools.indexOf(__Internal__.pathSetExcludedKeys, key) < 0);
 					});
 				
-			files.ADD('Path', root.DD_DOC(
+			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1074,7 +1074,11 @@ exports.add = function add(DD_MODULES) {
 									isNull: !host && !drive && (!root || !root.length) && (!path || !path.length) && !file,
 								});
 							}),
-								
+
+						fromJSON: function fromJSON(value) {
+							return this.parse(null, value);
+						},
+
 					},
 					/*instanceProto*/
 					tools.extend({
@@ -1605,7 +1609,7 @@ exports.add = function add(DD_MODULES) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: {
 										options: {
 											type: 'object',
@@ -1618,31 +1622,38 @@ exports.add = function add(DD_MODULES) {
 							}
 							//! END_REPLACE()
 							, function toDataObject(/*optional*/options) {
+								const type = types.getType(this);
+								const functions = types.get(options, 'functions', false);
+
 								const obj = tools.nullObject();
 
 								tools.fill(__Internal__.pathDataKeys, obj, this, options);
 
-								const type = types.getType(this);
-
-								obj.toPath = function toPath(/*optional*/options) {
-									if (options) {
-										return type.parse(null, tools.extend({}, this, options));
-									} else {
-										return type.parse(null, this);
+								if (functions) {
+									obj.toPath = function toPath(/*optional*/options) {
+										if (options) {
+											return type.parse(null, tools.extend({}, this, options));
+										} else {
+											return type.parse(null, this);
+										};
 									};
-								};
 
-								obj.toString = function toString(/*optional*/options) {
-									return this.toPath(options).toString()
-								};
+									obj.toString = function toString(/*optional*/options) {
+										return this.toPath(options).toString();
+									};
 
-								obj.toApiString = function toString(/*optional*/options) {
-									return this.toPath(options).toApiString()
+									obj.toApiString = function toString(/*optional*/options) {
+										return this.toPath(options).toApiString();
+									};
 								};
 
 								return obj;
 							}),
 
+						// NOTE: 'toJSON' is a documented function for "JSON.stringify".
+						toJSON: function toJSON(key) {
+							return this.toDataObject(null);
+						},
 					}, __Internal__.pathOptions)
 				)));
 				
@@ -1661,7 +1672,7 @@ exports.add = function add(DD_MODULES) {
 				};
 			};
 
-			files.ADD('UrlArguments', root.DD_DOC(
+			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -1765,6 +1776,11 @@ exports.add = function add(DD_MODULES) {
 									
 								return new this(args, options);
 							}),
+
+						fromJSON: function fromJSON(value) {
+							return this.parse(null, value);
+						},
+
 					},
 					/*instanceProto*/
 					{
@@ -1781,18 +1797,21 @@ exports.add = function add(DD_MODULES) {
 							_shared.setAttribute(this, '__args', types.freezeObject(args), {});
 						}),
 							
-						__toDataObject: root.DD_DOC(
+						toDataObject: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: null,
 									returns: 'object',
-									description: "INTERNAL",
+									description: "Converts to a normal Javascript object.",
 							}
 							//! END_REPLACE()
-							, function __toDataObject() {
-								return tools.reduce(this.__args, function(result, arg) {
+							, function toDataObject() {
+								const type = types.getType(this);
+								const functions = types.get(options, 'functions', false);
+
+								const obj = tools.reduce(this.__args, function(result, arg) {
 									if (arg.name) {
 										if (arg.name in result) {
 											const item = result[arg.name];
@@ -1808,34 +1827,25 @@ exports.add = function add(DD_MODULES) {
 
 									return result;
 
-								}, tools.nullObject())
-							}),
+								}, tools.nullObject());
 
-						toDataObject: root.DD_DOC(
-							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-									author: "Claude Petit",
-									revision: 0,
-									params: null,
-									returns: 'object',
-									description: "Converts to a normal Javascript object.",
-							}
-							//! END_REPLACE()
-							, function toDataObject() {
-								const type = types.getType(this);
+								if (functions) {
+									obj.toUrlArguments = function toUrlArguments() {
+										return type.parse(null, this);
+									};
 
-								const obj = this.__toDataObject();
-
-								obj.toUrlArguments = function toUrlArguments() {
-									return type.parse(null, this);
-								};
-
-								obj.toString = function toString() {
-									return this.toUrlArguments().toString();
+									obj.toString = function toString() {
+										return this.toUrlArguments().toString();
+									};
 								};
 
 								return obj;
 							}),
+
+						// NOTE: 'toJSON' is a documented function for "JSON.stringify".
+						toJSON: function toJSON(key) {
+							return this.toDataObject(null);
+						},
 
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1848,7 +1858,7 @@ exports.add = function add(DD_MODULES) {
 							}
 							//! END_REPLACE()
 							, function toArray() {
-								return types.entries(this.__toDataObject());
+								return types.entries(this.toDataObject(null));
 							}),
 
 						toString: root.DD_DOC(
@@ -2294,7 +2304,7 @@ exports.add = function add(DD_MODULES) {
 				// ...
 			});
 
-			files.ADD('Url', root.DD_DOC(
+			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -2793,6 +2803,11 @@ exports.add = function add(DD_MODULES) {
 									isNull: !protocol && !domain && (!path || !path.length) && !file && (!args || !args.__args || !args.__args.length) && !anchor,
 								});
 							}),
+
+						fromJSON: function fromJSON(value) {
+							return this.parse(null, value);
+						},
+
 					},
 					/*instanceProto*/
 					tools.extend({
@@ -3496,7 +3511,7 @@ exports.add = function add(DD_MODULES) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 2,
 									params: {
 										options: {
 											type: 'object',
@@ -3509,6 +3524,9 @@ exports.add = function add(DD_MODULES) {
 							}
 							//! END_REPLACE()
 							, function toDataObject(/*optional*/options) {
+								const type = types.getType(this);
+								const functions = types.get(options, 'functions', false);
+
 								const obj = tools.nullObject();
 
 								tools.fill(__Internal__.urlDataKeys, obj, this, options);
@@ -3526,25 +3544,30 @@ exports.add = function add(DD_MODULES) {
 									if (!types._instanceof(obj.args, files.UrlArguments)) {
 										obj.args = _shared.urlArgumentsParser(obj.args);
 									};
-									obj.args = obj.args.toDataObject();
+									obj.args = obj.args.toDataObject( { functions } );
 								};
 
-								const type = types.getType(this);
-
-								obj.toUrl = function toUrl(/*optional*/options) {
-									if (options) {
-										return type.parse(null, tools.extend({}, this, options));
-									} else {
-										return type.parse(null, this);
+								if (functions) {
+									obj.toUrl = function toUrl(/*optional*/options) {
+										if (options) {
+											return type.parse(null, tools.extend({}, this, options));
+										} else {
+											return type.parse(null, this);
+										};
 									};
-								};
 
-								obj.toString = function toString(/*optional*/options) {
-									return this.toUrl(options).toString()
+									obj.toString = function toString(/*optional*/options) {
+										return this.toUrl(options).toString()
+									};
 								};
 
 								return obj;
 							}),
+
+						// NOTE: 'toJSON' is a documented function for "JSON.stringify".
+						toJSON: function toJSON(key) {
+							return this.toDataObject(null);
+						},
 
 					}, __Internal__.urlData, __Internal__.urlOptions)
 				)));
