@@ -26,11 +26,12 @@
 
 
 // Examples :
-//			root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
-//			root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => cancelable.start());
-//			root.Doodad.Tools.Files.readdirAsync('F:\\', {cancelable: true, timeout: 5000, depth:Infinity}).then(cancelable => cancelable.start());
+//			tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
+//			tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity});  // .then(cancelable => cancelable.start());
+//			tools.Files.readdirAsync('F:\\', {cancelable: true, timeout: 5000, depth:Infinity});  //  .then(cancelable => cancelable.start());
 //			tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => {tools.callAsync(() => cancelable.cancel(), 1000); return cancelable.start()});
-
+//			tools.Files.readdirAsync('F:\\', {cancelable: true, depth: Infinity}).then(cancelable => {tools.callAsync(() => cancelable.cancel(), 60000); return cancelable.start()});
+//			w(1, root => root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 60000, depth: Infinity}));
 
 
 exports.add = function add(DD_MODULES) {
