@@ -8787,6 +8787,13 @@ exports.add = function add(DD_MODULES) {
 								type: '{' + types.getType(value).DD_FULL_NAME + '}',
 								value: this.$pack(value.serialize()),
 							};
+						} else if (types.isObject(value) && types.isFunction(value.toJSON)) {
+							const type = types.getType(value);
+							value = this.$pack(value.toJSON(''));
+							data = {
+								type: (type ? '{' + type.DD_FULL_NAME + '}' : 'object'),
+								value: value,
+							};
 						} else if (types.isJsObject(value)) {
 							value = tools.map(value, this.$pack, this);
 							data = {
@@ -8842,12 +8849,18 @@ exports.add = function add(DD_MODULES) {
 								value = tools.map(value, this.$unpack, this);
 							} else if (type[0] === '{') {
 								const clsName = type.slice(1, -1),
-									cls = namespaces.get(clsName);
-								if (!types._implements(cls, interfaces.Serializable)) {
+									cls = namespaces.get(clsName),
+									isSerializable = types._implements(cls, interfaces.Serializable),
+									fromJSON = (!isSerializable ? cls && cls.fromJSON : null);
+								if (!isSerializable && !types.isFunction(fromJSON)) {
 									throw new types.TypeError("Object of type '~0~' can't be deserialized.", [clsName]);
 								};
 								value = this.$unpack(value);
-								value = cls.$unserialize(value);
+								if (isSerializable) {
+									value = cls.$unserialize(value);
+								} else {
+									value = fromJSON.call(cls, value);
+								};
 							} else {
 								throw new types.TypeError("Invalid packet.");
 							};
