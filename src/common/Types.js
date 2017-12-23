@@ -236,18 +236,19 @@ exports.add = function add(DD_MODULES) {
 			//===================================
 			
 			__Internal__.hasAsyncAwait = false;
-			__Internal__.hasAsyncAwaitBug = false;
+			//__Internal__.hasAsyncAwaitBug = false;
 			try {
 				tools.eval("async function test() {}");
 				__Internal__.hasAsyncAwait = true;
 
-				// <PRB> Once again, ES specs are wrong because we SHOULD reuse Thenables instead of coercing them to an ES6 native Promise.
-				tools.eval(
-					"(async function() {return {then: (res, rej) => {" + 
-						"ctx.Internal.hasAsyncAwaitBug = true;" +
-						"res(1);" +
-					"}}})()"
-				, {Internal: __Internal__});
+				// No need to test for it: It will never change.
+				//// <PRB> Once again, ES specs are wrong because we SHOULD reuse Thenables instead of coercing them to an ES6 native Promise.
+				//tools.eval(
+				//	"(async function() {return {then: (res, rej) => {" + 
+				//		"ctx.Internal.hasAsyncAwaitBug = true;" +
+				//		"res(1);" +
+				//	"}}})()"
+				//, {Internal: __Internal__});
 
 			} catch(ex) {
 			};
@@ -256,15 +257,17 @@ exports.add = function add(DD_MODULES) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: null,
 						returns: 'bool',
 						description: "Returns 'true' if the Javascript engine has ES6 async/await support, 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, function hasAsyncAwait() {
-					return __Internal__.hasAsyncAwait && !__Internal__.hasAsyncAwaitBug;
-				}));
+				, (__Internal__.hasAsyncAwait /*&& !__Internal__.hasAsyncAwaitBug*/ ? function hasAsyncAwait() {
+					return true;
+				} : function hasAsyncAwait() {
+					return false;
+				})));
 
 			types.ADD('isAsyncFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
