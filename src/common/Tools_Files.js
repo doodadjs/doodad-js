@@ -1801,13 +1801,19 @@ exports.add = function add(DD_MODULES) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 1,
-									params: null,
+									revision: 2,
+									params: {
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options.",
+										},
+									},
 									returns: 'object',
 									description: "Converts to a normal Javascript object.",
 							}
 							//! END_REPLACE()
-							, function toDataObject() {
+							, function toDataObject(/*optional*/options) {
 								const type = types.getType(this);
 								const functions = types.get(options, 'functions', false);
 
