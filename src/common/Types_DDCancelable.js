@@ -79,6 +79,29 @@ exports.add = function add(DD_MODULES) {
 			});
 
 
+			__Internal__.resolveCb = function resolveCb(result) {
+				const Promise = types.getPromise();
+				return Promise.try(function tryResolve() {
+					const racer = this.racer;
+					if (!racer.isSolved()) {
+						racer.resolve(result);
+					};
+					return racer;
+				}, this);
+			};
+
+			__Internal__.rejectCb = function rejectCb(err) {
+				const Promise = types.getPromise();
+				return Promise.try(function tryReject() {
+					const racer = this.racer;
+					if (!racer.isSolved()) {
+						racer.reject(err);
+					};
+					return racer;
+				}, this);
+			};
+
+
 			types.REGISTER(types.Type.$inherit(
 				/*typeProto*/
 				{
@@ -91,47 +114,16 @@ exports.add = function add(DD_MODULES) {
 					_new: types.SUPER(function _new(callback) {
 						this._super();
 
-						const state = {};
+						const Promise = types.getPromise();
 
-						tools.extend(state, {
+						const state = {
 							//cancelable: this,
-							racer: null,
-
-							getRacer: (function getRacer() {
-								if (!this.racer) {
-									const Promise = types.getPromise();
-									this.racer = Promise.createRacer();
-								};
-								return this.racer;
-							}).bind(state),
-
-							resolveCb: (function resolveCb(result) {
-								const Promise = types.getPromise();
-								return Promise.try(function tryResolve() {
-									const racer = this.getRacer();
-									if (!racer.isSolved()) {
-										racer.resolve(result);
-									};
-									return racer;
-								}, this);
-							}).bind(state),
-
-							rejectCb: (function rejectCb(err) {
-								const Promise = types.getPromise();
-								return Promise.try(function tryReject() {
-									const racer = this.getRacer();
-									if (!racer.isSolved()) {
-										racer.reject(err);
-									};
-									return racer;
-								}, this);
-							}).bind(state),
-
+							racer: Promise.createRacer(),
 							startCb: null,
 							cancelCb: null,
-						});
+						};
 
-						const { startCb, cancelCb, name = null } = callback(state.resolveCb, state.rejectCb);
+						const { startCb, cancelCb, name = null } = callback(__Internal__.resolveCb.bind(state), __Internal__.rejectCb.bind(state));
 
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'start' callback.");
@@ -162,10 +154,10 @@ exports.add = function add(DD_MODULES) {
 									state.startCb = null;
 									promise = Promise.try(startCb)
 										.then(function thenReturnRacer() {
-											return state.getRacer();
+											return state.racer;
 										}, null, this);
 								} else {
-									promise = state.getRacer();
+									promise = state.racer;
 								};
 								if (resolveCb || rejectCb) {
 									promise = promise
@@ -186,8 +178,12 @@ exports.add = function add(DD_MODULES) {
 								if (cancelCb) {
 									state.cancelCb = null;
 									return Promise.try(cancelCb)
-										.then(function thenReturnRacer() {
-											return state.rejectCb(reason);
+										.then(function thenReject() {
+												const racer = state.racer;
+												if (!racer.isSolved()) {
+													racer.reject(reason);
+												};
+												return racer;
 										}, null, this)
 										.catch(function(err) {
 											if (err !== reason) {
@@ -195,7 +191,11 @@ exports.add = function add(DD_MODULES) {
 											};
 										});
 								} else {
-									return state.rejectCb(reason)
+									const racer = state.racer;
+									if (!racer.isSolved()) {
+										racer.reject(reason);
+									};
+									return racer
 										.catch(function(err) {
 											if (err !== reason) {
 												throw err;
@@ -209,7 +209,7 @@ exports.add = function add(DD_MODULES) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryRace() {
 								const state = __Internal__.cancelableStates.get(this);
-								return state.getRacer().race(promise);
+								return state.racer.race(promise);
 							}, this);
 					},
 
