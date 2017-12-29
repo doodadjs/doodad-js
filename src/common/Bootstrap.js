@@ -83,7 +83,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	//! IF_SET('debug')
 	// V8: Increment maximum number of stack frames
-	// Source: https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi
+	// Source: https://github.com/v8/v8/wiki/Stack-Trace-API
 	if (global.Error.stackTraceLimit < 50) {
 		global.Error.stackTraceLimit = 50;
 	};
