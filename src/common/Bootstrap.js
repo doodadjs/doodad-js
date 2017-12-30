@@ -4262,6 +4262,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	global.Error.prototype.critical = false;
 	global.Error.prototype.trapped = false;
 	global.Error.prototype.promiseName = '';
+	global.Error.prototype.innerStack = '';
 
 	//! IF_SET('serverSide')
 	// For Node.Js

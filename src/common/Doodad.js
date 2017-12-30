@@ -8716,6 +8716,7 @@ exports.add = function add(DD_MODULES) {
 					$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
 						'name',
 						'message',
+						'code',  // Node.Js
 						'innerStack',
 					], extenders.UniqueArray))),
 						
@@ -8766,18 +8767,16 @@ exports.add = function add(DD_MODULES) {
 						} else if (types.isError(value)) {
 							types.Error.prototype.parse.call(value);
 							const type = value.constructor;
-							const tmp = {
-								type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : ''),
-							};
-							tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
+							const details = tools.reduce(this.$ERROR_ATTRIBUTES, function(result, key) {
 								const valKey = (key === 'innerStack' ? 'stack' : key);
 								if (types.hasInherited(value, valKey)) {
-									tmp[key] = this.$pack(value[valKey]);
+									result[key] = this.$pack(value[valKey]);
 								};
-							}, this);
+								return result;
+							}, {}, this);
 							data = {
-								type: 'error',
-								value: tmp,
+								type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'error'),
+								value: details,
 							};
 						} else if (types.isArray(value)) {
 							value = tools.map(value, this.$pack, this);
@@ -8789,10 +8788,9 @@ exports.add = function add(DD_MODULES) {
 							};
 						} else if (types.isObject(value) && types.isFunction(value.toJSON)) {
 							const type = types.getType(value);
-							value = this.$pack(value.toJSON(''));
 							data = {
-								type: (type ? '{' + type.DD_FULL_NAME + '}' : 'object'),
-								value: value,
+								type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'object'),
+								value: this.$pack(value.toJSON('')),
 							};
 						} else if (types.isJsObject(value)) {
 							value = tools.map(value, this.$pack, this);
@@ -8827,17 +8825,7 @@ exports.add = function add(DD_MODULES) {
 							} else if (type === 'nan') {
 								value = NaN;
 							} else if (type === 'error') {
-								let cls;
-								const valueType = types.toString(types.get(value, 'type', ''));
-								if (valueType) {
-									const clsName = valueType.slice(1, -1);
-									cls = namespaces.get(clsName);
-									if (!types.isErrorType(cls)) {
-										throw new types.TypeError("Error of type '~0~' can't be deserialized.", [clsName]);
-									};
-								} else {
-									cls = _shared.Natives.windowError;
-								};
+								const cls = _shared.Natives.windowError;
 								const tmp = new cls();
 								tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 									if (types.has(value, key)) {
@@ -8849,16 +8837,26 @@ exports.add = function add(DD_MODULES) {
 								value = tools.map(value, this.$unpack, this);
 							} else if (type[0] === '{') {
 								const clsName = type.slice(1, -1),
-									cls = namespaces.get(clsName),
-									isSerializable = types._implements(cls, interfaces.Serializable),
-									fromJSON = (!isSerializable ? cls && cls.fromJSON : null);
-								if (!isSerializable && !types.isFunction(fromJSON)) {
+									cls = namespaces.get(clsName);
+								const isError = types.isErrorType(cls);
+								const isSerializable = !isError && types._implements(cls, interfaces.Serializable);
+								const fromJSON = (cls && !isError && !isSerializable ? cls.fromJSON : null);
+								if (!isError && !isSerializable && !types.isFunction(fromJSON)) {
 									throw new types.TypeError("Object of type '~0~' can't be deserialized.", [clsName]);
 								};
-								value = this.$unpack(value);
-								if (isSerializable) {
+								if (isError) {
+									const tmp = new cls();
+									tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
+										if (types.has(value, key)) {
+											_shared.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true});
+										};
+									}, this);
+									value = tmp;
+								} else if (isSerializable) {
+									value = this.$unpack(value);
 									value = cls.$unserialize(value);
 								} else {
+									value = this.$unpack(value);
 									value = fromJSON.call(cls, value);
 								};
 							} else {
