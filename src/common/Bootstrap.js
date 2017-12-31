@@ -454,18 +454,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// ES6 Classes support
 	//===================================
 
-	__Internal__.hasFirefoxClassesToStringBug = false;
-	__Internal__.classesNotCallable = true;
-		
 	(function() {
 		const cls = (class A {});
 
-		__Internal__.hasFirefoxClassesToStringBug = (_shared.Natives.functionToStringCall(cls).slice(0, 6) !== 'class ');  // Check for Firefox's bug
+		const hasFirefoxFunctionToStringBug = (_shared.Natives.functionToStringCall(cls).slice(0, 6) !== 'class ');  // Check for Firefox's bug
+		if (hasFirefoxFunctionToStringBug) {
+			throw new global.Error("Browser version not supported.");
+		};
 	})();
 
-	// FUTURE: Uncomment if classes can potentially be callable, for the moment, it's useless
-	//cls.call(_shared.Natives.objectCreate(cls.prototype)); // Will throw an error if ES6 classes are not callable.
-	//__Internal__.classesNotCallable = false;
 
 	__Internal__.ADD('DEBUGGER', function() {
 		// Something weird just happened. Please see the call stack.
@@ -951,12 +948,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if object is an ES6 class, 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, !__Internal__.hasFirefoxClassesToStringBug ? function isJsClass(obj) {
+		, function isJsClass(obj) {
 			if (types.isFunction(obj)) {
 				return (_shared.Natives.functionToStringCall(obj).slice(0, 6) === 'class ');
 			};
-			return false;
-		} : function isJsClass(obj) {
 			return false;
 		}));
 		
@@ -2383,7 +2378,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 3,
+					revision: 4,
 					params: {
 						type: {
 							type: 'type',
@@ -2415,17 +2410,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 			};
 			let obj;
-			if (args && args.length) {
-				if (__Internal__.classesNotCallable && types.isJsClass(type)) {
-					obj = new type(...args);
-				} else {
-					obj = tools.createObject(type.prototype, {
-						constructor: {
-							value: type,
-						},
-					});
-					obj.constructor.apply(obj, args);
-				};
+			if (args && (args.length > 0)) {
+				obj = new type(...args);
 			} else {
 				obj = new type();
 			};
