@@ -3253,7 +3253,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						obj: {
 							type: 'function',
@@ -3272,8 +3272,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				} else {
 					// Internet Explorer
 					const str = _shared.Natives.functionToStringCall(obj);
-					const result = str.match(/function\s+([^(\s]*)[^(]*\(/);
-					return result && result[1] || null;
+					const result = str.match(/(function\s+)?([^(\s]*)[^(]*\(/);
+					return result && result[2] || null;
 				};
 			} else {
 				return null;
