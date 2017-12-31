@@ -6,7 +6,7 @@ Object-oriented programming framework for Javascript.
 
 ## Features
 
-  -  Classes (not ES6's ones)
+  -  Classical OOP
   -  Inheritance and Composition
   -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
