@@ -4967,9 +4967,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		$TYPE_NAME: null,
 		$TYPE_UUID: null,
-	});
 
-	_shared.reservedAttributes[_shared.Natives.symbolToStringTag] = null;
+		[_shared.Natives.symbolToStringTag]: null,
+	});
 
 	//===================================
 	// DD_DOC
