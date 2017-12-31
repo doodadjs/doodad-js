@@ -6381,34 +6381,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return this.toString(...args);
 		});
 
-	__Internal__.typeTypeProto = {
-		$TYPE_NAME: 'Type',
-		$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
-
-		_super: null,
-			
-		$inherit: __Internal__.typeInherit,
-			
-		_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-		_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
-			
-		toString: types.SUPER(__Internal__.typeToString),
-		toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
-	};
-
-		__Internal__.typeTypeProto[__Internal__.symbol$IsSingleton] = types.READ_ONLY(false),
-		__Internal__.typeTypeProto[__Internal__.symbolSingleton] = types.READ_ONLY(null),
-
-	__Internal__.typeInstanceProto = {
-		_super: null,
-			
-		_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-		_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
-			
-		toString: types.SUPER(__Internal__.typeToString),
-		toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
-	}
-		
 	types.Type = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6421,12 +6393,36 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, __Internal__.typeInherit.call(undefined,
 			/*typeProto*/
-			__Internal__.typeTypeProto,
+			{
+				$TYPE_NAME: 'Type',
+				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
+
+				_super: null,
+			
+				$inherit: __Internal__.$inherit,
+			
+				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
+				_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
+			
+				toString: types.SUPER(__Internal__.typeToString),
+				toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
+
+				[__Internal__.symbol$IsSingleton]: types.READ_ONLY(false),
+				[__Internal__.symbolSingleton]: types.READ_ONLY(null),
+			},
 				
 			/*instanceProto*/
-			__Internal__.typeInstanceProto
-		));
+			 {
+				_super: null,
 			
+				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
+				_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
+			
+				toString: types.SUPER(__Internal__.typeToString),
+				toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
+			},
+		));
+
 	__Internal__.REGISTER(types.Type);
 
 	//===================================
