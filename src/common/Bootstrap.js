@@ -275,7 +275,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			//arrayFrom: global.Array.from,
 			arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
 			
-			// "createErrorType", "isError"
+			// "isError"
 			windowError: global.Error,
 
 			// "isNumber", "toInteger"
@@ -3246,6 +3246,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 			
 	//===================================
+	// "safeObject"
+	//===================================
+
+	_shared.TargetSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TARGET')), true) */ '__DD_TARGET' /*! END_REPLACE() */, true);
+		
+	//===================================
 	// Functions
 	//===================================
 		
@@ -3281,20 +3287,368 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 		
 	//===================================
+	// Temporary REGISTER (for Doodad.Types)
+	//===================================
+	__Internal__.tempTypesRegistered = [];
+
+	__Internal__.REGISTER = function REGISTER(type) {
+		const name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
+		if (types.isType(type)) {
+			type = types.INIT(type);
+		};
+		types[name] = type;
+		__Internal__.tempTypesRegistered.push(type);
+		return type;
+	};
+
+	//===================================
+	// Box/Unbox
+	//===================================
+		
+	_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ORIGINAL_VALUE')), true) */ '__DD_ORIGINAL_VALUE' /*! END_REPLACE() */, true);
+		
+	__Internal__.ADD('box', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						value: {
+							type: 'any',
+							optional: false,
+							description: "A value.",
+						},
+					},
+					returns: 'Doodad.Types.box',
+					description: "Box a value inside a box object.",
+		}
+		//! END_REPLACE()
+		, function box(value) {
+			if (types._instanceof(this, types.box)) {
+				if (types._instanceof(value, types.box)) {
+					value.setAttributes(this);
+					value = value[_shared.OriginalValueSymbol];
+				};
+				this[_shared.OriginalValueSymbol] = value;
+				return this;
+			} else {
+				return new types.box(value);
+			};
+		}));
+
+	tools.extend(types.box.prototype, {
+		setAttributes: function setAttributes(dest, /*optional*/override) {
+			const keys = tools.append(types.keys(this), types.symbols(this));
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
+					dest[key] = this[key];
+				};
+			};
+			return dest;
+		},
+		valueOf: function valueOf() {
+			return this[_shared.OriginalValueSymbol];
+		},
+		setValue: function setValue(value, /*optional*/override) {
+			// NOTE: "OriginalValueSymbol" is immutable
+			const type = this.constructor;
+			const newBox = new type(value);
+			return this.setAttributes(newBox, override);
+		},
+		clone: function clone() {
+			return this.setValue(this[_shared.OriginalValueSymbol]);
+		},
+	});
+			
+	__Internal__.ADD('unbox', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'Doodad.Types.box',
+							optional: false,
+							description: "A value.",
+						},
+					},
+					returns: 'object',
+					description: "Extract the value of a box object.",
+		}
+		//! END_REPLACE()
+		, function unbox(value) {
+			return (types._instanceof(value, types.box) ? value.valueOf() : value);
+		}));
+					
+	//===================================
+	// Reserved attributes
+	//===================================
+		
+	// TODO: Find another way
+	_shared.reservedAttributes = tools.nullObject({
+		//name: null, 
+		//apply: null, 
+		//call: null, 
+		//bind: null, 
+		arguments: null, 
+		caller: null, 
+		length: null, 
+		prototype: null,
+			
+		//__proto__: null,   must be handled conditionally
+		constructor: null, 
+			
+		__defineGetter__: null,
+		__lookupGetter__: null,
+		__defineSetter__: null,
+		__lookupSetter__: null,
+	});
+
+	//===================================
+	// Clone
+	//===================================
+		
+	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
+		// NOTE: This function will get overriden when "Doodad.js" is loaded.
+		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(val));
+	};
+
+	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
+		// NOTE: This function will get overriden when "Doodad.js" is loaded.
+		let result;
+
+		if (types.isNothing(obj)) {
+			result = obj;
+		} else {
+			const isArray = !types.isString(obj) && types.isArrayLike(obj);
+			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+			cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+							
+			if (isArray) {
+				obj = _shared.Natives.windowObject(obj);
+				if (depth >= 0) {
+					result = tools.createArray(obj.length);
+					const len = obj.length;
+					for (let key = 0; key < len; key++) {
+						if (types.has(obj, key)) {
+							result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
+						};
+					};
+				} else {
+					result = _shared.Natives.arraySliceCall(obj, 0);
+				};
+			} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
+				result = tools.eval(_shared.Natives.functionToStringCall(obj));
+			} else if (types.isObject(obj)) {
+				result = tools.createObject(types.getPrototypeOf(obj));
+			} else if (keepNonClonables) {
+				return obj;
+			} else {
+				throw new types.Error("Object is not clonable.");
+			};
+
+			// Copy properties
+			const keys = tools.append(types.allKeys(obj), types.allSymbols(obj)),
+				arrayLen = isArray && obj.length,
+				props = {};
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				if (isArray) {
+					if (key === 'length') {
+						continue;
+					};
+					const tmp = _shared.Natives.windowNumber(key);
+					if ((tmp >= 0) && (tmp < arrayLen)) {
+						continue;
+					};
+				};
+				let prop = types.getOwnPropertyDescriptor(result, key);
+				if (!prop || prop.configurable) {
+					prop = types.getOwnPropertyDescriptor(obj, key);
+					if (types.has(prop, 'value') && (depth >= 0)) {
+						prop.value = _shared.clone(prop.value, depth, cloneFunctions, keepUnlocked, keepNonClonables);
+					};
+					props[key] = prop;
+				};
+			};
+			types.defineProperties(result, props);
+
+			if (!keepUnlocked) {
+				if (types.isFrozen(obj)) {
+					types.freezeObject(result);
+				} else if (!types.isExtensible(obj)) {
+					types.preventExtensions(result);
+				};
+			};
+		};
+						
+		return result;
+	};
+
+	__Internal__.ADD('isClonable', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to test for.",
+						},
+						cloneFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the function will returns 'true' for custom functions. Default is 'false'.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the value is clonable.",
+		}
+		//! END_REPLACE()
+		, function isClonable(obj, /*optional*/cloneFunctions) {
+			return _shared.isClonable(obj, cloneFunctions);
+		}));
+				
+	__Internal__.ADD('clone', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 8,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "A clonable value.",
+						},
+						depth: {
+							type: 'integer',
+							optional: true,
+							description: "Depth.",
+						},
+						cloneFunctions: {
+							type: 'bool,integer',
+							optional: true,
+							description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
+						},
+						keepUnlocked: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
+						},
+						keepNonClonables: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', will keep non-clonable values instead of throwing. When 'false', will throw an error on a non-clonable value. Default is 'false'.",
+						},
+					},
+					returns: 'any',
+					description: "Clones a value.",
+		}
+		//! END_REPLACE()
+		, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
+			return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
+		}));
+				
+	//===================================
 	// Type functions
 	//===================================
 
-	// "safeObject"
-	_shared.TargetSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TARGET')), true) */ '__DD_TARGET' /*! END_REPLACE() */, true);
+	__Internal__.ADD('INIT', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						type: {
+							type: 'type',
+							optional: false,
+							description: "A Doodad type.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Arguments of the constructor.",
+						},
+					},
+					returns: 'type',
+					description: "Initialize a Doodad type. Returns that type.",
+		}
+		//! END_REPLACE()
+		, function INIT(type, /*optional*/args) {
+			if (types.isInitialized(type)) {
+				return type;
+			} else {
+				type = type[types.NewSymbol](args) || type;
+				if (types.isSingleton(type)) {
+					type = types.newInstance(type, args);
+				};
+				return type;
+			};
+		}));
 		
-	__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE' /*! END_REPLACE() */, true);
-	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID' /*! END_REPLACE() */, true);
-	__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
-	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
-	__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
+	// "types.DESTROY" Hook	
+	_shared.DESTROY = function DESTROY(obj) {
+		if (types.isInitialized(obj)) {
+			_shared.invoke(obj, '_delete', null, _shared.SECRET);
+		};
+	};
 
-	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID' /*! END_REPLACE() */, true);
+	__Internal__.ADD('DESTROY', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'object,type',
+							optional: false,
+							description: "A Doodad object or type.",
+						},
+					},
+					returns: 'undefined',
+					description: "Destroys a Doodad object or type.",
+		}
+		//! END_REPLACE()
+		, function DESTROY(obj) {
+			_shared.DESTROY(obj);
+		}));
+			
 
+	// "types.DESTROYED" Hook	
+	_shared.DESTROYED = function DESTROYED(obj) {
+		return types.isNothing(obj) || ( !!(types.isLike(obj, types.Type) && !types.get(obj, __Internal__.symbolInitialized)) );
+	};
+
+	__Internal__.ADD('DESTROYED', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'object,type',
+							optional: false,
+							description: "A Doodad object or type.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' is object is destroyed. Otherwise, returns 'false'.",
+		}
+		//! END_REPLACE()
+		, function DESTROYED(obj) {
+			return _shared.DESTROYED(obj);
+		}));
+			
+	__Internal__.ADD('isInitialized', function isInitialized(obj) {
+		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
+	});
+		
+	__Internal__.ADD('isErrorType', function isErrorType(obj) {
+			return !!obj && ((obj === types.Error) || types.baseof(types.Error, obj));
+		});
+			
 	__Internal__.ADD('isType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3312,10 +3666,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function isType(obj) {
-			if (!types.isFunction(obj)) {
-				return false;
-			};
-			return !!obj[__Internal__.symbolIsType]; // types.has(obj, __Internal__.symbolIsType);
+			return !!obj && ((obj === types.Type) || ((obj === types.Error) || types.baseof(types.Type, obj)) || types.baseof(types.Error, obj));
 		}));
 		
 	__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -3914,7 +4265,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						obj: {
 							type: ['object', 'type'],
@@ -3935,7 +4286,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return obj;
 			};
 			const ctr = obj.constructor;
-			if (types.isType(ctr)) {
+			if (types.isType(ctr) || types.isErrorType(ctr)) {
 				return ctr;
 			};
 			return null;
@@ -3945,7 +4296,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 2,
+					revision: 3,
 					params: {
 						obj: {
 							type: ['object', 'type'],
@@ -3963,7 +4314,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!obj) {
 				return null;
 			};
-			return types.getFunctionName(obj);
+			return types.getFunctionName(obj) || null;
 		}));
 		
 	__Internal__.ADD('getBase', __Internal__.DD_DOC(
@@ -4210,7 +4561,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						},
 					},
 					returns: 'object',
-					description: "Sets the value of multiple attribute as from inside the object.",
+					description: "Sets the value of multiple attributes as from inside the object.",
 		}
 		//! END_REPLACE()
 		, function setAttributes(obj, values, /*optional*/options) {
@@ -4224,976 +4575,40 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		});
 
 	//===================================
-	// Temporary REGISTER (for Doodad.Types)
-	//===================================
-	__Internal__.tempTypesRegistered = [];
-
-	__Internal__.REGISTER = function REGISTER(type) {
-		const name = (types.getTypeName && types.getTypeName(type) || types.getFunctionName(type));
-		if (types.isType && types.isType(type)) {
-			type = types.INIT(type);
-		};
-		types[name] = type;
-		__Internal__.tempTypesRegistered.push(type);
-		return type;
-	};
-
-	//===================================
-	// Errors
-	//===================================
-
-	// Change the prototype of Error so that these properties do not fall back to Object.prototype (yes, I do that !)
-
-	global.Error.prototype.bubble = false;
-	global.Error.prototype.critical = false;
-	global.Error.prototype.trapped = false;
-	global.Error.prototype.promiseName = '';
-	global.Error.prototype.innerStack = '';
-
-	//! IF_SET('serverSide')
-	// For Node.Js
-	global.Error.prototype.code = '';
-	//! END_IF()
-
-
-	__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_ERROR_TYPE')), true) */ '__DD_IS_ERROR_TYPE' /*! END_REPLACE() */, true);
-
-	__Internal__.ADD('isErrorType', function isErrorType(type) {
-		return types.isFunction(type) && types.has(type, __Internal__.symbolIsErrorType);
-	});
-			
-	// NOTE: 2015/04/16 The actual implementations of Error and other error types are not easily inheritable because their constructor always act as an instantiator.
-	// NOTE: 2016: ES6 Classes are the only way to really extend an Error object.
-	// NOTE: 2017: Constructors of ES6 classes are very restrictives...
-	//       1) They don't allow us to do things with 'this' BEFORE calling "super".
-	//       2) 'super' must be called in the constructor itself, that's not possible to pass 'super' to another function.
-	//       So that we give a context object with '_superArgs' and '_this' attributes to a customizable constructor function.
-	//       That function puts whatever it had normally do with 'this' into the '_this' attribute of that context. After the real 'super' gets called, the attributes are copied back to 'this'.
-	//       That function also store arguments for 'super' into the "_superArgs" attribute of the context, which are then passed to 'super'.
-	__Internal__.ADD('createErrorType', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 7,
-					params: {
-						name: {
-							type: 'string',
-							optional: false,
-							description: "Name of the resulting error type.",
-						},
-						base: {
-							type: 'error',
-							optional: true,
-							description: "Error type from which to inherit. Defaults to 'Error'.",
-						},
-						_super: {
-							type: 'function',
-							optional: true,
-							description: "The super function.",
-						},
-						constructor: {
-							type: 'function',
-							optional: true,
-							description: "A function to be called to construct a new instance. Defaults to base's constructor.",
-						},
-						typeProto: {
-							type: 'object',
-							optional: true,
-							description: "Type prottype.",
-						},
-						instanceProto: {
-							type: 'object',
-							optional: true,
-							description: "Instance prototype.",
-						},
-						uuid: {
-							type: 'string',
-							optional: true,
-							description: "UUID of the resulting error type.",
-						},
-					},
-					returns: 'error',
-					description: "Creates a new error type, based on another error type.",
-		}
-		//! END_REPLACE()
-		, function createErrorType(name, /*optional*/base, /*optional*/_super, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
-			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
-
-			if (types.isNothing(base)) {
-				base = _shared.Natives.windowError;
-			};
-
-			if (uuid) {
-				uuid = /*! REPLACE_BY(TO_SOURCE(UUID('ERROR_TYPE')), true) */ '__ERROR_TYPE__' /*! END_REPLACE() */ + uuid;
-			};
-
-			const ctx = {
-				_shared: _shared,
-				//types: types,
-				tools: tools,
-
-				name: name,
-				base: base,
-				_super: _super,
-				constructor: constructor,
-			};
-
-			// <PRB> grrrr, "this" is not available before we call "super" !!!
-			const type = (function(ctx) {
-				// IMPORTANT: Always use the context, not the scope variables to prevent memory leaks.
-				return (
-					class extends ctx.base {
-						constructor(/*paramarray*/...args) {
-							if (ctx._super) {
-								const _this = {};
-								const superArgs = ctx._super.apply(_this, args) || args;
-								super(...superArgs);
-								ctx.tools.extend(this, _this);
-							} else {
-								super(...args);
-							};
-							if (this.constructor === ctx.type) {
-								if (ctx.constructor) {
-									ctx.constructor.apply(this, args);
-								};
-								const values = {
-									name: ctx.name,
-									message: this.message,
-								};
-								_shared.setAttributes(this, values, {});
-							};
-						}
-
-						toString() {
-							return this.message;
-						}
-					
-						parse() {
-							// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
-							if (!this.parsed) {
-								let stack;
-								if (this.stack) {
-									stack = tools.parseStack(this.stack);
-									if (stack) {
-										stack.splice(0, this.throwLevel);
-										// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
-										if (!stack.length) {
-											stack = null;
-										};
-									};
-									this.parsedStack = stack;
-								};
-							
-								let fileName,
-									lineNumber,
-									columnNumber,
-									functionName;
-								if (this.fileName) {
-									// <FUTURE> Firefox
-									// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
-									fileName = this.fileName;
-									lineNumber = this.lineNumber;
-									functionName = "";
-								} else if (this.sourceURL) {
-									// Safari 5
-									// NOTE: "this.line" should be already set
-									fileName = this.sourceURL;
-									lineNumber = this.line;
-									columnNumber = 0;
-									functionName = "";
-								} else {
-									// Other browsers
-									// Set attributes from the stack.
-									if (stack) {
-										const trace = stack[0];
-										fileName = trace.path;
-										columnNumber = trace.columnNumber;
-										lineNumber = trace.lineNumber;
-										functionName = trace.functionName;
-									} else {
-										fileName = "";
-										columnNumber = 0;
-										lineNumber = 0;
-										functionName = "";
-									};
-								};
-								this.fileName = fileName;
-								this.sourceURL = fileName;
-								this.line = lineNumber;
-								this.lineNumber = lineNumber;
-								this.columnNumber = columnNumber;
-								this.functionName = functionName;
-								this.parsed = true;
-							};
-						}
-					}
-				);
-			})(ctx);
-
-			const proto = type.prototype;
-
-			ctx.type = type;
-
-			// <FUTURE> "Public static fields"
-			tools.extend(type, /*{
-				// ...
-			},*/ typeProto);
-
-			const typeValues = {
-				name: name,
-				[_shared.Natives.symbolHasInstance]: undefined,
-				[__Internal__.symbolIsErrorType]: true,
-				[_shared.UUIDSymbol]: uuid || null,
-			};
-			_shared.setAttributes(type, typeValues, {});
-
-			// <FUTURE> "Public instance fields"
-			tools.extend(proto, {
-				throwLevel: 0,
-				parsed: false,
-				parsedStack: null,
-				bubble: false,
-				critical: false,
-				trapped: false,
-			}, instanceProto);
-
-			const protoValues = {
-				//name: name,
-				[_shared.Natives.symbolToStringTag]: 'Error',
-				[_shared.UUIDSymbol]: uuid || null,
-			};
-			_shared.setAttributes(proto, protoValues, {});
-
-			proto.name = name;
-
-			return type;
-		}));
-		
-	__Internal__.createErrorSuper = function() {
-		return function _super(message, /*optional*/params) {
-			message = tools.format(message, params);
-			return [message];
-		};
-	};
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'error',
-					description: "Raised on invalid value type.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("TypeError", _shared.Natives.windowTypeError, __Internal__.createErrorSuper(), null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */)
-		));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: false,
-							description: "Error message",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'undefined',
-					description: "Generic error with message formatting.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('Error', _shared.Natives.windowError, __Internal__.createErrorSuper(), null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */)));
-
-
-	//! IF_SET('serverSide')
-	__Internal__.AssertionError = null;
-	//! END_IF()
-
-	//! BEGIN_REMOVE()
-	if (typeof require === 'function') {
-	//! END_REMOVE()
-	//! IF_SET('serverSide')
-		try {
-			__Internal__.AssertionError = require('assert').AssertionError;
-		} catch(ex) {
-		};
-	//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-
-	__Internal__.AssertionErrorDD_DOC = 
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						message: {
-							type: 'string',
-							optional: false,
-							description: "A message explaining the assertion.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised when an assertion fail.",
-		}
-		//! END_REPLACE()
-
-	//! IF_SET('serverSide')
-	if (__Internal__.AssertionError) {
-		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
-			__Internal__.AssertionErrorDD_DOC
-			, types.createErrorType("AssertionError", __Internal__.AssertionError, function _super(/*optional*/message, /*optional*/params) {
-					if (message) {
-						return [{
-							actual: false,
-							expected: true,
-							operator: '==',
-							message: tools.format("Assertion failed: " + message, params),
-						}];
-					} else {
-						return [{
-							actual: false,
-							expected: true,
-							operator: '==',
-							message: "Assertion failed.",
-						}];
-					};
-				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
-	};
-	//! END_IF()
-
-	//! IF_SET('serverSide')
-	if (!__Internal__.AssertionError) {
-	//! END_IF()
-		__Internal__.ADD('AssertionFailed', __Internal__.REGISTER(__Internal__.DD_DOC(
-			__Internal__.AssertionErrorDD_DOC
-			, types.createErrorType("AssertionError", types.Error, function _super(message, /*optional*/params) {
-				if (message) {
-					return ["Assertion failed: " + message, params];
-				} else {
-					return ["Assertion failed."];
-				};
-			}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */))));
-	//! IF_SET('serverSide')
-	};
-	//! END_IF()
-
-	//delete __Internal__.AssertionErrorDD_DOC;
-	__Internal__.AssertionErrorDD_DOC = null;
-
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that something has failed to parse.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on parse error.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("ParseError", types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Parse error.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining what is not supported.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised when something is not supported.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("NotSupported", types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Not supported.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining what is not available.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised when something is not available.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("NotAvailable", types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Not available.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						code: {
-							type: 'integer',
-							optional: false,
-							description: "HTTP status code.",
-						},
-						message: {
-							type: 'string',
-							optional: false,
-							description: "A message explaining the error.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on HTTP error.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('HttpError', types.Error, function _super(code, message, /*optional*/params) {
-			this.code = code;
-			return ['HTTP error. The status code is : ~0~.' || message, params || [code]];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that something has overflowed.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on buffer overflow.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('BufferOverflow', types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Buffer overflow.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that something has timed out.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on timeout.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('TimeoutError', types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Operation timed out.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that something has been canceled.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on cancel.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('CanceledError', types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Operation canceled.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that something is denied or not allowed.",
-						},
-						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
-						},
-					},
-					returns: 'error',
-					description: "Raised on access denied or not allowed operation.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType('AccessDenied', types.Error, function _super(/*optional*/message, /*optional*/params) {
-			return [message || "Access denied.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					message: {
-						type: 'string',
-						optional: true,
-						description: "A message explaining that the script execution has been interrupted.",
-					},
-					params: {
-						type: 'arrayof(any),objectof(any)',
-						optional: true,
-						description: "Parameters of the error message",
-					},
-				},
-				returns: 'error',
-				description: "Signals that script execution has been interrupted, but not aborted.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("ScriptInterruptedError", types.Error, function _super(/*optional*/message, /*optional*/params) {
-			this.bubble = true;
-			return [message || "Script interrupted.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */)));
-		
-	__Internal__.REGISTER(__Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 3,
-				params: {
-					exitCode: {
-						type: 'integer',
-						optional: true,
-						description: "Exit code.",
-					},
-					message: {
-						type: 'string',
-						optional: true,
-						description: "A message explaining that the script has been aborted.",
-					},
-					params: {
-						type: 'arrayof(any),objectof(any)',
-						optional: true,
-						description: "Parameters of the error message",
-					},
-				},
-				returns: 'error',
-				description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
-		}
-		//! END_REPLACE()
-		, types.createErrorType("ScriptAbortedError", types.ScriptInterruptedError, function _super(/*optional*/exitCode, /*optional*/message, /*optional*/params) {
-			this.exitCode = types.toInteger(exitCode) || 0;
-			this.critical = true;
-			return [message || "Script aborted.", params];
-		}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */)));
-				
-	//===================================
-	// Box/Unbox
+	// "createType"
 	//===================================
 		
-	_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ORIGINAL_VALUE')), true) */ '__DD_ORIGINAL_VALUE' /*! END_REPLACE() */, true);
-		
-	__Internal__.ADD('box', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						value: {
-							type: 'any',
-							optional: false,
-							description: "A value.",
-						},
-					},
-					returns: 'Doodad.Types.box',
-					description: "Box a value inside a box object.",
-		}
-		//! END_REPLACE()
-		, function box(value) {
-			if (types._instanceof(this, types.box)) {
-				if (types._instanceof(value, types.box)) {
-					value.setAttributes(this);
-					value = value[_shared.OriginalValueSymbol];
-				};
-				this[_shared.OriginalValueSymbol] = value;
-				return this;
-			} else {
-				return new types.box(value);
-			};
-		}));
+	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID' /*! END_REPLACE() */, true);
+	__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
+	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
+	__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
 
-	tools.extend(types.box.prototype, {
-		setAttributes: function setAttributes(dest, /*optional*/override) {
-			const keys = tools.append(types.keys(this), types.symbols(this));
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
-				if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
-					dest[key] = this[key];
-				};
-			};
-			return dest;
-		},
-		valueOf: function valueOf() {
-			return this[_shared.OriginalValueSymbol];
-		},
-		setValue: function setValue(value, /*optional*/override) {
-			// NOTE: "OriginalValueSymbol" is immutable
-			const type = this.constructor;
-			const newBox = new type(value);
-			return this.setAttributes(newBox, override);
-		},
-		clone: function clone() {
-			return this.setValue(this[_shared.OriginalValueSymbol]);
-		},
-	});
-			
-	__Internal__.ADD('unbox', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'Doodad.Types.box',
-							optional: false,
-							description: "A value.",
-						},
-					},
-					returns: 'object',
-					description: "Extract the value of a box object.",
-		}
-		//! END_REPLACE()
-		, function unbox(value) {
-			return (types._instanceof(value, types.box) ? value.valueOf() : value);
-		}));
-					
-
-	//===================================
-	// Reserved attributes
-	//===================================
-		
-	// TODO: Find another way
-	_shared.reservedAttributes = tools.nullObject({
-		//name: null, 
-		//apply: null, 
-		//call: null, 
-		//bind: null, 
-		arguments: null, 
-		caller: null, 
-		length: null, 
-		prototype: null,
-			
-		//__proto__: null,   must be handled conditionally
-		constructor: null, 
-			
-		__defineGetter__: null,
-		__lookupGetter__: null,
-		__defineSetter__: null,
-		__lookupSetter__: null,
-			
-		_super: null,
-
-		$TYPE_NAME: null,
-		$TYPE_UUID: null,
-
-		[_shared.Natives.symbolToStringTag]: null,
-	});
-
-	//===================================
-	// DD_DOC
-	//===================================
-		
-	__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
-
-	_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
-		
-	__Internal__.DD_DOC = __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					doc: {
-						type: 'object',
-						optional: false,
-						description: "Document to apply.",
-					},
-					value: {
-						type: 'any',
-						optional: false,
-						description: "Target value",
-					},
-				},
-				returns: 'object',
-				description: "Applies a document to an object and returns that object.",
-		}
-		//! END_REPLACE()
-		, function DD_DOC(doc, value) {
-			value = _shared.Natives.windowObject(value);
-			if (types.hasDefinePropertyEnabled()) {
-				types.defineProperty(value, __Internal__.symbolDD_DOC, {
-					value: doc && types.freezeObject(doc),
-				});
-			} else {
-				value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
-			};
-			return value;
-		});
-
-	__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 1,
-				params: null,
-				returns: 'object',
-				description: "Gets the document applied to an object.",
-		}
-		//! END_REPLACE()
-		, function GET_DD_DOC(value) {
-			return value[__Internal__.symbolDD_DOC];
-		});
-		
-	(function() {
-		for (let i = 0; i < __Internal__.tempDocs.length; i++) {
-			__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
-		};
-		//delete __Internal__.tempDocs;
-		__Internal__.tempDocs = null;
-	})();
-
-
-	//===================================
-	// Clone
-	//===================================
-		
-	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
-		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(val));
-	};
-
-	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
-		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		let result;
-
-		if (types.isNothing(obj)) {
-			result = obj;
-		} else {
-			const isArray = !types.isString(obj) && types.isArrayLike(obj);
-			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-			cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-							
-			if (isArray) {
-				obj = _shared.Natives.windowObject(obj);
-				if (depth >= 0) {
-					result = tools.createArray(obj.length);
-					const len = obj.length;
-					for (let key = 0; key < len; key++) {
-						if (types.has(obj, key)) {
-							result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
-						};
-					};
-				} else {
-					result = _shared.Natives.arraySliceCall(obj, 0);
-				};
-			} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
-				result = tools.eval(_shared.Natives.functionToStringCall(obj));
-			} else if (types.isObject(obj)) {
-				result = tools.createObject(types.getPrototypeOf(obj));
-			} else if (keepNonClonables) {
-				return obj;
-			} else {
-				throw new types.Error("Object is not clonable.");
-			};
-
-			// Copy properties
-			const keys = tools.append(types.allKeys(obj), types.allSymbols(obj)),
-				arrayLen = isArray && obj.length,
-				props = {};
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
-				if (isArray) {
-					if (key === 'length') {
-						continue;
-					};
-					const tmp = _shared.Natives.windowNumber(key);
-					if ((tmp >= 0) && (tmp < arrayLen)) {
-						continue;
-					};
-				};
-				let prop = types.getOwnPropertyDescriptor(result, key);
-				if (!prop || prop.configurable) {
-					prop = types.getOwnPropertyDescriptor(obj, key);
-					if (types.has(prop, 'value') && (depth >= 0)) {
-						prop.value = _shared.clone(prop.value, depth, cloneFunctions, keepUnlocked, keepNonClonables);
-					};
-					props[key] = prop;
-				};
-			};
-			types.defineProperties(result, props);
-
-			if (!keepUnlocked) {
-				if (types.isFrozen(obj)) {
-					types.freezeObject(result);
-				} else if (!types.isExtensible(obj)) {
-					types.preventExtensions(result);
-				};
-			};
-		};
-						
-		return result;
-	};
-
-	__Internal__.ADD('isClonable', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "Object to test for.",
-						},
-						cloneFunctions: {
-							type: 'bool',
-							optional: true,
-							description: "When 'true', the function will returns 'true' for custom functions. Default is 'false'.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the value is clonable.",
-		}
-		//! END_REPLACE()
-		, function isClonable(obj, /*optional*/cloneFunctions) {
-			return _shared.isClonable(obj, cloneFunctions);
-		}));
-				
-	__Internal__.ADD('clone', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 8,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "A clonable value.",
-						},
-						depth: {
-							type: 'integer',
-							optional: true,
-							description: "Depth.",
-						},
-						cloneFunctions: {
-							type: 'bool,integer',
-							optional: true,
-							description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
-						},
-						keepUnlocked: {
-							type: 'bool',
-							optional: true,
-							description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
-						},
-						keepNonClonables: {
-							type: 'bool',
-							optional: true,
-							description: "When 'true', will keep non-clonable values instead of throwing. When 'false', will throw an error on a non-clonable value. Default is 'false'.",
-						},
-					},
-					returns: 'any',
-					description: "Clones a value.",
-		}
-		//! END_REPLACE()
-		, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
-			return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
-		}));
-				
-	//===================================
-	// Type
-	//===================================
-		
+	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID' /*! END_REPLACE() */, true);
 	_shared.SuperEnabledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SUPER_ENABLED')), true) */ '__DD_SUPER_ENABLED' /*! END_REPLACE() */, true);
 	_shared.EnumerableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ENUMERABLE')), true) */ '__DD_ENUMERABLE' /*! END_REPLACE() */, true);
 	_shared.ReadOnlySymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_READ_ONLY')), true) */ '__DD_READ_ONLY' /*! END_REPLACE() */, true);
 	_shared.ConfigurableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONFIGURABLE')), true) */ '__DD_CONFIGURABLE' /*! END_REPLACE() */, true);
-	_shared.ConstructorSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONSTRUCTOR')), true) */ '__DD_CONSTRUCTOR' /*! END_REPLACE() */, true);
+	_shared.GetterSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_GETTER')), true) */ '__DD_GETTER' /*! END_REPLACE() */, true);
+	_shared.SetterSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SETTER')), true) */ '__DD_SETTER' /*! END_REPLACE() */, true);
 
-	__Internal__.symbolGetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_GETTER')), true) */ '__DD_GETTER' /*! END_REPLACE() */, true);
-	__Internal__.symbolSetter = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SETTER')), true) */ '__DD_SETTER' /*! END_REPLACE() */, true);
-		
+	__Internal__.ADD('ConstructorSymbol', types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CONSTRUCTOR')), true) */ '__DD_CONSTRUCTOR' /*! END_REPLACE() */, true));
+	__Internal__.ADD('NewSymbol', types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_NEW')), true) */ '__DD_NEW' /*! END_REPLACE() */, true));
+
+	tools.extend(_shared.reservedAttributes, {
+		_super: null,
+
+		$TYPE_NAME: null,
+		$TYPE_UUID: null,
+		[types.ConstructorSymbol]: null,
+		[types.NewSymbol]: null,
+
+		[_shared.Natives.symbolToStringTag]: null,
+
+		[__Internal__.symbolInitialized]: null,
+		[__Internal__.symbol$IsSingleton]: null,
+		[__Internal__.symbolSingleton]: null,
+	});
+
 	__Internal__.ADD('INHERIT', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5414,7 +4829,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function READ_ONLY(val) {
 			val = types.AttributeBox(val);
-			if (val[__Internal__.symbolGetter] || val[__Internal__.symbolSetter]) {
+			if (val[_shared.GetterSymbol] || val[_shared.SetterSymbol]) {
 				throw new types.Error("'READ_ONLY' can't be applied on a get/set attribute.");
 			};
 			val[_shared.ReadOnlySymbol] = true;
@@ -5439,7 +4854,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function WRITABLE(val) {
 			val = types.AttributeBox(val);
-			if (val[__Internal__.symbolGetter] || val[__Internal__.symbolSetter]) {
+			if (val[_shared.GetterSymbol] || val[_shared.SetterSymbol]) {
 				throw new types.Error("'WRITABLE' can't be applied on a get/set attribute.");
 			};
 			val[_shared.ReadOnlySymbol] = false;
@@ -5469,8 +4884,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function GET_SET(getter, setter) {
 			val = types.AttributeBox();
-			val[__Internal__.symbolGetter] = getter;
-			val[__Internal__.symbolSetter] = setter;
+			val[_shared.GetterSymbol] = getter;
+			val[_shared.SetterSymbol] = setter;
 			return val;
 		}));
 
@@ -5492,7 +4907,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function GET(getter) {
 			val = types.AttributeBox();
-			val[__Internal__.symbolGetter] = getter;
+			val[_shared.GetterSymbol] = getter;
 			return val;
 		}));
 
@@ -5514,7 +4929,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function SET(setter) {
 			val = types.AttributeBox();
-			val[__Internal__.symbolSetter] = setter;
+			val[_shared.SetterSymbol] = setter;
 			return val;
 		}));
 
@@ -5525,11 +4940,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		const desc = types.getOwnPropertyDescriptor(f, 'prototype');
 		__Internal__.prototypeIsConfigurable = desc.configurable;
 	})();
-			
-	_shared.reservedAttributes[__Internal__.symbolInitialized] = null;
-	_shared.reservedAttributes[__Internal__.symbol$IsSingleton] = null;
-	_shared.reservedAttributes[__Internal__.symbolSingleton] = null;
-		
+
 	// <PRB> Proxy checks existence of the property in the target AFTER the handler instead of BEFORE. That prevents us to force non-configurable and non-writable on a NEW NON-EXISTING property with a different value.
 	//       Error given is "TypeError: 'set' on proxy: trap returned truish for property 'doodad' which exists in the proxy target as a non-configurable and non-writable data property with a different value"
 	/*
@@ -5599,128 +5010,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return _caller;
 		});
 
-	__Internal__.ADD('SINGLETON', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					paramsDirection: 'rightToLeft',
-					params: {
-						type: {
-							type: 'type',
-							optional: false,
-							description: "A Doodad type.",
-						},
-					},
-					returns: 'type',
-					description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
-		}
-		//! END_REPLACE()
-		, function SINGLETON(type) {
-			if (!types.isType(type)) {
-				throw new types.Error("Invalid type.");
-			};
-
-			if (!types.isSingleton(type)) {
-				_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
-			};
-				
-			return type;
-		}));
-		
-	__Internal__.ADD('INIT', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						type: {
-							type: 'type',
-							optional: false,
-							description: "A Doodad type.",
-						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Arguments of the constructor.",
-						},
-					},
-					returns: 'type',
-					description: "Initialize a Doodad type. Returns that type.",
-		}
-		//! END_REPLACE()
-		, function INIT(type, /*optional*/args) {
-			if (types.isInitialized(type)) {
-				return type;
-			} else {
-				type = type[_shared.ConstructorSymbol](args) || type;
-				if (types.isSingleton(type)) {
-					type = types.newInstance(type, args);
-				};
-				return type;
-			};
-		}));
-		
-	// "types.DESTROY" Hook	
-	_shared.DESTROY = function DESTROY(obj) {
-		if (types.isInitialized(obj)) {
-			_shared.invoke(obj, '_delete', null, _shared.SECRET);
-		};
-	};
-
-	__Internal__.ADD('DESTROY', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'object,type',
-							optional: false,
-							description: "A Doodad object or type.",
-						},
-					},
-					returns: 'undefined',
-					description: "Destroys a Doodad object or type.",
-		}
-		//! END_REPLACE()
-		, function DESTROY(obj) {
-			_shared.DESTROY(obj);
-		}));
-			
-
-	// "types.DESTROYED" Hook	
-	_shared.DESTROYED = function DESTROYED(obj) {
-		return types.isNothing(obj) || ( !!(types.isLike(obj, types.Type) && !types.get(obj, __Internal__.symbolInitialized)) );
-	};
-
-	__Internal__.ADD('DESTROYED', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'object,type',
-							optional: false,
-							description: "A Doodad object or type.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' is object is destroyed. Otherwise, returns 'false'.",
-		}
-		//! END_REPLACE()
-		, function DESTROYED(obj) {
-			return _shared.DESTROYED(obj);
-		}));
-			
-
-	__Internal__.ADD('isInitialized', function isInitialized(obj) {
-		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
-	});
-		
 	__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, functionName) {
 		const forType = types.isType(target);
+
+		let code = '';
 
 		const loopKeys = function _loopKeys(keys, isSymbol) {
 			for (let i = 0; i < keys.length; i++) {
@@ -5760,8 +5053,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					code += "if (ok) {";
 
 					const attr = types.AttributeBox(proto[key]),
-						g = types.get(attr, __Internal__.symbolGetter),
-						s = types.get(attr, __Internal__.symbolSetter);
+						g = types.get(attr, _shared.GetterSymbol),
+						s = types.get(attr, _shared.SetterSymbol);
 
 					if (functionName) {
 						code += "attr = types.AttributeBox(proto[key]);";
@@ -5808,7 +5101,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						};
 					};
 
-					code += "if (ok) {";
+					if (functionName) {
+						code += "if (ok) {";
+					};
 
 					if (functionName) {
 						if (types.get(attr, _shared.SuperEnabledSymbol)) {
@@ -5862,8 +5157,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								code += "types.defineProperty(target, key, {" +
 											"configurable: " + (!!cf ? 'true' : 'false') + "," +
 											"enumerable: " + (!!enu ? 'true' : 'false') + "," +
-											"get: types.get(attr, __Internal__.symbolGetter) || undefined," +
-											"set: types.get(attr, __Internal__.symbolSetter) || undefined," +
+											"get: types.get(attr, _shared.GetterSymbol) || undefined," +
+											"set: types.get(attr, _shared.SetterSymbol) || undefined," +
 										"});";
 							} else {
 								types.defineProperty(target, key, {
@@ -5925,14 +5220,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						};
 					};
 
-					code +=		"};" +
-							"};";
-
+					if (functionName) {
+						code +=		"};" +
+								"};";
+					};
 				};
 			};
 		};
-
-		let code = '';
 
 		if (functionName) {
 			code +=	"(function " + functionName + "(target, base, proto) {" +
@@ -5968,7 +5262,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 13,
+					revision: 14,
 					params: {
 						name: {
 							type: 'string',
@@ -5980,15 +5274,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: true,
 							description: "A Doodad type to inherit.",
 						},
-						_super: {
-							type: 'function',
-							optional: true,
-							description: "The super function.",
-						},
 						constructor: {
 							type: 'function',
 							optional: true,
 							description: "The constructor function.",
+						},
+						_new: {
+							type: 'function',
+							optional: true,
+							description: "The creator function.",
 						},
 						typeProto: {
 							type: 'object',
@@ -6010,7 +5304,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
 		}
 		//! END_REPLACE()
-		, function createType(/*optional*/name, /*optional*/base, /*optional*/_super, /*optional*/constructor, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
+		, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/_new, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
 			if (types.isNothing(name)) {
 				name = '';
 			};
@@ -6020,7 +5314,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const baseIsType = types.isType(base);
 			if (baseIsType) {
 				if (!types.get(base, __Internal__.symbolInitialized)) {
-					throw new _shared.Natives.windowError("Base type '" + (types.getTypeName(base) || types.getFunctionName(base)) + "' is not initialized.");
+					throw new _shared.Natives.windowError("Base type '" + (types.getTypeName(base) || '<anonymous>') + "' is not initialized.");
 				};
 			};
 
@@ -6034,31 +5328,32 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				tools: tools,
 
 				base: base,
+				baseIsType: baseIsType,
 				typeProto: typeProto, 
 				instanceProto: instanceProto,
 				instanceBase: instanceBase,
 				applyProtoToType: typeProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
 				applyProtoToInstance: instanceProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
 
-				_super: null, // Will be set after creation
 				constructor: null, // Will be set after creation
+				_new: null, // Will be set after creation
 				type: null, // will be set after type creation
 				proto: null, // will be set after type creation
 			});
 
-			// <PRB> grrrr, "this" is not available before we call "super" !!!
 			const type = (function(ctx) {
-				// IMPORTANT: Always use the context, not the scope variables to prevent memory leaks.
+				// IMPORTANT: Always use the context (ctx), not the scope variables to prevent memory leaks.
 				if (ctx.base) {
 					return (
 						class extends ctx.base {
+							// <PRB> grrrr, "this" is not available before we call "super" !!!
 							constructor(/*paramarray*/...args) {
-								const superThis = {};
-								const superArgs = ctx._super.apply(superThis, args) || args;
-								let obj = super(...superArgs) || this;
-								ctx.tools.extend(this, superThis);
+								const constructorThis = {};
+								const constructorArgs = ctx.constructor.apply(constructorThis, args) || args;
+								let obj = super(...constructorArgs) || this;
+								ctx.tools.extend(obj, constructorThis);
 								if (ctx.types.getType(this) === ctx.type) {
-									obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;
+									obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
 								};
 								return obj;
 							}
@@ -6070,7 +5365,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							constructor(/*paramarray*/...args) {
 								let obj = this;
 								if (ctx.types.getType(this) === ctx.type) {
-									obj = ctx.type[ctx._shared.ConstructorSymbol].call(obj, args) || obj || this;
+									obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
 								};
 								return obj;
 							}
@@ -6092,10 +5387,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				apply: type.apply,
 				bind: type.bind,
 
-				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 
-				[_shared.ConstructorSymbol]: (function(ctx) {
+				[types.NewSymbol]: (function(ctx) {
+					// IMPORTANT: Always use the context (ctx), not the scope variables to prevent memory leaks.
 					return (function(args) {
 						const forType = types.isFunction(this);
 
@@ -6105,7 +5400,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						} else {
 							if (!types.get(ctx.type, __Internal__.symbolInitialized)) {
-								throw new types.Error("Type '" + types.getTypeName(ctx.type) + "' is not initialized.");
+								throw new types.Error("Type '~0~' is not initialized.", [types.getTypeName(ctx.type)]);
 							};
 							if (!types._instanceof(this, ctx.type)) {
 								throw new types.Error("Wrong constructor. Did you forget the 'new' operator ?");
@@ -6142,7 +5437,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							_shared.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {});
 
 							_shared.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true});
-							obj = ctx.constructor.apply(this, args) || this; // _new
+							obj = ctx._new.apply(this, args) || this; // _new
 
 							const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
 							_shared.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {});
@@ -6167,11 +5462,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 
-						if (baseIsType) {
-							ctx.base[_shared.ConstructorSymbol].call(obj, args);
+						if (ctx.baseIsType) {
+							ctx.base[types.NewSymbol].call(obj, args);
 						};
 
-						if (baseIsType) {
+						if (ctx.baseIsType) {
 							if ((obj !== this) && !types.get(obj, __Internal__.symbolInitialized)) {
 								_shared.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true});
 							};
@@ -6196,23 +5491,23 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			ctx.type = type;
 			ctx.proto = proto;
 
-			if (types.isNothing(_super)) {
-				_super = (function(/*paramarray*/...args) {
-					return args;
-				});
-			} else if (types.isString(constructor)) {
-				_super = tools.eval("function(/*paramarray*/...args) {" + _super + "}", ctx);
-			};
-			ctx._super = _super;
-
 			if (types.isNothing(constructor)) {
 				constructor = (function(/*paramarray*/...args) {
-					return this._new && this._new(...args) || this;
+					return args;
 				});
 			} else if (types.isString(constructor)) {
 				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", ctx);
 			};
 			ctx.constructor = constructor;
+
+			if (types.isNothing(_new)) {
+				_new = (function(/*paramarray*/...args) {
+					return this._new && this._new(...args) || this;
+				});
+			} else if (types.isString(_new)) {
+				_new = tools.eval("function(/*paramarray*/...args) {" + _new + "}", ctx);
+			};
+			ctx._new = _new;
 
 			if (typeProto) {
 				__Internal__.applyProto(type, base, typeProto, true, false, false, '');
@@ -6226,8 +5521,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return type;
 		}));
 		
-
-	__Internal__.typeInherit = __Internal__.DD_DOC(
+	__Internal__.$inherit = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
@@ -6258,20 +5552,23 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Creates and returns a new Doodad type that inherits from 'this'.",
 		}
 		//! END_REPLACE()
-		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto, /*optional*/ _super, /*optional*/constructor) {
+		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto) {
 			// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
 			const base = ((this === global) ? undefined: this);
 				
 			let name = null,
+				constructor = null,
+				_new = null,
 				uuid = null;
 
 			if (typeProto) {
-				name = types.unbox(types.get(typeProto, '$TYPE_NAME'));
-				uuid = types.unbox(types.get(typeProto, '$TYPE_UUID'));
-				//delete typeProto.$TYPE_NAME;
-				//delete typeProto.$TYPE_UUID;
-				name = !types.isNothing(name) && types.toString(name) || '';
-				uuid = !types.isNothing(uuid) && types.toString(uuid) || '';
+				name = types.get(typeProto, '$TYPE_NAME');
+				constructor = types.get(typeProto, types.ConstructorSymbol);
+				_new = types.get(typeProto, types.NewSymbol);
+				uuid = types.get(typeProto, '$TYPE_UUID');
+
+				name = (types.isNothing(name) ? '' : types.toString(name));
+				uuid = (types.isNothing(uuid) ? '' : types.toString(uuid));
 			};
 	
 			const type = types.createType(
@@ -6281,11 +5578,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					/*base*/
 					base, 
 						
-					/*_super*/
-					_super,
-
 					/*constructor*/
-					constructor, 
+					constructor,
+
+					/*_new*/
+					_new, 
 						
 					/*typeProto*/
 					typeProto, 
@@ -6300,115 +5597,674 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return type;
 		});
 		
-	//__Internal__.typeNew = __Internal__.DD_DOC(
-	//	//! REPLACE_IF(IS_UNSET('debug'), "null")
-	//	{
-	//				author: "Claude Petit",
-	//				revision: 1,
-	//				params: null,
-	//				returns: 'undefined',
-	//				description: "Object or type creator.",
-	//	}
-	//	//! END_REPLACE()
-	//	, function _new() {
-	//	});
-		
-	__Internal__.typeDelete = __Internal__.DD_DOC(
+	//===================================
+	// Errors
+	//===================================
+
+	// Change the prototype of Error so that these properties do not fall back to Object.prototype (yes, I do that !)
+
+	global.Error.prototype.bubble = false;
+	global.Error.prototype.critical = false;
+	global.Error.prototype.trapped = false;
+	global.Error.prototype.promiseName = '';
+	global.Error.prototype.innerStack = '';
+
+	//! IF_SET('serverSide')
+	// For Node.Js
+	global.Error.prototype.code = '';
+	//! END_IF()
+
+
+	types.Error = __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						message: {
+							type: 'string',
+							optional: false,
+							description: "Error message",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'undefined',
+					description: "Generic error with message formatting.",
+		}
+		//! END_REPLACE()
+		, __Internal__.$inherit.call(_shared.Natives.windowError,
+			/*typeProto*/
+			{
+				$TYPE_NAME: 'Error',
+				$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */,
+
+				[_shared.Natives.symbolHasInstance]: types.NOT_CONFIGURABLE(types.READ_ONLY(undefined)),
+
+				[types.ConstructorSymbol]: function constructor(message, /*optional*/params) {
+					message = tools.format(message, params);
+					return [message];
+				},
+
+				$inherit: __Internal__.$inherit,
+
+				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
+
+				_delete() {
+					if (this[__Internal__.symbolInitialized]) {
+						_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+					} else {
+						// Object already deleted, should not happens.
+						types.DEBUGGER();
+					};
+				},
+
+				toString() {
+					return '[type ' + types.getTypeName(this) + ']';
+				},
+			},
+			/*instanceProto*/
+			{
+				[_shared.Natives.symbolToStringTag]: types.NOT_CONFIGURABLE(types.READ_ONLY('Error')),
+
+				name: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
+				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
+
+				parsed: false,
+				parsedStack: null,
+				trapped: false,
+
+				_new(/*paramarray*/...args) {
+					_shared.setAttribute(this, 'name', types.getTypeName(this));
+				},
+
+				_delete() {
+					if (this[__Internal__.symbolInitialized]) {
+						_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+					} else {
+						// Object already deleted, should not happens.
+						types.DEBUGGER();
+					};
+				},
+
+				toString(/*paramarray*/...args) {
+					return this.message;
+				},
+					
+				toLocaleString(/*paramarray*/...args) {
+					return this.toString(...args);
+				},
+
+				parse() {
+					// Call this method before accessing "this.stack", "this.fileName", "this.lineNumber" and "this.columnNumber".
+					if (!this.parsed) {
+						let stack;
+						if (this.stack) {
+							stack = tools.parseStack(this.stack);
+							if (stack) {
+								// Internet Explorer (tested with version 11) and Chrome (tested with version 42) doesn't return more than 10 call levels, so the stack may be empty after "splice".
+								if (!stack.length) {
+									stack = null;
+								};
+							};
+							this.parsedStack = stack;
+						};
+							
+						let fileName,
+							lineNumber,
+							columnNumber,
+							functionName;
+						if (this.fileName) {
+							// <FUTURE> Firefox
+							// NOTE: "this.lineNumber" and "this.columnNumber" should be already set
+							fileName = this.fileName;
+							lineNumber = this.lineNumber;
+							functionName = "";
+						} else if (this.sourceURL) {
+							// Safari 5
+							// NOTE: "this.line" should be already set
+							fileName = this.sourceURL;
+							lineNumber = this.line;
+							columnNumber = 0;
+							functionName = "";
+						} else {
+							// Other browsers
+							// Set attributes from the stack.
+							if (stack) {
+								const trace = stack[0];
+								fileName = trace.path;
+								columnNumber = trace.columnNumber;
+								lineNumber = trace.lineNumber;
+								functionName = trace.functionName;
+							} else {
+								fileName = "";
+								columnNumber = 0;
+								lineNumber = 0;
+								functionName = "";
+							};
+						};
+						this.fileName = fileName;
+						this.sourceURL = fileName;
+						this.line = lineNumber;
+						this.lineNumber = lineNumber;
+						this.columnNumber = columnNumber;
+						this.functionName = functionName;
+						this.parsed = true;
+					};
+				}
+			},
+		));
+
+	__Internal__.REGISTER(types.Error);
+
+	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
 					revision: 2,
 					params: null,
-					returns: 'undefined',
-					description: "Object or type destructor.",
+					returns: 'error',
+					description: "Raised on invalid value type.",
 		}
 		//! END_REPLACE()
-		, function _delete() {
-			if (this[__Internal__.symbolInitialized]) {
-				_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
-			} else {
-				// Object already deleted, should not happens.
-				types.DEBUGGER();
-			};
-		});
-		
-	__Internal__.typeToString = __Internal__.DD_DOC(
+		, types.Error.$inherit(
+			{
+				$TYPE_NAME: "ValueError",
+				$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */,
+			})));
+
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						message: {
+							type: 'string',
+							optional: false,
+							description: "A message explaining the assertion.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised when an assertion fail.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit(
+			{
+				$TYPE_NAME: "AssertionError",
+				$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('AssertionError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					if (message) {
+						return ["Assertion failed: " + message, params];
+					} else {
+						return ["Assertion failed."];
+					};
+				},
+			})));
+
+	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
 					revision: 1,
 					params: {
-						paramarray: {
-							type: 'any',
+						message: {
+							type: 'string',
 							optional: true,
-							description: "Arguments.",
+							description: "A message explaining that something has failed to parse.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
 						},
 					},
-					returns: 'string',
-					description: "Converts the object to a string using neutral locale and returns that string.",
+					returns: 'error',
+					description: "Raised on parse error.",
 		}
 		//! END_REPLACE()
-		, function toString(/*paramarray*/...args) {
-			if (types.isType(this)) {
-				return '[type ' + types.getTypeName(this) + ']';
-			} else {
-				const name = types.getTypeName(this);
-				if (name) {
-					return '[object ' + name + ']';
-				} else {
-					return this._super(...args);
-				};
-			};
-		});
+		, types.Error.$inherit({
+				$TYPE_NAME: "ParseError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Parse error.", params];
+				},
+			})));
 		
-	__Internal__.typeToLocaleString = __Internal__.DD_DOC(
+	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
 					revision: 1,
 					params: {
-						paramarray: {
-							type: 'any',
+						message: {
+							type: 'string',
 							optional: true,
-							description: "Arguments.",
+							description: "A message explaining what is not supported.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
 						},
 					},
-					returns: 'string',
-					description: "Converts the object to a string using current locale and returns that string.",
+					returns: 'error',
+					description: "Raised when something is not supported.",
 		}
 		//! END_REPLACE()
-		, function toLocaleString(/*paramarray*/...args) {
-			return this.toString(...args);
+		, types.Error.$inherit({
+				$TYPE_NAME: "NotSupported",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('NotSupported')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Not supported.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining what is not available.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised when something is not available.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "NotAvailable",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('NotAvailable')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Not available.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						code: {
+							type: 'integer',
+							optional: false,
+							description: "HTTP status code.",
+						},
+						message: {
+							type: 'string',
+							optional: false,
+							description: "A message explaining the error.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised on HTTP error.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "HttpError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](code, /*optional*/message, /*optional*/params) {
+					this.code = code;
+					return [message || 'HTTP error. The status code is : ~0~.', params || [code]];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that something has overflowed.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised on buffer overflow.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "BufferOverflow",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('BufferOverflow')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Buffer overflow.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that something has timed out.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised on timeout.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "TimeoutError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('TimeoutError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Operation timed out.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that something has been canceled.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised on cancel.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "CanceledError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Operation canceled.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that something is denied or not allowed.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'error',
+					description: "Raised on access denied or not allowed operation.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "AccessDenied",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('AccessDenied')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Access denied.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that the script execution has been interrupted.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
+				},
+				returns: 'error',
+				description: "Signals that script execution has been interrupted, but not aborted.",
+		}
+		//! END_REPLACE()
+		, types.Error.$inherit({
+				$TYPE_NAME: "ScriptInterruptedError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */,
+
+				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
+
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Script interrupted.", params];
+				},
+			})));
+		
+	__Internal__.REGISTER(__Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					exitCode: {
+						type: 'integer',
+						optional: true,
+						description: "Exit code.",
+					},
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that the script has been aborted.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
+				},
+				returns: 'error',
+				description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
+		}
+		//! END_REPLACE()
+		, types.ScriptInterruptedError.$inherit({
+				$TYPE_NAME: "ScriptAbortedError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */,
+
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
+
+				[types.ConstructorSymbol](/*optional*/exitCode, /*optional*/message, /*optional*/params) {
+					this.exitCode = types.toInteger(exitCode) || 0;
+					return [message || "Script aborted.", params];
+				},
+			})));
+
+	//===================================
+	// DD_DOC
+	//===================================
+		
+	__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
+
+	_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
+		
+	__Internal__.DD_DOC = __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					doc: {
+						type: 'object',
+						optional: false,
+						description: "Document to apply.",
+					},
+					value: {
+						type: 'any',
+						optional: false,
+						description: "Target value",
+					},
+				},
+				returns: 'object',
+				description: "Applies a document to an object and returns that object.",
+		}
+		//! END_REPLACE()
+		, function DD_DOC(doc, value) {
+			value = _shared.Natives.windowObject(value);
+			if (types.hasDefinePropertyEnabled()) {
+				types.defineProperty(value, __Internal__.symbolDD_DOC, {
+					value: doc && types.freezeObject(doc),
+				});
+			} else {
+				value[__Internal__.symbolDD_DOC] = doc && types.freezeObject(doc);
+			};
+			return value;
 		});
 
+	__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Gets the document applied to an object.",
+		}
+		//! END_REPLACE()
+		, function GET_DD_DOC(value) {
+			return value[__Internal__.symbolDD_DOC];
+		});
+		
+	(function() {
+		for (let i = 0; i < __Internal__.tempDocs.length; i++) {
+			__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
+		};
+		//delete __Internal__.tempDocs;
+		__Internal__.tempDocs = null;
+	})();
+
+	//===================================
+	// Type
+	//===================================
+
+	__Internal__.ADD('SINGLETON', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					paramsDirection: 'rightToLeft',
+					params: {
+						type: {
+							type: 'type',
+							optional: false,
+							description: "A Doodad type.",
+						},
+					},
+					returns: 'type',
+					description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
+		}
+		//! END_REPLACE()
+		, function SINGLETON(type) {
+			if (!types.isType(type)) {
+				throw new types.Error("Invalid type.");
+			};
+
+			if (!types.isSingleton(type)) {
+				_shared.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
+			};
+				
+			return type;
+		}));
+		
 	types.Type = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: null,
 					returns: 'object',
 					description: "Base type of every Doodad types.",
 		}
 		//! END_REPLACE()
-		, __Internal__.typeInherit.call(undefined,
+		, __Internal__.$inherit.call(undefined,
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Type',
 				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
 
+				[__Internal__.symbol$IsSingleton]: types.READ_ONLY(false),
+				[__Internal__.symbolSingleton]: types.READ_ONLY(null),
+
 				_super: null,
 			
 				$inherit: __Internal__.$inherit,
 			
-				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-				_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
-			
-				toString: types.SUPER(__Internal__.typeToString),
-				toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
+				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
 
-				[__Internal__.symbol$IsSingleton]: types.READ_ONLY(false),
-				[__Internal__.symbolSingleton]: types.READ_ONLY(null),
+				_delete() {
+					if (this[__Internal__.symbolInitialized]) {
+						_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+					} else {
+						// Object already deleted, should not happens.
+						types.DEBUGGER();
+					};
+				},
+
+				toString(/*paramarray*/...args) {
+					return '[type ' + (types.getTypeName(this) || '<anonymous>') + ']';
+				},
+
+				toLocaleString(/*paramarray*/...args) {
+					return this.toString(...args);
+				},
 			},
 				
 			/*instanceProto*/
@@ -6416,10 +6272,23 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				_super: null,
 			
 				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
-				_delete: types.NOT_CONFIGURABLE(types.READ_ONLY(__Internal__.typeDelete)),
-			
-				toString: types.SUPER(__Internal__.typeToString),
-				toLocaleString: types.SUPER(__Internal__.typeToLocaleString),
+
+				_delete() {
+					if (this[__Internal__.symbolInitialized]) {
+						_shared.setAttribute(this, __Internal__.symbolInitialized, false, {});
+					} else {
+						// Object already deleted, should not happens.
+						types.DEBUGGER();
+					};
+				},
+
+				toString(/*paramarray*/...args) {
+					return '[object ' + (types.getTypeName(this) || '<anonymous>') + ']';
+				},
+
+				toLocaleString(/*paramarray*/...args) {
+					return this.toString(...args);
+				},
 			},
 		));
 

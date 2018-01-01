@@ -1613,14 +1613,20 @@ exports.add = function add(DD_MODULES) {
 			)));
 				
 
-			types.REGISTER(types.createErrorType("MissingDependencies", types.Error, function _super(missingDeps, modules) {
-				this.missingDeps = missingDeps;
-				this.modules = modules;
-				const names = tools.map(missingDeps, function(dep) {
-					return dep.module;
-				});
-				return ["Missing dependencies: ~0~.", [names.join(', ')]];
-			}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('MissingDependencies')), true) */ null /*! END_REPLACE() */));
+			types.REGISTER(types.Error.$inherit(
+				{
+					$TYPE_NAME: "MissingDependencies",
+					$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('MissingDependencies')), true) */ null /*! END_REPLACE() */,
+
+					[types.ConstructorSymbol](missingDeps, modules) {
+						this.missingDeps = missingDeps;
+						this.modules = modules;
+						const names = tools.map(missingDeps, function(dep) {
+							return dep.module;
+						});
+						return ["Missing dependencies: ~0~.", [names.join(', ')]];
+					}
+				}));
 
 
 

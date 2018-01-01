@@ -726,7 +726,7 @@ exports.add = function add(DD_MODULES) {
 						fn = obj[attr];
 					};
 					if (types.isCallback(fn)) {
-						throw new types.TypeError("The function is already a Callback.");
+						throw new types.ValueError("The function is already a Callback.");
 					};
 					if (types.isNothing(bubbleError)) {
 						bubbleError = true;
@@ -815,7 +815,7 @@ exports.add = function add(DD_MODULES) {
 						fn = obj[attr];
 					};
 					if (types.isCallback(fn)) {
-						throw new types.TypeError("The function is already a Callback.");
+						throw new types.ValueError("The function is already a Callback.");
 					};
 					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT((obj && types.isBindable(fn)) || (!obj && types.isFunction(fn)), "Invalid function.");
@@ -1097,7 +1097,7 @@ exports.add = function add(DD_MODULES) {
 										return fn.call(thisObj);
 									};
 								} else {
-									throw new types.TypeError("'fn' is not a function.");
+									throw new types.ValueError("'fn' is not a function.");
 								};
 							} catch(ex) {
 								throw ex;
@@ -1483,11 +1483,18 @@ exports.add = function add(DD_MODULES) {
 							description: "Application error with title and message formatting.",
 				}
 				//! END_REPLACE()
-				, types.createErrorType('Application', types.Error, function _super(title, message, /*optional*/params) {
-					root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
-					this.title = title;
-					return [message, params];
-				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('ApplicationException')), true) */ null /*! END_REPLACE() */)));
+				, types.Error.$inherit(
+					/*typeProto*/
+					{
+						$TYPE_NAME: 'Application',
+						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('ApplicationException')), true) */ null /*! END_REPLACE() */,
+
+						[_shared.ConstructorSymbol](title, message, /*optional*/params) {
+							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
+							this.title = title;
+							return [message, params];
+						}
+					})));
 
 			doodad.ADD('trapException', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -4982,7 +4989,7 @@ exports.add = function add(DD_MODULES) {
 					if (!name) {
 						name = types.getFunctionName(val);
 						if (!name) {
-							throw new types.TypeError("A function name is required.");
+							throw new types.ValueError("A function name is required.");
 						};
 					};
 					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Replace) | doodad.MethodModifiers.Override;
@@ -5024,7 +5031,7 @@ exports.add = function add(DD_MODULES) {
 					if (!name) {
 						name = types.getFunctionName(val);
 						if (!name) {
-							throw new types.TypeError("A function name is required.");
+							throw new types.ValueError("A function name is required.");
 						};
 					};
 					fn[_shared.ModifiersSymbol] = ((fn[_shared.ModifiersSymbol] || 0) & ~doodad.MethodModifiers.Override) | doodad.MethodModifiers.Replace;
@@ -5874,12 +5881,15 @@ exports.add = function add(DD_MODULES) {
 				__Internal__.postExtend(destInstanceAttributes, instanceExtendedAttributes);
 					
 				if (baseIsType) {
-					const typeProto = {},
+					const typeProto = {
+							$TYPE_NAME: protoName,
+							$TYPE_UUID: protoUUID,
+
+							[types.NewSymbol]: __Internal__.insideNew,
+						},
+
 						instanceProto = {};
 						
-					typeProto.$TYPE_NAME = types.READ_ONLY(protoName);
-					typeProto.$TYPE_UUID = types.READ_ONLY(protoUUID);
-
 					if (types.has(proto, '_new')) {
 						instanceProto._new = typeProto._new = proto._new;
 					};
@@ -5894,12 +5904,6 @@ exports.add = function add(DD_MODULES) {
 						
 						/*instanceProto*/
 						instanceProto,
-						
-						/*_super*/
-						null,
-
-						/*constructor*/
-						__Internal__.insideNew
 					);
 
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, newType));
@@ -6030,7 +6034,7 @@ exports.add = function add(DD_MODULES) {
 					modifiers = baseTypeData[_shared.ModifiersSymbol] || 0;
 
 					if (!(modifiers & doodad.ClassModifiers.Expandable)) {
-						throw new types.TypeError("Object is not expandable.");
+						throw new types.Error("Object is not expandable.");
 					};
 
 					typeStorage = baseTypeData[_shared.AttributesStorageSymbol];
@@ -6177,15 +6181,15 @@ exports.add = function add(DD_MODULES) {
 						const dispatch = this && this[_shared.CurrentDispatchSymbol];
 
 						if (!dispatch) {
-							throw new types.TypeError("Invalid call to '_superFrom'.");
+							throw new types.Error("Invalid call to '_superFrom'.");
 						};
 							
 						if (!types.isType(cls)) {
-							throw new types.TypeError("The 'cls' argument must be a type.");
+							throw new types.ValueError("The 'cls' argument must be a type.");
 						};
 							
 						if (!types._implements(this, cls)) {
-							throw new types.TypeError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || __Internal__.ANONYMOUS, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+							throw new types.ValueError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || __Internal__.ANONYMOUS, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 						};
 							
 						let proto = cls;
@@ -6196,7 +6200,7 @@ exports.add = function add(DD_MODULES) {
 						const name = dispatch[_shared.NameSymbol];
 
 						if (!types.isMethod(proto, name)) {
-							throw new types.TypeError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
+							throw new types.ValueError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
 						};
 
 						const newDispatch = _shared.getAttribute(proto, name),
@@ -6283,9 +6287,9 @@ exports.add = function add(DD_MODULES) {
 
 						return (function superAsync(/*paramarray* /...params) {
 							if (!canBeDestroyed && types.DESTROYED(this)) {
-								throw new types.TypeError("Object is destroyed.");
+								throw new types.Error("Object is destroyed.");
 							};
-									
+
 							if (!_super) {
 								// No caller
 								return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
@@ -6426,7 +6430,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function OutsideCallback(obj, fn) {
 					if (types.isCallback(fn)) {
-						throw new types.TypeError("The function is already a Callback.");
+						throw new types.ValueError("The function is already a Callback.");
 					};
 					const cb = types.INHERIT(doodad.OutsideCallback, function outside(/*paramarray*/...params) {
 						return __Internal__.callOutsideFn.call(obj, fn, params);
@@ -8799,7 +8803,7 @@ exports.add = function add(DD_MODULES) {
 								value: value,
 							};
 						} else {
-							throw new types.TypeError("Value can't be packed.");
+							throw new types.ValueError("Value can't be packed.");
 						};
 						return data;
 					}))),
@@ -8842,7 +8846,7 @@ exports.add = function add(DD_MODULES) {
 								const isSerializable = !isError && types._implements(cls, interfaces.Serializable);
 								const fromJSON = (cls && !isError && !isSerializable ? cls.fromJSON : null);
 								if (!isError && !isSerializable && !types.isFunction(fromJSON)) {
-									throw new types.TypeError("Object of type '~0~' can't be deserialized.", [clsName]);
+									throw new types.ValueError("Object of type '~0~' can't be deserialized.", [clsName]);
 								};
 								if (isError) {
 									const tmp = new cls();
@@ -8860,7 +8864,7 @@ exports.add = function add(DD_MODULES) {
 									value = fromJSON.call(cls, value);
 								};
 							} else {
-								throw new types.TypeError("Invalid packet.");
+								throw new types.ValueError("Invalid packet.");
 							};
 						} else if (types.isArray(data)) {
 							value = tools.map(data, this.$unpack, this);

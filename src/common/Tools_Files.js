@@ -143,7 +143,7 @@ exports.add = function add(DD_MODULES) {
 				} else if (types._instanceof(location, [files.Path, files.Url])) {
 					return location;
 				} else {
-					throw new types.TypeError("Invalid file location object.");
+					throw new types.ValueError("Invalid file location object.");
 				};
 			});
 
@@ -184,9 +184,15 @@ exports.add = function add(DD_MODULES) {
 							description: "Path error.",
 				}
 				//! END_REPLACE()
-				, types.createErrorType("PathError", types.Error, function _super(message, /*optional*/params) {
-					return [message || 'Path error.', params];
-				}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('PathError')), true) */ null /*! END_REPLACE() */)));
+				, types.Error.$inherit(
+					{
+						$TYPE_NAME: 'PathError',
+						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PathError')), true) */ null /*! END_REPLACE() */,						
+
+						[types.Constructor](message, /*optional*/params) {
+							return [message || 'Path error.', params];
+						}
+					})));
 
 			__Internal__.relativeToAbsolute = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
