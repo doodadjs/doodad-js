@@ -754,7 +754,7 @@ exports.add = function add(DD_MODULES) {
 						options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 					};
 
-					if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
+					if ((types.get(types.get(options, 'startup'), 'secret') || null) !== _shared.SECRET) {
 						throw new types.AccessDenied("Secrets mismatch.");
 					};
 

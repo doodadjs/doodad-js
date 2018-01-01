@@ -3056,7 +3056,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// SECRET
 	//==============
 		
-	_shared.SECRET = types.get(__options__, 'secret');
+	_shared.SECRET = types.get(__options__, 'secret') || null;
 	//delete __options__.secret;
 	__options__.secret = null;
 
