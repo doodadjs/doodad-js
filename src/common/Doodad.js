@@ -1489,7 +1489,7 @@ exports.add = function add(DD_MODULES) {
 						$TYPE_NAME: 'Application',
 						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('ApplicationException')), true) */ null /*! END_REPLACE() */,
 
-						[_shared.ConstructorSymbol](title, message, /*optional*/params) {
+						[types.ConstructorSymbol](title, message, /*optional*/params) {
 							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmptyTrim(title), "Invalid title.");
 							this.title = title;
 							return [message, params];
