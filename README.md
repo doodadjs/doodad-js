@@ -232,8 +232,8 @@ If you absolutely want private and protected scopes on production, and don't car
 
 ## Pre-built Errors
 
-  - **types.TypeError**: (inherits 'global.TypeError') Raised on invalid value type.
   - **types.Error**: (inherits 'global.Error') Generic error with message formatting.
+  - **types.ValueError**: (inherits 'types.Error') Raised on invalid value.
   - **types.AssertionError**: (inherits 'types.Error') Raised when an assertion fail.
   - **types.ParseError**: (inherits 'types.Error') Raised on parse error.
   - **types.NotSupported**: (inherits 'types.Error') Raised when something is not supported.

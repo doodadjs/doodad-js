@@ -558,7 +558,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function setPromise(Promise) {
 					if (!types.isFunction(Promise)) {
-						throw new types.TypeError("Invalid 'Promise' constructor.");
+						throw new types.ValueError("Invalid 'Promise' constructor.");
 					};
 
 					if (Promise === __Internal__.Promise) {
@@ -582,7 +582,7 @@ exports.add = function add(DD_MODULES) {
 							!types.isFunction(Promise.prototype.then) ||
 							!types.isFunction(Promise.prototype.catch)
 					) {
-						throw new types.TypeError("Invalid 'Promise' implementation. It must supports: 'resolve', 'reject', 'all', 'race', 'prototype.then' and 'prototype.catch'.");
+						throw new types.ValueError("Invalid 'Promise' implementation. It must supports: 'resolve', 'reject', 'all', 'race', 'prototype.then' and 'prototype.catch'.");
 					};
 						
 					let DDPromise;
@@ -627,7 +627,7 @@ exports.add = function add(DD_MODULES) {
 					};
 
 					if (!isStillDDPromise) {
-						throw new types.TypeError("Unsupported 'Promise' implementation.");
+						throw new types.ValueError("Unsupported 'Promise' implementation.");
 					};
 
 					__Internal__.addPromiseBluebirdPolyfills(DDPromise);
@@ -677,7 +677,7 @@ exports.add = function add(DD_MODULES) {
 						fn = obj[attr]; // must throw on invalid scope
 					};
 					if (types.isCallback(fn)) {
-						throw new types.TypeError("The function is already a Callback.");
+						throw new types.ValueError("The function is already a Callback.");
 					};
 					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");

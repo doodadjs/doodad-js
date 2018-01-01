@@ -2796,7 +2796,7 @@ exports.add = function add(DD_MODULES) {
 				/*_super*/
 				function(hook, /*optional*/stdout, /*optional*/stderr) {
 					if (!types.isJsFunction(hook)) {
-						throw new types.TypeError("Invalid hook function.");
+						throw new types.ValueError("Invalid hook function.");
 					};
 					this.__hook = hook;
 					this.__hasStd = !!stdout || !!stderr;

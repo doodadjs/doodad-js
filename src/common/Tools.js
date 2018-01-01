@@ -1427,7 +1427,7 @@ exports.add = function add(DD_MODULES) {
 						//posText = _shared.Natives.stringSearchCall(str, text);
 						posText = text.exec(str);
 						if (!text.global && (start > 0)) {
-							throw new types.TypeError("Regular expression must have the global flag set.");
+							throw new types.ValueError("Regular expression must have the global flag set.");
 						};
 						if (posText) {
 							posText = posText.index;
@@ -1445,7 +1445,7 @@ exports.add = function add(DD_MODULES) {
 							//posStopStr = _shared.Natives.stringSearchCall(str, stopStr);
 							posStopStr = stopStr.exec(str);
 							if (!stopStr.global && (start > 0)) {
-								throw new types.TypeError("Regular expression must have the global flag set.");
+								throw new types.ValueError("Regular expression must have the global flag set.");
 							};
 							if (posStopStr) {
 								posStopStr = posStopStr.index;
@@ -2752,7 +2752,7 @@ exports.add = function add(DD_MODULES) {
 								result = fn.call(thisObj, result, val, key, obj);
 							}, null, sparsed);
 							if (!hasInitial) {
-								throw new types.TypeError("Reduce of empty object with no initial value.");
+								throw new types.ValueError("Reduce of empty object with no initial value.");
 							};
 							return result;
 						};
@@ -2833,7 +2833,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 							if (!hasItem && (arguments.length < 3)) {
-								throw new types.TypeError("Reduce of empty array with no initial value.");
+								throw new types.ValueError("Reduce of empty array with no initial value.");
 							};
 							for (; key >= 0; key--) {
 								if (!sparsed || types.has(obj, key)) {
