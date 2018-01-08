@@ -223,7 +223,7 @@ exports.add = function add(DD_MODULES) {
 				//command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 				//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ []);
 				//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ [], 1);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
+				command.run(types.ValueError,                                {mode: 'isinstance'}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 				command.run(0,                                                {repetitions: 100}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run(6,                                                {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run("123",                                            {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val}, "");
@@ -234,7 +234,7 @@ exports.add = function add(DD_MODULES) {
 				//command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 				//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ []);
 				//command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ [], 1);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
+				command.run(types.ValueError,                                {mode: 'isinstance'}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 				command.run(0,                                                {repetitions: 100}, /**/ [], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run(6,                                                {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run("321",                                            {repetitions: 100}, /**/ ["1", "2", "3"], function(result, val, key, obj) {return result + val}, "");

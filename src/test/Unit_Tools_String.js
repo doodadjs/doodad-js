@@ -149,14 +149,14 @@ exports.add = function add(DD_MODULES) {
 				command.run(NaN,                                              {repetitions: 100}, /**/ "abcabcabc", "b", undefined, undefined, "a");
 				command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"));
 				command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 0);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 2);
+				command.run(types.ValueError,                              {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 2);
 				command.run(4,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 2);
 				command.run(-1,                                               {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 0, 0);
 				command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 0, 1);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 2, 4);
+				command.run(types.ValueError,                              {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), 2, 4);
 				command.run(4,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 2, 4);
 				command.run(NaN,                                              {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), undefined, undefined, "a");
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 1, undefined, new RegExp("a"));
+				command.run(types.ValueError,                              {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 1, undefined, new RegExp("a"));
 				command.run(1,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 1, undefined, new RegExp("a", "g"));
 					
 				command.end();
@@ -321,7 +321,7 @@ exports.add = function add(DD_MODULES) {
 				command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 				command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");
 				command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "", 1);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
+				command.run(types.ValueError,                              {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 				command.run(0,                                                {repetitions: 100}, /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run(6,                                                {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run("123",                                            {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val}, "");
@@ -334,7 +334,7 @@ exports.add = function add(DD_MODULES) {
 				command.run(types.AssertionError,                         {mode: 'isinstance'}   /**/);
 				command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "");
 				command.run(types.AssertionError,                         {mode: 'isinstance'},  /**/ "", 1);
-				command.run(global.TypeError || types.TypeError,           {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
+				command.run(types.ValueError,                             {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48});
 				command.run(0,                                                {repetitions: 100}, /**/ "", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run(6,                                                {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val.charCodeAt(0) - 48}, 0);
 				command.run("321",                                            {repetitions: 100}, /**/ "123", function(result, val, key, obj) {return result + val}, "");
