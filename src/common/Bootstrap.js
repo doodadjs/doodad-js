@@ -5798,7 +5798,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						this.parsed = true;
 					};
 				}
-			},
+			}
 		));
 
 	__Internal__.REGISTER(types.Error);
