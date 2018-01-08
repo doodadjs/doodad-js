@@ -6341,7 +6341,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				toLocaleString(/*paramarray*/...args) {
 					return this.toString(...args);
 				},
-			},
+			}
 		));
 
 	__Internal__.REGISTER(types.Type);
