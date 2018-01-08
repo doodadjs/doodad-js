@@ -1,14 +1,11 @@
 {
     "Symbol": "fd8598bd-b527-4059-9989-7b631382fa17",
-    "SYMBOL_IS_TYPE": "d8d31b3b-889d-438d-962f-654c892e9e76",
     "SYMBOL_TYPE_UUID": "7345d921-5397-47e4-a270-f5c9e7a46d06",
     "SYMBOL_INITIALIZED": "d5b3a3bf-4367-4dba-b662-5aae666007e2",
     "SYMBOL_$IS_SINGLETON": "62f732b5-a44d-43ca-85d1-5e2e379f4f56",
     "SYMBOL_SINGLETON": "9f20ad70-a77c-41e9-aa69-dff7b169ce1f",
     "SYMBOL_JS_TYPE_UUID": "02331456-445e-453f-9b26-c903068acd1a",
     "JS_TYPE": "db517c82-6581-4cd2-9ef8-627b55d17cef",
-    "SYMBOL_IS_ERROR_TYPE": "5d3a3b4a-b425-4eea-82f2-8297df68c70b",
-    "ERROR_TYPE": "f13fbc79-e79c-44ec-b792-a77abda96334",
     "TypeError": "8c9ad580-5f4b-41e1-96c4-5b4eeccd8d51",
     "Error": "18cd1d15-6e16-4d0a-9f72-43ab0c137425",
     "AssertionError": "2af70766-9254-46c4-b30c-7b061bac2a2a",
@@ -136,5 +133,8 @@
     "SYMBOL_TYPE": "41d48cec-22b9-4150-994f-36fee45ec973",
     "ApplicationException": "6b749447-7e3a-4665-81a2-2b7f809c68c6",
     "PathError": "ef2e0bdd-4e8b-4523-b2d2-3c0beeda4077",
-    "PageMovedError": "641130dc-a03b-48a5-9bb5-e8751babeb87"
+    "PageMovedError": "641130dc-a03b-48a5-9bb5-e8751babeb87",
+    "SYMBOL_NEW": "071dfbec-0a48-42e6-9dae-c65b53ce727b",
+    "SYMBOL_IS_TYPE": "9855f81d-b016-4e7a-b9c5-d8e1e784762d",
+    "SYMBOL_IS_ERROR_TYPE": "ff39b60c-a79c-4115-9e77-dac3d29799fb"
 }
