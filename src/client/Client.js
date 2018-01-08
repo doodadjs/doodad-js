@@ -1015,9 +1015,15 @@ exports.add = function add(DD_MODULES) {
 						description: "Signals that the current location has been moved to another one.",
 			}
 			//! END_REPLACE()
-			, types.createErrorType("PageMovedError", types.ScriptAbortedError, function _super(message, /*optional*/params) {
-				return [message || "Page moved.", params];
-			}, null, null, null, /*! REPLACE_BY(TO_SOURCE(UUID('PageMovedError')), true) */ null /*! END_REPLACE() */)));
+			, types.ScriptAbortedError.$inherit(
+				{
+					$TYPE_NAME: "PageMovedError",
+					$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PageMovedError')), true) */ null /*! END_REPLACE() */,
+
+					[types.ConstructorSymbol](message, /*optional*/params) {
+						return [message || "Page moved.", params];
+					},
+				})));
 
 			tools.ADD('getCurrentLocation', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
