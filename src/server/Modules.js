@@ -195,8 +195,9 @@ exports.add = function add(DD_MODULES) {
 						};
 
 						if (_module && (!path || path.isRelative)) {
-							location = files.Path.parse(_module, {file: 'package.json'})
-								.toApiString({isRelative: true});
+							location = files.parsePath(_module, {isRelative: true})
+								.combine('package.json')
+								.toApiString();
 							// TODO: Replace "modules.resolve" by ??? when implemented.
 							location = modules.resolve(location);
 							location = files.Path.parse(location)
@@ -379,25 +380,19 @@ exports.add = function add(DD_MODULES) {
 						{module: pkg, path: 'make.json'},
 					], options)
 					.then(function(files) {
-						return {
-							manifest: files[0].exports.default,
-							makeManifest: files[1].exports.default,
-						};
-					})
-					.then(function(manifests) {
-						const manifest = manifests.manifest,
-							makeManifest = manifests.makeManifest;
+						const manifest = files[0].exports.default,
+							makeManifest = files[1].exports.default;
 							
 						return {
 							add: function(DD_MODULES) {
 								DD_MODULES = DD_MODULES || {};
 								DD_MODULES[manifest.name] = {
 									type: makeManifest.type || 'Package',
-									version: manifest.version + (manifest.stage || 'd'),
-									dependencies: tools.filter(makeManifest.dependencies, function(dep) {
+									version: makeManifest.version + (makeManifest.stage || 'd'),
+									dependencies: tools.filter(makeManifest.dependencies || [], function(dep) {
 										return dep.server && !dep.test;
 									}).map(function(dep) {
-										return tools.extend({}, dep, {type: types.get(dep, 'type', 'Package')});
+										return tools.extend({type: 'Package'}, dep);
 									}),
 										
 									create: function create(root, /*optional*/_options, _shared) {

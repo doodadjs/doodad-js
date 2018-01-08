@@ -6,7 +6,7 @@ Object-oriented programming framework for Javascript.
 
 ## Features
 
-  -  Classical OOP
+  -  More Classical OOP
   -  Inheritance and Composition
   -  Interfaces (and Mix-ins and Traits)
   -  Class extenders
@@ -30,7 +30,7 @@ Object-oriented programming framework for Javascript.
 
 ### Browsers (with a bundler)
 
-Use the package "doodad-js" in your code and create your bundle with "browserify" or "webpack".
+Use the package "@doodad-js/core" in your code and create your bundle with "browserify" or "webpack".
 
 NOTE: The entry point should automatically be set to "browserify/browserify.min.js".
 
@@ -41,15 +41,15 @@ Download and extract the .zip file from the [latest release][latest-url].
 In your HTML file, load UUID and the Doodad package :
 
 ```html
-    <script src="lib/uuid/uuid.min.js"></script>
-    <script src="doodad-js.min.js"></script>
+    <script src="dist/@doodad-js/core/lib/uuid/uuid.min.js"></script>
+    <script src="dist/@doodad-js/core/package.min.js"></script>
 ```
 
 or their debug version :
 
 ```html
-    <script src="lib/uuid/uuid.js"></script>
-    <script src="doodad-js.js"></script>
+    <script src="dist/@doodad-js/core/lib/uuid/uuid.js"></script>
+    <script src="dist/@doodad-js/core/package.js"></script>
 ```
 
 From Javascript, when the scripts are loaded, create the root namespace :
@@ -79,7 +79,7 @@ You can create a shortcut to the namespaces this way :
 Download and install Doodad from NPM using the command prompt (Windows) or your favorite shell (Unix/Linux) :
 
 ```bash
-    npm install doodad-js --save
+    npm install @doodad-js/core --save
 ```
 
 By default, Doodad is running in production mode, which disables every validations. You may want to activate the development mode by setting the "NODE_ENV" environment variable :
@@ -95,7 +95,7 @@ Linux/Unix (shell) :
 
 Now, in your Node.js script, create the root namespace :
 ```js
-    require('doodad-js').createRoot()
+    require('@doodad-js/core').createRoot()
         .then(root => ...)
         .catch(err => {
             console.error(err);
@@ -116,7 +116,7 @@ You can create a shortcut to the namespaces this way :
 
 ### Source code
 
-Doodad must be built using [doodad-js-make][make-url] and its dependencies.
+Doodad must be built using [make][make-url] and its dependencies.
 
 ## Scopes
 
@@ -445,34 +445,34 @@ I'm also looking more forward on the future : WASM. With that, I hope to be able
 
 ## Other available packages
 
-  - **doodad-js**: Object-oriented programming framework (release)
-  - **doodad-js-cluster**: Cluster manager (alpha)
-  - **doodad-js-dates**: Dates formatting (beta)
-  - **doodad-js-http**: Http server (alpha)
-  - **doodad-js-http_jsonrpc**: JSON-RPC over http server (alpha)
-  - **doodad-js-io**: I/O module (alpha)
-  - **doodad-js-ipc**: IPC/RPC server (alpha)
-  - **doodad-js-json**: JSON parser (alpha)
-  - **doodad-js-loader**: Scripts loader (beta)
-  - **doodad-js-locale**: Locales (beta)
-  - **doodad-js-make**: Make tools for doodad (alpha)
-  - **doodad-js-mime**: Mime types (beta)
-  - **doodad-js-minifiers**: Javascript minifier used by doodad (alpha)
-  - **doodad-js-safeeval**: SafeEval (beta)
-  - **doodad-js-server**: Servers base module (alpha)
-  - **doodad-js-templates**: HTML page templates (alpha)
-  - **doodad-js-terminal**: Terminal (alpha)
-  - **doodad-js-test**: Test application
-  - **doodad-js-unicode**: Unicode Tools (beta)
-  - **doodad-js-widgets**: Widgets base module (alpha)
-  - **doodad-js-xml**: XML Parser (beta)
+  - **@doodad-js/core**: Object-oriented programming framework (release)
+  - **@doodad-js/cluster**: Cluster manager (alpha)
+  - **@doodad-js/dates**: Dates formatting (beta)
+  - **@doodad-js/http**: Http server (alpha)
+  - **@doodad-js/http_jsonrpc**: JSON-RPC over http server (alpha)
+  - **@doodad-js/io**: I/O module (alpha)
+  - **@doodad-js/ipc**: IPC/RPC server (alpha)
+  - **@doodad-js/json**: JSON parser (alpha)
+  - **@doodad-js/loader**: Scripts loader (beta)
+  - **@doodad-js/locale**: Locales (beta)
+  - **@doodad-js/make**: Make tools for doodad (alpha)
+  - **@doodad-js/mime**: Mime types (beta)
+  - **@doodad-js/minifiers**: Javascript minifier used by doodad (alpha)
+  - **@doodad-js/safeeval**: SafeEval (beta)
+  - **@doodad-js/server**: Servers base module (alpha)
+  - **@doodad-js/templates**: HTML page templates (alpha)
+  - **@doodad-js/terminal**: Terminal (alpha)
+  - **@doodad-js/test**: Test application
+  - **@doodad-js/unicode**: Unicode Tools (beta)
+  - **@doodad-js/widgets**: Widgets base module (alpha)
+  - **@doodad-js/xml**: XML Parser (beta)
   
 ## License
 
   [Apache-2.0][license-url]
 
-[npm-image]: https://img.shields.io/npm/v/doodad-js.svg
-[npm-url]: https://npmjs.org/package/doodad-js
+[npm-image]: https://img.shields.io/npm/v/@doodad-js/core.svg
+[npm-url]: https://npmjs.org/package/@doodad-js/core
 [license-url]: http://opensource.org/licenses/Apache-2.0
 [latest-url]: https://github.com/doodadjs/doodad-js/releases/latest
-[make-url]: https://npmjs.org/package/doodad-js-make
+[make-url]: https://npmjs.org/package/@doodad-js/make

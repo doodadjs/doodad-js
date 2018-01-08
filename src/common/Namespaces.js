@@ -214,6 +214,10 @@ exports.add = function add(DD_MODULES) {
 				return __Internal__.DD_REGISTRY.remove(name, type, options);
 			}));
 
+			__Internal__.getBaseName = function getBaseName(name) {
+				return (name[0] === '@' ? name.split('/', 3).slice(0, 2).join('/') : name.split('/', 2)[0]);
+			};
+
 			__Internal__.createNamespace = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -292,7 +296,7 @@ exports.add = function add(DD_MODULES) {
 					};
 
 					const checkDependencies = function _checkDependencies(spec) {
-						const baseName = spec.name.split('/', 2)[0];
+						const baseName = __Internal__.getBaseName(spec.name);
 						let deps = types.get(spec, 'dependencies');
 						if (spec.name !== baseName) {
 							if (!deps) {
@@ -334,7 +338,7 @@ exports.add = function add(DD_MODULES) {
 									if (!depEntry || !depEntry.objectCreated || versionMismatch) {
 										if (!optional || !ignoreOptionals) {
 											const missingDep = {
-												module: dep.split('/', 2)[0],
+												module: __Internal__.getBaseName(dep),
 												version: version,
 												optional: optional,
 												path: path,
@@ -381,7 +385,7 @@ exports.add = function add(DD_MODULES) {
 					};
 
 					const createMain = function _createMain(shortNames, spec, parent) {
-						const baseName = spec.name.split('/', 2)[0];
+						const baseName = __Internal__.getBaseName(spec.name);
 
 						const entryType = getEntryType(spec);
 
@@ -480,7 +484,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					
 					const create = function _create(spec, parentName, parent) {
-						const baseName = spec.name.split('/', 2)[0];
+						const baseName = __Internal__.getBaseName(spec.name);
 						const shortNames = baseName.split('.');
 						parent = createParents(shortNames, parentName, parent);
 						const entry = createMain(shortNames, spec, parent);
@@ -491,7 +495,7 @@ exports.add = function add(DD_MODULES) {
 						if (entry) {
 							const specNamespaces = types.get(entry.spec, 'namespaces');
 							if (specNamespaces) {
-								const baseName = entry.spec.name.split('/', 2)[0];
+								const baseName = __Internal__.getBaseName(entry.spec.name);
 								const specNamespacesLen = specNamespaces.length;
 								for (let i = 0; i < specNamespacesLen; i++) {
 									if (types.has(specNamespaces, i)) {
@@ -514,7 +518,7 @@ exports.add = function add(DD_MODULES) {
 
 					const createObject = function _createObject(entry) {
 						if (entry) {
-							const baseName = entry.spec.name.split('/', 2)[0];
+							const baseName = __Internal__.getBaseName(entry.spec.name);
 							let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
 							if (globalOptions) {
 								opts = tools.extend({}, globalOptions, opts);
@@ -578,7 +582,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					
 					const check = function _check(spec) {
-						const baseName = spec.name.split('/', 2)[0];
+						const baseName = __Internal__.getBaseName(spec.name);
 						if (!spec.bootstrap && (spec.name !== baseName)) {
 							const existing = __Internal__.DD_REGISTRY.get(spec.name);
 							if (existing) {
@@ -662,7 +666,7 @@ exports.add = function add(DD_MODULES) {
 						
 						const globalOptions = types.get(options, 'global');
 
-						const baseName = entry.spec.name.split('/', 2)[0];
+						const baseName = __Internal__.getBaseName(entry.spec.name);
 						options = types.get(options, baseName);
 
 						if (globalOptions) {

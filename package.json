@@ -1,5 +1,5 @@
 {
-  "name": "doodad-js",
+  "name": "@doodad-js/core",
   "description": "Object-oriented programming framework for Javascript",
   "version": "0.0.0",
   "files": [

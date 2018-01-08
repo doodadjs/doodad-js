@@ -64,14 +64,15 @@ exports.add = function add(DD_MODULES) {
 			modules.ADD('getOptions', function getOptions() {
 				return __options__;
 			});
-				
 
-				
-			//const __Internal__ = {
-			//};
-			
-				
-					
+
+			const __Internal__ = {
+				getPackageName: function getPackageName(name) {
+					return ((name[0] === '@') ? name.split('/')[1] : name);
+				},
+			};
+
+
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -135,9 +136,12 @@ exports.add = function add(DD_MODULES) {
 										.set({extension: 'min.js'});
 								};
 							};
+						} else if (module) {
+							location = location
+								.set({file: (root.getOptions().debug ? __Internal__.getPackageName(module) + '.js' : __Internal__.getPackageName(module) + '.min.js')});
 						} else {
 							location = location
-								.set({file: (root.getOptions().debug ? module + '.js' : module + '.min.js')});
+								.set({file: (root.getOptions().debug ? 'index.js' : 'index.min.js')});
 						};
 						return location;
 					});

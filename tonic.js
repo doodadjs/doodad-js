@@ -1,4 +1,4 @@
-require('doodad-js').createRoot()
+require('@doodad-js/core').createRoot()
 	.then(root => {
 		const doodad = root.Doodad,
 			mixins = doodad.MixIns,
