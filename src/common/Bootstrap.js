@@ -70,16 +70,22 @@ exports.createEval = exports.eval(exports.generateCreateEval());
 
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 	"use strict";
-		
-	// <PRB> "function.prototype.toString called on incompatible object" raised with some functions (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
-	try {
-		if (typeof global.Event === 'function') {
-			global.Function.prototype.toString.call(global.Event);
+
+	(function checkRuntime() {		
+		// <PRB> Firefox's "Function.prototype.toString" bug #1 : "incompatible object" error message raised with some constructors (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
+		try {
+			if (typeof global.Event === 'function') {
+				global.Function.prototype.toString.call(global.Event);
+			};
+		} catch(ex) {
+			throw new global.Error("Browser version not supported.");
 		};
-	} catch(ex) {
-		throw new global.Error("Browser version not supported.");
-	};
 		
+		// <PRB> Firefox's "Function.prototype.toString" bug #2: Returns class's constructor function instead of the class.
+		if ((class{}).toString().slice(0, 5) !== 'class') {
+			throw new global.Error("Browser version not supported.");
+		};
+	})();
 
 	//! IF_SET('debug')
 	// V8: Increment maximum number of stack frames
@@ -95,90 +101,202 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
 	//! END_IF()
 
-	const __bootFunctions__ = {
-		toBoolean: function toBoolean(obj) {
-			return (obj === 'true') || !!(+obj);
-		},
-	};
 
-	const __options__ = (function(__options__) {
-		const DEPTH = 15;
+	const {types, tools, __options__, _shared, __Internal__} = (function(__options__, _shared, __Internal__) {
+		const types = {
+			toBoolean: function toBoolean(obj) {
+				return (obj === 'true') || !!(+obj);
+			},
 
-		const extendObj = function(level, obj1, obj2, keys2) {
-			const keys2Len = keys2.length;
-			for (let i = 0; i < keys2Len; i++) {
-				const key = keys2[i];
-				if (global.Object.prototype.hasOwnProperty.call(obj2, key)) {
-					const val2 = obj2[key];
-					if ((val2 !== null) && (typeof val2 === 'object') && (level < DEPTH)) {
-						if (global.Object.prototype.hasOwnProperty.call(obj1, key)) {
-							const val1 = obj1[key];
-							obj1[key] = extend(level + 1, ((val1 !== null) && (typeof val1 === 'object') ? val1 : {}), val2);
-						} else {
-							obj1[key] = extend(level + 1, {}, val2);
+			isNothing: function isNothing(obj) {
+				return (obj == null); // Yes, "==", not "==="
+			},
+
+			isString: function isString(obj) {
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				const type = typeof obj;
+				if (type === 'object') {
+					if (obj[_shared.Natives.symbolToStringTag] === 'String') {
+						try {
+							_shared.Natives.stringValueOfCall(obj);
+							return true;
+						} catch(o) {
 						};
-					} else {
-						obj1[key] = val2;
+					} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
+						return true;
+					};
+				} else if (type === 'string') {
+					return true;
+				};
+				return false;
+			},
+
+			isFunction: function isFunction(obj) {
+				return (typeof obj === 'function');
+			},
+
+			isObject: function isObject(obj) {
+				if (obj && (typeof obj === 'object')) {
+					if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
+						let proto = types.getPrototypeOf(obj);
+						if (proto) {
+							return types.isObject(proto);
+						} else {
+							// Null object
+							return true;
+						};
+					} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
+						return true;
 					};
 				};
-			};
+				return false;
+			},
+
+			isObjectLike: function isObjectLike(obj) {
+				const type = typeof obj;
+				return !!obj && ((type === 'object') || (type === 'function'));
+			},
+		
+			isArrayLike: function isArrayLike(obj) {
+				// Unbelievable : There is not an official way to detect an array-like object !!!!
+				if (types.isNothing(obj)) {
+					return false;
+				};
+				if (typeof obj === 'object') {
+					const len = obj.length;
+					return (typeof len === 'number') && ((len >>> 0) === len);
+				} else if (types.isString(obj)) {
+					return true;
+				} else {
+					return false;
+				};
+			},
+
+			keys: function keys(obj) {
+				// Returns enumerable own properties (those not inherited).
+				// Doesn't not include array items.
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				
+				obj = _shared.Natives.windowObject(obj);
+
+				let result;
+				
+				if (types.isArrayLike(obj)) {
+					result = [];
+					for (let key in obj) {
+						if (types.has(obj, key) && !__Internal__.isArrayIndexRegExp.test(key)) {
+							result.push(key);
+						};
+					};
+				} else {
+					result = _shared.Natives.objectKeys(obj);
+				};
+				
+				return result;
+			},
+		
+			symbols: function symbols(obj) {
+				// FUTURE: "Object.symbols" ? (like "Object.keys")
+				// FUTURE: Use "filter"
+				if (types.isNothing(obj)) {
+					return [];
+				};
+				const all = _shared.Natives.objectGetOwnPropertySymbols(obj);
+				const symbols = [];
+				for (let i = 0; i < all.length; i++) {
+					const symbol = all[i];
+					if (types.isEnumerable(obj, symbol)) {
+						symbols.push(symbol);
+					};
+				};
+				return symbols;
+			},
 		};
 
-		const extend = function _extend(level, obj1, ...objs) {
-			const objsLen = objs.length;
-			for (let i = 0; i < objsLen; i++) {
-				if (global.Object.prototype.hasOwnProperty.call(objs, i)) {
-					const obj2 = objs[i];
-					if (obj2 != null) { // Yes, '!=', not '!=='
-						const keys2 = global.Object.keys(obj2);
-						const symbols2 = global.Object.getOwnPropertySymbols(obj2);
-						extendObj(level, obj1, obj2, keys2);
-						extendObj(level, obj1, obj2, symbols2);
+		const tools = {
+			depthExtend: function depthExtend(depth, obj, /*paramarray*/...args) {
+				let result;
+				if (!types.isNothing(obj)) {
+					let extender;
+					if (types.isFunction(depth)) {
+						extender = depth;
+						depth = Infinity;
+					} else {
+						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+						extender = function(result, val, key, extend) {
+							if ((extender.depth >= 0) && types.isObject(val)) {
+								const resultVal = result[key];
+								if (types.isNothing(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										result[key] = extend({}, val);
+									};
+								} else if (types.isObjectLike(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										extend(resultVal, val);
+									};
+								} else if (resultVal !== val) {
+									result[key] = val;
+								};
+							} else {
+								result[key] = val;
+							};
+						};
+						extender.depth = depth;
+					};
+					if (depth >= -1) {
+						result = _shared.Natives.windowObject(obj);
+						const argsLen = args.length;
+						for (let i = 0; i < argsLen; i++) {
+							let arg = args[i];
+							if (types.isNothing(arg)) {
+								continue;
+							};
+							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+							arg = _shared.Natives.windowObject(arg);
+							const keys = types.keys(arg)
+							const keysLen = keys.length; // performance
+							for (let j = 0; j < keysLen; j++) {
+								const key = keys[j];
+								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+							};
+							const symbols = types.symbols(arg);
+							const symbolsLen = symbols.length; // performance
+							for (let j = 0; j < symbolsLen; j++) {
+								const key = symbols[j];
+								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+							};
+						};
 					};
 				};
-			};
-			return obj1;
+				return result;
+			},
 		};
+
 
 		if (global.Array.isArray(_options)) {
-			_options = extend.apply(null, Array.prototype.concat.apply([0, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
+			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
 		//! IF_UNSET("serverSide")
 		} else {
-			_options = extend({}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
+			_options = tools.depthExtend(__Internal__.OPTIONS_DEPTH, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
 		//! END_IF()
 		};
 
-		extend(0, __options__, _options.startup);
+		tools.depthExtend(__Internal__.OPTIONS_DEPTH, __options__, _options.startup);
 		
-		__options__.debug = __bootFunctions__.toBoolean(__options__.debug);
-		__options__.fromSource = __bootFunctions__.toBoolean(__options__.fromSource);
-		__options__.enableProperties = __bootFunctions__.toBoolean(__options__.enableProperties);
-		__options__.enableSymbols = __bootFunctions__.toBoolean(__options__.enableSymbols);
-		__options__.enableAsserts = __bootFunctions__.toBoolean(__options__.enableAsserts);
-		__options__.enableSafeObjects = __bootFunctions__.toBoolean(__options__.enableSafeObjects);
-
-		return __options__;
-	})({
-		//! BEGIN_REMOVE()
-			fromSource: true,					// When 'true', loads source code instead of built code
-		//! END_REMOVE()
-
-		//! IF_SET('debug')
-			debug: true,						// When 'true', will be in 'debug mode'.
-			enableProperties: true,				// When 'true', enables "defineProperty"
-			enableAsserts: true,				// When 'true', enables asserts.
-		//! ELSE()
-		//!	INJECT("debug: false,")				// When 'true', will be in 'debug mode'.
-		//!	INJECT("enableProperties: false,")	// When 'true', enables "defineProperty"
-		//!	INJECT("enableAsserts: false,")		// When 'true', enables asserts.
-		//! END_IF()
-			
-		enableSymbols: true,					// When 'true', symbols are enabled.
-		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
-	});
+		__options__.debug = types.toBoolean(__options__.debug);
+		__options__.fromSource = types.toBoolean(__options__.fromSource);
+		__options__.enableProperties = types.toBoolean(__options__.enableProperties);
+		__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
+		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
+		__options__.enableSafeObjects = types.toBoolean(__options__.enableSafeObjects);
 
 
-	const _shared = (function(_shared) {
 		const natives = _shared.Natives;
 
 		// NOTE: Proxies are too slow. Please enable "safeObject" just when needed then disable it.
@@ -215,209 +333,235 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		};
 
 		_shared.Natives = _shared.safeObject(natives);
+		_shared = _shared.safeObject(_shared);
 
-		return _shared.safeObject(_shared);
-	})({
-		// Secret value used to load modules, ...
-		SECRET: null,
+		__Internal__ = _shared.safeObject(__Internal__);
 
-		// NOTE: Preload of immediatly needed natives.
-		Natives: {
-			// General
-			windowObject: global.Object,
-			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
-			numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
-			windowFunction: global.Function,
-			stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
-			windowMap: global.Map,
-			windowWeakMap: global.WeakMap,
-			windowSet: global.Set,
-			windowWeakSet: global.WeakSet,
+		return {types, tools, __options__, _shared, __Internal__};
+	})(
+		/*__options__*/
+		{
+			//! BEGIN_REMOVE()
+				fromSource: true,					// When 'true', loads source code instead of built code
+			//! END_REMOVE()
 
-			// "eval"
-			windowEval: global.eval,
-
-			// "hasInherited"
-			objectPrototype: global.Object.prototype,
+			//! IF_SET('debug')
+				debug: true,						// When 'true', will be in 'debug mode'.
+				enableProperties: true,				// When 'true', enables "defineProperty"
+				enableAsserts: true,				// When 'true', enables asserts.
+			//! ELSE()
+			//!	INJECT("debug: false,")				// When 'true', will be in 'debug mode'.
+			//!	INJECT("enableProperties: false,")	// When 'true', enables "defineProperty"
+			//!	INJECT("enableAsserts: false,")		// When 'true', enables asserts.
+			//! END_IF()
 			
-			// "createObject"
-			objectCreate: global.Object.create,
-			
-			// "hasDefinePropertyEnabled" and "defineProperty"
-			objectDefineProperty: global.Object.defineProperty,
-			
-			// "defineProperties"
-			objectDefineProperties: global.Object.defineProperties,
-			
-			// "allKeys"
-			objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
-			
-			// "getOwnPropertyDescriptor"
-			objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
-			
-			// "getPrototypeOf"
-			objectGetPrototypeOf: global.Object.getPrototypeOf,
-			
-			// "isPrototypeOf"
-			objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
-
-			// "setPrototypeOf"
-			objectSetPrototypeOf: global.Object.setPrototypeOf,
-			
-			// "isArray"
-			arrayIsArray: global.Array.isArray,
-			arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
-
-			arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
-
-			// "createArray"
-			windowArray: global.Array,
-			//arrayFrom: global.Array.from,
-			arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
-			
-			// "isError"
-			windowError: global.Error,
-
-			// "isNumber", "toInteger"
-			windowNumber: global.Number,
-			
-			// "hasSymbols", "isSymbol", "getSymbol"
-			windowSymbol: global.Symbol,
-			
-			// "getSymbolFor"
-			symbolFor: global.Symbol.for,
-			
-			// "getSymbolKey", "symbolIsGlobal"
-			symbolToStringCall: global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString),
-			symbolValueOfCall: global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf),
-			symbolKeyFor: global.Symbol.keyFor,
-			
-			// "createType", "_instanceof"
-			symbolHasInstance: global.Symbol.hasInstance,
-			functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
-
-			// "is*"
-			numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
-			booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
-			dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
-
-			// "isNaN"
-			numberIsNaN: global.Number.isNaN,
-
-			// "isFinite"
-			numberIsFinite: global.Number.isFinite,
-			
-			// "concat"
-			arrayConcatApply: global.Array.prototype.concat.apply.bind(global.Array.prototype.concat),
-
-			// "concat"
-			arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
-
-			// "trim"
-			stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
-
-			// "depthExtend"
-			functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
-			
-			// "isInteger", "isSafeInteger", "toInteger", "toFloat"
-			mathFloor: global.Math.floor,
-			mathAbs: global.Math.abs,
-
-			// "isInteger"
-			numberIsInteger: global.Number.isInteger,
-
-			// "isSafeInteger"
-			numberIsSafeInteger: global.Number.isSafeInteger,
-
-			// "toFloat"
-			mathPow: global.Math.pow,
-			
-			// "sealObject"
-			objectSeal: global.Object.seal,
-			
-			// "isFrozen"
-			objectIsFrozen: global.Object.isFrozen,
-			
-			// "freezeObject"
-			objectFreeze: global.Object.freeze,
-			
-			// "isExtensible"
-			objectIsExtensible: global.Object.isExtensible,
-
-			// "preventExtensions"
-			objectPreventExtensions: global.Object.preventExtensions,
-			
-			// "isSafeInteger", "getSafeIntegerBounds"
-			numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER, // global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1
-			numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER, // -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1
-			
-			// generateUUID
-			mathRandom: global.Math.random,
-
-			// AssertionError
-			//consoleAssert: (global.console.assert ? global.console.assert.bind(global.console) : undefined),
-
-			// "createEval"
-			arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
-
-			// "safeObject"
-			windowProxy: global.Proxy,
-			windowTypeError: global.TypeError,
-
-			// "toString"
-			windowString: global.String,
-
-			// "has", "isCustomFunction", "isNativeFunction"
-			objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
-
-			// "is*"
-			symbolToStringTag: global.Symbol.toStringTag,
-			stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
-
-			// "isArray", "isObject", "isJsObject", "isCallable"
-			objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
-
-			// "isEnumerable", "symbols"
-			objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
-
-			// "allSymbols", "symbols"
-			objectGetOwnPropertySymbols: global.Object.getOwnPropertySymbols,
-
-			// "keys"
-			objectKeys: global.Object.keys,
-
-			// "append", "concat"
-			arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
-
-			// "extend"
-			objectAssign: global.Object.assign,
-
-			// "isCustomFunction", "isNativeFunction", getFunctionName"
-			functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
+			enableSymbols: true,					// When 'true', symbols are enabled.
+			enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
 		},
-	});
 
+		/*_shared*/
+		{
+			// Secret value used to load modules, ...
+			SECRET: null,
 
-	const __Internal__ = _shared.safeObject({
-		// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
-		SAFE_INTEGER_LEN: _shared.Natives.stringReplaceCall(_shared.Natives.numberToStringCall(global.Number.MAX_VALUE, 2), /[(]e[+]\d+[)]|[.]|[0]/g, '').length,   // TODO: Find a mathematical way
+			// NOTE: Preload of immediatly needed natives.
+			Natives: {
+				// General
+				windowObject: global.Object,
+				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
+				windowFunction: global.Function,
+				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
+				windowMap: global.Map,
+				windowWeakMap: global.WeakMap,
+				windowSet: global.Set,
+				windowWeakSet: global.WeakSet,
 
-		MIN_BITWISE_INTEGER: 0,
-		MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
+				// "eval"
+				windowEval: global.eval,
+
+				// "hasInherited"
+				objectPrototype: global.Object.prototype,
 			
-		DD_ASSERT: null,
+				// "createObject"
+				objectCreate: global.Object.create,
+			
+				// "hasDefinePropertyEnabled" and "defineProperty"
+				objectDefineProperty: global.Object.defineProperty,
+			
+				// "defineProperties"
+				objectDefineProperties: global.Object.defineProperties,
+			
+				// "allKeys"
+				objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
+			
+				// "getOwnPropertyDescriptor"
+				objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
+			
+				// "getPrototypeOf"
+				objectGetPrototypeOf: global.Object.getPrototypeOf,
+			
+				// "isPrototypeOf"
+				objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
-		safeIntegerLen: null,
-		bitwiseIntegerLen: null,
-	});
+				// "setPrototypeOf"
+				objectSetPrototypeOf: global.Object.setPrototypeOf,
+			
+				// "isArray"
+				arrayIsArray: global.Array.isArray,
+				arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+
+				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+
+				// "createArray"
+				windowArray: global.Array,
+				//arrayFrom: global.Array.from,
+				arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
+			
+				// "isError"
+				windowError: global.Error,
+
+				// "isNumber", "toInteger"
+				windowNumber: global.Number,
+			
+				// "hasSymbols", "isSymbol", "getSymbol"
+				windowSymbol: global.Symbol,
+			
+				// "getSymbolFor"
+				symbolFor: global.Symbol.for,
+			
+				// "getSymbolKey", "symbolIsGlobal"
+				symbolToStringCall: global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString),
+				symbolValueOfCall: global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf),
+				symbolKeyFor: global.Symbol.keyFor,
+			
+				// "createType", "_instanceof"
+				symbolHasInstance: global.Symbol.hasInstance,
+				functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
+
+				// "is*"
+				numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
+				booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
+				dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
+
+				// "isNaN"
+				numberIsNaN: global.Number.isNaN,
+
+				// "isFinite"
+				numberIsFinite: global.Number.isFinite,
+			
+				// "concat"
+				arrayConcatApply: global.Array.prototype.concat.apply.bind(global.Array.prototype.concat),
+
+				// "concat"
+				arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
+
+				// "trim"
+				stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
+
+				// "depthExtend"
+				functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
+			
+				// "isInteger", "isSafeInteger", "toInteger", "toFloat"
+				mathFloor: global.Math.floor,
+				mathAbs: global.Math.abs,
+
+				// "isInteger"
+				numberIsInteger: global.Number.isInteger,
+
+				// "isSafeInteger"
+				numberIsSafeInteger: global.Number.isSafeInteger,
+
+				// "toFloat"
+				mathPow: global.Math.pow,
+			
+				// "sealObject"
+				objectSeal: global.Object.seal,
+			
+				// "isFrozen"
+				objectIsFrozen: global.Object.isFrozen,
+			
+				// "freezeObject"
+				objectFreeze: global.Object.freeze,
+			
+				// "isExtensible"
+				objectIsExtensible: global.Object.isExtensible,
+
+				// "preventExtensions"
+				objectPreventExtensions: global.Object.preventExtensions,
+			
+				// "isSafeInteger", "getSafeIntegerBounds"
+				numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER, // global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1
+				numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER, // -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1
+			
+				// generateUUID
+				mathRandom: global.Math.random,
+
+				// AssertionError
+				//consoleAssert: (global.console.assert ? global.console.assert.bind(global.console) : undefined),
+
+				// "createEval"
+				arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
+
+				// "safeObject"
+				windowProxy: global.Proxy,
+				windowTypeError: global.TypeError,
+
+				// "toString"
+				windowString: global.String,
+
+				// "has", "isCustomFunction", "isNativeFunction"
+				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
+
+				// "is*"
+				symbolToStringTag: global.Symbol.toStringTag,
+				stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
+
+				// "isArray", "isObject", "isJsObject", "isCallable"
+				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
+
+				// "isEnumerable", "symbols"
+				objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
+
+				// "allSymbols", "symbols"
+				objectGetOwnPropertySymbols: global.Object.getOwnPropertySymbols,
+
+				// "keys"
+				objectKeys: global.Object.keys,
+
+				// "append", "concat"
+				arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
+
+				// "extend"
+				objectAssign: global.Object.assign,
+
+				// "isCustomFunction", "isNativeFunction", getFunctionName"
+				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
+			},
+		},
+
+		/*__Internal__*/
+		{
+			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
+			SAFE_INTEGER_LEN: global.Number.MAX_VALUE.toString(2).replace(/[(]e[+]\d+[)]|[.]|[0]/g, '').length,   // TODO: Find a mathematical way
+
+			MIN_BITWISE_INTEGER: 0,
+			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
+			
+			DD_ASSERT: null,
+
+			safeIntegerLen: null,
+			bitwiseIntegerLen: null,
+
+			OPTIONS_DEPTH: 15,
+
+			isArrayIndexRegExp: /^(0|[1-9][0-9]*)$/,
+		}
+	);
 
 	__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
 
-	const types = {}, // Will get filled later
-		tools = {}; // Will get filled later
-
-			
 	//===================================
 	// Temporary DD_DOC
 	//===================================
@@ -451,18 +595,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	};
 
 	//===================================
-	// ES6 Classes support
+	// Debugger
 	//===================================
-
-	(function() {
-		const cls = (class A {});
-
-		const hasFirefoxFunctionToStringBug = (_shared.Natives.functionToStringCall(cls).slice(0, 6) !== 'class ');  // Check for Firefox's bug
-		if (hasFirefoxFunctionToStringBug) {
-			throw new global.Error("Browser version not supported.");
-		};
-	})();
-
 
 	__Internal__.ADD('DEBUGGER', function() {
 		// Something weird just happened. Please see the call stack.
@@ -670,7 +804,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Converts a value to a boolean.",
 		}
 		//! END_REPLACE()
-		, __bootFunctions__.toBoolean));
+		, types.toBoolean));
 
 	__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -870,9 +1004,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isNothing(obj) {
-			return (obj == null); // Yes, "==", not "==="
-		}));
+		, types.isNothing));
 		
 	// <PRB> JS has no function to test for strings
 	__Internal__.ADD('isString', __Internal__.DD_DOC(
@@ -891,26 +1023,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isString(obj) {
-			if (types.isNothing(obj)) {
-				return false;
-			};
-			const type = typeof obj;
-			if (type === 'object') {
-				if (obj[_shared.Natives.symbolToStringTag] === 'String') {
-					try {
-						_shared.Natives.stringValueOfCall(obj);
-						return true;
-					} catch(o) {
-					};
-				} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
-					return true;
-				};
-			} else if (type === 'string') {
-				return true;
-			};
-			return false;
-		}));
+		, types.isString));
 		
 	__Internal__.ADD('isFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -928,9 +1041,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Returns 'true' if object is a function, 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isFunction(obj) {
-			return (typeof obj === 'function');
-		}));
+		, types.isFunction));
 		
 	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1047,20 +1158,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isArrayLike(obj) {
-			// Unbelievable : There is not an official way to detect an array-like object !!!!
-			if (types.isNothing(obj)) {
-				return false;
-			};
-			if (typeof obj === 'object') {
-				const len = obj.length;
-				return (typeof len === 'number') && ((len >>> 0) === len);
-			} else if (types.isString(obj)) {
-				return true;
-			} else {
-				return false;
-			};
-		}));
+		, types.isArrayLike));
 		
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
@@ -2084,7 +2182,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 		}));
 		
-	__Internal__.isArrayIndex = /^(0|[1-9][0-9]*)$/;
 	__Internal__.ADD('keys', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2101,30 +2198,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
 		}
 		//! END_REPLACE()
-		, function keys(obj) {
-			// Returns enumerable own properties (those not inherited).
-			// Doesn't not include array items.
-			if (types.isNothing(obj)) {
-				return [];
-			};
-				
-			obj = _shared.Natives.windowObject(obj);
-
-			let result;
-				
-			if (types.isArrayLike(obj)) {
-				result = [];
-				for (let key in obj) {
-					if (types.has(obj, key) && !__Internal__.isArrayIndex.test(key)) {
-						result.push(key);
-					};
-				};
-			} else {
-					result = _shared.Natives.objectKeys(obj);
-			};
-				
-			return result;
-		}));
+		, types.keys));
 		
 	__Internal__.ADD('symbols', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2142,22 +2216,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns an array of enumerable own property symbols.",
 		}
 		//! END_REPLACE()
-		, function symbols(obj) {
-			// FUTURE: "Object.symbols" ? (like "Object.keys")
-			// FUTURE: Use "filter"
-			if (types.isNothing(obj)) {
-				return [];
-			};
-			const all = types.allSymbols(obj);
-			const symbols = [];
-			for (let i = 0; i < all.length; i++) {
-				const symbol = all[i];
-				if (types.isEnumerable(obj, symbol)) {
-					symbols.push(symbol);
-				};
-			};
-			return symbols;
-		}));
+		, types.symbols));
 		
 	__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
 
@@ -2824,7 +2883,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return result;
 		}));
-		
+
 	// <PRB> JS has no function to test for objects ( new Object() )
 	__Internal__.ADD('isObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2842,23 +2901,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isObject(obj) {
-			if (obj && (typeof obj === 'object')) {
-				if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
-					let proto = types.getPrototypeOf(obj);
-					if (proto) {
-						return types.isObject(proto);
-					} else {
-						// Null object
-						return true;
-					};
-				} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
-					return true;
-				};
-			};
-			return false;
-		}));
-			
+		, types.isObject));
+
 	__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2875,10 +2919,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
 		}
 		//! END_REPLACE()
-		, function isObjectLike(obj) {
-			const type = typeof obj;
-			return !!obj && ((type === 'object') || (type === 'function'));
-		}));
+		, types.isObjectLike));
 		
 	__Internal__.ADD('isExtensible', _shared.Natives.objectIsExtensible);
 		
@@ -3644,16 +3685,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	__Internal__.ADD('isInitialized', function isInitialized(obj) {
 		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 	});
-		
+
 	__Internal__.ADD('isErrorType', function isErrorType(obj) {
-			return !!obj && ((obj === types.Error) || types.baseof(types.Error, obj));
+			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsErrorType);
 		});
-			
+
 	__Internal__.ADD('isType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 3,
+					revision: 4,
 					params: {
 						obj: {
 							type: 'object',
@@ -3666,7 +3707,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function isType(obj) {
-			return !!obj && ((obj === types.Type) || ((obj === types.Error) || types.baseof(types.Type, obj)) || types.baseof(types.Error, obj));
+			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsType);
 		}));
 		
 	__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
@@ -3750,7 +3791,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 7,
+					revision: 8,
 					params: {
 						base: {
 							type: 'type,arrayof(type)',
@@ -3796,8 +3837,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				if (crossRealm) {
 					//type = types.getPrototypeOf(type);
-						type = types.getPrototypeOf(type.prototype);
-						type = type && type.constructor;
+						type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
+						type = (type && (type.constructor !== type) ? type.constructor : null);
 					let start = i;
 					while (!types.isNothing(type)) {
 						const tuuid = _shared.getUUID(type);
@@ -3818,8 +3859,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 						//type = types.getPrototypeOf(type);
-							type = types.getPrototypeOf(type.prototype);
-							type = type && type.constructor;
+							type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
+							type = (type && (type.constructor !== type) ? type.constructor : null);
 						i = start;
 					};
 				};
@@ -3838,8 +3879,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				if (crossRealm) {
 					const uuid = _shared.getUUID(base);
 					//type = types.getPrototypeOf(type);
-						type = types.getPrototypeOf(type.prototype);
-						type = type && type.constructor;
+						type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
+						type = (type && (type.constructor !== type) ? type.constructor : null);
 					while (!types.isNothing(type)) {
 						const tuuid = _shared.getUUID(type);
 						if (tuuid) {
@@ -3852,8 +3893,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 						//type = types.getPrototypeOf(type);
-							type = types.getPrototypeOf(type.prototype);
-							type = type && type.constructor;
+							type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
+							type = (type && (type.constructor !== type) ? type.constructor : null);
 					};
 				};
 			};
@@ -3985,7 +4026,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 8,
+					revision: 9,
 					params: {
 						obj: {
 							type: 'object,type',
@@ -4072,7 +4113,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 						//obj = types.getPrototypeOf(obj);
-							obj = types.getPrototypeOf(obj.prototype);
+							obj = (obj.prototype ? types.getPrototypeOf(obj.prototype) : null);
 							obj = obj && obj.constructor;
 						i = start;
 					} while (!types.isNothing(obj));
@@ -4109,7 +4150,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 						//obj = types.getPrototypeOf(obj);
-							obj = types.getPrototypeOf(obj.prototype);
+							obj = (obj.prototype ? types.getPrototypeOf(obj.prototype) : null);
 							obj = obj && obj.constructor;
 					} while (!types.isNothing(obj));
 				};
@@ -4321,7 +4362,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 2,
+					revision: 3,
 					params: {
 						obj: {
 							type: ['object', 'type'],
@@ -4339,7 +4380,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!obj) {
 				return null;
 			};
-			obj = types.getPrototypeOf(obj.prototype);
+			obj = (obj.prototype ? types.getPrototypeOf(obj.prototype) : null);
 			if (!obj) {
 				return null;
 			};
@@ -4577,7 +4618,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// "createType"
 	//===================================
-		
+	
+	__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE' /*! END_REPLACE() */, true);
 	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID' /*! END_REPLACE() */, true);
 	__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
 	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
@@ -4601,8 +4643,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		$TYPE_UUID: null,
 		[types.ConstructorSymbol]: null,
 		[types.NewSymbol]: null,
-
-		[_shared.Natives.symbolToStringTag]: null,
 
 		[__Internal__.symbolInitialized]: null,
 		[__Internal__.symbol$IsSingleton]: null,
@@ -5387,6 +5427,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				apply: type.apply,
 				bind: type.bind,
 
+				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 
 				[types.NewSymbol]: (function(ctx) {
@@ -5428,9 +5469,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								};
 
 								_shared.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});
-
-								// Have to make sure that 'types.isObject' will always return 'true' for Doodad objects.
-								_shared.setAttribute(this, _shared.Natives.symbolToStringTag, 'Object', {});
 							};
 
 							// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
@@ -5484,6 +5522,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 			const protoValues = {
 				constructor: type,
+				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 			};
 			_shared.setAttributes(proto, protoValues, {});
@@ -5601,6 +5640,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Errors
 	//===================================
 
+	__Internal__.symbolIsErrorType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_ERROR_TYPE')), true) */ '__DD_IS_ERROR_TYPE' /*! END_REPLACE() */, true);
+
 	// Change the prototype of Error so that these properties do not fall back to Object.prototype (yes, I do that !)
 
 	global.Error.prototype.bubble = false;
@@ -5642,7 +5683,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				$TYPE_NAME: 'Error',
 				$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('Error')), true) */ null /*! END_REPLACE() */,
 
-				[_shared.Natives.symbolHasInstance]: types.NOT_CONFIGURABLE(types.READ_ONLY(undefined)),
+				[__Internal__.symbolIsErrorType]: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 
 				[types.ConstructorSymbol]: function constructor(message, /*optional*/params) {
 					message = tools.format(message, params);
@@ -5668,6 +5709,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			},
 			/*instanceProto*/
 			{
+				[__Internal__.symbolIsErrorType]: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 				[_shared.Natives.symbolToStringTag]: types.NOT_CONFIGURABLE(types.READ_ONLY('Error')),
 
 				name: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
@@ -6079,15 +6121,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Signals that script execution has been interrupted, but not aborted.",
 		}
 		//! END_REPLACE()
-		, types.Error.$inherit({
+		, types.Error.$inherit(
+			/*typeProto*/
+			{
 				$TYPE_NAME: "ScriptInterruptedError",
 				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ScriptInterruptedError')), true) */ null /*! END_REPLACE() */,
-
-				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 
 				[types.ConstructorSymbol](message, /*optional*/params) {
 					return [message || "Script interrupted.", params];
 				},
+			},
+			/*instanceProto*/
+			{
+				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 			})));
 		
 	__Internal__.REGISTER(__Internal__.DD_DOC(
@@ -6116,16 +6162,20 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
 		}
 		//! END_REPLACE()
-		, types.ScriptInterruptedError.$inherit({
+		, types.ScriptInterruptedError.$inherit(
+			/*typeProto*/
+			{
 				$TYPE_NAME: "ScriptAbortedError",
 				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ScriptAbortedError')), true) */ null /*! END_REPLACE() */,
-
-				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 
 				[types.ConstructorSymbol](/*optional*/exitCode, /*optional*/message, /*optional*/params) {
 					this.exitCode = types.toInteger(exitCode) || 0;
 					return [message || "Script aborted.", params];
 				},
+			},
+			/*instanceProto*/
+			{
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 			})));
 
 	//===================================
@@ -6269,6 +6319,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				
 			/*instanceProto*/
 			 {
+				[_shared.Natives.symbolToStringTag]: types.NOT_CONFIGURABLE(types.READ_ONLY('Object')),
+
 				_super: null,
 			
 				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
@@ -6954,9 +7006,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 
 					let MODULE_VERSION;
-					//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('doodad-js')) + ";")
+					//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('@doodad-js/core')) + ";")
 
-					modules['doodad-js'] = {
+					modules['@doodad-js/core'] = {
 						type: 'Package',
 						version: MODULE_VERSION,
 						bootstrap: true,
