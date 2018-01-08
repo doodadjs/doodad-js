@@ -5903,7 +5903,7 @@ exports.add = function add(DD_MODULES) {
 						typeProto,
 						
 						/*instanceProto*/
-						instanceProto,
+						instanceProto
 					);
 
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, newType));
