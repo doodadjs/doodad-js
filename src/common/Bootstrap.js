@@ -3686,10 +3686,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 	});
 
-	__Internal__.ADD('isErrorType', function isErrorType(obj) {
-			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsErrorType);
-		});
-
 	__Internal__.ADD('isType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3710,6 +3706,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsType);
 		}));
 		
+	__Internal__.ADD('isErrorType', function isErrorType(obj) {
+			return types.isType(obj) && !!obj[__Internal__.symbolIsErrorType];
+		});
+
 	__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
