@@ -103,181 +103,394 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 
 	const {types, tools, __options__, _shared, __Internal__} = (function(__options__, _shared, __Internal__) {
-		const types = {
-			toBoolean: function toBoolean(obj) {
-				return (obj === 'true') || !!(+obj);
-			},
+		const types = {},
+			tools = {};
 
-			isNothing: function isNothing(obj) {
-				return (obj == null); // Yes, "==", not "==="
-			},
 
-			isString: function isString(obj) {
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				const type = typeof obj;
-				if (type === 'object') {
-					if (obj[_shared.Natives.symbolToStringTag] === 'String') {
-						try {
-							_shared.Natives.stringValueOfCall(obj);
-							return true;
-						} catch(o) {
-						};
-					} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
-						return true;
-					};
-				} else if (type === 'string') {
-					return true;
-				};
-				return false;
-			},
+		//===================================
+		// Temporary DD_DOC
+		//===================================
+		__Internal__.tempDocs = [];
 
-			isFunction: function isFunction(obj) {
-				return (typeof obj === 'function');
-			},
-
-			isObject: function isObject(obj) {
-				if (obj && (typeof obj === 'object')) {
-					if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
-						let proto = types.getPrototypeOf(obj);
-						if (proto) {
-							return types.isObject(proto);
-						} else {
-							// Null object
-							return true;
-						};
-					} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
-						return true;
-					};
-				};
-				return false;
-			},
-
-			isObjectLike: function isObjectLike(obj) {
-				const type = typeof obj;
-				return !!obj && ((type === 'object') || (type === 'function'));
-			},
-		
-			isArrayLike: function isArrayLike(obj) {
-				// Unbelievable : There is not an official way to detect an array-like object !!!!
-				if (types.isNothing(obj)) {
-					return false;
-				};
-				if (typeof obj === 'object') {
-					const len = obj.length;
-					return (typeof len === 'number') && ((len >>> 0) === len);
-				} else if (types.isString(obj)) {
-					return true;
-				} else {
-					return false;
-				};
-			},
-
-			keys: function keys(obj) {
-				// Returns enumerable own properties (those not inherited).
-				// Doesn't not include array items.
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				
-				obj = _shared.Natives.windowObject(obj);
-
-				let result;
-				
-				if (types.isArrayLike(obj)) {
-					result = [];
-					for (let key in obj) {
-						if (types.has(obj, key) && !__Internal__.isArrayIndexRegExp.test(key)) {
-							result.push(key);
-						};
-					};
-				} else {
-					result = _shared.Natives.objectKeys(obj);
-				};
-				
-				return result;
-			},
-		
-			symbols: function symbols(obj) {
-				// FUTURE: "Object.symbols" ? (like "Object.keys")
-				// FUTURE: Use "filter"
-				if (types.isNothing(obj)) {
-					return [];
-				};
-				const all = _shared.Natives.objectGetOwnPropertySymbols(obj);
-				const symbols = [];
-				for (let i = 0; i < all.length; i++) {
-					const symbol = all[i];
-					if (types.isEnumerable(obj, symbol)) {
-						symbols.push(symbol);
-					};
-				};
-				return symbols;
-			},
+		__Internal__.DD_DOC = function DD_DOC(doc, value) {
+			__Internal__.tempDocs.push([doc, value]);
+			return value;
 		};
 
-		const tools = {
-			depthExtend: function depthExtend(depth, obj, /*paramarray*/...args) {
-				let result;
-				if (!types.isNothing(obj)) {
-					let extender;
-					if (types.isFunction(depth)) {
-						extender = depth;
-						depth = Infinity;
+		//===================================
+		// Temporary ADD (for Doodad.Types)
+		//===================================
+		__Internal__.tempTypesAdded = [];
+
+		__Internal__.ADD = function ADD(name, obj) {
+			types[name] = obj;
+			__Internal__.tempTypesAdded.push([name, obj]);
+			return obj;
+		};
+
+		//===================================
+		// Temporary ADD (for Doodad.Tools)
+		//===================================
+		__Internal__.tempToolsAdded = [];
+
+		__Internal__.ADD_TOOL = function ADD_TOOL(name, obj) {
+			tools[name] = obj;
+			__Internal__.tempToolsAdded.push([name, obj]);
+			return obj;
+		};
+
+
+		//===================================
+		// Define "depthExtend" functions
+		//===================================
+		__Internal__.ADD('toBoolean', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "A value to convert.",
+					},
+				},
+				returns: 'bool',
+				description: "Converts a value to a boolean.",
+			}
+			//! END_REPLACE()
+		, function toBoolean(obj) {
+			return (obj === 'true') || !!(+obj);
+		}));
+
+		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isNothing(obj) {
+			return (obj == null); // Yes, "==", not "==="
+		}));
+		
+		// <PRB> JS has no function to test for strings
+		__Internal__.ADD('isString', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isString(obj) {
+			if (types.isNothing(obj)) {
+				return false;
+			};
+			const type = typeof obj;
+			if (type === 'object') {
+				if (obj[_shared.Natives.symbolToStringTag] === 'String') {
+					try {
+						_shared.Natives.stringValueOfCall(obj);
+						return true;
+					} catch(o) {
+					};
+				} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
+					return true;
+				};
+			} else if (type === 'string') {
+				return true;
+			};
+			return false;
+		}));
+		
+		__Internal__.ADD('isFunction', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is a function, 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isFunction(obj) {
+			return (typeof obj === 'function');
+		}));
+		
+		// <PRB> JS has no function to test for objects ( new Object() )
+		__Internal__.ADD('isObject', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'boolean',
+				description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isObject(obj) {
+			if (obj && (typeof obj === 'object')) {
+				if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
+					let proto = types.getPrototypeOf(obj);
+					if (proto) {
+						return types.isObject(proto);
 					} else {
-						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-						extender = function(result, val, key, extend) {
-							if ((extender.depth >= 0) && types.isObject(val)) {
-								const resultVal = result[key];
-								if (types.isNothing(resultVal)) {
-									extender.depth--;
-									if (extender.depth >= -1) {
-										result[key] = extend({}, val);
-									};
-								} else if (types.isObjectLike(resultVal)) {
-									extender.depth--;
-									if (extender.depth >= -1) {
-										extend(resultVal, val);
-									};
-								} else if (resultVal !== val) {
-									result[key] = val;
+						// Null object
+						return true;
+					};
+				} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
+					return true;
+				};
+			};
+			return false;
+		}));
+
+		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'boolean',
+				description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isObjectLike(obj) {
+			const type = typeof obj;
+			return !!obj && ((type === 'object') || (type === 'function'));
+		}));
+		
+		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
+			}
+			//! END_REPLACE()
+		, function isArrayLike(obj) {
+			// Unbelievable : There is not an official way to detect an array-like object !!!!
+			if (types.isNothing(obj)) {
+				return false;
+			};
+			if (typeof obj === 'object') {
+				const len = obj.length;
+				return (typeof len === 'number') && ((len >>> 0) === len);
+			} else if (types.isString(obj)) {
+				return true;
+			} else {
+				return false;
+			};
+		}));
+		
+		__Internal__.ADD('keys', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'arrayof(string)',
+				description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
+			}
+			//! END_REPLACE()
+		, function keys(obj) {
+			// Returns enumerable own properties (those not inherited).
+			// Doesn't not include array items.
+			if (types.isNothing(obj)) {
+				return [];
+			};
+				
+			obj = _shared.Natives.windowObject(obj);
+
+			let result;
+				
+			if (types.isArrayLike(obj)) {
+				result = [];
+				for (let key in obj) {
+					if (types.has(obj, key) && !__Internal__.isArrayIndexRegExp.test(key)) {
+						result.push(key);
+					};
+				};
+			} else {
+				result = _shared.Natives.objectKeys(obj);
+			};
+				
+			return result;
+		}));
+		
+		__Internal__.ADD('symbols', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'arrayof(symbol)',
+				description: "Returns an array of enumerable own property symbols.",
+			}
+			//! END_REPLACE()
+		, function symbols(obj) {
+			// FUTURE: "Object.symbols" ? (like "Object.keys")
+			// FUTURE: Use "filter"
+			if (types.isNothing(obj)) {
+				return [];
+			};
+			const all = _shared.Natives.objectGetOwnPropertySymbols(obj);
+			const symbols = [];
+			for (let i = 0; i < all.length; i++) {
+				const symbol = all[i];
+				if (types.isEnumerable(obj, symbol)) {
+					symbols.push(symbol);
+				};
+			};
+			return symbols;
+		}));
+		
+
+		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 6,
+				params: {
+					depth: {
+						type: 'integer,function',
+						optional: false,
+						description: "Depth, or extender function.",
+					},
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					paramarray: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'object',
+				description: "Extends the first object with owned properties of the other objects using the specified depth.",
+			}
+			//! END_REPLACE()
+		, function depthExtend(depth, obj, /*paramarray*/...args) {
+			let result;
+			if (!types.isNothing(obj)) {
+				let extender;
+				if (types.isFunction(depth)) {
+					extender = depth;
+					depth = Infinity;
+				} else {
+					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+					extender = function(result, val, key, extend) {
+						if ((extender.depth >= 0) && types.isObject(val)) {
+							const resultVal = result[key];
+							if (types.isNothing(resultVal)) {
+								extender.depth--;
+								if (extender.depth >= -1) {
+									result[key] = extend({}, val);
 								};
-							} else {
+							} else if (types.isObjectLike(resultVal)) {
+								extender.depth--;
+								if (extender.depth >= -1) {
+									extend(resultVal, val);
+								};
+							} else if (resultVal !== val) {
 								result[key] = val;
 							};
+						} else {
+							result[key] = val;
 						};
-						extender.depth = depth;
 					};
-					if (depth >= -1) {
-						result = _shared.Natives.windowObject(obj);
-						const argsLen = args.length;
-						for (let i = 0; i < argsLen; i++) {
-							let arg = args[i];
-							if (types.isNothing(arg)) {
-								continue;
-							};
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							arg = _shared.Natives.windowObject(arg);
-							const keys = types.keys(arg)
-							const keysLen = keys.length; // performance
-							for (let j = 0; j < keysLen; j++) {
-								const key = keys[j];
-								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-							};
-							const symbols = types.symbols(arg);
-							const symbolsLen = symbols.length; // performance
-							for (let j = 0; j < symbolsLen; j++) {
-								const key = symbols[j];
-								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-							};
+					extender.depth = depth;
+				};
+				if (depth >= -1) {
+					result = _shared.Natives.windowObject(obj);
+					const argsLen = args.length;
+					for (let i = 0; i < argsLen; i++) {
+						let arg = args[i];
+						if (types.isNothing(arg)) {
+							continue;
+						};
+						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+						arg = _shared.Natives.windowObject(arg);
+						const keys = types.keys(arg)
+						const keysLen = keys.length; // performance
+						for (let j = 0; j < keysLen; j++) {
+							const key = keys[j];
+							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+						};
+						const symbols = types.symbols(arg);
+						const symbolsLen = symbols.length; // performance
+						for (let j = 0; j < symbolsLen; j++) {
+							const key = symbols[j];
+							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
 						};
 					};
 				};
-				return result;
-			},
-		};
+			};
+			return result;
+		}));
+				
 
+		//===================================
+		// Get options
+		//===================================
 
 		if (global.Array.isArray(_options)) {
 			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
@@ -296,6 +509,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
 		__options__.enableSafeObjects = types.toBoolean(__options__.enableSafeObjects);
 
+
+		//===================================
+		// "safeObject"
+		//===================================
 
 		const natives = _shared.Natives;
 
@@ -332,6 +549,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			//! END_IF()
 		};
 
+
+		//===================================
+		// Return modified module constants
+		//===================================
+		
 		_shared.Natives = _shared.safeObject(natives);
 		_shared = _shared.safeObject(_shared);
 
@@ -491,8 +713,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				objectPreventExtensions: global.Object.preventExtensions,
 			
 				// "isSafeInteger", "getSafeIntegerBounds"
-				numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER, // global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) - 1
-				numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER, // -global.Math.pow(2, __Internal__.SAFE_INTEGER_LEN) + 1
+				numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER,
+				numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER,
 			
 				// generateUUID
 				mathRandom: global.Math.random,
@@ -542,8 +764,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		/*__Internal__*/
 		{
-			// Number.MAX_SAFE_INTEGER and MIN_SAFE_INTEGER polyfill
-			SAFE_INTEGER_LEN: global.Number.MAX_VALUE.toString(2).replace(/[(]e[+]\d+[)]|[.]|[0]/g, '').length,   // TODO: Find a mathematical way
+			SAFE_INTEGER_LEN: global.Math.log2(global.Number.MAX_SAFE_INTEGER),
 
 			MIN_BITWISE_INTEGER: 0,
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
@@ -561,38 +782,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.BITWISE_INTEGER_LEN = global.Math.round(global.Math.log(__Internal__.MAX_BITWISE_INTEGER) / global.Math.LN2, 0);
 
-
-	//===================================
-	// Temporary DD_DOC
-	//===================================
-	__Internal__.tempDocs = [];
-
-	__Internal__.DD_DOC = function DD_DOC(doc, value) {
-		__Internal__.tempDocs.push([doc, value]);
-		return value;
-	};
-
-	//===================================
-	// Temporary ADD (for Doodad.Types)
-	//===================================
-	__Internal__.tempTypesAdded = [];
-
-	__Internal__.ADD = function ADD(name, obj) {
-		types[name] = obj;
-		__Internal__.tempTypesAdded.push([name, obj]);
-		return obj;
-	};
-
-	//===================================
-	// Temporary ADD (for Doodad.Tools)
-	//===================================
-	__Internal__.tempToolsAdded = [];
-
-	__Internal__.ADD_TOOL = function ADD_TOOL(name, obj) {
-		tools[name] = obj;
-		__Internal__.tempToolsAdded.push([name, obj]);
-		return obj;
-	};
 
 	//===================================
 	// Debugger
@@ -788,24 +977,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Conversion
 	//==================================
 		
-	__Internal__.ADD('toBoolean', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "A value to convert.",
-						},
-					},
-					returns: 'bool',
-					description: "Converts a value to a boolean.",
-		}
-		//! END_REPLACE()
-		, types.toBoolean));
-
 	__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -988,61 +1159,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Utilities
 	//==================
 		
-	__Internal__.ADD('isNothing', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isNothing));
-		
-	// <PRB> JS has no function to test for strings
-	__Internal__.ADD('isString', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isString));
-		
-	__Internal__.ADD('isFunction', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-				author: "Claude Petit",
-				revision: 0,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
-					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is a function, 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isFunction));
-		
 	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1142,24 +1258,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		
 	__Internal__.ADD('isArray', _shared.Natives.arrayIsArray);
 
-	__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isArrayLike));
-		
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2182,42 +2280,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 		}));
 		
-	__Internal__.ADD('keys', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'arrayof(string)',
-					description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
-		}
-		//! END_REPLACE()
-		, types.keys));
-		
-	__Internal__.ADD('symbols', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'arrayof(symbol)',
-					description: "Returns an array of enumerable own property symbols.",
-		}
-		//! END_REPLACE()
-		, types.symbols));
-		
 	__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
 
 	__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
@@ -2688,91 +2750,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			
 	__Internal__.ADD_TOOL('extend', _shared.Natives.objectAssign);
 
-	__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						depth: {
-							type: 'integer,function',
-							optional: false,
-							description: "Depth, or extender function.",
-						},
-						obj: {
-							type: 'object',
-							optional: false,
-							description: "An object.",
-						},
-						paramarray: {
-							type: 'object',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'object',
-					description: "Extends the first object with owned properties of the other objects using the specified depth.",
-		}
-		//! END_REPLACE()
-		, function depthExtend(depth, obj, /*paramarray*/...args) {
-			let result;
-			if (!types.isNothing(obj)) {
-				let extender;
-				if (types.isFunction(depth)) {
-					extender = depth;
-					depth = Infinity;
-				} else {
-					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-					extender = function(result, val, key, extend) {
-						if ((extender.depth >= 0) && types.isObject(val)) {
-							const resultVal = result[key];
-							if (types.isNothing(resultVal)) {
-								extender.depth--;
-								if (extender.depth >= -1) {
-									result[key] = extend({}, val);
-								};
-							} else if (types.isObjectLike(resultVal)) {
-								extender.depth--;
-								if (extender.depth >= -1) {
-									extend(resultVal, val);
-								};
-							} else if (resultVal !== val) {
-								result[key] = val;
-							};
-						} else {
-							result[key] = val;
-						};
-					};
-					extender.depth = depth;
-				};
-				if (depth >= -1) {
-					result = _shared.Natives.windowObject(obj);
-					const argsLen = args.length;
-					for (let i = 0; i < argsLen; i++) {
-						let arg = args[i];
-						if (types.isNothing(arg)) {
-							continue;
-						};
-						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-						arg = _shared.Natives.windowObject(arg);
-						const keys = types.keys(arg)
-						const keysLen = keys.length; // performance
-						for (let j = 0; j < keysLen; j++) {
-							const key = keys[j];
-							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-						};
-						const symbols = types.symbols(arg);
-						const symbolsLen = symbols.length; // performance
-						for (let j = 0; j < symbolsLen; j++) {
-							const key = symbols[j];
-							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-						};
-					};
-				};
-			};
-			return result;
-		}));
-				
 	__Internal__.ADD_TOOL('complete', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2884,43 +2861,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return result;
 		}));
 
-	// <PRB> JS has no function to test for objects ( new Object() )
-	__Internal__.ADD('isObject', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'boolean',
-					description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isObject));
-
-	__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-					},
-					returns: 'boolean',
-					description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
-		}
-		//! END_REPLACE()
-		, types.isObjectLike));
-		
 	__Internal__.ADD('isExtensible', _shared.Natives.objectIsExtensible);
 		
 	__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
