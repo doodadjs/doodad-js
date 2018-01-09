@@ -1402,6 +1402,7 @@ exports.add = function add(DD_MODULES) {
 								while ((i >= 0) && (count > 0)) {
 									const tmp = this.path[i];
 									if (tmp === '.') {
+										// Do nothing
 									} else if (tmp === '..') {
 										count++;
 									} else {
@@ -2010,7 +2011,7 @@ exports.add = function add(DD_MODULES) {
 											};
 
 										} else {
-											result = [value, arg.value];
+											result = [arg.value];
 											isArray = true;
 
 										};
@@ -3274,6 +3275,7 @@ exports.add = function add(DD_MODULES) {
 								while ((i >= 0) && (count > 0)) {
 									const tmp = this.path[i];
 									if (tmp === '.') {
+										// Do nothing
 									} else if (tmp === '..') {
 										count++;
 									} else {

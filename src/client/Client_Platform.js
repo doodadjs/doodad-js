@@ -136,9 +136,8 @@ exports.add = function add(DD_MODULES) {
 				const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
 				if (tmp.length < 2) {
 					return tmp[0];
-				} else {
-					return tmp[0] + '_' + tmp[1].toUpperCase();
 				};
+				return tmp[0] + '_' + tmp[1].toUpperCase();
 			}));
 		},
 	};

@@ -150,8 +150,6 @@ exports.add = function add(DD_MODULES) {
 			modules.ADD('loadFiles', function loadFiles(filesToLoad, /*optional*/options) {
 				const Promise = types.getPromise();
 
-				const fromSource = root.getOptions().fromSource;
-
 				return Promise.map(filesToLoad, function(file) {
 					types.getDefault(file, 'module', null);
 					types.getDefault(file, 'path', null);

@@ -832,7 +832,8 @@ exports.add = function add(DD_MODULES) {
 					const loopCreateModules = function loopCreateModules(state) {
 						if (names.length) {
 							if (state.missings >= names.length) {
-								if (state.missingDeps[0].versionMismatch) {
+								const entry = state.missingDeps[0];
+								if (entry.versionMismatch) {
 									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.consumer, entry.module, (entry.version || '<unspecified>')]);
 								} else {
 									const missingDeps = tools.unique(function(dep1, dep2) {

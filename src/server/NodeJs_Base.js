@@ -44,7 +44,7 @@ exports.add = function add(DD_MODULES) {
 			"use strict";
 				
 			const doodad = root.Doodad,
-				types = doodad.Types,
+				//types = doodad.Types,
 				nodejs = doodad.NodeJs;
 
 				

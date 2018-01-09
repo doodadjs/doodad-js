@@ -1,3 +1,5 @@
+/* global DD_OPTIONS, DD_MODULES, DD_BOOTSTRAP, process */
+
 //! IF_SET("serverSide")
 	//! IF_SET("mjs")
 		//! INJECT("const exports = {};")
@@ -211,6 +213,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						_shared.Natives.stringValueOfCall(obj);
 						return true;
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
 					return true;
@@ -593,7 +596,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
 				windowFunction: global.Function,
-				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				windowMap: global.Map,
 				windowWeakMap: global.WeakMap,
 				windowSet: global.Set,
@@ -788,6 +790,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 
 	__Internal__.ADD('DEBUGGER', function() {
+		/* eslint no-debugger: "off" */
+
 		// Something weird just happened. Please see the call stack.
 
 		// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
@@ -919,7 +923,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 				
 			if (isArray) {
- 				const strLen = str.length;
+				const strLen = str.length;
 					
 				let start = 0,
 					x = 0;
@@ -1311,6 +1315,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === obj); // Not NaN
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1376,6 +1381,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsInteger(obj);
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1434,6 +1440,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsSafeInteger(obj);
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1514,6 +1521,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFinite(obj);
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1552,6 +1560,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === Infinity) || (obj === -Infinity);
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1599,6 +1608,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFloat(obj);
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1638,6 +1648,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						_shared.Natives.booleanValueOfCall(obj);
 						return true;
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Boolean]') {
 					return true;
@@ -1672,6 +1683,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						_shared.Natives.dateValueOfCall(obj);
 						return true;
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Date]') {
 					return true;
@@ -1736,6 +1748,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						// Explanation: NaN is the only value not equal to itself.
 						return obj !== obj;
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
 					obj = _shared.Natives.numberValueOfCall(obj);
@@ -1776,6 +1789,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						_shared.Natives.functionToStringCall(obj);
 						return true;
 					} catch(o) {
+						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Function]') {
 					return true;
@@ -2052,7 +2066,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					functionName = functionName.slice(4);
 				};
 				let path = call[5],
-					url,
 					isSystemPath = false;
 				if (!path) {
 					// File system path
@@ -3392,7 +3405,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		
 	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
 		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(val));
+		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(obj));
 	};
 
 	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
@@ -4863,7 +4876,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function GET_SET(getter, setter) {
-			val = types.AttributeBox();
+			const val = types.AttributeBox();
 			val[_shared.GetterSymbol] = getter;
 			val[_shared.SetterSymbol] = setter;
 			return val;
@@ -4886,7 +4899,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function GET(getter) {
-			val = types.AttributeBox();
+			const val = types.AttributeBox();
 			val[_shared.GetterSymbol] = getter;
 			return val;
 		}));
@@ -4908,7 +4921,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function SET(setter) {
-			val = types.AttributeBox();
+			const val = types.AttributeBox();
 			val[_shared.SetterSymbol] = setter;
 			return val;
 		}));
@@ -4991,7 +5004,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		});
 
 	__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, functionName) {
-		const forType = types.isType(target);
+		//const forType = types.isType(target);
 
 		let code = '';
 
@@ -5135,8 +5148,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							// TODO: SUPER
 							if (functionName) {
 								code += "types.defineProperty(target, key, {" +
-											"configurable: " + (!!cf ? 'true' : 'false') + "," +
-											"enumerable: " + (!!enu ? 'true' : 'false') + "," +
+											"configurable: " + (cf ? 'true' : 'false') + "," +
+											"enumerable: " + (enu ? 'true' : 'false') + "," +
 											"get: types.get(attr, _shared.GetterSymbol) || undefined," +
 											"set: types.get(attr, _shared.SetterSymbol) || undefined," +
 										"});";
@@ -6258,7 +6271,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			},
 				
 			/*instanceProto*/
-			 {
+			{
 				[_shared.Natives.symbolToStringTag]: types.NOT_CONFIGURABLE(types.READ_ONLY('Object')),
 
 				_super: null,
@@ -6958,12 +6971,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						inits = tools.nullObject();
 
 					let namespaces = null,
-						entries = null,
-						name;
+						entries = null;
 							
-					whileName: while (name = names.shift()) {
+					let name = names.shift();
+					while (name) {
 						const spec = modules[name];
 						spec.name = name;
+						let ok = true;
 						if (spec.bootstrap) {
 							const deps = (types.get(spec, 'dependencies') || []);
 							for (let i = 0; i < deps.length; i++) {
@@ -6984,86 +6998,91 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									};
 									if (!loading) {
 										names.push(name);
-										continue whileName;
+										ok = false;
+										break;
 									};
 								};
 							};
 								
-							const baseName = name.split('/', 2)[0],
-								shortNames = baseName.split('.'),
-								proto = types.get(spec, 'proto');
+							if (ok) {
+								const baseName = name.split('/', 2)[0],
+									shortNames = baseName.split('.'),
+									proto = types.get(spec, 'proto');
 
-							let nsObj = null,
-								parent = root,
-								fullName = '';
+								let nsObj = null,
+									parent = root,
+									fullName = '';
 									
-							for (let k = 0; k < shortNames.length; k++) {
-								const shortName = shortNames[k];
-								fullName += '.' + shortName;
-								const fn = fullName.slice(1);
-								const prevNsObj = types.get(parent, shortName);
-								if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !types._instanceof(prevNsObj, types.Namespace)))) {
-									let nsType = types.getType(prevNsObj) || types.Namespace;
-									if (proto) {
-										let args = proto;
-										// Extend namespace object
-										if (types.isFunction(args)) {
-											args = args(root);
+								for (let k = 0; k < shortNames.length; k++) {
+									const shortName = shortNames[k];
+									fullName += '.' + shortName;
+									const fn = fullName.slice(1);
+									const prevNsObj = types.get(parent, shortName);
+									if ((k === (shortNames.length - 1)) && (proto || (prevNsObj && !types._instanceof(prevNsObj, types.Namespace)))) {
+										let nsType = types.getType(prevNsObj) || types.Namespace;
+										if (proto) {
+											let args = proto;
+											// Extend namespace object
+											if (types.isFunction(args)) {
+												args = args(root);
+											};
+											if (!types.isArray(args)) {
+												args = [
+													/*typeProto*/
+													{
+														$TYPE_NAME: types.getTypeName(nsType),
+													},
+													/*instanceProto*/
+													args
+												];
+											};
+											nsType = types.INIT(nsType.$inherit.apply(nsType, args));
 										};
-										if (!types.isArray(args)) {
-											args = [
-												/*typeProto*/
-												{
-													$TYPE_NAME: types.getTypeName(nsType),
-												},
-												/*instanceProto*/
-												args
-											];
-										};
-										nsType = types.INIT(nsType.$inherit.apply(nsType, args));
+										nsObj = new nsType(parent, shortName, fn);
+									} else if (!prevNsObj) {
+										nsObj = new types.Namespace(parent, shortName, fn);
+									} else {
+										nsObj = prevNsObj;
 									};
-									nsObj = new nsType(parent, shortName, fn);
-								} else if (!prevNsObj) {
-									nsObj = new types.Namespace(parent, shortName, fn);
-								} else {
-									nsObj = prevNsObj;
-								};
-								nsObjs[fn] = nsObj;
-								if ((parent !== root) || (!entries && (spec.type !== 'Package')) || (entries && !types._instanceof(entries[spec.type || 'Module'], entries.Package))) {
-									parent[shortName] = nsObj;
-								};
-								parent = nsObj;
-							};
-								
-							nsObjs[name] = nsObj;
-
-							const nsList = (types.get(spec, 'namespaces') || []);
-							for (let j = 0; j < nsList.length; j++) {
-								if (types.has(nsList, j)) {
-									const shortNames = nsList[j].split('.');
-									let name = '.' + baseName;
-									for (let k = 0; k < shortNames.length; k++) {
-										const shortName = shortNames[k];
-										name += '.' + shortName;
-										const fn = name.slice(1);
-										if (!(fn in nsObjs)) {
-											nsObjs[fn] = parent[shortName] = new types.Namespace(parent, shortName, fn);
-										};
-										parent = parent[shortName];
+									nsObjs[fn] = nsObj;
+									if ((parent !== root) || (!entries && (spec.type !== 'Package')) || (entries && !types._instanceof(entries[spec.type || 'Module'], entries.Package))) {
+										parent[shortName] = nsObj;
 									};
 									parent = nsObj;
 								};
-							};
+								
+								nsObjs[name] = nsObj;
 
-							const opts = options[name];
-							const create = types.get(spec, 'create');
-							inits[name] = create && create(root, opts, _shared);
+								const nsList = (types.get(spec, 'namespaces') || []);
+								for (let j = 0; j < nsList.length; j++) {
+									if (types.has(nsList, j)) {
+										const shortNames = nsList[j].split('.');
+										let name = '.' + baseName;
+										for (let k = 0; k < shortNames.length; k++) {
+											const shortName = shortNames[k];
+											name += '.' + shortName;
+											const fn = name.slice(1);
+											if (!(fn in nsObjs)) {
+												nsObjs[fn] = parent[shortName] = new types.Namespace(parent, shortName, fn);
+											};
+											parent = parent[shortName];
+										};
+										parent = nsObj;
+									};
+								};
 
-							if (!namespaces && (name === 'Doodad.Namespaces')) {
-								namespaces = nsObj;
-								entries = namespaces.Entries;
+								const opts = options[name];
+								const create = types.get(spec, 'create');
+								inits[name] = create && create(root, opts, _shared);
+
+								if (!namespaces && (name === 'Doodad.Namespaces')) {
+									namespaces = nsObj;
+									entries = namespaces.Entries;
+								};
 							};
 						};
+
+						name = names.shift();
 					};
 
 					const initsNames = types.keys(inits),

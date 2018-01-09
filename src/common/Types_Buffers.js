@@ -111,6 +111,7 @@ exports.add = function add(DD_MODULES) {
 						_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */ ;
 					};
 				} catch(ex) {
+					// Do nothing
 				};
 			};
 					

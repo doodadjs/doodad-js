@@ -59,7 +59,6 @@ exports.add = function add(DD_MODULES) {
 			// Class entry
 			const doodad = root.Doodad,
 				types = doodad.Types,
-				dom = doodad.DOM,
 				namespaces = doodad.Namespaces,
 				entries = namespaces.Entries,
 				tools = doodad.Tools,
@@ -1543,6 +1542,7 @@ exports.add = function add(DD_MODULES) {
 								try {
 									tools.log(tools.LogLevels.Error, o.toString());
 								} catch(p) {
+									// Do nothing
 								};
 								types.DEBUGGER();
 							};
@@ -2531,7 +2531,7 @@ exports.add = function add(DD_MODULES) {
 							_shared.setAttributes(fn, values, {ignoreWhenReadOnly: true});
 
 							const _caller = types.INHERIT(doodad.CallerFunction, function caller(/*paramarray*/...params) {
-								const type = types.getType(this);
+								//const type = types.getType(this);
 										
 								const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super']),
 									currentDispatch = result[_shared.CurrentDispatchSymbol],
@@ -2750,13 +2750,13 @@ exports.add = function add(DD_MODULES) {
 
 								const result = _shared.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, _shared.AttributesSymbol]), 
 									oldDispatch = result[_shared.CurrentDispatchSymbol], 
-									oldCaller = result[_shared.CurrentCallerIndexSymbol],
-									attributes = result[_shared.AttributesSymbol];
+									oldCaller = result[_shared.CurrentCallerIndexSymbol];
+									//attributes = result[_shared.AttributesSymbol];
 
 								const oldInside = __Internal__.preserveInside();
 
-								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null),
-									hostType = types.getType(host);
+								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null);
+									//hostType = types.getType(host);
 
 								if (__Internal__.hasScopes) {
 									// Private methods
@@ -3239,7 +3239,7 @@ exports.add = function add(DD_MODULES) {
 								for (let j = 0; j < replacedCallers.length; j++) {
 									const callerJ = replacedCallers[j];
 									const protoJ = callerJ[_shared.PrototypeSymbol];
-									const typeJ = protoJ[_shared.TypeSymbol];
+									//const typeJ = protoJ[_shared.TypeSymbol];
 									if ((protoJ === protoI) || types.baseof(protoJ, protoI)) {
 										callers.splice(i, 1);
 										deleted = true;
@@ -6104,10 +6104,9 @@ exports.add = function add(DD_MODULES) {
 						};
 
 						const forType = types.isType(this),
-							cls = types.getType(this),
+							//cls = types.getType(this),
 							attributes = this[_shared.AttributesSymbol],
-							storage = this[_shared.AttributesStorageSymbol],
-							sealed = types.isSealedClass(cls);
+							storage = this[_shared.AttributesStorageSymbol];
 							
 						const preLoopAttrs = function _preLoopAttrs(attrs) {
 							for (let i = attrs.length - 1; i >= 0; i--) {
@@ -6770,7 +6769,7 @@ exports.add = function add(DD_MODULES) {
 								extender = attribute[_shared.ExtenderSymbol];
 							if (extender && extender.isPreserved) {
 								const preservedAttr = '__' + attr + '_preserved__';
-								_shared.setAttribute(obj, attr, this[preservedAttr]);
+								_shared.setAttribute(this, attr, this[preservedAttr]);
 								return true;
 							};
 						};
@@ -6970,8 +6969,7 @@ exports.add = function add(DD_MODULES) {
 							const typeStorage = this[_shared.AttributesStorageSymbol];
 							const instanceStorage = this.prototype[_shared.AttributesStorageSymbol];
 
-							let values,
-								attributes;
+							let values;
 
 							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
 							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned

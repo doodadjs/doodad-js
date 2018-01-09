@@ -194,6 +194,7 @@ exports.add = function add(DD_MODULES) {
 							try {
 								tools.catchAndExit(ev.detail.error);
 							} catch(o) {
+								// Do nothing
 							};
 						});
 							
@@ -216,18 +217,11 @@ exports.add = function add(DD_MODULES) {
 							
 						const dumpRejections = function dumpRejections() {
 							try {
-								const curTime = (new Date()).valueOf(),
-									iter = __Internal__.unhandledRejections.entries();
+								const curTime = (new Date()).valueOf();
 									
-								let result;
-									
-								// <FUTURE> for ... of
-								while (result = iter.next()) {
-									if (result.done) {
-										break;
-									};
-									const promise = result.value[0],
-										val = result.value[1];
+								for (let item of __Internal__.unhandledRejections.entries()) {
+									const promise = item[0],
+										val = item[1];
 									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
 										tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || "<anonymous>") + ". You can enable Node.js's '--trace-warnings' flag to get more details.");
 										if (val.reason) {

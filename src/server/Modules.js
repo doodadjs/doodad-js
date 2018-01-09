@@ -71,7 +71,6 @@ exports.add = function add(DD_MODULES) {
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
-				config = tools.Config,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
 
@@ -374,7 +373,7 @@ exports.add = function add(DD_MODULES) {
 				
 				
 			modules.ADD('loadManifest', function loadManifest(pkg, /*optional*/options) {
-				const Promise = types.getPromise();
+				//const Promise = types.getPromise();
 				return modules.loadFiles([
 						{module: pkg, path: 'package.json'},
 						{module: pkg, path: 'make.json'},

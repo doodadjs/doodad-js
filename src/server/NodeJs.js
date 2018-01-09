@@ -1,3 +1,5 @@
+/* global process */
+
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
@@ -100,13 +102,12 @@ exports.add = function add(DD_MODULES) {
 			const doodad = root.Doodad,
 				mixIns = doodad.MixIns,
 				extenders = doodad.Extenders,
-				namespaces = doodad.Namespaces,
+				//namespaces = doodad.Namespaces,
 				types = doodad.Types,
 				tools = doodad.Tools,
-				config = tools.Config,
 				files = tools.Files,
 				nodejs = doodad.NodeJs,
-				nodejsMixIns = nodejs.MixIns,
+				//nodejsMixIns = nodejs.MixIns,
 				nodejsInterfaces = nodejs.Interfaces;
 
 				
@@ -178,11 +179,11 @@ exports.add = function add(DD_MODULES) {
 			// Buffers
 			//===================================
 				
-			types.ADD('isBuffer', (_shared.Natives.globalBufferIsBuffer || (function(buffer) {
+			types.ADD('isBuffer', (_shared.Natives.globalBufferIsBuffer || (function(obj) {
 				if (types.isNothing(obj)) {
 					return false;
 				};
-				return (typeof obj === 'object') && (buffer instanceof _shared.Natives.globalBuffer);
+				return (typeof obj === 'object') && (obj instanceof _shared.Natives.globalBuffer);
 			})));
 				
 			//===================================
@@ -658,7 +659,7 @@ exports.add = function add(DD_MODULES) {
 
 					args = tools.append([], execArgs, [url], args);
 
-					const child = nodeChildProcessSpawn(process.execPath, args, {
+					/*const child =*/ nodeChildProcessSpawn(process.execPath, args, {
 						env: process.env,
 						stdio: [0, 1, 2],
 					});
@@ -733,7 +734,6 @@ exports.add = function add(DD_MODULES) {
 								try {
 									require(this.file);
 
-									const self = this;
 									this.ready = true;
 
 									this.dispatchEvent(new types.CustomEvent('load'));
@@ -1004,7 +1004,7 @@ exports.add = function add(DD_MODULES) {
 					if (ex.code === 'ENOENT') {
 						return false;
 
-					} else if ((ex.code === 'ENOTEMPTY') && types.get(options, 'force', false)) {
+					} else if ((ex.code === 'ENOTEMPTY') && force) {
 						const dirFiles = nodeFsReaddirSync(pathStr);
 
 						const count = dirFiles.length;
@@ -1400,6 +1400,8 @@ exports.add = function add(DD_MODULES) {
 			}));
 
 			files.ADD('copySync', function copySync(source, destination, /*optional*/options) {
+				/* eslint no-unsafe-finally: "off" */
+
 				const bufferLength = types.get(options, 'bufferLength', 16384),
 					preserveTimes = types.get(options, 'preserveTimes', true),
 					override = types.get(options, 'override', false),
@@ -2258,6 +2260,7 @@ exports.add = function add(DD_MODULES) {
 				try {
 					stats = nodeFsStatSync(folder)
 				} catch(ex) {
+					// Do nothing
 				};
 
 				if (!stats || !stats.isDirectory()) {
@@ -2266,6 +2269,7 @@ exports.add = function add(DD_MODULES) {
 					try {
 						files.mkdir(folder);
 					} catch(ex) {
+						// Do nothing
 					};
 				} else {
 					folder = files.Path.parse(folder);
@@ -2390,7 +2394,7 @@ exports.add = function add(DD_MODULES) {
 												if (encoding) {
 													state.data = (state.data || '') + chunk;
 												} else if (state.data) {
-													state.data = Buffer.concat([state.data, chunk]);
+													state.data = global.Buffer.concat([state.data, chunk]);
 												} else {
 													state.data = chunk;
 												};
@@ -2636,6 +2640,7 @@ exports.add = function add(DD_MODULES) {
 										try {
 											callback.apply(null, arguments);
 										} catch(ex) {
+											// Do nothing
 										};
 										if (types.get(callback.__OPTIONS__, 'once', false)) {
 											callback = null;
@@ -3590,10 +3595,12 @@ exports.add = function add(DD_MODULES) {
 						try {
 							files.rmdir(name1);
 						} catch(ex) {
+							// Do nothing
 						};
 						try {
 							files.rmdir(name2);
 						} catch(ex) {
+							// Do nothing
 						};
 					};
 				};

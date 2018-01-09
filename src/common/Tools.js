@@ -42,8 +42,7 @@ exports.add = function add(DD_MODULES) {
 					
 			const doodad = root.Doodad,
 				types = doodad.Types,
-				tools = doodad.Tools,
-				config = tools.Config;
+				tools = doodad.Tools;
 					
 			//===================================
 			// Internal
@@ -1107,15 +1106,10 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									const val = iterResult.value;
+								for (let val of obj) {
 									if (val === item) {
 										return val;
 									};
-									key++;
 								};
 							} else {
 								const keys = types.keys(obj),
@@ -1229,11 +1223,8 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									const val = iterResult.value;
+								const itemsLen = items.length;
+								for (let val of obj) {
 									for (let j = 0; j < itemsLen; j++) {
 										if (!sparsed || types.has(items, j)) {
 											if (val === items[j]) {
@@ -1241,7 +1232,6 @@ exports.add = function add(DD_MODULES) {
 											};
 										};
 									};
-									key++;
 								};
 							} else {
 								const keys = types.keys(obj),
@@ -2452,23 +2442,15 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
-									};
-									if (invert === !!items.call(thisObj, entry.value[1], entry.value[0], obj)) {
+								for (let item of obj.entries()) {
+									if (invert === !!items.call(thisObj, item[1], item[0], obj)) {
 										return false;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === !!items.call(thisObj, item.value, key, obj)) {
+								let key = 0;
+								for (let val of obj) {
+									if (invert === !!items.call(thisObj, val, key, obj)) {
 										return false;
 									};
 									key++;
@@ -2495,22 +2477,14 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
-									};
-									if (invert === (tools.findItem(items, entry.value[1], undefined, true, sparsed) !== null)) {
+								for (let item of obj.entries()) {
+									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) !== null)) {
 										return false;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === (tools.findItem(items, item.value, undefined, true, sparsed) !== null)) {
+								for (let val of obj) {
+									if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
 										return false;
 									};
 								};
@@ -2599,23 +2573,15 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
-									};
-									if (invert === !items.call(thisObj, entry.value[1], entry.value[0], obj)) {
+								for (let item of obj.entries()) {
+									if (invert === !items.call(thisObj, item[1], item[0], obj)) {
 										return true;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === !items.call(thisObj, item.value, key, obj)) {
+								let key = 0;
+								for (let val of obj) {
+									if (invert === !items.call(thisObj, val, key, obj)) {
 										return true;
 									};
 									key++;
@@ -2643,23 +2609,14 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								const entries = obj.entries();
-								let entry;
-								while (entry = entries.next()) {
-									if (entry.done) {
-										break;
-									};
-									if (invert === (tools.findItem(items, entry.value[1], undefined, true, sparsed) === null)) {
+								for (let item of obj.entries()) {
+									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) === null)) {
 										return true;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === (tools.findItem(items, item.value, undefined, true, sparsed) === null)) {
+								for (let val of obj) {
+									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
 										return true;
 									};
 								};

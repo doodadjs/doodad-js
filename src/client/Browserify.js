@@ -43,7 +43,7 @@ exports.add = function add(DD_MODULES) {
 
 			const doodad = root.Doodad,
 				types = doodad.Types,
-				tools = doodad.Tools,
+				//tools = doodad.Tools,
 				nodejs = doodad.NodeJs;
 
 	//		tools.complete(_shared.Natives, {
@@ -70,12 +70,14 @@ exports.add = function add(DD_MODULES) {
 						const mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
 						Promise = require(mod); // tiny Promise/A+ implementation
 					} catch(o) {
+						// Do nothing
 					};
 					if (!types.isFunction(Promise)) {
 						try {
 							const mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
 							Promise = require(mod); // subset of RSVP
 						} catch(o) {
+							// Do nothing
 						};
 					};
 					if (types.isFunction(Promise)) {

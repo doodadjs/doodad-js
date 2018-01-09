@@ -52,7 +52,7 @@ exports.add = function add(DD_MODULES) {
 			//===================================
 
 			const doodad = root.Doodad,
-				tools = doodad.Tools,
+				//tools = doodad.Tools,
 				types = doodad.Types;
 
 			//===================================

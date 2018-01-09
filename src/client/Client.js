@@ -48,7 +48,6 @@ exports.add = function add(DD_MODULES) {
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
-				config = tools.Config,
 				client = doodad.Client,
 				extenders = doodad.Extenders,
 				mixIns = doodad.MixIns;
@@ -418,6 +417,7 @@ exports.add = function add(DD_MODULES) {
 							_shared.Natives.windowDocument.write("");
 							_shared.Natives.windowDocument.close();
 						} catch(o) {
+							// Do nothing
 						};
 
 					} else {
@@ -425,12 +425,14 @@ exports.add = function add(DD_MODULES) {
 							try {
 								_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
 							} catch(o) {
+								// Do nothing
 							};
 						};
 						
 						try {
 							global.console.log("Page exited with code : " + types.toString(exitCode));
 						} catch(o) {
+							// Do nothing
 						};
 						
 						if (root.getOptions().debug) {
@@ -485,6 +487,7 @@ exports.add = function add(DD_MODULES) {
 									_shared.Natives.windowDocument.write("");
 									_shared.Natives.windowDocument.close();
 								} catch(o) {
+									// Do nothing
 								};
 							};
 						};

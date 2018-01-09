@@ -189,6 +189,7 @@ exports.add = function add(DD_MODULES) {
 				tools.eval("a => a");
 				__Internal__.hasArrows = true;
 			} catch(ex) {
+				// Do nothing
 			};
 
 			types.ADD('hasArrows', root.DD_DOC(
@@ -251,6 +252,7 @@ exports.add = function add(DD_MODULES) {
 				//, {Internal: __Internal__});
 
 			} catch(ex) {
+				// Do nothing
 			};
 
 			types.ADD('hasAsyncAwait', root.DD_DOC(
@@ -338,6 +340,7 @@ exports.add = function add(DD_MODULES) {
 			try {
 				__Internal__.arrowIsBindable = (tools.eval("() => this.doodad").bind({doodad: 1})() === 1);
 			} catch(ex) {
+				// Do nothing
 			};
 				
 			types.ADD('isBindable', root.DD_DOC(
@@ -603,7 +606,6 @@ exports.add = function add(DD_MODULES) {
 					if (types.isObjectLike(obj)) {
 						obj = _shared.Natives.windowObject(obj);
 						if (types.isArrayLike(obj)) {
-							const len = obj.length;
 							for (let key in obj) {
 								const number = _shared.Natives.windowNumber(key);
 								if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
@@ -992,7 +994,7 @@ exports.add = function add(DD_MODULES) {
 						} else {
 							const result = [];
 							const keys = types.keys(obj),
- 								len = keys.length; // performance
+								len = keys.length; // performance
 							for (let i = 0; i < len; i++) {
 								const key = keys[i];
 								result.push(obj[key]);

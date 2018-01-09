@@ -107,6 +107,7 @@ exports.add = function add(DD_MODULES) {
 							try {
 								val = obj.valueOf();
 							} catch(o) {
+								// Do nothing
 							};
 						};
 						const toSourceItemsCount = types.getOptions().toSourceItemsCount;

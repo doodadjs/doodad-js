@@ -125,9 +125,10 @@ exports.add = function add(DD_MODULES) {
 				}));
 
 			__Internal__.getPromiseName = function getPromiseName(callback) {
-				let original;
-				while (original = types.get(callback, _shared.OriginalValueSymbol)) {
+				let original = types.get(callback, _shared.OriginalValueSymbol);
+				while (original) {
 					callback = original;
+					original = types.get(callback, _shared.OriginalValueSymbol);
 				};
 				return types.get(callback, _shared.NameSymbol) || types.getFunctionName(callback);
 			};
@@ -347,7 +348,7 @@ exports.add = function add(DD_MODULES) {
 									resolve(result);
 								};
 							};
-							tools.forEach(promises, function(val) {
+							tools.forEach(promises, function(val, i) {
 								P.resolve(val)
 									.then(function(value) {
 										successes++;
@@ -516,7 +517,6 @@ exports.add = function add(DD_MODULES) {
 			};
 
 			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject) {
-				const Promise = this;
 				let solved = false;
 				//const self = this;
 				const res = function(value) {
@@ -624,6 +624,7 @@ exports.add = function add(DD_MODULES) {
 					try {
 						isStillDDPromise = (DDPromise.resolve(0).then(function() {}).catch(function() {}) instanceof DDPromise);
 					} catch(ex) {
+						// Do nothing
 					};
 
 					if (!isStillDDPromise) {
