@@ -168,7 +168,7 @@ exports.add = function add(DD_MODULES) {
 						return new types.Null();
 					} else {
 						return _shared.Natives.windowObject(val);
-					};
+					}
 				}));
 				
 			types.ADD('toArray', _shared.Natives.arrayFrom);
@@ -469,7 +469,7 @@ exports.add = function add(DD_MODULES) {
 						return true;
 					} else {
 						return false;
-					};
+					}
 				}));
 				
 			types.ADD('isEmpty', root.DD_DOC(
@@ -513,7 +513,7 @@ exports.add = function add(DD_MODULES) {
 						return true;
 					} else {
 						return false;
-					};
+					}
 				}));
 				
 			types.ADD('isStringAndNotEmpty', root.DD_DOC(
@@ -929,7 +929,7 @@ exports.add = function add(DD_MODULES) {
 						return true;
 					} else {
 						return false;
-					};
+					}
 				}));
 				
 			types.ADD('indexes', root.DD_DOC(
@@ -1000,7 +1000,7 @@ exports.add = function add(DD_MODULES) {
 								result.push(obj[key]);
 							};
 							return result;
-						};
+						}
 					};
 					return [];
 				}));
@@ -1034,7 +1034,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 							return result;
-						};
+						}
 					};
 					return [];
 				}));
@@ -1071,8 +1071,8 @@ exports.add = function add(DD_MODULES) {
 							return result;
 						} else {
 							return types.entries(obj);
-						};
-					};
+						}
+					}
 				}));
 				
 			types.ADD('available', root.DD_DOC(

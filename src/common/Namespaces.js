@@ -260,16 +260,16 @@ exports.add = function add(DD_MODULES) {
 									return tmp;
 								} else {
 									throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
-								};
+								}
 							} else if (!entryType || !types.baseof(entries.Entry, entryType)) {
 								throw new types.Error("Invalid registry entry type : '~0~'.", [types.getTypeName(entryType)]);
 							} else {
 								return entryType;
-							};
+							}
 						} else {
 							//spec.type = entries.Module;
 							return entries.Module;
-						};
+						}
 					};
 
 					const getNamespaceType = function _getNamespaceType(spec) {
@@ -283,16 +283,16 @@ exports.add = function add(DD_MODULES) {
 									return tmp;
 								} else {
 									throw new types.Error("Invalid namespace object type : '~0~'.", [types.toString(namespaceType).slice(0, 50)]);
-								};
+								}
 							} else if (!namespaceType || ((namespaceType !== types.Namespace) && !types.baseof(types.Namespace, namespaceType))) {
 								throw new types.Error("Invalid namespace object type : '~0~'.", [types.getTypeName(namespaceType)]);
 							} else {
 								return namespaceType;
-							};
+							}
 						} else {
 							//spec.namespaceType = types.Namespace;
 							return types.Namespace;
-						};
+						}
 					};
 
 					const checkDependencies = function _checkDependencies(spec) {
@@ -551,7 +551,7 @@ exports.add = function add(DD_MODULES) {
 													};
 												};
 												return entry;
-											};
+											}
 										});
 								} else if (types.isFunction(retval)) {
 									entry.objectCreating = false;
@@ -688,7 +688,7 @@ exports.add = function add(DD_MODULES) {
 												throw err;
 											} else {
 												return result;
-											};
+											}
 										});
 								};
 							} else {
@@ -718,7 +718,7 @@ exports.add = function add(DD_MODULES) {
 						
 					} else {
 						return entry;
-					};
+					}
 				});
 			});
 				
@@ -786,7 +786,7 @@ exports.add = function add(DD_MODULES) {
 							return -1;
 						} else {
 							return 1;
-						};
+						}
 					});
 
 					const doCallback = function _doCallback() {
@@ -840,7 +840,7 @@ exports.add = function add(DD_MODULES) {
 											return (dep1.module === dep2.module) && (dep1.path === dep2.path);
 										}, state.missingDeps);
 									throw new types.MissingDependencies(missingDeps, modules);
-								};
+								}
 							} else if ((state.missings + state.optionals) >= names.length) {
 								state.ignoreOptionals = true;
 							};
@@ -869,7 +869,7 @@ exports.add = function add(DD_MODULES) {
 								});
 						} else {
 							return state.toInit;
-						};
+						}
 					};
 
 					const loopInitModules = function loopInitModules(toInit) {
@@ -1072,7 +1072,7 @@ exports.add = function add(DD_MODULES) {
 							return {
 								done: true,
 							};
-						};
+						}
 					},
 				}));
 

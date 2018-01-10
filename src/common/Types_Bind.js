@@ -146,7 +146,7 @@ exports.add = function add(DD_MODULES) {
 						return oldFn;
 					} else {
 						return null;
-					};
+					}
 				}));
 
 

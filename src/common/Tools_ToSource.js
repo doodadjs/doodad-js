@@ -167,19 +167,19 @@ exports.add = function add(DD_MODULES) {
 									return "'" + str + "'";
 								} else {
 									return "(new String('" + str + "'))";
-								};
+								}
 							} else if (types.isBoolean(obj)) {
 								if (primitive) {
 									return (val ? 'true' : 'false');
 								} else {
 									return (val ? '(new Boolean(true))' : '(new Boolean(false))');
-								};
+								}
 							} else if (types.isNumber(obj)) {
 								if (primitive) {
 									return val.toString();
 								} else {
 									return '(new Number(' + val + '))';
-								};
+								}
 							} else if (types.isDate(obj)) {
 								return '(new Date(' + obj.getFullYear() + ', ' + obj.getMonth() + ', ' + obj.getDate() + ', ' + obj.getHours() + ', ' + obj.getMinutes() + ', ' + obj.getSeconds() + ', ' + obj.getMilliseconds() + '))';
 							} else if (types.isSymbol(obj)) {
@@ -192,7 +192,7 @@ exports.add = function add(DD_MODULES) {
 									return obj.toString();
 								} else {
 									return '(new Function())';
-								};
+								}
 							} else if (types.isArray(obj)) {
 								const includeFunctions = types.get(options, 'includeFunctions', true);
 								if (depth < 0) {
@@ -246,9 +246,9 @@ exports.add = function add(DD_MODULES) {
 								return tools.toSource(_shared.Natives.objectToStringCall(obj));
 							} else {
 								return obj.toString();
-							};
-						};
-					};
+							}
+						}
+					}
 				}));
 				
 			//===================================

@@ -270,7 +270,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					} else {
 						// Null object
 						return true;
-					};
+					}
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
 					return true;
 				};
@@ -327,7 +327,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return true;
 			} else {
 				return false;
-			};
+			}
 		}));
 		
 		__Internal__.ADD('keys', __Internal__.DD_DOC(
@@ -546,7 +546,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				});
 			} else {
 				return obj || {};
-			};
+			}
 			//! ELSE()
 				//!	INJECT("return obj || {};");
 			//! END_IF()
@@ -832,7 +832,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return exports.evalWithCtx(ctx, expr);
 			} else {
 				return exports.eval(expr);
-			};
+			}
 		}));
 
 
@@ -949,7 +949,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return str.slice(start, end + 1);
 				} else {
 					return [];
-				};
+				}
 			} else if ((chr === ' ') && !direction && (count === Infinity)) {
 				return _shared.Natives.stringTrimCall(str);
 			} else {
@@ -974,7 +974,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 				};
 				return str.slice(i, j + chrLen);
-			};
+			}
 		}));
 
 	//==================================
@@ -1039,7 +1039,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					obj = ((obj < 0.0 ? -1.0 : 1.0) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj) * precision)) / precision;
 				};
 				return obj;
-			};
+			}
 		}));
 		
 	__Internal__.ADD('toString', __Internal__.DD_DOC(
@@ -1221,7 +1221,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return true;
 			} else {
 				return false;
-			};
+			}
 		}));
 
 	__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
@@ -1336,7 +1336,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			// Source: http://es6-features.org/#NumberTypeChecking
 			return (num === num) && (num !== Infinity) && (num !== -Infinity);
-		};
+		}
 	};
 		
 	__Internal__.numberIsInteger = function numberIsInteger(num) {
@@ -1351,7 +1351,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			const abs = _shared.Natives.mathAbs(num);
 			return (abs === _shared.Natives.mathFloor(abs));
-		};
+		}
 	};
 
 	__Internal__.ADD('isInteger', __Internal__.DD_DOC(
@@ -1410,7 +1410,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return false;
 			};
 			return (num >= _shared.Natives.numberMinSafeInteger) && (num <= _shared.Natives.numberMaxSafeInteger);
-		};
+		}
 	};
 
 	__Internal__.ADD('isSafeInteger', __Internal__.DD_DOC(
@@ -1578,7 +1578,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return false;
 		} else {
 			return __Internal__.numberIsFinite(num);
-		};
+		}
 	};
 
 	__Internal__.ADD('isFloat', __Internal__.DD_DOC(
@@ -2239,7 +2239,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return obj[key];
 			} else {
 				return _default;
-			};
+			}
 		}));
 		
 	__Internal__.ADD('getDefault', __Internal__.DD_DOC(
@@ -2290,7 +2290,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					obj[key] = _default;
 				};
 				return _default;
-			};
+			}
 		}));
 		
 	__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
@@ -2606,7 +2606,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 					
 				return tmp;
-			};
+			}
 		}));
 
 	__Internal__.ADD('isPrototypeOf', function isPrototypeOf(protoObj, obj) {
@@ -2671,7 +2671,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return obj[key];
 			} else {
 				return _default;
-			};
+			}
 		}));
 		
 	__Internal__.ADD('hasIn', __Internal__.DD_DOC(
@@ -2993,7 +2993,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return _shared.Natives.objectSeal(obj);
 				} else {
 					return obj;
-				};
+				}
 			}));
 		
 	__Internal__.ADD('isFrozen', _shared.Natives.objectIsFrozen);
@@ -3043,7 +3043,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return _shared.Natives.objectFreeze(obj);
 				} else {
 					return obj;
-				};
+				}
 			}));
 		
 	//==============
@@ -3073,7 +3073,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return nodeUUID();
 			} else {
 				throw new global.Error("Package 'uuid' is missing.");
-			};
+			}
 		}
 	));
 
@@ -3173,7 +3173,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return genKey;
 			} else {
 				return _shared.Natives.windowString(key) + '$' + genKey;
-			};
+			}
 		})
 	));
 			
@@ -3210,7 +3210,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return key && key[1];
 			} else {
 				return key;
-			};
+			}
 		}));
 			
 	__Internal__.ADD('symbolIsGlobal', __Internal__.DD_DOC(
@@ -3274,10 +3274,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					const str = _shared.Natives.functionToStringCall(obj);
 					const result = str.match(/(function\s+)?([^(\s]*)[^(]*\(/);
 					return result && result[2] || null;
-				};
+				}
 			} else {
 				return null;
-			};
+			}
 		}));
 		
 	//===================================
@@ -3327,7 +3327,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return this;
 			} else {
 				return new types.box(value);
-			};
+			}
 		}));
 
 	tools.extend(types.box.prototype, {
@@ -3579,7 +3579,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					type = types.newInstance(type, args);
 				};
 				return type;
-			};
+			}
 		}));
 		
 	// "types.DESTROY" Hook	
@@ -4387,7 +4387,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return fn.apply(thisObj, args);
 			} else {
 				return fn.call(thisObj);
-			};
+			}
 		});
 			
 	_shared.getAttribute = __Internal__.DD_DOC(
@@ -4686,7 +4686,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return this;
 			} else {
 				return new types.AttributeBox(value);
-			};
+			}
 		})));
 
 	//tools.extend(types.AttributeBox.prototype, {
@@ -4997,7 +4997,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					throw ex;
 				} finally {
 					_shared.setAttribute(this, '_super', oldSuper);
-				};
+				}
 			});
 			_shared.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
 			return _caller;
@@ -5364,7 +5364,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							}
 						}
 					);
-				};
+				}
 			})(ctx);
 
 			const proto = type.prototype;;
@@ -5803,7 +5803,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						return ["Assertion failed: " + message, params];
 					} else {
 						return ["Assertion failed."];
-					};
+					}
 				},
 			})));
 

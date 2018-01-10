@@ -361,7 +361,7 @@ exports.add = function add(DD_MODULES) {
 								id = null;
 							},
 						} : undefined);
-					};
+					}
 				}));
 				
 			//=====================================
@@ -1662,10 +1662,10 @@ exports.add = function add(DD_MODULES) {
 									return false;
 								} else {
 									throw err;
-								};
+								}
 							} else {
 								return (type === 'file' ? !!url.file : (type === 'folder' ? !url.file : true))
-							};
+							}
 						});
 				});
 			});
@@ -1698,7 +1698,7 @@ exports.add = function add(DD_MODULES) {
 					return files.existsAsync(url, options);
 				} else {
 					throw new types.NotSupported("Synchronous version of 'exists' is not implemented.");
-				};
+				}
 			}));
 					
 
@@ -1804,7 +1804,7 @@ exports.add = function add(DD_MODULES) {
 								});
 							} else {
 								throw new types.HttpError(response.status, response.statusText);
-							};
+							}
 						});
 					} else {
 						const xhr = new _shared.Natives.windowXMLHttpRequest();
@@ -1906,7 +1906,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 						});
-					};
+					}
 				});
 			}));
 
@@ -1940,7 +1940,7 @@ exports.add = function add(DD_MODULES) {
 					return files.readFileAsync(url, /*optional*/options);
 				} else {
 					return files.readFileSync(url, /*optional*/options);
-				};
+				}
 			}));
 				
 			files.ADD('watch', root.DD_DOC(

@@ -518,7 +518,7 @@ exports.add = function add(DD_MODULES) {
 							return true;
 						};
 						return false;
-					};
+					}
 				}));
 
 			types.ADD('getImplements', root.DD_DOC(
@@ -746,7 +746,7 @@ exports.add = function add(DD_MODULES) {
 									return insideFnApply(obj, args);
 								} else {
 									return insideFnApply(obj, params);
-								};
+								}
 							};
 						} catch(ex) {
 							callback.lastError = ex;
@@ -880,14 +880,14 @@ exports.add = function add(DD_MODULES) {
 						} else {
 							const currentInstance = state[0];
 							return !!currentInstance && (currentInstance === obj);
-						};
+						}
 					} else {
 						if (forType) {
 							return !!__Internal__.currentType && (__Internal__.currentType === obj);
 						} else {
 							return !!__Internal__.currentInstance && (__Internal__.currentInstance === obj);
-						};
-					};
+						}
+					}
 				}
 			:
 				function isInside(obj, /*optional*/state) {
@@ -945,7 +945,7 @@ exports.add = function add(DD_MODULES) {
 								throw ex;
 							} finally {
 								__Internal__.restoreInside(oldInside);
-							};
+							}
 						};
 					} else {
 						if ((secret !== _shared.SECRET) && obj && !__Internal__.isInside(obj)) {
@@ -960,7 +960,7 @@ exports.add = function add(DD_MODULES) {
 								throw ex;
 							} finally {
 								__Internal__.restoreInside(oldInside);
-							};
+							}
 						};
 					};
 					_shared.setAttribute(_insider, _shared.BoundObjectSymbol, obj);
@@ -1003,7 +1003,7 @@ exports.add = function add(DD_MODULES) {
 						throw ex;
 					} finally {
 						__Internal__.restoreInside(oldInside);
-					};
+					}
 				}
 			:
 				function insideNew(...args) {
@@ -1051,8 +1051,8 @@ exports.add = function add(DD_MODULES) {
 							return __Internal__.makeInside(obj, fn, secret);
 						} else {
 							return __Internal__.oldMakeInside(obj, fn);
-						};
-					};
+						}
+					}
 				});
 				
 			//==================================
@@ -1076,7 +1076,7 @@ exports.add = function add(DD_MODULES) {
 							return fn.apply(thisObj, args);
 						} else {
 							return fn.call(thisObj);
-						};
+						}
 					} else {
 						if (!types.isNothing(obj) && (secret !== _shared.SECRET)) {
 							throw new types.Error("Invalid secret.");
@@ -1094,19 +1094,19 @@ exports.add = function add(DD_MODULES) {
 										return fn.apply(thisObj, args);
 									} else {
 										return fn.call(thisObj);
-									};
+									}
 								} else {
 									throw new types.ValueError("'fn' is not a function.");
-								};
+								}
 							} catch(ex) {
 								throw ex;
 							} finally {
 								__Internal__.restoreInside(oldInside);
-							};
+							}
 						//} else {
 						//	return __Internal__.oldInvoke(obj, fn, args);
-						//};
-					};
+						//}
+					}
 				});
 
 			_shared.getAttribute = root.DD_DOC(
@@ -1122,15 +1122,15 @@ exports.add = function add(DD_MODULES) {
 								return storage[attr];
 							} else {
 								return __Internal__.oldGetAttribute(obj, attr);
-							};
+							}
 						} catch(ex) {
 							throw ex;
 						} finally {
 							__Internal__.restoreInside(oldInside);
-						};
+						}
 					} else {
 						return __Internal__.oldGetAttribute(obj, attr);
-					};
+					}
 				});
 				
 			_shared.getAttributes = root.DD_DOC(
@@ -1159,10 +1159,10 @@ exports.add = function add(DD_MODULES) {
 							throw ex;
 						} finally {
 							__Internal__.restoreInside(oldInside);
-						};
+						}
 					} else {
 						return __Internal__.oldGetAttributes(obj, attrs);
-					};
+					}
 				});
 				
 			_shared.setAttribute = root.DD_DOC(
@@ -1179,15 +1179,15 @@ exports.add = function add(DD_MODULES) {
 								return value;
 							} else {
 								return __Internal__.oldSetAttribute(obj, attr, value, options);
-							};
+							}
 						} catch(ex) {
 							throw ex;
 						} finally {
 							__Internal__.restoreInside(oldInside);
-						};
+						}
 					} else {
 						return __Internal__.oldSetAttribute(obj, attr, value, options);
-					};
+					}
 				});
 				
 			_shared.setAttributes = root.DD_DOC(
@@ -1217,10 +1217,10 @@ exports.add = function add(DD_MODULES) {
 							throw ex;
 						} finally {
 							__Internal__.restoreInside(oldInside);
-						};
+						}
 					} else {
 						return __Internal__.oldSetAttributes(obj, values, options);
-					};
+					}
 				});
 
 			__Internal__.oldTypesIsClonable = _shared.isClonable;
@@ -1234,7 +1234,7 @@ exports.add = function add(DD_MODULES) {
 					return obj.clone();
 				} else {
 					return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked, keepNonClonable);
-				};
+				}
 			};
 				
 			//==================================
@@ -1295,7 +1295,7 @@ exports.add = function add(DD_MODULES) {
 					return (types.isType(obj) ? !!destroyed : (destroyed !== false)); // NOTE: Can be "null" for "not created".
 				} else {
 					return __Internal__.oldDESTROYED(obj);
-				};
+				}
 			};
 
 			//==================================
@@ -1793,7 +1793,7 @@ exports.add = function add(DD_MODULES) {
 									return extender.get(options);
 								} else {
 									return this;
-								};
+								}
 							}),
 
 						getValue: types.READ_ONLY(null), // function getValue(attr, attribute, forType)
@@ -1902,7 +1902,7 @@ exports.add = function add(DD_MODULES) {
 										cache.storage = _shared.invoke(this, function() {return this[_shared.AttributesStorageSymbol]}, null, _shared.SECRET);
 									};
 									return cache.storage[attr];
-								};
+								}
 							});
 						}),
 
@@ -2587,15 +2587,15 @@ exports.add = function add(DD_MODULES) {
 											return "Error: " + ex.toString();
 										} catch(o) {
 											return "Internal error";
-										};
+										}
 									} else {
 										if (modifiers & doodad.MethodModifiers.Async) {
 											const Promise = types.getPromise();
 											return Promise.reject(ex);
 										} else {
 											throw ex;
-										};
-									};
+										}
+									}
 										
 								} finally {
 									_shared.setAttribute(this, '_super', oldSuper);
@@ -2605,7 +2605,7 @@ exports.add = function add(DD_MODULES) {
 									if (!types.isNothing(_super)) {
 										_super[_shared.CalledSymbol] = oldCalled;
 									};
-								};
+								}
 							});
 
 							return _caller;
@@ -2815,7 +2815,7 @@ exports.add = function add(DD_MODULES) {
 											return "Error: 'toString' is not reentrant.";
 										} else {
 											throw new types.Error("'~0~' is not reentrant.", [attr]);
-										};
+										}
 									};
 								};
 
@@ -3500,7 +3500,7 @@ exports.add = function add(DD_MODULES) {
 										throw ex;
 									} finally {
 										_shared.setAttribute(this, '_super', oldSuper);
-									};
+									}
 								};
 							} else {
 								_super = _super || (function(){});
@@ -3513,7 +3513,7 @@ exports.add = function add(DD_MODULES) {
 										throw ex;
 									} finally {
 										_shared.setAttribute(this, '_super', oldSuper);
-									};
+									}
 								};
 							};
 
@@ -4227,7 +4227,7 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						value[_shared.ExtenderSymbol] = extender;
 						return value;
-					};
+					}
 				}));
 				
 			doodad.ADD('NOT_INHERITED', root.DD_DOC(
@@ -4482,10 +4482,10 @@ exports.add = function add(DD_MODULES) {
 							return doodad.ASYNC(fn);
 						} else {
 							throw new types.NotSupported("Async functions are not supported because they always coerce to a native ES6 Promise.");
-						};
+						}
 					} else {
 						return fn;
-					};
+					}
 				}));
 
 			doodad.ADD('JS_METHOD', root.DD_DOC(
@@ -5952,7 +5952,7 @@ exports.add = function add(DD_MODULES) {
 					};
 
 					return base;
-				};
+				}
 			};
 				
 			__Internal__.$extend = function $extend(/*paramarray*/...args) {
@@ -6227,7 +6227,7 @@ exports.add = function add(DD_MODULES) {
 									notReentrantMap.set(name, true);
 								};
 
-							};
+							}
 						};
 					}))))))));
 				
@@ -6381,7 +6381,7 @@ exports.add = function add(DD_MODULES) {
 								return fn.apply(null, args);
 							} else {
 								return fn();
-							};
+							}
 						} catch(ex) {
 							throw ex;
 						} finally {
@@ -6392,7 +6392,7 @@ exports.add = function add(DD_MODULES) {
 							if (dispatch) {
 								_shared.setAttributes(this, oldValues);
 							};
-						};
+						}
 					}
 				:
 					function callOutside(fn, /*optional*/args) {
@@ -6400,7 +6400,7 @@ exports.add = function add(DD_MODULES) {
 							return fn.apply(null, args);
 						} else {
 							return fn();
-						};
+						}
 					}
 				);
 
@@ -6568,7 +6568,7 @@ exports.add = function add(DD_MODULES) {
 							return '[class ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
 						} else {
 							return '[object ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
-						};
+						}
 					}))))))),
 
 
@@ -6838,7 +6838,7 @@ exports.add = function add(DD_MODULES) {
 								return true;
 							};
 							return false;
-						};
+						}
 					}))))),
 						
 				isImplemented: root.DD_DOC(
@@ -7367,7 +7367,7 @@ exports.add = function add(DD_MODULES) {
 								return true;
 							} else {
 								throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
-							};
+							}
 						}),
 
 					detach: root.DD_DOC(

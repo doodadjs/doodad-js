@@ -195,11 +195,11 @@ exports.add = function add(DD_MODULES) {
 											throw err;
 										} else {
 											return null;
-										};
+										}
 									} else {
 										file.exports = exports;
 										return file;
-									};
+									}
 								});
 						})
 						.catch(function(err) {
@@ -208,10 +208,10 @@ exports.add = function add(DD_MODULES) {
 									throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
 								} else {
 									throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
-								};
+								}
 							} else {
 								throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
-							};
+							}
 						});
 				});
 			});
@@ -260,7 +260,7 @@ exports.add = function add(DD_MODULES) {
 									});
 							} else {
 								throw err;
-							};
+							}
 						};
 
 					if (root.getOptions().debug) {

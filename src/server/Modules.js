@@ -85,10 +85,10 @@ exports.add = function add(DD_MODULES) {
 						throw new types.Error("Failed to load file '~0~' from module '~1~': ~2~", [file.path, file.module, err]);
 					} else {
 						throw new types.Error("Failed to load module '~0~': ~1~", [file.module, err]);
-					};
+					}
 				} else {
 					throw new types.Error("Failed to load file '~0~': ~1~", [file.path, err]);
-				};
+				}
 			};
 
 
@@ -250,7 +250,7 @@ exports.add = function add(DD_MODULES) {
 								return null;
 							} else {
 								throw err;
-							};
+							}
 						})
 						.then(function(exports) {
 							file.exports = exports;
@@ -306,7 +306,7 @@ exports.add = function add(DD_MODULES) {
 									});
 							} else {
 								throw err;
-							};
+							}
 						};
 
 					const DD_MODULES = {};

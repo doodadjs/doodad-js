@@ -233,8 +233,8 @@ exports.add = function add(DD_MODULES) {
 										.then(function() {
 											return result;
 										});
-								};
-							};
+								}
+							}
 						});
 					};
 				};
@@ -460,7 +460,7 @@ exports.add = function add(DD_MODULES) {
 								return callback(ex);
 							} else {
 								throw ex;
-							};
+							}
 						});
 					} else {
 						promise = oldCatchCall(this, callback);
@@ -696,7 +696,7 @@ exports.add = function add(DD_MODULES) {
 								ex.promiseName = (types.get(callback.promise, _shared.NameSymbol) || '<anonymous>');
 							};
 							throw ex;
-						};
+						}
 					});
 					_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});

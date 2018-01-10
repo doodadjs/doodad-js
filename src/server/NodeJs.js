@@ -347,7 +347,7 @@ exports.add = function add(DD_MODULES) {
 					return !!obj[__Internal__.symbolDestroyed];
 				} else {
 					return __Internal__.oldDESTROYED(obj);
-				};
+				}
 			};
 
 			//===================================
@@ -853,8 +853,8 @@ exports.add = function add(DD_MODULES) {
 						return false;
 					} else {
 						throw ex;
-					};
-				};
+					}
+				}
 			});
 
 			files.ADD('existsAsync', function existsAsync(path, /*optional*/options) {
@@ -913,7 +913,7 @@ exports.add = function add(DD_MODULES) {
 					return files.existsAsync(path, options);
 				} else {
 					return files.existsSync(path, options);
-				};
+				}
 			}));
 					
 			files.ADD('rmSync', function rmSync(path, /*optional*/options) {
@@ -927,7 +927,7 @@ exports.add = function add(DD_MODULES) {
 						return false;
 					} else {
 						throw ex;
-					};
+					}
 				};
 
 				return true;
@@ -987,7 +987,7 @@ exports.add = function add(DD_MODULES) {
 					return files.rmAsync(path, options);
 				} else {
 					return files.rmSync(path, options);
-				};
+				}
 			}));
 					
 			files.ADD('rmdirSync', function rmdirSync(path, /*optional*/options) {
@@ -1155,10 +1155,10 @@ exports.add = function add(DD_MODULES) {
 												});
 										} else {
 											throw err;
-										};
+										}
 									} else {
 										return loopDeleteContent(parent, names, index + 1);
-									};
+									}
 								});
 						};
 					};
@@ -1177,7 +1177,7 @@ exports.add = function add(DD_MODULES) {
 										});
 								} else {
 									throw err;
-								};
+								}
 							})
 							.nodeify(function returnResult(err, dummy) {
 								if (err) {
@@ -1185,10 +1185,10 @@ exports.add = function add(DD_MODULES) {
 										return false;
 									} else {
 										throw err;
-									};
+									}
 								} else {
 									return true;
-								};
+								}
 							});
 					};
 
@@ -1203,7 +1203,7 @@ exports.add = function add(DD_MODULES) {
 									return state.rejectCb(err);
 								} else {
 									return state.resolveCb(result);
-								};
+								}
 							});
 					};
 
@@ -1233,7 +1233,7 @@ exports.add = function add(DD_MODULES) {
 						state.rejectCb = Promise.reject.bind(Promise);
 
 						return startCb();
-					};
+					}
 				});
 			});
 
@@ -1265,7 +1265,7 @@ exports.add = function add(DD_MODULES) {
 					return files.rmdirAsync(path, options);
 				} else {
 					return files.rmdirSync(path, options);
-				};
+				}
 			}));
 					
 			files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
@@ -1353,7 +1353,7 @@ exports.add = function add(DD_MODULES) {
 												return createLoop(index + 1);
 											} else {
 												throw err;
-											};
+											}
 										});
 								};
 							});
@@ -1364,7 +1364,7 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						return mkdir(path.toApiString());
 
-					};
+					}
 				});
 			});
 
@@ -1396,7 +1396,7 @@ exports.add = function add(DD_MODULES) {
 					return files.mkdirAsync(path, options);
 				} else {
 					return files.mkdirSync(path, options);
-				};
+				}
 			}));
 
 			files.ADD('copySync', function copySync(source, destination, /*optional*/options) {
@@ -1509,7 +1509,7 @@ exports.add = function add(DD_MODULES) {
 							throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [sourceStr]);
 						} else {
 							throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
-						};
+						}
 					};
 				};
 
@@ -1780,7 +1780,7 @@ exports.add = function add(DD_MODULES) {
 										return stat(sourceStr);
 									} else {
 										return lstat(sourceStr);
-									};
+									}
 								})
 								.then(function(stats) {
 									if (stats.isSymbolicLink()) {
@@ -1795,7 +1795,7 @@ exports.add = function add(DD_MODULES) {
 											throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [sourceStr]);
 										} else {
 											throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
-										};
+										}
 									};
 								});
 						});
@@ -1812,7 +1812,7 @@ exports.add = function add(DD_MODULES) {
 									return state.rejectCb(err);
 								} else {
 									return state.resolveCb(result);
-								};
+								}
 							});
 					};
 
@@ -1842,7 +1842,7 @@ exports.add = function add(DD_MODULES) {
 						state.rejectCb = Promise.reject.bind(Promise);
 
 						return startCb();
-					};
+					}
 				});
 			});
 
@@ -1879,7 +1879,7 @@ exports.add = function add(DD_MODULES) {
 					return files.copyAsync(source, destination, options);
 				} else {
 					return files.copySync(source, destination, options);
-				};
+				}
 			}));
 
 			__Internal__.readdirAddFile = function readdirAddFile(result, base, name, stats, followLinks) {
@@ -1898,7 +1898,7 @@ exports.add = function add(DD_MODULES) {
 					return file;
 				} else {
 					return null;
-				};
+				}
 			};
 
 			files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
@@ -2041,7 +2041,7 @@ exports.add = function add(DD_MODULES) {
 									return state.rejectCb(err);
 								} else {
 									return state.resolveCb(result);
-								};
+								}
 							});
 					};
 
@@ -2071,7 +2071,7 @@ exports.add = function add(DD_MODULES) {
 						state.rejectCb = Promise.reject.bind(Promise);
 
 						return startCb();
-					};
+					}
 				});
 			});
 
@@ -2103,7 +2103,7 @@ exports.add = function add(DD_MODULES) {
 					return files.readdirAsync(path, options);
 				} else {
 					return files.readdirSync(path, options);
-				};
+				}
 			}));
 					
 			files.ADD('getCanonicalSync', function getCanonicalSync(path, /*optional*/options) {
@@ -2235,7 +2235,7 @@ exports.add = function add(DD_MODULES) {
 					return files.getCanonicalAsync(path, options);
 				} else {
 					return files.getCanonicalSync(path, options);
-				};
+				}
 			}));
 
 			files.ADD('getTempFolder', root.DD_DOC(
@@ -2294,7 +2294,7 @@ exports.add = function add(DD_MODULES) {
 					return nodeFsReadFileSync(path.toApiString(), {encoding: encoding});
 				} else {
 					throw new types.NotSupported("HTTP not supported synchronously.");
-				};
+				}
 			});
 
 			files.ADD('readFileAsync', function readFileAsync(path, /*optional*/options) {
@@ -2444,7 +2444,7 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						throw new types.NotSupported("Unsupported protocol.");
 
-					};
+					}
 				});
 			});
 
@@ -2476,7 +2476,7 @@ exports.add = function add(DD_MODULES) {
 					return files.readFileAsync(path, options);
 				} else {
 					return files.readFileSync(path, options);
-				};
+				}
 			}));
 
 			files.ADD('writeFileAsync', function writeFileAsync(path, data, /*optional*/options) {
@@ -2547,7 +2547,7 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						throw new types.NotSupported("Remote write is not implemented.");
 
-					};
+					}
 				});
 			});
 
@@ -2584,7 +2584,7 @@ exports.add = function add(DD_MODULES) {
 					return files.writeFileAsync(path, data, options);
 				} else {
 					throw new types.NotSupported("Synchronous write is not implemented.");
-				};
+				}
 			}));
 
 			files.ADD('watch', root.DD_DOC(
@@ -3365,7 +3365,7 @@ exports.add = function add(DD_MODULES) {
 								throw ex;
 							} finally {
 								this.__currentlyEmitted = oldCurrentlyEmitted;
-							};
+							}
 						} else if (isOnError && (this.listenerCount(event) === 0)) {
 							const ex = arguments[1];
 							if (!ex.trapped) {

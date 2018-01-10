@@ -1296,8 +1296,8 @@ exports.add = function add(DD_MODULES) {
 							return str;
 						} else {
 							return Array(n + 1).join(str);
-						};
-					};
+						}
+					}
 				}));
 
 			tools.ADD('replace', root.DD_DOC(
@@ -1349,7 +1349,7 @@ exports.add = function add(DD_MODULES) {
 							text[i] = _shared.Natives.stringReplaceCall(text[i], from, to);
 						};
 						return text;
-					};
+					}
 				}));
 				
 			tools.ADD('search', root.DD_DOC(
@@ -1451,14 +1451,14 @@ exports.add = function add(DD_MODULES) {
 							return undefined;
 						} else {
 							return -1;
-						};
+						}
 					} else if ((posStopStr >= 0) && (posStopStr < posText)) {
 						// Stop
 						if (getText) {
 							return null;
 						} else {
 							return NaN;
-						};
+						}
 					} else {
 						// Match
 						if (getText) {
@@ -1466,11 +1466,11 @@ exports.add = function add(DD_MODULES) {
 								return str.slice(posText, Math.min(posStopStr, end));
 							} else {
 								return str.slice(posText);
-							};
+							}
 						} else {
 							return posText;
-						};
-					};
+						}
+					}
 				}));
 
 			tools.ADD('join', root.DD_DOC(
@@ -1768,7 +1768,7 @@ exports.add = function add(DD_MODULES) {
 						return -1;
 					} else {
 						return 0;
-					};
+					}
 				}));
 				
 			tools.ADD('compareNumbersInverted', root.DD_DOC(
@@ -1805,7 +1805,7 @@ exports.add = function add(DD_MODULES) {
 						return -1;
 					} else {
 						return 0;
-					};
+					}
 				}));
 
 				
@@ -2005,7 +2005,7 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 								return result;
-							};
+							}
 						} else if (types.isIterable(obj)) {
 							const iter = obj[_shared.Natives.symbolIterator]();
 							const result = [];
@@ -2026,7 +2026,7 @@ exports.add = function add(DD_MODULES) {
 								result[key] = fn.call(thisObj, obj[key], key, obj);
 							};
 							return result;
-						};
+						}
 					};
 				}));
 
@@ -2692,7 +2692,7 @@ exports.add = function add(DD_MODULES) {
 								return _shared.Natives.arrayReduceCall(obj, fn, initialValue);
 							} else {
 								return _shared.Natives.arrayReduceCall(obj, fn);
-							};
+							}
 						} else {
 							obj = _shared.Natives.windowObject(obj);
 							let result,
@@ -2712,8 +2712,8 @@ exports.add = function add(DD_MODULES) {
 								throw new types.ValueError("Reduce of empty object with no initial value.");
 							};
 							return result;
-						};
-					};
+						}
+					}
 				}));
 				
 			tools.ADD('reduceRight', root.DD_DOC(
@@ -2772,7 +2772,7 @@ exports.add = function add(DD_MODULES) {
 								return _shared.Natives.arrayReduceRightCall(obj, fn, initialValue);
 							} else {
 								return _shared.Natives.arrayReduceRightCall(obj, fn);
-							};
+							}
 						} else {
 							obj = _shared.Natives.windowObject(obj);
 							let value = initialValue,
@@ -2798,8 +2798,8 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 							return value;
-						};
-					};
+						}
+					}
 				}));
 				
 			//===================================

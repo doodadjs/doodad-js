@@ -93,7 +93,7 @@ exports.add = function add(DD_MODULES) {
 							});
 					} else {
 						return url;
-					};
+					}
 				};
 			};
 				
@@ -117,7 +117,7 @@ exports.add = function add(DD_MODULES) {
 							});
 					} else {
 						return path;
-					};
+					}
 				};
 			};
 				
@@ -139,12 +139,12 @@ exports.add = function add(DD_MODULES) {
 						return _shared.urlParser(location, options);
 					} else {
 						return _shared.pathParser(location, options);
-					};
+					}
 				} else if (types._instanceof(location, [files.Path, files.Url])) {
 					return location;
 				} else {
 					throw new types.ValueError("Invalid file location object.");
-				};
+				}
 			});
 
 			//===================================
@@ -287,7 +287,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new files.PathError("Path overflow.");
-										};
+										}
 									};
 								};
 							};
@@ -303,7 +303,7 @@ exports.add = function add(DD_MODULES) {
 									return null;
 								} else {
 									throw new files.PathError("Path overflow.");
-								};
+								}
 							};
 						} else {
 							pos++;
@@ -455,7 +455,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Bad url protocol.");
-										};
+										}
 									};
 										
 									const pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
@@ -485,7 +485,7 @@ exports.add = function add(DD_MODULES) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid path.");
-									};
+									}
 								};
 									
 								// Options
@@ -515,7 +515,7 @@ exports.add = function add(DD_MODULES) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid root.");
-									};
+									}
 								};
 									
 								if (types.isNothing(os)) {
@@ -566,14 +566,14 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("'root' option must be quoted.");
-										};
+										}
 									};
 									if (path && pathIsString && ((path.length < 2) || (path[0] !== quote) || (path[path.length - 1] !== quote))) {
 										if (dontThrow) {
 											return null;
 										} else {
 											throw new types.ParseError("'path' option must be quoted.");
-										};
+										}
 									};
 								};
 									
@@ -603,7 +603,7 @@ exports.add = function add(DD_MODULES) {
 														return '^' + g1;
 													} else {
 														return g1;
-													};
+													}
 												} else if (g2) {
 													// Invalid characters
 													if (!quote || (g2 === quote)) {
@@ -625,7 +625,7 @@ exports.add = function add(DD_MODULES) {
 														return '\\' + g1;
 													} else {
 														return g1;
-													};
+													}
 												} else if (g2) {
 													// Invalid characters
 													if (!quote || (g2 === quote)) {
@@ -633,8 +633,8 @@ exports.add = function add(DD_MODULES) {
 													} else {
 														// Allow when quoted
 														return g2;
-													};
-												};
+													}
+												}
 											})
 										};
 									};
@@ -670,7 +670,7 @@ exports.add = function add(DD_MODULES) {
 												return null;
 											} else {
 												throw new types.ParseError("Invalid char: '~0~'.", [state.invalid]);
-											};
+											}
 										};
 									};
 								};
@@ -716,7 +716,7 @@ exports.add = function add(DD_MODULES) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid 'dirChar' option.");
-									};
+									}
 								};
 										
 								// Split paths
@@ -755,7 +755,7 @@ exports.add = function add(DD_MODULES) {
 														return null;
 													} else {
 														throw new types.ParseError("'path' can't have a network path or a drive letter while 'root' is set.");
-													};
+													}
 												};
 												if (hasHost) {
 													host = path.splice(0, 3)[2];
@@ -784,7 +784,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("'host' and 'drive' options are invalid for non-Windows systems.");
-										};
+										}
 									};
 								};
 									
@@ -802,7 +802,7 @@ exports.add = function add(DD_MODULES) {
 													return null;
 												} else {
 													throw new types.ParseError("A network path must have a shared folder.");
-												};
+												}
 											};
 
 											// Validate host
@@ -813,7 +813,7 @@ exports.add = function add(DD_MODULES) {
 													return null;
 												} else {
 													throw new types.ParseError("Invalid host name.");
-												};
+												}
 											};
 										};
 
@@ -829,7 +829,7 @@ exports.add = function add(DD_MODULES) {
 													return null;
 												} else {
 													throw new types.ParseError("Invalid drive.");
-												};
+												}
 											};
 										};
 											
@@ -838,7 +838,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("A network path or drive letter is mandatory for the absolute path.");
-										};
+										}
 									};
 								};
 
@@ -1019,7 +1019,7 @@ exports.add = function add(DD_MODULES) {
 												return null;
 											} else {
 												throw new types.ParseError("Invalid path or file name: '~0~.", [state.invalid]);
-											};
+											}
 										};
 									};
 								};
@@ -1034,7 +1034,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid file name.");
-										};
+										}
 									};
 								} else {
 									file = null;
@@ -1314,7 +1314,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Drive mismatch.");
-										};
+										}
 									};
 									if (!dirRoot) {
 										dirRoot = location.root;
@@ -1326,7 +1326,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Bad url protocol.");
-										};
+										}
 									};
 									if (location.isWindows) {
 										if (dir.length && ((this.os !== 'windows') || this.host || (dir[0][0] !== this.drive))) {
@@ -1334,7 +1334,7 @@ exports.add = function add(DD_MODULES) {
 												return null;
 											} else {
 												throw new types.ParseError("Drive mismatch.");
-											};
+											}
 										};
 										dir.shift();
 									};
@@ -1441,7 +1441,7 @@ exports.add = function add(DD_MODULES) {
 									return this.set({file: '', path: tools.append([], this.path, [this.file])});
 								} else {
 									return this;
-								};
+								}
 							}),
 							
 						popFile: root.DD_DOC(
@@ -1463,7 +1463,7 @@ exports.add = function add(DD_MODULES) {
 									return this.set({file: newFile, path: newPath});
 								} else {
 									return null;
-								};
+								}
 							}),
 							
 						toArray: root.DD_DOC(
@@ -1642,7 +1642,7 @@ exports.add = function add(DD_MODULES) {
 											return type.parse(null, tools.extend({}, this, options));
 										} else {
 											return type.parse(null, this);
-										};
+										}
 									};
 
 									obj.toString = function toString(/*optional*/options) {
@@ -1676,7 +1676,7 @@ exports.add = function add(DD_MODULES) {
 				} catch(ex) {
 					// <PRB> decodeURIComponent throws on invalid hex values and on invalid UTF8 sequences.
 					return _shared.Natives.windowUnescape(uri);
-				};
+				}
 			};
 
 			files.REGISTER(root.DD_DOC(
@@ -2257,7 +2257,7 @@ exports.add = function add(DD_MODULES) {
 											return 1;
 										} else {
 											return 0;
-										};
+										}
 									});
 
 									if (!args.length) {
@@ -2417,7 +2417,7 @@ exports.add = function add(DD_MODULES) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid url.");
-									};
+									}
 								};
 
 								let tmpPath = types.get(options, 'path', null);
@@ -2596,7 +2596,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid port number.");
-										};
+										}
 									};
 								};
 
@@ -2631,7 +2631,7 @@ exports.add = function add(DD_MODULES) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid url arguments.");
-									};
+									}
 								};
 
 								if (!noEscapes && anchor) {
@@ -2756,7 +2756,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid path or file name: ~0~.", [state.invalid]);
-										};
+										}
 									};
 								};
 											
@@ -2770,7 +2770,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid file name.");
-										};
+										}
 									};
 								} else {
 									file = null;
@@ -2964,7 +2964,7 @@ exports.add = function add(DD_MODULES) {
 									return this.set({
 										args: _shared.urlArgumentsParser(),
 									});
-								};
+								}
 							}),
 							
 						toString: root.DD_DOC(
@@ -3179,7 +3179,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Drive mismatch.");
-										};
+										}
 									};
 									if (domain) {
 										data.protocol = types.get(options, 'protocol', location.protocol);
@@ -3208,7 +3208,7 @@ exports.add = function add(DD_MODULES) {
 											return null;
 										} else {
 											throw new types.ParseError("Drive mismatch.");
-										};
+										}
 									};
 								};
 
@@ -3314,7 +3314,7 @@ exports.add = function add(DD_MODULES) {
 									return this.set({file: '', path: tools.append([], this.path, [this.file])});
 								} else {
 									return this;
-								};
+								}
 							}),
 								
 						popFile: root.DD_DOC(
@@ -3336,7 +3336,7 @@ exports.add = function add(DD_MODULES) {
 									return this.set({file: newFile, path: newPath});
 								} else {
 									return null;
-								};
+								}
 							}),
 							
 						toArray: root.DD_DOC(
@@ -3567,7 +3567,7 @@ exports.add = function add(DD_MODULES) {
 											return type.parse(null, tools.extend({}, this, options));
 										} else {
 											return type.parse(null, this);
-										};
+										}
 									};
 
 									obj.toString = function toString(/*optional*/options) {

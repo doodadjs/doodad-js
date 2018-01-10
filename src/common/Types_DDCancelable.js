@@ -201,7 +201,7 @@ exports.add = function add(DD_MODULES) {
 												throw err;
 											};
 										});
-								};
+								}
 							}, this);
 					},
 
