@@ -92,6 +92,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function toSource(obj, /*optional*/depth, /*optional*/options) {
+					/* eslint no-cond-assign: "off" */
 					// TODO: "chain" option to generate the prototypes chain with "Object.setPrototypeOf"
 					if (obj === undefined) {
 						return 'undefined';

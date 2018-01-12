@@ -39,6 +39,7 @@ exports.add = function add(DD_MODULES) {
 
 			tools.complete(_shared.Natives, {
 				windowParseInt: global.parseInt,
+				/* eslint no-restricted-properties: "off" */ // Thanks, but I want isNaN
 				windowIsNaN: global.isNaN,
 			});
 
@@ -91,7 +92,7 @@ exports.add = function add(DD_MODULES) {
 										};
 									};
 								};
-								const subval = val.slice(start, (end >= 0 ? end: undefined));
+								const subval = val.slice(start, (end >= 0 ? end : undefined));
 								const subvalTrim = tools.trim(subval);
 								let subvalNumber;
 								if (identifiers && types.has(identifiers, subvalTrim)) {

@@ -62,6 +62,10 @@ exports.add = function add(DD_MODULES) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
+				/* eslint no-useless-concat: "off" */
+				/* eslint global-require: "off" */
+				/* eslint import/no-dynamic-require: "off" */
+
 				try {
 					types.getPromise();
 				} catch(ex) {

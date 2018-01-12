@@ -261,7 +261,7 @@ exports.add = function add(DD_MODULES) {
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Type',
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('TypeEntry')), true) */,
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('TypeEntry')), true) */,
 					}
 				)));
 
@@ -738,7 +738,7 @@ exports.add = function add(DD_MODULES) {
 					if (callBubble && types.isBindable(bubbleError)) {
 						bubbleError = _shared.makeInside(obj, bubbleError, secret);
 					};
-					let callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/...params) {
+					const callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/...params) {
 						callback.lastError = null;
 						try {
 							if (!obj || !_shared.DESTROYED(obj)) {
@@ -762,6 +762,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 						};
+						return undefined; // "consistent-return"
 					});
 					_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
@@ -828,7 +829,7 @@ exports.add = function add(DD_MODULES) {
 					if (callBubble && types.isBindable(bubbleError)) {
 						bubbleError = _shared.makeInside(obj, bubbleError, secret);
 					};
-					let callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/...params) {
+					const callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/...params) {
 						if (!args) {
 							args = params;
 						};
@@ -1583,7 +1584,7 @@ exports.add = function add(DD_MODULES) {
 					/*typeProto*/
 					{
 						$TYPE_NAME: "Extender",
-						$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Extender')), true) */,
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Extender')), true) */,
 							
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1831,7 +1832,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Extender.$inherit({
 					$TYPE_NAME: "Attribute",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('AttributeExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('AttributeExtender')), true) */,
 						
 					isReadOnly: types.READ_ONLY(false),
 					isEnumerable: types.READ_ONLY(true),
@@ -1899,7 +1900,9 @@ exports.add = function add(DD_MODULES) {
 								} else {
 									if (cache.obj !== this) {
 										cache.obj = this;
-										cache.storage = _shared.invoke(this, function() {return this[_shared.AttributesStorageSymbol]}, null, _shared.SECRET);
+										cache.storage = _shared.invoke(this, function() {
+											return this[_shared.AttributesStorageSymbol];
+										}, null, _shared.SECRET);
 									};
 									return cache.storage[attr];
 								}
@@ -1968,7 +1971,9 @@ exports.add = function add(DD_MODULES) {
 									if (attr !== _shared.AttributesStorageSymbol) {
 										if (cache.obj !== this) {
 											cache.obj = this;
-											cache.storage = _shared.invoke(this, function() {return this[_shared.AttributesStorageSymbol]}, null, _shared.SECRET);
+											cache.storage = _shared.invoke(this, function() {
+												return this[_shared.AttributesStorageSymbol];
+											}, null, _shared.SECRET);
 										};
 										cache.storage[attr] = value;
 									};
@@ -2198,6 +2203,7 @@ exports.add = function add(DD_MODULES) {
 									// NOTE: Commented out since using "existingAttributes"
 									//attrDesc.release();
 
+									/* eslint no-useless-concat: "off" */
 									const desc = new generator.DynamicValue("{configurable: false, enumerable: " + tools.toSource(this.isEnumerable) + ", get: " + getId + ", " + "set: " + setId + "}");
 									const descId = generator.vars.add(desc);
 									generator.define(attrId, descId);
@@ -2280,7 +2286,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "Null",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
 						
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 						this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute.setValue(null), destAttribute, sourceIsProto, proto, protoName);
@@ -2309,7 +2315,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "ClonedAttribute",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ClonedAttributeExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ClonedAttributeExtender')), true) */,
 						
 					maxDepth: types.READ_ONLY(0),
 					keepUnlocked: types.READ_ONLY(false),
@@ -2390,7 +2396,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "ExtendObject",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
 						
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
@@ -2429,7 +2435,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "UniqueArray",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
 						
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
@@ -2479,7 +2485,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "Method",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('MethodExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MethodExtender')), true) */,
 						
 					keepUnlocked: types.READ_ONLY(true),
 
@@ -2721,13 +2727,22 @@ exports.add = function add(DD_MODULES) {
 						}
 						//! END_REPLACE()
 						, function dispatchTemplate(attr, attribute, callers) {
+							/* eslint consistent-return: "off" */
+
 							const extender = this;
 
 							const _dispatch = types.INHERIT(doodad.DispatchFunction, function dispatch(/*paramarray*/...params) {
 								const type = types.getType(this),
 									forType = types.isType(this),
 									modifiers = _dispatch[_shared.ModifiersSymbol],
-									canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed);
+									canBeDestroyed = !!(modifiers & doodad.MethodModifiers.CanBeDestroyed),
+									async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
+
+								const caller = _dispatch[_shared.CallersSymbol][0];
+								if (!caller) {
+									// No caller
+									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
+								};
 									
 								if (!canBeDestroyed) {
 									//if (_shared.DESTROYED(this)) {
@@ -2798,8 +2813,7 @@ exports.add = function add(DD_MODULES) {
 								};
 
 								// Non-reentrant methods
-								const notReentrant = extender.notReentrant || (attr === 'toString'),
-									async = (attr !== 'toString') && (modifiers & doodad.MethodModifiers.Async); // NOTE: "toString" can't be async
+								const notReentrant = extender.notReentrant || (attr === 'toString');
 
 								let notReentrantMap = __Internal__.notReentrantMap.get(this);
 								if (notReentrant) {
@@ -2819,12 +2833,6 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 
-								const caller = _dispatch[_shared.CallersSymbol][0];
-								if (!caller) {
-									// No caller
-									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
-								};
-									
 								const oldCallerCalled = caller[_shared.CalledSymbol];
 
 								//let oldHostDispatch,
@@ -3026,7 +3034,7 @@ exports.add = function add(DD_MODULES) {
 							if (caller && !((caller[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.MustOverride)) {
 								caller = (callers.length > attribute[_shared.CallFirstLengthSymbol]) && callers[attribute[_shared.CallFirstLengthSymbol]];
 								if (!caller || !((caller[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.MustOverride)) {
-									modifiers = modifiers & (~ doodad.MethodModifiers.MustOverride);
+									modifiers &= ~doodad.MethodModifiers.MustOverride;
 								};
 							};
 
@@ -3418,7 +3426,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "JsMethod",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('JsMethodExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsMethodExtender')), true) */,
 						
 					dontSetSuper: types.READ_ONLY(false),
 						
@@ -3503,7 +3511,9 @@ exports.add = function add(DD_MODULES) {
 									}
 								};
 							} else {
-								_super = _super || (function(){});
+								_super = _super || (function() {
+									// Do nothing
+								});
 								_caller = function caller(/*paramarray*/...params) {
 									const oldSuper = _shared.getAttribute(this, '_super');
 									_shared.setAttribute(this, '_super', _super);
@@ -3653,7 +3663,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "Property",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('PropertyExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PropertyExtender')), true) */,
 						
 					isReadOnly: types.READ_ONLY(false),
 					bindMethod: types.READ_ONLY(true),
@@ -3689,7 +3699,7 @@ exports.add = function add(DD_MODULES) {
 									if (srcGet && !destGet) {
 										destGet = function get(value) {
 											return destVal;
-										}
+										};
 									};
 									if (srcSet && !destSet) {
 										destSet = function set(value) {
@@ -4689,11 +4699,14 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will replace the existing one.",
 				}
 				//! END_REPLACE()
-				, function REPLACE(/*<<< optional[_interface]*/ /*optional*/fn) {
-					let _interface = null;
-					if (arguments.length > 1) {
-						_interface = fn;
-						fn = arguments[1];
+				, function REPLACE(/*<<< optional[_interface]*/ /*optional fn*/...args) {
+					let _interface = null,
+						fn;
+					if (args.length > 1) {
+						_interface = args[0];
+						fn = args[1];
+					} else {
+						fn = args[0];
 					};
 					if (root.DD_ASSERT) {
 						root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
@@ -4726,12 +4739,15 @@ exports.add = function add(DD_MODULES) {
 						description: "Specifies that a method will override the existing one.",
 				}
 				//! END_REPLACE()
-				, function OVERRIDE(/*<<< optional[_interface]*/ /*optional*/fn) {
-					let _interface = null;
-					if (arguments.length > 1) {
-						_interface = fn;
-						fn = arguments[1];
-					};
+				, function OVERRIDE(/*<<< optional[_interface]*/ /*optional fn*/ ...args) {
+					let _interface = null,
+						fn;
+					if (args.length > 1) {
+						_interface = args[0];
+						fn = args[1];
+					} else {
+						fn = args[0];
+					}
 					if (root.DD_ASSERT) {
 						root.DD_ASSERT(types.isNothing(_interface) || types.isInterface(_interface) || types.isMixIn(_interface), "Invalid interface or mix-in.");
 					};
@@ -5191,7 +5207,7 @@ exports.add = function add(DD_MODULES) {
 					// </FUTURE>
 				} else if (types.hasSymbolsEnabled()) {
 					if (__Internal__.hasPolicies) {
-						let pos = 0;
+						const pos = 0;
 						// <FUTURE> When transpiling "ddclass" to "class"...
 							//if (scope === doodad.Scopes.Private) {
 							//	// Private fields must start with a vigil...
@@ -5214,6 +5230,8 @@ exports.add = function add(DD_MODULES) {
 						};
 					};
 				};
+
+				let retval = undefined; // "consistent-return"
 
 				if (extender.extend) {
 
@@ -5255,7 +5273,7 @@ exports.add = function add(DD_MODULES) {
 									destAttribute[_shared.ExtenderSymbol] = extender;
 									destAttribute[_shared.WhenSymbol] = whenTypes;
 									destAttributes[attr] = destAttribute;
-									return;
+									return retval;
 								};
 							};
 
@@ -5310,18 +5328,22 @@ exports.add = function add(DD_MODULES) {
 								};
 
 							} else {
-								return [
+								retval = [
+									// eslint-disable-next-line array-bracket-spacing
 									/* 0 : data   */ [/*0*/ extender], 
+									// eslint-disable-next-line array-bracket-spacing
 									/* 1 : params */ [/*0*/ attr, /*1*/ source, /*2*/ sourceProto, /*3*/ destAttributes, /*4*/ forType, /*5*/ sourceAttribute, /*6*/ destAttribute, /*7*/ sourceIsProto, /*8*/ proto, /*9*/ protoName, /*10*/ extendedAttributes, /*11*/ toInitialize, /*12*/ toExtendLater]
 								];
 							};
 						};
 					};
 				};
+
+				return retval; // "consistent-return"
 			};
 				
 			__Internal__.extendSource = function extendSource(base, baseTypeAttributes, baseInstanceAttributes, source, sourceTypeAttributes, sourceInstanceAttributes, destTypeAttributes, destInstanceAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources) {
-				let baseIsProto = false;
+				const baseIsProto = false;
 
 				if (!baseIsClass) {
 					// doodad-js Type / JS Class
@@ -5544,7 +5566,7 @@ exports.add = function add(DD_MODULES) {
 
 								const impls = _shared.getAttribute(_interface, _shared.ImplementsSymbol).values();
 
-								for (let impl of impls) {
+								for (const impl of impls) {
 									if (!types.isString(impl)) {
 										const uuid = _shared.getUUID(impl);
 
@@ -5642,6 +5664,7 @@ exports.add = function add(DD_MODULES) {
 							instanceToExtendLater = [];
 
 							// Will be passed later to "__Internal__.createType".
+							// eslint-disable-next-line array-bracket-spacing
 							const data = [/*0*/ protoName, /*1*/ typeExtendedAttributes, /*2*/ destTypeAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater, /*17*/ destInstanceAttributes, /*18*/ instanceExtendedAttributes];
 
 							const sourceData = _shared.getAttributes(source, [_shared.ImplementsSymbol]);
@@ -5660,7 +5683,7 @@ exports.add = function add(DD_MODULES) {
 								_isolated.set(sourceUUID, data);
 							};
 
-							for (let impl of sourceData[_shared.ImplementsSymbol].values()) {
+							for (const impl of sourceData[_shared.ImplementsSymbol].values()) {
 								if (types.isIsolated(impl)) {
 									const uuid = _shared.getUUID(impl);
 
@@ -6458,7 +6481,7 @@ exports.add = function add(DD_MODULES) {
 
 			__Internal__.classProto = {
 				$TYPE_NAME: "Class",
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
 					
 				_new: types.SUPER(
 					function _new(/*paramarray*/...args) {
@@ -6570,7 +6593,6 @@ exports.add = function add(DD_MODULES) {
 							return '[object ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
 						}
 					}))))))),
-
 
 
 				$extend: root.DD_DOC(
@@ -6743,6 +6765,7 @@ exports.add = function add(DD_MODULES) {
 								return this[preservedAttr];
 							};
 						};
+						return undefined; // "consistent-return"
 					}))))),
 					
 				restorePreserved: root.DD_DOC(
@@ -6934,7 +6957,7 @@ exports.add = function add(DD_MODULES) {
 
 			__Internal__.interfaceProto = {
 				$TYPE_NAME: "Interface",
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Interface')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Interface')), true) */,
 						
 				_new: types.SUPER(
 					function _new(host) {
@@ -7030,7 +7053,6 @@ exports.add = function add(DD_MODULES) {
 					function toString() {
 						return '[interface ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
 					}))))))),
-
 
 
 				$extend: root.DD_DOC(
@@ -7238,7 +7260,7 @@ exports.add = function add(DD_MODULES) {
 					
 			__Internal__.eventHandlerProto = {
 					$TYPE_NAME: 'EventHandler',
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
 
 					stackSize: doodad.PUBLIC(10),
 						
@@ -7263,7 +7285,7 @@ exports.add = function add(DD_MODULES) {
 								result++;
 							};
 							return result;
-						}, 0)
+						}, 0);
 					},
 
 					attach: root.DD_DOC(
@@ -7357,6 +7379,7 @@ exports.add = function add(DD_MODULES) {
 										cb = doodad.Callback(obj, cb, true);
 									};
 								};
+								// eslint-disable-next-line array-bracket-spacing
 								stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 								this[_shared.SortedSymbol] = false;
 								this[_shared.ClonedStackSymbol] = null;
@@ -7603,7 +7626,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "Event",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('EventExtender')), true) */,
 
 					eventsPrefixed: types.READ_ONLY(false),
 					eventsAttr: types.READ_ONLY('__EVENTS'),
@@ -7684,7 +7707,7 @@ exports.add = function add(DD_MODULES) {
 
 			extenders.REGISTER([], extenders.Event.$inherit({
 					$TYPE_NAME: "RawEvent",
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
 
 					eventsPrefixed: types.READ_ONLY(true),
 					eventsAttr: types.READ_ONLY('__RAW_EVENTS'),
@@ -8056,7 +8079,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 					$TYPE_NAME: 'Clonable',
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Clonable')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Clonable')), true) */,
 
 					clone: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8068,7 +8091,9 @@ exports.add = function add(DD_MODULES) {
 								description: "Returns a clone of the object.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.RETURNS(function clone(val) {return (val !== this) && types.is(val, this);}))),  // function()
+						, doodad.PUBLIC(doodad.RETURNS(function clone(val) {
+							return (val !== this) && types.is(val, this);
+						}))),  // function()
 				}))));
 				
 			root.DD_DOC(
@@ -8083,7 +8108,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 					$TYPE_NAME: 'Serializable',
-					$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
 					
 					serialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8113,7 +8138,9 @@ exports.add = function add(DD_MODULES) {
 								description: "Deserializes an object.",
 						}
 						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.RETURNS(function(val) {return types._instanceof(val, this); /* Polymorphism allowed */}))), // function(data)
+						, doodad.PUBLIC(doodad.RETURNS(function(val) {
+							return types._instanceof(val, this); /* Polymorphism allowed */
+						}))), // function(data)
 				}))));
 
 			//==================================
@@ -8452,7 +8479,6 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend(__Internal__.creatablePrototype))));
-				
 
 
 			root.DD_DOC(
@@ -8553,7 +8579,7 @@ exports.add = function add(DD_MODULES) {
 								};
 									
 							} else {
-								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid translation name.")
+								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid translation name.");
 									
 							};
 						})),
@@ -8656,7 +8682,7 @@ exports.add = function add(DD_MODULES) {
 								};
 									
 							} else {
-								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid configuration name.")
+								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid configuration name.");
 									
 							};
 						})),
@@ -8884,7 +8910,6 @@ exports.add = function add(DD_MODULES) {
 						return this.__value;
 					},
 				})));
-
 			
 
 			types.preventExtensions(__Internal__[_shared.TargetSymbol]);

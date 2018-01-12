@@ -87,6 +87,7 @@ exports.add = function add(DD_MODULES) {
 			};
 
 			namespaces.ADD('VersionIdentifiers', types.freezeObject(tools.nullObject({
+				/* eslint object-property-newline: "off" */
 				development: -4, dev: -4, d: -4, 
 				alpha: -3, a: -3, 
 				beta: -2, b: -2, 
@@ -491,31 +492,6 @@ exports.add = function add(DD_MODULES) {
 						return entry;
 					};
 					
-					const createNamespaces = function _createNamespaces(entry) {
-						if (entry) {
-							const specNamespaces = types.get(entry.spec, 'namespaces');
-							if (specNamespaces) {
-								const baseName = __Internal__.getBaseName(entry.spec.name);
-								const specNamespacesLen = specNamespaces.length;
-								for (let i = 0; i < specNamespacesLen; i++) {
-									if (types.has(specNamespaces, i)) {
-										const name = specNamespaces[i],
-											shortNames = name.split('.');
-										const parent = createParents(shortNames, baseName, entry.namespace);
-										const newSpec = {
-											name: baseName + '.' + name,
-											type: entries.Namespace,
-											namespaceType: types.Namespace,
-										};
-										const main = createMain(shortNames, newSpec, parent);
-										createObject(main);
-									};
-								};
-							};
-						};
-						return entry;
-					};
-
 					const createObject = function _createObject(entry) {
 						if (entry) {
 							const baseName = __Internal__.getBaseName(entry.spec.name);
@@ -565,6 +541,31 @@ exports.add = function add(DD_MODULES) {
 						return entry;
 					};
 					
+					const createNamespaces = function _createNamespaces(entry) {
+						if (entry) {
+							const specNamespaces = types.get(entry.spec, 'namespaces');
+							if (specNamespaces) {
+								const baseName = __Internal__.getBaseName(entry.spec.name);
+								const specNamespacesLen = specNamespaces.length;
+								for (let i = 0; i < specNamespacesLen; i++) {
+									if (types.has(specNamespaces, i)) {
+										const name = specNamespaces[i],
+											shortNames = name.split('.');
+										const parent = createParents(shortNames, baseName, entry.namespace);
+										const newSpec = {
+											name: baseName + '.' + name,
+											type: entries.Namespace,
+											namespaceType: types.Namespace,
+										};
+										const main = createMain(shortNames, newSpec, parent);
+										createObject(main);
+									};
+								};
+							};
+						};
+						return entry;
+					};
+
 					const terminate = function _terminate(entry) {
 						if (entry) {
 							namespaces.dispatchEvent(new types.CustomEvent('create', 
@@ -632,6 +633,8 @@ exports.add = function add(DD_MODULES) {
 					}
 					//! END_REPLACE()
 			, function initNamespace(entry, /*optional*/options) {
+				/* eslint no-loop-func: "off" */
+
 				const Promise = types.getPromise();
 
 				return Promise.try(function() {
@@ -827,6 +830,8 @@ exports.add = function add(DD_MODULES) {
 							// NOTE: Returns "cbPromise". This allows to catch callback errors.
 							return cbPromise;
 						};
+
+						return undefined; // "consistent-return"
 					};
 
 					const loopCreateModules = function loopCreateModules(state) {
@@ -888,6 +893,8 @@ exports.add = function add(DD_MODULES) {
 								return loopInitModules(toInit);
 							});
 						};
+
+						return undefined; // "consistent-return"
 					};
 						
 					const state = {missingDeps: [], missings: 0, optionals: 0, ignoreOptionals: false, toInit: []};
@@ -1062,7 +1069,7 @@ exports.add = function add(DD_MODULES) {
 								break;
 							};
 							entry = ar[this.__index++];
-							ok = ((entry.type === type) || (!exact && types.baseof(type, entry.type)))
+							ok = ((entry.type === type) || (!exact && types.baseof(type, entry.type)));
 						};
 						if (ok) { 
 							return {
@@ -1632,7 +1639,6 @@ exports.add = function add(DD_MODULES) {
 						return ["Missing dependencies: ~0~.", [names.join(', ')]];
 					}
 				}));
-
 
 
 			types.preventExtensions(__Internal__);

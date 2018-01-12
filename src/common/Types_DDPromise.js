@@ -216,6 +216,7 @@ exports.add = function add(DD_MODULES) {
 									state.start++;
 									return P.resolve(fn.call(undefined, val, key, obj))
 										.then(function(res) {
+											/* eslint consistent-return: "off" */
 											result[key] = res;
 											const pos = state.start;
 											if (pos < len) {
@@ -412,20 +413,20 @@ exports.add = function add(DD_MODULES) {
 				// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 				// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
 				const oldCatchCall = Promise.prototype.catch.call.bind(Promise.prototype.catch);
-				Promise.prototype.catch = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/) {
+				Promise.prototype.catch = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/...args) {
 					let filters = null;
 					let i = 0;
-					forEachArgument: for (; i < arguments.length; i++) {
-						const filter = arguments[i];
+					forEachArgument: for (; i < args.length; i++) {
+						const filter = args[i];
 						if (!types.isErrorType(filter) && !types.isJsObject(filter)) {
 							if (i > 0) {
-								filters = _shared.Natives.arraySliceCall(arguments, 0, i);
+								filters = _shared.Natives.arraySliceCall(args, 0, i);
 							};
 							break forEachArgument;
 						};
 					};
-					let callback = arguments[i++];
-					const thisObj = arguments[i++];
+					let callback = args[i++];
+					const thisObj = args[i++];
 					if (callback && thisObj) {
 						callback = _shared.PromiseCallback(thisObj, callback);
 					};
@@ -593,7 +594,8 @@ exports.add = function add(DD_MODULES) {
 							return (
 								class DDPromise extends ctx.Promise {
 									constructor(callback) {
-										let res, rej;
+										let res,
+											rej;
 										super(function(resolve, reject) {
 											res = resolve;
 											rej = reject;
@@ -682,15 +684,15 @@ exports.add = function add(DD_MODULES) {
 					};
 					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-					const checkDestroyed = types.getType(obj) && !types.isPrototypeOf(doodad.DispatchFunction, fn);
+					const checkDestroyed = types.getType(obj) && !types.isProtoOf(doodad.DispatchFunction, fn);
 					const insideFn = _shared.makeInside(obj, fn, secret);
-					const callback = types.INHERIT(_shared.PromiseCallback, function callbackHandler(/*paramarray*/) {
+					const callback = types.INHERIT(_shared.PromiseCallback, function callbackHandler(/*paramarray*/...args) {
 						if (checkDestroyed && _shared.DESTROYED(obj)) {
 							// NOTE: We absolutly must reject the Promise.
 							throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
 						};
 						try {
-							return insideFn.apply(obj, arguments);
+							return insideFn.apply(obj, args);
 						} catch(ex) {
 							if (!ex.promiseName) {
 								ex.promiseName = (types.get(callback.promise, _shared.NameSymbol) || '<anonymous>');
@@ -704,7 +706,6 @@ exports.add = function add(DD_MODULES) {
 					_shared.registerCallback(callback);
 					return callback;
 				}));
-				
 					
 
 			//===================================

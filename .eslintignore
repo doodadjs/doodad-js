@@ -6,5 +6,6 @@ dist
 lib
 test
 
+*.inc.js
 *.templ.js
 webpack.config.js

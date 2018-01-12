@@ -203,7 +203,7 @@ exports.add = function add(DD_MODULES) {
 					types.isFunction(emitter.once) &&
 					types.isFunction(emitter.removeAllListeners) &&
 					types.isFunction(emitter.removeListener) &&
-					types.isFunction(emitter.setMaxListeners)
+					types.isFunction(emitter.setMaxListeners);
 					//types.isFunction(emitter.eventNames) // NOTE: "eventNames" is new since Node.js v. 6.0.0
 			});
 
@@ -211,7 +211,7 @@ exports.add = function add(DD_MODULES) {
 			types.ADD('isEmitterLike', function isEmitterLike(emitter) {
 				return types.isFunction(emitter.on) &&
 					types.isFunction(emitter.once) &&
-					types.isFunction(emitter.removeListener)
+					types.isFunction(emitter.removeListener);
 			});
 
 			//===================================
@@ -228,7 +228,7 @@ exports.add = function add(DD_MODULES) {
 					types.isFunction(stream.resume) &&
 					types.isFunction(stream.unpipe) &&
 					types.isFunction(stream.push) &&
-					types.isFunction(stream.unshift)
+					types.isFunction(stream.unshift);
 			});
 				
 			// <PRB> Some libraries don't inherit from EventEmitter and expose only a few of its methods.
@@ -236,7 +236,7 @@ exports.add = function add(DD_MODULES) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isEmitter(stream) &&
 					types.isFunction(stream.write) &&
-					types.isFunction(stream.end)
+					types.isFunction(stream.end);
 			});
 				
 			types.ADD('isDuplexStream', function isDuplexStream(stream) {
@@ -264,6 +264,8 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.oldDESTROY = _shared.DESTROY;
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types.isObject(obj) && !types.getType(obj)) {
+					/* eslint no-cond-assign: "off" */
+
 					// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
 					if (!obj[__Internal__.symbolDestroyed]) {
 						const isEmitter = types.isEmitterLike(obj);
@@ -283,7 +285,7 @@ exports.add = function add(DD_MODULES) {
 
 						if ((isEmitter || isStream) && types.isFunction(obj.on)) {
 							// <PRB> The 'error' event could emits even after a destroy/close.
-							obj.on('error', function noop() {})
+							obj.on('error', function noop() {});
 						};
 
 
@@ -477,6 +479,8 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
+					/* eslint consistent-return: "off" */
+
 					if (types.isNothing(delay)) {
 						delay = -1;
 					};
@@ -535,7 +539,7 @@ exports.add = function add(DD_MODULES) {
 				let exitCode = 1; // 1 = General error
 				let isAborted = false;
 				try {
-					isAborted = types._instanceof(err, types.ScriptAbortedError)
+					isAborted = types._instanceof(err, types.ScriptAbortedError);
 				} catch(o) {
 					if (root.getOptions().debug) {
 						types.DEBUGGER();
@@ -706,6 +710,8 @@ exports.add = function add(DD_MODULES) {
 						}),
 							
 						start: function start() {
+							/* eslint global-require: "off", import/no-dynamic-require: "off" */
+
 							if (this.launched) {
 								if (this.ready) {
 									if (this.failed) {
@@ -1076,7 +1082,7 @@ exports.add = function add(DD_MODULES) {
 						rejectCb: null,
 					};
 
-					const isFolder = function isFolder(path) {
+					const isFolder = function _isFolder(path) {
 						return Promise.create(function stat(resolve, reject) {
 							nodeFsStat(path, function(err, stats) {
 								if (err) {
@@ -1088,7 +1094,7 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const rmdir = function rmdir(path) {
+					const rmdir = function _rmdir(path) {
 						return Promise.create(function doRmDir(resolve, reject) {
 							nodeFsRmdir(path, function(err) {
 								if (err) {
@@ -1100,7 +1106,7 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const unlink = function unlink(path) {
+					const unlink = function _unlink(path) {
 						return Promise.create(function doUnlink(resolve, reject) {
 							nodeFsUnlink(path, function(err) {
 								if (err) {
@@ -1112,7 +1118,7 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const readdir = function readdir(path) {
+					const readdir = function _readdir(path) {
 						return Promise.create(function doReadDir(resolve, reject) {
 							nodeFsReaddir(path, function readdirCb(err, names) {
 								if (err) {
@@ -1124,7 +1130,11 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const loopDeleteContent = function loopDeleteContent(parent, names, index) {
+					let loopDeleteContent,
+						proceed;
+
+					loopDeleteContent = function _loopDeleteContent(parent, names, index) {
+						/* eslint consistent-return: "off" */
 						if (index < names.length) {
 							const path = parent.combine(names[index]);
 							const pathStr = path.toApiString();
@@ -1163,7 +1173,7 @@ exports.add = function add(DD_MODULES) {
 						};
 					};
 							
-					const proceed = function proceed(path) {
+					proceed = function _proceed(path) {
 						const pathStr = path.toApiString();
 						return rmdir(pathStr)
 							.catch(function catchNotEmpty(err) {
@@ -1192,7 +1202,7 @@ exports.add = function add(DD_MODULES) {
 							});
 					};
 
-					const startCb = function startRmdirAsync() {
+					const startCb = function _startRmdirAsync() {
 						return proceed(path)
 							.nodeify(function(err, result) {
 								if (state.timeoutId) {
@@ -1762,7 +1772,7 @@ exports.add = function add(DD_MODULES) {
 								// Recurse directory
 								return files.mkdir(destination, {makeParents: makeParents, async: true})
 									.then(function(dummy) {
-										return readdir(sourceStr)
+										return readdir(sourceStr);
 									})
 									.then(function(dirFiles) {
 										return loopDirectoryContent(dirFiles, 0);
@@ -1788,7 +1798,7 @@ exports.add = function add(DD_MODULES) {
 									} else if (stats.isFile()) {
 										return copyFile(stats);
 									} else if (stats.isDirectory() && recursive) {
-										return copyDirectory(stats)
+										return copyDirectory(stats);
 									} else if (!skipInvalid) {
 										// Invalid file system object
 										if (stats.isDirectory()) {
@@ -1909,7 +1919,10 @@ exports.add = function add(DD_MODULES) {
 					followLinks = types.get(options, 'followLinks', true),
 					skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
 
-				const parse = function parse(result, parent, base, name, depth) {
+				let parse,
+					proceed;
+
+				parse = function _parse(result, parent, base, name, depth) {
 					const path = parent.combine(name);
 					let stats = null;
 					try {
@@ -1931,7 +1944,7 @@ exports.add = function add(DD_MODULES) {
 					};
 				};
 
-				const proceed = function proceed(result, path, base, depth) {
+				proceed = function _proceed(result, path, base, depth) {
 					if (depth >= 0) {
 						const names = nodeFsReaddirSync(path.toApiString());
 						for (let i = 0; i < names.length; i++) {
@@ -1994,7 +2007,10 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					const parseNames = function parseNames(result, parent, base, names, index, depth) {
+					let parseNames,
+						proceed;
+
+					parseNames = function _parseNames(result, parent, base, names, index, depth) {
 						if (index < names.length) {
 							const name = names[index],
 								path = parent.combine(name);
@@ -2019,7 +2035,7 @@ exports.add = function add(DD_MODULES) {
 						return result;
 					};
 	
-					const proceed = function proceed(result, path, base, depth) {
+					proceed = function _proceed(result, path, base, depth) {
 						if (depth >= 0) {
 							const promise = readDir(path.toApiString());
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
@@ -2120,10 +2136,14 @@ exports.add = function add(DD_MODULES) {
 						name = ar[i],
 						nameLc = name.toLowerCase();
 
-					let resolved = names.filter(function(n) {return n === name})[0];
+					let resolved = names.filter(function(n) {
+						return n === name;
+					})[0];
 
 					if (!resolved) {
-						resolved = names.filter(function(n) {return n.toLowerCase() === nameLc})[0];
+						resolved = names.filter(function(n) {
+							return n.toLowerCase() === nameLc;
+						})[0];
 					};
 
 					ar[i] = resolved;
@@ -2175,10 +2195,14 @@ exports.add = function add(DD_MODULES) {
 							return readdir(base.set({path: ar.slice(0, index)}))
 								.then(function resolve(names) {
 									const name = ar[index];
-									let resolved = names.filter(function(n) {return n === name})[0];
+									let resolved = names.filter(function(n) {
+										return n === name;
+									})[0];
 									if (!resolved) {
 										const nameLc = name.toLowerCase();
-										resolved = names.filter(function(n) {return n.toLowerCase() === nameLc})[0];
+										resolved = names.filter(function(n) {
+											return n.toLowerCase() === nameLc;
+										})[0];
 										ar[index] = resolved;
 									};
 									return loopAr(base, ar, index - 1);
@@ -2258,7 +2282,7 @@ exports.add = function add(DD_MODULES) {
 				let stats = null;
 
 				try {
-					stats = nodeFsStatSync(folder)
+					stats = nodeFsStatSync(folder);
 				} catch(ex) {
 					// Do nothing
 				};
@@ -2631,14 +2655,14 @@ exports.add = function add(DD_MODULES) {
 					} else {
 						data = {
 							callbacks: [],
-							watcher: nodeFsWatch(pathStr, {persistent: false}, doodad.Callback(null, function(event, filename) {
+							watcher: nodeFsWatch(pathStr, {persistent: false}, doodad.Callback(null, function(...args) {
 								const data = __Internal__.watchedFiles[pathStr],
 									len = data.callbacks.length;
 								for (let i = len - 1; i >= 0; i--) {
 									let callback = data.callbacks[i];
 									if (callback) {
 										try {
-											callback.apply(null, arguments);
+											callback(...args);
 										} catch(ex) {
 											// Do nothing
 										};
@@ -2718,7 +2742,6 @@ exports.add = function add(DD_MODULES) {
 					};
 				};
 			}));
-					
 					
 					
 			//===================================
@@ -2851,7 +2874,7 @@ exports.add = function add(DD_MODULES) {
 					//! END_REPLACE()
 					, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
 						if (__Internal__.oldConsole) {
-							throw new types.Error("'global.console' already captured.")
+							throw new types.Error("'global.console' already captured.");
 						};
 						const newConsole = new this(hook, stdout, stderr);
 						const oldConsole = global.console;
@@ -2892,14 +2915,14 @@ exports.add = function add(DD_MODULES) {
 					__hook: null,
 					__hasStd: false,
 						
-					log: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
+					log: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
-							const message = this.__hook('log', types.toArray(arguments));
+							const message = this.__hook('log', args);
 							if (this.__hasStd) {
 								if (message) {
 									this._super(message);
 								} else {
-									this._super.apply(this, arguments);
+									this._super(...args);
 								};
 							};
 						} catch(ex) {
@@ -2911,14 +2934,14 @@ exports.add = function add(DD_MODULES) {
 						};
 					})),
 						
-					info: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
+					info: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
-							const message = this.__hook('info', types.toArray(arguments));
+							const message = this.__hook('info', args);
 							if (this.__hasStd) {
 								if (message) {
 									this._super(message);
 								} else {
-									this._super.apply(this, arguments);
+									this._super(...args);
 								};
 							};
 						} catch(ex) {
@@ -2930,14 +2953,14 @@ exports.add = function add(DD_MODULES) {
 						};
 					})),
 						
-					error: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
+					error: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
-							const message = this.__hook('error', types.toArray(arguments));
+							const message = this.__hook('error', args);
 							if (this.__hasStd) {
 								if (message) {
 									this._super(message);
 								} else {
-									this._super.apply(this, arguments);
+									this._super(...args);
 								};
 							};
 						} catch(ex) {
@@ -2949,14 +2972,14 @@ exports.add = function add(DD_MODULES) {
 						};
 					})),
 						
-					warn: types.SUPER(types.WRITABLE(function(/*paramarray*/) {
+					warn: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
-							const message = this.__hook('warn', types.toArray(arguments));
+							const message = this.__hook('warn', args);
 							if (this.__hasStd) {
 								if (message) {
 									this._super(message);
 								} else {
-									this._super.apply(this, arguments);
+									this._super(...args);
 								};
 							};
 						} catch(ex) {
@@ -3022,7 +3045,7 @@ exports.add = function add(DD_MODULES) {
 
 						const createHandler = function(emitter, eventType) {
 							let ignore = false;
-							return doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/) {
+							return doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/...args) {
 								if (!ignore) {
 									if (once) {
 										self.detach(emitter);
@@ -3035,7 +3058,7 @@ exports.add = function add(DD_MODULES) {
 										type: eventType,
 										data: context,
 									};
-									return handler.apply(this, tools.append([ctx], arguments));
+									return handler.apply(this, tools.append([ctx], args));
 								};
 							}, null, null, _shared.SECRET);
 						};
@@ -3261,7 +3284,7 @@ exports.add = function add(DD_MODULES) {
 					root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
 				};
 
-				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx /*paramarray*/) {
+				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*paramarray*/...args) {
 					const dispatch = this[_shared.CurrentDispatchSymbol];
 						
 					const values = _shared.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
@@ -3297,7 +3320,7 @@ exports.add = function add(DD_MODULES) {
 						if (!ctx || (emitter === ctx.emitter)) {
 							const handler = evDatas[2];
 
-							handler.apply(obj, _shared.Natives.arraySliceCall(arguments, 1));
+							handler.apply(obj, args);
 						};
 					};
 
@@ -3351,7 +3374,7 @@ exports.add = function add(DD_MODULES) {
 					return this;
 				}),
 					
-				emit: doodad.PUBLIC(function emit(event /*, paramarray*/) {
+				emit: doodad.PUBLIC(function emit(event, ...args) {
 					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3360,14 +3383,14 @@ exports.add = function add(DD_MODULES) {
 						if (!isOnError || (oldCurrentlyEmitted !== event)) {
 							this.__currentlyEmitted = event;
 							try {
-								return this[name].apply(this, types.toArray(arguments).slice(1));
+								return this[name](...args);
 							} catch(ex) {
 								throw ex;
 							} finally {
 								this.__currentlyEmitted = oldCurrentlyEmitted;
 							}
 						} else if (isOnError && (this.listenerCount(event) === 0)) {
-							const ex = arguments[1];
+							const ex = args[0];
 							if (!ex.trapped) {
 								tools.catchAndExit(ex);
 							};
@@ -3557,7 +3580,6 @@ exports.add = function add(DD_MODULES) {
 				//};
 
 
-
 				// NOTE : Assuming little endian.
 				const strLen = str.length;
 				size = (types.isNothing(size) ? strLen * 2 : _shared.Natives.mathMin(strLen * 2, size));
@@ -3573,7 +3595,6 @@ exports.add = function add(DD_MODULES) {
 				};
 				return _shared.Natives.globalBufferFrom(buf);
 			});
-
 
 
 			return function init(/*optional*/options) {

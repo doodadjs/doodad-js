@@ -229,6 +229,7 @@ exports.add = function add(DD_MODULES) {
 							index;
 						const sepLen = separator.length;
 						result = [];
+						// eslint-disable-next-line no-cond-assign
 						while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
 							result[result.length] = str.slice(last, index);
 							last = index + sepLen;
@@ -243,6 +244,7 @@ exports.add = function add(DD_MODULES) {
 						const strLen = str.length;
 						result = [];
 						separator.lastIndex = 0;
+						// eslint-disable-next-line no-cond-assign
 						while ((limit > 1) && (matches = separator.exec(str))) {
 							const index = matches.index;
 							result[result.length] = str.slice(0, index);
@@ -701,13 +703,13 @@ exports.add = function add(DD_MODULES) {
 							description: "Prepends the items of each array to the first argument than returns that array.",
 				}
 				//! END_REPLACE()
-				, function prepend(obj /*paramarray*/) {
+				, function prepend(obj, /*paramarray*/...args) {
 					if (!types.isArrayLike(obj)) {
 						return null;
 					};
-					const len = arguments.length;
-					for (let i = 1; i < len; i++) {
-						const arg = arguments[i];
+					const len = args.length;
+					for (let i = 0; i < len; i++) {
+						const arg = args[i];
 						if (!types.isNothing(arg)) {
 							_shared.Natives.arrayUnshiftApply(obj, arg);
 						};
@@ -772,11 +774,9 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									if (item.call(thisObj, iterResult.value, key, obj)) {
+								let key = 0;
+								for (const val of obj) {
+									if (item.call(thisObj, val, key, obj)) {
 										return key;
 									};
 									key++;
@@ -802,11 +802,9 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									if (iterResult.value === item) {
+								let key = 0;
+								for (const val of obj) {
+									if (val === item) {
 										return key;
 									};
 									key++;
@@ -963,11 +961,9 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									if (items.call(thisObj, iterResult.value, key, obj)) {
+								let key = 0;
+								for (const val of obj) {
+									if (items.call(thisObj, val, key, obj)) {
 										result.push(key);
 									};
 									key++;
@@ -996,11 +992,9 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									if (tools.findItem(items, iterResult.value, undefined, true, sparsed) !== null) {
+								let key = 0;
+								for (const val of obj) {
+									if (tools.findItem(items, val, undefined, true, sparsed) !== null) {
 										result.push(key);
 									};
 									key++;
@@ -1074,11 +1068,8 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									const val = iterResult.value;
+								let key = 0;
+								for (const val of obj) {
 									if (item.call(thisObj, val, key, obj)) {
 										return val;
 									};
@@ -1106,7 +1097,7 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								for (let val of obj) {
+								for (const val of obj) {
 									if (val === item) {
 										return val;
 									};
@@ -1182,11 +1173,8 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let key = 0,
-									iterResult;
-								while ((iterResult = iter.next()) && !iterResult.done) {
-									const val = iterResult.value;
+								let key = 0;
+								for (const val of obj) {
 									if (items.call(thisObj, val, key, obj)) {
 										result.push(val);
 									};
@@ -1224,7 +1212,7 @@ exports.add = function add(DD_MODULES) {
 								};
 							} else if (types.isIterable(obj)) {
 								const itemsLen = items.length;
-								for (let val of obj) {
+								for (const val of obj) {
 									for (let j = 0; j < itemsLen; j++) {
 										if (!sparsed || types.has(items, j)) {
 											if (val === items[j]) {
@@ -1683,9 +1671,9 @@ exports.add = function add(DD_MODULES) {
 					};
 					return result;
 				}));
-				
+
 			// See "http://stackoverflow.com/questions/2083754/why-shouldnt-apos-be-used-to-escape-single-quotes"
-			__Internal__.htmlReserved = "<>\"'&",
+			__Internal__.htmlReserved = "<>\"'&";
 			__Internal__.htmlReservedSubstitutions = ['&lt;', '&gt;', '&quot;', '&#39;', '&amp;'];
 
 			tools.ADD('escapeHtml', root.DD_DOC(
@@ -1707,10 +1695,10 @@ exports.add = function add(DD_MODULES) {
 				, function escapeHtml(text) {
 					return tools.escape(text, __Internal__.htmlReserved, __Internal__.htmlReservedSubstitutions);
 				}));
-				
-			__Internal__.regExpReserved = "\\^$*+?()|{}[].",
+
+			__Internal__.regExpReserved = "\\^$*+?()|{}[].";
 			__Internal__.regExpReservedSubstitutions = ['\\\\', '\\^', '\\$', '\\*', '\\+', '\\?', '\\(', '\\)', '\\|', '\\{', '\\}', '\\[', '\\]', '\\.'];
-					
+
 			tools.ADD('escapeRegExp', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1807,7 +1795,6 @@ exports.add = function add(DD_MODULES) {
 						return 0;
 					}
 				}));
-
 				
 
 			//===================================
@@ -1835,15 +1822,15 @@ exports.add = function add(DD_MODULES) {
 							description: "Extends the first object with owned properties of the other objects using the specified depth. Existing owned properties are excluded.",
 				}
 				//! END_REPLACE()
-				, function depthComplete(depth, /*paramarray*/obj) {
+				, function depthComplete(depth, obj, /*paramarray*/...args) {
 					let result;
 					if (!types.isNothing(obj)) {
 						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 						if (depth >= -1) {
 							result = _shared.Natives.windowObject(obj);
-							const len = arguments.length;
-							for (let i = 2; i < len; i++) {
-								obj = arguments[i];
+							const len = args.length;
+							for (let i = 0; i < len; i++) {
+								obj = args[i];
 								if (types.isNothing(obj)) {
 									continue;
 								};
@@ -1893,7 +1880,7 @@ exports.add = function add(DD_MODULES) {
 							description: "Extends the first object with named owned properties of the other objects.",
 				}
 				//! END_REPLACE()
-				, function fill(keys, /*paramarray*/obj) {
+				, function fill(keys, obj, /*paramarray*/...args) {
 					let result;
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(keys)) {
@@ -1902,10 +1889,10 @@ exports.add = function add(DD_MODULES) {
 							keys = [keys];
 						};
 						result = _shared.Natives.windowObject(obj);
-						const argumentsLen = arguments.length,
+						const argumentsLen = args.length,
 							keysLen = keys.length;
-						for (let i = 1; i < argumentsLen; i++) {
-							obj = arguments[i];
+						for (let i = 0; i < argumentsLen; i++) {
+							obj = args[i];
 							if (!types.isNothing(obj)) {
 								obj = _shared.Natives.windowObject(obj);
 								for (let k = 0; k < keysLen; k++) {
@@ -1968,6 +1955,8 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed) {
+					/* eslint consistent-return: "off" */
+
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -2007,13 +1996,10 @@ exports.add = function add(DD_MODULES) {
 								return result;
 							}
 						} else if (types.isIterable(obj)) {
-							const iter = obj[_shared.Natives.symbolIterator]();
 							const result = [];
-							let key = 0,
-								data;
-							// <FUTURE> for...of
-							while ((data = iter.next()) && !data.done) {
-								result[key] = fn.call(thisObj, data.value, key, obj);
+							let key = 0;
+							for (const val of obj) {
+								result[key] = fn.call(thisObj, val, key, obj);
 								key++;
 							};
 							return result;
@@ -2066,6 +2052,8 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function forEach(obj, fn, /*optional*/thisObj, /*optional*/sparsed) {
+					/* eslint consistent-return: "off" */
+
 					root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
 						
 					if (!types.isNothing(obj)) {
@@ -2089,12 +2077,9 @@ exports.add = function add(DD_MODULES) {
 								};
 							};
 						} else if (types.isIterable(obj)) {
-							const iter = obj[_shared.Natives.symbolIterator]();
-							let key = 0,
-								item;
-							// <FUTURE> for...of
-							while ((item = iter.next()) && !item.done) {
-								fn.call(thisObj, item.value, key++, obj);
+							let key = 0;
+							for (const val of obj) {
+								fn.call(thisObj, val, key++, obj);
 							};
 						} else {
 							obj = _shared.Natives.windowObject(obj);
@@ -2194,12 +2179,9 @@ exports.add = function add(DD_MODULES) {
 								};
 							} else if (types.isIterable(obj)) {
 								result = [];
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === !items.call(thisObj, item.value, undefined, obj)) {
-										result.push(item.value);
+								for (const val of obj) {
+									if (invert === !items.call(thisObj, val, undefined, obj)) {
+										result.push(val);
 									};
 								};
 							} else {
@@ -2242,12 +2224,9 @@ exports.add = function add(DD_MODULES) {
 								};
 							} else if (types.isIterable(obj)) {
 								result = [];
-								const iter = obj[_shared.Natives.symbolIterator]();
-								let item;
-								// <FUTURE> for...of
-								while ((item = iter.next()) && !item.done) {
-									if (invert === (tools.findItem(items, item.value, undefined, true, sparsed) === null)) {
-										result.push(item.value);
+								for (const val of obj) {
+									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
+										result.push(val);
 									};
 								};
 							} else {
@@ -2442,14 +2421,14 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (let item of obj.entries()) {
+								for (const item of obj.entries()) {
 									if (invert === !!items.call(thisObj, item[1], item[0], obj)) {
 										return false;
 									};
 								};
 							} else if (types.isIterable(obj)) {
 								let key = 0;
-								for (let val of obj) {
+								for (const val of obj) {
 									if (invert === !!items.call(thisObj, val, key, obj)) {
 										return false;
 									};
@@ -2477,13 +2456,13 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (let item of obj.entries()) {
+								for (const item of obj.entries()) {
 									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) !== null)) {
 										return false;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								for (let val of obj) {
+								for (const val of obj) {
 									if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
 										return false;
 									};
@@ -2561,7 +2540,7 @@ exports.add = function add(DD_MODULES) {
 									// JS 1.6
 									return _shared.Natives.arraySomeCall(obj, items, thisObj);
 								} else {
-									obj =_shared.Natives.windowObject(obj);
+									obj = _shared.Natives.windowObject(obj);
 									const len = obj.length;
 									for (let key = 0; key < len; key++) {
 										if (!sparsed || types.has(obj, key)) {
@@ -2573,14 +2552,14 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (let item of obj.entries()) {
+								for (const item of obj.entries()) {
 									if (invert === !items.call(thisObj, item[1], item[0], obj)) {
 										return true;
 									};
 								};
 							} else if (types.isIterable(obj)) {
 								let key = 0;
-								for (let val of obj) {
+								for (const val of obj) {
 									if (invert === !items.call(thisObj, val, key, obj)) {
 										return true;
 									};
@@ -2609,13 +2588,13 @@ exports.add = function add(DD_MODULES) {
 									};
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (let item of obj.entries()) {
+								for (const item of obj.entries()) {
 									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) === null)) {
 										return true;
 									};
 								};
 							} else if (types.isIterable(obj)) {
-								for (let val of obj) {
+								for (const val of obj) {
 									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
 										return true;
 									};
@@ -2626,7 +2605,7 @@ exports.add = function add(DD_MODULES) {
 								for (let i = 0; i < len; i++) {
 									const key = keys[i];
 									const val = obj[key];
-									if (invert == (tools.findItem(items, val, undefined, true, sparsed) === null)) {
+									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
 										return true;
 									};
 								};

@@ -458,7 +458,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					if (types.isObjectLike(obj)) {
 						obj = _shared.Natives.windowObject(obj);
-						for (let key in obj) {
+						for (const key in obj) {
 							if (types.has(obj, key)) {
 								return false;
 							};
@@ -502,7 +502,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					if (types.isObjectLike(obj)) {
 						obj = _shared.Natives.windowObject(obj);
-						for (let key in obj) {
+						for (const key in obj) {
 							if (types.has(obj, key)) {
 								return false;
 							};
@@ -574,7 +574,7 @@ exports.add = function add(DD_MODULES) {
 				//! END_REPLACE()
 				, function isObjectAndNotEmpty(obj) {
 					if (types.isObject(obj)) {
-						for (let key in obj) {
+						for (const key in obj) {
 							if (types.has(obj, key)) {
 								return true;
 							};
@@ -603,17 +603,18 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function isObjectLikeAndNotEmpty(obj) {
+					/* eslint guard-for-in: "off" */ // It's all ok, thanks
 					if (types.isObjectLike(obj)) {
 						obj = _shared.Natives.windowObject(obj);
 						if (types.isArrayLike(obj)) {
-							for (let key in obj) {
+							for (const key in obj) {
 								const number = _shared.Natives.windowNumber(key);
 								if ((types.isNaN(number) || !types.isFinite(number)) && types.has(obj, key)) {
 									return true;
 								};
 							};
 						} else {
-							for (let key in obj) {
+							for (const key in obj) {
 								if (types.has(obj, key)) {
 									return true;
 								};
@@ -717,6 +718,7 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function set(obj, key, value, /*optional*/inherited) {
+					/* eslint consistent-return: "off", no-return-assign: "off" */
 					if (types.isNothing(obj)) {
 						return;
 					};
@@ -1028,7 +1030,7 @@ exports.add = function add(DD_MODULES) {
 							return _shared.Natives.objectEntries(obj);
 						} else {
 							const result = [];
-							for (let key in obj) {
+							for (const key in obj) {
 								if (types.has(obj, key)) {
 									result.push([key, obj[key]]);
 								};

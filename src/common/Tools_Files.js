@@ -91,10 +91,9 @@ exports.add = function add(DD_MODULES) {
 						return url.set({
 								noEscapes: false,
 							});
-					} else {
-						return url;
-					}
+					};
 				};
+				return url;
 			};
 				
 			_shared.pathParser = function pathParser(path, /*optional*/options) {
@@ -115,13 +114,12 @@ exports.add = function add(DD_MODULES) {
 								dirChar: null, // switch to default
 								noEscapes: false, // switch to default
 							});
-					} else {
-						return path;
-					}
+					};
 				};
+				return path;
 			};
 				
-			__Internal__.detectUrlRegexp = /^[a-zA-Z]+\:\/\//;
+			__Internal__.detectUrlRegexp = /^[a-zA-Z]+:\/\//;
 
 			files.ADD('parseUrl', function parseUrl(url, /*optional*/options) {
 				return _shared.urlParser(url, options);
@@ -350,7 +348,7 @@ exports.add = function add(DD_MODULES) {
 				
 			// Unix-like
 
-			__Internal__.unixShellSpecialCharacters = ' <>|?*"\'&`#;~!\-()\\[\\]{}\\\\';
+			__Internal__.unixShellSpecialCharacters = ' <>|?*"\'&`#;~!-()\\[\\]{}\\\\';
 
 			// group 1 = chars to unescape, group 2 = invalid chars
 			__Internal__.parsePathUnixUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\\\(.)|([' + __Internal__.unixShellSpecialCharacters + ']|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
@@ -613,7 +611,8 @@ exports.add = function add(DD_MODULES) {
 														return g2;
 													};
 												};
-											})
+												return undefined; // "consistent-return"
+											});
 										};
 									} else if (shell === 'bash') {
 										unescapePath = function unescapePathBash(path) {
@@ -634,8 +633,9 @@ exports.add = function add(DD_MODULES) {
 														// Allow when quoted
 														return g2;
 													}
-												}
-											})
+												};
+												return undefined; // "consistent-return"
+											});
 										};
 									};
 
@@ -2395,7 +2395,7 @@ exports.add = function add(DD_MODULES) {
 										
 									let pathTmp = url.path;
 									if (isWindows) {
-										pathTmp = tools.append([], [url.drive + ':'], pathTmp)
+										pathTmp = tools.append([], [url.drive + ':'], pathTmp);
 									};
 										
 									options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
@@ -2472,7 +2472,7 @@ exports.add = function add(DD_MODULES) {
 									url = tools.trim(url);
 										
 									// Auto-detect "protocol"
-									if (/^[A-Za-z+]+\:\/\//.test(url)) {
+									if (/^[A-Za-z+]+:\/\//.test(url)) {
 										const pos = url.indexOf(':');
 										if (pos >= 0) {
 											if (types.isNothing(protocol)) {
@@ -2491,7 +2491,7 @@ exports.add = function add(DD_MODULES) {
 									} else {
 										// Auto-detect "isWindows", "domain", "user", "password", "port", "path"
 										isWindows = false;
-										const posUrl = tools.search(url, /[/\?#]/);
+										const posUrl = tools.search(url, /[/?#]/);
 										if (posUrl >= 0) {
 											if (types.isNothing(domain)) {
 												domain = url.slice(0, posUrl) || null;
@@ -2605,7 +2605,7 @@ exports.add = function add(DD_MODULES) {
 									let posArgs = tools.search(file, '?', 0, null, '#');
 									const posAnchor = tools.search(file, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
 									if ((posArgs >= 0) && types.isNothing(args)) {
-										args = file.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor: undefined));
+										args = file.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor : undefined));
 									};
 									if ((posAnchor >= 0) && types.isNothing(anchor)) {
 										anchor = file.slice(posAnchor + 1);
@@ -2910,6 +2910,7 @@ exports.add = function add(DD_MODULES) {
 								if (this.args) {
 									return this.args.get(name, singleValue);
 								};
+								return undefined; // "consistent-return"
 							}),
 							
 						setArgs: root.DD_DOC(
@@ -3051,7 +3052,7 @@ exports.add = function add(DD_MODULES) {
 									};
 									if (!noEscapes && options.isWindows) {
 										// Workaround for Windows and IE (must be "/C:/", not "/C%3A/")
-										path = tools.replace(path, /^\/?([A-Za-z])\%3[Aa]/, function(result, g1) {
+										path = tools.replace(path, /^\/?([A-Za-z])%3[Aa]/, function(result, g1) {
 											return '/' + g1.toUpperCase() + ':';
 										});
 									};
@@ -3571,7 +3572,7 @@ exports.add = function add(DD_MODULES) {
 									};
 
 									obj.toString = function toString(/*optional*/options) {
-										return this.toUrl(options).toString()
+										return this.toUrl(options).toString();
 									};
 								};
 

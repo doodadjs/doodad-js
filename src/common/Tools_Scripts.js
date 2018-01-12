@@ -219,7 +219,7 @@ exports.add = function add(DD_MODULES) {
 							try {
 								const curTime = (new Date()).valueOf();
 									
-								for (let item of __Internal__.unhandledRejections.entries()) {
+								for (const item of __Internal__.unhandledRejections.entries()) {
 									const promise = item[0],
 										val = item[1];
 									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {

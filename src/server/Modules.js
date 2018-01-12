@@ -284,6 +284,8 @@ exports.add = function add(DD_MODULES) {
 				}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
+					/* eslint consistent-return: "off" */
+
 					const Promise = types.getPromise();
 
 					if (types.isArray(options)) {

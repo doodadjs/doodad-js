@@ -4,256 +4,62 @@ module.exports = {
         "commonjs": true,
         "es6": true
     },
-    "extends": "eslint:recommended",
+	"extends": "airbnb-base",
+	"plugins": [
+		"import"
+	],
     "rules": {
-        "accessor-pairs": "error",
-        "array-bracket-spacing": "off",
-        "array-callback-return": "error",
-        "arrow-body-style": "error",
-        "arrow-parens": "error",
-        "arrow-spacing": "error",
-        "block-scoped-var": "error",
-        "block-spacing": [
-            "error",
-            "never"
-        ],
-        "brace-style": "off",
-        "callback-return": "off",
-        "camelcase": [
-            "error",
-            {
-                "properties": "never"
-            }
-        ],
-        "capitalized-comments": "off",
-        "class-methods-use-this": "error",
-        "comma-dangle": "off",
-        "comma-spacing": "off",
-        "comma-style": [
-            "error",
-            "last"
-        ],
-        "complexity": "off",
-        "computed-property-spacing": [
-            "error",
-            "never"
-        ],
-        "consistent-return": "off",
-        "consistent-this": "off",
-        "curly": "error",
-        "default-case": "error",
-        "dot-location": [
-            "error",
-            "property"
-        ],
-        "dot-notation": "off",
-        "eol-last": "off",
-        "eqeqeq": "off",
-        "func-call-spacing": "error",
-        "func-name-matching": "off",
-        "func-names": "off",
-        "func-style": [
-            "error",
-            "expression"
-        ],
-        "generator-star-spacing": "off",
-        "global-require": "off",
-        "guard-for-in": "off",
-        "handle-callback-err": "off",
-        "id-blacklist": "error",
-        "id-length": "off",
-        "id-match": "error",
-        "indent": "off",
-        "init-declarations": "off",
-        "jsx-quotes": "error",
-        "key-spacing": "off",
-        "keyword-spacing": "off",
-        "line-comment-position": "off",
-        "linebreak-style": "off",
-        "lines-around-comment": "off",
-        "lines-around-directive": "off",
-        "max-depth": "off",
-        "max-len": "off",
-        "max-lines": "off",
-        "max-nested-callbacks": "error",
-        "max-params": "off",
-        "max-statements": "off",
-        "max-statements-per-line": "off",
-        "multiline-ternary": "off",
-        "new-parens": "error",
-        "newline-after-var": "off",
-        "newline-before-return": "off",
-        "newline-per-chained-call": "off",
-        "no-alert": "error",
-        "no-array-constructor": "error",
-        "no-await-in-loop": "error",
-        "no-bitwise": "off",
-        "no-caller": "error",
-        "no-catch-shadow": "off",
-        "no-compare-neg-zero": "error",
-        "no-confusing-arrow": "error",
-        "no-continue": "off",
-        "no-div-regex": "error",
-        "no-duplicate-imports": "error",
-        "no-else-return": "off",
-        "no-empty-function": "off",
-        "no-eq-null": "off",
-        "no-eval": "off",
-        "no-extend-native": "off",
-        "no-extra-bind": "error",
-		//"no-extra-boolean-cast": "off",
-        "no-extra-label": "off",
-        "no-extra-parens": "off",
-        "no-extra-semi": "off",
-        "no-floating-decimal": "error",
-        "no-implicit-coercion": [
-            "error",
-            {
-                "boolean": false,
-                "number": false,
-                "string": false
-            }
-        ],
-        "no-implicit-globals": "error",
-        "no-implied-eval": "error",
-        "no-inline-comments": "off",
-        "no-inner-declarations": [
-            "error",
-            "functions"
-        ],
-        "no-invalid-this": "off",
-        "no-iterator": "error",
-        "no-label-var": "error",
-        "no-lone-blocks": "error",
-        "no-lonely-if": "error",
-        "no-loop-func": "off",
-        "no-magic-numbers": "off",
-        "no-mixed-operators": "off",
-        "no-mixed-requires": "error",
-        "no-multi-assign": "off",
-        "no-multi-spaces": "off",
-        "no-multi-str": "error",
-        "no-multiple-empty-lines": "off",
-        "no-native-reassign": "error",
-        "no-negated-condition": "off",
-        "no-negated-in-lhs": "error",
-        "no-nested-ternary": "off",
-        "no-new": "error",
-        "no-new-func": "error",
-        "no-new-object": "error",
-        "no-new-require": "error",
-        "no-new-wrappers": "error",
-        "no-octal-escape": "error",
-        "no-param-reassign": "off",
-        "no-path-concat": "error",
-        "no-plusplus": "off",
-        "no-process-env": "off",
-        "no-process-exit": "error",
-        "no-proto": "error",
-        "no-prototype-builtins": "off",
-        "no-restricted-globals": "error",
-        "no-restricted-imports": "error",
-        "no-restricted-modules": "error",
-        "no-restricted-properties": "error",
-        "no-restricted-syntax": "error",
-        "no-return-assign": "off",
-        "no-return-await": "error",
-        "no-script-url": "error",
-        "no-self-compare": "off",
-        "no-sequences": "off",
-        "no-shadow": "off",
-        "no-shadow-restricted-names": "error",
-        "no-spaced-func": "error",
-        "no-sync": "off",
-        "no-tabs": "off",
-        "no-template-curly-in-string": "error",
-        "no-ternary": "off",
-        "no-throw-literal": "error",
-        "no-trailing-spaces": "off",
-        "no-undef-init": "off",
-        "no-undefined": "off",
-        "no-underscore-dangle": "off",
-        "no-unmodified-loop-condition": "off",
-        "no-unneeded-ternary": "off",
-		"no-unreachable": "warn", // <FUTURE> See if fixed : function myfunc(foo) { if (foo === 1) { return 'value1' } else if (foo === 2) { return 'value2' } else { return 'value3' } /* WE GET no-unreachable ERROR THERE !!! */ }
-        "no-unused-expressions": "off",
-		"no-unused-vars": ['error', {args: 'none'}],
-        "no-use-before-define": "off",
-        "no-useless-call": "off",
-        "no-useless-computed-key": "error",
-        "no-useless-concat": "off",
-        "no-useless-constructor": "error",
-        "no-useless-escape": "off",
-        "no-useless-rename": "error",
-        "no-useless-return": "error",
-        "no-var": "off",
-        "no-void": "error",
-        "no-warning-comments": "off",
-        "no-whitespace-before-property": "error",
-        "no-with": "error",
-        "nonblock-statement-body-position": "error",
-        "object-curly-newline": "off",
-        "object-curly-spacing": "off",
-        "object-property-newline": "off",
-        "object-shorthand": "off",
-        "one-var": "off",
-        "one-var-declaration-per-line": [
-            "error",
-            "initializations"
-        ],
-        "operator-assignment": "off",
-        "operator-linebreak": "off",
-        "padded-blocks": "off",
-        "prefer-arrow-callback": "off",
-        "prefer-const": "off",
-        "prefer-destructuring": [
-            "error",
-            {
-                "array": false,
-                "object": false
-            }
-        ],
-        "prefer-numeric-literals": "error",
-        "prefer-promise-reject-errors": "error",
-        "prefer-reflect": "off",
-        "prefer-rest-params": "off",
-        "prefer-spread": "off",
-        "prefer-template": "off",
-        "quote-props": "off",
-        "quotes": "off",
-        "radix": "error",
-        "require-await": "error",
-        "require-jsdoc": "error",
-        "rest-spread-spacing": [
-            "error",
-            "never"
-        ],
-        "semi": "off",
-        "semi-spacing": "off",
-        "sort-imports": "error",
-        "sort-keys": "off",
-        "sort-vars": "off",
-        "space-before-blocks": "off",
-        "space-before-function-paren": "off",
-        "space-in-parens": "off",
-        "space-infix-ops": "off",
-        "space-unary-ops": "off",
-        "spaced-comment": "off",
-        "strict": "off",
-        "symbol-description": "error",
-        "template-curly-spacing": "error",
-        "template-tag-spacing": "error",
-        "unicode-bom": [
-            "error",
-            "never"
-        ],
-        "valid-jsdoc": "error",
-        "vars-on-top": "off",
-        "wrap-regex": "off",
-        "yield-star-spacing": "error",
-        "yoda": [
-            "error",
-            "never"
-        ]
-    }
+		"comma-dangle": 'off', // We don't mind
+		"dot-notation": 'off', // We don't mind
+		"eol-last": 'off', // Temporary
+		"func-names": 'warn', // Temporary
+		"function-paren-newline": 'off', // Temporary: Maybe change to "never" later...
+		"indent": 'off', // Temporary. Problem with Visual Studio for the moment.
+		"keyword-spacing": 'off', // We prefer no spaciing.
+		'max-len': 'off', // Grab a modern and graphical editor, VI/VIM are for servers.
+		"new-cap": 'off', // Some variables are assigned a constructor.
+		"no-bitwise": 'off', // What ?
+		"no-continue": 'off', // What ?
+		"no-else-return": 'off', // What ?
+		"no-extra-label": 'off', // What ?
+		"no-extra-semi": 'off', // ASI ?
+		"no-labels": 'off', // What ?
+		"no-lonely-if": 'off', // What ?
+		"no-mixed-operators": 'off', // a && b || c
+		"no-multi-assign": 'off', // Temporary
+		"no-multi-spaces": 'off', // What ???
+		"no-multiple-empty-lines": 'warn', // Temporary
+		"no-nested-ternary": 'off', // Temporary
+		"no-param-reassign": 'off', // We mostly does parameter validation and conversion (cast).
+		"no-plusplus": 'off', // What ?
+		"no-restricted-syntax": 'off', // for...of
+		"no-shadow": 'warn', // Temporary
+		"no-tabs": 'off', // We prefer tabs over spaces
+		"no-trailing-spaces": 'off', // Temporary. Problem with Visual Studio for the moment.
+		"no-undef-init": 'off', // Like to be explicit.
+		"no-underscore-dangle": 'off', // What ?
+		"no-unneeded-ternary": 'off', // Temporary
+		"no-unreachable": 'warn', // <FUTURE> See if fixed : function myfunc(foo) { if (foo === 1) { return 'value1' } else if (foo === 2) { return 'value2' } else { return 'value3' } /* WE GET no-unreachable ERROR THERE BECAUSE OF COMMA !!! */ }
+		"no-unused-expressions": 'off', // DD_ASSERT && DD_ASSERT(...)
+		"no-unused-vars": ['error', {args: 'none'}], // Function signature
+		"object-curly-newline": 'off', // No
+		"object-curly-spacing": 'off', // What ?
+		"object-shorthand": 'off', // Temporary
+		"one-var": 'off', // No, "const/let/var" can declare more than one variables at once.
+		"padded-blocks": 'off', // That makes code more readable for me.
+		"prefer-arrow-callback": 'off', // Nope, a function is fine too.
+		"prefer-const": 'warn', // Temporary
+		"prefer-destructuring": 'off', // Temporary
+		"prefer-spread": 'off', // Temporary
+		"prefer-template": 'off', // Not sure
+		"quote-props": 'off', // We don't care
+		"quotes": "off", // Strings are either single or double quotes, ok ?
+		"semi": ['warn', 'always'], // Temporary
+		"semi-spacing": 'warn', // Temporary
+		"space-before-function-paren": 'off', // What ?
+		"space-in-parens": 'off', // Readability
+		"spaced-comment": 'off', // Some comments are just argument names
+		"strict": 'off', // Get "use strict uncessary inside modules ?", but I'm still CommonJS !
+		"wrap-iife": ['error', 'inside'], // Yes, but "inside" instead of "outside".
+	},
 };

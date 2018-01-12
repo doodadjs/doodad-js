@@ -52,7 +52,6 @@ exports.add = function add(DD_MODULES) {
 				types = doodad.Types,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
-				
 
 
 			const __options__ = tools.extend({
@@ -122,7 +121,7 @@ exports.add = function add(DD_MODULES) {
 							location = path;
 							if (location) {
 								location = location
-									.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
+									.removeArgs(['redirects', 'crashReport', 'crashRecovery']); // TODO: Put these hard coded names in a common constant
 							};
 						};
 						if (location.file) {
@@ -176,7 +175,7 @@ exports.add = function add(DD_MODULES) {
 											reject(ev.detail ? ev.detail : new types.Error("Unspecified error (the browser didn't give any error detail)."));
 										});
 										scriptLoader.start();
-									})
+									});
 							} else {
 								promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: true})
 									.then(function(code) {
@@ -185,7 +184,7 @@ exports.add = function add(DD_MODULES) {
 										const evalFn = tools.createEval(types.keys(locals), false).apply(null, types.values(locals));
 										evalFn(code);
 										return DD_EXPORTS;
-									})
+									});
 							};
 
 							return promise
@@ -300,7 +299,6 @@ exports.add = function add(DD_MODULES) {
 							return root;
 						});
 				}));
-				
 				
 				
 			//===================================

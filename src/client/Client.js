@@ -334,7 +334,7 @@ exports.add = function add(DD_MODULES) {
 						if (__Internal__.nextTickDone) {
 							__Internal__.nextTickDone = false;
 							__Internal__.nextTickValue = !__Internal__.nextTickValue;
-							__Internal__.nextTickDiv.setAttribute("value", __Internal__.nextTickValue)
+							__Internal__.nextTickDiv.setAttribute("value", __Internal__.nextTickValue);
 						};
 						return (cancelable ? {
 							cancel: function cancel() {
@@ -384,7 +384,7 @@ exports.add = function add(DD_MODULES) {
 				let exitCode = 1; // 1 = General error
 				let isAborted = false;
 				try {
-					isAborted = types._instanceof(err, types.ScriptAbortedError)
+					isAborted = types._instanceof(err, types.ScriptAbortedError);
 				} catch(o) {
 					if (root.getOptions().debug) {
 						types.DEBUGGER();
@@ -396,7 +396,7 @@ exports.add = function add(DD_MODULES) {
 
 				let ev = null;
 				try {
-					ev = new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}})
+					ev = new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}});
 					tools.dispatchEvent(ev); // sync
 				} catch(o) {
 					ev = null;
@@ -459,7 +459,7 @@ exports.add = function add(DD_MODULES) {
 									_shared.Natives.windowDocument.close();
 							
 									if (reload) {
-										url = url.setArgs({crashReport: true})
+										url = url.setArgs({crashReport: true});
 										tools.setCurrentLocation(url, true);
 									};
 
@@ -645,8 +645,7 @@ exports.add = function add(DD_MODULES) {
 					
 				// NOTE: Sorry for using the same variable
 				parent = parent.firstChild;
-				while (parent && (parent.nodeType !== 1))
-				{
+				while (parent && (parent.nodeType !== 1)) {
 					parent = parent.nextSibling;
 				}
 				return parent;
@@ -706,6 +705,7 @@ exports.add = function add(DD_MODULES) {
 					const extender = self[_shared.ExtenderSymbol];
 
 					const createHandler = function(element, eventType) {
+						/* eslint consistent-return: "off" */
 						let ignore = false;
 						return doodad.Callback(self[_shared.ObjectSymbol], function jsEventHandler(ev) {
 							if (!ignore) {
@@ -828,7 +828,7 @@ exports.add = function add(DD_MODULES) {
 						const self = this;
 						this.__unified = {
 							// TODO: Unify event properties between browsers
-							which: (types.isNothing(self.which) ? self.keyCode : ((self.which != 0) && (self.charCode != 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
+							which: (types.isNothing(self.which) ? self.keyCode : ((self.which !== 0) && (self.charCode !== 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
 							//preventDefault: (types.isNothing(self.preventDefault) ? function() {ev.returnValue = false; ev.keyCode = 0;} : self.preventDefault),
 						};
 					};
@@ -1664,7 +1664,7 @@ exports.add = function add(DD_MODULES) {
 									throw err;
 								}
 							} else {
-								return (type === 'file' ? !!url.file : (type === 'folder' ? !url.file : true))
+								return (type === 'file' ? !!url.file : (type === 'folder' ? !url.file : true));
 							}
 						});
 				});

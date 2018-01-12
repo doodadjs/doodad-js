@@ -41,13 +41,21 @@
 // WARNING: It is NOT to be used with arbitrary expressions.
 // WARNING: Do not declare any variable and parameter inside these functions.
 exports.eval = function _eval(/*expr*/) {
+	/* eslint no-eval: "off" */
+	/* eslint prefer-rest-params: "off" */
+
 	"use strict";
+
 	// <PRB> "{...}" and "function ..." need parentheses.
 	return eval('(' + arguments[0] + ')');
 };
 
 exports.evalWithCtx = function evalWithCtx(ctx /*, expr*/) {
+	/* eslint no-eval: "off" */
+	/* eslint prefer-rest-params: "off" */
+
 	"use strict";
+
 	// NOTE: "ctx" is to be used by the expression
 	ctx = ctx || {}; // force variable to be preserved
 	// <PRB> "{...}" and "function ..." need parentheses.
@@ -64,13 +72,15 @@ exports.generateCreateEval = function generateCreateEval() {
 				'"};" + ' +
 			'"})"' +
 		");" +
-	"})"
+	"})";
 };
 
 exports.createEval = exports.eval(exports.generateCreateEval());
 
 
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
+	/* eslint global-require: "off" */
+
 	"use strict";
 
 	(function checkRuntime() {		
@@ -264,7 +274,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isObject(obj) {
 			if (obj && (typeof obj === 'object')) {
 				if (obj[_shared.Natives.symbolToStringTag] === 'Object') {
-					let proto = types.getPrototypeOf(obj);
+					const proto = types.getPrototypeOf(obj);
 					if (proto) {
 						return types.isObject(proto);
 					} else {
@@ -347,6 +357,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 			//! END_REPLACE()
 		, function keys(obj) {
+			/* eslint no-restricted-syntax: "off" */ // for...in
+
 			// Returns enumerable own properties (those not inherited).
 			// Doesn't not include array items.
 			if (types.isNothing(obj)) {
@@ -359,7 +371,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				
 			if (types.isArrayLike(obj)) {
 				result = [];
-				for (let key in obj) {
+				for (const key in obj) {
 					if (types.has(obj, key) && !__Internal__.isArrayIndexRegExp.test(key)) {
 						result.push(key);
 					};
@@ -467,22 +479,21 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					const argsLen = args.length;
 					for (let i = 0; i < argsLen; i++) {
 						let arg = args[i];
-						if (types.isNothing(arg)) {
-							continue;
-						};
-						// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-						arg = _shared.Natives.windowObject(arg);
-						const keys = types.keys(arg)
-						const keysLen = keys.length; // performance
-						for (let j = 0; j < keysLen; j++) {
-							const key = keys[j];
-							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-						};
-						const symbols = types.symbols(arg);
-						const symbolsLen = symbols.length; // performance
-						for (let j = 0; j < symbolsLen; j++) {
-							const key = symbols[j];
-							extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+						if (!types.isNothing(arg)) {
+							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+							arg = _shared.Natives.windowObject(arg);
+							const keys = types.keys(arg);
+							const keysLen = keys.length; // performance
+							for (let j = 0; j < keysLen; j++) {
+								const key = keys[j];
+								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+							};
+							const symbols = types.symbols(arg);
+							const symbolsLen = symbols.length; // performance
+							for (let j = 0; j < symbolsLen; j++) {
+								const key = symbols[j];
+								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+							};
 						};
 					};
 				};
@@ -496,6 +507,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//===================================
 
 		if (global.Array.isArray(_options)) {
+			// eslint-disable-next-line comma-spacing, array-bracket-spacing
 			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
 		//! IF_UNSET("serverSide")
 		} else {
@@ -625,7 +637,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				// "getPrototypeOf"
 				objectGetPrototypeOf: global.Object.getPrototypeOf,
 			
-				// "isPrototypeOf"
+				// "isProtoOf"
 				objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
 				// "setPrototypeOf"
@@ -1097,6 +1109,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				pos,
 				lastPos = 0,
 				isKey = false;
+			// eslint-disable-next-line no-cond-assign
 			while ((pos = message.indexOf('~', lastPos)) >= 0) {
 				const key = message.slice(lastPos, pos);
 				if (isKey) {
@@ -1305,6 +1318,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function isNumber(obj) {
+			/* eslint no-self-compare: "off" */
+
 			if (types.isNothing(obj)) {
 				return false;
 			};
@@ -1328,6 +1343,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 
 	__Internal__.numberIsFinite = function numberIsFinite(num) {
+		/* eslint no-self-compare: "off" */
+
 		if (_shared.Natives.numberIsFinite) {
 			return _shared.Natives.numberIsFinite(num);
 		} else {
@@ -1340,6 +1357,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	};
 		
 	__Internal__.numberIsInteger = function numberIsInteger(num) {
+		/* eslint no-self-compare: "off" */
+
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1394,6 +1413,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 		
 	__Internal__.numberIsSafeInteger = function numberIsSafeInteger(num) {
+		/* eslint no-self-compare: "off" */
+
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1573,6 +1594,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 		
 	__Internal__.numberIsFloat = function numberIsFloat(num) {
+		/* eslint no-self-compare: "off" */
+
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1618,7 +1641,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return __Internal__.numberIsFloat(obj);
 			};
 			return false;
-		})),
+		}));
 		
 	// <PRB> JS has no function to test for booleans
 	__Internal__.ADD('isBoolean', __Internal__.DD_DOC(
@@ -1737,6 +1760,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function isNaN(obj) {
+			/* eslint no-self-compare: "off" */
+
 			if (types.isNothing(obj)) {
 				return false;
 			};
@@ -1988,7 +2013,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	// NOTE: It removes native functions from the stack
 	// <FUTURE> thread level
-	__Internal__.parseStackRegEx = /( at )?([^\[(@ ]+)?( [\[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][\/][\/][\/]?[^\/]+[\/][^: ]+)|(([A-Z][:]|[\\])[\\][^:]+)|([\/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
+	__Internal__.parseStackRegEx = /( at )?([^[(@ ]+)?( [[]as [^\]]+[\]])? ?[(@]?(([a-zA-Z]+[:][/][/][/]?[^/]+[/][^: ]+)|(([A-Z][:]|[\\])[\\][^:]+)|([/][^:]+)|eval code)( line ([0-9]+) [>] eval)?(([:])([0-9]+)([:])([0-9]+))?/gm;
 
 	__Internal__.ADD_TOOL('parseStack', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2495,6 +2520,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function getPropertyDescriptor(obj, key) {
+			/* eslint no-cond-assign: "off" */
 			obj = _shared.Natives.windowObject(obj);
 			let proto = obj,
 				descriptor = undefined;
@@ -2552,7 +2578,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return obj;
 		}));
 		
-	__Internal__.ADD('getPrototypeOf', _shared.Natives.objectGetPrototypeOf)
+	__Internal__.ADD('getPrototypeOf', _shared.Natives.objectGetPrototypeOf);
 		
 	__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2609,7 +2635,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		}));
 
-	__Internal__.ADD('isPrototypeOf', function isPrototypeOf(protoObj, obj) {
+	__Internal__.ADD('isProtoOf', function isProtoOf(protoObj, obj) {
 			// NOTE: Why does this function is part of Object prototype ?
 			return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 		});
@@ -3776,7 +3802,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							if (types.isFunction(b)) {
 								b = _shared.Natives.windowObject(b);
 								if (b instanceof _shared.Natives.windowFunction) {
-									if (types.isPrototypeOf(b, type)) {
+									if (types.isProtoOf(b, type)) {
 										return true;
 									};
 								} else {
@@ -3792,7 +3818,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					//type = types.getPrototypeOf(type);
 						type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
 						type = (type && (type.constructor !== type) ? type.constructor : null);
-					let start = i;
+					const start = i;
 					while (!types.isNothing(type)) {
 						const tuuid = _shared.getUUID(type);
 						for (; i < base.length; i++) {
@@ -3821,7 +3847,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				base = _shared.Natives.windowObject(base);
 				if (!crossRealm) {
 					if (base instanceof _shared.Natives.windowFunction) {
-						if (types.isPrototypeOf(base, type)) {
+						if (types.isProtoOf(base, type)) {
 							return true;
 						};
 					} else {
@@ -4025,7 +4051,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									t = _shared.Natives.windowObject(t);
 								};
 								if (t instanceof _shared.Natives.windowFunction) {
-									if ((obj === t) || types.isPrototypeOf(t, obj)) {
+									if ((obj === t) || types.isProtoOf(t, obj)) {
 										return true;
 									};
 								} else {
@@ -4082,7 +4108,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				if (!crossRealm) {
 					if (type instanceof _shared.Natives.windowFunction) {
-						if ((obj === type) || types.isPrototypeOf(type, obj)) {
+						if ((obj === type) || types.isProtoOf(type, obj)) {
 							return true;
 						};
 					} else {
@@ -4479,7 +4505,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: false,
 							description: "New value.",
 						},
-						options : {
+						options: {
 							type: 'object',
 							optional: true,
 							description: "Options.",
@@ -4548,7 +4574,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							optional: false,
 							description: "name/value pairs.",
 						},
-						options : {
+						options: {
 							type: 'object',
 							optional: true,
 							description: "Options.",
@@ -4988,7 +5014,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
-			let _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
+			const _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
 				const oldSuper = _shared.getAttribute(this, '_super');
 				_shared.setAttribute(this, '_super', superFn);
 				try {
@@ -5033,9 +5059,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					if (functionName) {
 						if (skipExisting) {
-							code += "ok = !hasKey;"
+							code += "ok = !hasKey;";
 						} else {
-							code += "ok = true;"
+							code += "ok = true;";
 						};
 					} else {
 						if (hasKey && skipExisting) {
@@ -5185,7 +5211,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 													"writable: !ro," +
 													"ignoreWhenReadOnly: true," +
 												"});" +
-											"};"
+											"};";
 								} else {
 									code += "_shared.setAttribute(target, key, value, {" +
 												"configurable: " + (cf ? 'true' : 'false') + "," +
@@ -5311,6 +5337,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 			};
 
+			/* eslint no-useless-concat: "off" */
 			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
 
 			const instanceBase = (base ? base.prototype : null);
@@ -5367,7 +5394,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				}
 			})(ctx);
 
-			const proto = type.prototype;;
+			const proto = type.prototype;
 
 			// <FUTURE> "Public static fields"
 			//tools.extend(type, {
@@ -5546,7 +5573,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto) {
 			// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
-			const base = ((this === global) ? undefined: this);
+			const base = ((this === global) ? undefined : this);
 				
 			let name = null,
 				constructor = null,
@@ -6241,7 +6268,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Type',
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Type')), true) */,
 
 				[__Internal__.symbol$IsSingleton]: types.READ_ONLY(false),
 				[__Internal__.symbolSingleton]: types.READ_ONLY(null),
@@ -6329,7 +6356,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'CustomEvent',
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEvent')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEvent')), true) */,
 			},
 			/*instanceProto*/
 			{
@@ -6421,7 +6448,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'CustomEventTarget',
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEventTarget')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CustomEventTarget')), true) */,
 			},
 			/*instanceProto*/
 			{
@@ -6564,7 +6591,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						let res = true;
 							
 						if (!event.stopped) {
-							var	listeners;
+							let	listeners;
 							if (type in this[__Internal__.symbolEventListeners]) {
 								listeners = this[__Internal__.symbolEventListeners][type];
 								if (listeners.__locked) {
@@ -6741,7 +6768,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Namespace',
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('Namespace')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Namespace')), true) */,
 			},
 			/*instanceProto*/
 			{
@@ -6749,7 +6776,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				DD_NAME: types.READ_ONLY(null),
 				DD_FULL_NAME: types.READ_ONLY(null),
 
-				ADD:  __Internal__.DD_DOC(
+				ADD: __Internal__.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
@@ -6875,7 +6902,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Root',
-				$TYPE_UUID:  '' /*! INJECT('+' + TO_SOURCE(UUID('RootNamespace')), true) */,
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('RootNamespace')), true) */,
 			},
 			/*instanceProto*/
 			{
@@ -7097,7 +7124,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						const opts = options[baseName];
 						entry.objectCreated = true;
 						entry.objectInit = inits[name];
-						entry.objectInit && entry.objectInit(opts)
+						entry.objectInit && entry.objectInit(opts);
 						entry.init(opts);
 						namespaces.add(name, entry, nsOptions);
 						//delete nsObjs[name];

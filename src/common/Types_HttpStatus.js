@@ -74,7 +74,7 @@ exports.add = function add(DD_MODULES) {
 				MultipleChoices: 300,
 				MovedPermanently: 301,
 				Found: 302,
-				SeeOther : 303,
+				SeeOther: 303,
 				NotModified: 304,
 				UseProxy: 305,
 				TemporaryRedirect: 307,
