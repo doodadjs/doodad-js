@@ -3677,11 +3677,7 @@ exports.add = function add(DD_MODULES) {
 								return sourceAttribute;
 							};
 
-							let srcGet,
-								srcSet,
-								destDesc,
-								destGet,
-								destSet;
+							let destDesc;
 										
 							if (types.isNothing(destAttribute)) {
 								destDesc = {};
@@ -3689,10 +3685,10 @@ exports.add = function add(DD_MODULES) {
 								destDesc = types.unbox(destAttribute);
 							};
 									
-							srcGet = types.get(srcDesc, 'get', null);
-							srcSet = types.get(srcDesc, 'set', null);
-							destGet = types.get(destDesc, 'get', null);
-							destSet = types.get(destDesc, 'set', null);
+							const srcGet = types.get(srcDesc, 'get', null);
+							const srcSet = types.get(srcDesc, 'set', null);
+							const destGet = types.get(destDesc, 'get', null);
+							const destSet = types.get(destDesc, 'set', null);
 
 							if (types.has(destDesc, 'value')) {
 								(function(srcGet, srcSet, destGet, destSet, destVal) {

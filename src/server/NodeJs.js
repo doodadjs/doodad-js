@@ -1130,10 +1130,9 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					let loopDeleteContent,
-						proceed;
+					let proceed;
 
-					loopDeleteContent = function _loopDeleteContent(parent, names, index) {
+					const loopDeleteContent = function _loopDeleteContent(parent, names, index) {
 						/* eslint consistent-return: "off" */
 						if (index < names.length) {
 							const path = parent.combine(names[index]);
@@ -1919,10 +1918,9 @@ exports.add = function add(DD_MODULES) {
 					followLinks = types.get(options, 'followLinks', true),
 					skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
 
-				let parse,
-					proceed;
+				let proceed;
 
-				parse = function _parse(result, parent, base, name, depth) {
+				const parse = function _parse(result, parent, base, name, depth) {
 					const path = parent.combine(name);
 					let stats = null;
 					try {
@@ -2007,10 +2005,9 @@ exports.add = function add(DD_MODULES) {
 						});
 					};
 
-					let parseNames,
-						proceed;
+					let proceed;
 
-					parseNames = function _parseNames(result, parent, base, names, index, depth) {
+					const parseNames = function _parseNames(result, parent, base, names, index, depth) {
 						if (index < names.length) {
 							const name = names[index],
 								path = parent.combine(name);

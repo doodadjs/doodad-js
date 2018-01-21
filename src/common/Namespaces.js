@@ -328,8 +328,8 @@ exports.add = function add(DD_MODULES) {
 										autoLoad = types.get(dep, 'autoLoad', types.isLike(depType, entries.Package) || types.isLike(depType, entries.Application));
 										dep = dep.name;
 									};
-									let depEntry = __Internal__.DD_REGISTRY.get(dep),
-										versionMismatch = false;
+									const depEntry = __Internal__.DD_REGISTRY.get(dep);
+									let versionMismatch = false;
 									if (version && depEntry && depEntry.version) {
 										if (tools.Version.compare(depEntry.version, tools.Version.parse(version, namespaces.VersionIdentifiers)) > 0) {
 											// Higher version expected

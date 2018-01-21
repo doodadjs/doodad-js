@@ -491,16 +491,17 @@ exports.add = function add(DD_MODULES) {
 								let os = types.get(options, 'os', null),  // Default is Auto-set
 									dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
 									isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
-									noEscapes = types.get(options, 'noEscapes', false), // Default is False
 									shell = types.get(options, 'shell', null), // Default is Auto-set
 									quote = types.get(options, 'quote', null),  // Default is Auto-detect
 									dirRoot = types.get(options, 'root', null),  // Default is no root
 									drive = types.get(options, 'drive', null),  // Default is Auto-detect
 									file = types.get(options, 'file', null),  // Default is Auto-detect
 									extension = types.get(options, 'extension', null), // Default is "file" 's extension
-									forceDrive = types.get(options, 'forceDrive', false),  // Default is False
-									allowTraverse = types.get(options, 'allowTraverse', false),  // Default is False
 									host = types.get(options, 'host', null); // Default is Auto-detect
+
+								const noEscapes = types.get(options, 'noEscapes', false), // Default is False
+									forceDrive = types.get(options, 'forceDrive', false),  // Default is False
+									allowTraverse = types.get(options, 'allowTraverse', false);  // Default is False
 
 								path = types.get(options, 'path', path);
 									
@@ -2449,9 +2450,9 @@ exports.add = function add(DD_MODULES) {
 									args = types.get(options, 'args', types.get(options, 'query', null)), // Default is Auto-detect
 									anchor = types.get(options, 'anchor', null), // Default is Auto-detect
 									isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
-									noEscapes = types.get(options, 'noEscapes', false),
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
 								
+								const noEscapes = types.get(options, 'noEscapes', false);
 
 								if (types.isNothing(args)) {
 									args = types.get(options, 'search', null);

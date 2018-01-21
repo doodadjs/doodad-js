@@ -75,6 +75,7 @@ exports.add = function add(DD_MODULES) {
 			// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
 				
 			// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+			// eslint-disable-next-line semi-spacing
 			_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */;
 
 			types.ADD('getGeneratorFunction', root.DD_DOC(

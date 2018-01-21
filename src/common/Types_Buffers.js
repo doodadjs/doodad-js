@@ -108,6 +108,7 @@ exports.add = function add(DD_MODULES) {
 												global.Float64Array];
 					} else {
 						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
+						// eslint-disable-next-line semi-spacing
 						_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */;
 					};
 				} catch(ex) {

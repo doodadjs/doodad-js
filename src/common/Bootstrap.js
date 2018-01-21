@@ -2055,8 +2055,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const calls = [];
 				
 			do {
-				let rawFunctionName,
-					functionName, 
+				let functionName, 
 					pos;
 				
 				functionName = call[2] || '';
@@ -2064,7 +2063,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				if (pos >= 0) {
 					functionName = functionName.slice(pos + 4);
 				};
-				rawFunctionName = functionName + (call[3] || '');
+				const rawFunctionName = functionName + (call[3] || '');
 				pos = functionName.lastIndexOf('@'); // Firefox beginning of file name
 				if (pos >= 0) {
 					functionName = functionName.slice(0, pos);
@@ -3160,6 +3159,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 		
 	if (!__options__.enableSymbols) {
+		// eslint-disable-next-line semi-spacing
 		__Internal__.globalSymbolsUUID = /*! REPLACE_BY(TO_SOURCE(UUID('Symbol')), true) */ tools.generateUUID() /*! END_REPLACE() */;
 	};
 	
