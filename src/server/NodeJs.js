@@ -33,6 +33,8 @@
 	//! INJECT("import {default as nodeHttp} from 'http';");
 	//! INJECT("import {default as nodeConsole} from 'console';");
 //! ELSE()
+	"use strict";
+
 	const nodeOs = require('os'),
 		nodeChildProcess = require('child_process'),
 		nodeFs = require('fs'),
@@ -97,8 +99,6 @@ exports.add = function add(DD_MODULES) {
 		bootstrap: true,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-				
 			const doodad = root.Doodad,
 				mixIns = doodad.MixIns,
 				extenders = doodad.Extenders,

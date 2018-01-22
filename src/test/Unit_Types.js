@@ -24,6 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! IF_SET("mjs")
+//! ELSE()
+	"use strict";
+//! END_IF()
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Doodad.Test.Types'] = {

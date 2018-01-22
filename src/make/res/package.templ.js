@@ -21,6 +21,9 @@
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
 //! END_REPLACE()
+
+"use strict";
+
 (function() {
 	const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
 	const DD_MODULES = {};

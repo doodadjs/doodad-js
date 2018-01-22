@@ -1,3 +1,5 @@
+"use strict";
+
 (function() {
 	const doodad = DD_ROOT.Doodad,
 		types = doodad.Types, 

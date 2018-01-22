@@ -33,6 +33,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! IF_SET("mjs")
+//! ELSE()
+	"use strict";
+//! END_IF()
+
 //! IF(IS_SET("serverSide") && IS_SET("mjs"))
 	//! INJECT("import {default as nodeUUID} from 'uuid';");
 //! END_IF()
@@ -44,8 +49,6 @@ exports.eval = function _eval(/*expr*/) {
 	/* eslint no-eval: "off" */
 	/* eslint prefer-rest-params: "off" */
 
-	"use strict";
-
 	// <PRB> "{...}" and "function ..." need parentheses.
 	return eval('(' + arguments[0] + ')');
 };
@@ -53,8 +56,6 @@ exports.eval = function _eval(/*expr*/) {
 exports.evalWithCtx = function evalWithCtx(ctx /*, expr*/) {
 	/* eslint no-eval: "off" */
 	/* eslint prefer-rest-params: "off" */
-
-	"use strict";
 
 	// NOTE: "ctx" is to be used by the expression
 	ctx = ctx || {}; // force variable to be preserved
@@ -80,8 +81,6 @@ exports.createEval = exports.eval(exports.generateCreateEval());
 
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 	/* eslint global-require: "off" */
-
-	"use strict";
 
 	(function checkRuntime() {		
 		// <PRB> Firefox's "Function.prototype.toString" bug #1 : "incompatible object" error message raised with some constructors (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.

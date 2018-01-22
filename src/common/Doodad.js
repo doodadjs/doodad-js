@@ -24,6 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! IF_SET("mjs")
+//! ELSE()
+	"use strict";
+//! END_IF()
+
 // Naming conventions :
 //
 //     Namespaces, Types, Enums, and other Public Module Attributes : Each word in lower case and beginning with an upper case. ex.: MyType
@@ -54,8 +59,6 @@ exports.add = function add(DD_MODULES) {
 		bootstrap: true,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			// Class entry
 			const doodad = root.Doodad,
 				types = doodad.Types,

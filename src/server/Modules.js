@@ -30,6 +30,8 @@
 	//! INJECT("import {default as nodeFs} from 'fs';");
 	//! INJECT("import {default as amp} from 'app-module-path';")
 //! ELSE()
+	"use strict";
+
 	const nodeModule = require('module'),
 		nodeProcess = require('process'),
 		nodeFs = require('fs'),
@@ -61,8 +63,6 @@ exports.add = function add(DD_MODULES) {
 		bootstrap: true,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			//===================================
 			// Get namespaces
 			//===================================
@@ -397,8 +397,6 @@ exports.add = function add(DD_MODULES) {
 									}),
 										
 									create: function create(root, /*optional*/_options, _shared) {
-										"use strict";
-											
 										const doodad = root.Doodad,
 											modules = doodad.Modules,
 											fromSource = root.getOptions().fromSource;

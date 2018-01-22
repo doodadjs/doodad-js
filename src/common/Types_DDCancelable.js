@@ -24,6 +24,10 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! IF_SET("mjs")
+//! ELSE()
+	"use strict";
+//! END_IF()
 
 // Examples :
 //			tools.Files.readdirAsync('F:\\', {timeout: 5000, depth: Infinity});
@@ -45,8 +49,6 @@ exports.add = function add(DD_MODULES) {
 		],
 
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			//===================================
 			// Get namespaces
 			//===================================

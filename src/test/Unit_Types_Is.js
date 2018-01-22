@@ -24,6 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! IF_SET("mjs")
+//! ELSE()
+	"use strict";
+//! END_IF()
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Doodad.Test.Types.Is'] = {
@@ -36,8 +41,6 @@ exports.add = function add(DD_MODULES) {
 
 		proto: {
 			run: function run(root, /*optional*/options) {
-				"use strict";
-
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,

@@ -27,6 +27,8 @@
 //! IF_SET("mjs")
 	//! INJECT("import {default as nodeUtil} from 'util';");
 //! ELSE()
+	"use strict";
+
 	const nodeUtil = require('util');
 //! END_IF()
 
@@ -41,8 +43,6 @@ exports.add = function add(DD_MODULES) {
 		bootstrap: true,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-				
 			const doodad = root.Doodad,
 				//types = doodad.Types,
 				nodejs = doodad.NodeJs;

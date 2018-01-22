@@ -31,6 +31,8 @@
 	//! INJECT("import {default as nodeOs} from 'os';");
 	//! INJECT("import {default as nodePath} from 'path';");
 //! ELSE()
+	"use strict";
+
 	const nodeOs = require('os'),
 		nodePath = require('path');
 //! END_IF()
@@ -52,8 +54,6 @@ exports.add = function add(DD_MODULES) {
 		bootstrap: true,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			//===================================
 			// Get namespaces
 			//===================================
