@@ -1108,7 +1108,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				pos,
 				lastPos = 0,
 				isKey = false;
-			// eslint-disable-next-line no-cond-assign
 			while ((pos = message.indexOf('~', lastPos)) >= 0) {
 				const key = message.slice(lastPos, pos);
 				if (isKey) {
