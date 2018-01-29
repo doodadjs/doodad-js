@@ -490,7 +490,6 @@ exports.add = function add(DD_MODULES) {
 								};
 									
 								// Options
-								const osInfo = tools.getOS();
 								let os = types.get(options, 'os', null),  // Default is Auto-set
 									dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
 									isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
@@ -522,6 +521,7 @@ exports.add = function add(DD_MODULES) {
 									
 								if (types.isNothing(os)) {
 									// Auto-set
+									const osInfo = tools.getOS();
 									os = osInfo.type;
 								};
 									
