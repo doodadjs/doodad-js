@@ -8304,15 +8304,11 @@ exports.add = function add(DD_MODULES) {
 					$onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
 					onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
 
-					// TODO: Been able to do something like :
-					// onDestroy: doodad.IF_IMPLEMENTS(doodad.Events, doodad.EVENT(false)),
-
 					isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function isDestroyed() {
 						const destroyed = this[_shared.DestroyedSymbol];
 						return (destroyed !== false); // NOTE: Can be "null" for "not created".
 					}))))),
 
-						
 					$create: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
