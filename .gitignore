@@ -6,6 +6,10 @@ test
 config.json
 webpack.config.js
 
+# Travis scripts
+.curbranch
+.lastrev
+
 # Logs
 logs
 *.log
