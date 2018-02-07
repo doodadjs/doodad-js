@@ -1891,23 +1891,32 @@ exports.add = function add(DD_MODULES) {
 				}
 			}));
 
-			__Internal__.readdirAddFile = function readdirAddFile(result, base, name, stats, followLinks) {
+			__Internal__.readdirAddFile = function readdirAddFile(result, base, name, stats, followLinks, type) {
 				const isFolder = stats.isDirectory(),
-					isFile = stats.isFile();
-				if ((isFolder || isFile) && (followLinks || !stats.isSymbolicLink())) {
+					isFile = stats.isFile(),
+					isLink = !followLinks && stats.isSymbolicLink();
+				let ok = false;
+				if (isFolder && (!type || (type === 'folder'))) {
+					ok = true;
+				} else if (isFile && (!type || (type === 'file'))) {
+					ok = true;
+				} else if (isLink && (!type || (type === 'link'))) {
+					ok = true;
+				};
+				const path = (isFolder ? base.combine(name, {file: ''}) : ok && base.combine(name));
+				if (ok) {
 					const file = {
-						name: name,
-						path: (isFolder ? base.combine(name, {file: ''}) : base.combine(name)),
-						isFolder: isFolder,
-						isFile: isFile,
+						name,
+						path,
+						isFolder,
+						isFile,
+						isLink,
 						size: stats.size, // bytes
 						// ...
 					};
 					result.push(file);
-					return file;
-				} else {
-					return null;
-				}
+				};
+				return path;
 			};
 
 			files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
@@ -1916,6 +1925,7 @@ exports.add = function add(DD_MODULES) {
 				const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 					relative = types.get(options, 'relative', false),
 					followLinks = types.get(options, 'followLinks', true),
+					type = types.get(options, 'type', null),
 					skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
 
 				let proceed;
@@ -1935,9 +1945,9 @@ exports.add = function add(DD_MODULES) {
 						};
 					};
 					if (stats) {
-						const file = __Internal__.readdirAddFile(result, base, name, stats, followLinks);
-						if (file && file.isFolder) {
-							return proceed(result, path, file.path, depth - 1);
+						const newBase = __Internal__.readdirAddFile(result, base, name, stats, followLinks, type);
+						if (newBase) {
+							return proceed(result, path, newBase, depth - 1);
 						};
 					};
 				};
@@ -1964,6 +1974,7 @@ exports.add = function add(DD_MODULES) {
 					const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
 						followLinks = types.get(options, 'followLinks', true),
+						type = types.get(options, 'type', null),
 						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
 						timeout = types.get(options, 'timeout', null),
 						hasTimeout = types.isInteger(timeout) && (timeout > 0),
@@ -2019,9 +2030,9 @@ exports.add = function add(DD_MODULES) {
 											throw err;
 										};
 									} else {
-										const file = __Internal__.readdirAddFile(result, base, name, stats, followLinks);
-										if (file && file.isFolder) {
-											return proceed(result, path, file.path, depth - 1);
+										const newBase = __Internal__.readdirAddFile(result, base, name, stats, followLinks, type);
+										if (newBase) {
+											return proceed(result, path, newBase, depth - 1);
 										};
 									};
 								})
