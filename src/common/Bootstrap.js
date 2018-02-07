@@ -356,7 +356,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 			//! END_REPLACE()
 		, function keys(obj) {
-			/* eslint no-restricted-syntax: "off" */ // for...in
+			/* eslint no-restricted-syntax: "off", guard-for-in: "off" */ // for...in
 
 			// Returns enumerable own properties (those not inherited).
 			// Doesn't not include array items.
