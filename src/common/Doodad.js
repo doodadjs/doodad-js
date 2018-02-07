@@ -2667,25 +2667,25 @@ exports.add = function add(DD_MODULES) {
 										const errorEvent = obj.__ERROR_EVENT;
 										if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
 											const errorAttr = attributes[errorEvent];
-											const onError = obj[errorEvent];
+											const onError = _shared.getAttribute(obj, errorEvent);
 											if (types.isLike(errorAttr[_shared.ExtenderSymbol], extenders.RawEvent)) {
 												if (onError.getCount() > 0) {
 													// <PRB> Node.Js re-emits 'error'.
 													const noop = function _noop(err) {};
 													try {
 														onError.attachOnce(null, noop);
-														emitted = onError.call(obj, ex);
+														emitted = _shared.invoke(obj, onError, [ex], _shared.SECRET);
 													} catch(o) {
 														throw o;
 													} finally {
 														onError.detach(null, noop);
 													};
 												} else {
-													emitted = onError.call(obj, ex);
+													emitted = _shared.invoke(obj, onError, [ex], _shared.SECRET);
 												};
 											} else {
 												const ev = new doodad.ErrorEvent(ex);
-												onError.call(obj, ev);
+												_shared.invoke(obj, onError, [ev], _shared.SECRET);
 												if (ev.prevent) {
 													ex.trapped = true;
 												};
@@ -2895,26 +2895,28 @@ exports.add = function add(DD_MODULES) {
 									};
 										
 								} finally {
-//										if (!_dispatch[_shared.SuperAsyncSymbol]) {
+//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
 										if (notReentrant) {
 											if (async && retVal) {
-												retVal = retVal.nodeify(function resetCalled(err, result) {
+												const self = this;
+												retVal = retVal.nodeify(_shared.PromiseCallback(null, function resetCalled(err, result) {
 													notReentrantMap.set(attr, false);
 													if (err) {
-														extender.handleDispatchError(err, attr, this);
+														return extender.handleDispatchError(err, attr, self);
 													} else {
 														return result;
 													};
-												}, this);
+												}));
 											} else {
 												notReentrantMap.set(attr, false);
 											};
 										} else if (async && retVal) {
-											retVal = retVal.catch(function(err) {
-													extender.handleDispatchError(err, attr, this);
-												}, this);
+											const self = this;
+											retVal = retVal.catch(_shared.PromiseCallback(null, function(err) {
+													return extender.handleDispatchError(err, attr, self);
+												}));
 										};
-//										};
+//									};
 
 									__Internal__.restoreInside(oldInside);
 									caller[_shared.CalledSymbol] = oldCallerCalled;
