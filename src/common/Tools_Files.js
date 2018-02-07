@@ -2557,13 +2557,6 @@ exports.add = function add(DD_MODULES) {
 											path = [];
 										};
 									};
-
-								} else if (types.isArray(path)) {
-									// Auto-detect "file"
-									if (types.isNothing(file)) {
-										file = path.slice(-1)[0] || null;
-										path = path.slice(0, -1);
-									};
 								};
 									
 								if (!noEscapes) {
