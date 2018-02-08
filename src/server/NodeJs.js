@@ -1916,7 +1916,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					result.push(file);
 				};
-				return path;
+				return (isFolder ? path : null);
 			};
 
 			files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
