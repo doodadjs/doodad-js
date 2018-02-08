@@ -6464,7 +6464,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 										author: "Claude Petit",
-										revision: 0,
+										revision: 1,
 										params: {
 											type: {
 												type: 'string',
@@ -6476,26 +6476,21 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												optional: false,
 												description: "Callback function",
 											}, 
-											useCapture: {
-												type: 'boolean',
+											options: {
+												type: 'boolean,object',
 												optional: true,
-												description: "Reserved.",
+												description: "Options.",
 											}, 
-											wantsUntrusted: {
-												type: 'boolean',
-												optional: true,
-												description: "Reserved.",
-											},
 										},
 										returns: 'undefined',
 										description: "Adds an event listener for the specified event name.",
 							}
 							//! END_REPLACE()
-					, function addEventListener(type, handler, /*optional*/useCapture, /*optional*/wantsUntrusted) {
+					, function addEventListener(type, handler, /*optional*/options) {
 						type = type.toLowerCase();
-						useCapture = !!useCapture;
-						wantsUntrusted = (types.isNothing(wantsUntrusted) ? true : !!wantsUntrusted);
-							
+						const opts = options && (typeof options === 'object'),
+							useCapture = !!(opts ? types.get(opts, 'capture', false) : options),
+							once = types.get(opts, 'once', false);
 						let listeners = this[__Internal__.symbolEventListeners][type];
 						if (!types.isArray(listeners)) {
 							this[__Internal__.symbolEventListeners][type] = listeners = [];
@@ -6509,7 +6504,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 						if (!found) {
-							listeners.push([handler, useCapture, wantsUntrusted]);
+							listeners.push([handler, useCapture, once]);
 						};
 					}),
 						
@@ -6517,7 +6512,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											type: {
 												type: 'string',
@@ -6529,20 +6524,21 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												optional: false,
 												description: "Original callback function",
 											}, 
-											useCapture: {
-												type: 'boolean',
+											options: {
+												type: 'boolean,object',
 												optional: true,
-												description: "Reserved.",
+												description: "Options.",
 											}, 
 										},
 										returns: 'undefined',
 										description: "Removes an event listener for the specified event name.",
 							}
 							//! END_REPLACE()
-					, function removeEventListener(type, /*optional*/handler, /*optional*/useCapture) {
+					, function removeEventListener(type, /*optional*/handler, /*optional*/options) {
 						type = type.toLowerCase();
-							
 						if (type in this[__Internal__.symbolEventListeners]) {
+							const opts = options && (typeof options === 'object'),
+								useCapture = (opts ? types.get(opts, 'capture') : options);
 							const listeners = this[__Internal__.symbolEventListeners][type];
 							if (types.isArray(listeners)) {
 								if (types.isNothing(useCapture)) {
@@ -6553,10 +6549,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 										};
 									};
 								} else {
-									useCapture = !!useCapture;
+									const capture = !!useCapture;
 									for (let i = listeners.length - 1; i >= 0; i--) {
 										const value = listeners[i];
-										if ((!handler || (value[0] === handler)) && (value[1] === useCapture)) {
+										if ((!handler || (value[0] === handler)) && (value[1] === capture)) {
 											listeners.splice(i, 1);
 										};
 									};
@@ -6569,7 +6565,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 										author: "Claude Petit",
-										revision: 1,
+										revision: 2,
 										params: {
 											event: {
 												type: 'string',
@@ -6584,44 +6580,68 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					, function dispatchEvent(event) {
 						// TODO: What should I do with "useCapture" ???
 						// TODO: Implement "wantsUntrusted" ?
-						let type = event.type.toLowerCase();
+						const type = event.type.toLowerCase();
 							
 						let res = true;
 							
 						if (!event.stopped) {
-							let	listeners;
-							if (type in this[__Internal__.symbolEventListeners]) {
-								listeners = this[__Internal__.symbolEventListeners][type];
+							const events = this[__Internal__.symbolEventListeners];
+							let	listeners = types.get(events, type);
+							if (listeners) {
 								if (listeners.__locked) {
 									return res;
 									//throw new types.Error("Listeners locked for event '~0~'.", [type]);
 								};
-							} else {
-								this[__Internal__.symbolEventListeners][type] = listeners = [];
-							};
 								
-							try {
-								listeners.__locked = true;  // prevents infinite loop
-									
-								const ar = types.clone(listeners),
-									arLen = ar.length;
-								for (let i = 0; i < arLen; i++) {
-									const listener = ar[i];
-									const retval = listener[0].call(this, event);
-									if (event.canceled) {
-										res = false;
+								const ar = types.clone(listeners);
+
+								let arLen = ar.length,
+									changed = false;
+
+								try {
+									listeners.__locked = true;  // prevents infinite loop
+
+									let i = 0;
+									while (i < arLen) {
+										const listener = ar[i];
+										const handler = listener[0];
+										//const useCapture = listener[1];
+										const once = listener[2];
+										if (once) {
+											ar.splice(i, 1);
+											arLen--;
+											changed = true;
+										};
+										const retval = handler.call(this, event);
+										if (event.canceled) {
+											res = false;
+										};
+										if (retval === false) {
+											event.stopImmediatePropagation();
+										};
+										if (event.stopped) {
+											break;
+										};
+										if (!once) {
+											i++;
+										};
 									};
-									if (retval === false) {
-										event.stopImmediatePropagation();
-									};
-									if (event.stopped) {
-										break;
+								} catch(ex) {
+									throw ex;
+								} finally {
+									listeners.__locked = false;
+									if (changed) {
+										if (arLen > 0) {
+											events[type] = ar;
+										} else {
+											delete events[type];
+										};
 									};
 								};
-									
-								type = 'on' + type;
-								if (!event.stopped && types.has(this, type)) {
-									const fn = this[type];
+
+								const name = 'on' + type;
+								if (!event.stopped && types.has(this, name)) {
+									const fn = this[name];
 									if (types.isFunction(fn)) {
 										const retval = fn.call(this, event);
 										if (event.canceled) {
@@ -6632,10 +6652,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 										};
 									};
 								};
-							} catch(ex) {
-								throw ex;
-							} finally {
-								listeners.__locked = false;
 							};
 						};
 							
