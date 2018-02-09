@@ -6586,7 +6586,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							
 						if (!event.stopped) {
 							const events = this[__Internal__.symbolEventListeners];
-							let	listeners = types.get(events, type);
+							const listeners = types.get(events, type);
 							if (listeners) {
 								if (listeners.__locked) {
 									return res;
