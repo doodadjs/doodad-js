@@ -124,7 +124,7 @@ exports.add = function add(DD_MODULES) {
 
 						// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
 						const self = this;
-						_shared.setAttribute(this, _shared.Natives.symbolIterator, function() {
+						types.setAttribute(this, _shared.Natives.symbolIterator, function() {
 							return self;
 						}, {});
 					}),

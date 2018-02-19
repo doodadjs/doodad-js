@@ -197,7 +197,7 @@ exports.add = function add(DD_MODULES) {
 							
 						_new: types.SUPER(function _new(data, /*optional*/options) {
 							this._super();
-							_shared.setAttributes(this, {
+							types.setAttributes(this, {
 								data: data,
 								options: tools.nullObject(options),
 							});

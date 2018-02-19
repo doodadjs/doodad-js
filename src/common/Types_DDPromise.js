@@ -639,10 +639,10 @@ exports.add = function add(DD_MODULES) {
 					__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 					__Internal__.addPromiseDoodadExtensions(DDPromise);
 
-					_shared.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
+					types.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
 
-					_shared.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
-					_shared.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
+					types.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
+					types.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
 
 					__Internal__.Promise = DDPromise;
 
@@ -703,8 +703,8 @@ exports.add = function add(DD_MODULES) {
 							throw ex;
 						}
 					});
-					_shared.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
-					_shared.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.promise = null; // will be provided later
 					_shared.registerCallback(callback);
 					return callback;

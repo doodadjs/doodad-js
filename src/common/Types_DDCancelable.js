@@ -135,7 +135,7 @@ exports.add = function add(DD_MODULES) {
 						state.startCb = startCb;
 						state.cancelCb = cancelCb;
 
-						_shared.setAttribute(this, 'name', types.isNothing(name) ? types.getFunctionName(state.startCb) : types.toString(name));
+						types.setAttribute(this, 'name', types.isNothing(name) ? types.getFunctionName(state.startCb) : types.toString(name));
 
 						__Internal__.cancelableStates.set( this, state );
 					}),

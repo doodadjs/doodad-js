@@ -100,7 +100,7 @@ exports.add = function add(DD_MODULES) {
 				established: 2, e: 2,
 			})));
 				
-			_shared.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
+			types.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
 				return __Internal__.DD_REGISTRY.iter();
 			}, {});
 
@@ -1046,7 +1046,7 @@ exports.add = function add(DD_MODULES) {
 					_new: types.SUPER(function _new(registry, type, exact) {
 						this._super();
 
-						_shared.setAttributes(this, {
+						types.setAttributes(this, {
 							__type: type,
 							__exact: !!exact,
 							__values: tools.map(types.values(registry.registry), function(entry) {

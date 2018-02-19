@@ -152,8 +152,8 @@ exports.add = function add(DD_MODULES) {
 						uuids[uuid] = true;
 
 						//try {
-							_shared.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
-							_shared.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
+							types.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
+							types.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
 						//} catch(ex) {
 						//	console.log(name);
 						//};

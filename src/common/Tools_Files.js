@@ -1096,7 +1096,7 @@ exports.add = function add(DD_MODULES) {
 							this._super();
 							const attrs = tools.fill(__Internal__.pathAllKeys, {}, options);
 							if (types.hasDefinePropertyEnabled()) {
-								_shared.setAttributes(this, attrs);
+								types.setAttributes(this, attrs);
 							} else {
 								tools.extend(this, attrs);
 							};
@@ -1804,8 +1804,8 @@ exports.add = function add(DD_MODULES) {
 								root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
 							};
 
-							_shared.setAttribute(this, 'options', options, {});
-							_shared.setAttribute(this, '__args', types.freezeObject(args), {});
+							types.setAttribute(this, 'options', options, {});
+							types.setAttribute(this, '__args', types.freezeObject(args), {});
 						}),
 							
 						toDataObject: root.DD_DOC(
@@ -2825,7 +2825,7 @@ exports.add = function add(DD_MODULES) {
 							this._super();
 							const attrs = tools.fill(__Internal__.urlAllKeys, {}, options);
 							if (types.hasDefinePropertyEnabled()) {
-								_shared.setAttributes(this, attrs);
+								types.setAttributes(this, attrs);
 							} else {
 								tools.extend(this, attrs);
 							};

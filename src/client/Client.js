@@ -843,7 +843,7 @@ exports.add = function add(DD_MODULES) {
 				_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
 					this._super(options);
 					if (!types.isType(this)) {
-						_shared.setAttributes(this, {
+						types.setAttributes(this, {
 							eventType: types.get(options, 'eventType', this.eventType),
 						});
 					};
@@ -953,7 +953,7 @@ exports.add = function add(DD_MODULES) {
 				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
 					const dispatch = this[_shared.CurrentDispatchSymbol];
 						
-					const values = _shared.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
 
 					const stack = values[_shared.StackSymbol];
 						
@@ -972,7 +972,7 @@ exports.add = function add(DD_MODULES) {
 						const values = {};
 						values[_shared.SortedSymbol] = true;
 						values[_shared.ClonedStackSymbol] = clonedStack;
-						_shared.setAttributes(dispatch, values);
+						types.setAttributes(dispatch, values);
 					};
 							
 					const stackLen = clonedStack.length;
