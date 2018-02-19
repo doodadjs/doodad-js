@@ -4506,25 +4506,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			
 	_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
 		options = options && tools.nullObject(options);
-		const hasOwn = types.has(obj, attr);
+		const hasOwn = types.has(obj, attr),
+			hasAll = options && ('all' in options),
+			newDescriptor = !!options && (('configurable' in options) || ('enumerable' in options) || ('writable' in options) || hasAll);
 		let descriptor = types.getPropertyDescriptor(obj, attr);
 		const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
 			descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
 			descWritable = !descriptor || types.get(descriptor, 'writable', false),
 			descGet = types.get(descriptor, 'get'),
 			descSet = types.get(descriptor, 'set');
-		if (descSet && !options) {
-			descSet.call(obj, value);
-		} else if (descGet && !options) {
+		if (descSet && !newDescriptor) {
+			if (!options || !options.ignoreWhenSame || !descGet || (descGet.call(obj) !== value)) {
+				descSet.call(obj, value);
+			};
+		} else if (descGet && !newDescriptor) {
 			if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
 				// NOTE: Use native error because something might be wrong
 				throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 			};
-		} else if (hasOwn && descWritable && (!options || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
-			obj[attr] = value;
+		} else if (hasOwn && descWritable && (!newDescriptor || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
+			if (!options || !options.ignoreWhenSame || (obj[attr] !== value)) {
+				obj[attr] = value;
+			};
 		} else if (descConfigurable) {
-			if (options && types.hasDefinePropertyEnabled()) {
-				if ('all' in options) {
+			if (newDescriptor && types.hasDefinePropertyEnabled()) {
+				if (hasAll) {
 					descriptor = {
 						configurable: ('configurable' in options ? options.configurable : options.all),
 						enumerable: ('enumerable' in options ? options.enumerable : options.all),
@@ -4539,7 +4545,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			descriptor.value = value;
 			types.defineProperty(obj, attr, descriptor);
 		} else {
-			if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
+			if (!newDescriptor || !options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
 				// NOTE: Use native error because something might be wrong
 				throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 			};
@@ -4551,7 +4557,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 10,
+					revision: 11,
 					params: {
 						obj: {
 							type: 'object',
@@ -7199,7 +7205,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 						
 					//delete types.Namespace[__Internal__.symbolInitialized];
-					types.Namespace[__Internal__.symbolInitialized] = null;
+					types.setAttribute(types.Namespace, __Internal__.symbolInitialized, null, {configurable: true});
 					_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
 
 					for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
