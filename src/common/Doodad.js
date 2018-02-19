@@ -900,12 +900,18 @@ exports.add = function add(DD_MODULES) {
 			);
 
 			__Internal__.setInside = (__Internal__.hasScopes ?
-				function setInside(obj, secret) {
-					if (types.getType(obj) && !__Internal__.isInside(obj) && (secret !== _shared.SECRET)) {
-						throw new types.Error("Invalid secret.");
+				function setInside(obj, secret, /*optional*/preserve) {
+					const type = types.getType(obj);
+					if (!type || !__Internal__.isInside(obj)) {
+						if (type && !types.isNothing(_shared.SECRET) && (secret !== _shared.SECRET)) {
+							throw new types.Error("Invalid secret.");
+						};
+						const preserved = (preserve ? __Internal__.preserveInside() : null);
+						__Internal__.currentInstance = obj;
+						__Internal__.currentType = type;
+						return preserved;
 					};
-					__Internal__.currentInstance = obj;
-					__Internal__.currentType = types.getType(obj);
+					return null;
 				}
 			:
 				function setInside(obj, secret) {
@@ -944,26 +950,28 @@ exports.add = function add(DD_MODULES) {
 					const fnApply = fn.apply.bind(fn);
 					if (types.isNothing(obj)) {
 						_insider = function insider(/*paramarray*/...params) {
-							const oldInside = __Internal__.preserveInside();
-							__Internal__.setInside(this, secret);
+							const oldInside = __Internal__.setInside(this, secret, true);
 							try {
 								return fnApply(this, params);
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.restoreInside(oldInside);
+								if (oldInside) {
+									__Internal__.restoreInside(oldInside);
+								};
 							}
 						};
 					} else {
 						_insider = function insider(/*paramarray*/...params) {
-							const oldInside = __Internal__.preserveInside();
-							__Internal__.setInside(obj, secret);
+							const oldInside = __Internal__.setInside(obj, secret, true);
 							try {
 								return fnApply(obj, params);
 							} catch(ex) {
 								throw ex;
 							} finally {
-								__Internal__.restoreInside(oldInside);
+								if (oldInside) {
+									__Internal__.restoreInside(oldInside);
+								};
 							}
 						};
 					};
@@ -995,8 +1003,7 @@ exports.add = function add(DD_MODULES) {
 				
 			__Internal__.insideNew = (__Internal__.hasScopes ?
 				function insideNew(...args) {
-					const oldInside = __Internal__.preserveInside();
-					__Internal__.setInside(this, _shared.SECRET);
+					const oldInside = __Internal__.setInside(this, _shared.SECRET, true);
 					try {
 						const obj = this._new && this._new(...args) || this;
 						if (_shared.CreatorSymbol) {
@@ -1006,7 +1013,9 @@ exports.add = function add(DD_MODULES) {
 					} catch(ex) {
 						throw ex;
 					} finally {
-						__Internal__.restoreInside(oldInside);
+						if (oldInside) {
+							__Internal__.restoreInside(oldInside);
+						};
 					}
 				}
 			:
@@ -1076,34 +1085,28 @@ exports.add = function add(DD_MODULES) {
 					}
 				} else {
 					//const type = types.getType(obj);
-					//if (types.isClass(type) || types.isInterfaceClass(type)) {
-						const oldInside = secret && __Internal__.preserveInside();
-						if (secret) {
-							__Internal__.setInside(obj, secret);
+					//const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
+					const oldInside = __Internal__.setInside(obj, secret, true);
+					try {
+						if (types.isString(fn) || types.isSymbol(fn)) {
+							fn = thisObj[fn];
 						};
-						try {
-							if (types.isString(fn) || types.isSymbol(fn)) {
-								fn = thisObj[fn];
-							};
-							if (types.isFunction(fn)) {
-								if (args) {
-									return fn.apply(thisObj, args);
-								} else {
-									return fn.call(thisObj);
-								}
+						if (types.isFunction(fn)) {
+							if (args) {
+								return fn.apply(thisObj, args);
 							} else {
-								throw new types.ValueError("'fn' is not a function.");
+								return fn.call(thisObj);
 							}
-						} catch(ex) {
-							throw ex;
-						} finally {
-							if (secret) {
-								__Internal__.restoreInside(oldInside);
-							};
+						} else {
+							throw new types.ValueError("'fn' is not a function.");
 						}
-					//} else {
-					//	return __Internal__.oldInvoke(obj, fn, args, secret, thisObj);
-					//}
+					} catch(ex) {
+						throw ex;
+					} finally {
+						if (oldInside) {
+							__Internal__.restoreInside(oldInside);
+						};
+					}
 				}
 			};
 
@@ -1111,12 +1114,10 @@ exports.add = function add(DD_MODULES) {
 			_shared.getAttribute = function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const direct = types.get(options, 'direct', !secret && (!needsInside || !__Internal__.isInside(obj)));
+				const defDirect = types.get(options, 'direct', null);
+				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
 				if (!direct && needsInside) {
-					const oldInside = secret && __Internal__.preserveInside();
-					if (secret) {
-						__Internal__.setInside(obj, secret);
-					};
+					const oldInside = __Internal__.setInside(obj, secret, true);
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						if (types.hasIn(storage, attr)) {
@@ -1127,12 +1128,13 @@ exports.add = function add(DD_MODULES) {
 					} catch(ex) {
 						throw ex;
 					} finally {
-						if (secret) {
+						if (oldInside) {
 							__Internal__.restoreInside(oldInside);
 						};
 					}
 				} else {
-					return __Internal__.oldGetAttribute(obj, attr, options, secret);
+					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
+					return __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
 				}
 			};
 				
@@ -1140,12 +1142,10 @@ exports.add = function add(DD_MODULES) {
 			_shared.getAttributes = function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const direct = types.get(options, 'direct', !secret && (!needsInside || !__Internal__.isInside(obj)));
+				const defDirect = types.get(options, 'direct', null);
+				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
 				if (!direct && needsInside) {
-					const oldInside = secret && __Internal__.preserveInside();
-					if (secret) {
-						__Internal__.setInside(obj, secret);
-					};
+					const oldInside = __Internal__.setInside(obj, secret, true);
 					try {
 						const storage = (direct ? undefined : obj[_shared.AttributesStorageSymbol]);
 						const attrsLen = attrs.length,
@@ -1164,12 +1164,13 @@ exports.add = function add(DD_MODULES) {
 					} catch(ex) {
 						throw ex;
 					} finally {
-						if (secret) {
+						if (oldInside) {
 							__Internal__.restoreInside(oldInside);
 						};
 					}
 				} else {
-					return __Internal__.oldGetAttributes(obj, attrs, options, secret);
+					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
+					return __Internal__.oldGetAttributes(obj, attrs, optsDirect, secret);
 				}
 			};
 				
@@ -1177,12 +1178,10 @@ exports.add = function add(DD_MODULES) {
 			_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const direct = types.get(options, 'direct', !secret && (!needsInside || !__Internal__.isInside(obj)));
+				const defDirect = types.get(options, 'direct', null);
+				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
 				if (!direct && needsInside) {
-					const oldInside = secret && __Internal__.preserveInside();
-					if (secret) {
-						__Internal__.setInside(obj, secret);
-					};
+					const oldInside = __Internal__.setInside(obj, secret, true);
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						if (types.hasIn(storage, attr)) {
@@ -1194,12 +1193,13 @@ exports.add = function add(DD_MODULES) {
 					} catch(ex) {
 						throw ex;
 					} finally {
-						if (secret) {
+						if (oldInside) {
 							__Internal__.restoreInside(oldInside);
 						};
 					}
 				} else {
-					return __Internal__.oldSetAttribute(obj, attr, value, options, secret);
+					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
+					return __Internal__.oldSetAttribute(obj, attr, value, optsDirect, secret);
 				}
 			};
 				
@@ -1207,12 +1207,10 @@ exports.add = function add(DD_MODULES) {
 			_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const direct = types.get(options, 'direct', !secret && (!needsInside || !__Internal__.isInside(obj)));
+				const defDirect = types.get(options, 'direct', null);
+				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
 				if (!direct && needsInside) {
-					const oldInside = secret && __Internal__.preserveInside();
-					if (secret) {
-						__Internal__.setInside(obj, secret);
-					};
+					const oldInside = __Internal__.setInside(obj, secret, true);
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						const loopKeys = function _loopKeys(keys) {
@@ -1232,12 +1230,13 @@ exports.add = function add(DD_MODULES) {
 					} catch(ex) {
 						throw ex;
 					} finally {
-						if (secret) {
+						if (oldInside) {
 							__Internal__.restoreInside(oldInside);
 						};
 					}
 				} else {
-					return __Internal__.oldSetAttributes(obj, values, options, secret);
+					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
+					return __Internal__.oldSetAttributes(obj, values, optsDirect, secret);
 				}
 			};
 
@@ -2787,8 +2786,6 @@ exports.add = function add(DD_MODULES) {
 									oldCaller = result[_shared.CurrentCallerIndexSymbol];
 									//attributes = result[_shared.AttributesSymbol];
 
-								const oldInside = __Internal__.preserveInside();
-
 								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null);
 									//hostType = types.getType(host);
 
@@ -2865,6 +2862,8 @@ exports.add = function add(DD_MODULES) {
 
 								let retVal = undefined;
 
+								const oldInside = __Internal__.setInside(this, _shared.SECRET, true);
+
 								try {
 									const values = {
 										[_shared.CurrentDispatchSymbol]: _dispatch,
@@ -2884,8 +2883,6 @@ exports.add = function add(DD_MODULES) {
 
 									caller[_shared.CalledSymbol] = false;
 										
-									__Internal__.setInside(this, _shared.SECRET);
-
 									retVal = caller.apply(this, params);
 
 //									if (!_dispatch[_shared.SuperAsyncSymbol]) {
@@ -2934,7 +2931,10 @@ exports.add = function add(DD_MODULES) {
 										};
 //									};
 
-									__Internal__.restoreInside(oldInside);
+									if (oldInside) {
+										__Internal__.restoreInside(oldInside);
+									};
+
 									caller[_shared.CalledSymbol] = oldCallerCalled;
 
 									const values = {
@@ -6334,11 +6334,10 @@ exports.add = function add(DD_MODULES) {
 								return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 							};
 
-							const oldInside = __Internal__.preserveInside();
 							const oldValues = types.getAttributes(this, ['_super', _shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], null, _shared.SECRET);
 							const oldCallerCalled = _super[_shared.CalledSymbol];
 
-							__Internal__.setInside(this, _shared.SECRET);
+							const oldInside = __Internal__.setInside(this, _shared.SECRET, true);
 
 							let retVal = undefined;
 
@@ -6394,7 +6393,10 @@ exports.add = function add(DD_MODULES) {
 										}, this);
 								};
 
-								__Internal__.restoreInside(oldInside);
+								if (oldInside) {
+									__Internal__.restoreInside(oldInside);
+								};
+
 								_super[_shared.CalledSymbol] = oldCallerCalled;
 
 								types.setAttributes(this, oldValues, null, _shared.SECRET);
@@ -6414,8 +6416,7 @@ exports.add = function add(DD_MODULES) {
 						const callers = dispatch && dispatch[_shared.CallersSymbol];
 						const caller = callers && callers[oldValues[_shared.CurrentCallerIndexSymbol] - 1];
 						const oldCallerCalled = caller && caller[_shared.CalledSymbol];
-						const oldInside = __Internal__.preserveInside();
-						__Internal__.setInside(null);
+						const oldInside = __Internal__.setInside(null, null, true);
 						try {
 							if (args) {
 								return fn.apply(null, args);
@@ -6425,7 +6426,9 @@ exports.add = function add(DD_MODULES) {
 						} catch(ex) {
 							throw ex;
 						} finally {
-							__Internal__.restoreInside(oldInside);
+							if (oldInside) {
+								__Internal__.restoreInside(oldInside);
+							};
 							if (caller) {
 								caller[_shared.CalledSymbol] = oldCallerCalled;
 							};
