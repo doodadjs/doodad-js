@@ -4366,7 +4366,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
 		if (types.isString(fn) || types.isSymbol(fn)) {
-			fn = types.getAttribute(obj, fn);
+			fn = types.getAttribute(obj, fn, {direct: true}, secret);
 		};
 		if (types.isNothing(thisObj)) {
 			thisObj = obj;
@@ -4460,10 +4460,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	_shared.getAttributes = function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
 		const attrsLen = attrs.length,
 			result = {};
+		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
 		for (let i = 0; i < attrsLen; i++) {
 			if (types.has(attrs, i)) {
 				const attr = attrs[i];
-				result[attr] = _shared.getAttribute(obj, attr, options, secret);
+				result[attr] = _shared.getAttribute(obj, attr, optsDirect, secret);
 			};
 		};
 		return result;
@@ -4596,9 +4597,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
 		const keys = tools.append(types.keys(values), types.symbols(values)),
 			keysLen = keys.length;
+		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
 		for (let i = 0; i < keysLen; i++) {
 			const key = keys[i];
-			_shared.setAttribute(obj, key, values[key], options, secret);
+			_shared.setAttribute(obj, key, values[key], optsDirect, secret);
 		};
 		return values;
 	};
@@ -5059,7 +5061,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
 			const _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
-				const oldSuper = types.getAttribute(this, '_super');
+				const oldSuper = types.getAttribute(this, '_super', {direct: true});
 				types.setAttribute(this, '_super', superFn);
 				try {
 					return fn.apply(this, args);
@@ -5172,14 +5174,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						if (types.get(attr, _shared.SuperEnabledSymbol)) {
 							code += "const createSuper = !hasKey && isFunction;" +
 									"if (createSuper) {" +
-										"const _super = base && types.getAttribute(base, key);" +
+										"const _super = base && types.getAttribute(base, key, {direct: true});" +
 										"value = __Internal__.createCaller(key, value, _super);" +
 									"};";
 						};
 					} else {
 						const createSuper = !hasKey && isFunction && types.get(attr, _shared.SuperEnabledSymbol);
 						if (createSuper) {
-							const _super = base && types.getAttribute(base, key);
+							const _super = base && types.getAttribute(base, key, {direct: true});
 							value = __Internal__.createCaller(key, value, _super);
 						};
 					};
@@ -5204,9 +5206,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					if (preApply) {
 						if (functionName) {
-							code += "types.setAttribute(target, key, value, {all: true});";
+							code += "types.setAttribute(target, key, value, {all: true, direct: true});";
 						} else {
-							types.setAttribute(target, key, value, {all: true});
+							types.setAttribute(target, key, value, {all: true, direct: true});
 						};
 					} else {
 						let enu = types.get(attr, _shared.EnumerableSymbol);
@@ -5254,6 +5256,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 													"enumerable: true," +
 													"writable: !ro," +
 													"ignoreWhenReadOnly: true," +
+													"direct: true," +
 												"});" +
 											"};";
 								} else {
@@ -5262,6 +5265,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												"enumerable: " + (enu ? 'true' : 'false') + "," +
 												"writable: !ro," +
 												"ignoreWhenReadOnly: true," +
+												"direct: true," +
 											"});";
 								};
 							} else {
@@ -5277,6 +5281,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 										enumerable: !!enu,
 										writable: !ro,
 										ignoreWhenReadOnly: true,
+										direct: true,
 									});
 								};
 							};
@@ -5319,6 +5324,121 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		};
 
 		return fn;
+	};
+
+	__Internal__._createType = function(ctx) {
+		if (ctx.base) {
+			return (
+				class extends ctx.base {
+					// <PRB> grrrr, "this" is not available before we call "super" !!!
+					constructor(/*paramarray*/...args) {
+						const constructorThis = {};
+						const constructorArgs = ctx.constructor.apply(constructorThis, args) || args;
+						let obj = super(...constructorArgs) || this;
+						ctx.tools.extend(obj, constructorThis);
+						if (ctx.types.getType(this) === ctx.type) {
+							obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
+						};
+						return obj;
+					}
+				}
+			);
+		} else {
+			return (
+				class {
+					constructor(/*paramarray*/...args) {
+						let obj = this;
+						if (ctx.types.getType(this) === ctx.type) {
+							obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
+						};
+						return obj;
+					}
+				}
+			);
+		}
+	};
+
+	__Internal__._createTypeNew  = function(ctx) {
+		return (function(args) {
+			const forType = types.isFunction(this);
+
+			if (forType) {
+				if ((this !== ctx.type) && (!types.baseof(ctx.type, this))) {
+					throw new types.Error('Wrong constructor.');
+				};
+			} else {
+				if (!types.get(ctx.type, __Internal__.symbolInitialized)) {
+					throw new types.Error("Type '~0~' is not initialized.", [types.getTypeName(ctx.type)]);
+				};
+				if (!types._instanceof(this, ctx.type)) {
+					throw new types.Error("Wrong constructor. Did you forget the 'new' operator ?");
+				};
+			};
+
+			if (!__Internal__.prototypeIsConfigurable) {
+				// <PRB> "prototype" is not configurable, so we can't set it to read-only
+				if (!forType) {
+					if (ctx.type.prototype !== ctx.proto) {
+						// Something has changed the prototype. Set it back to original and recreate the object.
+						ctx.type.prototype = ctx.proto;
+						return types.newInstance(ctx.type, args);
+					};
+				};
+			};
+
+			let obj;
+			if (types.get(this, __Internal__.symbolInitialized)) {
+				obj = this;
+			} else {
+				if (!forType) {
+					if (types.get(ctx.type, __Internal__.symbolSingleton)) {
+						throw new types.Error('Singleton object has already been created.');
+					};
+
+					types.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true, direct: true});
+				};
+
+				// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
+				types.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {direct: true});
+
+				types.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+				obj = ctx._new.apply(this, args) || this; // _new
+
+				const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
+				types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {direct: true});
+				if (isSingleton) {
+					if (!forType) {
+						types.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {direct: true});
+					};
+				} else {
+					types.setAttribute(obj, __Internal__.symbolSingleton, null, {direct: true});
+				};
+			};
+
+			if (ctx.typeProto && types.hasDefinePropertyEnabled()) {
+				if (forType) {
+					ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);
+				};
+			};
+
+			if (ctx.instanceProto && types.hasDefinePropertyEnabled()) {
+				if (!forType) {
+					ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);
+				};
+			};
+
+			if (ctx.baseIsType) {
+				ctx.base[types.NewSymbol].call(obj, args);
+			};
+
+			if (ctx.baseIsType) {
+				if ((obj !== this) && !types.get(obj, __Internal__.symbolInitialized)) {
+					types.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+				};
+			};
+
+			return obj;
+		});
 	};
 
 	__Internal__.ADD('createType', __Internal__.DD_DOC(
@@ -5405,38 +5525,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				proto: null, // will be set after type creation
 			});
 
-			const type = (function(ctx) {
-				// IMPORTANT: Always use the context (ctx), not the scope variables to prevent memory leaks.
-				if (ctx.base) {
-					return (
-						class extends ctx.base {
-							// <PRB> grrrr, "this" is not available before we call "super" !!!
-							constructor(/*paramarray*/...args) {
-								const constructorThis = {};
-								const constructorArgs = ctx.constructor.apply(constructorThis, args) || args;
-								let obj = super(...constructorArgs) || this;
-								ctx.tools.extend(obj, constructorThis);
-								if (ctx.types.getType(this) === ctx.type) {
-									obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
-								};
-								return obj;
-							}
-						}
-					);
-				} else {
-					return (
-						class {
-							constructor(/*paramarray*/...args) {
-								let obj = this;
-								if (ctx.types.getType(this) === ctx.type) {
-									obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
-								};
-								return obj;
-							}
-						}
-					);
-				}
-			})(ctx);
+			const type = __Internal__._createType(ctx);
 
 			const proto = type.prototype;
 
@@ -5454,89 +5543,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 
-				[types.NewSymbol]: (function(ctx) {
-					// IMPORTANT: Always use the context (ctx), not the scope variables to prevent memory leaks.
-					return (function(args) {
-						const forType = types.isFunction(this);
-
-						if (forType) {
-							if ((this !== ctx.type) && (!types.baseof(ctx.type, this))) {
-								throw new types.Error('Wrong constructor.');
-							};
-						} else {
-							if (!types.get(ctx.type, __Internal__.symbolInitialized)) {
-								throw new types.Error("Type '~0~' is not initialized.", [types.getTypeName(ctx.type)]);
-							};
-							if (!types._instanceof(this, ctx.type)) {
-								throw new types.Error("Wrong constructor. Did you forget the 'new' operator ?");
-							};
-						};
-
-						if (!__Internal__.prototypeIsConfigurable) {
-							// <PRB> "prototype" is not configurable, so we can't set it to read-only
-							if (!forType) {
-								if (ctx.type.prototype !== ctx.proto) {
-									// Something has changed the prototype. Set it back to original and recreate the object.
-									ctx.type.prototype = ctx.proto;
-									return types.newInstance(ctx.type, args);
-								};
-							};
-						};
-
-						let obj;
-						if (types.get(this, __Internal__.symbolInitialized)) {
-							obj = this;
-						} else {
-							if (!forType) {
-								if (types.get(ctx.type, __Internal__.symbolSingleton)) {
-									throw new types.Error('Singleton object has already been created.');
-								};
-
-								types.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});
-							};
-
-							// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-							types.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {});
-
-							types.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true});
-							obj = ctx._new.apply(this, args) || this; // _new
-
-							const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
-							types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {});
-							if (isSingleton) {
-								if (!forType) {
-									types.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {});
-								};
-							} else {
-								types.setAttribute(obj, __Internal__.symbolSingleton, null, {});
-							};
-						};
-
-						if (typeProto && types.hasDefinePropertyEnabled()) {
-							if (forType) {
-								ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);
-							};
-						};
-
-						if (instanceProto && types.hasDefinePropertyEnabled()) {
-							if (!forType) {
-								ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);
-							};
-						};
-
-						if (ctx.baseIsType) {
-							ctx.base[types.NewSymbol].call(obj, args);
-						};
-
-						if (ctx.baseIsType) {
-							if ((obj !== this) && !types.get(obj, __Internal__.symbolInitialized)) {
-								types.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true});
-							};
-						};
-
-						return obj;
-					});
-				})(ctx),
+				[types.NewSymbol]: __Internal__._createTypeNew(ctx),
 			};
 			types.setAttributes(type, typeValues, {direct: true});
 
@@ -5549,7 +5556,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 			};
-			types.setAttributes(proto, protoValues, {});
+			types.setAttributes(proto, protoValues, {direct: true});
 
 			ctx.type = type;
 			ctx.proto = proto;
@@ -5720,7 +5727,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {});
+						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -5745,12 +5752,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				trapped: false,
 
 				_new(/*paramarray*/...args) {
-					types.setAttribute(this, 'name', types.getTypeName(this));
+					types.setAttribute(this, 'name', types.getTypeName(this), {direct: true});
 				},
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {});
+						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6292,7 +6299,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 
 			if (!types.isSingleton(type)) {
-				types.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
+				types.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true, direct: true});
 			};
 				
 			return type;
@@ -6325,7 +6332,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {});
+						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6351,7 +6358,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {});
+						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6736,7 +6743,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					DD_PARENT: this,
 					DD_NAME: name,
 					DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
-				}, {});
+				}, {direct: true});
 			};
 
 			if (types.isType(obj) && !types.isInitialized(obj)) {
@@ -6749,7 +6756,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					call: obj.call,
 					bind: obj.bind,
 				};
-				types.setAttributes(obj, values, {ignoreWhenReadOnly: true});
+				types.setAttributes(obj, values, {ignoreWhenReadOnly: true, direct: true});
 			};
 
 			types.setAttribute(this, name, obj, {
@@ -6778,7 +6785,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					DD_PARENT: this,
 					DD_NAME: name,
 					DD_FULL_NAME: fullName,
-				}, {});
+				}, {direct: true});
 			};
 
 			if (!types.isErrorType(type) && !types.isInitialized(type)) {
@@ -6788,6 +6795,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			// NOTE: Will get protected when the real REGISTER will get called.
 			types.setAttribute(this, name, type, {
 				configurable: true,
+				direct: true,
 			});
 
 			__Internal__.tempRegisteredOthers.push([this, [type, args, protect]]);

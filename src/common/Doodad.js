@@ -1115,15 +1115,19 @@ exports.add = function add(DD_MODULES) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
 				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
-				if (!direct && needsInside) {
+				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
+				if (needsInside && !direct) {
 					const oldInside = __Internal__.setInside(obj, secret, true);
+					let optsDirect = null;
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						if (types.hasIn(storage, attr)) {
 							return storage[attr];
 						} else {
-							return __Internal__.oldGetAttribute(obj, attr, options, secret);
+							if (!optsDirect) {
+								optsDirect = tools.extend({}, options, {direct: true});
+							};
+							return __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
 						}
 					} catch(ex) {
 						throw ex;
@@ -1143,20 +1147,24 @@ exports.add = function add(DD_MODULES) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
 				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
-				if (!direct && needsInside) {
+				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
+				if (needsInside && !direct) {
 					const oldInside = __Internal__.setInside(obj, secret, true);
 					try {
 						const storage = (direct ? undefined : obj[_shared.AttributesStorageSymbol]);
 						const attrsLen = attrs.length,
 							result = {};
+						let optsDirect = null;
 						for (let i = 0; i < attrsLen; i++) {
 							if (types.has(attrs, i)) {
 								const attr = attrs[i];
 								if (types.hasIn(storage, attr)) {
 									result[attr] = storage[attr];
 								} else {
-									result[attr] = __Internal__.oldGetAttribute(obj, attr, options, secret);
+									if (!optsDirect) {
+										optsDirect = tools.extend({}, options, {direct: true});
+									};
+									result[attr] = __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
 								};
 							};
 						};
@@ -1179,16 +1187,20 @@ exports.add = function add(DD_MODULES) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
 				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
-				if (!direct && needsInside) {
+				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
+				if (needsInside && !direct) {
 					const oldInside = __Internal__.setInside(obj, secret, true);
+					let optsDirect = null;
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						if (types.hasIn(storage, attr)) {
 							storage[attr] = value;
 							return value;
 						} else {
-							return __Internal__.oldSetAttribute(obj, attr, value, options, secret);
+							if (!optsDirect) {
+								optsDirect = tools.extend({}, options, {direct: true});
+							};
+							return __Internal__.oldSetAttribute(obj, attr, value, optsDirect, secret);
 						}
 					} catch(ex) {
 						throw ex;
@@ -1208,9 +1220,10 @@ exports.add = function add(DD_MODULES) {
 				const type = types.getType(obj);
 				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
 				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? types.isNothing(secret) && !types.isNothing(_shared.SECRET) && (!needsInside || !__Internal__.isInside(obj)) : !!defDirect);
-				if (!direct && needsInside) {
+				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
+				if (needsInside && !direct) {
 					const oldInside = __Internal__.setInside(obj, secret, true);
+					let optsDirect = null;
 					try {
 						const storage = obj[_shared.AttributesStorageSymbol];
 						const loopKeys = function _loopKeys(keys) {
@@ -1220,7 +1233,10 @@ exports.add = function add(DD_MODULES) {
 								if (types.hasIn(storage, key)) {
 									storage[key] = values[key];
 								} else {
-									__Internal__.oldSetAttribute(obj, key, values[key], options, secret);
+									if (!optsDirect) {
+										optsDirect = tools.extend({}, options, {direct: true});
+									};
+									__Internal__.oldSetAttribute(obj, key, values[key], optsDirect, secret);
 								};
 							};
 						};
@@ -1896,7 +1912,7 @@ exports.add = function add(DD_MODULES) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], null, _shared.SECRET);
+											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], {direct: false}, _shared.SECRET);
 											const dispatch = result[_shared.CurrentDispatchSymbol],
 												caller = result[_shared.CurrentCallerIndexSymbol];
 											if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Private) {
@@ -1966,7 +1982,7 @@ exports.add = function add(DD_MODULES) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], null, _shared.SECRET);
+											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], {direct: false}, _shared.SECRET);
 											const dispatch = result[_shared.CurrentDispatchSymbol],
 												caller = result[_shared.CurrentCallerIndexSymbol];
 											if (boxed[_shared.ScopeSymbol] === doodad.Scopes.Private) {

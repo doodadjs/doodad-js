@@ -3295,7 +3295,7 @@ exports.add = function add(DD_MODULES) {
 				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*paramarray*/...args) {
 					const dispatch = this[_shared.CurrentDispatchSymbol];
 						
-					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
 
 					const stack = values[_shared.StackSymbol];
 						
@@ -3314,7 +3314,7 @@ exports.add = function add(DD_MODULES) {
 						const values = {};
 						values[_shared.SortedSymbol] = true;
 						values[_shared.ClonedStackSymbol] = clonedStack;
-						types.setAttributes(dispatch, values);
+						types.setAttributes(dispatch, values, null, _shared.SECRET);
 					};
 							
 					const stackLen = clonedStack.length;
@@ -3418,7 +3418,7 @@ exports.add = function add(DD_MODULES) {
 				listenerCount: doodad.PUBLIC(function listenerCount(event) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null);
+						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
 						return (stack ? tools.reduce(stack, function(result, data) {
 							if (data[4] > 0) {
 								result++;
@@ -3432,7 +3432,7 @@ exports.add = function add(DD_MODULES) {
 				listeners: doodad.PUBLIC(function listeners(event) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null);
+						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
 						return (stack ? tools.reduce(stack, function(result, data) {
 							if (data[4] > 0) {
 								result.push(data[1]);
@@ -3465,7 +3465,7 @@ exports.add = function add(DD_MODULES) {
 				removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
 					const removeListeners = function _removeListeners(name) {
 						const eventFn = this[name];
-						const stack = types.getAttribute(eventFn, _shared.StackSymbol, null);
+						const stack = types.getAttribute(eventFn, _shared.StackSymbol, null, _shared.SECRET);
 						for (let j = 0; j < stack.length; j++) {
 							const data = stack[j];
 							if (data[4] > 0) {
@@ -3516,7 +3516,7 @@ exports.add = function add(DD_MODULES) {
 					const events = this.__RAW_EVENTS;
 					for (let i = 0; i < events.length; i++) {
 						const name = events[i];
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null);
+						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
 						if (stack && tools.some(stack, function(data) {
 							return (data[4] > 0);
 						})) {
