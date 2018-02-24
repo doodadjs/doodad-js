@@ -852,7 +852,7 @@ exports.add = function add(DD_MODULES) {
 				try {
 					const stats = nodeFsStatSync(path.toApiString());
 
-					return (type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isFolder() : true));
+					return (type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isDirectory() : true));
 
 				} catch(ex) {
 					if (ex.code === 'ENOENT') {
@@ -877,7 +877,7 @@ exports.add = function add(DD_MODULES) {
 										reject(ex);
 									};
 								} else {
-									resolve((type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isFolder() : true)));
+									resolve((type === 'file' ? stats.isFile() : (type === 'folder' ? stats.isDirectory() : true)));
 								};
 							});
 						});
@@ -1029,7 +1029,7 @@ exports.add = function add(DD_MODULES) {
 								} else if (ex.code === 'EPERM') {
 									try {
 										const stats = nodeFsStat(newPath.toApiString());
-										if (stats.isFolder()) {
+										if (stats.isDirectory()) {
 											files.rmdirSync(newPath, options);
 										} else {
 											// EPERM
@@ -1088,7 +1088,7 @@ exports.add = function add(DD_MODULES) {
 								if (err) {
 									reject(err);
 								} else {
-									resolve(stats.isFolder());
+									resolve(stats.isDirectory());
 								};
 							});
 						});
