@@ -68,7 +68,7 @@ exports.add = function add(DD_MODULES) {
 			// Options
 			//===================================
 					
-			const __options__ = tools.nullObject({
+			let __options__ = tools.nullObject({
 				logLevel: tools.LogLevels.Error,
 				unhandledRejectionsTimeout: 5000,
 				unhandledRejectionsMaxSize: 20,
@@ -88,6 +88,10 @@ exports.add = function add(DD_MODULES) {
 
 			tools.ADD('getOptions', function getOptions() {
 				return __options__;
+			});
+
+			tools.ADD('setOptions', function setOptions(options) {
+				__options__ = types.freezeObject(tools.nullObject(__options__, options));
 			});
 
 			//===================================
