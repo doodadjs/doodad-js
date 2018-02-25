@@ -3483,7 +3483,7 @@ exports.add = function add(DD_MODULES) {
 								
 								const caseSensitive = types.get(options, 'caseSensitive', false);
 
-								const thisAr = this.toArray({trim: true, domain: null}),
+								const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
 									toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
 								
 								const pathAr = [];
@@ -3516,7 +3516,7 @@ exports.add = function add(DD_MODULES) {
 									pathAr.push(thisAr[j]);
 								};
 								
-								return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true, isWindows: false}));
+								return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
 							},
 
 						toDataObject: root.DD_DOC(
