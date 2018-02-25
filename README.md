@@ -56,7 +56,9 @@ From Javascript, when the scripts are loaded, create the root namespace :
 
 ```js
     window.createRoot()
-        .then(root => ...)
+        .then((root) => {
+			// Your code there...
+		})
         .catch(err => {
             console.error(err);
         });
@@ -96,7 +98,9 @@ Linux/Unix (shell) :
 Now, in your Node.js script, create the root namespace :
 ```js
     require('@doodad-js/core').createRoot()
-        .then(root => ...)
+        .then((root) => {
+			// Your code there...
+		})
         .catch(err => {
             console.error(err);
         });
