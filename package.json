@@ -22,7 +22,8 @@
       "logLevel": 3,
       "unhandledRejectionsTimeout": 1000,
       "unhandledRejectionsMaxSize": 20,
-      "caseSensitive": null
+      "caseSensitive": null,
+      "noWatch": false
     },
     "Doodad__Tools__Config": {
       "configPath": ""

@@ -2623,7 +2623,7 @@ exports.add = function add(DD_MODULES) {
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							path: {
 								type: 'string,Url,Path',
@@ -2655,6 +2655,12 @@ exports.add = function add(DD_MODULES) {
 					if (types._instanceof(path, files.Url)) {
 						path = files.Path.parse(path);
 					};
+
+					if (tools.getOptions().noWatch) {
+						// NOTE: We parse location before "return".
+						return;
+					};
+
 					const pathStr = path.toApiString();
 							
 					let data;
