@@ -74,25 +74,26 @@ exports.add = function add(DD_MODULES) {
 				unhandledRejectionsMaxSize: 20,
 				caseSensitive: null, // null = auto-detect (not 100 % viable)
 				noWatch: false,
-			}, _options);
-
-			__options__.logLevel = types.toInteger(__options__.logLevel);
-			__options__.unhandledRejectionsTimeout = types.toInteger(__options__.unhandledRejectionsTimeout);
-			__options__.unhandledRejectionsMaxSize = types.toInteger(__options__.unhandledRejectionsMaxSize);
-			__options__.noWatch = types.toBoolean(__options__.noWatch);
-			if (!types.isNothing(__options__.caseSensitive)) {
-				__options__.caseSensitive = types.toBoolean(__options__.caseSensitive);
-			};
-
-			types.freezeObject(__options__);
+			});
 
 			tools.ADD('getOptions', function getOptions() {
 				return __options__;
 			});
 
 			tools.ADD('setOptions', function setOptions(options) {
-				__options__ = types.freezeObject(tools.nullObject(__options__, options));
+				const newOptions = tools.nullObject(__options__, options);
+				newOptions.logLevel = types.toInteger(newOptions.logLevel);
+				newOptions.unhandledRejectionsTimeout = types.toInteger(newOptions.unhandledRejectionsTimeout);
+				newOptions.unhandledRejectionsMaxSize = types.toInteger(newOptions.unhandledRejectionsMaxSize);
+				newOptions.noWatch = types.toBoolean(newOptions.noWatch);
+				if (!types.isNothing(newOptions.caseSensitive)) {
+					newOptions.caseSensitive = types.toBoolean(newOptions.caseSensitive);
+				};
+				__options__ = types.freezeObject(newOptions);
+				return __options__;
 			});
+
+			tools.setOptions(_options);
 
 			//===================================
 			// Hooks
