@@ -23,7 +23,7 @@
 "use strict";
 
 module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/_options, /*optional*/startup) {
+	createRoot: function(/*optional*/modules, /*optional*/options, /*optional*/startup) {
 		const packageDir = '@doodad-js/core/';
 		const sourceDir = packageDir + 'src/';
 
@@ -33,32 +33,35 @@ module.exports = {
 		} catch(ex) {
 		};
 		
-		const options = [config, _options];
-		
-		DD_MODULES = (DD_MODULES || {});
-		require(sourceDir + "common/Types.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_Bind.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_Generators.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_Iterators.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_HttpStatus.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_DDPromise.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_DDCancelable.js").add(DD_MODULES);
-		require(sourceDir + "common/Types_Buffers.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools_Files.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools_Config.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools_Scripts.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools_Version.js").add(DD_MODULES);
-		require(sourceDir + "common/Tools_ToSource.js").add(DD_MODULES);
-		require(sourceDir + "common/Namespaces.js").add(DD_MODULES);
-		require(sourceDir + "common/Doodad.js").add(DD_MODULES);
-		require(sourceDir + "server/Modules.js").add(DD_MODULES);
-		require(sourceDir + "server/NodeJs_Base.js").add(DD_MODULES);
-		require(sourceDir + "server/NodeJs.js").add(DD_MODULES);
-		require(sourceDir + "server/NodeJs_Platform.js").add(DD_MODULES);
+		const pkgModules = {};
+		require(sourceDir + "common/Types.js").add(pkgModules);
+		require(sourceDir + "common/Types_Bind.js").add(pkgModules);
+		require(sourceDir + "common/Types_Generators.js").add(pkgModules);
+		require(sourceDir + "common/Types_Iterators.js").add(pkgModules);
+		require(sourceDir + "common/Types_HttpStatus.js").add(pkgModules);
+		require(sourceDir + "common/Types_DDPromise.js").add(pkgModules);
+		require(sourceDir + "common/Types_DDCancelable.js").add(pkgModules);
+		require(sourceDir + "common/Types_Buffers.js").add(pkgModules);
+		require(sourceDir + "common/Tools.js").add(pkgModules);
+		require(sourceDir + "common/Tools_Files.js").add(pkgModules);
+		require(sourceDir + "common/Tools_Config.js").add(pkgModules);
+		require(sourceDir + "common/Tools_Html.js").add(pkgModules);
+		require(sourceDir + "common/Tools_Scripts.js").add(pkgModules);
+		require(sourceDir + "common/Tools_Version.js").add(pkgModules);
+		require(sourceDir + "common/Tools_ToSource.js").add(pkgModules);
+		require(sourceDir + "common/Namespaces.js").add(pkgModules);
+		require(sourceDir + "common/Doodad.js").add(pkgModules);
+		require(sourceDir + "server/Modules.js").add(pkgModules);
+		require(sourceDir + "server/NodeJs_Base.js").add(pkgModules);
+		require(sourceDir + "server/NodeJs.js").add(pkgModules);
+		require(sourceDir + "server/NodeJs_Platform.js").add(pkgModules);
+		require(sourceDir + "common/Resources.js").add(pkgModules);
 
 		const bootstrap = require(sourceDir + "common/Bootstrap.js");
 
-		return bootstrap.createRoot(DD_MODULES, options, startup);
+		return bootstrap.createRoot(pkgModules, [config, options])
+			.then(function(root) {
+				return root.Doodad.Namespaces.load(modules, options, startup);
+			});
 	},
 };

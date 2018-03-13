@@ -29,9 +29,9 @@
 	"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Types'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad.Types'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		bootstrap: true,
 			
@@ -1158,7 +1158,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

@@ -29,9 +29,9 @@
 	"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Modules'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad.Modules'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
 			'Doodad.Tools', 
@@ -279,23 +279,23 @@ exports.add = function add(DD_MODULES) {
 							});
 
 							// Get Doodad modules from JS script files.
-							let DD_MODULES = null;
+							let pkgModules = null;
 
 							if (root.getOptions().debug) {
-								DD_MODULES = global.DD_MODULES;
+								pkgModules = global.DD_MODULES;
 								//delete global.DD_MODULES;
 								global.DD_MODULES = null;
 							} else {
-								DD_MODULES = {};
+								pkgModules = {};
 								tools.forEach(files, function(file) {
 									if (file && !file.isConfig) {
-										file.exports.add(DD_MODULES);
+										file.exports.add(pkgModules);
 									};
 								});
 							};
 
 							// Load modules.
-							return namespaces.load(DD_MODULES, options)
+							return namespaces.load(pkgModules, options)
 								.catch(types.MissingDependencies, trapMissingDeps);
 						})
 						.then(function(dummy) {
@@ -311,7 +311,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

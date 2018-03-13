@@ -38,9 +38,9 @@
 //			w(1, root => root.Doodad.Tools.Files.readdirAsync('F:\\', {timeout: 60000, depth: Infinity}));
 
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Types/DDCancelable'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad.Types/DDCancelable'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		bootstrap: true,
 
@@ -228,7 +228,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

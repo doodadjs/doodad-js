@@ -43,7 +43,7 @@ export function createRoot(/*optional*/modules, /*optional*/options, /*optional*
 		return (val === "true") || !!(+val);
 	};
 
-	modules = (modules || {});
+	const pkgModules = {};
 
 	const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 		env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
@@ -84,9 +84,12 @@ export function createRoot(/*optional*/modules, /*optional*/options, /*optional*
 
 	//! FOR_EACH(VAR("modules"), "mod", "index")
 		//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-			/*! INJECT("module" + VAR("index")) */.add(modules);
+			/*! INJECT("module" + VAR("index")) */.add(pkgModules);
 		//! END_IF()
 	//! END_FOR()
 
-	return bootstrap.createRoot(modules, [config, options], startup);
+	return bootstrap.createRoot(pkgModules, [config, options])
+		.then(function(root) {
+			return root.Doodad.Namespaces.load(modules, options, startup);
+		});
 };

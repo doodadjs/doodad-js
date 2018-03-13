@@ -47,6 +47,12 @@
       "browserify": true
     },
     {
+      "src": "common/Resources.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
       "src": "common/Tools.js",
       "client": true,
       "server": true,
@@ -60,6 +66,12 @@
     },
     {
       "src": "common/Tools_Config.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools_Html.js",
       "client": true,
       "server": true,
       "browserify": true
@@ -289,6 +301,16 @@
       "server": true,
       "browserify": true,
       "test": true
+    }
+  ],
+  "resources": [
+    {
+      "name": "Doodad.Resources/Common",
+      "namespace": "Doodad.Resources",
+      "src": "common/res",
+      "client": true,
+      "server": true,
+      "browserify": true
     }
   ],
   "tasks": {

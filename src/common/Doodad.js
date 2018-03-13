@@ -39,9 +39,9 @@
 //     Read-only (or don't touch warning) Attributes, and Special Functions : All upper case and words separated with an underscore (_). ex: READ_ONLY_ATTRIBUTE
 //     Non-instance (static) Type Attributes : Preceded by a dollar sign ("$").
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['Extenders', 'Interfaces', 'MixIns', 'Exceptions'],
 		dependencies: [
@@ -8947,7 +8947,7 @@ exports.add = function add(DD_MODULES) {
 			types.preventExtensions(__Internal__[_shared.TargetSymbol]);
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

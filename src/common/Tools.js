@@ -29,9 +29,9 @@
 	"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Tools'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad.Tools'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
 			'Doodad.Types',
@@ -1619,117 +1619,6 @@ exports.add = function add(DD_MODULES) {
 
 				
 			//===================================
-			// Escape functions
-			//===================================
-					
-			tools.ADD('escape', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "Text to escape",
-								},
-								reserved: {
-									type: 'string',
-									optional: false,
-									description: "Reserved characters to substitute",
-								},
-								substitutions: {
-									type: 'arrayof(string)',
-									optional: false,
-									description: "Substitutions of the reserved characters in their string position order",
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string by replacing reserved characters with their substitution.",
-				}
-				//! END_REPLACE()
-				, function escape(text, reserved, substitutions) {
-					if (root.DD_ASSERT) {
-						root.DD_ASSERT(types.isNothing(text) || types.isString(text), "Invalid text.");
-						root.DD_ASSERT(types.isNothing(reserved) || types.isString(reserved), "Invalid reserved characters string.");
-						root.DD_ASSERT(types.isNothing(substitutions) || types.isArray(substitutions), "Invalid reserved characters string.");
-						if (reserved) {
-							root.DD_ASSERT(substitutions && (reserved.length === substitutions.length), "Reserved characters substitutions length mismatch.");
-						};
-					};
-					if (!text || !reserved) {
-						return text;
-					};
-					const textLen = text.length,
-						reservedLen = reserved.length;
-					let result = '',
-						lastPos = 0;
-					for (let i = 0; i < textLen; i++) {
-						const chr = text[i];
-						for (let j = 0; j < reservedLen; j++) {
-							if (chr === reserved[j]) {
-								result += text.slice(lastPos, i) + substitutions[j];
-								lastPos = (i + 1);
-								break;
-							};
-						};
-					};
-					if (lastPos === 0) {
-						result = text;
-					} else {
-						result += text.slice(lastPos);
-					};
-					return result;
-				}));
-
-			// See "http://stackoverflow.com/questions/2083754/why-shouldnt-apos-be-used-to-escape-single-quotes"
-			__Internal__.htmlReserved = "<>\"'&";
-			__Internal__.htmlReservedSubstitutions = ['&lt;', '&gt;', '&quot;', '&#39;', '&amp;'];
-
-			tools.ADD('escapeHtml', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "String to escape",
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string to HTML.",
-				}
-				//! END_REPLACE()
-				, function escapeHtml(text) {
-					return tools.escape(text, __Internal__.htmlReserved, __Internal__.htmlReservedSubstitutions);
-				}));
-
-			__Internal__.regExpReserved = "\\^$*+?()|{}[].";
-			__Internal__.regExpReservedSubstitutions = ['\\\\', '\\^', '\\$', '\\*', '\\+', '\\?', '\\(', '\\)', '\\|', '\\{', '\\}', '\\[', '\\]', '\\.'];
-
-			tools.ADD('escapeRegExp', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "String to escape",
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string to a regular expression.",
-				}
-				//! END_REPLACE()
-				, (_shared.Natives.regExpEscape || function escapeRegExp(text) {
-					return tools.escape(text, __Internal__.regExpReserved, __Internal__.regExpReservedSubstitutions);
-				})));
-				
-			//===================================
 			// Compare functions
 			//===================================
 					
@@ -2868,9 +2757,149 @@ exports.add = function add(DD_MODULES) {
 					return _shared.Natives.mathFloor((+number) * MUL) / MUL;
 				}));
 
+
+			//===================================
+			// Escape functions
+			//===================================
+					
+            tools.ADD('prepareMappingForEscape', function(mapping, /*optional*/prefix, /*optional*/suffix) {
+                const reserved = types.keys(mapping);
+
+                reserved.sort(function(v1, v2) {
+                    if (v1.length > v2.length) {
+                        return -1;
+                    } else if (v1.length < v2.length) {
+                        return 1;
+                    } else {
+                        return 0;
+                    };
+                });
+
+                types.freezeObject(reserved);
+
+                const substitutions = tools.map(reserved, function(key) {
+                    return (prefix || '') + mapping[key] + (suffix || '');
+				});
+
+				types.freezeObject(substitutions);
+
+				return types.freezeObject([reserved, substitutions]);
+            });
+
+			tools.ADD('escape', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								text: {
+									type: 'string',
+									optional: false,
+									description: "Text to escape",
+								},
+								reserved: {
+									type: 'arrayof(string)',
+									optional: false,
+									description: "Reserved characters to substitute, sorted by their length descendent.",
+								},
+								substitutions: {
+									type: 'arrayof(string)',
+									optional: false,
+									description: "Substitutions of the reserved characters in their string position order",
+								},
+							},
+							returns: 'string',
+							description: "Escapes a string by replacing reserved characters with their substitution.",
+				}
+				//! END_REPLACE()
+				, function escape(text, reserved, substitutions) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isNothing(text) || types.isString(text), "Invalid text.");
+						root.DD_ASSERT(types.isNothing(reserved) || types.isArray(reserved), "Invalid reserved characters array.");
+						root.DD_ASSERT(types.isNothing(substitutions) || types.isArray(substitutions), "Invalid reserved characters array.");
+						if (reserved) {
+							root.DD_ASSERT(substitutions && (reserved.length === substitutions.length), "Reserved characters substitutions length mismatch.");
+						};
+					};
+					if (!text || !reserved) {
+						return text;
+					};
+					const textLen = text.length,
+						reservedLen = reserved.length,
+						maxInt = root.DD_ASSERT && types.getSafeIntegerBounds().max;
+					let result = '',
+						lastPos = 0;
+					for (let i = 0; i < textLen; ) {
+						let found = false,
+							prevResLen = maxInt;
+						for (let j = 0; j < reservedLen; j++) {
+							const reservedChr = reserved[j],
+								reservedChrLen = reservedChr.length;
+							if (root.DD_ASSERT) {
+								root.DD_ASSERT(reservedChrLen <= prevResLen, "Reserved characters must be sorted by length, in descending order.");
+								prevResLen = reservedChrLen;
+							};
+							const chr = text.slice(i, i + reservedChrLen);
+							if (chr === reservedChr) {
+								result += text.slice(lastPos, i) + substitutions[j];
+								i += reservedChrLen;
+								lastPos = i;
+								found = true;
+								break;
+							}
+						};
+						if (!found) {
+							i++;
+						};
+					};
+					if (lastPos === 0) {
+						result = text;
+					} else {
+						result += text.slice(lastPos);
+					};
+					return result;
+				}));
+
+				
+			__Internal__.regExMapping = tools.prepareMappingForEscape(tools.nullObject({
+				'\\': '\\\\',
+				'^': '\\^',
+				'$': '\\$',
+				'*': '\\*',
+				'+': '\\+',
+				'?': '\\?',
+				'(': '\\(',
+				')': '\\)',
+				'|': '\\|',
+				'{': '\\{',
+				'}': '\\}',
+				'[': '\\[',
+				']': '\\]', 
+				'.': '\\.',
+			}));
+
+			tools.ADD('escapeRegExp', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								text: {
+									type: 'string',
+									optional: false,
+									description: "String to escape",
+								},
+							},
+							returns: 'string',
+							description: "Escapes a string to a regular expression.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.regExpEscape || function escapeRegExp(text) {
+					return tools.escape(text, __Internal__.regExMapping[0], __Internal__.regExMapping[1]);
+				})));
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

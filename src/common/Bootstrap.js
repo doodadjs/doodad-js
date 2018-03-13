@@ -1,11 +1,15 @@
-/* global DD_OPTIONS, DD_MODULES, DD_BOOTSTRAP, process */
+/* global process, DD_BOOTSTRAP */
 
 //! IF_SET("serverSide")
 	//! IF_SET("mjs")
 		//! INJECT("const exports = {};")
 	//! END_IF()
+		
+	//! INJECT("const DD_MODULES = null, DD_OPTIONS = null;")
+	
 //! ELSE()
 	//! INJECT("const global = window, exports = {};")
+	
 //! END_IF()
 
 
@@ -35,7 +39,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 //! IF(IS_SET("serverSide") && IS_SET("mjs"))
@@ -506,12 +510,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//===================================
 
 		if (global.Array.isArray(_options)) {
-			// eslint-disable-next-line comma-spacing, array-bracket-spacing
-			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {} /*! IF_UNSET("serverSide") */ , ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined) /*! END_IF() */ ], _options));
-		//! IF_UNSET("serverSide")
-		} else {
-			_options = tools.depthExtend(__Internal__.OPTIONS_DEPTH, {}, ((typeof DD_OPTIONS === 'object') && (DD_OPTIONS !== null) ? DD_OPTIONS : undefined), _options);
-		//! END_IF()
+			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {}], _options));
 		};
 
 		tools.depthExtend(__Internal__.OPTIONS_DEPTH, __options__, _options.startup);
@@ -6006,7 +6005,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('HttpError')), true) */ null /*! END_REPLACE() */,
 
 				[types.ConstructorSymbol](code, /*optional*/message, /*optional*/params) {
-					this.code = code;
+					this.code = types.toInteger(code);
 					return [message || 'HTTP error. The status code is : ~0~.', params || [code]];
 				},
 			})));
@@ -6938,13 +6937,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	types.preventExtensions(__Internal__[_shared.TargetSymbol]);
 
-
-	//! IF_UNSET("serverSide")
-		if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {
-			modules = tools.extend({}, DD_MODULES, modules);
-		};
-	//! END_IF()
-
 	const root = types.INIT(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -7059,9 +7051,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					modules['@doodad-js/core'] = {
 						type: 'Package',
 						version: MODULE_VERSION,
-						bootstrap: true,
 					};
-						
+					
 					const names = types.keys(modules),
 						inits = tools.nullObject();
 
@@ -7168,7 +7159,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 								const opts = options[name];
 								const create = types.get(spec, 'create');
-								inits[name] = create && create(root, opts, _shared);
+								if (create) {
+									if (!types.isFunction(create)) {
+										throw new types.NotSupported();
+									};
+									inits[name] = create(root, opts, _shared);
+								};
 
 								if (!namespaces && (name === 'Doodad.Namespaces')) {
 									namespaces = nsObj;
@@ -7192,7 +7188,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						const opts = options[baseName];
 						entry.objectCreated = true;
 						entry.objectInit = inits[name];
-						entry.objectInit && entry.objectInit(opts);
+						if (entry.objectInit) {
+							const retVal = entry.objectInit(opts);
+							if (!types.isNothing(retVal)) {
+								throw new types.NotSupported();
+							};
+						};
 						entry.init(opts);
 						namespaces.add(name, entry, nsOptions);
 						//delete nsObjs[name];

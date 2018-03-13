@@ -48,9 +48,9 @@ const nodeModuleModule = nodeModule.Module,
 	ampAddPath = amp.addPath;
 
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Modules'] = {
+exports.add = function add(mods) {
+	mods = (mods || {});
+	mods['Doodad.Modules'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
 			'Doodad.Tools',
@@ -311,7 +311,7 @@ exports.add = function add(DD_MODULES) {
 							}
 						};
 
-					const DD_MODULES = {};
+					const pkgModules = {};
 
 					let promise = Promise.resolve();
 
@@ -333,7 +333,7 @@ exports.add = function add(DD_MODULES) {
 										.then(function(mods) {
 											tools.forEach(mods, function(mod) {
 												if (types.has(mod, 'add')) {
-													mod.add(DD_MODULES);
+													mod.add(pkgModules);
 												};
 											});
 										});
@@ -359,13 +359,13 @@ exports.add = function add(DD_MODULES) {
 										if (!types.isFunction(file.exports.default.add)) {
 											__Internal__.throwFileError(file, new types.Error("Missing 'add' export function."));
 										};
-										file.exports.default.add(DD_MODULES);
+										file.exports.default.add(pkgModules);
 									};
 								});
 							};
 						})
 						.then(function(dummy) {
-							return namespaces.load(DD_MODULES, options)
+							return namespaces.load(pkgModules, options)
 								.catch(types.MissingDependencies, trapMissingDeps);
 						})
 						.then(function(dummy) {
@@ -385,9 +385,9 @@ exports.add = function add(DD_MODULES) {
 							makeManifest = files[1].exports.default;
 							
 						return {
-							add: function(DD_MODULES) {
-								DD_MODULES = DD_MODULES || {};
-								DD_MODULES[manifest.name] = {
+							add: function(mods) {
+								mods = mods || {};
+								mods[manifest.name] = {
 									type: makeManifest.type || 'Package',
 									version: makeManifest.version + (makeManifest.stage || 'd'),
 									dependencies: tools.filter(makeManifest.dependencies || [], function(dep) {
@@ -430,7 +430,7 @@ exports.add = function add(DD_MODULES) {
 											});
 									},
 								};
-								return DD_MODULES;
+								return mods;
 							},
 						};
 					});
@@ -450,7 +450,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return mods;
 };
 
 //! END_MODULE()

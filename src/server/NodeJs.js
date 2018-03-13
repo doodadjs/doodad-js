@@ -83,9 +83,9 @@ const nodeOsTmpdir = nodeOs.tmpdir,
 	nodeConsoleConsole = nodeConsole.Console;
 
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.NodeJs/root'] = {
+exports.add = function add(mods) {
+	mods = (mods || {});
+	mods['Doodad.NodeJs/root'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['MixIns', 'Interfaces'],
 		dependencies: [
@@ -1926,7 +1926,7 @@ exports.add = function add(DD_MODULES) {
 					relative = types.get(options, 'relative', false),
 					followLinks = types.get(options, 'followLinks', true),
 					type = types.get(options, 'type', null),
-					skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false);
+					skipDenied = types.get(options, 'skipDenied', false);
 
 				let proceed;
 
@@ -1940,7 +1940,7 @@ exports.add = function add(DD_MODULES) {
 							stats = nodeFsLstatSync(path.toApiString());
 						};
 					} catch(ex) {
-						if (!skipOnDeniedPermission || (ex.code !== 'EPERM')) {
+						if (!skipDenied || (ex.code !== 'EPERM')) {
 							throw ex;
 						};
 					};
@@ -1975,7 +1975,7 @@ exports.add = function add(DD_MODULES) {
 						relative = types.get(options, 'relative', false),
 						followLinks = types.get(options, 'followLinks', true),
 						type = types.get(options, 'type', null),
-						skipOnDeniedPermission = types.get(options, 'skipOnDeniedPermission', false),
+						skipDenied = types.get(options, 'skipDenied', false),
 						timeout = types.get(options, 'timeout', null),
 						hasTimeout = types.isInteger(timeout) && (timeout > 0),
 						cancelable = types.get(options, 'cancelable', false);
@@ -2026,7 +2026,7 @@ exports.add = function add(DD_MODULES) {
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function thenAddAndProceed(err, stats) {
 									if (err) {
-										if (!skipOnDeniedPermission || (err.code !== 'EPERM')) {
+										if (!skipDenied || (err.code !== 'EPERM')) {
 											throw err;
 										};
 									} else {
@@ -3643,7 +3643,7 @@ exports.add = function add(DD_MODULES) {
 		},
 	};
 
-	return DD_MODULES;
+	return mods;
 };
 
 //! END_MODULE()

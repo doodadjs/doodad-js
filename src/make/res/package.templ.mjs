@@ -23,42 +23,48 @@
 //! END_REPLACE()
 
 export function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
-	const DD_OPTIONS = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
 	const DD_MODULES = {};
+	const DD_EXPORTS = undefined;
 	const DD_BOOTSTRAP = {};
+
+	const config = /*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */;
 
 	(function() {
 		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
 
-		if (!has(DD_OPTIONS, 'startup')) {
-			DD_OPTIONS.startup = {};
-		};
-		if (!has(DD_OPTIONS, 'Doodad.Tools')) {
-			DD_OPTIONS['Doodad.Tools'] = {};
+		if (!has(config, 'startup')) {
+			config.startup = {};
 		};
 
 		// Can't load modules from source on the client
-		DD_OPTIONS.startup.fromSource = false;
+		config.startup.fromSource = false;
 
 		//! IF_SET('debug')
+			if (!has(config, 'Doodad.Tools')) {
+				config['Doodad.Tools'] = {};
+			};
+			
 			// Debug mode
-			DD_OPTIONS.startup.debug = true;
+			config.startup.debug = true;
 
 			// Enable some validations on debug
-			DD_OPTIONS.startup.enableAsserts = true;
-			DD_OPTIONS.startup.enableProperties = true;
+			config.startup.enableAsserts = true;
+			config.startup.enableProperties = true;
 
 			// Ease debug
-			DD_OPTIONS.startup.enableSymbols = false;
+			config.startup.enableSymbols = false;
 
 			// Enable all log levels
-			DD_OPTIONS['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
+			config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
 		//! END_IF()
 	})();
 
 	//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-	return DD_BOOTSTRAP.createRoot(modules, options, startup)
+	return DD_BOOTSTRAP.createRoot(DD_MODULES, [config, options])
+		.then(function(root) {
+			return root.Doodad.Namespaces.load(modules, options, startup);
+		});
 };

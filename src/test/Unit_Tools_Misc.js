@@ -26,12 +26,12 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Test.Tools.Misc'] = {
+exports.add = function add(mods) {
+	mods = (mods || {});
+	mods['Doodad.Test.Tools.Misc'] = {
 		type: 'TestModule',
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: ['Doodad.Test.Tools'],
@@ -58,12 +58,22 @@ exports.add = function add(DD_MODULES) {
 				let command;
 
 					
-				command = test.prepareCommand(tools.escapeHtml, "Doodad.Tools.escapeHtml");
+				command = test.prepareCommand(function(text) {return tools.escapeHtml(text, false)}, "Doodad.Tools.escapeHtml (standard)");
 					
 				command.run(undefined,                                       {repetitions: 100}  /**/);
 				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
 				command.run("",                                              {repetitions: 100}, /**/ "");
 				command.run("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
+
+				command.end();
+					
+				
+				command = test.prepareCommand(function(text) {return tools.escapeHtml(text, true)}, "Doodad.Tools.escapeHtml (full)");
+					
+				command.run(undefined,                                       {repetitions: 100}  /**/);
+				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+				command.run("",                                              {repetitions: 100}, /**/ "");
+				command.run("&lt;script onload&equals;&quot;go&lpar;&apos;&amp;&num;20&apos;&rpar;&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
 
 				command.end();
 					
@@ -96,7 +106,7 @@ exports.add = function add(DD_MODULES) {
 			},
 		},
 	};
-	return DD_MODULES;
+	return mods;
 };
 
 //! END_MODULE()

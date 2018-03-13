@@ -25,15 +25,12 @@
 "use strict";
 
 module.exports = {
-	createRoot: function(/*optional*/DD_MODULES, /*optional*/options, /*optional*/startup) {
+	createRoot: function(/*optional*/modules, /*optional*/options, /*optional*/startup) {
 		const has = function(obj, key) {
 			return obj && Object.prototype.hasOwnProperty.call(obj, key);
 		};
 		const get = function(obj, key, /*optional*/_default) {
 			return (obj && has(obj, key) ? obj[key] : _default);
-		};
-		const bool = function(val) {
-			return (val === "true") || !!(+val);
 		};
 
 		let config = null;
@@ -46,8 +43,6 @@ module.exports = {
 			config = {};
 		};
 		
-		DD_MODULES = (DD_MODULES || {});
-
 		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 
@@ -84,14 +79,23 @@ module.exports = {
 			config['Doodad.Tools'].logLevel = 0; // Doodad.Tools.LogLevels.Debug
 		};
 
+		const pkgModules = {};
+
+		//! FOR_EACH(VAR("resources"), "res")
+			require(/*! INJECT(TO_SOURCE(VAR("res.source"))) */).add(pkgModules);
+		//! END_FOR()
+
 		//! FOR_EACH(VAR("modules"), "mod")
 			//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+				require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(pkgModules);
 			//! END_IF()
 		//! END_FOR()
 
 		const bootstrap = require(/*! INJECT(TO_SOURCE(IS_SET("debug") ? PATH("%SOURCEDIR%/common/Bootstrap.js").relative(PATH("%BROWSERIFYDIR%")).toString({os: 'linux'}) : "./common/Bootstrap.min.js")) */);
 
-		return bootstrap.createRoot(DD_MODULES, [config, options], startup);
+		return bootstrap.createRoot(pkgModules, [config, options])
+			.then(function(root) {
+				return root.Doodad.Namespaces.load(modules, options, startup);
+			});
 	},
 };

@@ -29,9 +29,9 @@
 	"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Namespaces'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Doodad.Namespaces'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['Entries'],
 		dependencies: [
@@ -51,7 +51,7 @@ exports.add = function add(DD_MODULES) {
 				tools = doodad.Tools,
 				namespaces = doodad.Namespaces,
 				entries = namespaces.Entries;
-					
+			
 			//===================================
 			// Internals
 			//===================================
@@ -133,7 +133,7 @@ exports.add = function add(DD_MODULES) {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								name: {
 									type: 'string',
@@ -147,12 +147,12 @@ exports.add = function add(DD_MODULES) {
 								},
 							},
 							returns: 'Namespace',
-							description: "Returns the namespace object of the specified namespace from the registry, accroding to the specified entry type if present.",
+							description: "Returns the namespace object of the specified namespace from the registry, according to the specified entry type if present.",
 					}
 					//! END_REPLACE()
 			, function get(name, /*optional*/type) {
 				const entry = __Internal__.DD_REGISTRY.get(name, type);
-				if (!entry || !entry.objectInitialized) {
+				if (!entry || !entry.objectCreated) {
 					return null;
 				};
 				return entry.namespace;
@@ -763,7 +763,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isArray(options)) {
 						options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 					};
-
+			
 					if ((types.get(types.get(options, 'startup'), 'secret') || null) !== _shared.SECRET) {
 						throw new types.AccessDenied("Secrets mismatch.");
 					};
@@ -1382,7 +1382,7 @@ exports.add = function add(DD_MODULES) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: {
 										options: {
 											type: 'object',
@@ -1395,6 +1395,8 @@ exports.add = function add(DD_MODULES) {
 							}
 							//! END_REPLACE()
 					, function init(/*optional*/options) {
+						this.objectCreated = true;
+						this.objectCreating = false;
 						this.objectInitialized = true;
 						this.objectInitializing = false;
 					}),
@@ -1654,7 +1656,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

@@ -29,9 +29,9 @@
 	"use strict";
 //! END_IF()
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Doodad.Test.Types.Array'] = {
+exports.add = function add(mods) {
+	mods = (mods || {});
+	mods['Doodad.Test.Types.Array'] = {
 		type: 'TestModule',
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: ['Doodad.Test.Types'],
@@ -328,7 +328,7 @@ exports.add = function add(DD_MODULES) {
 			},
 		},
 	};
-	return DD_MODULES;
+	return mods;
 };
 
 //! END_MODULE()
