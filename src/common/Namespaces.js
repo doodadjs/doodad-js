@@ -926,10 +926,11 @@ exports.add = function add(modules) {
 							const entry = toInit.shift(); 
 
 							if (!entry.objectCreated && !entry.objectCreating && entry.objectCreate) {
+								if (entry.spec.autoInit !== false) {
+									toInit.push(entry);
+								};
 								promise = promise.then(entry.objectCreate);
-							};
-
-							if (!entry.objectInitialized && !entry.objectInitializing && (entry.spec.autoInit !== false)) {
+							} else if (!entry.objectInitialized && !entry.objectInitializing && (entry.spec.autoInit !== false)) {
 								promise = promise.then(function(dummy) {
 									return __Internal__.initNamespace(entry, options);
 								});
