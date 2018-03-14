@@ -59,6 +59,7 @@ exports.add = function add(modules) {
 			const __Internal__ = {
 				waitCounter: 0,
 				waiting: false,
+				pendingProtection: new types.Set(),
 			};
 
 			//===================================
@@ -254,7 +255,7 @@ exports.add = function add(modules) {
 				return Promise.try(function() {
 					const globalOptions = types.get(options, 'global');
 
-					const getEntryType = function(spec) {
+					const getEntryType = function _getEntryType(spec, /*optional*/_default) {
 						const entryType = types.get(spec, 'type');
 						if (entryType) {
 							if (types.isString(entryType)) {
@@ -271,8 +272,8 @@ exports.add = function add(modules) {
 								return entryType;
 							}
 						} else {
-							//spec.type = entries.Module;
-							return entries.Module;
+							//spec.type = _default || entries.Module;
+							return _default || entries.Module;
 						}
 					};
 
@@ -306,15 +307,22 @@ exports.add = function add(modules) {
 							if (!deps) {
 								spec.dependencies = deps = [];
 							};
-							deps.push({
-								name: baseName,
-								autoLoad: false,
-								optional: true,
-							});
+							if (tools.findItem(deps, function(dep) {
+								if (types.isString(dep)) {
+									return (dep === baseName);
+								};
+								return (dep.name === baseName);
+							}) === null) {
+								deps.push({
+									name: baseName,
+									autoLoad: false,
+									optional: true,
+								});
+							};
 						};
 						const missingDeps = [];
 						if (deps) {
-							const entryType = getEntryType(spec);
+							const entryType = getEntryType(spec, entries.Module);
 							const defaultAutoLoad = types.isLike(entryType, entries.Package) || types.isLike(entryType, entries.Application);
 							for (let i = 0; i < deps.length; i++) {
 								if (types.has(deps, i)) {
@@ -324,7 +332,7 @@ exports.add = function add(modules) {
 										path = null,
 										autoLoad = defaultAutoLoad;
 									if (!types.isString(dep)) {
-										const depType = getEntryType(dep);
+										const depType = getEntryType(dep, entryType);
 										path = types.get(dep, 'path', null);
 										optional = types.toBoolean(types.get(dep, 'optional', false));
 										version = types.get(dep, 'version', null);
@@ -342,6 +350,7 @@ exports.add = function add(modules) {
 									if (!depEntry || !depEntry.objectCreated || versionMismatch) {
 										if (!optional || !ignoreOptionals) {
 											const missingDep = {
+												name: dep,
 												module: __Internal__.getBaseName(dep),
 												version: version,
 												optional: optional,
@@ -391,7 +400,7 @@ exports.add = function add(modules) {
 					const createMain = function _createMain(shortNames, spec, parent) {
 						const baseName = __Internal__.getBaseName(spec.name);
 
-						const entryType = getEntryType(spec);
+						const entryType = getEntryType(spec, entries.Module);
 
 						let entry = __Internal__.DD_REGISTRY.get(spec.name);
 						if (entry) {
@@ -496,73 +505,69 @@ exports.add = function add(modules) {
 					};
 					
 					const createObject = function _createObject(entry) {
-						if (entry) {
-							const baseName = __Internal__.getBaseName(entry.spec.name);
-							let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
-							if (globalOptions) {
-								opts = tools.extend({}, globalOptions, opts);
+						const baseName = __Internal__.getBaseName(entry.spec.name);
+						let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
+						if (globalOptions) {
+							opts = tools.extend({}, globalOptions, opts);
+						};
+						if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
+							let retval = null;
+							entry.objectCreating = true;
+							const create = types.get(entry.spec, 'create');
+							if (create) {
+								retval = create(root, opts, _shared);
 							};
-							if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
-								let retval = null;
-								entry.objectCreating = true;
-								const create = types.get(entry.spec, 'create');
-								if (create) {
-									retval = create(root, opts, _shared);
-								};
-								if (types.isNothing(retval)) {
-									entry.objectCreating = false;
-									entry.objectCreated = true;
-								} else if (types.isPromise(retval)) {
-									__Internal__.incrementWait();
-									return retval
-										.nodeify(function(err, result) {
-											__Internal__.decrementWait();
-											if (err) {
-												throw err;
-											} else {
-												entry.objectCreating = false;
-												entry.objectCreated = true;
-												if (!types.isNothing(result)) {
-													if (types.isFunction(result)) {
-														entry.objectInit = result;
-													} else {
-														throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
-													};
+							if (types.isNothing(retval)) {
+								entry.objectCreating = false;
+								entry.objectCreated = true;
+							} else if (types.isPromise(retval)) {
+								__Internal__.incrementWait();
+								return retval
+									.nodeify(function(err, result) {
+										__Internal__.decrementWait();
+										if (err) {
+											throw err;
+										} else {
+											entry.objectCreating = false;
+											entry.objectCreated = true;
+											if (!types.isNothing(result)) {
+												if (types.isFunction(result)) {
+													entry.objectInit = result;
+												} else {
+													throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 												};
-												return entry;
-											}
-										});
-								} else if (types.isFunction(retval)) {
-									entry.objectCreating = false;
-									entry.objectCreated = true;
-									entry.objectInit = retval;
-								} else {
-									throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
-								};
+											};
+											return entry;
+										}
+									});
+							} else if (types.isFunction(retval)) {
+								entry.objectCreating = false;
+								entry.objectCreated = true;
+								entry.objectInit = retval;
+							} else {
+								throw new types.Error("'create' of '~0~' has returned an invalid value.", [entry.spec.name]);
 							};
 						};
 						return entry;
 					};
 					
 					const createNamespaces = function _createNamespaces(entry) {
-						if (entry) {
-							const specNamespaces = types.get(entry.spec, 'namespaces');
-							if (specNamespaces) {
-								const baseName = __Internal__.getBaseName(entry.spec.name);
-								const specNamespacesLen = specNamespaces.length;
-								for (let i = 0; i < specNamespacesLen; i++) {
-									if (types.has(specNamespaces, i)) {
-										const name = specNamespaces[i],
-											shortNames = name.split('.');
-										const parent = createParents(shortNames, baseName, entry.namespace);
-										const newSpec = {
-											name: baseName + '.' + name,
-											type: entries.Namespace,
-											namespaceType: types.Namespace,
-										};
-										const main = createMain(shortNames, newSpec, parent);
-										createObject(main);
+						const specNamespaces = types.get(entry.spec, 'namespaces');
+						if (specNamespaces) {
+							const baseName = __Internal__.getBaseName(entry.spec.name);
+							const specNamespacesLen = specNamespaces.length;
+							for (let i = 0; i < specNamespacesLen; i++) {
+								if (types.has(specNamespaces, i)) {
+									const name = specNamespaces[i],
+										shortNames = name.split('.');
+									const parent = createParents(shortNames, baseName, entry.namespace);
+									const newSpec = {
+										name: baseName + '.' + name,
+										type: entries.Namespace,
+										namespaceType: types.Namespace,
 									};
+									const main = createMain(shortNames, newSpec, parent);
+									createObject(main);
 								};
 							};
 						};
@@ -570,18 +575,16 @@ exports.add = function add(modules) {
 					};
 
 					const terminate = function _terminate(entry) {
-						if (entry) {
-							namespaces.dispatchEvent(new types.CustomEvent('create', 
-								{
-									detail: {
-										entry: entry,
-										options: options,
-									},
-								}
-							));
-							
-							tools.log(tools.LogLevels.Debug, "Entry '~0~' created.", [entry.spec.name]);
-						};
+						namespaces.dispatchEvent(new types.CustomEvent('create', 
+							{
+								detail: {
+									entry: entry,
+									options: options,
+								},
+							}
+						));
+						
+						tools.log(tools.LogLevels.Debug, "Entry '~0~' created.", [entry.spec.name]);
 						return entry;
 					};
 					
@@ -609,8 +612,17 @@ exports.add = function add(modules) {
 					
 					return Promise.resolve(create(spec, '', root))
 						.then(createNamespaces)
-						.then(createObject)
-						.then(terminate);
+						.then(function(entry) {
+							if (!entry.objectCreated && !entry.objectCreating && !entry.objectCreate && types._instanceof(entry, entries.Application)) {
+								entry.objectCreate = function() {
+									return Promise.resolve(createObject(entry))
+										.then(terminate);
+								};
+								return entry;
+							};
+							return Promise.resolve(createObject(entry))
+								.then(terminate);
+						});
 				});
 			});
 				
@@ -641,7 +653,9 @@ exports.add = function add(modules) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function() {
-					if (entry && !entry.objectInitialized) {
+					if (entry && !entry.objectInitialized && !entry.objectInitializing) {
+						entry.objectInitializing = true;
+
 						let promise = Promise.resolve();
 						
 						const deps = types.get(entry.spec, 'dependencies');
@@ -658,7 +672,6 @@ exports.add = function add(modules) {
 									if (depEntry) {
 										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
 											if (depEntry.spec.autoInit !== false) {
-												depEntry.objectInitializing = true;
 												promise = promise
 													.then(function() {
 														return __Internal__.initNamespace(depEntry, options);
@@ -722,9 +735,9 @@ exports.add = function add(modules) {
 						return promise
 							.then(terminate);
 						
-					} else {
-						return entry;
-					}
+					};
+
+					return entry;
 				});
 			});
 				
@@ -822,12 +835,12 @@ exports.add = function add(modules) {
 									namespaces.addEventListener('error', cbErrorHandler);
 								});
 						};
-								
+						
 						// Dispatches "onready"
 						if (!__Internal__.waiting) {
 							namespaces.dispatchEvent(new types.CustomEvent('ready'));
 						};
-								
+						
 						// Returns the callback promise or nothing.
 						if (cbPromise) {
 							// NOTE: Returns "cbPromise". This allows to catch callback errors.
@@ -837,20 +850,23 @@ exports.add = function add(modules) {
 						return undefined; // "consistent-return"
 					};
 
-					const loopCreateModules = function loopCreateModules(state) {
+					const loopCreateModules = function _loopCreateModules(state) {
 						if (names.length) {
 							if (state.missings >= names.length) {
 								const entry = state.missingDeps[0];
 								if (entry.versionMismatch) {
-									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.consumer, entry.module, (entry.version || '<unspecified>')]);
+									throw new types.Error("Module '~0~' is missing dependency '~1~' version '~2~' or higher.", [entry.consumer, entry.name, (entry.version || '<unspecified>')]);
 								} else {
 									const missingDeps = tools.unique(function(dep1, dep2) {
-											return (dep1.module === dep2.module) && (dep1.path === dep2.path);
+											return (dep1.name === dep2.name) && (dep1.path === dep2.path);
 										}, state.missingDeps);
 									throw new types.MissingDependencies(missingDeps, modules);
-								}
-							} else if ((state.missings + state.optionals) >= names.length) {
+								};
+							} else if (!state.ignoreOptionals && ((state.missings + state.optionals) >= names.length)) {
 								state.ignoreOptionals = true;
+								state.missings = 0;
+								state.optionals = 0;
+								state.missingDeps = [];
 							};
 							const name = names.shift(),
 								spec = modules[name];
@@ -869,8 +885,11 @@ exports.add = function add(modules) {
 									} else {
 										state.missings = 0;
 										state.optionals = 0;
-										if (entry && (entry.spec.autoInit !== false)) {
-											state.toInit.push(entry);
+										state.missingDeps = [];
+										if (entry) {
+											if (entry.objectCreate || (entry.spec.autoInit !== false)) {
+												state.toInit.push(entry);
+											};
 										};
 									};
 									return loopCreateModules(state);
@@ -880,13 +899,37 @@ exports.add = function add(modules) {
 						}
 					};
 
-					const loopInitModules = function loopInitModules(toInit) {
+					const protectModules = function _protectModules(toInit) {
+						__Internal__.pendingProtection.forEach(function(name) {
+							__Internal__.pendingProtection.delete(name);
+							const entry = __Internal__.DD_REGISTRY.get(name);
+							if (entry) {
+								const namespace = entry.namespace;
+								if (namespace) {
+									const parent = namespace.DD_PARENT,
+										name = namespace.DD_NAME;
+									if (parent && name) {
+										if (entry.options.protect) {
+											parent.ADD(name, namespace, true);
+										};
+									};
+								};
+							};
+						});
+						return toInit;
+					};
+
+					const loopInitModules = function _loopInitModules(toInit) {
 						if (toInit.length) {
 							let promise = Promise.resolve();
 
 							const entry = toInit.shift(); 
-							if (!entry.objectInitialized && !entry.objectInitializing) {
-								entry.objectInitializing = true;
+
+							if (!entry.objectCreated && !entry.objectCreating && entry.objectCreate) {
+								promise = promise.then(entry.objectCreate);
+							};
+
+							if (!entry.objectInitialized && !entry.objectInitializing && (entry.spec.autoInit !== false)) {
 								promise = promise.then(function(dummy) {
 									return __Internal__.initNamespace(entry, options);
 								});
@@ -903,6 +946,7 @@ exports.add = function add(modules) {
 					const state = {missingDeps: [], missings: 0, optionals: 0, ignoreOptionals: false, toInit: []};
 
 					return Promise.resolve(loopCreateModules(state))
+						.then(protectModules)
 						.then(loopInitModules)
 						.then(doCallback)
 						.catch(function(err) {
@@ -1230,10 +1274,14 @@ exports.add = function add(modules) {
 						if (!types._instanceof(entry, type)) {
 							return false;
 						};
-						if (entry.options.protect) {
+						const pendingProtection = __Internal__.pendingProtection.has(name);
+						if (entry.options.protect && !pendingProtection) {
 							return false;
 						};
 						delete this.registry[name];
+						if (pendingProtection) {
+							__Internal__.pendingProtection.delete(name);
+						};
 						const namespace = entry.namespace;
 						if (namespace) {
 							const parent = namespace.DD_PARENT;
@@ -1295,9 +1343,15 @@ exports.add = function add(modules) {
 							const namespace = entry.namespace;
 							if (namespace) {
 								const parent = namespace.DD_PARENT,
-									name = namespace.DD_NAME;
-								if (parent && name) {
-									parent.ADD(name, namespace, entry.options.protect);
+									name = namespace.DD_NAME,
+									fullname = namespace.DD_FULL_NAME;
+								if (parent && name && fullname) {
+									parent.ADD(name, namespace, false);
+									if (entry.options.protect) {
+										__Internal__.pendingProtection.add(fullname);
+									};
+								} else {
+									return false;
 								};
 							};
 						};
@@ -1355,6 +1409,7 @@ exports.add = function add(modules) {
 					spec: null,
 					namespace: null,
 					version: null,
+					objectCreate: null,
 					objectCreated: false,
 					objectCreating: false,
 					objectInit: null,
@@ -1395,10 +1450,12 @@ exports.add = function add(modules) {
 							}
 							//! END_REPLACE()
 					, function init(/*optional*/options) {
+						this.objectCreate = null;
 						this.objectCreated = true;
 						this.objectCreating = false;
 						this.objectInitialized = true;
 						this.objectInitializing = false;
+						this.objectInit = null;
 					}),
 				}
 			)));
@@ -1639,7 +1696,7 @@ exports.add = function add(modules) {
 						this.missingDeps = missingDeps;
 						this.modules = modules;
 						const names = tools.map(missingDeps, function(dep) {
-							return dep.module;
+							return dep.name;
 						});
 						return ["Missing dependencies: ~0~.", [names.join(', ')]];
 					}
