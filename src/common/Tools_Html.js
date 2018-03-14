@@ -157,11 +157,8 @@ exports.add = function add(modules) {
 			//===================================
 			return function init(/*optional*/options) {
 				const resLoader = resources.getResourcesLoader();
-				return resLoader.locate('./common/res/html5_entities.json')
-					.then(function loadEntitiesPromise(location) {
-						return resLoader.load(location)
-							.then(__Internal__.parseEntities);
-					});
+				return resLoader.load('./common/res/html5_entities.json')
+					.then(__Internal__.parseEntities);
 			};
 		},
 	};

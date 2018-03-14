@@ -70,17 +70,27 @@ exports.add = function add(modules) {
                             const path = basePath
                                 .combine(files.parsePath(fileName));
                             return path;
-                        });
+                        }, this);
                     },
-                    load: function load(path, /*optional*/options) {
-                        if (path.extension === 'json') {
-                            return config.load(path, { async: true, watch: true, encoding: 'utf-8' });
-                        } else {
-                            const headers = {
-                                Accept: '*/*',
-                            };
-                            return files.readFile(path, { async: true, encoding: 'utf-8', enableCache: true, headers: headers });
-                        };
+                    load: function load(fileName, /*optional*/options) {
+                        const Promise = types.getPromise();
+                        return Promise.try(function tryLoad() {
+                                const path = files.parsePath(fileName);
+                                if (path.isRelative) {
+                                    return this.locate(path, options);
+                                };
+                                return path;
+                            }, this)
+                            .then(function(path) {
+                                if (path.extension === 'json') {
+                                    return config.load(path, { async: true, watch: true, encoding: 'utf-8' });
+                                } else {
+                                    const headers = {
+                                        Accept: '*/*',
+                                    };
+                                    return files.readFile(path, { async: true, encoding: 'utf-8', enableCache: true, headers: headers });
+                                };
+                            }, null, this);
                     },
                 };
 			};
@@ -92,7 +102,7 @@ exports.add = function add(modules) {
                 });
 
                 resNs.ADD('setResourcesLoader', function setResourcesLoader(loader) {
-                    __Internal__.resourcesLoader.set(resNs, loader);
+                    __Internal__.resourcesLoader.set(resNs, tools.extend({}, resNs.getResourcesLoader(), loader));
                 });
 
                 resNs.setResourcesLoader(__Internal__.createResourcesLoader(resNs, basePath));
