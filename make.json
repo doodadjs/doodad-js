@@ -307,7 +307,8 @@
     {
       "name": "Doodad.Resources/Common",
       "namespace": "Doodad.Resources",
-      "src": "common/res",
+      "sourceBase": "%SOURCEDIR%/",
+      "source": "common/res",
       "client": true,
       "server": true,
       "browserify": true
