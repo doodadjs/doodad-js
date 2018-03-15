@@ -148,7 +148,7 @@ exports.add = function add(modules) {
 				mathMin: global.Math.min,
 
 				// alert
-				windowAlert: global.alert || global.console.log.bind(global.console),
+				windowAlert: global.alert.bind(global) || global.console.log.bind(global.console),
 			});
 				
 				
