@@ -57,8 +57,8 @@ From Javascript, when the scripts are loaded, create the root namespace :
 ```js
     window.createRoot()
         .then((root) => {
-			// Your code there...
-		})
+            // Your code there...
+        })
         .catch(err => {
             console.error(err);
         });
