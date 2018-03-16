@@ -658,7 +658,8 @@ exports.add = function add(mods) {
 
 					// Remove unwanted "node" args
 					const execArgs = tools.filter(process.execArgv, function(arg) {
-						return (arg.split('=')[0] !== '--debug-brk');
+						const val = arg.split('=')[0];
+						return ((val !== '--debug-brk') && (val !== '--inspect-brk'));
 					});
 
 					args = tools.append([], execArgs, [url], args);
