@@ -99,8 +99,8 @@ Now, in your Node.js script, create the root namespace :
 ```js
     require('@doodad-js/core').createRoot()
         .then((root) => {
-			// Your code there...
-		})
+            // Your code there...
+        })
         .catch(err => {
             console.error(err);
         });
