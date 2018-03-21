@@ -5105,7 +5105,7 @@ exports.add = function add(modules) {
 				[_shared.InitInstanceSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
 				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
 				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
-				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null}))))))),
+				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false})))))),
 				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
 			});
 			types.freezeObject(__Internal__.defaultAttributes);
@@ -5673,6 +5673,10 @@ exports.add = function add(modules) {
 						};
 							
 						if (types.isIsolated(sourceType) && !types.isIsolated(baseType)) {
+							if (!baseIsClass) {
+								throw new types.TypeError("To implement an isolated 'Class', base must be a 'Class'.");
+							};
+
 							const destImplements = _implements;
 
 							const proto = {};
@@ -5984,7 +5988,6 @@ exports.add = function add(modules) {
 					const newProtoValues = {
 						[_shared.AttributesStorageSymbol]: instanceStorage,
 						[_shared.AttributesSymbol]: destInstanceAttributes,
-						[_shared.IsolatedSymbol]: _isolated,
 						[_shared.ImplementsSymbol]: _implements,
 						[_shared.ToInitializeSymbol]: instanceToInitialize,
 						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
@@ -6576,7 +6579,6 @@ exports.add = function add(modules) {
 							values = {
 								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
 								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
 								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
 								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
 							};
@@ -6708,7 +6710,7 @@ exports.add = function add(modules) {
 							return cache.get(uuid);
 						};
 
-						const _isolated = this[_shared.IsolatedSymbol];
+						const _isolated = cls[_shared.IsolatedSymbol];
 
 						let data = _isolated.get(type);
 						if (!data) {
@@ -7050,7 +7052,6 @@ exports.add = function add(modules) {
 							values = {
 								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
 								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.IsolatedSymbol]: this.prototype[_shared.IsolatedSymbol], // NOTE: Will be cloned
 								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
 								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
 							};
