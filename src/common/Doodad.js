@@ -5105,7 +5105,7 @@ exports.add = function add(modules) {
 				[_shared.InitInstanceSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
 				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
 				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
-				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false})))))),
+				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
 				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
 			});
 			types.freezeObject(__Internal__.defaultAttributes);
