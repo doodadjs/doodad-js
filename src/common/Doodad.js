@@ -6565,7 +6565,7 @@ exports.add = function add(modules) {
 								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
 								[_shared.ModifiersSymbol]: modifiers,
 								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol],
 								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
 								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
 								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
@@ -7038,7 +7038,7 @@ exports.add = function add(modules) {
 								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
 								[_shared.ModifiersSymbol]: (types.get(this, _shared.ModifiersSymbol) || 0),
 								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol], // NOTE: Will be cloned
+								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol],
 								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
 								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
 								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
