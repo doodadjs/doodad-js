@@ -3428,11 +3428,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		
 	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
 		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || (!!cloneFunctions && types.isCustomFunction(obj));
+		// NOTE: Don't forget to also change '_shared.clone' !!!
+		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || types._instanceof(obj, [types.Map, types.Set]) || (!!cloneFunctions && types.isCustomFunction(obj));
 	};
 
 	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
 		// NOTE: This function will get overriden when "Doodad.js" is loaded.
+		// NOTE: Don't forget to also change '_shared.isClonable' !!!
+
 		let result;
 
 		if (types.isNothing(obj)) {
@@ -3459,6 +3462,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				result = tools.eval(_shared.Natives.functionToStringCall(obj));
 			} else if (types.isObject(obj)) {
 				result = tools.createObject(types.getPrototypeOf(obj));
+			} else if (types._instanceof(obj, [types.Map, types.Set])) {
+				result = new obj.constructor(obj);
 			} else if (keepNonClonables) {
 				return obj;
 			} else {
@@ -3532,7 +3537,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 8,
+					revision: 9,
 					params: {
 						obj: {
 							type: 'any',
