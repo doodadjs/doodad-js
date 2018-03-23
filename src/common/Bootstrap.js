@@ -2761,6 +2761,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function extendProperties(obj, /*paramarray*/...args) {
 			let result;
+			const loopKeys = function _loopKeys(arg, keys) {
+				const keysLen = keys.length;
+				for (let j = 0; j < keysLen; j++) {
+					const key = keys[j];
+					const descriptor = types.getOwnPropertyDescriptor(arg, key);
+					types.defineProperty(result, key, descriptor);
+				};
+			};
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
 				const argsLen = args.length;
@@ -2771,12 +2779,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 					arg = _shared.Natives.windowObject(arg);
-					const keys = tools.append(types.keys(arg), types.symbols(arg));
-					for (let j = 0; j < keys.length; j++) {
-						const key = keys[j];
-						const descriptor = types.getOwnPropertyDescriptor(arg, key);
-						types.defineProperty(result, key, descriptor);
-					};
+					loopKeys(arg, types.keys(arg));
+					loopKeys(arg, types.symbols(arg));
 				};
 			};
 			return result;
@@ -2807,6 +2811,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function complete(obj, /*paramarray*/...args) {
 			let result;
+			const loopKeys = function _loopKeys(arg, keys) {
+				const keysLen = keys.length; // performance
+				for (let j = 0; j < keysLen; j++) {
+					const key = keys[j];
+					if (!types.has(result, key)) {
+						result[key] = arg[key];
+					};
+				};
+			};
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
 				const argsLen = args.length;
@@ -2817,22 +2830,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 					arg = _shared.Natives.windowObject(arg);
-					const keys = types.keys(arg);
-					const keysLen = keys.length; // performance
-					for (let j = 0; j < keysLen; j++) {
-						const key = keys[j];
-						if (!types.has(result, key)) {
-							result[key] = arg[key];
-						};
-					};
-					const symbols = types.symbols(arg);
-					const symbolsLen = symbols.length; // performance
-					for (let j = 0; j < symbolsLen; j++) {
-						const key = symbols[j];
-						if (!types.has(result, key)) {
-							result[key] = arg[key];
-						};
-					};
+					loopKeys(arg, types.keys(arg));
+					loopKeys(arg, types.symbols(arg));
 				};
 			};
 				
@@ -2843,7 +2842,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 2,
+					revision: 3,
 					obj: {
 						type: 'object',
 						optional: false,
@@ -2862,6 +2861,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function completeProperties(obj, /*paramarray*/args) {
 			let result;
+			const loopKeys = function _loopKeys(arg, keys) {
+				const keysLen = keys.length; // performance
+				for (let j = 0; j < keysLen; j++) {
+					const key = keys[j];
+					if (!types.has(result, key)) {
+						const descriptor = types.getOwnPropertyDescriptor(arg, key);
+						types.defineProperty(result, key, descriptor);
+					};
+				};
+			};
 			if (!types.isNothing(obj)) {
 				result = _shared.Natives.windowObject(obj);
 				const argsLen = args.length;
@@ -2872,24 +2881,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 					// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 					arg = _shared.Natives.windowObject(arg);
-					const keys = types.keys(arg);
-					const keysLen = keys.length; // performance
-					for (let j = 0; j < keysLen; j++) {
-						const key = keys[j];
-						if (!types.has(result, key)) {
-							const descriptor = types.getOwnPropertyDescriptor(arg, key);
-							types.defineProperty(result, key, descriptor);
-						};
-					};
-					const symbols = types.symbols(arg);
-					const symbolsLen = symbols.length; // performance
-					for (let j = 0; j < symbolsLen; j++) {
-						const key = symbols[j];
-						if (!types.has(result, key)) {
-							const descriptor = types.getOwnPropertyDescriptor(arg, key);
-							types.defineProperty(result, key, descriptor);
-						};
-					};
+					loopKeys(arg, types.keys(arg));
+					loopKeys(arg, types.symbols(arg));
 				};
 			};
 			return result;
@@ -2926,7 +2919,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						obj: {
 							type: 'object,arraylike',
@@ -2957,11 +2950,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								};
 							};
 						} else {
-							const keys = types.keys(obj),
-								keysLen = keys.length;
-							for (let i = 0; i < keysLen; i++) {
-								types.preventExtensions(obj[keys[i]], depth);
+							const loopKeys = function _loopKeys(keys) {
+								const keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.preventExtensions(obj[keys[i]], depth);
+								};
 							};
+							loopKeys(types.keys(obj));
+							loopKeys(types.symbols(obj));
 						};
 					};
 					_shared.Natives.objectPreventExtensions(obj);
@@ -3004,11 +3000,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								};
 							};
 						} else {
-							const keys = types.keys(obj),
-								keysLen = keys.length;
-							for (let i = 0; i < keysLen; i++) {
-								types.sealObject(obj[keys[i]], depth);
+							const loopKeys = function _loopKeys(keys) {
+								const keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.sealObject(obj[keys[i]], depth);
+								};
 							};
+							loopKeys(types.keys(obj));
+							loopKeys(types.symbols(obj));
 						};
 					};
 					return _shared.Natives.objectSeal(obj);
@@ -3054,11 +3053,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								};
 							};
 						} else {
-							const keys = types.keys(obj),
-								keysLen = keys.length;
-							for (let i = 0; i < keysLen; i++) {
-								types.freezeObject(obj[keys[i]], depth);
+							const loopKeys = function _loopKeys(keys) {
+								const keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									types.freezeObject(obj[keys[i]], depth);
+								};
 							};
+							loopKeys(types.keys(obj));
+							loopKeys(types.symbols(obj));
 						};
 					};
 					return _shared.Natives.objectFreeze(obj);
@@ -3354,13 +3356,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	tools.extend(types.box.prototype, {
 		setAttributes: function setAttributes(dest, /*optional*/override) {
-			const keys = tools.append(types.keys(this), types.symbols(this));
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
-				if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
-					dest[key] = this[key];
+			const loopKeys = function _loopKeys(self, keys) {
+				const keysLen = keys.length;
+				for (let i = 0; i < keysLen; i++) {
+					const key = keys[i];
+					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
+						dest[key] = self[key];
+					};
 				};
 			};
+			loopKeys(this, types.keys(this));
+			loopKeys(this, types.symbols(this));
 			return dest;
 		},
 		valueOf: function valueOf() {
@@ -4598,13 +4604,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 
 	_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
-		const keys = tools.append(types.keys(values), types.symbols(values)),
-			keysLen = keys.length;
-		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
-		for (let i = 0; i < keysLen; i++) {
-			const key = keys[i];
-			_shared.setAttribute(obj, key, values[key], optsDirect, secret);
+		const loopKeys = function _loopKeys(keys) {
+			const keysLen = keys.length;
+			const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
+			for (let i = 0; i < keysLen; i++) {
+				const key = keys[i];
+				_shared.setAttribute(obj, key, values[key], optsDirect, secret);
+			};
 		};
+		loopKeys(types.keys(values));
+		loopKeys(types.symbols(values));
 		return values;
 	};
 
