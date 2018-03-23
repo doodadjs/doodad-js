@@ -531,7 +531,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		// NOTE: Proxies are too slow. Please enable "safeObject" just when needed then disable it.
 		_shared.safeObject = function _safeObject(obj) {
-			//! IF_SET('debug')
 			if (__options__.enableSafeObjects && natives.windowProxy) {
 				return new natives.windowProxy(obj || {}, {
 					get: function(target, property, receiver) {
@@ -557,9 +556,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			} else {
 				return obj || {};
 			}
-			//! ELSE()
-				//!	INJECT("return obj || {};");
-			//! END_IF()
 		};
 
 
@@ -568,11 +564,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//===================================
 		
 		_shared.Natives = _shared.safeObject(natives);
-		_shared = _shared.safeObject(_shared);
 
-		__Internal__ = _shared.safeObject(__Internal__);
-
-		return {types, tools, __options__, _shared, __Internal__};
+		return {
+			types,
+			tools,
+			__options__,
+			_shared: _shared.safeObject(_shared),
+			__Internal__: _shared.safeObject(__Internal__),
+		};
 	})(
 		/*__options__*/
 		{
