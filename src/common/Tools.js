@@ -496,7 +496,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'object,array',
@@ -518,12 +518,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'any',
 							description: "Search the first occurrence of the specified value among owned properties of an object, than deletes it and returns that value. When not found, returns 'undefined'. If object is an array, splices at the index of the first occurrence.",
 				}
 				//! END_REPLACE()
-				, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions) {
+				, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/includeSymbols) {
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
 						if (!includeFunctions && types.isFunction(item)) {
@@ -539,16 +544,26 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (item.call(thisObj, val, key, obj)) {
-										delete obj[key];
-										return val;
+								let result = undefined;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (item.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											result = val;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						} else {
 							if (types.isArray(obj)) {
@@ -563,26 +578,37 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (val === item) {
-										delete obj[key];
-										return val;
+								let result = undefined;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (val === item) {
+											delete obj[key];
+											result = val;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						};
 					};
+					return undefined;
 				}));
 				
 			tools.ADD('popItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'object,array',
@@ -599,12 +625,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'arrayof(any)',
 							description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
 				}
 				//! END_REPLACE()
-				, function popItems(obj, items, /*optional*/thisObj) {
+				, function popItems(obj, items, /*optional*/thisObj, /*optional*/includeSymbols) {
 					const result = [];
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
@@ -621,17 +652,22 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (items.call(thisObj, val, key, obj)) {
-										delete obj[key];
-										result.push(val);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (items.call(thisObj, val, key, obj)) {
+											delete obj[key];
+											result.push(val);
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else if (types.isArray(items)) {
 							const itemsLen = items.length;
 							if (types.isArray(obj)) {
@@ -649,21 +685,26 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									for (let j = 0; j < itemsLen; j++) {
-										if (types.has(items, j)) {
-											if (items[j] === val) {
-												delete obj[key];
-												result.push(val);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										for (let j = 0; j < itemsLen; j++) {
+											if (types.has(items, j)) {
+												if (items[j] === val) {
+													delete obj[key];
+													result.push(val);
+												};
 											};
 										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else {
 							if (types.isArray(obj)) {
 								for (let key = obj.length - 1; key >= 0; key--) {
@@ -676,17 +717,22 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (items === val) {
-										delete obj[key];
-										result.push(val);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (items === val) {
+											delete obj[key];
+											result.push(val);
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						};
 					};
 					return result;
@@ -735,7 +781,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'any',
@@ -762,12 +808,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'integer,string',
 							description: "Returns the array index or the attribute name of the specified item. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
-				, function findItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function findItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -792,14 +843,24 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (item.call(thisObj, obj[key], key, obj)) {
-										return key;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (item.call(thisObj, obj[key], key, obj)) {
+											result = key;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						} else {
 							if (types.isArrayLike(obj)) {
@@ -820,14 +881,24 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (obj[key] === item) {
-										return key;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (obj[key] === item) {
+											result = key;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						};
 					};
@@ -838,7 +909,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'any',
@@ -865,12 +936,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'integer,string',
 							description: "Returns the array index or the attribute name of the specified item, by searching from the end. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
-				, function findLastItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function findLastItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -886,13 +962,23 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj);
-								for (let i = keys.length - 1; i >= 0; i--) {
-									const key = keys[i];
-									if (item.call(thisObj, obj[key], key, obj)) {
-										return key;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									for (let i = keys.length - 1; i >= 0; i--) {
+										const key = keys[i];
+										if (item.call(thisObj, obj[key], key, obj)) {
+											result = key;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						} else {
 							if (types.isArrayLike(obj)) {
@@ -904,13 +990,23 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj);
-								for (let i = keys.length - 1; i >= 0; i--) {
-									const key = keys[i];
-									if (obj[key] === item) {
-										return key;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									for (let i = keys.length - 1; i >= 0; i--) {
+										const key = keys[i];
+										if (obj[key] === item) {
+											result = key;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						};
 					};
@@ -921,7 +1017,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'any',
@@ -948,12 +1044,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'arrayof(integer,string)',
 							description: "Returns the array indexes or the attribute names of the specified items.",
 				}
 				//! END_REPLACE()
-				, function findItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function findItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					const result = [];
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
@@ -979,15 +1080,20 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (items.call(thisObj, obj[key], key, obj)) {
-										result.push(key);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (items.call(thisObj, obj[key], key, obj)) {
+											result.push(key);
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else {
 							if (!types.isArray(items)) {
 								items = [items];
@@ -1010,15 +1116,20 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (tools.findItem(items, obj[key], undefined, true, sparsed) !== null) {
-										result.push(key);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (tools.findItem(items, obj[key], undefined, true, sparsed) !== null) {
+											result.push(key);
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						};
 					};
 					return result;
@@ -1028,7 +1139,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'any',
@@ -1055,12 +1166,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'any',
 							description: "Returns the found item. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
-				, function getItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function getItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -1086,15 +1202,25 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i],
-										val = obj[key];
-									if (item.call(thisObj, val, key, obj)) {
-										return val;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i],
+											val = obj[key];
+										if (item.call(thisObj, val, key, obj)) {
+											result = val;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						} else {
 							if (types.isArrayLike(obj)) {
@@ -1113,14 +1239,24 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (obj[key] === item) {
-										return item;
+								let result = null;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (obj[key] === item) {
+											result = item;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						};
 					};
@@ -1132,7 +1268,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'any',
@@ -1159,12 +1295,17 @@ exports.add = function add(modules) {
 									optional: true,
 									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 								},
+								includeSymbols: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+								},
 							},
 							returns: 'any',
 							description: "Returns the found items.",
 				}
 				//! END_REPLACE()
-				, function getItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function getItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					const result = [];
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
@@ -1191,16 +1332,21 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i],
-										val = obj[key];
-									if (items.call(thisObj, val, key, obj)) {
-										result.push(val);
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i],
+											val = obj[key];
+										if (items.call(thisObj, val, key, obj)) {
+											result.push(val);
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else {
 							if (!types.isArrayLike(items)) {
 								items = [items];
@@ -1232,21 +1378,26 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									keysLen = keys.length,
-									itemsLen = items.length;
-								for (let i = 0; i < keysLen; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									for (let j = 0; j < itemsLen; j++) {
-										if (!sparsed || types.has(items, j)) {
-											if (val === items[j]) {
-												result.push(val);
+								const loopKeys = function _loopKeys(keys) {
+									const keysLen = keys.length,
+										itemsLen = items.length;
+									for (let i = 0; i < keysLen; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										for (let j = 0; j < itemsLen; j++) {
+											if (!sparsed || types.has(items, j)) {
+												if (val === items[j]) {
+													result.push(val);
+												};
 											};
 										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						};
 					};
 					return result;
@@ -1704,7 +1855,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								depth: {
 									type: 'integer',
@@ -1723,6 +1874,23 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function depthComplete(depth, obj, /*paramarray*/...args) {
 					let result;
+					const loopKeys = function _loopKeys(obj, keys) {
+						const keysLen = keys.length; // performance
+						for (let j = 0; j < keysLen; j++) {
+							const key = keys[j];
+							const objVal = obj[key];
+							if ((depth >= 0) && types.isObjectLike(objVal)) {
+								const resultVal = result[key];
+								if (types.isNothing(resultVal)) {
+									result[key] = tools.depthComplete(depth, {}, objVal);
+								} else if (types.isObjectLike(resultVal)) {
+									tools.depthComplete(depth, resultVal, objVal);
+								};
+							} else if (!types.has(result, key)) {
+								result[key] = objVal;
+							};
+						};
+					};
 					if (!types.isNothing(obj)) {
 						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 						if (depth >= -1) {
@@ -1735,26 +1903,11 @@ exports.add = function add(modules) {
 								};
 								// Part of "Object.assign" Polyfill from Mozilla Developer Network.
 								obj = _shared.Natives.windowObject(obj);
-								const keys = tools.append(types.keys(obj), types.symbols(obj)),
-									keysLen = keys.length; // performance
-								for (let j = 0; j < keysLen; j++) {
-									const key = keys[j];
-									const objVal = obj[key];
-									if ((depth >= 0) && types.isObjectLike(objVal)) {
-										const resultVal = result[key];
-										if (types.isNothing(resultVal)) {
-											result[key] = tools.depthComplete(depth, {}, objVal);
-										} else if (types.isObjectLike(resultVal)) {
-											tools.depthComplete(depth, resultVal, objVal);
-										};
-									} else if (!types.has(result, key)) {
-										result[key] = objVal;
-									};
-								};
+								loopKeys(obj, types.keys(obj));
+								loopKeys(obj, types.symbols(obj));
 							};
 						};
 					};
-
 					return result;
 				}));
 				
@@ -1762,7 +1915,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								keys: {
 									type: 'arrayof(string,symbol),string,symbol',
@@ -1812,7 +1965,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'arraylike,object,Map,Set',
@@ -1848,12 +2001,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
-						},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
+					},
 						returns: 'array,object',
 						description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
 				}
 				//! END_REPLACE()
-				, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed) {
+				, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed, /*optional*/includeSymbols) {
 					/* eslint consistent-return: "off" */
 
 					if (!types.isNothing(obj)) {
@@ -1904,12 +2062,15 @@ exports.add = function add(modules) {
 							return result;
 						} else {
 							const result = tools.createObject(types.getPrototypeOf(obj));
-							const keys = types.keys(obj),
-								len = keys.length; // performance
-							for (let i = 0; i < len; i++) {
-								const key = keys[i];
-								result[key] = fn.call(thisObj, obj[key], key, obj);
+							const loopKeys = function _loopKeys(keys) {
+								const len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
+									result[key] = fn.call(thisObj, obj[key], key, obj);
+								};
 							};
+							loopKeys(types.keys(obj));
+							loopKeys(types.symbols(obj));
 							return result;
 						}
 					};
@@ -1919,7 +2080,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'arraylike,object,Map,Set,Iterable',
@@ -1945,12 +2106,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
 						},
 						returns: 'undefined',
 						description: "For each item of the array (or the object), simply calls the specified function.",
 				}
 				//! END_REPLACE()
-				, function forEach(obj, fn, /*optional*/thisObj, /*optional*/sparsed) {
+				, function forEach(obj, fn, /*optional*/thisObj, /*optional*/sparsed, /*optional*/includeSymbols) {
 					/* eslint consistent-return: "off" */
 
 					root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
@@ -1982,13 +2148,18 @@ exports.add = function add(modules) {
 							};
 						} else {
 							obj = _shared.Natives.windowObject(obj);
-							const keys = types.keys(obj),
-								len = keys.length; // performance
-							for (let i = 0; i < len; i++) {
-								const key = keys[i];
-								fn.call(thisObj, obj[key], key, obj);
+							const loopKeys = function _loopKeys(keys) {
+								const len = keys.length; // performance
+								for (let i = 0; i < len; i++) {
+									const key = keys[i];
+									fn.call(thisObj, obj[key], key, obj);
+								};
 							};
-						};
+							loopKeys(types.keys(obj));
+							if (includeSymbols) {
+								loopKeys(types.symbols(obj));
+							};
+				};
 					};
 				}));
 				
@@ -1996,7 +2167,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'arraylike,object,Map,Set,Iterable',
@@ -2032,12 +2203,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
 						},
 						returns: 'array,object',
 						description: "Filters array (or object) with the specified items, and returns a new array (or object) with matching items.",
 				}
 				//! END_REPLACE()
-				, function filter(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function filter(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					let result;
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
@@ -2085,16 +2261,21 @@ exports.add = function add(modules) {
 								};
 							} else {
 								result = {};
-								const keys = types.keys(obj),
-									len = keys.length;
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === !items.call(thisObj, val, key, obj)) {
-										result[key] = val;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === !items.call(thisObj, val, key, obj)) {
+											result[key] = val;
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else {
 							if (types._instanceof(obj, types.Map)) {
 								result = new types.Map();
@@ -2130,16 +2311,21 @@ exports.add = function add(modules) {
 								};
 							} else {
 								result = {};
-								const keys = types.keys(obj),
-									len = keys.length;
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
-										result[key] = val;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
+											result[key] = val;
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						};
 					};
 					return result;
@@ -2149,7 +2335,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							obj: {
 								type: 'arraylike,object',
@@ -2185,12 +2371,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
 						},
 						returns: 'array,object',
 						description: "Filters array (or object) with the specified keys, and returns a new array (or object) with matching items.",
 				}
 				//! END_REPLACE()
-				, function filterKeys(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function filterKeys(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					let result;
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
@@ -2212,16 +2403,21 @@ exports.add = function add(modules) {
 								};
 							} else {
 								result = {};
-								const keys = types.keys(obj),
-									len = keys.length;
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === !items.call(thisObj, val, key, obj)) {
-										result[key] = val;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === !items.call(thisObj, val, key, obj)) {
+											result[key] = val;
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						} else {
 							if (types.isArrayLike(obj)) {
 								result = [];
@@ -2236,22 +2432,182 @@ exports.add = function add(modules) {
 								};
 							} else {
 								result = {};
-								const keys = types.keys(obj),
-									len = keys.length;
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === (tools.findItem(items, key, undefined, true, sparsed) === null)) {
-										result[key] = val;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length;
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === (tools.findItem(items, key, undefined, true, sparsed) === null)) {
+											result[key] = val;
+										};
 									};
 								};
-							};
+								loopKeys(types.keys(obj));
+								if (includeSymbols) {
+									loopKeys(types.symbols(obj));
+								};
+						};
 						};
 					};
 					return result;
 				}));
 				
 			tools.ADD('every', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+						author: "Claude Petit",
+						revision: 8,
+						params: {
+							obj: {
+								type: 'arraylike,object,Map,Set,Iterable',
+								optional: false,
+								description: "An object to analyze.",
+							},
+							items: {
+								type: 'any,arrayof(any),function',
+								optional: false,
+								description: 
+									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
+									"  value (any): The current value\n" +
+									"  key (integer,string): The current index or attribute name\n" +
+									"  obj (arraylike,object): A reference to the object"
+							},
+							thisObj: {
+								type: 'any',
+								optional: true,
+								description: "Value of 'this' when calling the function. Default is 'undefined'.",
+							},
+							invert: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will invert the filter. Default is 'false'.",
+							},
+							includeFunctions: {
+								type: 'bool',
+								optional: true,
+								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
+							},
+							sparsed: {
+								type: 'bool',
+								optional: true,
+								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+							},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' when every items of an array (or an object) match the filter. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function every(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
+					if (!types.isNothing(obj)) {
+						obj = _shared.Natives.windowObject(obj);
+						invert = !!invert;
+						if (types.isNothing(sparsed)) {
+							sparsed = true;
+						};
+						if (!includeFunctions && types.isFunction(items)) {
+							if (types.isArrayLike(obj)) {
+								if (_shared.Natives.arrayEveryCall && !invert && !sparsed) {
+									// JS 1.6
+									return _shared.Natives.arrayEveryCall(obj, items, thisObj);
+								} else {
+									const len = obj.length;
+									for (let key = 0; key < len; key++) {
+										if (!sparsed || types.has(obj, key)) {
+											const value = obj[key];
+											if (invert === !!items.call(thisObj, value, key, obj)) {
+												return false;
+											};
+										};
+									};
+								};
+							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
+								for (const item of obj.entries()) {
+									if (invert === !!items.call(thisObj, item[1], item[0], obj)) {
+										return false;
+									};
+								};
+							} else if (types.isIterable(obj)) {
+								let key = 0;
+								for (const val of obj) {
+									if (invert === !!items.call(thisObj, val, key, obj)) {
+										return false;
+									};
+									key++;
+								};
+							} else {
+								let result = true;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (invert === !!items.call(thisObj, obj[key], key, obj)) {
+											result = false;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
+									};
+								};
+								return result;
+							};
+						} else {
+							if (types.isArrayLike(obj)) {
+								const len = obj.length;
+								for (let key = 0; key < len; key++) {
+									if (!sparsed || types.has(obj, key)) {
+										const val = obj[key];
+										if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
+											return false;
+										};
+									};
+								};
+							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
+								for (const item of obj.entries()) {
+									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) !== null)) {
+										return false;
+									};
+								};
+							} else if (types.isIterable(obj)) {
+								for (const val of obj) {
+									if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
+										return false;
+									};
+								};
+							} else {
+								let result = true;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										if (invert === (tools.findItem(items, obj[key], undefined, true, sparsed) !== null)) {
+											result = false;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
+									};
+								};
+								return result;
+							};
+						};
+					};
+					return true;
+				}));
+				
+			tools.ADD('some', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
@@ -2291,142 +2647,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' when every items of an array (or an object) match the filter. Returns 'false' otherwise.",
-				}
-				//! END_REPLACE()
-				, function every(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed) {
-					if (!types.isNothing(obj)) {
-						obj = _shared.Natives.windowObject(obj);
-						invert = !!invert;
-						if (types.isNothing(sparsed)) {
-							sparsed = true;
-						};
-						if (!includeFunctions && types.isFunction(items)) {
-							if (types.isArrayLike(obj)) {
-								if (_shared.Natives.arrayEveryCall && !invert && !sparsed) {
-									// JS 1.6
-									return _shared.Natives.arrayEveryCall(obj, items, thisObj);
-								} else {
-									const len = obj.length;
-									for (let key = 0; key < len; key++) {
-										if (!sparsed || types.has(obj, key)) {
-											const value = obj[key];
-											if (invert === !!items.call(thisObj, value, key, obj)) {
-												return false;
-											};
-										};
-									};
-								};
-							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (const item of obj.entries()) {
-									if (invert === !!items.call(thisObj, item[1], item[0], obj)) {
-										return false;
-									};
-								};
-							} else if (types.isIterable(obj)) {
-								let key = 0;
-								for (const val of obj) {
-									if (invert === !!items.call(thisObj, val, key, obj)) {
-										return false;
-									};
-									key++;
-								};
-							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (invert === !!items.call(thisObj, obj[key], key, obj)) {
-										return false;
-									};
-								};
-							};
-						} else {
-							if (types.isArrayLike(obj)) {
-								const len = obj.length;
-								for (let key = 0; key < len; key++) {
-									if (!sparsed || types.has(obj, key)) {
-										const val = obj[key];
-										if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
-											return false;
-										};
-									};
-								};
-							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
-								for (const item of obj.entries()) {
-									if (invert === (tools.findItem(items, item[1], undefined, true, sparsed) !== null)) {
-										return false;
-									};
-								};
-							} else if (types.isIterable(obj)) {
-								for (const val of obj) {
-									if (invert === (tools.findItem(items, val, undefined, true, sparsed) !== null)) {
-										return false;
-									};
-								};
-							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									if (invert === (tools.findItem(items, obj[key], undefined, true, sparsed) !== null)) {
-										return false;
-									};
-								};
-							};
-						};
-					};
-					return true;
-				}));
-				
-			tools.ADD('some', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set,Iterable',
+							includeSymbols: {
+								type: 'bool',
 								optional: false,
-								description: "An object to analyze.",
-							},
-							items: {
-								type: 'any,arrayof(any),function',
-								optional: false,
-								description: 
-									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
-									"  value (any): The current value\n" +
-									"  key (integer,string): The current index or attribute name\n" +
-									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							invert: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will invert the filter. Default is 'false'.",
-							},
-							includeFunctions: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
 							},
 						},
 						returns: 'bool',
 						description: "Returns 'true' when at least one item of an array (or an object) matches the filter. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, function some(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed) {
+				, function some(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
 						invert = !!invert;
@@ -2465,15 +2696,25 @@ exports.add = function add(modules) {
 									key++;
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === !items.call(thisObj, val, key, obj)) {
-										return true;
+								let result = false;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === !items.call(thisObj, val, key, obj)) {
+											result = true;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						} else {
 							if (types.isArrayLike(obj)) {
@@ -2499,15 +2740,25 @@ exports.add = function add(modules) {
 									};
 								};
 							} else {
-								const keys = types.keys(obj),
-									len = keys.length; // performance
-								for (let i = 0; i < len; i++) {
-									const key = keys[i];
-									const val = obj[key];
-									if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
-										return true;
+								let result = false;
+								const loopKeys = function _loopKeys(keys) {
+									const len = keys.length; // performance
+									for (let i = 0; i < len; i++) {
+										const key = keys[i];
+										const val = obj[key];
+										if (invert === (tools.findItem(items, val, undefined, true, sparsed) === null)) {
+											result = true;
+											return true;
+										};
+									};
+									return false;
+								};
+								if (!loopKeys(types.keys(obj))) {
+									if (includeSymbols) {
+										loopKeys(types.symbols(obj));
 									};
 								};
+								return result;
 							};
 						};
 					};
@@ -2550,12 +2801,17 @@ exports.add = function add(modules) {
 								optional: true,
 								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
 							},
+							includeSymbols: {
+								type: 'bool',
+								optional: false,
+								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+							},
 						},
 						returns: 'any',
 						description: "Reduces every items of an array (or object) to a single value.",
 				}
 				//! END_REPLACE()
-				, function reduce(obj, fn, /*optional*/initialValue, /*optional*/thisObj, /*optional*/sparsed) {
+				, function reduce(obj, fn, /*optional*/initialValue, /*optional*/thisObj, /*optional*/sparsed, /*optional*/includeSymbols) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
 
 					if (types.isNothing(obj)) {
