@@ -462,14 +462,14 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 4,
+							revision: 5,
 							params: {
 								obj: {
 									type: 'Object,Class',
 									optional: false,
 									description: "Object to test for.",
 								},
-								cls: {
+								type: {
 									type: 'arrayof(Class),Class,arrayof(Object),Object',
 									optional: false,
 									description: "Classes.",
@@ -479,26 +479,28 @@ exports.add = function add(modules) {
 							description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
-				, function _implements(obj, cls) {
+				, function _implements(obj, type) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return false;
 					};
-					const impls = types.getAttribute(obj, _shared.ImplementsSymbol, null, _shared.SECRET);
-					if (types.isArray(cls)) {
-						const clsLen = cls.length;
-						for (let i = 0; i < clsLen; i++) {
-							if (types.has(cls, i)) {
-								const cl = types.getType(cls[i]);
-								if (!cl) {
+					const isType = types.isType(obj),
+						cls = (isType ? obj : types.getType(obj));
+					const impls = types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, null, _shared.SECRET);
+					if (types.isArray(type)) {
+						const typeLen = type.length;
+						for (let i = 0; i < typeLen; i++) {
+							if (types.has(type, i)) {
+								const typ = types.getType(type[i]);
+								if (!typ) {
 									continue;
 								};
-								if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+								if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
 									continue;
 								};
-								if (impls.has(cl)) {
+								if (impls.has(typ)) {
 									return true;
 								};
-								const uuid = _shared.getUUID(cl);
+								const uuid = _shared.getUUID(typ);
 								if (uuid && impls.has(uuid)) {
 									return true;
 								};
@@ -506,17 +508,17 @@ exports.add = function add(modules) {
 						};
 						return false;
 					} else {
-						const cl = types.getType(cls);
-						if (!cl) {
+						const typ = types.getType(type);
+						if (!typ) {
 							return false;
 						};
-						if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+						if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
 							return false;
 						};
-						if (impls.has(cl)) {
+						if (impls.has(typ)) {
 							return true;
 						};
-						const uuid = _shared.getUUID(cl);
+						const uuid = _shared.getUUID(typ);
 						if (uuid && impls.has(uuid)) {
 							return true;
 						};
@@ -528,7 +530,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'Object,Class',
@@ -544,14 +546,16 @@ exports.add = function add(modules) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return null;
 					};
-					return types.toArray(types.getAttribute(obj, _shared.ImplementsSymbol, null, _shared.SECRET));
+					const isType = types.isType(obj),
+						cls = (isType ? obj : types.getType(obj));
+					return types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, null, _shared.SECRET);
 				}));
 				
 			types.ADD('isMethod', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								obj: {
 									type: 'Object,Class',
@@ -574,7 +578,7 @@ exports.add = function add(modules) {
 					};
 					const isType = types.isType(obj);
 					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
-					if (!(name in attrs)) {
+					if (!attrs || !(name in attrs)) {
 						return false;
 					};
 					const attr = attrs[name],
@@ -592,7 +596,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 3,
+							revision: 4,
 							params: {
 								obj: {
 									type: 'Object,Class',
@@ -614,7 +618,7 @@ exports.add = function add(modules) {
 						return false;
 					};
 					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
-					if (!(name in attrs)) {
+					if (!attrs || !(name in attrs)) {
 						return false;
 					};
 					const attr = attrs[name],
@@ -1278,7 +1282,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 							author: "Claude Petit",
-							revision: 5,
+							revision: 6,
 							params: {
 								obj: {
 									type: 'Object,Type',
@@ -1301,8 +1305,10 @@ exports.add = function add(modules) {
 						return undefined;
 					};
 					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
-					const attr = attrs[name];
-					return attr;
+					if (!attrs || !(name in attrs)) {
+						return null;
+					};
+					return attrs[name];
 				});
 					
 			__Internal__.oldDESTROY = _shared.DESTROY;
@@ -2684,7 +2690,8 @@ exports.add = function add(modules) {
 						},
 
 					handleDispatchError: function handleDispatchError(ex, attr, obj) {
-							const type = types.getType(obj);
+							const isType = types.isType(obj),
+								type = (isType ? obj : types.getType(obj));
 							const attributes = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
 							const notReentrantMap = __Internal__.notReentrantMap.get(obj);
 							let emitted = false;
@@ -2797,7 +2804,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, _shared.AttributesSymbol], null, _shared.SECRET), 
+								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], null, _shared.SECRET), 
 									oldDispatch = result[_shared.CurrentDispatchSymbol], 
 									oldCaller = result[_shared.CurrentCallerIndexSymbol];
 									//attributes = result[_shared.AttributesSymbol];
@@ -5092,23 +5099,38 @@ exports.add = function add(modules) {
 			// Class
 			//==================================
 				
-			__Internal__.defaultAttributes = tools.nullObject({
-				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+			__Internal__.defaultAttributes = types.freezeObject(tools.nullObject({
+				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
 				[_shared.AttributesStorageSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
 				[_shared.PrototypeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
 				[_shared.ModifiersSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false}))))))),
-				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
 				[_shared.BaseSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
 				[_shared.MustOverrideSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
 				[_shared.CurrentDispatchSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
 				[_shared.CurrentCallerIndexSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
 				[_shared.InitInstanceSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
-				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
-				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
+				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
 				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
 				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
-			});
-			types.freezeObject(__Internal__.defaultAttributes);
+			}));
+
+			__Internal__.defaultAttributesExpandable = types.freezeObject(tools.nullObject({
+				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+			}));
+
+			__Internal__.switchToExpandable = function switchToExpandable(attributes) {
+				tools.forEach(__Internal__.defaultAttributesExpandable, function(attribute, attr) {
+					const oldAttribute = attributes[attr];
+					root.DD_ASSERT && root.DD_ASSERT(oldAttribute, "Adding new attributes there is not supported­.");
+					const newAttribute = attribute.setValue(oldAttribute);
+					attributes[attr] = types.freezeObject(newAttribute);
+				});
+			};
 
 /*
 			__Internal__.defaultAttributesKeys = types.freezeObject(types.keys(__Internal__.defaultAttributes));
@@ -5128,7 +5150,6 @@ exports.add = function add(modules) {
 				return __Internal__.defaultAttributes[key][_shared.ExtenderSymbol].isInstance;
 			}));
 */
-
 			__Internal__.extendRenamed = function extendRenamed(attr, newAttr, source, sourceProto, destAttributes, forType, destAttribute, extender, proto, protoName) {
 				// NOTE: The contract must be fullfilled (source: Sorella in freenode) : `compose({ a(){ return 1 }, b(){ return a() + 1 }, {a renamed to _a(){ return 3 } }).b()` should returns 2
 
@@ -5672,7 +5693,7 @@ exports.add = function add(modules) {
 							};
 						};
 							
-						if (types.isIsolated(sourceType) && !types.isIsolated(baseType)) {
+						if (types.isIsolated(source) && !types.isIsolated(base)) {
 							if (!baseIsClass) {
 								throw new types.TypeError("To implement an isolated 'Class', base must be a 'Class'.");
 							};
@@ -5864,6 +5885,8 @@ exports.add = function add(modules) {
 					const attr = toInitialize[i],
 						attribute = attributes[attr];
 
+					root.DD_ASSERT && root.DD_ASSERT(attribute, "Attribute '~0~' is missing.", [attr]);
+
 					const extender = attribute[_shared.ExtenderSymbol];
 						
 					if (extender && extender.init && extender.preExtend) {
@@ -5877,10 +5900,12 @@ exports.add = function add(modules) {
 				};
 
 				for (let i = 0; i < toInitializeLen; i++) {
-					const attr = toInitialize[i];
-						
-					const attribute = attributes[attr],
-						extender = attribute[_shared.ExtenderSymbol];
+					const attr = toInitialize[i],
+						attribute = attributes[attr];
+
+					root.DD_ASSERT && root.DD_ASSERT(attribute, "Attribute '~0~' is missing.", [attr]);
+
+					const extender = attribute[_shared.ExtenderSymbol];
 							
 					if (extender && extender.init && !extender.preExtend) {
 						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
@@ -5988,7 +6013,7 @@ exports.add = function add(modules) {
 					const newProtoValues = {
 						[_shared.AttributesStorageSymbol]: instanceStorage,
 						[_shared.AttributesSymbol]: destInstanceAttributes,
-						[_shared.ImplementsSymbol]: _implements,
+						[_shared.ImplementsSymbol]: _implements,  // Will be cloned later
 						[_shared.ToInitializeSymbol]: instanceToInitialize,
 						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
 					};
@@ -6163,7 +6188,7 @@ exports.add = function add(modules) {
 						};
 
 						const forType = types.isType(this),
-							//cls = types.getType(this),
+							//cls = (forType ? this : types.getType(this)),
 							attributes = this[_shared.AttributesSymbol],
 							storage = this[_shared.AttributesStorageSymbol];
 							
@@ -6551,7 +6576,9 @@ exports.add = function add(modules) {
 								throw new types.Error("Static types can't be instantiated.");
 							};
 						};
-							
+
+						const isExpandable = !!(modifiers & doodad.ClassModifiers.Expandable);
+
 						if (forType) {
 							// Initialize attributes
 							const typeStorage = this[_shared.AttributesStorageSymbol];
@@ -6559,28 +6586,45 @@ exports.add = function add(modules) {
 
 							let values;
 
-							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
-							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
+							const typeAttributes = this[_shared.AttributesSymbol];
+							const typeImplements = this[_shared.ImplementsSymbol];
+							const typeToInitialize = this[_shared.ToInitializeSymbol];
+							const typeToExtendLater = this[_shared.ToExtendLaterSymbol];
+							if (isExpandable) {
+								__Internal__.switchToExpandable(typeAttributes);
+							};
 							values = {
-								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
+								[_shared.AttributesSymbol]: types.freezeObject(typeAttributes), // NOTE: Will be cloned
 								[_shared.ModifiersSymbol]: modifiers,
-								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.ImplementsSymbol]: types.freezeObject(typeImplements), // NOTE: Will be cloned
 								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol],
 								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
 								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
-								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
-								[_shared.ToExtendLaterSymbol]: this[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+								[_shared.ToInitializeSymbol]: types.freezeObject(typeToInitialize), // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: types.freezeObject(typeToExtendLater), // NOTE: Will be cloned
 							};
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
-							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
-							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
-							values = {
-								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
-								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
-								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+							const instanceAttributes = this.prototype[_shared.AttributesSymbol];
+							const instanceImplements = this.prototype[_shared.ImplementsSymbol];
+							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol];
+							const instanceToExtendLater = this.prototype[_shared.ToExtendLaterSymbol];
+							if (isExpandable) {
+								__Internal__.switchToExpandable(instanceAttributes);
+								values = {
+									[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
+									[_shared.ImplementsSymbol]: instanceImplements, // NOTE: Will be cloned
+									[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
+									[_shared.ToExtendLaterSymbol]: instanceToExtendLater, // NOTE: Will be cloned
+								};
+							} else {
+								values = {
+									[_shared.AttributesSymbol]: types.freezeObject(instanceAttributes),
+									[_shared.ImplementsSymbol]: null,
+									[_shared.ToInitializeSymbol]: types.freezeObject(instanceToInitialize),
+									[_shared.ToExtendLaterSymbol]: types.freezeObject(instanceToExtendLater),
+								};
 							};
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
@@ -6847,9 +6891,9 @@ exports.add = function add(modules) {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 4,
+								revision: 5,
 								params: {
-									cls: {
+									type: {
 										type: 'arrayof(Class),Class,arrayof(Object),Object',
 										optional: false,
 										description: "Classes.",
@@ -6860,23 +6904,25 @@ exports.add = function add(modules) {
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function _implements(cls) {
-						const impls = this[_shared.ImplementsSymbol];
-						if (types.isArray(cls)) {
-							const clsLen = cls.length;
-							for (let i = 0; i < clsLen; i++) {
-								if (types.has(cls, i)) {
-									const cl = types.getType(cls[i]);
-									if (!cl) {
+					function _implements(type) {
+						const forType = types.isType(this),
+							cls = (forType ? this : types.getType(this));
+						const impls = (!forType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? this : cls)[_shared.ImplementsSymbol];
+						if (types.isArray(type)) {
+							const typeLen = type.length;
+							for (let i = 0; i < typeLen; i++) {
+								if (types.has(type, i)) {
+									const typ = types.getType(type[i]);
+									if (!typ) {
 										continue;
 									};
-									if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+									if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
 										continue;
 									};
-									if (impls.has(cl)) {
+									if (impls.has(typ)) {
 										return true;
 									};
-									const uuid = _shared.getUUID(cl);
+									const uuid = _shared.getUUID(typ);
 									if (uuid && impls.has(uuid)) {
 										return true;
 									};
@@ -6884,17 +6930,17 @@ exports.add = function add(modules) {
 							};
 							return false;
 						} else {
-							const cl = types.getType(cls);
-							if (!cl) {
+							const typ = types.getType(type);
+							if (!typ) {
 								return false;
 							};
-							if (!types.isLike(cl, __Internal__.CLASS_OR_INTERFACE)) {
+							if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
 								return false;
 							};
-							if (impls.has(cl)) {
+							if (impls.has(typ)) {
 								return true;
 							};
-							const uuid = _shared.getUUID(cl);
+							const uuid = _shared.getUUID(typ);
 							if (uuid && impls.has(uuid)) {
 								return true;
 							};
@@ -6906,7 +6952,7 @@ exports.add = function add(modules) {
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 								author: "Claude Petit",
-								revision: 2,
+								revision: 3,
 								params: {
 									name: {
 										type: 'string,symbol',
@@ -6920,8 +6966,7 @@ exports.add = function add(modules) {
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function isImplemented(name) {
-						const isType = types.isType(this),
-							attrs = this[_shared.AttributesSymbol];
+						const attrs = this[_shared.AttributesSymbol];
 						if (!(name in attrs)) {
 							return false;
 						};
@@ -6930,6 +6975,7 @@ exports.add = function add(modules) {
 						if (!types.isLike(extender, extenders.Method)) {
 							return false;
 						};
+						const isType = types.isType(this);
 						if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
 							return false;
 						};
@@ -6939,7 +6985,9 @@ exports.add = function add(modules) {
 
 			};
 
-			tools.extend(__Internal__.classProto, __Internal__.defaultAttributes);
+			tools.extend(__Internal__.classProto, tools.map(__Internal__.defaultAttributes, function(attr) {
+				return attr.clone();
+			}, /*thisObj*/undefined, /*start*/null, /*end*/null, /*sparsed*/false, /*includeSymbols*/true));
 				
 			//! IF_SET("serverSide")
 			(function() {
@@ -7001,8 +7049,8 @@ exports.add = function add(modules) {
 					function _new(host) {
 						// TODO: Merge _new with Class's _new
 
-						const cls = types.getType(this),
-							forType = types.isType(this);
+						const forType = types.isType(this),
+							cls = (forType ? this : types.getType(this));
 
 						this._super();
 
@@ -7032,28 +7080,32 @@ exports.add = function add(modules) {
 
 							let values;
 
-							const typeAttributes = this[_shared.AttributesSymbol]; // NOTE: Will be cloned
-							const typeToInitialize = this[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
+							const typeAttributes = this[_shared.AttributesSymbol];
+							const typeImplements = this[_shared.ImplementsSymbol];
+							const typeToInitialize = this[_shared.ToInitializeSymbol];
+							const typeToExtendLater = this[_shared.ToExtendLaterSymbol];
 							values = {
-								[_shared.AttributesSymbol]: typeAttributes, // NOTE: Will be cloned
-								[_shared.ModifiersSymbol]: (types.get(this, _shared.ModifiersSymbol) || 0),
-								[_shared.ImplementsSymbol]: this[_shared.ImplementsSymbol], // NOTE: Will be cloned
+								[_shared.AttributesSymbol]: types.freezeObject(typeAttributes), // NOTE: Will be cloned
+								[_shared.ModifiersSymbol]: modifiers,
+								[_shared.ImplementsSymbol]: types.freezeObject(typeImplements), // NOTE: Will be cloned
 								[_shared.IsolatedSymbol]: this[_shared.IsolatedSymbol],
 								[_shared.PrototypeSymbol]: this[_shared.PrototypeSymbol],
 								[_shared.BaseSymbol]: this[_shared.BaseSymbol],
-								[_shared.ToInitializeSymbol]: typeToInitialize, // NOTE: Will be cloned
-								[_shared.ToExtendLaterSymbol]: this[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+								[_shared.ToInitializeSymbol]: types.freezeObject(typeToInitialize), // NOTE: Will be cloned
+								[_shared.ToExtendLaterSymbol]: types.freezeObject(typeToExtendLater), // NOTE: Will be cloned
 							};
 							const initType = __Internal__.initializeAttributes(typeAttributes, true, values, null, null, typeToInitialize);
 							initType(this, typeStorage);
 
-							const instanceAttributes = this.prototype[_shared.AttributesSymbol]; // NOTE: Will be cloned
-							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol]; // NOTE: Will be cloned
+							const instanceAttributes = this.prototype[_shared.AttributesSymbol];
+							//const instanceImplements = this.prototype[_shared.ImplementsSymbol];
+							const instanceToInitialize = this.prototype[_shared.ToInitializeSymbol];
+							const instanceToExtendLater = this.prototype[_shared.ToExtendLaterSymbol];
 							values = {
-								[_shared.AttributesSymbol]: instanceAttributes, // NOTE: Will be cloned
-								[_shared.ImplementsSymbol]: this.prototype[_shared.ImplementsSymbol], // NOTE: Will be cloned
-								[_shared.ToInitializeSymbol]: instanceToInitialize, // NOTE: Will be cloned
-								[_shared.ToExtendLaterSymbol]: this.prototype[_shared.ToExtendLaterSymbol], // NOTE: Will be cloned
+								[_shared.AttributesSymbol]: types.freezeObject(instanceAttributes),
+								[_shared.ImplementsSymbol]: null,
+								[_shared.ToInitializeSymbol]: types.freezeObject(instanceToInitialize),
+								[_shared.ToExtendLaterSymbol]: types.freezeObject(instanceToExtendLater),
 							};
 							const initProto = __Internal__.initializeAttributes(instanceAttributes, false, values, true, null, instanceToInitialize);
 							initProto(this.prototype, instanceStorage);
@@ -7119,7 +7171,9 @@ exports.add = function add(modules) {
 				[_shared.HostSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))),
 			};
 				
-			tools.extend(__Internal__.interfaceProto, __Internal__.defaultAttributes);
+			tools.extend(__Internal__.interfaceProto, tools.map(__Internal__.defaultAttributes, function(attr) {
+				return attr.clone();
+			}, /*thisObj*/undefined, /*start*/null, /*end*/null, /*sparsed*/false, /*includeSymbols*/true));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
