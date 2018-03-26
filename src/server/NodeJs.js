@@ -829,18 +829,6 @@ exports.add = function add(mods) {
 				}));
 					
 				
-			//===================================
-			// Config
-			//===================================
-				
-			__Internal__.oldLoadConfig = _shared.loadConfig;
-				
-			_shared.loadConfig = function loadConfig(path, /*optional*/options, /*optional*/callbacks) {
-				path = files.parsePath(path, types.get(options, 'parseOptions'));
-				return __Internal__.oldLoadConfig(path, options, callbacks);
-			};
-
-
 			//=====================================
 			// Files functions
 			//=====================================

@@ -379,6 +379,7 @@ exports.add = function add(modules) {
 					return;
 				};
 
+				//_shared.Natives.windowAlert(err.message + '\r\n' + err.lineNumber + ':' + err.columnNumber);
 				err.trapped = true;
 
 				// NOTE: This is the last resort error handling.
@@ -1630,21 +1631,6 @@ exports.add = function add(modules) {
 					
 				return loader;
 			}));
-
-			//===================================
-			// Config
-			//===================================
-				
-			__Internal__.oldLoadConfig = _shared.loadConfig;
-				
-			_shared.loadConfig = function loadConfig(url, /*optional*/options, /*optional*/callbacks) {
-					options = tools.nullObject(options);
-					if (types.isString(url)) {
-						url = files.parseUrl(url, options.parseOptions);
-					};
-					return __Internal__.oldLoadConfig(url, options, callbacks);
-				};
-
 
 			//===================================
 			// File functions

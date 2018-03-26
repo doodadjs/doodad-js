@@ -82,14 +82,21 @@ exports.add = function add(modules) {
                                 return path;
                             }, this)
                             .then(function(path) {
+                                const watchCb = types.get(options, 'watchCb', null);
+                                let promise = null;
                                 if (path.extension === 'json') {
-                                    return config.load(path, { async: true, watch: true, encoding: 'utf-8' });
+                                    promise = config.load(path);
                                 } else {
                                     const headers = {
                                         Accept: '*/*',
                                     };
-                                    return files.readFile(path, { async: true, encoding: 'utf-8', enableCache: true, headers: headers });
+                                    promise = files.readFile(path, {async: true, encoding: 'utf-8', enableCache: true, headers: headers});
                                 };
+                                if (watchCb) {
+                                    files.watch(path, watchCb, {once: true});
+                                    promise = promise.nodeify(watchCb);
+                                };
+                                return promise;
                             }, null, this);
                     },
                 };

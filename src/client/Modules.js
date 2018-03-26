@@ -164,7 +164,7 @@ exports.add = function add(modules) {
 						.then(function(location) {
 							let promise = null;
 							if (file.isConfig) {
-								promise = config.load(location, {async: true, encoding: 'utf-8'});
+								promise = config.load(location);
 
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
@@ -236,7 +236,7 @@ exports.add = function add(modules) {
 								},
 							},
 							returns: 'Promise(bool)',
-							description: "Loads a module.",
+							description: "Loads one or more Doodad module file(s).",
 				}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
