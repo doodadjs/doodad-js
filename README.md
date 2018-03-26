@@ -127,8 +127,6 @@ Doodad must be built using [make][make-url] and its dependencies.
   - **doodad.PUBLIC**: Accessible from the outside.
   - **doodad.PROTECTED**: Accessible from the inside only.
   - **doodad.PRIVATE**: Accessible only from the inside of the prototype. Can't be overriden or replaced.
-  - **doodad.PROTECTED_DEBUG**: Like "doodad.PROTECTED", but will be "doodad.PUBLIC" on debug mode.
-  - **doodad.PRIVATE_DEBUG**:  Like "doodad.PRIVATE", but will be "doodad.PUBLIC" on debug mode.
 
 #### Protection level
 

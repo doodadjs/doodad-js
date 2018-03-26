@@ -179,7 +179,7 @@ exports.add = function add(modules) {
 			const __options__ = tools.nullObject({
 				enforceScopes: false,    // for performance, set it to "false"
 				enforcePolicies: false,  // for performance, set it to "false"
-				publicOnDebug: false,    // to be able to read core attributes in debug mode, set it to "true"
+				publicOnDebug: false,    // to be able to read PROTECTED/PRIVATE attributes in debug mode, set it to "true"
 			}, _options);
 
 			__options__.enforceScopes = types.toBoolean(__options__.enforceScopes);
@@ -3862,7 +3862,7 @@ exports.add = function add(modules) {
 					return value;
 				}));
 				
-			doodad.ADD('PROTECTED', root.DD_DOC(
+			doodad.ADD('PROTECTED', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
@@ -3890,9 +3890,9 @@ exports.add = function add(modules) {
 						value[_shared.ExtenderSymbol] = extender;
 					};
 					return value;
-				}));
+				})));
 
-			doodad.ADD('PRIVATE', root.DD_DOC(
+			doodad.ADD('PRIVATE', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 						author: "Claude Petit",
@@ -3921,10 +3921,7 @@ exports.add = function add(modules) {
 						value[_shared.ExtenderSymbol] = extender;
 					};
 					return value;
-				}));
-				
-			doodad.ADD('PROTECTED_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PROTECTED));
-			doodad.ADD('PRIVATE_DEBUG', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : doodad.PRIVATE));
+				})));
 				
 			//==================================
 			// Class Modifiers
@@ -5100,27 +5097,27 @@ exports.add = function add(modules) {
 			//==================================
 				
 			__Internal__.defaultAttributes = types.freezeObject(tools.nullObject({
-				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
-				[_shared.AttributesStorageSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
-				[_shared.PrototypeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
+				[_shared.AttributesSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
+				[_shared.AttributesStorageSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
+				[_shared.PrototypeSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
 				[_shared.ModifiersSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(0, extenders.Attribute, {isEnumerable: false}))))))),
-				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
+				[_shared.ImplementsSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
 				[_shared.BaseSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
 				[_shared.MustOverrideSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
-				[_shared.CurrentDispatchSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
-				[_shared.CurrentCallerIndexSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
-				[_shared.InitInstanceSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
-				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
-				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
-				[_shared.IsolatedSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
-				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
+				[_shared.CurrentDispatchSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
+				[_shared.CurrentCallerIndexSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false})))))))),
+				[_shared.InitInstanceSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Null, {isEnumerable: false}))))))),
+				[_shared.ToInitializeSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
+				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: true})))))))),
+				[_shared.IsolatedSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false})))))),
+				[_shared.IsolatedCacheSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false}))))))),
 			}));
 
 			__Internal__.defaultAttributesExpandable = types.freezeObject(tools.nullObject({
-				[_shared.AttributesSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
-				[_shared.ImplementsSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
-				[_shared.ToInitializeSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
-				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE_DEBUG(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.AttributesSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.ImplementsSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: null})))))))),
+				[_shared.ToInitializeSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
+				[_shared.ToExtendLaterSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.ClonedAttribute, {isEnumerable: false, cloneOnInit: true, cloneOnGetValue: false, isProto: true})))))))),
 			}));
 
 			__Internal__.switchToExpandable = function switchToExpandable(attributes) {
@@ -6259,7 +6256,7 @@ exports.add = function add(modules) {
 								description: "Call '_super' from the specified implemented class.",
 					}
 					//! END_REPLACE()
-					, doodad.PROTECTED_DEBUG(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
+					, doodad.PROTECTED(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function superFrom(cls) {
 						const dispatch = this && this[_shared.CurrentDispatchSymbol];
 
