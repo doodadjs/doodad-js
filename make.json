@@ -25,7 +25,7 @@
   "//": "",
   "version": "9.0.0",
   "stage": "r",
-  "mjs": false,
+  "mjs": true,
   "modules": [
     {
       "src": "common/Bootstrap.js",
