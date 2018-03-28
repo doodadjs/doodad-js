@@ -5,8 +5,6 @@
 		//! INJECT("const exports = {};")
 	//! END_IF()
 		
-	//! INJECT("const DD_MODULES = null, DD_OPTIONS = null;")
-	
 //! ELSE()
 	//! INJECT("const global = window, exports = {};")
 	
