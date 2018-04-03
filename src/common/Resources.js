@@ -34,9 +34,9 @@ exports.add = function add(modules) {
 	modules['Doodad.Resources'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-            'Doodad.Tools.Config',
-            'Doodad.Tools.Files',
-            'Doodad.Modules',
+			'Doodad.Tools.Config',
+			'Doodad.Tools.Files',
+			'Doodad.Modules',
 		],
 			
 		create: function create(root, /*optional*/_options, _shared) {
@@ -46,11 +46,11 @@ exports.add = function add(modules) {
 					
 			const doodad = root.Doodad,
 				types = doodad.Types,
-                tools = doodad.Tools,
-                config = tools.Config,
-                files = tools.Files,
-                modules = doodad.Modules,
-                resources = doodad.Resources;
+				tools = doodad.Tools,
+				config = tools.Config,
+				files = tools.Files,
+				modules = doodad.Modules,
+				resources = doodad.Resources;
 
 			//===================================
 			// Internal
@@ -58,72 +58,72 @@ exports.add = function add(modules) {
 					
 			// <FUTURE> Thread context
 			const __Internal__ = {
-                resourcesLoader: new types.WeakMap(),
+				resourcesLoader: new types.WeakMap(),
 			};
 
 
 			__Internal__.createResourcesLoader = function(resNs, basePath) {
-                return {
-                    locate: function locate(fileName, /*optional*/options) {
-                        const Promise = types.getPromise();
-                        return Promise.try(function tryLocate() {
-                            const path = basePath
-                                .combine(files.parsePath(fileName));
-                            return path;
-                        }, this);
-                    },
-                    load: function load(fileName, /*optional*/options) {
-                        const Promise = types.getPromise();
-                        return Promise.try(function tryLoad() {
-                                const path = files.parsePath(fileName);
-                                if (path.isRelative) {
-                                    return this.locate(path, options);
-                                };
-                                return path;
-                            }, this)
-                            .then(function(path) {
-                                const watchCb = types.get(options, 'watchCb', null);
-                                let promise = null;
-                                if (path.extension === 'json') {
-                                    promise = config.load(path);
-                                } else {
-                                    const headers = {
-                                        Accept: '*/*',
-                                    };
-                                    promise = files.readFile(path, {async: true, encoding: 'utf-8', enableCache: true, headers: headers});
-                                };
-                                if (watchCb) {
-                                    files.watch(path, watchCb, {once: true});
-                                    promise = promise.nodeify(watchCb);
-                                };
-                                return promise;
-                            }, null, this);
-                    },
-                };
+				return {
+					locate: function locate(fileName, /*optional*/options) {
+						const Promise = types.getPromise();
+						return Promise.try(function tryLocate() {
+							const path = basePath
+								.combine(files.parsePath(fileName));
+							return path;
+						}, this);
+					},
+					load: function load(fileName, /*optional*/options) {
+						const Promise = types.getPromise();
+						return Promise.try(function tryLoad() {
+								const path = files.parsePath(fileName);
+								if (path.isRelative) {
+									return this.locate(path, options);
+								};
+								return path;
+							}, this)
+							.then(function(path) {
+								const watchCb = types.get(options, 'watchCb', null);
+								let promise = null;
+								if (path.extension === 'json') {
+									promise = config.load(path);
+								} else {
+									const headers = {
+										Accept: '*/*',
+									};
+									promise = files.readFile(path, {async: true, encoding: 'utf-8', enableCache: true, headers: headers});
+								};
+								if (watchCb) {
+									files.watch(path, watchCb, {once: true});
+									promise = promise.nodeify(watchCb);
+								};
+								return promise;
+							}, null, this);
+					},
+				};
 			};
 
 
-            resources.ADD('createResourcesLoader', function(resNs, basePath) {
-                resNs.ADD('getResourcesLoader', function getResourcesLoader() {
-                    return __Internal__.resourcesLoader.get(resNs);
-                });
+			resources.ADD('createResourcesLoader', function(resNs, basePath) {
+				resNs.ADD('getResourcesLoader', function getResourcesLoader() {
+					return __Internal__.resourcesLoader.get(resNs);
+				});
 
-                resNs.ADD('setResourcesLoader', function setResourcesLoader(loader) {
-                    __Internal__.resourcesLoader.set(resNs, tools.extend({}, resNs.getResourcesLoader(), loader));
-                });
+				resNs.ADD('setResourcesLoader', function setResourcesLoader(loader) {
+					__Internal__.resourcesLoader.set(resNs, tools.extend({}, resNs.getResourcesLoader(), loader));
+				});
 
-                resNs.setResourcesLoader(__Internal__.createResourcesLoader(resNs, basePath));
-            });
+				resNs.setResourcesLoader(__Internal__.createResourcesLoader(resNs, basePath));
+			});
 
 
-            return function init(_options) {
-                return modules.locate('@doodad-js/core')
-                    .then(function(path) {
-                        const basePath = path.set({file: null});
-                        const rootOpts = root.getOptions();
-                        resources.createResourcesLoader(resources, (rootOpts.fromSource ? basePath.combine('./src') : (root.serverSide ? basePath.combine('./build') : basePath)));
-                    });
-            };
+			return function init(options) {
+				const Promise = types.getPromise();
+				return Promise.resolve(root.serverSide ? files.Path.parse(module.filename) : modules.locate(/*! INJECT(TO_SOURCE(MANIFEST('name'))) */))
+					.then(function(location) {
+						location = location.set({file: ''});
+						resources.createResourcesLoader(resources, (root.serverSide ? location.moveUp(1) : location));
+					});
+			};
 		},
 	};
 	return modules;
