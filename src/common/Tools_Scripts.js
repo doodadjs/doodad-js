@@ -94,9 +94,9 @@ exports.add = function add(modules) {
 							returns: 'Url,Path',
 							description:
 								"Returns location of the current running script. Multiple usages :\n" + 
-								'- Client-side only: Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-								'- Client-side and server-side: Doodad.Tools.getCurrentScript((global.document?document.currentScript:module.filename)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-								'- Server-side only: Don\'t use this function. Instead, do : Doodad.Tools.Files.Path.parse(module.filename)\n',
+								'- Client-side only: root.Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
+								'- Client-side and server-side: root.Doodad.Tools.getCurrentScript((root.serverSide?module.filename:document.currentScript)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
+								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.Files.Path.parse(module.filename)\n',
 					}
 					//! END_REPLACE()
 				, function getCurrentScript(/*optional*/currentScript) {
