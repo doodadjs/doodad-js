@@ -30,7 +30,7 @@ Object-oriented programming framework for Javascript.
 
 ### Browsers (with a bundler)
 
-Use the package "@doodad-js/core" in your code and create your bundle with "browserify" or "webpack".
+Do a normal "require" of the package "@doodad-js/core" in your code, and create your bundle with "browserify" or "webpack".
 
 NOTE: The entry point should automatically be set to "browserify/browserify.min.js".
 
@@ -39,21 +39,18 @@ NOTE: The entry point should automatically be set to "browserify/browserify.min.
 Download and extract the .zip file from the [latest release][latest-url].
 
 In your HTML file, load UUID and the Doodad package :
-
 ```html
     <script src="dist/@doodad-js/core/lib/uuid/uuid.min.js"></script>
     <script src="dist/@doodad-js/core/package.min.js"></script>
 ```
 
 or their debug version :
-
 ```html
     <script src="dist/@doodad-js/core/lib/uuid/uuid.js"></script>
     <script src="dist/@doodad-js/core/package.js"></script>
 ```
 
 From Javascript, when the scripts are loaded, create the root namespace :
-
 ```js
     window.createRoot()
         .then((root) => {
@@ -79,7 +76,6 @@ You can create a shortcut to the namespaces this way :
 ### Node.js
 
 Download and install Doodad from NPM using the command prompt (Windows) or your favorite shell (Unix/Linux) :
-
 ```bash
     npm install @doodad-js/core --save
 ```
@@ -137,7 +133,6 @@ Also, Doodad allows reflection on every fields and methods to all loaded Doodad 
 Last, the efficiency of these scopes depends on an internal flag that remembers in which class instance we are while executing a method. Unfortunatly, __because Javascript's strict mode refuses access to the caller's object, Doodad can't know with precision when we leave the framework's context__. To rectify this issue, I've recently (since the version 9.0.0) added a new method accessible by "this.callOutside" with a new callback type accessible by "doodad.OutsideCallback". You have to use one of them when you are inside a method and calling something, or getting called by something, that should be external to the object, like a callback function, or an external library if it can hold a reference to your object. I'm sorry for the inconveniences.
 
 If you absolutely want private and protected scopes on production, and don't care about performances, you can pass these options to "createRoot" :
-
 ```js
 {
     startup: {
