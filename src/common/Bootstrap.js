@@ -3444,12 +3444,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		if (types.isNothing(obj)) {
 			result = obj;
 		} else {
-			const isArray = !types.isString(obj) && types.isArrayLike(obj);
+			const isArray = types.isArray(obj);
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 			cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 							
 			if (isArray) {
-				obj = _shared.Natives.windowObject(obj);
 				if (depth >= 0) {
 					result = tools.createArray(obj.length);
 					const len = obj.length;
@@ -3485,6 +3484,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 					const tmp = _shared.Natives.windowNumber(key);
 					if ((tmp >= 0) && (tmp < arrayLen)) {
+						// Skip array items
 						continue;
 					};
 				};
@@ -3540,7 +3540,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
 					author: "Claude Petit",
-					revision: 9,
+					revision: 10,
 					params: {
 						obj: {
 							type: 'any',
@@ -4230,8 +4230,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						if (!types.isNothing(hasInstance) && (hasInstance !== _shared.Natives.functionHasInstance)) {
 							// "hasInstance" has been messed, switch to cross-realm mode
 							crossRealm = true;
-						} else if (obj instanceof type) {
-							return true;
+						} else {
+							return (obj instanceof type);
 						};
 					} else {
 						// Cross-realm
