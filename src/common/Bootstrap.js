@@ -3432,7 +3432,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
 		// NOTE: This function will get overriden when "Doodad.js" is loaded.
 		// NOTE: Don't forget to also change '_shared.clone' !!!
-		return (!types.isString(obj) && types.isArrayLike(obj)) || types.isObject(obj) || types._instanceof(obj, [types.Map, types.Set]) || (!!cloneFunctions && types.isCustomFunction(obj));
+		return types.isArray(obj) || types.isObject(obj) || types._instanceof(obj, [types.Map, types.Set]) || (!!cloneFunctions && types.isCustomFunction(obj));
 	};
 
 	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
