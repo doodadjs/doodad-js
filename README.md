@@ -116,7 +116,7 @@ You can create a shortcut to the namespaces this way :
 
 ### Source code
 
-Doodad must be built using [make][make-url] and its dependencies.
+Doodad must be built using [@doodad-js/make][make-url] and its dependencies.
 
 ## Scopes
 
