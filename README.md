@@ -41,13 +41,13 @@ Download and extract the .zip file from the [latest release][latest-url].
 In your HTML file, load UUID and the Doodad package :
 ```html
     <script src="dist/@doodad-js/core/lib/uuid/uuid.min.js"></script>
-    <script src="dist/@doodad-js/core/package.min.js"></script>
+    <script src="dist/@doodad-js/core/core.min.js"></script>
 ```
 
 or their debug version :
 ```html
     <script src="dist/@doodad-js/core/lib/uuid/uuid.js"></script>
-    <script src="dist/@doodad-js/core/package.js"></script>
+    <script src="dist/@doodad-js/core/core.js"></script>
 ```
 
 From Javascript, when the scripts are loaded, create the root namespace :
