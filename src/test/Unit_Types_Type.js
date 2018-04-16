@@ -54,10 +54,12 @@ exports.add = function add(mods) {
 					options = {};
 				};
 					
-					
-				global.Type = types.Type;
 
-				global.Test1 = types.INIT(types.Type.$inherit(
+				const __Internal__ = {
+				};
+
+
+				__Internal__.Test1 = types.INIT(types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Test1',
@@ -88,9 +90,9 @@ exports.add = function add(mods) {
 					}
 				));
 					
-				global.objTest1 = new global.Test1();
+				__Internal__.objTest1 = new __Internal__.Test1();
 					
-				global.Test2 = types.INIT(types.SINGLETON(types.Type.$inherit(
+				__Internal__.Test2 = types.INIT(types.SINGLETON(types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Test2',
@@ -109,7 +111,7 @@ exports.add = function add(mods) {
 					}
 				)));
 					
-				global.Test3 = types.INIT(global.Test1.$inherit(
+				__Internal__.Test3 = types.INIT(__Internal__.Test1.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'Test3',
@@ -134,393 +136,390 @@ exports.add = function add(mods) {
 					}
 				));
 					
-				global.objTest3 = new global.Test3();
+				__Internal__.objTest3 = new __Internal__.Test3();
 
 
-				let command;
+				test.runCommand(types.isType, "Doodad.Types.isType", function(command, options) {
+					command.runStep(false, {repetitions: 100},        /**/ undefined);
+					command.runStep(false, {repetitions: 100},        /**/ null);
+					command.runStep(false, {repetitions: 100},        /**/ '');
+					command.runStep(false, {repetitions: 100},        /**/ 1);
+					command.runStep(false, {repetitions: 100},        /**/ 0.1);
+					command.runStep(false, {repetitions: 100},        /**/ NaN);
+					command.runStep(false, {repetitions: 100},        /**/ Infinity);
+					command.runStep(false, {repetitions: 100},        /**/ true);
+					command.runStep(false, {repetitions: 100},        /**/ {});
+					command.runStep(false, {repetitions: 100},        /**/ []);
+					command.runStep(false, {repetitions: 100},        /**/ new String(''));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(0.1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
+					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
+					command.runStep(false, {repetitions: 100},        /**/ new Date);
+					command.runStep(false, {repetitions: 100},        /**/ new Error);
+					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
+					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
+					command.runStep(false, {repetitions: 100},        /**/ Object);
+					command.runStep(true,  {repetitions: 100},        /**/ types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3);
+				});
 
+				test.runCommand(types.isJsFunction, "Doodad.Types.isJsFunction", function(command, options) {
+					command.runStep(false, {repetitions: 100},        /**/ undefined);
+					command.runStep(false, {repetitions: 100},        /**/ null);
+					command.runStep(false, {repetitions: 100},        /**/ '');
+					command.runStep(false, {repetitions: 100},        /**/ 1);
+					command.runStep(false, {repetitions: 100},        /**/ 0.1);
+					command.runStep(false, {repetitions: 100},        /**/ NaN);
+					command.runStep(false, {repetitions: 100},        /**/ Infinity);
+					command.runStep(false, {repetitions: 100},        /**/ true);
+					command.runStep(false, {repetitions: 100},        /**/ {});
+					command.runStep(false, {repetitions: 100},        /**/ []);
+					command.runStep(false, {repetitions: 100},        /**/ new String(''));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(0.1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
+					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
+					command.runStep(false, {repetitions: 100},        /**/ new Date);
+					command.runStep(false, {repetitions: 100},        /**/ new Error);
+					command.runStep(true,  {repetitions: 100},        /**/ (function(){}));
+					command.runStep(true,  {repetitions: 100},        /**/ Object.prototype.toString);
+					command.runStep(true,  {repetitions: 100},        /**/ Object);
+					command.runStep(false, {repetitions: 100},        /**/ types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3);
+				});
 
-				command = test.prepareCommand(types.isType, "Doodad.Types.isType");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "null");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "''");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "true");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "{}");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "[]");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new String('')");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(0.1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Date");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "(function(){})");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Object");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3");
-				command.end();
-
-				command = test.prepareCommand(types.isJsFunction, "Doodad.Types.isJsFunction");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "null");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "''");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "true");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "{}");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "[]");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new String('')");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(0.1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Date");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "(function(){})");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Object");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3");
-				command.end();
-
-				command = test.prepareCommand(types.isJsObject, "Doodad.Types.isJsObject");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "undefined");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "null");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "''");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "0.1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "NaN");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Infinity");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "true");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "{}");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "[]");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new String('')");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(0.1)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(NaN)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Number(Infinity)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Boolean(false)");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Date");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "new Error");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "(function(){})");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Object.prototype.toString");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Object");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3");
-				command.end();
+				test.runCommand(types.isJsObject, "Doodad.Types.isJsObject", function(command, options) {
+					command.runStep(false, {repetitions: 100},        /**/ undefined);
+					command.runStep(false, {repetitions: 100},        /**/ null);
+					command.runStep(false, {repetitions: 100},        /**/ '');
+					command.runStep(false, {repetitions: 100},        /**/ 1);
+					command.runStep(false, {repetitions: 100},        /**/ 0.1);
+					command.runStep(false, {repetitions: 100},        /**/ NaN);
+					command.runStep(false, {repetitions: 100},        /**/ Infinity);
+					command.runStep(false, {repetitions: 100},        /**/ true);
+					command.runStep(true,  {repetitions: 100},        /**/ {});
+					command.runStep(false, {repetitions: 100},        /**/ []);
+					command.runStep(false, {repetitions: 100},        /**/ new String(''));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(0.1));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
+					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
+					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
+					command.runStep(false, {repetitions: 100},        /**/ new Date);
+					command.runStep(false, {repetitions: 100},        /**/ new Error);
+					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
+					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
+					command.runStep(false, {repetitions: 100},        /**/ Object);
+					command.runStep(false, {repetitions: 100},        /**/ types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3);
+				});
 
 					
 					
-				command = test.prepareCommand(function(obj, type) {
+				test.runCommand(function(obj, type) {
 					return obj instanceof type;
-				}, "obj instanceof type");
+				}, "obj instanceof type", function(command, options) {
 					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test2", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Type");
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test2, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, types.Type);
 
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test1");
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test1);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test3);
 					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test3");
-					
-				command.end();
-
-					
-				command = test.prepareCommand(types._instanceof, "Doodad.Types._instanceof");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Type");
-				command.run(true, {eval: true, repetitions: 100},        /**/ "Test2", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Type");
-
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test1");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test2");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test3");
-					
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(types.baseof, "Doodad.Types.baseof");
+				test.runCommand(types._instanceof, "Doodad.Types._instanceof", function(command, options) {
 					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Type");
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, types.Type);
+					command.runStep(true, {repetitions: 100},        /**/ __Internal__.Test2, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, types.Type);
 
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test1");
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test1);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test2);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test3);
 					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test2");
-					
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test3");
-					
-				command.end();
-
-					
-				command = test.prepareCommand(types.is, "Doodad.Types.is");
-					
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Type");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Type");
-
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test1");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test2");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test2", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test2");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test3", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test3");
-					
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(types.isLike, "Doodad.Types.isLike");
+				test.runCommand(types.baseof, "Doodad.Types.baseof", function(command, options) {
 					
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Type", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test2", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test3", "Type");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Type");
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, types.Type);
 
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test1", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest1", "Test1");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test3", "Test1");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test1");
+					command.runStep(true,  {repetitions: 100},        /**/ types.Type, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test1);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test2);
+						
+					command.runStep(true,  {repetitions: 100},        /**/ types.Type, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test3);
 					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test2");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test2", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test3", "Test2");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest3", "Test2");
-					
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Type", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "objTest1", "Test3");
-				command.run(false, {eval: true, repetitions: 100},        /**/ "Test2", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "Test3", "Test3");
-				command.run(true,  {eval: true, repetitions: 100},        /**/ "objTest3", "Test3");
-					
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(function(obj, attr) {
+				test.runCommand(types.is, "Doodad.Types.is", function(command, options) {
+					
+					command.runStep(true,  {repetitions: 100},        /**/ types.Type, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, types.Type);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, types.Type);
+
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test1);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test2);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test2);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test3);
+					
+				});
+
+					
+				test.runCommand(types.isLike, "Doodad.Types.isLike", function(command, options) {
+					
+					command.runStep(true,  {repetitions: 100},        /**/ types.Type, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test1, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test2, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test3, types.Type);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, types.Type);
+
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test1);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test1);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test1);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test2);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test2);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test2);
+						
+					command.runStep(false, {repetitions: 100},        /**/ types.Type, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.objTest1, __Internal__.Test3);
+					command.runStep(false, {repetitions: 100},        /**/ __Internal__.Test2, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.Test3, __Internal__.Test3);
+					command.runStep(true,  {repetitions: 100},        /**/ __Internal__.objTest3, __Internal__.Test3);
+					
+				});
+
+					
+				test.runCommand(function(obj, attr) {
 					return obj[attr];
-				}, "obj[attr]");
+				}, "obj[attr]", function(command, options) {
 					
-				command.run(1,         {eval: true},    /**/ "Test1", "'typeAttribute'");
-				command.run(undefined, {eval: true},    /**/ "Test1", "'instanceAttribute'");
+					command.runStep(1,         {},    /**/ __Internal__.Test1, 'typeAttribute');
+					command.runStep(undefined, {},    /**/ __Internal__.Test1, 'instanceAttribute');
 
-				command.run(undefined, {eval: true},    /**/ "objTest1", "'typeAttribute'");
-				command.run(2,         {eval: true},    /**/ "objTest1", "'instanceAttribute'");
+					command.runStep(undefined, {},    /**/ __Internal__.objTest1, 'typeAttribute');
+					command.runStep(2,         {},    /**/ __Internal__.objTest1, 'instanceAttribute');
 
-				command.run(undefined, {eval: true},    /**/ "Test2", "'typeAttribute'");
-				command.run(2,         {eval: true},    /**/ "Test2", "'instanceAttribute'");
+					command.runStep(undefined, {},    /**/ __Internal__.Test2, 'typeAttribute');
+					command.runStep(2,         {},    /**/ __Internal__.Test2, 'instanceAttribute');
 
-				command.run(3,         {eval: true},    /**/ "Test3", "'typeAttribute'");
-				command.run(undefined, {eval: true},    /**/ "Test3", "'instanceAttribute'");
+					command.runStep(3,         {},    /**/ __Internal__.Test3, 'typeAttribute');
+					command.runStep(undefined, {},    /**/ __Internal__.Test3, 'instanceAttribute');
 
-				command.run(undefined, {eval: true},    /**/ "objTest3", "'typeAttribute'");
-				command.run(4,         {eval: true},    /**/ "objTest3", "'instanceAttribute'");
+					command.runStep(undefined, {},    /**/ __Internal__.objTest3, 'typeAttribute');
+					command.runStep(4,         {},    /**/ __Internal__.objTest3, 'instanceAttribute');
 					
-				command.end();
+				});
 
-				command = test.prepareCommand(function(obj, attr) {
+				test.runCommand(function(obj, attr) {
 					const fn = obj[attr];
 					return fn && fn.apply(obj);
-				}, "obj[attr]()");
+				}, "obj[attr]()", function(command, options) {
 					
-				command.run(1,         {eval: true},    /**/ "Test1", "'typeMethod'");
-				command.run(2,         {eval: true},    /**/ "Test1", "'typeMethodNoSuper'");
-				command.run(3,         {eval: true},    /**/ "Test1", "'typeMethodNoOverride'");
-				command.run(undefined, {eval: true},    /**/ "Test1", "'instanceMethod'");
-				command.run(undefined, {eval: true},    /**/ "Test1", "'instanceMethodNoSuper'");
-				command.run(undefined, {eval: true},    /**/ "Test1", "'instanceMethodNoOverride'");
+					command.runStep(1,         {},    /**/ __Internal__.Test1, 'typeMethod');
+					command.runStep(2,         {},    /**/ __Internal__.Test1, 'typeMethodNoSuper');
+					command.runStep(3,         {},    /**/ __Internal__.Test1, 'typeMethodNoOverride');
+					command.runStep(undefined, {},    /**/ __Internal__.Test1, 'instanceMethod');
+					command.runStep(undefined, {},    /**/ __Internal__.Test1, 'instanceMethodNoSuper');
+					command.runStep(undefined, {},    /**/ __Internal__.Test1, 'instanceMethodNoOverride');
 
-				command.run(undefined, {eval: true},    /**/ "objTest1", "'typeMethod'");
-				command.run(undefined, {eval: true},    /**/ "objTest1", "'typeMethodNoSuper'");
-				command.run(undefined, {eval: true},    /**/ "objTest1", "'typeMethodNoOverride'");
-				command.run(2,         {eval: true},    /**/ "objTest1", "'instanceMethod'");
-				command.run(3,         {eval: true},    /**/ "objTest1", "'instanceMethodNoSuper'");
-				command.run(4,         {eval: true},    /**/ "objTest1", "'instanceMethodNoOverride'");
+					command.runStep(undefined, {},    /**/ __Internal__.objTest1, 'typeMethod');
+					command.runStep(undefined, {},    /**/ __Internal__.objTest1, 'typeMethodNoSuper');
+					command.runStep(undefined, {},    /**/ __Internal__.objTest1, 'typeMethodNoOverride');
+					command.runStep(2,         {},    /**/ __Internal__.objTest1, 'instanceMethod');
+					command.runStep(3,         {},    /**/ __Internal__.objTest1, 'instanceMethodNoSuper');
+					command.runStep(4,         {},    /**/ __Internal__.objTest1, 'instanceMethodNoOverride');
 
-				command.run(undefined, {eval: true},    /**/ "Test2", "'typeMethod'");
-				command.run(2,         {eval: true},    /**/ "Test2", "'instanceMethod'");
+					command.runStep(undefined, {},    /**/ __Internal__.Test2, 'typeMethod');
+					command.runStep(2,         {},    /**/ __Internal__.Test2, 'instanceMethod');
 
-				command.run(1,         {eval: true},    /**/ "Test3", "'typeMethod'");
-				command.run(4,         {eval: true},    /**/ "Test3", "'typeMethodNoSuper'");
-				command.run(3,         {eval: true},    /**/ "Test3", "'typeMethodNoOverride'");
-				command.run(undefined, {eval: true},    /**/ "Test3", "'instanceMethod'");
-				command.run(undefined, {eval: true},    /**/ "Test3", "'instanceMethodNoSuper'");
-				command.run(undefined, {eval: true},    /**/ "Test3", "'instanceMethodNoOverride'");
+					command.runStep(1,         {},    /**/ __Internal__.Test3, 'typeMethod');
+					command.runStep(4,         {},    /**/ __Internal__.Test3, 'typeMethodNoSuper');
+					command.runStep(3,         {},    /**/ __Internal__.Test3, 'typeMethodNoOverride');
+					command.runStep(undefined, {},    /**/ __Internal__.Test3, 'instanceMethod');
+					command.runStep(undefined, {},    /**/ __Internal__.Test3, 'instanceMethodNoSuper');
+					command.runStep(undefined, {},    /**/ __Internal__.Test3, 'instanceMethodNoOverride');
 
-				command.run(undefined, {eval: true},    /**/ "objTest3", "'typeMethod'");
-				command.run(undefined, {eval: true},    /**/ "objTest3", "'typeMethodNoSuper'");
-				command.run(undefined, {eval: true},    /**/ "objTest3", "'typeMethodNoOverride'");
-				command.run(2,         {eval: true},    /**/ "objTest3", "'instanceMethod'");
-				command.run(5,         {eval: true},    /**/ "objTest3", "'instanceMethodNoSuper'");
-				command.run(4,         {eval: true},    /**/ "objTest3", "'instanceMethodNoOverride'");
+					command.runStep(undefined, {},    /**/ __Internal__.objTest3, 'typeMethod');
+					command.runStep(undefined, {},    /**/ __Internal__.objTest3, 'typeMethodNoSuper');
+					command.runStep(undefined, {},    /**/ __Internal__.objTest3, 'typeMethodNoOverride');
+					command.runStep(2,         {},    /**/ __Internal__.objTest3, 'instanceMethod');
+					command.runStep(5,         {},    /**/ __Internal__.objTest3, 'instanceMethodNoSuper');
+					command.runStep(4,         {},    /**/ __Internal__.objTest3, 'instanceMethodNoOverride');
 					
-				command.end();
-
-					
-				command = test.prepareCommand(types.getType, "Doodad.Types.getType");
-					
-				command.run("Type",   {eval: true, repetitions: 100},        /**/ "Type");
-				command.run("Test1",  {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run("Test1",  {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run("Test2.constructor",  {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run("Test3",  {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run("Test3",  {eval: true, repetitions: 100},        /**/ "objTest3");
-
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(types.getTypeName, "Doodad.Types.getTypeName");
+				test.runCommand(types.getType, "Doodad.Types.getType", function(command, options) {
 					
-				command.run("'Type'",   {eval: true, repetitions: 100},        /**/ "Type");
-				command.run("'Test1'",  {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run("'Test1'",  {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run("'Test2'",  {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run("'Test3'",  {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run("'Test3'",  {eval: true, repetitions: 100},        /**/ "objTest3");
+					command.runStep(types.Type,   {repetitions: 100},        /**/ types.Type);
+					command.runStep(__Internal__.Test1,  {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep(__Internal__.Test1,  {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep(__Internal__.Test2.constructor,  {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep(__Internal__.Test3,  {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep(__Internal__.Test3,  {repetitions: 100},        /**/ __Internal__.objTest3);
 
-				command.end();
-
-					
-				command = test.prepareCommand(types.getBase, "Doodad.Types.getBase");
-					
-	////			command.run("???",        {eval: true, repetitions: 100},        /**/ "Type");
-				command.run("Type",     {eval: true, repetitions: 100},        /**/ "Test1");
-				command.run("Type",     {eval: true, repetitions: 100},        /**/ "objTest1");
-				command.run("Type",     {eval: true, repetitions: 100},        /**/ "Test2");
-				command.run("Test1",    {eval: true, repetitions: 100},        /**/ "Test3");
-				command.run("Test1",    {eval: true, repetitions: 100},        /**/ "objTest3");
-
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(function (obj) {
+				test.runCommand(types.getTypeName, "Doodad.Types.getTypeName", function(command, options) {
+					
+					command.runStep('Type',   {repetitions: 100},        /**/ types.Type);
+					command.runStep('Test1',  {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep('Test1',  {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep('Test2',  {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep('Test3',  {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep('Test3',  {repetitions: 100},        /**/ __Internal__.objTest3);
+
+				});
+
+					
+				test.runCommand(types.getBase, "Doodad.Types.getBase", function(command, options) {
+					
+					//command.runStep("???",        {repetitions: 100},        /**/ types.Type);
+					command.runStep(types.Type,     {repetitions: 100},        /**/ __Internal__.Test1);
+					command.runStep(types.Type,     {repetitions: 100},        /**/ __Internal__.objTest1);
+					command.runStep(types.Type,     {repetitions: 100},        /**/ __Internal__.Test2);
+					command.runStep(__Internal__.Test1,    {repetitions: 100},        /**/ __Internal__.Test3);
+					command.runStep(__Internal__.Test1,    {repetitions: 100},        /**/ __Internal__.objTest3);
+
+				});
+
+					
+				test.runCommand(function (obj) {
 					return obj.toString();
-				}, "obj.toString()");
+				}, "obj.toString()", function(command, options) {
 
-				command.run("'[type Type]'",     {eval: true},        /**/ "Type");
-				command.run("'[type Test1]'",    {eval: true},        /**/ "Test1");
-				command.run("'[object Test1]'",  {eval: true},        /**/ "objTest1");
-				command.run("'[object Test2]'",  {eval: true},        /**/ "Test2");
-				command.run("'[type Test3]'",    {eval: true},        /**/ "Test3");
-				command.run("'[object Test3]'",  {eval: true},        /**/ "objTest3");
+					command.runStep('[type Type]',     {},        /**/ types.Type);
+					command.runStep('[type Test1]',    {},        /**/ __Internal__.Test1);
+					command.runStep('[object Test1]',  {},        /**/ __Internal__.objTest1);
+					command.runStep('[object Test2]',  {},        /**/ __Internal__.Test2);
+					command.runStep('[type Test3]',    {},        /**/ __Internal__.Test3);
+					command.runStep('[object Test3]',  {},        /**/ __Internal__.objTest3);
 
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(function (obj) {
+				test.runCommand(function (obj) {
 					return obj.toLocaleString();
-				}, "obj.toLocaleString()");
+				}, "obj.toLocaleString()", function(command, options) {
 
-				command.run("'[type Type]'",     {eval: true},        /**/ "Type");
-				command.run("'[type Test1]'",    {eval: true},        /**/ "Test1");
-				command.run("'[object Test1]'",  {eval: true},        /**/ "objTest1");
-				command.run("'[object Test2]'",  {eval: true},        /**/ "Test2");
-				command.run("'[type Test3]'",    {eval: true},        /**/ "Test3");
-				command.run("'[object Test3]'",  {eval: true},        /**/ "objTest3");
+					command.runStep('[type Type]',     {},        /**/ types.Type);
+					command.runStep('[type Test1]',    {},        /**/ __Internal__.Test1);
+					command.runStep('[object Test1]',  {},        /**/ __Internal__.objTest1);
+					command.runStep('[object Test2]',  {},        /**/ __Internal__.Test2);
+					command.runStep('[type Test3]',    {},        /**/ __Internal__.Test3);
+					command.runStep('[object Test3]',  {},        /**/ __Internal__.objTest3);
 
-				command.end();
+				});
 
 					
-				command = test.prepareCommand(function (obj) {
+				test.runCommand(function (obj) {
 					return (types instanceof types.Namespace) && (types instanceof types.Type);
-				}, "(Doodad.Types instanceof Doodad.Types.Namespace) && (Doodad.Types instanceof Doodad.Types.Type)");
-				command.run(true);
-				command.end();
+				}, "(Doodad.Types instanceof Doodad.Types.Namespace) && (Doodad.Types instanceof Doodad.Types.Type)", function(command, options) {
+					command.runStep(true);
+				});
 					
 					
 			},

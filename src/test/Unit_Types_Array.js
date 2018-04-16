@@ -55,275 +55,291 @@ exports.add = function add(mods) {
 				};
 
 					
-				const createArrays = function createArrays() {
-					global.ar1 = [1, 2, 9, 10];
-					global.ar1.a = 3;
-					delete global.ar1[2];
-					delete global.ar1[3];
-						
-					global.ar2 = [1, 2, 3];
-					delete global.ar2[0];
+				const createArray1 = function _createArray1() {
+					const ar1 = [1, 2, 9, 10];
+					ar1.a = 3;
+					delete ar1[2];
+					delete ar1[3];
+					return ar1;
 				};
 					
-				createArrays();
+				const createArray2 = function _createArray2() {
+					const ar2 = [1, 2, 3];
+					delete ar2[0];
+					return ar2;
+				};
 					
 
-				let command;
-
+				test.runCommand(types.has, "Doodad.Types.hasKey", function(command, options) {
+					const ar1 = createArray1();
 					
-				command = test.prepareCommand(types.has, "Doodad.Types.hasKey");
-					
-				command.run(false,       {eval: true}     /**/ );
-				command.run(false,       {eval: true},    /**/ "ar1");
-				command.run(true,        {eval: true},    /**/ "ar1", "0");
-				command.run(true,        {eval: true},    /**/ "ar1", "1");
-				command.run(false,       {eval: true},    /**/ "ar1", "2");
-				command.run(true,        {eval: true},    /**/ "ar1", "'a'");
-				command.run(false,       {eval: true},    /**/ "ar1", "'b'");
-				command.run(false,       {eval: true},    /**/ "ar1", "'toString'");
+					command.runStep(false,       {}     /**/ );
+					command.runStep(false,       {},    /**/ ar1);
+					command.runStep(true,        {},    /**/ ar1, 0);
+					command.runStep(true,        {},    /**/ ar1, 1);
+					command.runStep(false,       {},    /**/ ar1, 2);
+					command.runStep(true,        {},    /**/ ar1, 'a');
+					command.runStep(false,       {},    /**/ ar1, 'b');
+					command.runStep(false,       {},    /**/ ar1, 'toString');
 
-				command.end();
-
-					
-				command = test.prepareCommand(types.hasInherited, "Doodad.Types.hasKeyInherited");
-					
-				command.run(false,       {eval: true}     /**/ );
-				command.run(false,       {eval: true},    /**/ "ar1");
-				command.run(true,        {eval: true},    /**/ "ar1", "0");
-				command.run(true,        {eval: true},    /**/ "ar1", "1");
-				command.run(false,       {eval: true},    /**/ "ar1", "2");
-				command.run(true,        {eval: true},    /**/ "ar1", "'a'");
-				command.run(false,       {eval: true},    /**/ "ar1", "'b'");
-				command.run(true,       {eval: true},    /**/ "ar1", "'toString'");  // "Array" has its own "toString"
-					
-				command.end();
-
-					
-				command = test.prepareCommand(types.get, "Doodad.Types.get");
-					
-				command.run("undefined", {eval: true}     /**/ );
-				command.run("undefined", {eval: true},    /**/ "ar1");
-
-				command.run(1,           {eval: true},    /**/ "ar1", "0");
-				command.run(2,           {eval: true},    /**/ "ar1", "1");
-				command.run("undefined", {eval: true},    /**/ "ar1", "2");
-				command.run(3,           {eval: true},    /**/ "ar1", "'a'");
-				command.run("undefined", {eval: true},    /**/ "ar1", "'b'");
-				command.run("undefined", {eval: true},    /**/ "ar1", "'toString'");
-
-				command.run(1,           {eval: true},    /**/ "ar1", "0", "4");
-				command.run(2,           {eval: true},    /**/ "ar1", "1", "4");
-				command.run(4,           {eval: true},    /**/ "ar1", "2", "4");
-				command.run(3,           {eval: true},    /**/ "ar1", "'a'", "4");
-				command.run(4,           {eval: true},    /**/ "ar1", "'b'", "4");
-				command.run("undefined", {eval: true},    /**/ "ar1", "'toString'");
-
-				command.end();
-
-					
-				command = test.prepareCommand(types.gets, "Doodad.Types.gets");
-					
-				command.run("{}",        {eval: true}     /**/ );
-				command.run("{}",        {eval: true},    /**/ "ar1");
-				command.run("{}",        {eval: true},    /**/ "ar1");
-
-				command.run("{'0': 1}",  {eval: true},    /**/ "ar1", "0");
-				command.run("{'1': 2}",  {eval: true},    /**/ "ar1", "1");
-				command.run("{}",        {eval: true},    /**/ "ar1", "2");
-				command.run("{'a': 3}",  {eval: true},    /**/ "ar1", "'a'");
-				command.run("{}",        {eval: true},    /**/ "ar1", "'b'");
-				command.run("{}",        {eval: true},    /**/ "ar1", "'toString'");
-
-				command.run("{'0': 1}",  {eval: true},    /**/ "ar1", "0", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'1': 2}",  {eval: true},    /**/ "ar1", "1", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'2': 6}",  {eval: true},    /**/ "ar1", "2", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'a': 3}",  {eval: true},    /**/ "ar1", "'a'", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'b': 8}",  {eval: true},    /**/ "ar1", "'b'", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'toString': 9}", {eval: true},  /**/ "ar1", "'toString'", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0]");
-				command.run("{'0': 1, 'a': 3}",  {eval: true},    /**/ "ar1", "[0, 'a']");
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0, 'b']");
-
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0]", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'0': 1, 'a': 3}",  {eval: true},    /**/ "ar1", "[0, 'a']", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'0': 1, 'b': 8}",  {eval: true},    /**/ "ar1", "[0, 'b']", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-
-				command.end();
-
-					
-				command = test.prepareCommand(types.set, "Doodad.Types.set");
-					
-				command.run(4,           {eval: true},    /**/ "ar1", "0", "4");
-				command.run(5,           {eval: true},    /**/ "ar1", "1", "5");
-				command.run(undefined,   {eval: true},    /**/ "ar1", "2", "6");
-				command.run(7,           {eval: true},    /**/ "ar1", "'a'", "7");
-				command.run(undefined,   {eval: true},    /**/ "ar1", "'b'", "8");
-
-				command.end();
-				command.chain(function(dummy) {
-					createArrays();
-				});
-					
-					
-				command = test.prepareCommand(types.sets, "Doodad.Types.sets");
-					
-				command.run("{'0': 4}",  {eval: true},    /**/ "ar1", "{'0': 4}");
-				command.run("{'1': 5}",  {eval: true},    /**/ "ar1", "{'1': 5}");
-				command.run("{}",        {eval: true},    /**/ "ar1", "{'2': 6}");
-				command.run("{'a': 7}",  {eval: true},    /**/ "ar1", "{'a': 7}");
-				command.run("{}",        {eval: true},    /**/ "ar1", "{'b': 8}");
-				command.chain(function(dummy) {
-					createArrays();
-				});
-
-				command.run("{'0': 4, 'a': 7}",  {eval: true},    /**/ "ar1", "{'0': 4, 'a': 7}");
-				command.chain(function(dummy) {
-					createArrays();
-				});
-
-				command.run("{'0': 4, 'a': 7}",  {eval: true},    /**/ "ar1", "{'0': 4, 'a': 7, 'b': 8}");
-
-				command.end();
-				command.chain(function(dummy) {
-					createArrays();
-				});
-
-
-				command = test.prepareCommand(types.getDefault, "Doodad.Types.getDefault");
-					
-				command.run("undefined", {eval: true}     /**/ );
-				command.run("undefined", {eval: true},    /**/ "ar1");
-
-				command.run(1,           {eval: true},    /**/ "ar1", "0");
-				command.run(2,           {eval: true},    /**/ "ar1", "1");
-				command.run("undefined", {eval: true},    /**/ "ar1", "2");
-				command.run(3,           {eval: true},    /**/ "ar1", "'a'");
-				command.run("undefined", {eval: true},    /**/ "ar1", "'b'");
-				command.chain(function(dummy) {
-					createArrays();
-				});
-
-				command.run(1,           {eval: true},    /**/ "ar1", "0", "4");
-				command.run(2,           {eval: true},    /**/ "ar1", "1", "4");
-				command.run(4,           {eval: true},    /**/ "ar1", "2", "4");
-				command.run(3,           {eval: true},    /**/ "ar1", "'a'", "4");
-				command.run(4,           {eval: true},    /**/ "ar1", "'b'", "4");
-
-				command.end();
-				command.chain(function(dummy) {
-					createArrays();
 				});
 
 					
-				command = test.prepareCommand(types.getsDefault, "Doodad.Types.getsDefault");
+				test.runCommand(types.hasInherited, "Doodad.Types.hasKeyInherited", function(command, options) {
+					const ar1 = createArray1();
 					
-				command.run("{}",        {eval: true}     /**/ );
-				command.run("{}",        {eval: true},    /**/ "ar1");
-				command.run("{}",        {eval: true},    /**/ "ar1");
-
-				command.run("{'0': 1}",  {eval: true},    /**/ "ar1", "0");
-				command.run("{'1': 2}",  {eval: true},    /**/ "ar1", "1");
-				command.run("{}",        {eval: true},    /**/ "ar1", "2");
-				command.run("{'a': 3}",  {eval: true},    /**/ "ar1", "'a'");
-				command.run("{}",        {eval: true},    /**/ "ar1", "'b'");
-				command.chain(function(dummy) {
-					createArrays();
+					command.runStep(false,       {}     /**/ );
+					command.runStep(false,       {},    /**/ ar1);
+					command.runStep(true,        {},    /**/ ar1, 0);
+					command.runStep(true,        {},    /**/ ar1, 1);
+					command.runStep(false,       {},    /**/ ar1, 2);
+					command.runStep(true,        {},    /**/ ar1, 'a');
+					command.runStep(false,       {},    /**/ ar1, 'b');
+					command.runStep(true,       {},    /**/ ar1, 'toString');  // "Array" has its own "toString"
+					
 				});
 
-				command.run("{'0': 1}",  {eval: true},    /**/ "ar1", "0", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'1': 2}",  {eval: true},    /**/ "ar1", "1", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'2': 6}",  {eval: true},    /**/ "ar1", "2", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'a': 3}",  {eval: true},    /**/ "ar1", "'a'", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'b': 8}",  {eval: true},    /**/ "ar1", "'b'", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.chain(function(dummy) {
-					createArrays();
+					
+				test.runCommand(types.get, "Doodad.Types.get", function(command, options) {
+					const ar1 = createArray1();
+					
+					command.runStep(undefined,   {}     /**/ );
+					command.runStep(undefined,   {},    /**/ ar1);
+
+					command.runStep(1,           {},    /**/ ar1, 0);
+					command.runStep(2,           {},    /**/ ar1, 1);
+					command.runStep(undefined,   {},    /**/ ar1, 2);
+					command.runStep(3,           {},    /**/ ar1, 'a');
+					command.runStep(undefined,   {},    /**/ ar1, 'b');
+					command.runStep(undefined,   {},    /**/ ar1, 'toString');
+
+					command.runStep(1,           {},    /**/ ar1, 0, 4);
+					command.runStep(2,           {},    /**/ ar1, 1, 4);
+					command.runStep(4,           {},    /**/ ar1, 2, 4);
+					command.runStep(3,           {},    /**/ ar1, 'a', 4);
+					command.runStep(4,           {},    /**/ ar1, 'b', 4);
+					command.runStep(undefined,   {},    /**/ ar1, 'toString');
+
 				});
 
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0]");
-				command.run("{'0': 1, 'a': 3}",  {eval: true},    /**/ "ar1", "[0, 'a']");
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0, 'b']");
-				command.chain(function(dummy) {
-					createArrays();
+					
+				test.runCommand(types.gets, "Doodad.Types.gets", function(command, options) {
+					const ar1 = createArray1();
+					
+					command.runStep({},        {}     /**/ );
+					command.runStep({},        {},    /**/ ar1);
+					command.runStep({},        {},    /**/ ar1);
+
+					command.runStep({'0': 1},  {},    /**/ ar1, 0);
+					command.runStep({'1': 2},  {},    /**/ ar1, 1);
+					command.runStep({},        {},    /**/ ar1, 2);
+					command.runStep({'a': 3},  {},    /**/ ar1, 'a');
+					command.runStep({},        {},    /**/ ar1, 'b');
+					command.runStep({},        {},    /**/ ar1, 'toString');
+
+					command.runStep({'0': 1},  {},    /**/ ar1, 0, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'1': 2},  {},    /**/ ar1, 1, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'2': 6},  {},    /**/ ar1, 2, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'a': 3},  {},    /**/ ar1, 'a', {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'b': 8},  {},    /**/ ar1, 'b', {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'toString': 9}, {},  /**/ ar1, 'toString', {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+
+					command.runStep({'0': 1},          {},    /**/ ar1, [0]);
+					command.runStep({'0': 1, 'a': 3},  {},    /**/ ar1, [0, 'a']);
+					command.runStep({'0': 1},          {},    /**/ ar1, [0, 'b']);
+
+					command.runStep({'0': 1},          {},    /**/ ar1, [0], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'0': 1, 'a': 3},  {},    /**/ ar1, [0, 'a'], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					command.runStep({'0': 1, 'b': 8},  {},    /**/ ar1, [0, 'b'], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+
 				});
 
-				command.run("{'0': 1}",          {eval: true},    /**/ "ar1", "[0]", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'0': 1, 'a': 3}",  {eval: true},    /**/ "ar1", "[0, 'a']", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.run("{'0': 1, 'b': 8}",  {eval: true},    /**/ "ar1", "[0, 'b']", "{'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9}");
-				command.chain(function(dummy) {
-					createArrays();
+					
+				test.runCommand(types.set, "Doodad.Types.set", function(command, options) {
+					const ar1 = createArray1();
+					
+					command.runStep(4,           {},    /**/ ar1, 0, 4);
+					command.runStep(5,           {},    /**/ ar1, 1, 5);
+					command.runStep(undefined,   {},    /**/ ar1, 2, 6);
+					command.runStep(7,           {},    /**/ ar1, 'a', 7);
+					command.runStep(undefined,   {},    /**/ ar1, 'b', 8);
+
+				});
+					
+					
+				test.runCommand(types.sets, "Doodad.Types.sets", function(command, options) {
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 4},  {},    /**/ ar1, {'0': 4});
+						command.runStep({'1': 5},  {},    /**/ ar1, {'1': 5});
+						command.runStep({},        {},    /**/ ar1, {'2': 6});
+						command.runStep({'a': 7},  {},    /**/ ar1, {'a': 7});
+						command.runStep({},        {},    /**/ ar1, {'b': 8});
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 4, 'a': 7},  {},    /**/ ar1, {'0': 4, 'a': 7});
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 4, 'a': 7},  {},    /**/ ar1, {'0': 4, 'a': 7, 'b': 8});
+					});
+
 				});
 
-				command.end();
+
+				test.runCommand(types.getDefault, "Doodad.Types.getDefault", function(command, options) {
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep(undefined, {}     /**/ );
+						command.runStep(undefined, {},    /**/ ar1);
+						command.runStep(1,           {},    /**/ ar1, 0);
+						command.runStep(2,           {},    /**/ ar1, 1);
+						command.runStep(undefined, {},    /**/ ar1, 2);
+						command.runStep(3,           {},    /**/ ar1, 'a');
+						command.runStep(undefined, {},    /**/ ar1, 'b');
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep(1,           {},    /**/ ar1, 0, 4);
+						command.runStep(2,           {},    /**/ ar1, 1, 4);
+						command.runStep(4,           {},    /**/ ar1, 2, 4);
+						command.runStep(3,           {},    /**/ ar1, 'a', 4);
+						command.runStep(4,           {},    /**/ ar1, 'b', 4);
+					});
+
+				});
+
+					
+				test.runCommand(types.getsDefault, "Doodad.Types.getsDefault", function(command, options) {
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({},        {}     /**/ );
+						command.runStep({},        {},    /**/ ar1);
+						command.runStep({},        {},    /**/ ar1);
+						command.runStep({'0': 1},  {},    /**/ ar1, 0);
+						command.runStep({'1': 2},  {},    /**/ ar1, 1);
+						command.runStep({},        {},    /**/ ar1, 2);
+						command.runStep({'a': 3},  {},    /**/ ar1, 'a');
+						command.runStep({},        {},    /**/ ar1, 'b');
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 1},  {},    /**/ ar1, 0, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'1': 2},  {},    /**/ ar1, 1, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'2': 6},  {},    /**/ ar1, 2, {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'a': 3},  {},    /**/ ar1, 'a', {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'b': 8},  {},    /**/ ar1, 'b', {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 1},          {},    /**/ ar1, [0]);
+						command.runStep({'0': 1, 'a': 3},  {},    /**/ ar1, [0, 'a']);
+						command.runStep({'0': 1},          {},    /**/ ar1, [0, 'b']);
+					});
+
+					command.chain(function(dummy) {
+						const ar1 = createArray1();
+						command.runStep({'0': 1},          {},    /**/ ar1, [0], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'0': 1, 'a': 3},  {},    /**/ ar1, [0, 'a'], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+						command.runStep({'0': 1, 'b': 8},  {},    /**/ ar1, [0, 'b'], {'0': 4, '1': 5, '2': 6, 'a': 7, 'b': 8, toString: 9});
+					});
+
+				});
 					
 					
-				command = test.prepareCommand(types.keys, "Doodad.Types.keys");
-				command.run("[]",                    {eval: true}     /**/ );
-				command.run("['a']",                 {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.keys, "Doodad.Types.keys", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {}     /**/ );
+					command.runStep(['a'],                 {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.keysInherited, "Doodad.Types.keysInherited");
-				command.run("[]",                    {eval: true}     /**/ );
-				command.run("['a']",                 {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.keysInherited, "Doodad.Types.keysInherited", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {}     /**/ );
+					command.runStep(['a'],                 {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.values, "Doodad.Types.values");
-				command.run("[]",                    {eval: true}     /**/ );
-				command.run("[3]",                   {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.values, "Doodad.Types.values", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {}     /**/ );
+					command.runStep([3],                   {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.items, "Doodad.Types.items");
-				command.run("[]",                    {eval: true, depth: 1}     /**/ );
-				command.run("[[0, 1], [1, 2]]",      {eval: true, depth: 1},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.items, "Doodad.Types.items", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {depth: 1}     /**/ );
+					command.runStep([[0, 1], [1, 2]],      {depth: 1},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.hasIndex, "Doodad.Types.hasIndex");
-				command.run(false, {eval: true}     /**/ );
-				command.run(false, {eval: true},    /**/ "ar1");
-				command.run(true,  {eval: true},    /**/ "ar1", "0");
-				command.run(true,  {eval: true},    /**/ "ar1", "1");
-				command.run(false, {eval: true},    /**/ "ar1", "2");
-				command.run(false, {eval: true},    /**/ "ar1", "'a'");
-				command.run(false, {eval: true},    /**/ "ar1", "'b'");
-				command.run(false, {eval: true},    /**/ "ar1", "'toString'");
-				command.end();
+				test.runCommand(types.hasIndex, "Doodad.Types.hasIndex", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep(false, {}     /**/ );
+					command.runStep(false, {},    /**/ ar1);
+					command.runStep(true,  {},    /**/ ar1, 0);
+					command.runStep(true,  {},    /**/ ar1, 1);
+					command.runStep(false, {},    /**/ ar1, 2);
+					command.runStep(false, {},    /**/ ar1, 'a');
+					command.runStep(false, {},    /**/ ar1, 'b');
+					command.runStep(false, {},    /**/ ar1, 'toString');
+				});
 					
 					
-				command = test.prepareCommand(types.indexes, "Doodad.Types.indexes");
-				command.run("[]",                    {eval: true}     /**/ );
-				command.run("[0, 1]",                {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.indexes, "Doodad.Types.indexes", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {}     /**/ );
+					command.runStep([0, 1],                {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.available, "Doodad.Types.available");
-				command.run(-1,    {eval: true}     /**/ );
-				command.run(-1,     {eval: true},   /**/ "[]");
-				command.run(-1,     {eval: true},   /**/ "[0, 1]");
-				command.run(2,     {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.available, "Doodad.Types.available", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep(-1,    {}     /**/ );
+					command.runStep(-1,     {},   /**/ []);
+					command.runStep(-1,     {},   /**/ [0, 1]);
+					command.runStep(2,     {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.availables, "Doodad.Types.availables");
-				command.run("[]",                    {eval: true}     /**/ );
-				command.run("[2, 3]",                {eval: true},    /**/ "ar1");
-				command.end();
+				test.runCommand(types.availables, "Doodad.Types.availables", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep([],                    {}     /**/ );
+					command.runStep([2, 3],                {},    /**/ ar1);
+				});
 					
 					
-				command = test.prepareCommand(types.isClonable, "Doodad.Types.isClonable");
-				command.run(false,      {eval: true}     /**/ );
-				command.run(true,       {eval: true},    /**/  "ar1");
-				command.end();
+				test.runCommand(types.isClonable, "Doodad.Types.isClonable", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep(false,      {}     /**/ );
+					command.runStep(true,       {},    /**/  ar1);
+				});
 
 
-				command = test.prepareCommand(types.clone, "Doodad.Types.clone");
-				command.run("undefined",  {eval: true}                               /**/ );
-				command.run("ar1", {eval: true, not: true, mode: 'compare'},    /**/  "ar1");
-				command.run("[1, 2, ctx.EmptySlot, ctx.EmptySlot]", {eval: true},  /**/  "ar1");
-				command.end();
+				test.runCommand(types.clone, "Doodad.Types.clone", function(command, options) {
+					const ar1 = createArray1();
+
+					command.runStep(undefined,  {}                               /**/ );
+					command.runStep(ar1, {not: true, mode: 'compare'},    /**/  ar1);
+					command.runStep([1, 2, test.EmptySlot, test.EmptySlot], {},  /**/  ar1);
+				});
 				
 			},
 		},

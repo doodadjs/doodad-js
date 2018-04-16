@@ -54,274 +54,325 @@ exports.add = function add(mods) {
 					options = {};
 				};
 					
+				
+				const __Internal__ = {
+					symbol1: types.hasSymbolsEnabled() && types.getSymbol("symbol1") || undefined,
+					symbol2: types.hasSymbolsEnabled() && types.getSymbol("symbol2") || undefined,
+				};
 					
-				global.symbol1 = types.hasSymbolsEnabled() && types.getSymbol("symbol1") || undefined;
-				global.symbol2 = types.hasSymbolsEnabled() && types.getSymbol("symbol2") || undefined;
-					
-				const createDicts = function createDicts() {
-					global.dict1 = {
+				const createDicts = function _createDicts() {
+					const dicts = {};
+
+					dicts.dict1 = {
 						a: 1,
 						b: 2,
 					};
-					if (global.symbol1) {
-						global.dict1[global.symbol1] = 10;
+					if (__Internal__.symbol1) {
+						dicts.dict1[__Internal__.symbol1] = 10;
 					};
-						
-					const typeDict2 = function() {};
-					typeDict2.prototype = types.setPrototypeOf(typeDict2.prototype, global.dict1);
+					
+					/*
+					const typeDict2 = function() {
+						// Do nothing
+					};
+					typeDict2.prototype = types.setPrototypeOf(typeDict2.prototype, dicts.dict1);
 					typeDict2.prototype.c = 3;
 					typeDict2.prototype.d = 4;
-					global.dict2 = new typeDict2();
+					dicts.dict2 = new typeDict2();
 						
 					const typeDict3 = function() {};
-					typeDict3.prototype = types.setPrototypeOf(typeDict3.prototype, global.dict2);
-					global.dict3 = new typeDict3();
-					global.dict3.e = 5;
-					global.dict3.f = 6;
-					if (global.symbol2) {
-						global.dict3[global.symbol2] = 11;
+					typeDict3.prototype = types.setPrototypeOf(typeDict3.prototype, dicts.dict2);
+					dicts.dict3 = new typeDict3();
+					dicts.dict3.e = 5;
+					dicts.dict3.f = 6;
+					if (__Internal__.symbol2) {
+						dicts.dict3[__Internal__.symbol2] = 11;
 					};
+					*/
+
+					return dicts;
 				};
 					
-				createDicts();
-					
 
-				let command;
-
-
-				command = test.prepareCommand(tools.findItem, "Doodad.Tools.findItem");
-				command.run(null,                                             {repetitions: 100}  /**/);
-				command.run(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
-				command.run(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
-				command.run('b',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
-				command.run('a',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
-				command.run('a',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {return val === "there"});
-				command.end();
+				test.runCommand(tools.findItem, "Doodad.Tools.findItem", function(command, options) {
+					command.runStep(null,                                             {repetitions: 100}  /**/);
+					command.runStep(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
+					command.runStep(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
+					command.runStep('b',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
+					command.runStep('a',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
+					command.runStep('a',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {
+						return val === "there";
+					});
+				});
 					
 					
-				command = test.prepareCommand(tools.findLastItem, "Doodad.Tools.findLastItem");
-				command.run(null,                                             {repetitions: 100}  /**/);
-				command.run(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
-				command.run(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
-				command.run('b',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
-				command.run('c',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
-				command.run('c',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {return val === "there"});
-				command.end();
+				test.runCommand(tools.findLastItem, "Doodad.Tools.findLastItem", function(command, options) {
+					command.runStep(null,                                             {repetitions: 100}  /**/);
+					command.runStep(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
+					command.runStep(null,                                             {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
+					command.runStep('b',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
+					command.runStep('c',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
+					command.runStep('c',                                              {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {
+						return val === "there";
+					});
+				});
 					
 					
-				command = test.prepareCommand(tools.findItems, "Doodad.Tools.findItems");
-				command.run([],                                               {repetitions: 100}  /**/);
-				command.run([],                                               {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
-				command.run([],                                               {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
-				command.run(['b'],                                            {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
-				command.run(['a', 'c'],                                       {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
-				command.run(['a', 'c'],                                       {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {return val === "there"});
-				command.end();
+				test.runCommand(tools.findItems, "Doodad.Tools.findItems", function(command, options) {
+					command.runStep([],                                               {repetitions: 100}  /**/);
+					command.runStep([],                                               {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"});
+					command.runStep([],                                               {repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "zzz");
+					command.runStep(['b'],                                            {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "hi");
+					command.runStep(['a', 'c'],                                       {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, "there");
+					command.runStep(['a', 'c'],                                       {contains: true, repetitions: 100}, /**/ {a: "there", b: "hi", c: "there"}, function(val, key, obj) {
+						return val === "there";
+					});
+				});
 					
 					
-				command = test.prepareCommand(tools.map, "Doodad.Tools.map");
-				//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}  /**/ );
-				//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
-				//root.DD_ASSERT && command.run(types.AssertionError,    {mode: 'isinstance'}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "");
-				command.run({val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return val});
-				command.end();
+				test.runCommand(tools.map, "Doodad.Tools.map", function(command, options) {
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "");
+					command.runStep({val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {
+						return val;
+					});
+				});
 					
 					
-				command = test.prepareCommand(function(obj) {
+				test.runCommand(function(obj) {
 					const result = [];
 					tools.forEach(obj, function(val, key, obj) {
 						result.push(val);
 					});
 					return result;
-				}, "Doodad.Tools.forEach");
-				command.run([],                                               {repetitions: 100}  /**/ );
-				command.run(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.filter, "Doodad.Tools.filter");
-				command.run(undefined,                                        {repetitions: 100}  /**/);
-				command.run({},                                               {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
-				command.run({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "a");
-				command.run({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a']);
-				command.run({val1: 'a', val2: 'b'},                           {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a', 'b']);
-				command.run({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return val === 'a'});
-				command.run({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a', 'b'], null, true);
-				command.run({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return val === 'a' || val === 'b'}, null, true);
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.filterKeys, "Doodad.Tools.filterKeys");
-				command.run(undefined,                                        {repetitions: 100}  /**/);
-				command.run({},                                               {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
-				command.run({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1']);
-				command.run({val1: 'a', val2: 'b'},                           {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1', 'val2']);
-				command.run({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return key === 'val1'});
-				command.run({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1', 'val2'], null, true);
-				command.run({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {return key === 'val1' || key === 'val2'}, null, true);
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.every, "Doodad.Tools.every");
-				command.run(true,                                             {repetitions: 100}  /**/);
-				command.run(true,                                             {repetitions: 100}, /**/ {});
-				command.run(true,                                             {repetitions: 100}, /**/ {}, "a");
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"});
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "a");
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, ["a"]);
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b");
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, "ab");
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["ab"]);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["a", "b"]);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["a", "b", "c"]);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, {val1: "a", val2: "b"});
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, {val1: "a", val2: "b", val3: "c"});
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "a", null, true);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b", null, true);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, function(val, key, obj) {return val === "a"});
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, function(val, key, obj) {return val === "a"}, null, true);
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.some, "Doodad.Tools.some");
-				command.run(false,                                            {repetitions: 100}  /**/);
-				command.run(false,                                            {repetitions: 100}, /**/ {});
-				command.run(false,                                            {repetitions: 100}, /**/ {}, "b");
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"});
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "b");
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["b"]);
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b");
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "bc");
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["b", "c"]);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, {val1: "b", val2: "c"});
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "b", null, true);
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["a", "b"], null, true);
-				command.run(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, function(val, key, obj) {return val === "b"});
-				command.run(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, function(val, key, obj) {return val === "a" || val === "b"}, null, true);
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.complete, "Doodad.Tools.complete");
-				command.run("undefined",                      {eval: true}     /**/ );
-				command.run("{a: 1, b: 2, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
+				}, "Doodad.Tools.forEach", function(command, options) {
+					command.runStep([],                                               {repetitions: 100}  /**/ );
+					command.runStep(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
 				});
 					
 					
-				command = test.prepareCommand(tools.depthComplete, "Doodad.Tools.depthComplete");
-				command.run("undefined",                               {eval: true}     /**/ );
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}",         {eval: true, depth: 2},    /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}, ee: 5}}",  {eval: true, depth: 2},    /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}", "{b: {cc: 4, ee: 5}}");
-				command.end();
-					
-					
-				command = test.prepareCommand(tools.extend, "Doodad.Tools.extend");
-				command.run("{a: 2, b: 3, c: 4, d: 5}",       {eval: true},    /**/ "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
+				test.runCommand(tools.filter, "Doodad.Tools.filter", function(command, options) {
+					command.runStep(undefined,                                        {repetitions: 100}  /**/);
+					command.runStep({},                                               {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
+					command.runStep({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, "a");
+					command.runStep({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a']);
+					command.runStep({val1: 'a', val2: 'b'},                           {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a', 'b']);
+					command.runStep({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {
+						return val === 'a';
+					});
+					command.runStep({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['a', 'b'], null, true);
+					command.runStep({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {
+						return (val === 'a') || (val === 'b');
+					}, null, true);
 				});
 					
 					
-				command = test.prepareCommand(tools.depthExtend, "Doodad.Tools.depthExtend");
-				command.run("undefined",                                              {eval: true}            /**/ );
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "0", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}}",          {eval: true, depth: 2}, /**/ "1", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.run("{a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5, bbb: 5}}}",  {eval: true, depth: 2}, /**/ "2", "{a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}", "{b: {cc: 4, dd: {aaa: 5}}}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
+				test.runCommand(tools.filterKeys, "Doodad.Tools.filterKeys", function(command, options) {
+					command.runStep(undefined,                                        {repetitions: 100}  /**/);
+					command.runStep({},                                               {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"});
+					command.runStep({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1']);
+					command.runStep({val1: 'a', val2: 'b'},                           {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1', 'val2']);
+					command.runStep({val1: 'a'},                                      {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {
+						return key === 'val1';
+					});
+					command.runStep({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, ['val1', 'val2'], null, true);
+					command.runStep({val3: 'c', val4: 'd', val5: 'e', val6: 'f'},     {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "c", val4: "d", val5: "e", val6: "f"}, function(val, key, obj) {
+						return (key === 'val1') || (key === 'val2');
+					}, null, true);
 				});
 					
 					
-				command = test.prepareCommand(tools.fill, "Doodad.Tools.fill");
-				command.run("undefined",                        {eval: true}     /**/ );
-				command.run("{a: 1, b: 2}",                     {eval: true},    /**/ "undefined", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
+				test.runCommand(tools.every, "Doodad.Tools.every", function(command, options) {
+					command.runStep(true,                                             {repetitions: 100}  /**/);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {});
+					command.runStep(true,                                             {repetitions: 100}, /**/ {}, "a");
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"});
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "a");
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, ["a"]);
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b");
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, "ab");
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["ab"]);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["a", "b"]);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, ["a", "b", "c"]);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, {val1: "a", val2: "b"});
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "b", val3: "a", val4: "b", val5: "a"}, {val1: "a", val2: "b", val3: "c"});
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "a", null, true);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b", null, true);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, function(val, key, obj) {
+						return val === "a";
+					});
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, function(val, key, obj) {
+						return val === "a";
+					}, null, true);
+				});
+					
+					
+				test.runCommand(tools.some, "Doodad.Tools.some", function(command, options) {
+					command.runStep(false,                                            {repetitions: 100}  /**/);
+					command.runStep(false,                                            {repetitions: 100}, /**/ {});
+					command.runStep(false,                                            {repetitions: 100}, /**/ {}, "b");
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"});
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "b");
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["b"]);
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "a", val5: "a"}, "b");
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "bc");
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["b", "c"]);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, {val1: "b", val2: "c"});
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, "b", null, true);
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, ["a", "b"], null, true);
+					command.runStep(true,                                             {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, function(val, key, obj) {
+						return val === "b";
+					});
+					command.runStep(false,                                            {repetitions: 100}, /**/ {val1: "a", val2: "a", val3: "a", val4: "b", val5: "a"}, function(val, key, obj) {
+						return (val === "a") || (val === "b");
+					}, null, true);
+				});
+					
+					
+				test.runCommand(tools.complete, "Doodad.Tools.complete", function(command, options) {
+					command.runStep(undefined,                      {}     /**/ );
 
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("{a: 2, b: 2}",                     {eval: true},    /**/ "'a'", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("{a: 2, b: 2, c: 4}",               {eval: true},    /**/ "['a', 'c']", "dict1", "{a: 2, b: 3, c: 4, d: 5}");
-
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep({a: 1, b: 2, c: 4, d: 5},       {},    /**/ dicts.dict1, {a: 2, b: 3, c: 4, d: 5});
+					});
 				});
 					
 					
-				command = test.prepareCommand(tools.popAt, "Doodad.Tools.popAt");
-				command.run(undefined,  {eval: true}     /**/ );
-				command.run(undefined,  {eval: true},    /**/  "dict1");
-				command.chain(function(dummy) {
-					createDicts();
+				test.runCommand(tools.depthComplete, "Doodad.Tools.depthComplete", function(command, options) {
+					command.runStep(undefined,                               {}     /**/ );
+					command.runStep({a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}},         {depth: 2},    /**/ 0, {a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}, {b: {cc: 4, ee: 5}});
+					command.runStep({a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}, ee: 5}},  {depth: 2},    /**/ 1, {a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4}}}, {b: {cc: 4, ee: 5}});
 				});
-				command.run(1,          {eval: true},    /**/  "dict1", "'a'");
-				command.chain(function(dummy) {
-					createDicts();
+					
+					
+				test.runCommand(tools.extend, "Doodad.Tools.extend", function(command, options) {
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep({a: 2, b: 3, c: 4, d: 5},       {},    /**/ dicts.dict1, {a: 2, b: 3, c: 4, d: 5});
+					});
 				});
-				command.run(2,          {eval: true},    /**/  "dict1", "'b'");
-				command.chain(function(dummy) {
-					createDicts();
+					
+					
+				test.runCommand(tools.depthExtend, "Doodad.Tools.depthExtend", function(command, options) {
+					command.runStep(undefined,                                              {}            /**/ );
+					command.runStep({a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}},          {depth: 2}, /**/ 0, {a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}, {b: {cc: 4, dd: {aaa: 5}}});
+					command.runStep({a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5}}},          {depth: 2}, /**/ 1, {a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}, {b: {cc: 4, dd: {aaa: 5}}});
+					command.runStep({a: {aa: 1, bb: 2}, b: {cc: 4, dd: {aaa: 5, bbb: 5}}},  {depth: 2}, /**/ 2, {a: {aa: 1, bb: 2}, b: {cc: 3, dd: {aaa: 4, bbb: 5}}}, {b: {cc: 4, dd: {aaa: 5}}});
 				});
-				command.run(undefined,  {eval: true},    /**/  "dict1", "'c'");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
+					
+					
+				test.runCommand(tools.fill, "Doodad.Tools.fill", function(command, options) {
+					command.runStep(undefined,                        {}     /**/ );
 
-				command = test.prepareCommand(tools.popItem, "Doodad.Tools.popItem");
-				command.run(undefined,  {eval: true}     /**/ );
-				command.run(undefined,  {eval: true},    /**/  "dict1");
-				command.run(undefined,  {eval: true},    /**/  "dict1", 0);
-				command.chain(function(dummy) {
-					createDicts();
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep({a: 1, b: 2},                     {},    /**/ undefined, dicts.dict1, {a: 2, b: 3, c: 4, d: 5});
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep({a: 2, b: 2},                     {},    /**/ 'a', dicts.dict1, {a: 2, b: 3, c: 4, d: 5});
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep({a: 2, b: 2, c: 4},               {},    /**/ ['a', 'c'], dicts.dict1, {a: 2, b: 3, c: 4, d: 5});
+					});
 				});
-				command.run(1,          {eval: true},    /**/  "dict1", 1);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(2,          {eval: true},    /**/  "dict1", 2);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(undefined,  {eval: true},    /**/  "dict1", 3);
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run(1,          {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
+					
+					
+				test.runCommand(tools.popAt, "Doodad.Tools.popAt", function(command, options) {
+					command.runStep(undefined,  {}     /**/ );
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(undefined,  {},    /**/  dicts.dict1);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(1,          {},    /**/  dicts.dict1, 'a');
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(2,          {},    /**/  dicts.dict1, 'b');
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(undefined,  {},    /**/  dicts.dict1, 'c');
+					});
 				});
 
-				command = test.prepareCommand(tools.popItems, "Doodad.Tools.popItems");
-				command.run("[]",       {eval: true, contains: true}  /**/ );
-				command.run("[]",       {eval: true, contains: true}, /**/  "dict1");
-				command.run("[]",       {eval: true, contains: true}, /**/  "dict1", "[0]");
-				command.chain(function(dummy) {
-					createDicts();
+				test.runCommand(tools.popItem, "Doodad.Tools.popItem", function(command, options) {
+					command.runStep(undefined,  {}     /**/ );
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(undefined,  {},    /**/  dicts.dict1);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(undefined,  {},    /**/  dicts.dict1, 0);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(1,          {},    /**/  dicts.dict1, 1);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(2,          {},    /**/  dicts.dict1, 2);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(undefined,  {},    /**/  dicts.dict1, 3);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep(1,          {contains: true}, /**/  dicts.dict1, function(val, key, obj) {
+							return val === 1;
+						});
+					});
 				});
-				command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "[0, 1]");
-				command.chain(function(dummy) {
-					createDicts();
+
+				test.runCommand(tools.popItems, "Doodad.Tools.popItems", function(command, options) {
+					command.runStep([],       {contains: true}  /**/ );
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep([],       {contains: true}, /**/  dicts.dict1);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep([],       {contains: true}, /**/  dicts.dict1, [0]);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep([1],      {contains: true}, /**/  dicts.dict1, [0, 1]);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep([1, 2],   {contains: true}, /**/  dicts.dict1, [0, 1, 2]);
+					});
+
+					command.chain(function(dummy) {
+						const dicts = createDicts();
+						command.runStep([1],      {contains: true}, /**/  dicts.dict1, function(val, key, obj){
+							return val === 1;
+						});
+					});
 				});
-				command.run("[1, 2]",   {eval: true, contains: true}, /**/  "dict1", "[0, 1, 2]");
-				command.chain(function(dummy) {
-					createDicts();
-				});
-				command.run("[1]",      {eval: true, contains: true}, /**/  "dict1", "function(val, key, obj){return val === 1}");
-				command.end();
-				command.chain(function(dummy) {
-					createDicts();
-				});
-					
 					
 			},
 		},

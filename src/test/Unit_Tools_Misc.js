@@ -55,53 +55,41 @@ exports.add = function add(mods) {
 				};
 					
 
-				let command;
-
-					
-				command = test.prepareCommand(function(text) {return tools.escapeHtml(text, false)}, "Doodad.Tools.escapeHtml (standard)");
-					
-				command.run(undefined,                                       {repetitions: 100}  /**/);
-				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
-				command.run("",                                              {repetitions: 100}, /**/ "");
-				command.run("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
-
-				command.end();
+				test.runCommand(function(text) {return tools.escapeHtml(text, false)}, "Doodad.Tools.escapeHtml (standard)", function(command, options) {
+					command.runStep(undefined,                                       {repetitions: 100}  /**/);
+					command.runStep(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+					command.runStep("",                                              {repetitions: 100}, /**/ "");
+					command.runStep("&lt;script onload=&quot;go(&#39;&amp;#20&#39;)&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
+				});
 					
 				
-				command = test.prepareCommand(function(text) {return tools.escapeHtml(text, true)}, "Doodad.Tools.escapeHtml (full)");
-					
-				command.run(undefined,                                       {repetitions: 100}  /**/);
-				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
-				command.run("",                                              {repetitions: 100}, /**/ "");
-				command.run("&lt;script onload&equals;&quot;go&lpar;&apos;&amp;&num;20&apos;&rpar;&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
-
-				command.end();
+				test.runCommand(function(text) {return tools.escapeHtml(text, true)}, "Doodad.Tools.escapeHtml (full)", function(command, options) {
+					command.runStep(undefined,                                       {repetitions: 100}  /**/);
+					command.runStep(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+					command.runStep("",                                              {repetitions: 100}, /**/ "");
+					command.runStep("&lt;script onload&equals;&quot;go&lpar;&apos;&amp;&num;20&apos;&rpar;&quot;&gt;", {repetitions: 100}, /**/ '<script onload="go(\'&#20\')">');
+				});
 					
 				
-				command = test.prepareCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp");
-					
-				command.run(undefined,                                       {repetitions: 100}  /**/);
-				command.run(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
-				command.run("",                                              {repetitions: 100}, /**/ "");
-				command.run("\\[\\(\\$1\\+\\$2\\)\\|\\(\\^\\$3\\)\\]",       {repetitions: 100}, /**/ '[($1+$2)|(^$3)]');
-
-				command.end();
+				test.runCommand(tools.escapeRegExp, "Doodad.Tools.escapeRegExp", function(command, options) {
+					command.runStep(undefined,                                       {repetitions: 100}  /**/);
+					command.runStep(types.AssertionError,                            {mode: 'isinstance'}, /**/ 1);
+					command.runStep("",                                              {repetitions: 100}, /**/ "");
+					command.runStep("\\[\\(\\$1\\+\\$2\\)\\|\\(\\^\\$3\\)\\]",       {repetitions: 100}, /**/ '[($1+$2)|(^$3)]');
+				});
 					
 				
-				command = test.prepareCommand(tools.sign, "Doodad.Tools.sign");
-					
-				command.run(NaN,                                             {repetitions: 100}  /**/);
-				command.run(0,                                               {repetitions: 100}, /**/ null);
-				command.run(NaN,                                             {repetitions: 100}, /**/ NaN);
-				command.run(1,                                               {repetitions: 100}, /**/ Infinity);
-				command.run(-1,                                              {repetitions: 100}, /**/ -Infinity);
-				command.run(0,                                               {repetitions: 100}, /**/ 0);
-				command.run(-0,                                              {repetitions: 100}, /**/ -0);
-				command.run(1,                                               {repetitions: 100}, /**/ 2);
-				command.run(-1,                                              {repetitions: 100}, /**/ -2);
-
-				command.end();
-					
+				test.runCommand(tools.sign, "Doodad.Tools.sign", function(command, options) {
+					command.runStep(NaN,                                             {repetitions: 100}  /**/);
+					command.runStep(0,                                               {repetitions: 100}, /**/ null);
+					command.runStep(NaN,                                             {repetitions: 100}, /**/ NaN);
+					command.runStep(1,                                               {repetitions: 100}, /**/ Infinity);
+					command.runStep(-1,                                              {repetitions: 100}, /**/ -Infinity);
+					command.runStep(0,                                               {repetitions: 100}, /**/ 0);
+					command.runStep(-0,                                              {repetitions: 100}, /**/ -0);
+					command.runStep(1,                                               {repetitions: 100}, /**/ 2);
+					command.runStep(-1,                                              {repetitions: 100}, /**/ -2);
+				});
 				
 			},
 		},

@@ -56,17 +56,16 @@ exports.add = function add(mods) {
 				};
 
 
-				let command;
-
-
-				command = test.prepareCommand(function(/*paramarray*/) {
+				test.runCommand(function(/*paramarray*/) {
 					return files.Path.parse.apply(files.Path, arguments);
-				}, "Doodad.Tools.Files.Path.parse.test1");
-						
-				function test1(osType, /*optional*/options) {
-					if (osType === 'windows') {
-						command.run({
-							os: osType,
+				}, "Doodad.Tools.Files.Path.parse.test1", function(command, options) {
+
+					command.runGroup("Windows", function(group) {
+						const os = 'windows';
+						const options = {os};
+
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: null,
@@ -79,8 +78,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "", options);
 
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -93,8 +92,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "C:\\", options);
 
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -107,8 +106,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "C:\\Temp\\", options);
 							
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -121,8 +120,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "C:\\Temp\\SubFolder\\", options);
 							
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -135,8 +134,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "C:\\Temp\\SubFolder\\File.txt", options);
 							
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -148,10 +147,14 @@ exports.add = function add(mods) {
 							noEscapes: false,
 							shell: 'dos',
 						}, {depth: 1}, /**/ '"C:\\Temp\\SubFolder\\File.txt"', options);
-							
-					} else {
-						command.run({
-							os: osType,
+					});
+					
+					command.runGroup("Linux/Unix", function(group) {
+						const os = 'linux';
+						const options = {os};
+
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -164,8 +167,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "/", options);
 
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -177,9 +180,9 @@ exports.add = function add(mods) {
 							noEscapes: false,
 							shell: 'api',
 						}, {depth: 1}, /**/ "/tmp/", options);
-							
-						command.run({
-							os: osType,
+						
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -191,9 +194,9 @@ exports.add = function add(mods) {
 							noEscapes: false,
 							shell: 'api',
 						}, {depth: 1}, /**/ "/tmp/subfolder/", options);
-							
-						command.run({
-							os: osType,
+						
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -206,8 +209,8 @@ exports.add = function add(mods) {
 							shell: 'api',
 						}, {depth: 1}, /**/ "/tmp/subfolder/file.txt", options);
 							
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -220,8 +223,8 @@ exports.add = function add(mods) {
 							shell: 'bash',
 						}, {depth: 1}, /**/ '"/tmp/subfolder/file.txt"', options);
 							
-						command.run({
-							os: osType,
+						group.runStep({
+							os: os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -233,118 +236,109 @@ exports.add = function add(mods) {
 							noEscapes: false,
 							shell: 'api',
 						}, {depth: 1}, /**/ "C:\\SubFolder\\File.txt", options);
-							
-					};
-				};
-
-				test1('windows', {os: 'windows'});
-				test1('linux', {os: 'linux'});
-					
-				command.end();
+					});
+				});
 					
 			
-				command = test.prepareCommand(function(path, /*optional*/options) {
+				test.runCommand(function(path, /*optional*/options) {
 					let res = files.Path.parse(path, options);
 					if (res) {
 						res = res.toString();
 					};
 					return res;
-				}, "Doodad.Tools.Files.Path.parse.test2");
-					
-				function test2(osType, /*optional*/forceOs) {
-					let options = null;
-					if (forceOs) {
-						options = {os: osType};
-					};
-					if (osType === 'windows') {
-						command.run("",                                              {repetitions: 100}, /**/ null, options);
-						command.run("C:\\",                                          {repetitions: 100}, /**/ "C:", options);
-						command.run("",                                              {repetitions: 100}, /**/ "", options);
-						command.run("C:\\",                                          {repetitions: 100}, /**/ "C:\\", options);
-						command.run("C:\\",                                          {repetitions: 100}, /**/ "c:\\", options);
-						command.run("C:\\Temp\\",                                    {repetitions: 100}, /**/ "C:\\Temp\\", options);
-						command.run("C:\\Temp\\File.txt",                            {repetitions: 100}, /**/ "C:\\Temp\\File.txt", options);
-						command.run("C:\\Temp\\SubFolder\\File.txt",                 {repetitions: 100}, /**/ "C:\\Temp\\SubFolder\\File.txt", options);
-						command.run("\\",                                            {repetitions: 100}, /**/ "\\", options);
-						command.run("\\Temp\\",                                      {repetitions: 100}, /**/ "\\Temp\\", options);
-						command.run("\\Temp\\SubFolder\\",                           {repetitions: 100}, /**/ "\\Temp\\SubFolder\\", options);
-						command.run("\\Temp\\SubFolder\\File.txt",                   {repetitions: 100}, /**/ "\\Temp\\SubFolder\\File.txt", options);
-						command.run("Temp\\",                                        {repetitions: 100}, /**/ "Temp\\", options);
-						command.run("Temp\\SubFolder\\",                             {repetitions: 100}, /**/ "Temp\\SubFolder\\", options);
-						command.run("Temp\\SubFolder\\File.txt",                     {repetitions: 100}, /**/ "Temp\\SubFolder\\File.txt", options);
-						command.run("File.txt",                                      {repetitions: 100}, /**/ "File.txt", options);
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "..\\", tools.extend({}, options, {isRelative: false}));
-						command.run("..\\",                                          {repetitions: 100}, /**/ "..\\", tools.extend({}, options, {isRelative: true}));
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "..\\File.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("..\\File.txt",                                  {repetitions: 100}, /**/ "..\\File.txt", tools.extend({}, options, {isRelative: true}));
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "\\..\\File.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("C:..\\File.txt",                                {repetitions: 100}, /**/ "C:..\\File.txt", tools.extend({}, options, {isRelative: true}));
-						command.run("C:\\..\\File.txt",                              {repetitions: 100}, /**/ "C:\\..\\File.txt", tools.extend({}, options, {isRelative: true}));
-						command.run("\\File.txt",                                    {repetitions: 100}, /**/ "\\SubFolder\\..\\File.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("\\SubFolder\\File.txt",                         {repetitions: 100}, /**/ "\\SubFolder\\.\\File.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("\\Sub Folder\\My File.txt",                     {repetitions: 100}, /**/ "\\Sub Folder\\My File.txt", options);
-						command.run("\\Sub Folder\\My File.txt",                     {repetitions: 100}, /**/ "\\Sub Folder\\My File.txt", options);
-						command.run("C:\\Users\\Claude\\SubFolder\\File.txt",        {repetitions: 100}, /**/ "\\SubFolder\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude"}));
-						command.run("C:\\Users\\Claude\\File.txt",                   {repetitions: 100}, /**/ "\\SubFolder\\..\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
-						command.run(files.PathError,		                      {mode: 'isinstance'}, /**/ "\\SubFolder\\..\\..\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
-						command.run('"C:\\Temp\\SubFolder\\File.txt"',               {repetitions: 100}, /**/ '"C:\\Temp\\SubFolder\\File.txt"', options);
-						command.run('"\\Temp\\SubFolder\\File.txt"',                 {repetitions: 100}, /**/ '"\\Temp\\SubFolder\\File.txt"', options);
-						command.run('"Temp\\SubFolder\\File.txt"',                   {repetitions: 100}, /**/ '"Temp\\SubFolder\\File.txt"', options);
-						command.run('"File.txt"',                                    {repetitions: 100}, /**/ '"File.txt"', options);
-						command.run('"\\Sub Folder\\My File.txt"',                   {repetitions: 100}, /**/ '"\\Sub Folder\\My File.txt"', options);
-						command.run('\\"Sub Folder"\\"My File.txt"',                 {repetitions: 100}, /**/ '\\"Sub Folder"\\"My File.txt"', options);
-						command.run("\\tmp\\subfolder\\file.txt",                    {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
-							
-						command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My Folder\\My File.txt", tools.extend({}, options, {shell: 'dos'}));
-						command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My^ Folder\\My^ File.txt", tools.extend({}, options, {shell: 'dos'}));
-						command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\MyFolder\\MyFile&HerFile.txt", tools.extend({}, options, {shell: 'dos'}));
-						command.run("\\MyFolder\\MyFile^&HerFile.txt",               {repetitions: 100}, /**/ "\\MyFolder\\MyFile^&HerFile.txt", tools.extend({}, options, {shell: 'dos'}));
-						command.run('"\\My Folder\\My File.txt"',                    {repetitions: 100}, /**/ '"\\My Folder\\My File.txt"', tools.extend({}, options, {shell: 'dos'}));
-					} else {
-						command.run("",                                              {repetitions: 100}, /**/ null, options);
-						command.run("",                                              {repetitions: 100}, /**/ "", options);
-						command.run("/",                                             {repetitions: 100}, /**/ "/", options);
-						command.run("/tmp/",                                         {repetitions: 100}, /**/ "/tmp/", options);
-						command.run("/tmp/file.txt",                                 {repetitions: 100}, /**/ "/tmp/file.txt", options);
-						command.run("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
-						command.run("tmp/",                                          {repetitions: 100}, /**/ "tmp/", options);
-						command.run("tmp/file.txt",                                  {repetitions: 100}, /**/ "tmp/file.txt", options);
-						command.run("tmp/subfolder/file.txt",                        {repetitions: 100}, /**/ "tmp/subfolder/file.txt", options);
-						command.run("file.txt",                                      {repetitions: 100}, /**/ "file.txt", options);
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "../", tools.extend({}, options, {isRelative: false}));
-						command.run("../",                                           {repetitions: 100}, /**/ "../", tools.extend({}, options, {isRelative: true}));
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "../file.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("../file.txt",                                   {repetitions: 100}, /**/ "../file.txt", tools.extend({}, options, {isRelative: true}));
-						command.run("/file.txt",                                     {repetitions: 100}, /**/ "/subfolder/../file.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("/subfolder/file.txt",                           {repetitions: 100}, /**/ "/subfolder/./file.txt", tools.extend({}, options, {isRelative: false}));
-						command.run("/Sub Folder/My File.txt",                       {repetitions: 100}, /**/ "/Sub Folder/My File.txt", options);
-						command.run("/Sub Folder/My File.txt",                       {repetitions: 100}, /**/ "/Sub Folder/My File.txt", options);
-						command.run("/home/claude/subfolder/file.txt",               {repetitions: 100}, /**/ "/subfolder/file.txt", tools.extend({}, options, {root: "/home/claude"}));
-						command.run("/home/claude/file.txt",                         {repetitions: 100}, /**/ "/subfolder/../file.txt", tools.extend({}, options, {root: "/home/claude", isRelative: false}));
-						command.run(files.PathError,                              {mode: 'isinstance'}, /**/ "/subfolder/../../file.txt", tools.extend({}, options, {root: "/home/claude", isRelative: false}));
-						command.run('"/tmp/subfolder/file.txt"',                     {repetitions: 100}, /**/ '"/tmp/subfolder/file.txt"', options);
-						command.run('"tmp/subfolder/file.txt"',                      {repetitions: 100}, /**/ '"tmp/subfolder/file.txt"', options);
-						command.run('"file.txt"',                                    {repetitions: 100}, /**/ '"file.txt"', options);
-						command.run('"/subfolder/My File.txt"',                      {repetitions: 100}, /**/ '"/subfolder/My File.txt"', options);
-						command.run('/"subfolder"/"My File.txt"',                    {repetitions: 100}, /**/ '/"subfolder"/"My File.txt"', options);
-						command.run("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "\\tmp\\subfolder\\file.txt", options);
+				}, "Doodad.Tools.Files.Path.parse.test2", function(command, options) {
 
-						command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "/My Folder/My File.txt", tools.extend({}, options, {shell: 'bash'}));
-						command.run("/My\\ Folder/My\\ File.txt",                    {repetitions: 100}, /**/ "/My\\ Folder/My\\ File.txt", tools.extend({}, options, {shell: 'bash'}));
-						command.run(types.ParseError,                             {mode: 'isinstance'}, /**/ "/MyFolder/MyFile&HerFile.txt", tools.extend({}, options, {shell: 'bash'}));
-						command.run("/MyFolder/MyFile\\&HerFile.txt",                {repetitions: 100}, /**/ "/MyFolder/MyFile\\&HerFile.txt", tools.extend({}, options, {shell: 'bash'}));
-						command.run('"/My Folder/My File.txt"',                      {repetitions: 100}, /**/ '"/My Folder/My File.txt"', tools.extend({}, options, {shell: 'bash'}));
-					};
-				};
+					command.runGroup("Windows", function(group, grpOptions) {
+						const os = 'windows'
+						const options = {os};
+						
+						group.runStep("",                                              {repetitions: 100}, /**/ null, options);
+						group.runStep("C:\\",                                          {repetitions: 100}, /**/ "C:", options);
+						group.runStep("",                                              {repetitions: 100}, /**/ "", options);
+						group.runStep("C:\\",                                          {repetitions: 100}, /**/ "C:\\", options);
+						group.runStep("C:\\",                                          {repetitions: 100}, /**/ "c:\\", options);
+						group.runStep("C:\\Temp\\",                                    {repetitions: 100}, /**/ "C:\\Temp\\", options);
+						group.runStep("C:\\Temp\\File.txt",                            {repetitions: 100}, /**/ "C:\\Temp\\File.txt", options);
+						group.runStep("C:\\Temp\\SubFolder\\File.txt",                 {repetitions: 100}, /**/ "C:\\Temp\\SubFolder\\File.txt", options);
+						group.runStep("\\",                                            {repetitions: 100}, /**/ "\\", options);
+						group.runStep("\\Temp\\",                                      {repetitions: 100}, /**/ "\\Temp\\", options);
+						group.runStep("\\Temp\\SubFolder\\",                           {repetitions: 100}, /**/ "\\Temp\\SubFolder\\", options);
+						group.runStep("\\Temp\\SubFolder\\File.txt",                   {repetitions: 100}, /**/ "\\Temp\\SubFolder\\File.txt", options);
+						group.runStep("Temp\\",                                        {repetitions: 100}, /**/ "Temp\\", options);
+						group.runStep("Temp\\SubFolder\\",                             {repetitions: 100}, /**/ "Temp\\SubFolder\\", options);
+						group.runStep("Temp\\SubFolder\\File.txt",                     {repetitions: 100}, /**/ "Temp\\SubFolder\\File.txt", options);
+						group.runStep("File.txt",                                      {repetitions: 100}, /**/ "File.txt", options);
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "..\\", tools.extend({}, options, {isRelative: false}));
+						group.runStep("..\\",                                          {repetitions: 100}, /**/ "..\\", tools.extend({}, options, {isRelative: true}));
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "..\\File.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("..\\File.txt",                                  {repetitions: 100}, /**/ "..\\File.txt", tools.extend({}, options, {isRelative: true}));
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "\\..\\File.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("C:..\\File.txt",                                {repetitions: 100}, /**/ "C:..\\File.txt", tools.extend({}, options, {isRelative: true}));
+						group.runStep("C:\\..\\File.txt",                              {repetitions: 100}, /**/ "C:\\..\\File.txt", tools.extend({}, options, {isRelative: true}));
+						group.runStep("\\File.txt",                                    {repetitions: 100}, /**/ "\\SubFolder\\..\\File.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("\\SubFolder\\File.txt",                         {repetitions: 100}, /**/ "\\SubFolder\\.\\File.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("\\Sub Folder\\My File.txt",                     {repetitions: 100}, /**/ "\\Sub Folder\\My File.txt", options);
+						group.runStep("\\Sub Folder\\My File.txt",                     {repetitions: 100}, /**/ "\\Sub Folder\\My File.txt", options);
+						group.runStep("C:\\Users\\Claude\\SubFolder\\File.txt",        {repetitions: 100}, /**/ "\\SubFolder\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude"}));
+						group.runStep("C:\\Users\\Claude\\File.txt",                   {repetitions: 100}, /**/ "\\SubFolder\\..\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
+						group.runStep(files.PathError,		                      {mode: 'isinstance'}, /**/ "\\SubFolder\\..\\..\\File.txt", tools.extend({}, options, {root: "C:\\Users\\Claude", isRelative: false}));
+						group.runStep('"C:\\Temp\\SubFolder\\File.txt"',               {repetitions: 100}, /**/ '"C:\\Temp\\SubFolder\\File.txt"', options);
+						group.runStep('"\\Temp\\SubFolder\\File.txt"',                 {repetitions: 100}, /**/ '"\\Temp\\SubFolder\\File.txt"', options);
+						group.runStep('"Temp\\SubFolder\\File.txt"',                   {repetitions: 100}, /**/ '"Temp\\SubFolder\\File.txt"', options);
+						group.runStep('"File.txt"',                                    {repetitions: 100}, /**/ '"File.txt"', options);
+						group.runStep('"\\Sub Folder\\My File.txt"',                   {repetitions: 100}, /**/ '"\\Sub Folder\\My File.txt"', options);
+						group.runStep('\\"Sub Folder"\\"My File.txt"',                 {repetitions: 100}, /**/ '\\"Sub Folder"\\"My File.txt"', options);
+						group.runStep("\\tmp\\subfolder\\file.txt",                    {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
 
-				test2(tools.getOS().type);
-				test2('windows', true);
-				test2('linux', true);
-					
-				command.end();
+						group.runStep(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My Folder\\My File.txt", tools.extend({}, options, {shell: 'dos'}));
+						group.runStep(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\My^ Folder\\My^ File.txt", tools.extend({}, options, {shell: 'dos'}));
+						group.runStep(types.ParseError,                             {mode: 'isinstance'}, /**/ "\\MyFolder\\MyFile&HerFile.txt", tools.extend({}, options, {shell: 'dos'}));
+						group.runStep("\\MyFolder\\MyFile^&HerFile.txt",               {repetitions: 100}, /**/ "\\MyFolder\\MyFile^&HerFile.txt", tools.extend({}, options, {shell: 'dos'}));
+						group.runStep('"\\My Folder\\My File.txt"',                    {repetitions: 100}, /**/ '"\\My Folder\\My File.txt"', tools.extend({}, options, {shell: 'dos'}));
+					});
+
+					command.runGroup("Linux/Unix", function(group, grpOptions) {
+						const os = 'linux'
+						const options = {os};
+
+						group.runStep("",                                              {repetitions: 100}, /**/ null, options);
+						group.runStep("",                                              {repetitions: 100}, /**/ "", options);
+						group.runStep("/",                                             {repetitions: 100}, /**/ "/", options);
+						group.runStep("/tmp/",                                         {repetitions: 100}, /**/ "/tmp/", options);
+						group.runStep("/tmp/file.txt",                                 {repetitions: 100}, /**/ "/tmp/file.txt", options);
+						group.runStep("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "/tmp/subfolder/file.txt", options);
+						group.runStep("tmp/",                                          {repetitions: 100}, /**/ "tmp/", options);
+						group.runStep("tmp/file.txt",                                  {repetitions: 100}, /**/ "tmp/file.txt", options);
+						group.runStep("tmp/subfolder/file.txt",                        {repetitions: 100}, /**/ "tmp/subfolder/file.txt", options);
+						group.runStep("file.txt",                                      {repetitions: 100}, /**/ "file.txt", options);
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "../", tools.extend({}, options, {isRelative: false}));
+						group.runStep("../",                                           {repetitions: 100}, /**/ "../", tools.extend({}, options, {isRelative: true}));
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "../file.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("../file.txt",                                   {repetitions: 100}, /**/ "../file.txt", tools.extend({}, options, {isRelative: true}));
+						group.runStep("/file.txt",                                     {repetitions: 100}, /**/ "/subfolder/../file.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("/subfolder/file.txt",                           {repetitions: 100}, /**/ "/subfolder/./file.txt", tools.extend({}, options, {isRelative: false}));
+						group.runStep("/Sub Folder/My File.txt",                       {repetitions: 100}, /**/ "/Sub Folder/My File.txt", options);
+						group.runStep("/Sub Folder/My File.txt",                       {repetitions: 100}, /**/ "/Sub Folder/My File.txt", options);
+						group.runStep("/home/claude/subfolder/file.txt",               {repetitions: 100}, /**/ "/subfolder/file.txt", tools.extend({}, options, {root: "/home/claude"}));
+						group.runStep("/home/claude/file.txt",                         {repetitions: 100}, /**/ "/subfolder/../file.txt", tools.extend({}, options, {root: "/home/claude", isRelative: false}));
+						group.runStep(files.PathError,                              {mode: 'isinstance'}, /**/ "/subfolder/../../file.txt", tools.extend({}, options, {root: "/home/claude", isRelative: false}));
+						group.runStep('"/tmp/subfolder/file.txt"',                     {repetitions: 100}, /**/ '"/tmp/subfolder/file.txt"', options);
+						group.runStep('"tmp/subfolder/file.txt"',                      {repetitions: 100}, /**/ '"tmp/subfolder/file.txt"', options);
+						group.runStep('"file.txt"',                                    {repetitions: 100}, /**/ '"file.txt"', options);
+						group.runStep('"/subfolder/My File.txt"',                      {repetitions: 100}, /**/ '"/subfolder/My File.txt"', options);
+						group.runStep('/"subfolder"/"My File.txt"',                    {repetitions: 100}, /**/ '/"subfolder"/"My File.txt"', options);
+						group.runStep("/tmp/subfolder/file.txt",                       {repetitions: 100}, /**/ "\\tmp\\subfolder\\file.txt", options);
+
+						group.runStep(types.ParseError,                             {mode: 'isinstance'}, /**/ "/My Folder/My File.txt", tools.extend({}, options, {shell: 'bash'}));
+						group.runStep("/My\\ Folder/My\\ File.txt",                    {repetitions: 100}, /**/ "/My\\ Folder/My\\ File.txt", tools.extend({}, options, {shell: 'bash'}));
+						group.runStep(types.ParseError,                             {mode: 'isinstance'}, /**/ "/MyFolder/MyFile&HerFile.txt", tools.extend({}, options, {shell: 'bash'}));
+						group.runStep("/MyFolder/MyFile\\&HerFile.txt",                {repetitions: 100}, /**/ "/MyFolder/MyFile\\&HerFile.txt", tools.extend({}, options, {shell: 'bash'}));
+						group.runStep('"/My Folder/My File.txt"',                      {repetitions: 100}, /**/ '"/My Folder/My File.txt"', tools.extend({}, options, {shell: 'bash'}));
+					});
+				});
 					
 
-				command = test.prepareCommand(function(path1, path2, /*optional*/optionsPath1, /*optional*/optionsPath2, /*optional*/setPath2, /*optional*/combineOptions, /*optional*/toStringOptions) {
+				test.runCommand(function(path1, path2, /*optional*/optionsPath1, /*optional*/optionsPath2, /*optional*/setPath2, /*optional*/combineOptions, /*optional*/toStringOptions) {
 					path1 = files.Path.parse(path1, optionsPath1);
 					if (!path1) {
 						return undefined;
@@ -360,53 +354,50 @@ exports.add = function add(mods) {
 						path2 = path2.toString(toStringOptions);
 					};
 					return path2;
-				}, "Doodad.Tools.Files.Path.combine.Path");
-					
-				command.run("C:\\",                                                  {repetitions: 100}, /**/ "C:\\", "C:\\", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\",                                       {repetitions: 100}, /**/ "C:\\", "C:\\SubFolder\\", {os: 'windows'}, {os: 'windows'});
-				command.run(types.ParseError,                                        {mode: 'isinstance'}, /**/ "C:\\", "D:\\SubFolder\\", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "SubFolder\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "\\SubFolder\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\SubFolder\\", "\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "SubFolder\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\File1.txt\\SubFolder\\File2.txt",                   {repetitions: 100}, /**/ "C:\\File1.txt", "SubFolder\\File2.txt", {os: 'windows'}, {os: 'windows'});
-				command.run("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "SubFolder2\\File2.txt", {os: 'windows'}, {os: 'windows'});
-					
-				command.run("/",                                                     {repetitions: 100}, /**/ "/", "/", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/",                                           {repetitions: 100}, /**/ "/", "/SubFolder/", {os: 'linux'}, {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "SubFolder/File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "/SubFolder/File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "/File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "../File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "../File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "/../File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "SubFolder/../File.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/File1.txt/SubFolder/File2.txt",                        {repetitions: 100}, /**/ "/File1.txt", "SubFolder/File2.txt", {os: 'linux'}, {os: 'linux'});
-				command.run("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "SubFolder2/File2.txt", {os: 'linux'}, {os: 'linux'});
-					
-				command.run("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "SubFolder2/File2.txt", {os: 'windows'}, {os: 'linux'});
-				command.run("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'});
+				}, "Doodad.Tools.Files.Path.combine.Path", function(command, options) {
+					command.runStep("C:\\",                                                  {repetitions: 100}, /**/ "C:\\", "C:\\", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\",                                       {repetitions: 100}, /**/ "C:\\", "C:\\SubFolder\\", {os: 'windows'}, {os: 'windows'});
+					command.runStep(types.ParseError,                                        {mode: 'isinstance'}, /**/ "C:\\", "D:\\SubFolder\\", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "SubFolder\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "\\SubFolder\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\SubFolder\\", "..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\SubFolder\\", "\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "SubFolder\\..\\File.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "File2.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\File1.txt\\SubFolder\\File2.txt",                   {repetitions: 100}, /**/ "C:\\File1.txt", "SubFolder\\File2.txt", {os: 'windows'}, {os: 'windows'});
+					command.runStep("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "SubFolder2\\File2.txt", {os: 'windows'}, {os: 'windows'});
+						
+					command.runStep("/",                                                     {repetitions: 100}, /**/ "/", "/", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/",                                           {repetitions: 100}, /**/ "/", "/SubFolder/", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/", "File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "SubFolder/File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "/SubFolder/File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "/File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "/../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/", "SubFolder/../File.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "File2.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/File1.txt/SubFolder/File2.txt",                        {repetitions: 100}, /**/ "/File1.txt", "SubFolder/File2.txt", {os: 'linux'}, {os: 'linux'});
+					command.runStep("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "SubFolder2/File2.txt", {os: 'linux'}, {os: 'linux'});
+						
+					command.runStep("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "SubFolder2/File2.txt", {os: 'windows'}, {os: 'linux'});
+					command.runStep("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'});
 
-				command.run(types.ParseError,                                      {mode: 'isinstance'}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'});
-				command.run("/SubFolder1/File1.txt/C:/SubFolder2/File2.txt",         {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows', drive: ''});
-				command.run("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'}, {drive: null});
-					
-				command.end();
-					
+					command.runStep(types.ParseError,                                      {mode: 'isinstance'}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'});
+					command.runStep("/SubFolder1/File1.txt/C:/SubFolder2/File2.txt",         {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows', drive: ''});
+					command.runStep("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "C:\\SubFolder2\\File2.txt", {os: 'linux'}, {os: 'windows'}, {drive: null});
+				});
 					
 					
-				command = test.prepareCommand(function(path, url, /*optional*/optionsPath, /*optional*/optionsUrl, /*optional*/setUrl, /*optional*/combineOptions, /*optional*/toStringOptions) {
+				test.runCommand(function(path, url, /*optional*/optionsPath, /*optional*/optionsUrl, /*optional*/setUrl, /*optional*/combineOptions, /*optional*/toStringOptions) {
 					path = files.Path.parse(path, optionsPath);
 					if (!path) {
 						return undefined;
@@ -423,43 +414,40 @@ exports.add = function add(mods) {
 						path = path.toString(toStringOptions);
 					};
 					return path;
-				}, "Doodad.Tools.Files.Path.combine.Url");
-					
-				command.run("C:\\",                                                  {repetitions: 100}, /**/ "C:\\", "file:///C:/", {os: 'windows'});
-				command.run("C:\\SubFolder\\",                                       {repetitions: 100}, /**/ "C:\\", "file:///C:/SubFolder/", {os: 'windows'});
-				command.run(types.ParseError,                                        {mode: 'isinstance'}, /**/ "C:\\", "file:///D:/SubFolder/", {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "file:///File.txt", {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "file://SubFolder/File.txt", {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "file:///SubFolder/File.txt", {os: 'windows'});
-				command.run("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "file:///File.txt", {os: 'windows'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "file://../File.txt", {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100},  /**/ "C:\\SubFolder\\", "file://../File.txt", {os: 'windows'});
-				command.run(files.PathError,                                         {mode: 'isinstance'},  /**/ "C:\\SubFolder\\", "file:///../File.txt", {os: 'windows'});
-				command.run("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "file://SubFolder/../File.txt", {os: 'windows'});
-				command.run("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "file:///File2.txt", {os: 'windows'});
-				command.run("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "file:///File2.txt", {os: 'windows'});
-				command.run("C:\\File1.txt\\SubFolder\\File2.txt",                   {repetitions: 100}, /**/ "C:\\File1.txt", "file://SubFolder/File2.txt", {os: 'windows'});
-				command.run("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "file://SubFolder2/File2.txt", {os: 'windows'});
-					
-				command.run("/",                                                     {repetitions: 100}, /**/ "/", "file:///", {os: 'linux'});
-				command.run("/SubFolder/",                                           {repetitions: 100}, /**/ "/", "file:///SubFolder/", {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "file:///File.txt", {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "file://SubFolder/File.txt", {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "file:///SubFolder/File.txt", {os: 'linux'});
-				command.run("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "file:///File.txt", {os: 'linux'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "file://../File.txt", {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "file://../File.txt", {os: 'linux'});
-				command.run(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "file:///../File.txt", {os: 'linux'});
-				command.run("/File.txt",                                             {repetitions: 100}, /**/ "/", "file://SubFolder/../File.txt", {os: 'linux'});
-				command.run("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "file:///File2.txt", {os: 'linux'});
-				command.run("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "file:///File2.txt", {os: 'linux'});
-				command.run("/File1.txt/SubFolder/File2.txt",                        {repetitions: 100}, /**/ "/File1.txt", "file://SubFolder/File2.txt", {os: 'linux'});
-				command.run("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "file://SubFolder2/File2.txt", {os: 'linux'});
-					
-				command.run(types.ParseError,                                       {mode: 'isinstance'}, /**/ "/SubFolder/", "http://www.doodad-js.local/File.txt", {os: 'linux'});
-
-				command.end();
-					
+				}, "Doodad.Tools.Files.Path.combine.Url", function(command, options) {
+					command.runStep("C:\\",                                                  {repetitions: 100}, /**/ "C:\\", "file:///C:/", {os: 'windows'});
+					command.runStep("C:\\SubFolder\\",                                       {repetitions: 100}, /**/ "C:\\", "file:///C:/SubFolder/", {os: 'windows'});
+					command.runStep(types.ParseError,                                        {mode: 'isinstance'}, /**/ "C:\\", "file:///D:/SubFolder/", {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "file:///File.txt", {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "file://SubFolder/File.txt", {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\", "file:///SubFolder/File.txt", {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File.txt",                               {repetitions: 100}, /**/ "C:\\SubFolder\\", "file:///File.txt", {os: 'windows'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "C:\\", "file://../File.txt", {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100},  /**/ "C:\\SubFolder\\", "file://../File.txt", {os: 'windows'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'},  /**/ "C:\\SubFolder\\", "file:///../File.txt", {os: 'windows'});
+					command.runStep("C:\\File.txt",                                          {repetitions: 100}, /**/ "C:\\", "file://SubFolder/../File.txt", {os: 'windows'});
+					command.runStep("C:\\File1.txt\\File2.txt",                              {repetitions: 100}, /**/ "C:\\File1.txt", "file:///File2.txt", {os: 'windows'});
+					command.runStep("C:\\SubFolder\\File1.txt\\File2.txt",                   {repetitions: 100}, /**/ "C:\\SubFolder\\File1.txt", "file:///File2.txt", {os: 'windows'});
+					command.runStep("C:\\File1.txt\\SubFolder\\File2.txt",                   {repetitions: 100}, /**/ "C:\\File1.txt", "file://SubFolder/File2.txt", {os: 'windows'});
+					command.runStep("C:\\SubFolder1\\File1.txt\\SubFolder2\\File2.txt",      {repetitions: 100}, /**/ "C:\\SubFolder1\\File1.txt", "file://SubFolder2/File2.txt", {os: 'windows'});
+						
+					command.runStep("/",                                                     {repetitions: 100}, /**/ "/", "file:///", {os: 'linux'});
+					command.runStep("/SubFolder/",                                           {repetitions: 100}, /**/ "/", "file:///SubFolder/", {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/", "file:///File.txt", {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "file://SubFolder/File.txt", {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/", "file:///SubFolder/File.txt", {os: 'linux'});
+					command.runStep("/SubFolder/File.txt",                                   {repetitions: 100}, /**/ "/SubFolder/", "file:///File.txt", {os: 'linux'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "/", "file://../File.txt", {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/SubFolder/", "file://../File.txt", {os: 'linux'});
+					command.runStep(files.PathError,                                         {mode: 'isinstance'}, /**/ "/SubFolder/", "file:///../File.txt", {os: 'linux'});
+					command.runStep("/File.txt",                                             {repetitions: 100}, /**/ "/", "file://SubFolder/../File.txt", {os: 'linux'});
+					command.runStep("/File1.txt/File2.txt",                                  {repetitions: 100}, /**/ "/File1.txt", "file:///File2.txt", {os: 'linux'});
+					command.runStep("/SubFolder/File1.txt/File2.txt",                        {repetitions: 100}, /**/ "/SubFolder/File1.txt", "file:///File2.txt", {os: 'linux'});
+					command.runStep("/File1.txt/SubFolder/File2.txt",                        {repetitions: 100}, /**/ "/File1.txt", "file://SubFolder/File2.txt", {os: 'linux'});
+					command.runStep("/SubFolder1/File1.txt/SubFolder2/File2.txt",            {repetitions: 100}, /**/ "/SubFolder1/File1.txt", "file://SubFolder2/File2.txt", {os: 'linux'});
+						
+					command.runStep(types.ParseError,                                       {mode: 'isinstance'}, /**/ "/SubFolder/", "http://www.doodad-js.local/File.txt", {os: 'linux'});
+				});
 					
 			},
 		},

@@ -56,592 +56,582 @@ exports.add = function add(mods) {
 				};
 					
 
-				let command;
-
-					
-				command = test.prepareCommand(function(/*paramarray*/) {
+				test.runCommand(function(/*paramarray*/) {
 					return files.Url.parse.apply(files.Url, arguments);
-				}, "Doodad.Tools.Files.Url.parse.test1");
-						
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
-					anchor: 'failedBookmark',
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#failedBookmark", options);
+				}, "Doodad.Tools.Files.Url.parse.test1", function(command, options) {
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
+						anchor: 'failedBookmark',
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#failedBookmark", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
-					anchor: '',
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
+						anchor: '',
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: 'unit', value: ''}]},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: 'unit', value: ''}]},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: 'unit', value: null}]},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: 'unit', value: null}]},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: [{name: '', value: null}]},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: [{name: '', value: null}]},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests', 'units'],
-					file: '',
-					extension: '',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests', 'units'],
+						file: '',
+						extension: '',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: ['v0', 'tests'],
-					file: '',
-					extension: '',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: ['v0', 'tests'],
+						file: '',
+						extension: '',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: [],
-					file: '',
-					extension: '',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: [],
+						file: '',
+						extension: '',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local", options);
 
-				command.run({
-					protocol: 'http',
-					user: null,
-					password: 'password',
-					domain: 'www.doodad-js.local',
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://:password@www.doodad-js.local", options);
+					command.runStep({
+						protocol: 'http',
+						user: null,
+						password: 'password',
+						domain: 'www.doodad-js.local',
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://:password@www.doodad-js.local", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: '',
-					domain: 'www.doodad-js.local',
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user:@www.doodad-js.local", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: '',
+						domain: 'www.doodad-js.local',
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user:@www.doodad-js.local", options);
 
-				command.run({
-					protocol: 'http',
-					user: 'user',
-					password: null,
-					domain: 'www.doodad-js.local',
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://user@www.doodad-js.local", options);
+					command.runStep({
+						protocol: 'http',
+						user: 'user',
+						password: null,
+						domain: 'www.doodad-js.local',
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://user@www.doodad-js.local", options);
 
-				command.run({
-					protocol: 'http',
-					user: null,
-					password: null,
-					domain: 'www.doodad-js.local',
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://www.doodad-js.local", options);
+					command.runStep({
+						protocol: 'http',
+						user: null,
+						password: null,
+						domain: 'www.doodad-js.local',
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://www.doodad-js.local", options);
 
-				command.run({
-					protocol: null,
-					user: null,
-					password: null,
-					domain: null,
-					port: null,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: true,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "", options);
+					command.runStep({
+						protocol: null,
+						user: null,
+						password: null,
+						domain: null,
+						port: null,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: true,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "", options);
 
-				command.run({
-					protocol: 'http',
-					user: null,
-					password: null,
-					domain: 'www.doodad-js.local',
-					port: 8080,
-					path: [],
-					file: null,
-					extension: null,
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "http://www.doodad-js.local:8080", options);
+					command.runStep({
+						protocol: 'http',
+						user: null,
+						password: null,
+						domain: 'www.doodad-js.local',
+						port: 8080,
+						path: [],
+						file: null,
+						extension: null,
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "http://www.doodad-js.local:8080", options);
 
-				command.run({
-					protocol: 'file',
-					user: null,
-					password: null,
-					domain: null,
-					port: null,
-					path: ['C:', 'Doodad', 'v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: true,
-				}, {depth: 3}, /**/ "file:///C:/Doodad/v0/tests/units/test.html", options);
+					command.runStep({
+						protocol: 'file',
+						user: null,
+						password: null,
+						domain: null,
+						port: null,
+						path: ['C:', 'Doodad', 'v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: true,
+					}, {depth: 3}, /**/ "file:///C:/Doodad/v0/tests/units/test.html", options);
 
-				command.run({
-					protocol: 'file',
-					user: null,
-					password: null,
-					domain: null,
-					port: null,
-					path: ['Doodad', 'v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: null},
-					anchor: null,
-					isRelative: false,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "file:///Doodad/v0/tests/units/test.html", options);
+					command.runStep({
+						protocol: 'file',
+						user: null,
+						password: null,
+						domain: null,
+						port: null,
+						path: ['Doodad', 'v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: null},
+						anchor: null,
+						isRelative: false,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "file:///Doodad/v0/tests/units/test.html", options);
 
-				command.run({
-					protocol: 'file',
-					user: null,
-					password: null,
-					domain: null,
-					port: null,
-					path: ['Doodad', 'v0', 'tests', 'units'],
-					file: 'test.html',
-					extension: 'html',
-					args: {__args: null},
-					anchor: null,
-					isRelative: true,
-					noEscapes: false,
-					isWindows: false,
-				}, {depth: 3}, /**/ "file://Doodad/v0/tests/units/test.html", options);
-
-				command.end();
+					command.runStep({
+						protocol: 'file',
+						user: null,
+						password: null,
+						domain: null,
+						port: null,
+						path: ['Doodad', 'v0', 'tests', 'units'],
+						file: 'test.html',
+						extension: 'html',
+						args: {__args: null},
+						anchor: null,
+						isRelative: true,
+						noEscapes: false,
+						isWindows: false,
+					}, {depth: 3}, /**/ "file://Doodad/v0/tests/units/test.html", options);
+				});
 					
 			
-				command = (function() {
-						const command = test.prepareCommand.call(this, function(url) {
-								return files.Url.parse(url).toString();
-							}, "Doodad.Test.Tools.Files.Url.parse.test2");
-						return tools.extend({}, command, {
-							run: function(url, /*optional*/expected /*paramarray*/) {
-								const params =  Array.prototype.slice.call(arguments, 0, arguments.length - 2);
-								params.unshift(((expected === undefined) ? url : expected), {}, url);
-								command.run.apply(this, params);
-							},
-						});
-					}).apply(this);
-					
-				// Normal
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad");
-				command.run("http://user:password@www.mydomain.com:8080/");
-				command.run("http://user:password@www.mydomain.com:8080");
-				command.run("http://user:password@www.mydomain.com");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/doodad.js");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1/");
-				command.run("http://user:password@www.mydomain.com/Doodad/v1");
-				command.run("http://user:password@www.mydomain.com/Doodad/");
-				command.run("http://user:password@www.mydomain.com/Doodad");
-				command.run("http://user:password@www.mydomain.com/");
-				command.run("http://user:password@www.mydomain.com");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js?");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/doodad.js");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/");
-				command.run("http://www.mydomain.com:8080/Doodad/v1");
-				command.run("http://www.mydomain.com:8080/Doodad/");
-				command.run("http://www.mydomain.com:8080/Doodad");
-				command.run("http://www.mydomain.com:8080/");
-				command.run("http://www.mydomain.com:8080");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?v=1");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js?");
-				command.run("http://www.mydomain.com/Doodad/v1/doodad.js");
-				command.run("http://www.mydomain.com/Doodad/v1/");
-				command.run("http://www.mydomain.com/Doodad/v1");
-				command.run("http://www.mydomain.com/Doodad/");
-				command.run("http://www.mydomain.com/Doodad");
-				command.run("http://www.mydomain.com/");
-				command.run("http://www.mydomain.com");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/doodad.js");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js?");
-				command.run("http://user:password@www.mydomain.com:8080/doodad.js");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1");
-				command.run("http://user@www.mydomain.com:8080/Doodad/doodad.js?");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b&");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?v=1&a=");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?v=1");
-				command.run("http://user@www.mydomain.com:8080/doodad.js?");
-				command.run("http://user@www.mydomain.com:8080/doodad.js");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?v=1");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js?");
-				command.run("http://www.mydomain.com:8080/Doodad/doodad.js");
-				command.run("http://www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com:8080/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com:8080/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com:8080/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com:8080/doodad.js?v=1");
-				command.run("http://www.mydomain.com:8080/doodad.js?");
-				command.run("http://www.mydomain.com:8080/doodad.js");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?v=1");
-				command.run("http://www.mydomain.com/Doodad/doodad.js?");
-				command.run("http://www.mydomain.com/Doodad/doodad.js");
-				command.run("http://www.mydomain.com/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/doodad.js?v=1&a=&b&");
-				command.run("http://www.mydomain.com/doodad.js?v=1&a=&b");
-				command.run("http://www.mydomain.com/doodad.js?v=1&a=");
-				command.run("http://www.mydomain.com/doodad.js?v=1");
-				command.run("http://www.mydomain.com/doodad.js?");
-				command.run("http://www.mydomain.com/doodad.js");
-				command.run("http://user:password@www.mydomain.com/Doodad/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com/doodad.js?v=1&a=");
-				command.run("http://user:password@www.mydomain.com/doodad.js?v=1");
-				command.run("http://user:password@www.mydomain.com/doodad.js?");
-				command.run("http://user:password@www.mydomain.com/doodad.js");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/?");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/?");
-				command.run("http://user:password@www.mydomain.com:8080/?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080/?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080/?v=1");
-				command.run("http://user:password@www.mydomain.com:8080/?");
-				command.run("http://user:password@www.mydomain.com:8080?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080?v=1&a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080?v=1&a=&b");
-				command.run("http://user:password@www.mydomain.com:8080?v=1&a=");
-				command.run("http://user:password@www.mydomain.com:8080?v=1");
-				command.run("http://user:password@www.mydomain.com:8080?");
-				command.run("http://user@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?v=1");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/?");
-				command.run("http://www.mydomain.com:8080/Doodad/v1/");
-				command.run("http://www.mydomain.com/Doodad/v1/?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/Doodad/v1/?v=1&a=&b&");
-				command.run("http://www.mydomain.com/Doodad/v1/?v=1&a=&b");
-				command.run("http://www.mydomain.com/Doodad/v1/?v=1&a=");
-				command.run("http://www.mydomain.com/Doodad/v1/?v=1");
-				command.run("http://www.mydomain.com/Doodad/v1/?");
-				command.run("http://www.mydomain.com/Doodad/?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/Doodad/?v=1&a=&b&");
-				command.run("http://www.mydomain.com/Doodad/?v=1&a=&b");
-				command.run("http://www.mydomain.com/Doodad/?v=1&a=");
-				command.run("http://www.mydomain.com/Doodad/?v=1");
-				command.run("http://www.mydomain.com/Doodad/?");
-				command.run("http://www.mydomain.com/?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com/?v=1&a=&b&");
-				command.run("http://www.mydomain.com/?v=1&a=&b");
-				command.run("http://www.mydomain.com/?v=1&a=");
-				command.run("http://www.mydomain.com/?v=1");
-				command.run("http://www.mydomain.com/?");
-				command.run("http://www.mydomain.com?v=1&a=&b&#anchor");
-				command.run("http://www.mydomain.com?v=1&a=&b&");
-				command.run("http://www.mydomain.com?v=1&a=&b");
-				command.run("http://www.mydomain.com?v=1&a=");
-				command.run("http://www.mydomain.com?v=1");
-				command.run("http://www.mydomain.com?");
-				command.run("/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("/Doodad/v1/doodad.js?v=1&a=");
-				command.run("/Doodad/v1/doodad.js?v=1");
-				command.run("/Doodad/v1/doodad.js?");
-				command.run("/Doodad/v1/doodad.js");
-				command.run("/Doodad/v1/");
-				command.run("/Doodad/v1");
-				command.run("/Doodad/");
-				command.run("/Doodad");
-				command.run("/");
-				command.run("");
+				test.runCommand(function(url) {
+					return files.Url.parse(url).toString();
+				}, "Doodad.Test.Tools.Files.Url.parse.test2", function(command, options) {
+					const runStep = function(url, /*optional*/expected /*paramarray*/) {
+						const params =  Array.prototype.slice.call(arguments, 0, arguments.length - 2);
+						params.unshift(((expected === undefined) ? url : expected), {}, url);
+						command.runStep(...params);
+					};
+						
+					// Normal
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js?");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/doodad.js");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad");
+					runStep("http://user:password@www.mydomain.com:8080/");
+					runStep("http://user:password@www.mydomain.com:8080");
+					runStep("http://user:password@www.mydomain.com");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1/");
+					runStep("http://user:password@www.mydomain.com/Doodad/v1");
+					runStep("http://user:password@www.mydomain.com/Doodad/");
+					runStep("http://user:password@www.mydomain.com/Doodad");
+					runStep("http://user:password@www.mydomain.com/");
+					runStep("http://user:password@www.mydomain.com");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/");
+					runStep("http://www.mydomain.com:8080/Doodad/v1");
+					runStep("http://www.mydomain.com:8080/Doodad/");
+					runStep("http://www.mydomain.com:8080/Doodad");
+					runStep("http://www.mydomain.com:8080/");
+					runStep("http://www.mydomain.com:8080");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?");
+					runStep("http://www.mydomain.com/Doodad/v1/doodad.js");
+					runStep("http://www.mydomain.com/Doodad/v1/");
+					runStep("http://www.mydomain.com/Doodad/v1");
+					runStep("http://www.mydomain.com/Doodad/");
+					runStep("http://www.mydomain.com/Doodad");
+					runStep("http://www.mydomain.com/");
+					runStep("http://www.mydomain.com");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js?");
+					runStep("http://user:password@www.mydomain.com:8080/doodad.js");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?v=1");
+					runStep("http://user@www.mydomain.com:8080/Doodad/doodad.js?");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b&");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?v=1&a=&b");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?v=1&a=");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?v=1");
+					runStep("http://user@www.mydomain.com:8080/doodad.js?");
+					runStep("http://user@www.mydomain.com:8080/doodad.js");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?v=1");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js?");
+					runStep("http://www.mydomain.com:8080/Doodad/doodad.js");
+					runStep("http://www.mydomain.com:8080/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com:8080/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com:8080/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com:8080/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com:8080/doodad.js?v=1");
+					runStep("http://www.mydomain.com:8080/doodad.js?");
+					runStep("http://www.mydomain.com:8080/doodad.js");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?v=1");
+					runStep("http://www.mydomain.com/Doodad/doodad.js?");
+					runStep("http://www.mydomain.com/Doodad/doodad.js");
+					runStep("http://www.mydomain.com/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/doodad.js?v=1&a=&b&");
+					runStep("http://www.mydomain.com/doodad.js?v=1&a=&b");
+					runStep("http://www.mydomain.com/doodad.js?v=1&a=");
+					runStep("http://www.mydomain.com/doodad.js?v=1");
+					runStep("http://www.mydomain.com/doodad.js?");
+					runStep("http://www.mydomain.com/doodad.js");
+					runStep("http://user:password@www.mydomain.com/Doodad/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com/doodad.js?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com/doodad.js?v=1&a=");
+					runStep("http://user:password@www.mydomain.com/doodad.js?v=1");
+					runStep("http://user:password@www.mydomain.com/doodad.js?");
+					runStep("http://user:password@www.mydomain.com/doodad.js");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/?");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/Doodad/?");
+					runStep("http://user:password@www.mydomain.com:8080/?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080/?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080/?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080/?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080/?v=1");
+					runStep("http://user:password@www.mydomain.com:8080/?");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080?v=1");
+					runStep("http://user:password@www.mydomain.com:8080?");
+					runStep("http://user@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/?");
+					runStep("http://www.mydomain.com:8080/Doodad/v1/");
+					runStep("http://www.mydomain.com/Doodad/v1/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/Doodad/v1/?v=1&a=&b&");
+					runStep("http://www.mydomain.com/Doodad/v1/?v=1&a=&b");
+					runStep("http://www.mydomain.com/Doodad/v1/?v=1&a=");
+					runStep("http://www.mydomain.com/Doodad/v1/?v=1");
+					runStep("http://www.mydomain.com/Doodad/v1/?");
+					runStep("http://www.mydomain.com/Doodad/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/Doodad/?v=1&a=&b&");
+					runStep("http://www.mydomain.com/Doodad/?v=1&a=&b");
+					runStep("http://www.mydomain.com/Doodad/?v=1&a=");
+					runStep("http://www.mydomain.com/Doodad/?v=1");
+					runStep("http://www.mydomain.com/Doodad/?");
+					runStep("http://www.mydomain.com/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com/?v=1&a=&b&");
+					runStep("http://www.mydomain.com/?v=1&a=&b");
+					runStep("http://www.mydomain.com/?v=1&a=");
+					runStep("http://www.mydomain.com/?v=1");
+					runStep("http://www.mydomain.com/?");
+					runStep("http://www.mydomain.com?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com?v=1&a=&b&");
+					runStep("http://www.mydomain.com?v=1&a=&b");
+					runStep("http://www.mydomain.com?v=1&a=");
+					runStep("http://www.mydomain.com?v=1");
+					runStep("http://www.mydomain.com?");
+					runStep("/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("/Doodad/v1/doodad.js?v=1&a=");
+					runStep("/Doodad/v1/doodad.js?v=1");
+					runStep("/Doodad/v1/doodad.js?");
+					runStep("/Doodad/v1/doodad.js");
+					runStep("/Doodad/v1/");
+					runStep("/Doodad/v1");
+					runStep("/Doodad/");
+					runStep("/Doodad");
+					runStep("/");
+					runStep("");
 
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=&");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a=");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&a");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1&");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=1");
-				command.run("file:///C:/Doodad/v1/doodad.js?v=");
-				command.run("file:///C:/Doodad/v1/doodad.js?v");
-				command.run("file:///C:/Doodad/v1/doodad.js?");
-				command.run("file:///C:/Doodad/v1/doodad.js");
-				command.run("file:///C:/Doodad/v1/");
-				command.run("file:///C:/Doodad/");
-				command.run("file:///C:/");
-				command.run("file:///c:/", "file:///C:/");
-				command.run("file://C:/", "file:///C:/");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1&");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=1");
+					runStep("file:///C:/Doodad/v1/doodad.js?v=");
+					runStep("file:///C:/Doodad/v1/doodad.js?v");
+					runStep("file:///C:/Doodad/v1/doodad.js?");
+					runStep("file:///C:/Doodad/v1/doodad.js");
+					runStep("file:///C:/Doodad/v1/");
+					runStep("file:///C:/Doodad/");
+					runStep("file:///C:/");
+					runStep("file:///c:/", "file:///C:/");
+					runStep("file://C:/", "file:///C:/");
 
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=&b&#");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=&b&");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=&b");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=&");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a=");
-				command.run("file:///Doodad/v1/doodad.js?v=1&a");
-				command.run("file:///Doodad/v1/doodad.js?v=1&");
-				command.run("file:///Doodad/v1/doodad.js?v=1");
-				command.run("file:///Doodad/v1/doodad.js?v=");
-				command.run("file:///Doodad/v1/doodad.js?v");
-				command.run("file:///Doodad/v1/doodad.js?");
-				command.run("file:///Doodad/v1/doodad.js");
-				command.run("file:///Doodad/v1/");
-				command.run("file:///Doodad/");
-				command.run("file:///");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&#anchor");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&#");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=&");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a=");
+					runStep("file:///Doodad/v1/doodad.js?v=1&a");
+					runStep("file:///Doodad/v1/doodad.js?v=1&");
+					runStep("file:///Doodad/v1/doodad.js?v=1");
+					runStep("file:///Doodad/v1/doodad.js?v=");
+					runStep("file:///Doodad/v1/doodad.js?v");
+					runStep("file:///Doodad/v1/doodad.js?");
+					runStep("file:///Doodad/v1/doodad.js");
+					runStep("file:///Doodad/v1/");
+					runStep("file:///Doodad/");
+					runStep("file:///");
+				});
 					
-				command.end();
 					
-					
-				command = test.prepareCommand(function(url1, url2, /*optional*/optionsUrl1, /*optional*/optionsUrl2, /*optional*/setUrl2, /*optional*/combineOptions, /*optional*/toStringOptions) {
+				test.runCommand(function(url1, url2, /*optional*/optionsUrl1, /*optional*/optionsUrl2, /*optional*/setUrl2, /*optional*/combineOptions, /*optional*/toStringOptions) {
 					url1 = files.Url.parse(url1, optionsUrl1);
 					if (!url1) {
 						return undefined;
@@ -657,20 +647,18 @@ exports.add = function add(mods) {
 						url2 = url2.toString(toStringOptions);
 					};
 					return url2;
-				}, "Doodad.Tools.Files.Url.combine.Url");
-					
-				command.run("http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor"); // absolute
-				command.run("http://www.doodad-js.local/?v=1&a=&b&#anchor",                                            {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local?v=1&a=&b&#anchor");  // absolute
-				command.run("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js?v=1&a=&b&#anchor",        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js?v=1&a=&b&#anchor");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1#anchor", "/Doodad.js?a=&b&");
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js?v=1&a=&b&#anchor",        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1#anchor", "Doodad.js?a=&b&");
-					
-				command.end();
+				}, "Doodad.Tools.Files.Url.combine.Url", function(command, options) {
+					command.runStep("http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local/Doodad.js?v=1&a=&b&#anchor"); // absolute
+					command.runStep("http://www.doodad-js.local/?v=1&a=&b&#anchor",                                            {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "http://www.doodad-js.local?v=1&a=&b&#anchor");  // absolute
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js?v=1&a=&b&#anchor");
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js?v=1&a=&b&#anchor",        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js?v=1&a=&b&#anchor");
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad.js?v=1&a=&b&#anchor",                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1#anchor", "/Doodad.js?a=&b&");
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js?v=1&a=&b&#anchor",        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/?v=1#anchor", "Doodad.js?a=&b&");
+				});
 					
 					
 					
-				command = test.prepareCommand(function(url, path, /*optional*/optionsUrl, /*optional*/optionsPath, /*optional*/setPath, /*optional*/combineOptions, /*optional*/toStringOptions) {
+				test.runCommand(function(url, path, /*optional*/optionsUrl, /*optional*/optionsPath, /*optional*/setPath, /*optional*/combineOptions, /*optional*/toStringOptions) {
 					url = files.Url.parse(url, optionsUrl);
 					if (!url) {
 						return undefined;
@@ -687,12 +675,10 @@ exports.add = function add(mods) {
 						url = url.toString(toStringOptions);
 					};
 					return url;
-				}, "Doodad.Tools.Files.Url.combine.Path");
-					
-				command.run("http://user:password@www.mydomain.com:8080/Doodad.js",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
-				command.run("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js",                        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
-					
-				command.end();
+				}, "Doodad.Tools.Files.Url.combine.Path", function(command, options) {
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad.js",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
+					command.runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js",                        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+				});
 						
 			},
 		},

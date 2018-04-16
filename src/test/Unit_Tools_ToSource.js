@@ -50,59 +50,56 @@ exports.add = function add(mods) {
 					io = doodad.IO;
 
 
-				let command;
-
-						
-				command = test.prepareCommand(tools.toSource, "Doodad.Tools.toSource");
-				command.run("undefined",                                       {}, /**/  undefined);
-				command.run("null",                                            {}, /**/  null);
-				command.run("NaN",                                             {}, /**/  NaN);
-				command.run("Infinity",                                        {}, /**/  Infinity);
-				command.run("-Infinity",                                       {}, /**/  -Infinity);
-				command.run("0",                                               {}, /**/  0);
-				command.run("1",                                               {}, /**/  1);
-				command.run("0.1",                                             {}, /**/  0.1);
-				command.run("-0.1",                                            {}, /**/  -0.1);
-				command.run("1.1415",                                          {}, /**/  1.1415);
-				command.run("true",                                            {}, /**/  true);
-				command.run("false",                                           {}, /**/  false);
-				command.run("''",                                              {}, /**/  "");
-				command.run("'hello'",                                         {}, /**/  "hello");
-				command.run("'hello\\n'",                                      {}, /**/  "hello\n");
-				command.run("'\\'hello\\''",                                   {}, /**/  "'hello'");
-				command.run("(new Number(0))",                                 {}, /**/  Object(0));
-				command.run("(new Number(1))",                                 {}, /**/  Object(1));
-				command.run("(new Number(0.1))",                               {}, /**/  Object(0.1));
-				command.run("(new Number(-0.1))",                              {}, /**/  Object(-0.1));
-				command.run("(new Number(1.1415))",                            {}, /**/  Object(1.1415));
-				command.run("(new Boolean(true))",                             {}, /**/  Object(true));
-				command.run("(new Boolean(false))",                            {}, /**/  Object(false));
-				command.run("(new String(''))",                                {}, /**/  Object(""));
-				command.run("(new String('hello'))",                           {}, /**/  Object("hello"));
-				command.run("(new String('hello\\n'))",                        {}, /**/  Object("hello\n"));
-				command.run("(new String('\\'hello\\''))",                     {}, /**/  Object("'hello'"));
-				command.run("{}",                                              {}, /**/  {});
-				command.run("{'a': 1}",                                        {}, /**/  {a: 1});
-				command.run("{'a': 1, 'b': 2}",                                {}, /**/  {a: 1, b: 2});
-				command.run("[]",                                              {}, /**/  []);
-				command.run("[1]",                                             {}, /**/  [1]);
-				command.run("[1, 2]",                                          {}, /**/  [1, 2]);
-				command.run("[, 2]",                                           {}, /**/  [, 2]); // empty slot
-				command.run("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}});
-				command.run("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 0);
-				command.run("{'a': 1, 'b': {'c': {}}}",                        {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 1);
-				command.run("{'a': 1, 'b': {'c': {'d': 4}}}",                  {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 2);
-				command.run("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]]);
-				command.run("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]], 0);
-				command.run("[1, [2, (new Array(1))]]",                        {depth: 2}, /**/  [1, [2, [3]]], 1);
-				command.run("[1, [2, [3]]]",                                   {depth: 2}, /**/  [1, [2, [3]]], 2);
-				command.run("(new Date(2015, 8, 15, 9, 32, 52, 140))",         {}, /**/  new Date(2015, 8, 15, 9, 32, 52, 140));
-				command.run("(new Error('error'))",                            {}, /**/  (new Error("error")));
-				command.run("(new Function())",                                {}, /**/  Object.prototype.toString);
-				// NOTE: Disabled because I get different results
-				//command.run("function () {return \"hello\";}",                    {note: "May fail under Firefox because it injects the \"use strict\" sentence and it does make sense."},      /**/  (function() {return "hello";}));
-				//command.run("function () {\n\"use strict\";\nreturn \"hello\";}", {note: "May fail under browsers other than Firefox because the \"use strict\" sentence is not injected."},    /**/  (function() {return "hello";}));
-				command.end();
+				test.runCommand(tools.toSource, "Doodad.Tools.toSource", function(command, options) {
+					command.runStep("undefined",                                       {}, /**/  undefined);
+					command.runStep("null",                                            {}, /**/  null);
+					command.runStep("NaN",                                             {}, /**/  NaN);
+					command.runStep("Infinity",                                        {}, /**/  Infinity);
+					command.runStep("-Infinity",                                       {}, /**/  -Infinity);
+					command.runStep("0",                                               {}, /**/  0);
+					command.runStep("1",                                               {}, /**/  1);
+					command.runStep("0.1",                                             {}, /**/  0.1);
+					command.runStep("-0.1",                                            {}, /**/  -0.1);
+					command.runStep("1.1415",                                          {}, /**/  1.1415);
+					command.runStep("true",                                            {}, /**/  true);
+					command.runStep("false",                                           {}, /**/  false);
+					command.runStep("''",                                              {}, /**/  "");
+					command.runStep("'hello'",                                         {}, /**/  "hello");
+					command.runStep("'hello\\n'",                                      {}, /**/  "hello\n");
+					command.runStep("'\\'hello\\''",                                   {}, /**/  "'hello'");
+					command.runStep("(new Number(0))",                                 {}, /**/  Object(0));
+					command.runStep("(new Number(1))",                                 {}, /**/  Object(1));
+					command.runStep("(new Number(0.1))",                               {}, /**/  Object(0.1));
+					command.runStep("(new Number(-0.1))",                              {}, /**/  Object(-0.1));
+					command.runStep("(new Number(1.1415))",                            {}, /**/  Object(1.1415));
+					command.runStep("(new Boolean(true))",                             {}, /**/  Object(true));
+					command.runStep("(new Boolean(false))",                            {}, /**/  Object(false));
+					command.runStep("(new String(''))",                                {}, /**/  Object(""));
+					command.runStep("(new String('hello'))",                           {}, /**/  Object("hello"));
+					command.runStep("(new String('hello\\n'))",                        {}, /**/  Object("hello\n"));
+					command.runStep("(new String('\\'hello\\''))",                     {}, /**/  Object("'hello'"));
+					command.runStep("{}",                                              {}, /**/  {});
+					command.runStep("{'a': 1}",                                        {}, /**/  {a: 1});
+					command.runStep("{'a': 1, 'b': 2}",                                {}, /**/  {a: 1, b: 2});
+					command.runStep("[]",                                              {}, /**/  []);
+					command.runStep("[1]",                                             {}, /**/  [1]);
+					command.runStep("[1, 2]",                                          {}, /**/  [1, 2]);
+					command.runStep("[, 2]",                                           {}, /**/  [, 2]); // empty slot
+					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}});
+					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 0);
+					command.runStep("{'a': 1, 'b': {'c': {}}}",                        {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 1);
+					command.runStep("{'a': 1, 'b': {'c': {'d': 4}}}",                  {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 2);
+					command.runStep("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]]);
+					command.runStep("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]], 0);
+					command.runStep("[1, [2, (new Array(1))]]",                        {depth: 2}, /**/  [1, [2, [3]]], 1);
+					command.runStep("[1, [2, [3]]]",                                   {depth: 2}, /**/  [1, [2, [3]]], 2);
+					command.runStep("(new Date(2015, 8, 15, 9, 32, 52, 140))",         {}, /**/  new Date(2015, 8, 15, 9, 32, 52, 140));
+					command.runStep("(new Error('error'))",                            {}, /**/  (new Error("error")));
+					command.runStep("(new Function())",                                {}, /**/  Object.prototype.toString);
+					// NOTE: Disabled because I get different results
+					//command.runStep("function () {return \"hello\";}",                    {note: "May fail under Firefox because it injects the \"use strict\" sentence and it does make sense."},      /**/  (function() {return "hello";}));
+					//command.runStep("function () {\n\"use strict\";\nreturn \"hello\";}", {note: "May fail under browsers other than Firefox because the \"use strict\" sentence is not injected."},    /**/  (function() {return "hello";}));
+				});
 					
 			},
 		},
