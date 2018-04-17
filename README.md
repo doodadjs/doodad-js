@@ -436,7 +436,7 @@ I'm waiting after changes to the Javascript language to get something like :
     }
 ```
 
-But I have to wait on what will be feasible after current proposals like "decorators", "public fields" and "private fields".
+But I'll have to see what is feasible after current proposals like "decorators", "public fields" and "private fields".
 
 ~~I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doesn't like, with the addition of my own (and, I believe, more realistic) classes.~~ (Suspended)
 
