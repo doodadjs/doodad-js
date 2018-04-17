@@ -937,13 +937,13 @@ exports.add = function add(mods) {
 					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
 					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
 					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
-					command.runStep(false, {repetitions: 100},        /**/ "document.forms");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.forms");
 					command.runStep(false, {repetitions: 100},        /**/ new Date);
 					command.runStep(false, {repetitions: 100},        /**/ new Error);
 					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
 					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
 					command.runStep(false, {repetitions: 100},        /**/ Object);
-					command.runStep(false, {repetitions: 100},        /**/ "document.body");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.body");
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.a);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.b);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.c);
@@ -981,13 +981,13 @@ exports.add = function add(mods) {
 					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
 					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
 					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
-					command.runStep(false, {repetitions: 100},        /**/ "document.forms");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.forms");
 					command.runStep(false, {repetitions: 100},        /**/ new Date);
 					command.runStep(false, {repetitions: 100},        /**/ new Error);
 					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
 					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
 					command.runStep(false, {repetitions: 100},        /**/ Object);
-					command.runStep(false, {repetitions: 100},        /**/ "document.body");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.body");
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.a);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.b);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.c);
@@ -1025,13 +1025,13 @@ exports.add = function add(mods) {
 					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
 					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
 					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
-					command.runStep(false, {repetitions: 100},        /**/ "document.forms");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.forms");
 					command.runStep(false, {repetitions: 100},        /**/ new Date);
 					command.runStep(false, {repetitions: 100},        /**/ new Error);
 					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
 					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
 					command.runStep(false, {repetitions: 100},        /**/ Object);
-					command.runStep(true, {repetitions: 100},         /**/ "document.body");
+					command.runStep(true, {eval: true, repetitions: 100},         /**/ "document.body");
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.a);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.b);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.c);
@@ -1069,13 +1069,13 @@ exports.add = function add(mods) {
 					command.runStep(false, {repetitions: 100},        /**/ new Number(NaN));
 					command.runStep(false, {repetitions: 100},        /**/ new Number(Infinity));
 					command.runStep(false, {repetitions: 100},        /**/ new Boolean(false));
-					command.runStep(false, {repetitions: 100},        /**/ "document.forms");
+					command.runStep(false, {eval: true, repetitions: 100},        /**/ "document.forms");
 					command.runStep(false, {repetitions: 100},        /**/ new Date);
 					command.runStep(false, {repetitions: 100},        /**/ new Error);
 					command.runStep(false, {repetitions: 100},        /**/ (function(){}));
 					command.runStep(false, {repetitions: 100},        /**/ Object.prototype.toString);
 					command.runStep(false, {repetitions: 100},        /**/ Object);
-					command.runStep(true,  {repetitions: 100},        /**/ "document.body");
+					command.runStep(true,  {eval: true, repetitions: 100},        /**/ "document.body");
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.a);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.b);
 					command.runStep(false, {repetitions: 100},        /**/ __Internal__.c);
@@ -1570,3 +1570,5 @@ exports.add = function add(mods) {
 	};
 	return mods;
 };
+
+//! END_MODULE()
