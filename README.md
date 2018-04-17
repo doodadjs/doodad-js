@@ -263,7 +263,7 @@ If you absolutely want private and protected scopes on production, and don't car
 
 ## More documentation
 
-Incomming... In the meantime, you can browse the source files and look at the "DD_DOC" headers.
+Suspended because of current proposals to Javascript... In the meantime, you can browse the source files and look at the "DD_DOC" headers.
   
 ## Examples
 
@@ -412,7 +412,7 @@ Example 5 (expandable objects) :
 
 ## Future
 
-Maybe I'll try to write a Babel plugin to get something like the following :
+I'm waiting after changes to the Javascript language to get something like :
 
 ```js
     @interface
@@ -438,7 +438,8 @@ Maybe I'll try to write a Babel plugin to get something like the following :
 
 But I have to wait on what will be feasible after current proposals like "decorators", "public fields" and "private fields".
 
-I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doesn't like, with the addition of my own (and, I believe, more realistic) classes.
+~~I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doesn't like, with the addition of my own (and, I believe, more realistic) classes.~~ (Suspended)
+
 
 ## Other available packages
 
