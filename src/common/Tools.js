@@ -74,6 +74,7 @@ exports.add = function add(modules) {
 				unhandledRejectionsMaxSize: 20,
 				caseSensitive: null, // null = auto-detect (not 100 % viable)
 				noWatch: false,
+				toSourceItemsCount: 255,		// Max number of items
 			});
 
 			tools.ADD('getOptions', function getOptions() {
@@ -81,11 +82,12 @@ exports.add = function add(modules) {
 			});
 
 			tools.ADD('setOptions', function setOptions(options) {
-				const newOptions = tools.nullObject(__options__, options);
+				const newOptions = tools.depthExtend(__Internal__.OPTIONS_DEPTH, tools.nullObject(__options__), options);
 				newOptions.logLevel = types.toInteger(newOptions.logLevel);
 				newOptions.unhandledRejectionsTimeout = types.toInteger(newOptions.unhandledRejectionsTimeout);
 				newOptions.unhandledRejectionsMaxSize = types.toInteger(newOptions.unhandledRejectionsMaxSize);
 				newOptions.noWatch = types.toBoolean(newOptions.noWatch);
+				newOptions.toSourceItemsCount = types.toInteger(newOptions.toSourceItemsCount);
 				if (!types.isNothing(newOptions.caseSensitive)) {
 					newOptions.caseSensitive = types.toBoolean(newOptions.caseSensitive);
 				};
