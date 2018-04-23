@@ -115,7 +115,26 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//! END_IF()
 
 
-	const {types, tools, __options__, _shared, __Internal__} = (function(__options__, _shared, __Internal__) {
+	let __options__ = {
+		//! IF_SET('debug')
+			debug: true,                        // When 'true', will be in 'debug mode'.
+			fromSource: true,                   // When 'true', loads source code instead of built code
+			enableDebugger: true,               // When 'true', enables 'types.DEBUGGER'.
+			enableProperties: true,             // When 'true', enables 'types.defineProperty'.
+			enableAsserts: true,                // When 'true', enables 'root.DD_ASSERT'.
+		//! ELSE()
+		//!	INJECT("debug: false,                       // When 'true', will be in 'debug mode'.")
+		//!	INJECT("fromSource: false,                  // When 'true', loads source code instead of built code.")
+		//!	INJECT("enableDebugger: false,              // When 'true', enables 'types.DEBUGGER'.")
+		//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.")
+		//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.")
+		//! END_IF()
+		
+		enableSymbols: true,					// (Read-Only) When 'true', symbols are enabled.
+		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
+	};
+
+	const {types, tools, _shared, __Internal__} = (function(_shared, __Internal__) {
 		const types = {},
 			tools = {};
 
@@ -310,6 +329,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return !!obj && ((type === 'object') || (type === 'function'));
 		}));
 		
+		__Internal__.ADD('isArray', _shared.Natives.arrayIsArray);
+
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -341,6 +362,49 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		}));
 		
+		__Internal__.ADD('has', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+					keys: {
+						type: 'arrayof(string,Symbol),string,Symbol',
+						optional: false,
+						description: "Key(s) to test for.",
+					},
+				},
+				returns: 'bool',
+				description: "Returns 'true' if one of the specified keys is an owned property of the object.",
+			}
+			//! END_REPLACE()
+			, function has(obj, keys) {
+				if (!types.isNothing(obj)) {
+					obj = _shared.Natives.windowObject(obj);
+					if (!types.isArray(keys)) {
+						return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
+					};
+					const len = keys.length;
+					if (!len) {
+						return false;
+					};
+					for (let i = 0; i < len; i++) {
+						if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
+							const key = keys[i];
+							if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
+								return true;
+							};
+						};
+					};
+				};
+				return false;
+			}));
+
 		__Internal__.ADD('keys', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -417,7 +481,65 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return symbols;
 		}));
 		
+		__Internal__.ADD_TOOL('createObject', _shared.Natives.objectCreate);
 
+		__Internal__.ADD_TOOL('extend', _shared.Natives.objectAssign);
+
+		__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'arraylike',
+						optional: false,
+						description: "Target array.",
+					},
+					paramarray: {
+						type: 'arrayof(arraylike)',
+						optional: true,
+						description: "Arrays to append.",
+					},
+				},
+				returns: 'array',
+				description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
+			}
+			//! END_REPLACE()
+			, function append(obj, /*paramarray*/...args) {
+				if (!types.isArrayLike(obj)) {
+					return null;
+				};
+				const argsLen = args.length;
+				for (let i = 0; i < argsLen; i++) {
+					const arg = args[i];
+					if (!types.isNothing(arg)) {
+						_shared.Natives.arrayPushApply(obj, arg);
+					};
+				};
+				return obj;
+			}));
+				
+		__Internal__.ADD_TOOL('nullObject', __Internal__.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					paramarray: {
+						type: 'object',
+						optional: true,
+						description: "List of objects.",
+					},
+				},
+				returns: 'object',
+				description: "Returns a null object extended by the provided objects.",
+			}
+			//! END_REPLACE()
+			, function nullObject(/*paramarray*/...args) {
+				return tools.extend.apply(tools, tools.append([tools.createObject(null)], args));
+			}));
+	
 		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -444,82 +566,73 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Extends the first object with owned properties of the other objects using the specified depth.",
 			}
 			//! END_REPLACE()
-		, function depthExtend(depth, obj, /*paramarray*/...args) {
-			let result;
-			if (!types.isNothing(obj)) {
-				let extender;
-				if (types.isFunction(depth)) {
-					extender = depth;
-					depth = Infinity;
-				} else {
-					depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-					extender = function(result, val, key, extend) {
-						if ((extender.depth >= 0) && types.isObject(val)) {
-							const resultVal = result[key];
-							if (types.isNothing(resultVal)) {
-								extender.depth--;
-								if (extender.depth >= -1) {
-									result[key] = extend({}, val);
+			, function depthExtend(depth, obj, /*paramarray*/...args) {
+				let result;
+				if (!types.isNothing(obj)) {
+					let extender;
+					if (types.isFunction(depth)) {
+						extender = depth;
+						depth = Infinity;
+					} else {
+						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+						extender = function(result, val, key, extend) {
+							if ((extender.depth >= 0) && types.isObject(val)) {
+								const resultVal = result[key];
+								if (types.isNothing(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										result[key] = extend({}, val);
+									};
+								} else if (types.isObjectLike(resultVal)) {
+									extender.depth--;
+									if (extender.depth >= -1) {
+										extend(resultVal, val);
+									};
+								} else if (resultVal !== val) {
+									result[key] = val;
 								};
-							} else if (types.isObjectLike(resultVal)) {
-								extender.depth--;
-								if (extender.depth >= -1) {
-									extend(resultVal, val);
-								};
-							} else if (resultVal !== val) {
+							} else {
 								result[key] = val;
 							};
-						} else {
-							result[key] = val;
 						};
+						extender.depth = depth;
 					};
-					extender.depth = depth;
-				};
-				if (depth >= -1) {
-					result = _shared.Natives.windowObject(obj);
-					const argsLen = args.length;
-					for (let i = 0; i < argsLen; i++) {
-						let arg = args[i];
-						if (!types.isNothing(arg)) {
-							// Part of "Object.assign" Polyfill from Mozilla Developer Network.
-							arg = _shared.Natives.windowObject(arg);
-							const keys = types.keys(arg);
-							const keysLen = keys.length; // performance
-							for (let j = 0; j < keysLen; j++) {
-								const key = keys[j];
-								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
-							};
-							const symbols = types.symbols(arg);
-							const symbolsLen = symbols.length; // performance
-							for (let j = 0; j < symbolsLen; j++) {
-								const key = symbols[j];
-								extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+					if (depth >= -1) {
+						result = _shared.Natives.windowObject(obj);
+						const argsLen = args.length;
+						for (let i = 0; i < argsLen; i++) {
+							let arg = args[i];
+							if (!types.isNothing(arg)) {
+								// Part of "Object.assign" Polyfill from Mozilla Developer Network.
+								arg = _shared.Natives.windowObject(arg);
+								const keys = types.keys(arg);
+								const keysLen = keys.length; // performance
+								for (let j = 0; j < keysLen; j++) {
+									const key = keys[j];
+									extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+								};
+								const symbols = types.symbols(arg);
+								const symbolsLen = symbols.length; // performance
+								for (let j = 0; j < symbolsLen; j++) {
+									const key = symbols[j];
+									extender(result, arg[key], key, _shared.Natives.functionBindCall(tools.depthExtend, types, extender));
+								};
 							};
 						};
 					};
 				};
-			};
-			return result;
-		}));
-				
-
+				return result;
+			}));
+					
 		//===================================
-		// Get options
+		// Options
 		//===================================
 
 		if (global.Array.isArray(_options)) {
 			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {}], _options));
 		};
 
-		tools.depthExtend(__Internal__.OPTIONS_DEPTH, __options__, _options.startup);
-		
-		__options__.debug = types.toBoolean(__options__.debug);
-		__options__.fromSource = types.toBoolean(__options__.fromSource);
-		__options__.enableProperties = types.toBoolean(__options__.enableProperties);
-		__options__.enableSymbols = types.toBoolean(__options__.enableSymbols);
-		__options__.enableAsserts = types.toBoolean(__options__.enableAsserts);
-		__options__.enableSafeObjects = types.toBoolean(__options__.enableSafeObjects);
-
+		__options__ = __Internal__.setOptions(__Internal__, types, tools, _options.startup);
 
 		//===================================
 		// "safeObject"
@@ -566,31 +679,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		return {
 			types,
 			tools,
-			__options__,
 			_shared: _shared.safeObject(_shared),
 			__Internal__: _shared.safeObject(__Internal__),
 		};
 	})(
-		/*__options__*/
-		{
-			//! BEGIN_REMOVE()
-				fromSource: true,					// When 'true', loads source code instead of built code
-			//! END_REMOVE()
-
-			//! IF_SET('debug')
-				debug: true,						// When 'true', will be in 'debug mode'.
-				enableProperties: true,				// When 'true', enables "defineProperty"
-				enableAsserts: true,				// When 'true', enables asserts.
-			//! ELSE()
-			//!	INJECT("debug: false,")				// When 'true', will be in 'debug mode'.
-			//!	INJECT("enableProperties: false,")	// When 'true', enables "defineProperty"
-			//!	INJECT("enableAsserts: false,")		// When 'true', enables asserts.
-			//! END_IF()
-			
-			enableSymbols: true,					// When 'true', symbols are enabled.
-			enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
-		},
-
 		/*_shared*/
 		{
 			// Secret value used to load modules, ...
@@ -786,6 +878,35 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			OPTIONS_DEPTH: 15,
 
 			isArrayIndexRegExp: /^(0|[1-9][0-9]*)$/,
+
+			enableAsserts: function enableAsserts(__Internal__, root, types) {
+				if (types.hasDefinePropertyEnabled()) {
+					__Internal__.DD_ASSERT = __Internal__.ASSERT;
+				} else {
+					root.DD_ASSERT = __Internal__.ASSERT;
+				};
+			},
+				
+			disableAsserts: function disableAsserts(__Internal__, root, types) {
+				if (types.hasDefinePropertyEnabled()) {
+					__Internal__.DD_ASSERT = null;
+				} else {
+					root.DD_ASSERT = null;
+				};
+			},
+					
+			setOptions: function setOptions(__Internal__, types, tools, options) {
+				const newOptions = tools.nullObject(__options__, options);
+
+				newOptions.debug = types.toBoolean(newOptions.debug);
+				newOptions.fromSource = types.toBoolean(newOptions.fromSource);
+				newOptions.enableProperties = types.toBoolean(newOptions.enableProperties);
+				newOptions.enableAsserts = types.toBoolean(newOptions.enableAsserts);
+				newOptions.enableSymbols = types.toBoolean(newOptions.enableSymbols);
+				newOptions.enableSafeObjects = types.toBoolean(newOptions.enableSafeObjects);
+
+				return newOptions;
+			},
 		}
 	);
 
@@ -802,7 +923,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		// Something weird just happened. Please see the call stack.
 
 		// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
-		if (__options__.debug) {
+		if (__options__.enableDebugger) {
 			debugger;
 		};
 	});
@@ -1267,8 +1388,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return false;
 		}));
 		
-	__Internal__.ADD('isArray', _shared.Natives.arrayIsArray);
-
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1465,48 +1584,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return __Internal__.numberIsSafeInteger(obj);
 			};
 			return false;
-		}));
-		
-	__Internal__.ADD('getSafeIntegerBounds', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'object',
-					description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
-		}
-		//! END_REPLACE()
-		, function getSafeIntegerBounds() {
-			if (!__Internal__.safeIntegerLen) {
-				__Internal__.safeIntegerLen = types.freezeObject(tools.nullObject({
-					len: __Internal__.SAFE_INTEGER_LEN, 
-					min: _shared.Natives.numberMinSafeInteger, 
-					max: _shared.Natives.numberMaxSafeInteger,
-				}));
-			};
-			return __Internal__.safeIntegerLen;
-		}));
-		
-	__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'object',
-					description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
-		}
-		//! END_REPLACE()
-		, function getBitwiseIntegerBounds() {
-			if (!__Internal__.bitwiseIntegerLen) {
-				__Internal__.bitwiseIntegerLen = types.freezeObject(tools.nullObject({
-					len: __Internal__.BITWISE_INTEGER_LEN, 
-					min: __Internal__.MIN_BITWISE_INTEGER, 
-					max: __Internal__.MAX_BITWISE_INTEGER,
-				}));
-			};
-			return __Internal__.bitwiseIntegerLen;
 		}));
 		
 	__Internal__.ADD('isFinite', __Internal__.DD_DOC(
@@ -1823,41 +1900,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Arrays
 	//===================================
 
-	__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'arraylike',
-							optional: false,
-							description: "Target array.",
-						},
-						paramarray: {
-							type: 'arrayof(arraylike)',
-							optional: true,
-							description: "Arrays to append.",
-						},
-					},
-					returns: 'array',
-					description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
-		}
-		//! END_REPLACE()
-		, function append(obj, /*paramarray*/...args) {
-			if (!types.isArrayLike(obj)) {
-				return null;
-			};
-			const argsLen = args.length;
-			for (let i = 0; i < argsLen; i++) {
-				const arg = args[i];
-				if (!types.isNothing(arg)) {
-					_shared.Natives.arrayPushApply(obj, arg);
-				};
-			};
-			return obj;
-		}));
-			
 	__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'tools.concat'.
 	__Internal__.ADD_TOOL('concat', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -2135,49 +2177,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Objects
 	//===================================
 		
-	__Internal__.ADD('has', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object.",
-						},
-						keys: {
-							type: 'arrayof(string,Symbol),string,Symbol',
-							optional: false,
-							description: "Key(s) to test for.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if one of the specified keys is an owned property of the object.",
-		}
-		//! END_REPLACE()
-		, function has(obj, keys) {
-			if (!types.isNothing(obj)) {
-				obj = _shared.Natives.windowObject(obj);
-				if (!types.isArray(keys)) {
-					return _shared.Natives.objectHasOwnPropertyCall(obj, keys);
-				};
-				const len = keys.length;
-				if (!len) {
-					return false;
-				};
-				for (let i = 0; i < len; i++) {
-					if (_shared.Natives.objectHasOwnPropertyCall(keys, i)) {
-						const key = keys[i];
-						if (_shared.Natives.objectHasOwnPropertyCall(obj, key)) {
-							return true;
-						};
-					};
-				};
-			};
-			return false;
-		}));
-
 	__Internal__.ADD('hasInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2525,8 +2524,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return descriptor;
 		}));
 		
-	__Internal__.ADD_TOOL('createObject', _shared.Natives.objectCreate);
-
 	__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2632,26 +2629,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			// NOTE: Why does this function is part of Object prototype ?
 			return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 		});
-
-	__Internal__.ADD_TOOL('nullObject', __Internal__.DD_DOC(
-		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						paramarray: {
-							type: 'object',
-							optional: true,
-							description: "List of objects.",
-						},
-					},
-					returns: 'object',
-					description: "Returns a null object extended by the provided objects.",
-		}
-		//! END_REPLACE()
-		, function nullObject(/*paramarray*/...args) {
-			return tools.extend.apply(types, tools.append([tools.createObject(null)], args));
-		}));
 
 	__Internal__.ADD_TOOL('safeObject', _shared.safeObject);
 
@@ -2784,8 +2761,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return result;
 		}));
 			
-	__Internal__.ADD_TOOL('extend', _shared.Natives.objectAssign);
-
 	__Internal__.ADD_TOOL('complete', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3067,13 +3042,51 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				}
 			}));
 		
-	//==============
-	// SECRET
-	//==============
+	//===================================
+	// Bounds
+	//===================================
+
+	__Internal__.ADD('getSafeIntegerBounds', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'object',
+					description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
+		}
+		//! END_REPLACE()
+		, function getSafeIntegerBounds() {
+			if (!__Internal__.safeIntegerLen) {
+				__Internal__.safeIntegerLen = types.freezeObject(tools.nullObject({
+					len: __Internal__.SAFE_INTEGER_LEN, 
+					min: _shared.Natives.numberMinSafeInteger, 
+					max: _shared.Natives.numberMaxSafeInteger,
+				}));
+			};
+			return __Internal__.safeIntegerLen;
+		}));
 		
-	_shared.SECRET = types.get(__options__, 'secret') || null;
-	delete __options__.secret;
-	//__options__.secret = null;
+	__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+		{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'object',
+					description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
+		}
+		//! END_REPLACE()
+		, function getBitwiseIntegerBounds() {
+			if (!__Internal__.bitwiseIntegerLen) {
+				__Internal__.bitwiseIntegerLen = types.freezeObject(tools.nullObject({
+					len: __Internal__.BITWISE_INTEGER_LEN, 
+					min: __Internal__.MIN_BITWISE_INTEGER, 
+					max: __Internal__.MAX_BITWISE_INTEGER,
+				}));
+			};
+			return __Internal__.bitwiseIntegerLen;
+		}));
 
 	//===================================
 	// UUIDs
@@ -6940,13 +6953,21 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	types.setAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
 	__Internal__.ADD('Namespace', types.Namespace);
 
+	//==============
+	// SECRET
+	//==============
+		
+	_shared.SECRET = types.get(__options__, 'secret') || null;
+	delete __options__.secret;
+	//__options__.secret = null;
+
 	//===================================
 	// Root
 	//===================================
 
 	types.freezeObject(__options__);
 
-	types.preventExtensions(__Internal__[_shared.TargetSymbol]);
+	types.preventExtensions(__Internal__[_shared.TargetSymbol] || __Internal__);
 
 	const root = types.INIT(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7047,7 +7068,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 						
 					if (__options__.enableAsserts) {
-						this.enableAsserts();
+						__Internal__.enableAsserts(__Internal__, root, types);
+					} else {
+						__Internal__.disableAsserts(__Internal__, root, types);
 					};
 						
 					// Load bootstrap modules
@@ -7261,45 +7284,28 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),")
 				//! END_IF()
 
-				enableAsserts: __Internal__.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Enables 'DD_ASSERT'.",
-					}
-					//! END_REPLACE()
-					, function enableAsserts() {
-						if (types.hasDefinePropertyEnabled()) {
-							__Internal__.DD_ASSERT = __Internal__.ASSERT;
-						} else {
-							const root = this;
-							root.DD_ASSERT = __Internal__.ASSERT;
-						};
-					}),
-					
-				disableAsserts: __Internal__.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Disables 'DD_ASSERT'.",
-					}
-					//! END_REPLACE()
-					, function disableAsserts() {
-						if (types.hasDefinePropertyEnabled()) {
-							__Internal__.DD_ASSERT = null;
-						} else {
-							const root = this;
-							root.DD_ASSERT = null;
-						};
-					}),
-						
 				getOptions: function() {
+					return __options__;
+				},
+
+				setOptions: function(options) {
+					const root = this;
+
+					const newOptions = __Internal__.setOptions(__Internal__, types, tools, options);
+
+					if (types.has(options, 'enableAsserts')) {
+						if (newOptions.enableAsserts) {
+							__Internal__.enableAsserts(root);
+						} else {
+							__Internal__.disableAsserts(root);
+						};
+					};
+	
+					// Read-Only
+					newOptions.enableSymbols = __options__.enableSymbols;
+
+					__options__ = types.freezeObject(newOptions);
+
 					return __options__;
 				},
 			}
