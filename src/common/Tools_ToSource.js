@@ -114,7 +114,7 @@ exports.add = function add(modules) {
 								// Do nothing
 							};
 						};
-						const toSourceItemsCount = types.getOptions().toSourceItemsCount;
+						const toSourceItemsCount = tools.getOptions().toSourceItemsCount;
 						if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 							return obj.toSource();
 						} else {
