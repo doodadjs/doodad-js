@@ -82,7 +82,7 @@ exports.add = function add(modules) {
 			});
 
 			tools.ADD('setOptions', function setOptions(options) {
-				const newOptions = tools.depthExtend(__Internal__.OPTIONS_DEPTH, tools.nullObject(__options__), options);
+				const newOptions = tools.nullObject(__options__, options);
 				newOptions.logLevel = types.toInteger(newOptions.logLevel);
 				newOptions.unhandledRejectionsTimeout = types.toInteger(newOptions.unhandledRejectionsTimeout);
 				newOptions.unhandledRejectionsMaxSize = types.toInteger(newOptions.unhandledRejectionsMaxSize);
