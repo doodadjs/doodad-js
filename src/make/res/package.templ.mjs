@@ -57,6 +57,9 @@ export function createRoot(/*optional*/modules, /*optional*/options, /*optional*
 				// Debug mode
 				config.startup.debug = true;
 	
+				// May stop in the attached Debugger.
+				config.startup.enableDebugger = true;
+
 				// Enable some validations on debug
 				config.startup.enableAsserts = true;
 				config.startup.enableProperties = true;

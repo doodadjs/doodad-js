@@ -78,6 +78,9 @@ module.exports = {
 				// Will load modules from source
 				config.startup.fromSource = true;
 
+				// May stop in the attached Debugger.
+				config.startup.enableDebugger = true;
+
 				// Enable some validations on debug
 				config.startup.enableAsserts = true;
 				config.startup.enableProperties = true;
