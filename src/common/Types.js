@@ -55,17 +55,14 @@ exports.add = function add(modules) {
 			// Options
 			//===================================
 					
-			const __options__ = tools.nullObject({
-				toSourceItemsCount: 255,		// Max number of items
-			}, _options);
+			//const __options__ = tools.nullObject({
+			//}, _options);
 
-			__options__.toSourceItemsCount = types.toInteger(__options__.toSourceItemsCount);
+			//types.freezeObject(__options__);
 
-			types.freezeObject(__options__);
-
-			types.ADD('getOptions', function getOptions() {
-				return __options__;
-			});
+			//types.ADD('getOptions', function getOptions() {
+			//	return __options__;
+			//});
 
 			//===================================
 			// Native functions
