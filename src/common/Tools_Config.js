@@ -34,36 +34,36 @@ exports.add = function add(modules) {
 	modules['Doodad.Tools.Config'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-			'Doodad.Types', 
-			'Doodad.Tools', 
+			'Doodad.Types',
+			'Doodad.Tools',
 			'Doodad.Tools.Files',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
 				config = tools.Config;
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			//const __Internal__ = {
 			//};
-				
-				
+
+
 			//===================================
 			// Options
 			//===================================
-					
+
 			//const __options__ = tools.nullObject({
 			//	configPath: null,
 			//}, _options);
@@ -75,20 +75,20 @@ exports.add = function add(modules) {
 			//config.ADD('getOptions', function getOptions() {
 			//	return __options__;
 			//});
-				
+
 
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				windowJSON: global.JSON,
 			});
-				
+
 			//===================================
 			// Config
 			//===================================
-				
+
 			config.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -114,9 +114,9 @@ exports.add = function add(modules) {
 					const Promise = types.getPromise();
 					return Promise.try(function() {
 						const path = files.parseLocation(location);
-										
+
 						const encoding = types.get(options, 'encoding', 'utf-8');
-	
+
 						// For readFile through HTTP/HTTPS
 						let headers = null;
 						if (types._instanceof(path, files.Url)) {
@@ -126,7 +126,7 @@ exports.add = function add(modules) {
 							};
 							headers['Accept'] = 'application/json';
 						};
-	
+
 						return files.readFileAsync(path, {encoding, headers})
 							.then(function proceedFile(json) {
 								if (encoding.slice(0, 3).toLowerCase() === 'utf') {

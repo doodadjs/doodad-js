@@ -34,7 +34,7 @@ exports.add = function add(modules) {
 	modules['Doodad.Tools/Version'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
 				types = doodad.Types,
@@ -72,7 +72,7 @@ exports.add = function add(modules) {
 					{
 						$TYPE_NAME: 'Version',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Version')), true) */,
-							
+
 						__parse: function __parse(val, identifiers, trimSpaces) {
 							const ar = [];
 							const valLen = val.length;
@@ -109,7 +109,7 @@ exports.add = function add(modules) {
 							} while (end >= 0);
 							return ar;
 						},
-							
+
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -135,28 +135,28 @@ exports.add = function add(modules) {
 								if (types._instanceof(str, tools.Version)) {
 									return str;
 								};
-									
+
 								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(options) || types.isObject(options), "Invalid options.");
-									
+
 								options = tools.nullObject(options);
-									
+
 								//const dontThrow = types.getDefault(options, 'dontThrow', false);
 
 								// Force to string
 								str += '';
-									
+
 								const identifiers = types.getDefault(options, 'identifiers', {}),
 									trimSpaces = types.getDefault(options, 'trimSpaces', false);
 
 								// Doodad.Tools.Version.parse('1.1.23 beta', {identifiers: {alpha: 0, beta: 1, release: 2}}) --> [1, 1, 23, 1]
 								// Doodad.Tools.Version.parse('1.1.23 build 1324') --> [1, 1, 23, 1324]
 								// Doodad.Tools.Version.parse('major: 1, minor: 1, revision: 23 beta', {identifiers: {beta: 1}}) --> [1, 1, 23, 1]
-										
+
 								const ar = this.__parse(str, identifiers, trimSpaces);
-									
+
 								return new this(ar, options);
 							}),
-							
+
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -194,7 +194,7 @@ exports.add = function add(modules) {
 					{
 						data: types.READ_ONLY(null),
 						options: types.READ_ONLY(null),
-							
+
 						_new: types.SUPER(function _new(data, /*optional*/options) {
 							this._super();
 							types.setAttributes(this, {
@@ -202,7 +202,7 @@ exports.add = function add(modules) {
 								options: tools.nullObject(options),
 							});
 						}),
-							
+
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -261,7 +261,7 @@ exports.add = function add(modules) {
 								};
 								return 0;
 							}),
-							
+
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -287,8 +287,8 @@ exports.add = function add(modules) {
 							}),
 					}
 				)));
-					
-					
+
+
 			//===================================
 			// Init
 			//===================================

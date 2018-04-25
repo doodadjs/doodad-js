@@ -34,29 +34,29 @@ exports.add = function add(modules) {
 	modules['Doodad.Types/uuids'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools;
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			//// <FUTURE> Thread context
 			//const __Internal__ = {
 			//};
-				
-				
+
+
 			//===================================
 			// Options
 			//===================================
-					
+
 			//let __options__ = tools.nullObject({
 			//}, _options);
 
@@ -67,16 +67,16 @@ exports.add = function add(modules) {
 			//config.ADD('getOptions', function getOptions() {
 			//	return __options__;
 			//});
-				
+
 
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			//tools.complete(_shared.Natives, {
 			//	windowPromise: (types.isFunction(global.Promise) ? global.Promise : undefined),
 			//});
-				
+
 			//===================================
 			// Init
 			//===================================

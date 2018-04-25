@@ -38,12 +38,12 @@ exports.add = function add(modules) {
 			'Doodad.Tools.Files',
 			'Doodad.Modules',
 		],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
@@ -55,7 +55,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 				resourcesLoader: new types.WeakMap(),

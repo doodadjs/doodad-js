@@ -35,8 +35,8 @@ exports.add = function add(modules) {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['Entries'],
 		dependencies: [
-			'Doodad.Types', 
-			'Doodad.Types/Iterators', 
+			'Doodad.Types',
+			'Doodad.Types/Iterators',
 			'Doodad.Tools',
 		],
 		bootstrap: true,
@@ -45,13 +45,13 @@ exports.add = function add(modules) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				namespaces = doodad.Namespaces,
 				entries = namespaces.Entries;
-			
+
 			//===================================
 			// Internals
 			//===================================
@@ -73,7 +73,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Utilities
 			//===================================
-				
+
 			__Internal__.incrementWait = function incrementWait() {
 				__Internal__.waiting = true;
 				if (__Internal__.waitCounter < 0) {
@@ -81,7 +81,7 @@ exports.add = function add(modules) {
 				};
 				__Internal__.waitCounter++;
 			};
-				
+
 			__Internal__.decrementWait = function decrementWait() {
 				__Internal__.waitCounter--;
 				if (__Internal__.waitCounter <= 0) {
@@ -92,15 +92,15 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('VersionIdentifiers', types.freezeObject(tools.nullObject({
 				/* eslint object-property-newline: "off" */
-				development: -4, dev: -4, d: -4, 
-				alpha: -3, a: -3, 
-				beta: -2, b: -2, 
-				stable: -1, s: -1, 
-				release: 0, r: 0, 
-				production: 1, prod: 1, p: 1, 
+				development: -4, dev: -4, d: -4,
+				alpha: -3, a: -3,
+				beta: -2, b: -2,
+				stable: -1, s: -1,
+				release: 0, r: 0,
+				production: 1, prod: 1, p: 1,
 				established: 2, e: 2,
 			})));
-				
+
 			types.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
 				return __Internal__.DD_REGISTRY.iter();
 			}, {});
@@ -251,7 +251,7 @@ exports.add = function add(modules) {
 					//! END_REPLACE()
 			, function createNamespace(spec, /*optional*/options, /*optional*/ignoreOptionals) {
 				const Promise = types.getPromise();
-					
+
 				return Promise.try(function() {
 					const globalOptions = types.get(options, 'global');
 
@@ -370,14 +370,14 @@ exports.add = function add(modules) {
 						};
 						return missingDeps;
 					};
-					
+
 					const createParents = function _createParents(shortNames, fullName, parent) {
 						for (let i = 0; i < shortNames.length - 1; i++) {
 							const shortName = shortNames[i];
 							fullName += ('.' + shortName);
-							
+
 							const fName = fullName.slice(1);
-							
+
 							let namespace = parent[shortName];
 
 							if (!namespace) {
@@ -390,10 +390,10 @@ exports.add = function add(modules) {
 								const entry = new entries.Namespace(root, newSpec, namespace);
 								__Internal__.DD_REGISTRY.add(fName, entry, {secret: _shared.SECRET});
 							};
-							
+
 							parent = namespace;
 						};
-						
+
 						return parent;
 					};
 
@@ -408,22 +408,22 @@ exports.add = function add(modules) {
 								return entry;
 							};
 						};
-						
+
 						let namespaceType = getNamespaceType(spec);
-						
+
 						let namespace = types.get(spec, 'object');
 						if (namespace) {
 							if (!types.isLike(namespace, namespaceType)) {
 								throw new types.Error("Invalid namespace object.");
 							};
 						};
-						
+
 						const curEntryType = types.getType(entry);
 						let replaceEntry = false;
 						if (curEntryType && (entryType !== curEntryType) && (entryType !== entries.Namespace)) {
 							replaceEntry = true;
 						};
-						
+
 						const shortName = shortNames[shortNames.length - 1];
 						let prevNamespace = null;
 						if (types.has(parent, shortName)) {
@@ -433,12 +433,12 @@ exports.add = function add(modules) {
 								prevNamespace = null;
 							};
 						};
-						
+
 						if (entry && replaceEntry) {
 							__Internal__.DD_REGISTRY.remove(spec.name, null, {secret: _shared.SECRET});
 							entry = null;
 						};
-						
+
 						if (!entry) {
 							if (spec.name !== baseName) {
 								const baseEntry = __Internal__.DD_REGISTRY.get(baseName);
@@ -492,10 +492,10 @@ exports.add = function add(modules) {
 							entry = new entryType(root, spec, namespace, {protect: protect});
 							__Internal__.DD_REGISTRY.add(spec.name, entry, {secret: _shared.SECRET});
 						};
-						
+
 						return entry;
 					};
-					
+
 					const create = function _create(spec, parentName, parent) {
 						const baseName = __Internal__.getBaseName(spec.name);
 						const shortNames = baseName.split('.');
@@ -503,7 +503,7 @@ exports.add = function add(modules) {
 						const entry = createMain(shortNames, spec, parent);
 						return entry;
 					};
-					
+
 					const createObject = function _createObject(entry) {
 						const baseName = __Internal__.getBaseName(entry.spec.name);
 						let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
@@ -550,7 +550,7 @@ exports.add = function add(modules) {
 						};
 						return entry;
 					};
-					
+
 					const createNamespaces = function _createNamespaces(entry) {
 						const specNamespaces = types.get(entry.spec, 'namespaces');
 						if (specNamespaces) {
@@ -575,7 +575,7 @@ exports.add = function add(modules) {
 					};
 
 					const terminate = function _terminate(entry) {
-						namespaces.dispatchEvent(new types.CustomEvent('create', 
+						namespaces.dispatchEvent(new types.CustomEvent('create',
 							{
 								detail: {
 									entry: entry,
@@ -583,11 +583,11 @@ exports.add = function add(modules) {
 								},
 							}
 						));
-						
+
 						tools.log(tools.LogLevels.Debug, "Entry '~0~' created.", [entry.spec.name]);
 						return entry;
 					};
-					
+
 					const check = function _check(spec) {
 						const baseName = __Internal__.getBaseName(spec.name);
 						if (!spec.bootstrap && (spec.name !== baseName)) {
@@ -596,7 +596,7 @@ exports.add = function add(modules) {
 								return existing;
 							};
 						};
-					
+
 						const missingDeps = checkDependencies(spec);
 						if (missingDeps.length) {
 							return missingDeps;
@@ -604,12 +604,12 @@ exports.add = function add(modules) {
 
 						return null;
 					};
-						
+
 					const result = check(spec);
 					if (result) {
 						return result;
 					};
-					
+
 					return Promise.resolve(create(spec, '', root))
 						.then(createNamespaces)
 						.then(function(entry) {
@@ -625,7 +625,7 @@ exports.add = function add(modules) {
 						});
 				});
 			});
-				
+
 			__Internal__.initNamespace = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -657,7 +657,7 @@ exports.add = function add(modules) {
 						entry.objectInitializing = true;
 
 						let promise = Promise.resolve();
-						
+
 						const deps = types.get(entry.spec, 'dependencies');
 						if (deps) {
 							const depsLen = deps.length;
@@ -667,7 +667,7 @@ exports.add = function add(modules) {
 									if (!types.isString(dep)) {
 										dep = dep.name;
 									};
-									
+
 									const depEntry = __Internal__.DD_REGISTRY.get(dep);
 									if (depEntry) {
 										if (!depEntry.objectInitialized && !depEntry.objectInitializing) {
@@ -682,7 +682,7 @@ exports.add = function add(modules) {
 								};
 							};
 						};
-						
+
 						const globalOptions = types.get(options, 'global');
 
 						const baseName = __Internal__.getBaseName(entry.spec.name);
@@ -691,7 +691,7 @@ exports.add = function add(modules) {
 						if (globalOptions) {
 							options = tools.extend({}, globalOptions, options);
 						};
-						
+
 						if (entry.objectInit) {
 							if (types.isFunction(entry.objectInit)) {
 								const retval = entry.objectInit(options);
@@ -714,9 +714,9 @@ exports.add = function add(modules) {
 								throw new types.Error("'objectInit' of '~0~' has an invalid value.", [entry.spec.name]);
 							};
 						};
-						
+
 						const terminate = function terminate() {
-							namespaces.dispatchEvent(new types.CustomEvent('init', 
+							namespaces.dispatchEvent(new types.CustomEvent('init',
 								{
 									detail: {
 										entry: entry,
@@ -724,23 +724,23 @@ exports.add = function add(modules) {
 									},
 								}
 							));
-							
+
 							entry.init(options);
-							
+
 							tools.log(tools.LogLevels.Debug, "Entry '~0~' initialized.", [entry.spec.name]);
-							
+
 							return entry;
 						};
-						
+
 						return promise
 							.then(terminate);
-						
+
 					};
 
 					return entry;
 				});
 			});
-				
+
 			namespaces.ADD('load', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -776,7 +776,7 @@ exports.add = function add(modules) {
 					if (types.isArray(options)) {
 						options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 					};
-			
+
 					if ((types.get(types.get(options, 'startup'), 'secret') || null) !== _shared.SECRET) {
 						throw new types.AccessDenied("Secrets mismatch.");
 					};
@@ -791,9 +791,9 @@ exports.add = function add(modules) {
 							mod.type = modType;
 						};
 					});
-					
+
 					const names = types.keys(modules);
-						
+
 					names.sort(function(name1, name2) {
 						const mod1 = modules[name1],
 							mod2 = modules[name2],
@@ -835,12 +835,12 @@ exports.add = function add(modules) {
 									namespaces.addEventListener('error', cbErrorHandler);
 								});
 						};
-						
+
 						// Dispatches "onready"
 						if (!__Internal__.waiting) {
 							namespaces.dispatchEvent(new types.CustomEvent('ready'));
 						};
-						
+
 						// Returns the callback promise or nothing.
 						if (cbPromise) {
 							// NOTE: Returns "cbPromise". This allows to catch callback errors.
@@ -923,7 +923,7 @@ exports.add = function add(modules) {
 						if (toInit.length) {
 							let promise = Promise.resolve();
 
-							const entry = toInit.shift(); 
+							const entry = toInit.shift();
 
 							if (!entry.objectCreated && !entry.objectCreating && entry.objectCreate) {
 								if (entry.spec.autoInit !== false) {
@@ -943,7 +943,7 @@ exports.add = function add(modules) {
 
 						return undefined; // "consistent-return"
 					};
-						
+
 					const state = {missingDeps: [], missings: 0, optionals: 0, ignoreOptionals: false, toInit: []};
 
 					return Promise.resolve(loopCreateModules(state))
@@ -1023,9 +1023,9 @@ exports.add = function add(modules) {
 					};
 					cloneDeps = false;
 				};
-					
+
 				var targetNamespaces = targetRoot.Namespaces;
-					
+
 				var specs = {};
 
 				var fillSpecs = function fillSpecs(name, / *optional* /newName) {
@@ -1049,9 +1049,9 @@ exports.add = function add(modules) {
 						};
 					};
 				};
-					
+
 				fillSpecs(name, newName);
-					
+
 				return targetNamespaces.load(specs, options)
 					.then(function() {
 						var namespace = targetNamespaces.get(newName);
@@ -1066,17 +1066,17 @@ exports.add = function add(modules) {
 					});
 			}));
 			*/
-				
+
 			//===================================
 			// Objects
 			//===================================
-					
+
 			//-----------------------------------
 			// Registry object
 			//-----------------------------------
-					
+
 			__Internal__.NamespaceGetter = function NamespaceGetter() {};
-					
+
 			__Internal__.RegistryIterator = types.INIT(types.Iterator.$inherit(
 				{
 					$TYPE_NAME: 'RegistryIterator',
@@ -1098,7 +1098,7 @@ exports.add = function add(modules) {
 								// NOTE: We MUST NOT expose the entry objects
 								return {
 									type: types.getType(entry),
-									name: entry.spec.name, 
+									name: entry.spec.name,
 									object: entry.namespace
 								};
 							}),
@@ -1119,7 +1119,7 @@ exports.add = function add(modules) {
 							entry = ar[this.__index++];
 							ok = ((entry.type === type) || (!exact && types.baseof(type, entry.type)));
 						};
-						if (ok) { 
+						if (ok) {
 							return {
 								value: types.clone(entry), // FUTURE: freeze entries in the registry
 							};
@@ -1147,16 +1147,16 @@ exports.add = function add(modules) {
 					$TYPE_NAME: 'Registry',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Registry')), true) */,
 				},
-					
+
 				/*instanceProto*/
 				{
 					registry: null,
-						
+
 					_new: types.SUPER(function _new() {
 						this._super();
 						this.registry = tools.nullObject();
 					}),
-						
+
 					get: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1364,9 +1364,9 @@ exports.add = function add(modules) {
 					},
 				}
 			)));
-				
+
 			__Internal__.DD_REGISTRY = new __Internal__.Registry();
-				
+
 			//-----------------------------------
 			// Entry
 			//-----------------------------------
@@ -1403,7 +1403,7 @@ exports.add = function add(modules) {
 					$TYPE_NAME: 'Entry',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Entry')), true) */,
 				},
-					
+
 				/*instanceProto*/
 				{
 					root: null,
@@ -1417,7 +1417,7 @@ exports.add = function add(modules) {
 					objectInitialized: false,
 					objectInitializing: false,
 					options: null,
-						
+
 					_new: types.SUPER(function _new(root, spec, namespace, /*optional*/options) {
 						this._super();
 						this.root = root;
@@ -1427,13 +1427,13 @@ exports.add = function add(modules) {
 						});
 						this.namespace = namespace;
 						this.version = this.spec.version && tools.Version.parse(this.spec.version, namespaces.VersionIdentifiers);
-							
+
 						this.options = tools.nullObject(options);
-							
+
 						const val = types.getIn(this.options, 'protect', true);
 						this.options.protect = types.toBoolean(val);
 					}),
-					
+
 					init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1573,7 +1573,7 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ModuleEntry')), true) */,
 				}
 			)));
-				
+
 			//-----------------------------------
 			// Special Entry
 			//-----------------------------------
@@ -1610,8 +1610,8 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SpecialEntry')), true) */,
 				}
 			)));
-				
-				
+
+
 			//-----------------------------------
 			// Package Entry
 			//-----------------------------------
@@ -1648,8 +1648,8 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackageEntry')), true) */,
 				}
 			)));
-				
-				
+
+
 			//-----------------------------------
 			// Application Entry
 			//-----------------------------------
@@ -1686,7 +1686,7 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ApplicationEntry')), true) */,
 				}
 			)));
-				
+
 
 			types.REGISTER(types.Error.$inherit(
 				{

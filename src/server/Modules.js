@@ -61,7 +61,7 @@ exports.add = function add(mods) {
 			'Doodad.NodeJs/root',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -74,7 +74,7 @@ exports.add = function add(mods) {
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
 
-				
+
 			const __Internal__ = {
 			};
 
@@ -119,9 +119,9 @@ exports.add = function add(mods) {
 			//! END_REMOVE()
 
 				//! ELSE()
-				
+
 				__Internal__.locatorModule = require.main || module.parent;
-	
+
 				//! END_IF()
 
 			//! BEGIN_REMOVE()
@@ -228,7 +228,7 @@ exports.add = function add(mods) {
 						return location;
 					});
 				}));
-			
+
 			modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
 				const Promise = types.getPromise();
 
@@ -261,7 +261,7 @@ exports.add = function add(mods) {
 						});
 				});
 			});
-				
+
 			modules.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -372,8 +372,8 @@ exports.add = function add(mods) {
 							return root;
 						});
 				}));
-				
-				
+
+
 			modules.ADD('loadManifest', function loadManifest(pkg, /*optional*/options) {
 				//const Promise = types.getPromise();
 				return modules.loadFiles([
@@ -383,7 +383,7 @@ exports.add = function add(mods) {
 					.then(function(files) {
 						const manifest = files[0].exports.default,
 							makeManifest = files[1].exports.default;
-							
+
 						return {
 							add: function(mods) {
 								mods = mods || {};
@@ -395,12 +395,12 @@ exports.add = function add(mods) {
 									}).map(function(dep) {
 										return tools.extend({type: 'Package'}, dep);
 									}),
-										
+
 									create: function create(root, /*optional*/_options, _shared) {
 										const doodad = root.Doodad,
 											modules = doodad.Modules,
 											fromSource = root.getOptions().fromSource;
-											
+
 										let files = tools.filter(makeManifest.modules, function(mod) {
 											return mod.server && !mod.exclude && !mod.test;
 										});
@@ -416,7 +416,7 @@ exports.add = function add(mods) {
 												optional: types.get(file, 'optional', false),
 											};
 										}, []);
-											
+
 										files.push({
 											module: manifest.name,
 											path: 'config.json',
@@ -435,14 +435,14 @@ exports.add = function add(mods) {
 						};
 					});
 			});
-				
+
 			modules.ADD('loadManifests', function loadManifests(pkgs, /*optional*/options) {
 				const Promise = types.getPromise();
 				return Promise.map(pkgs, function(pkg) {
 					return modules.loadManifest(pkg, options);
 				});
 			});
-				
+
 			//===================================
 			// Init
 			//===================================

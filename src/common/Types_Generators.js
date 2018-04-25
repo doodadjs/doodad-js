@@ -33,7 +33,7 @@ exports.add = function add(modules) {
 	modules = (modules || {});
 	modules['Doodad.Types/Generators'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			
+
 		dependencies: [
 			'Doodad.Tools',
 		],
@@ -46,18 +46,18 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				types = doodad.Types;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			//const __Internal__ = {
 			//};
 
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
 				functionIsGeneratorCall: (types.isFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : null),
@@ -72,11 +72,11 @@ exports.add = function add(modules) {
 			//===================================
 			// Generators
 			//===================================
-				
+
 			// <PRB> "Generator" and "GeneratorFunction" are not in the global space !!!
 			// <PRB> "Generator" looks like not having a class !!!
 			// <PRB> Enventually, another design mistake... no official way to test if an object is a GeneratorFunction or a Generator !!! (the reason invoked again is "there is no use case")
-				
+
 			// <PRB> Because the GeneratorFunction constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
 			// eslint-disable-next-line semi-spacing
 			_shared.Natives.GeneratorFunction[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_GeneratorFunction')), true) */;
@@ -94,7 +94,7 @@ exports.add = function add(modules) {
 				, function getGeneratorFunction() {
 					return (_shared.Natives.GeneratorFunction || null);
 				}));
-				
+
 			types.ADD('isGeneratorFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -116,7 +116,7 @@ exports.add = function add(modules) {
 				} : function isGeneratorFunction(obj) {
 					return (typeof obj === 'function') && types._instanceof(obj, _shared.Natives.GeneratorFunction);
 				})));
-				
+
 			types.ADD('isGenerator', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -149,7 +149,7 @@ exports.add = function add(modules) {
 					};
 					return (proto.constructor.constructor === _shared.Natives.GeneratorFunction);
 				}));
-				
+
 
 			//===================================
 			// Init

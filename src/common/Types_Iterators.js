@@ -37,7 +37,7 @@ exports.add = function add(modules) {
 		dependencies: [
 			'Doodad.Tools',
 		],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -46,18 +46,18 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				types = doodad.Types;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			//const __Internal__ = {
 			//};
 
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				// "hasIterators", "isIterable"
 				symbolIterator: global.Symbol.iterator,
@@ -89,8 +89,8 @@ exports.add = function add(modules) {
 					};
 					return (typeof obj === 'string') || ((typeof obj === 'object') && (_shared.Natives.symbolIterator in obj));
 				}));
-				
-				
+
+
 			// <PRB> As usual, JS doesn't give a way to make sure an object is an iterator
 			types.ADD('isIteratorLike', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -111,8 +111,8 @@ exports.add = function add(modules) {
 				, function isIteratorLike(obj) {
 					return types.isObjectLike(obj) && types.isFunction(obj.next);
 				}));
-				
-				
+
+
 			types.ADD('Iterator', types.Type.$inherit(
 				{
 					$TYPE_NAME: 'Iterator',
@@ -130,7 +130,7 @@ exports.add = function add(modules) {
 					}),
 
 					close: null, // function()
-						
+
 					next: function next() {
 						return {
 							done: true,

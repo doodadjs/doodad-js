@@ -35,7 +35,7 @@ exports.add = function add(modules) {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: ['Doodad'],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -44,28 +44,28 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			const __Internal__ = {
 				Promise: null,
 				symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_PROMISE_EXTENDED')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
 			};
 
-				
+
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			// NOTE: Store everything because third-parties can override them.
-				
+
 			tools.complete(_shared.Natives, {
 				windowPromise: global.Promise,
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 			});
-				
+
 			//=================================
 			// DDPromise
 			//=================================
@@ -92,7 +92,7 @@ exports.add = function add(modules) {
 				, function isPromise(obj) {
 					return types.isObjectLike(obj) && !!obj[_shared.IsPromiseSymbol];
 				}));
-			
+
 			types.ADD('isExtendedPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -112,7 +112,7 @@ exports.add = function add(modules) {
 				, function isExtendedPromise(obj) {
 					return types.isObjectLike(obj) && !!obj[__Internal__.symbolIsExtendedPromise];
 				}));
-			
+
 			types.ADD('getPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -158,8 +158,8 @@ exports.add = function add(modules) {
 				} else if (!types.isFunction(Promise.prototype.nodeify)) {
 					Promise.prototype.nodeify = Promise.prototype.asCallback;
 				};
-					
-					
+
+
 				// Bluebird "finally" polyfill
 				if (!types.isFunction(Promise.prototype.finally)) {
 					Promise.prototype.finally = function _finally(callback) {
@@ -176,8 +176,8 @@ exports.add = function add(modules) {
 						return promise;
 					};
 				};
-					
-					
+
+
 				// Bluebird "try" polyfill
 				if (!types.isFunction(Promise.try)) {
 					Promise.try = function _try(callback) {
@@ -203,7 +203,7 @@ exports.add = function add(modules) {
 							options = tools.nullObject({
 								concurrency: Infinity,
 							}, options);
-							
+
 							if ((len <= 0) || (options.concurrency <= 0)) {
 								return [];
 							};
@@ -315,7 +315,7 @@ exports.add = function add(modules) {
 					promise[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
 					return promise;
 				};
-					
+
 				// Add "thisObj" argument
 				// Add promise name
 				const oldMapCall = Promise.map.call.bind(Promise.map);
@@ -409,7 +409,7 @@ exports.add = function add(modules) {
 					promise[_shared.NameSymbol] = name;
 					return promise;
 				};
-					
+
 				// Add "thisObj" argument
 				// Add promise name
 				// Add Bluebird polyfill for catch (must be done there).
@@ -477,7 +477,7 @@ exports.add = function add(modules) {
 					};
 					return promise;
 				};
-					
+
 				// Add "thisObj" argument
 				// Add promise name
 				const oldAsCallbackCall = Promise.prototype.asCallback.call.bind(Promise.prototype.asCallback);
@@ -490,7 +490,7 @@ exports.add = function add(modules) {
 					promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
 					return promise;
 				};
-					
+
 				// Add "thisObj" argument
 				// Add promise name
 				const oldFinallyCall = Promise.prototype.finally.call.bind(Promise.prototype.finally);
@@ -578,9 +578,9 @@ exports.add = function add(modules) {
 
 					// Make some tests...
 					if (
-							!types.isFunction(Promise) || 
-							!types.isFunction(Promise.resolve) || 
-							!types.isFunction(Promise.reject) || 
+							!types.isFunction(Promise) ||
+							!types.isFunction(Promise.resolve) ||
+							!types.isFunction(Promise.reject) ||
 							!types.isFunction(Promise.all) ||
 							!types.isFunction(Promise.race) ||
 							!types.isFunction(Promise.prototype.then) ||
@@ -588,7 +588,7 @@ exports.add = function add(modules) {
 					) {
 						throw new types.ValueError("Invalid 'Promise' implementation. It must supports: 'resolve', 'reject', 'all', 'race', 'prototype.then' and 'prototype.catch'.");
 					};
-						
+
 					let DDPromise;
 					if (types.isNativeFunction(Promise)) {
 						// ES6 Promise
@@ -608,7 +608,7 @@ exports.add = function add(modules) {
 								}
 							);
 						})({
-							Promise: Promise, 
+							Promise: Promise,
 							DDPromiseConstructor: __Internal__.DDPromiseConstructor,
 						});
 					} else {
@@ -648,7 +648,7 @@ exports.add = function add(modules) {
 
 					return DDPromise;
 				}));
-				
+
 			_shared.PromiseCallback = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -709,7 +709,7 @@ exports.add = function add(modules) {
 					_shared.registerCallback(callback);
 					return callback;
 				}));
-					
+
 
 			//===================================
 			// Init

@@ -39,30 +39,30 @@ exports.add = function add(modules) {
 			'Doodad.Tools.Files',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files;
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 			};
-				
-				
+
+
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			// NOTE: Makes use of "isNativeFunction" to get rid of third-parties injections as possible.
 
 			tools.complete(_shared.Natives, {
@@ -73,12 +73,12 @@ exports.add = function add(modules) {
 				// "getCurrentScript"
 				windoError: global.Error,
 			});
-				
+
 
 			//===================================
 			// Script functions
 			//===================================
-				
+
 			tools.ADD('getCurrentScript', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -93,7 +93,7 @@ exports.add = function add(modules) {
 							},
 							returns: 'Url,Path',
 							description:
-								"Returns location of the current running script. Multiple usages :\n" + 
+								"Returns location of the current running script. Multiple usages :\n" +
 								'- Client-side only: root.Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Client-side and server-side: root.Doodad.Tools.getCurrentScript((root.serverSide?module.filename:document.currentScript)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.Files.Path.parse(module.filename)\n',
@@ -103,7 +103,7 @@ exports.add = function add(modules) {
 					let url,
 						ex,
 						exLevel = 0;
-					
+
 					if (types.isError(currentScript)) {
 						ex = currentScript;
 					} else if (types.isString(currentScript)) {
@@ -118,7 +118,7 @@ exports.add = function add(modules) {
 						// Safari 5: undefined
 						url = files.Url.parse(currentScript.src);
 					};
-						
+
 					if (!url) {
 						if (ex && types.isString(ex.sourceURL)) {
 							// Safari
@@ -144,15 +144,15 @@ exports.add = function add(modules) {
 							};
 						};
 					};
-						
+
 					return url;
 				}));
-					
-				
+
+
 			//===================================
 			// Abort functions
 			//===================================
-				
+
 			tools.ADD('abortScript', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -190,7 +190,7 @@ exports.add = function add(modules) {
 				, function trapUnhandledErrors() {
 					if (!__Internal__.unhandledRejections) {
 						__Internal__.unhandledRejections = new types.Map();
-							
+
 						const options = tools.getOptions();
 
 						types.addAppEventListener('unhandlederror', function(ev) {
@@ -200,7 +200,7 @@ exports.add = function add(modules) {
 								// Do nothing
 							};
 						});
-							
+
 						types.addAppEventListener('unhandledrejection', function(ev) {
 							if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
 								if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
@@ -211,17 +211,17 @@ exports.add = function add(modules) {
 								};
 							};
 						});
-							
+
 						types.addAppEventListener('rejectionhandled', function(ev) {
 							if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
 								__Internal__.unhandledRejections.delete(ev.detail.promise);
 							};
 						});
-							
+
 						const dumpRejections = function dumpRejections() {
 							try {
 								const curTime = (new Date()).valueOf();
-									
+
 								for (const item of __Internal__.unhandledRejections.entries()) {
 									const promise = item[0],
 										val = item[1];
@@ -236,7 +236,7 @@ exports.add = function add(modules) {
 							} catch(o) {
 								__Internal__.unhandledRejections.clear();
 							};
-								
+
 							const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
 								if (types.isObject(timer) && types.isFunction(timer.unref)) {
@@ -245,7 +245,7 @@ exports.add = function add(modules) {
 								};
 							//! END_IF()
 						};
-							
+
 						const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 						//! IF_SET("serverSide")
 							if (types.isObject(timer) && types.isFunction(timer.unref)) {
@@ -256,7 +256,7 @@ exports.add = function add(modules) {
 					};
 				}));
 
-	
+
 			//===================================
 			// Init
 			//===================================

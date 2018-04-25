@@ -40,22 +40,22 @@ exports.add = function add(modules) {
 				optional: true,
 			},
 		],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				resources = doodad.Resources,
 				html = tools.Html;
-			
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 				entities: {
@@ -81,11 +81,11 @@ exports.add = function add(modules) {
 					full: null,
 				},
 			};
-				
+
 			// See "http://stackoverflow.com/questions/2083754/why-shouldnt-apos-be-used-to-escape-single-quotes"
             __Internal__.entitiesMapping = {
 				standard: tools.prepareMappingForEscape(__Internal__.entitiesReverted.standard, '&', ';'),
-				
+
 				full: null,
 			};
 
@@ -137,7 +137,7 @@ exports.add = function add(modules) {
 					newEntities[name.replace(/[&;]/g, "")] = value.characters;
 					return newEntities;
 				}, tools.nullObject()));
-				
+
 				__Internal__.entitiesReverted.full = types.freezeObject(tools.reduce(entities, function(newEntities, value, name) {
 					const nameLc = name.toLowerCase();
 					if ((nameLc !== name) && types.has(entities, nameLc) && (entities[nameLc].characters === entities[name].characters)) {
@@ -151,7 +151,7 @@ exports.add = function add(modules) {
 				__Internal__.entitiesMapping.full = tools.prepareMappingForEscape(__Internal__.entitiesReverted.full, '&', ';');
 			};
 
-			
+
 			//===================================
 			// Init
 			//===================================

@@ -43,11 +43,11 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				types = doodad.Types;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			const __Internal__ = {
 				// "toSource"
 				supportsVerticalTabEscape: ('\v' !== 'v'),
@@ -57,17 +57,17 @@ exports.add = function add(modules) {
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				windowObject: global.Object,
 				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 				stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
 			});
-				
+
 			//===================================
 			// "toSource" function
 			//===================================
-				
+
 			tools.ADD('toSource', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -254,7 +254,7 @@ exports.add = function add(modules) {
 						}
 					}
 				}));
-				
+
 			//===================================
 			// Init
 			//===================================

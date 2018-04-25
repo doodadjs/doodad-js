@@ -89,15 +89,15 @@ exports.add = function add(mods) {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['MixIns', 'Interfaces'],
 		dependencies: [
-			'Doodad.Types', 
-			'Doodad.Types/DDCancelable', 
+			'Doodad.Types',
+			'Doodad.Types/DDCancelable',
 			'Doodad.Tools',
-			'Doodad.Tools.Config', 
-			'Doodad.Tools.Files', 
+			'Doodad.Tools.Config',
+			'Doodad.Tools.Files',
 			'Doodad'
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
 				mixIns = doodad.MixIns,
@@ -110,11 +110,11 @@ exports.add = function add(mods) {
 				//nodejsMixIns = nodejs.MixIns,
 				nodejsInterfaces = nodejs.Interfaces;
 
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 				loadedScripts: {},   // <FUTURE> global to every thread
@@ -133,11 +133,11 @@ exports.add = function add(mods) {
 			};
 
 			__Internal__.removeListenerPrefixed = _shared.EVENT_NAME_PREFIX + __Internal__.removeListener;
-				
+
 			//===================================
 			// Natives
 			//===================================
-				
+
 			tools.complete(_shared.Natives, {
 				// "isBuffer"
 				globalBuffer: global.Buffer,
@@ -174,22 +174,22 @@ exports.add = function add(mods) {
 				// NodeEvent
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
 			});
-				
+
 			//===================================
 			// Buffers
 			//===================================
-				
+
 			types.ADD('isBuffer', (_shared.Natives.globalBufferIsBuffer || (function(obj) {
 				if (types.isNothing(obj)) {
 					return false;
 				};
 				return (typeof obj === 'object') && (obj instanceof _shared.Natives.globalBuffer);
 			})));
-				
+
 			//===================================
 			// Emitters
 			//===================================
-				
+
 			types.ADD('isEmitter', function isEmitter(emitter) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isFunction(emitter.prependListener) &&
@@ -217,7 +217,7 @@ exports.add = function add(mods) {
 			//===================================
 			// Streams
 			//===================================
-				
+
 			types.ADD('isReadableStream', function isReadableStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isEmitter(stream) &&
@@ -230,7 +230,7 @@ exports.add = function add(mods) {
 					types.isFunction(stream.push) &&
 					types.isFunction(stream.unshift);
 			});
-				
+
 			// <PRB> Some libraries don't inherit from EventEmitter and expose only a few of its methods.
 			types.ADD('isWritableStream', function isWritableStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
@@ -238,24 +238,24 @@ exports.add = function add(mods) {
 					types.isFunction(stream.write) &&
 					types.isFunction(stream.end);
 			});
-				
+
 			types.ADD('isDuplexStream', function isDuplexStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isReadableStream(stream) && types.isWritableStream(stream);
 			});
-				
+
 			types.ADD('isTransformStream', function isTransformStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
-				return types.isReadableStream(stream) && 
+				return types.isReadableStream(stream) &&
 					types.isWritableStream(stream) &&
 					types.isFunction(stream._transform);
 			});
-				
+
 			types.ADD('isStream', function isStream(stream) {
 				// <PRB> Node.Js has no object models, so we must test for functions.
 				return types.isReadableStream(stream) || types.isWritableStream(stream);
 			});
-				
+
 
 			//===================================
 			// types.DESTROY hook
@@ -408,7 +408,7 @@ exports.add = function add(mods) {
 					throw new types.Error("Unknow application event '~0~'.", [event]);
 				};
 			});
-				
+
 			types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
 				if (event === 'unhandlederror') {
 					if (__Internal__.unhandledErrorEvent.has(listener)) {
@@ -432,11 +432,11 @@ exports.add = function add(mods) {
 					throw new types.Error("Unknow application event '~0~'.", [event]);
 				};
 			});
-				
+
 			//===================================
 			// Asynchronous functions
 			//===================================
-				
+
 			tools.ADD('callAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -520,11 +520,11 @@ exports.add = function add(mods) {
 						} || undefined);
 					};
 				}));
-				
+
 			//=====================================
 			// Shutdown & Exit
 			//=====================================
-				
+
 			tools.ADD('catchAndExit', function catchAndExit(err) {
 				if (!err || err.trapped || (!err.critical && err.bubble)) {
 					// Ignore trapped errors or errors like "ScriptInterruptedError".
@@ -573,21 +573,21 @@ exports.add = function add(mods) {
 							};
 						};
 					};
-						
+
 					_shared.Natives.processExit();
 				};
 
 				throw err;
 			});
-				
+
 			//=====================================
 			// "Client.js" Extension
 			//=====================================
-				
+
 				//===================================
 				// Location functions
 				//===================================
-				
+
 				tools.ADD('getCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -609,7 +609,7 @@ exports.add = function add(mods) {
 						args: url.args.set(args),
 					});
 				}));
-					
+
 				tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -633,19 +633,19 @@ exports.add = function add(mods) {
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort) {
 					// FIXME: Does "nothing"
-						
+
 					if (root.DD_ASSERT) {
 						root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
 					};
-						
+
 					if (types.isString(url)) {
 						url = files.Url.parse(url);
 					};
-						
+
 					if (url.protocol !== 'file') {
 						throw new types.Error("Invalid url.");
 					};
-						
+
 					let args;
 					if (url.args) {
 						args = url.args.toString(args, {
@@ -653,7 +653,7 @@ exports.add = function add(mods) {
 						});
 						args = args && args.split('&');
 					};
-						
+
 					url = files.Path.parse(url).toApiString();
 
 					// Remove unwanted "node" args
@@ -668,13 +668,13 @@ exports.add = function add(mods) {
 						env: process.env,
 						stdio: [0, 1, 2],
 					});
-						
+
 					if (!dontAbort) {
 						// Exit parent process. Spawned child should stay alive.
 						throw new types.ScriptAbortedError();
 					};
 				}));
-					
+
 				//===================================
 				// Script loader functions
 				//===================================
@@ -690,12 +690,12 @@ exports.add = function add(mods) {
 						file: null,
 						createOptions: null,
 						initOptions: null,
-							
+
 						launched: false,
 						ready: false,
 						failed: false,
 						lastError: null,
-							
+
 						oninit: null,
 						onloading: null,
 						onload: null,
@@ -705,11 +705,11 @@ exports.add = function add(mods) {
 							this._super();
 
 							this.file = file;
-								
+
 							this.createOptions = createOptions;
 							this.initOptions = initOptions;
 						}),
-							
+
 						start: function start() {
 							/* eslint global-require: "off", import/no-dynamic-require: "off" */
 
@@ -723,7 +723,7 @@ exports.add = function add(mods) {
 								};
 							} else {
 								this.launched = true;
-									
+
 								this.dispatchEvent(new types.CustomEvent('init'));
 								tools.dispatchEvent(new types.CustomEvent('scriptinit', {
 									detail: {
@@ -749,7 +749,7 @@ exports.add = function add(mods) {
 											loader: this,
 										},
 									}));
-										
+
 								} catch(ex) {
 									if (this.ready) {
 										throw ex;
@@ -766,12 +766,12 @@ exports.add = function add(mods) {
 										}));
 									};
 								};
-									
+
 							};
 						},
 					}
 				));
-					
+
 				tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -813,7 +813,7 @@ exports.add = function add(mods) {
 					};
 
 					root.DD_ASSERT && root.DD_ASSERT(types.isString(file), "Invalid file.");
-						
+
 					let loader = null;
 					if (types.has(__Internal__.loadedScripts, file)) {
 						loader = __Internal__.loadedScripts[file];
@@ -824,15 +824,15 @@ exports.add = function add(mods) {
 					if (!loader) {
 						__Internal__.loadedScripts[file] = loader = new __Internal__.ScriptLoader(/*file*/file, /*createOptions*/null, /*initOptions*/null);
 					};
-						
+
 					return loader;
 				}));
-					
-				
+
+
 			//=====================================
 			// Files functions
 			//=====================================
-					
+
 			files.ADD('existsSync', function existsSync(path, /*optional*/options) {
 				path = files.parsePath(path);
 
@@ -910,7 +910,7 @@ exports.add = function add(mods) {
 					return files.existsSync(path, options);
 				}
 			}));
-					
+
 			files.ADD('rmSync', function rmSync(path, /*optional*/options) {
 				path = files.parsePath(path);
 
@@ -984,7 +984,7 @@ exports.add = function add(mods) {
 					return files.rmSync(path, options);
 				}
 			}));
-					
+
 			files.ADD('rmdirSync', function rmdirSync(path, /*optional*/options) {
 				const force = types.get(options, 'force', false);
 
@@ -1160,7 +1160,7 @@ exports.add = function add(mods) {
 								});
 						};
 					};
-							
+
 					proceed = function _proceed(path) {
 						const pathStr = path.toApiString();
 						return rmdir(pathStr)
@@ -1265,7 +1265,7 @@ exports.add = function add(mods) {
 					return files.rmdirSync(path, options);
 				}
 			}));
-					
+
 			files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
 				path = files.parsePath(path);
 				path = path.pushFile();
@@ -1597,7 +1597,7 @@ exports.add = function add(mods) {
 							});
 						});
 					};
-						
+
 					const open = function _open(path, mode) {
 						return Promise.create(function openPromise(resolve, reject) {
 							nodeFsOpen(path, mode, function(err, fd) {
@@ -1723,7 +1723,7 @@ exports.add = function add(mods) {
 										})
 										.nodeify(function(err, dummy) {
 											let promise = Promise.all([
-													((sourceFd === null) ? undefined : close(sourceFd)), 
+													((sourceFd === null) ? undefined : close(sourceFd)),
 													((destFd === null) ? undefined : close(destFd))
 												]);
 											if (err) {
@@ -1910,7 +1910,7 @@ exports.add = function add(mods) {
 
 			files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
 				path = files.parsePath(path);
-						
+
 				const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 					relative = types.get(options, 'relative', false),
 					followLinks = types.get(options, 'followLinks', true),
@@ -1992,7 +1992,7 @@ exports.add = function add(mods) {
 							};
 						});
 					};
-						
+
 					const readDir = function readDir(path) {
 						return Promise.create(function tryReaddir(resolve, reject) {
 							nodeFsReaddir(path, function readdirCb(err, names) {
@@ -2031,7 +2031,7 @@ exports.add = function add(mods) {
 						};
 						return result;
 					};
-	
+
 					proceed = function _proceed(result, path, base, depth) {
 						if (depth >= 0) {
 							const promise = readDir(path.toApiString());
@@ -2118,7 +2118,7 @@ exports.add = function add(mods) {
 					return files.readdirSync(path, options);
 				}
 			}));
-					
+
 			files.ADD('getCanonicalSync', function getCanonicalSync(path, /*optional*/options) {
 				path = files.parsePath(path);
 
@@ -2639,7 +2639,7 @@ exports.add = function add(mods) {
 				if (!types.isArray(callbacks)) {
 					callbacks = [callbacks];
 				};
-						
+
 				if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
 					if (types._instanceof(path, files.Url)) {
 						path = files.Path.parse(path);
@@ -2651,7 +2651,7 @@ exports.add = function add(mods) {
 					};
 
 					const pathStr = path.toApiString();
-							
+
 					let data;
 					if (types.has(__Internal__.watchedFiles, pathStr)) {
 						data = __Internal__.watchedFiles[pathStr];
@@ -2681,18 +2681,18 @@ exports.add = function add(mods) {
 						};
 						__Internal__.watchedFiles[pathStr] = data;
 					};
-							
+
 					tools.forEach(callbacks, function(callback) {
 						callback.__OPTIONS__ = options;
 					});
-							
+
 					data.callbacks = tools.unique(data.callbacks, callbacks);
-							
+
 				} else {
 					throw new types.NotSupported("Remote files are not supported.");
 				};
 			}));
-					
+
 			files.ADD('unwatch', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2726,12 +2726,12 @@ exports.add = function add(mods) {
 						callbacks = [callbacks];
 					};
 				};
-						
+
 				if (types._instanceof(path, files.Url)) {
 					path = files.Path.parse(path);
 				};
 				const pathStr = path.toApiString();
-							
+
 				if (types.has(__Internal__.watchedFiles, pathStr)) {
 					const data = __Internal__.watchedFiles[pathStr];
 					if (types.isNothing(callbacks)) {
@@ -2745,12 +2745,12 @@ exports.add = function add(mods) {
 					};
 				};
 			}));
-					
-					
+
+
 			//===================================
 			// Child process extension
 			//===================================
-						
+
 			nodejs.ADD('forkSync', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -2782,11 +2782,11 @@ exports.add = function add(mods) {
 				options = tools.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
 				return nodeChildProcessSpawnSync(process.execPath, args, options);
 			}));
-						
+
 			//=====================================
 			// Console
 			//=====================================
-				
+
 			nodejs.ADD('Console', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2796,17 +2796,17 @@ exports.add = function add(mods) {
 							hook: {
 								type: 'function',
 								optional: false,
-								description: 
-									"Hook function. Arguments :\n" + 
-									"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" + 
+								description:
+									"Hook function. Arguments :\n" +
+									"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
 									"  (arrayof(any)) args : Arguments passed to function\n" +
 									"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
-							}, 
+							},
 							stdout: {
 								type: 'object',
 								optional: true,
 								description: "Writable NodeJs output stream. Default is 'process.stdout'.",
-							}, 
+							},
 							stderr: {
 								type: 'object',
 								optional: true,
@@ -2819,10 +2819,10 @@ exports.add = function add(mods) {
 			//! END_REPLACE()
 			, types.createType(
 				/*name*/
-				"Console", 
-					
+				"Console",
+
 				/*base*/
-				nodeConsoleConsole, 
+				nodeConsoleConsole,
 
 				/*_super*/
 				function(hook, /*optional*/stdout, /*optional*/stderr) {
@@ -2842,7 +2842,7 @@ exports.add = function add(mods) {
 
 				/*constructor*/
 				null,
-					
+
 				/*typeProto*/
 				{
 					capture: root.DD_DOC(
@@ -2854,17 +2854,17 @@ exports.add = function add(mods) {
 									hook: {
 										type: 'function',
 										optional: false,
-										description: 
-											"Hook function. Arguments :\n" + 
-											"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" + 
+										description:
+											"Hook function. Arguments :\n" +
+											"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
 											"  (arrayof(any)) args : Arguments passed to function\n" +
 											"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
-									}, 
+									},
 									stdout: {
 										type: 'object',
 										optional: true,
 										description: "Writable NodeJs output stream. Default is 'process.stdout'.",
-									}, 
+									},
 									stderr: {
 										type: 'object',
 										optional: true,
@@ -2889,7 +2889,7 @@ exports.add = function add(mods) {
 						});
 						__Internal__.oldConsole = oldConsole;
 					}),
-						
+
 					release: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -2912,12 +2912,12 @@ exports.add = function add(mods) {
 						};
 					}),
 				},
-					
+
 				/*instanceProto*/
 				{
 					__hook: null,
 					__hasStd: false,
-						
+
 					log: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
 							const message = this.__hook('log', args);
@@ -2936,7 +2936,7 @@ exports.add = function add(mods) {
 							};
 						};
 					})),
-						
+
 					info: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
 							const message = this.__hook('info', args);
@@ -2955,7 +2955,7 @@ exports.add = function add(mods) {
 							};
 						};
 					})),
-						
+
 					error: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
 							const message = this.__hook('error', args);
@@ -2974,7 +2974,7 @@ exports.add = function add(mods) {
 							};
 						};
 					})),
-						
+
 					warn: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
 						try {
 							const message = this.__hook('warn', args);
@@ -2996,11 +2996,11 @@ exports.add = function add(mods) {
 				}
 			)));
 
-				
+
 			//===================================
 			// doodad-js extension
 			//===================================
-				
+
 			mixIns.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3014,7 +3014,7 @@ exports.add = function add(mods) {
 			, doodad.MIX_IN(mixIns.Events.$extend({
 				$TYPE_NAME: "NodeEvents",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
-					
+
 				__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
 
 				detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
@@ -3024,7 +3024,7 @@ exports.add = function add(mods) {
 						this[events[i]].detach(emitters);
 					};
 				})))),
-					
+
 				clearNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearNodeEvents() {
 					const events = this.__NODE_EVENTS,
 						eventsLen = events.length;
@@ -3033,7 +3033,7 @@ exports.add = function add(mods) {
 					};
 				})))),
 			}))));
-				
+
 			__Internal__.eventHandlerProto = {
 					$TYPE_NAME: 'NodeEventHandler',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventHandler')), true) */,
@@ -3112,11 +3112,11 @@ exports.add = function add(mods) {
 							if (!types.isArray(emitters)) {
 								emitters = [emitters];
 							};
-									
+
 							//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
 							//	return nodeJs.isEventEmitter(emitter);
 							//}), "Invalid emitters.");
-									
+
 							for (let i = 0; i < emitters.length; i++) {
 								const evs = this._super(this[_shared.ObjectSymbol], this, [emitters[i]]);
 								if (evs) {
@@ -3146,7 +3146,7 @@ exports.add = function add(mods) {
 				}
 				//! END_REPLACE()
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
-				
+
 			extenders.REGISTER([], root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3169,7 +3169,7 @@ exports.add = function add(mods) {
 				enableScopes: types.READ_ONLY(true),
 				canReject: types.READ_ONLY(true),
 				eventType: types.READ_ONLY(null),
-					
+
 				_new: types.SUPER(function _new(/*optional*/options) {
 					this._super(options);
 					if (!types.isType(this)) {
@@ -3181,7 +3181,7 @@ exports.add = function add(mods) {
 				}),
 
 				getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-					return this._super(options) + 
+					return this._super(options) +
 						',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
 						',' + types.get(options, 'eventType', this.eventType);
 				}),
@@ -3258,7 +3258,7 @@ exports.add = function add(mods) {
 				}),
 			})));
 
-				
+
 			doodad.ADD('NODE_EVENT', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -3289,11 +3289,11 @@ exports.add = function add(mods) {
 
 				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*paramarray*/...args) {
 					const dispatch = this[_shared.CurrentDispatchSymbol];
-						
+
 					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
 
 					const stack = values[_shared.StackSymbol];
-						
+
 					let clonedStack;
 					if (values[_shared.SortedSymbol]) {
 						clonedStack = values[_shared.ClonedStackSymbol];
@@ -3311,7 +3311,7 @@ exports.add = function add(mods) {
 						values[_shared.ClonedStackSymbol] = clonedStack;
 						types.setAttributes(dispatch, values, null, _shared.SECRET);
 					};
-							
+
 					const stackLen = clonedStack.length;
 
 					for (let i = 0; i < stackLen; i++) {
@@ -3319,7 +3319,7 @@ exports.add = function add(mods) {
 							obj = data[0],
 							evDatas = data[3],
 							emitter = evDatas[0];
-									
+
 						if (!ctx || (emitter === ctx.emitter)) {
 							const handler = evDatas[2];
 
@@ -3333,17 +3333,17 @@ exports.add = function add(mods) {
 
 				return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
 			}));
-				
+
 			//*********************************************
 			// Emitter
 			//*********************************************
-				
+
 			nodejsInterfaces.REGISTER(doodad.ISOLATED(doodad.MIX_IN(doodad.Class.$extend(
 									mixIns.RawEvents,
 			{
 				$TYPE_NAME: 'IEmitter',
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('IEmitter')), true) */,
-					
+
 				onnewListener: doodad.RAW_EVENT(),
 				onremoveListener: doodad.RAW_EVENT(),
 
@@ -3358,7 +3358,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3367,7 +3367,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				addListener: doodad.PUBLIC(function addListener(event, listener) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3376,7 +3376,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				emit: doodad.PUBLIC(function emit(event, ...args) {
 					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
 					const name = _shared.EVENT_NAME_PREFIX + event;
@@ -3401,7 +3401,7 @@ exports.add = function add(mods) {
 					};
 					return false;
 				}),
-					
+
 				getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
 					let max = 10; // NodeJs default value
 					if (this.__RAW_EVENTS.length) {
@@ -3409,7 +3409,7 @@ exports.add = function add(mods) {
 					};
 					return max;
 				}),
-					
+
 				listenerCount: doodad.PUBLIC(function listenerCount(event) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3423,7 +3423,7 @@ exports.add = function add(mods) {
 					};
 					return 0;
 				}),
-					
+
 				listeners: doodad.PUBLIC(function listeners(event) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3437,7 +3437,7 @@ exports.add = function add(mods) {
 					};
 					return [];
 				}),
-					
+
 				on: doodad.PUBLIC(function on(event, listener) {
 					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 					const name = _shared.EVENT_NAME_PREFIX + event;
@@ -3447,7 +3447,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				once: doodad.PUBLIC(function once(event, listener) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3456,7 +3456,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
 					const removeListeners = function _removeListeners(name) {
 						const eventFn = this[name];
@@ -3485,7 +3485,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				removeListener: doodad.PUBLIC(function removeListener(event, listener) {
 					const name = _shared.EVENT_NAME_PREFIX + event;
 					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
@@ -3496,7 +3496,7 @@ exports.add = function add(mods) {
 					};
 					return this;
 				}),
-					
+
 				setMaxListeners: doodad.PUBLIC(function setMaxListeners(number) {
 					const events = this.__RAW_EVENTS;
 					for (let i = 0; i < events.length; i++) {

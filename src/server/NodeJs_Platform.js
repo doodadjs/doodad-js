@@ -52,7 +52,7 @@ exports.add = function add(mods) {
 		//dependencies: [
 		//],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -65,14 +65,14 @@ exports.add = function add(mods) {
 			//=============================
 			// Internals
 			//=============================
-					
+
 			const __Internal__ = {
 			};
 
 			//=====================
 			// Options
 			//=====================
-				
+
 			//const __options__ = tools.extend({
 			//}, _options);
 
@@ -83,19 +83,19 @@ exports.add = function add(mods) {
 			//client.ADD('getOptions', function getOptions() {
 			//	return __options__;
 			//});
-				
+
 			//========================
 			// Natives
 			//========================
-				
+
 			//tools.complete(_shared.Natives, {
 			//});
-				
-				
+
+
 			//===================================
 			// System functions
 			//===================================
-					
+
 			tools.ADD('getOS', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -126,7 +126,7 @@ exports.add = function add(mods) {
 				};
 				return os;
 			}));
-							
+
 			//=====================================
 			// Misc functions
 			//=====================================

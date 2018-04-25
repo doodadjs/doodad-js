@@ -44,20 +44,20 @@ exports.add = function add(modules) {
 			//===================================
 
 			const doodad = root.Doodad,
-				tools = doodad.Tools, 
+				tools = doodad.Tools,
 				types = doodad.Types;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			//const __Internal__ = {
 			//};
 
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				// "bind"
 				functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
@@ -110,7 +110,7 @@ exports.add = function add(modules) {
 					newFn[_shared.OriginalValueSymbol] = fn;
 					return newFn;
 				}));
-				
+
 			types.ADD('unbind', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{

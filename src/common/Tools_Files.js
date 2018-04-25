@@ -34,35 +34,35 @@ exports.add = function add(modules) {
 	modules['Doodad.Tools.Files'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-			'Doodad.Types', 
+			'Doodad.Types',
 			'Doodad.Tools',
 			'Doodad',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files;
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 			};
-				
-				
+
+
 			//===================================
 			// Options
 			//===================================
-					
+
 			//const __options__ = tools.nullObject({
 			//}, _options);
 
@@ -82,7 +82,7 @@ exports.add = function add(modules) {
 				};
 				return args;
 			};
-				
+
 			_shared.urlParser = function urlParser(url, /*optional*/options) {
 				if (!types.isNothing(url)) {
 					if (!types._instanceof(url, files.Url)) {
@@ -98,7 +98,7 @@ exports.add = function add(modules) {
 				};
 				return url;
 			};
-				
+
 			_shared.pathParser = function pathParser(path, /*optional*/options) {
 				if (!types.isNothing(path)) {
 					if (!types._instanceof(path, files.Path)) {
@@ -121,7 +121,7 @@ exports.add = function add(modules) {
 				};
 				return path;
 			};
-				
+
 			__Internal__.detectUrlRegexp = /^[a-zA-Z]+:\/\//;
 
 			files.ADD('parseUrl', function parseUrl(url, /*optional*/options) {
@@ -151,19 +151,19 @@ exports.add = function add(modules) {
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				windowRegExp: (global.RegExp || RegExp),
 
-				windowUnescape: (global.unescape || unescape),					
+				windowUnescape: (global.unescape || unescape),
 				windowEncodeURIComponent: global.encodeURIComponent,
 				windowDecodeURIComponent: global.decodeURIComponent,
 			});
-				
+
 			//===================================
 			// Paths
 			//===================================
-				
+
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -188,7 +188,7 @@ exports.add = function add(modules) {
 				, types.Error.$inherit(
 					{
 						$TYPE_NAME: 'PathError',
-						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PathError')), true) */ null /*! END_REPLACE() */,						
+						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PathError')), true) */ null /*! END_REPLACE() */,
 
 						[types.Constructor](message, /*optional*/params) {
 							return [message || 'Path error.', params];
@@ -228,38 +228,38 @@ exports.add = function add(modules) {
 						root.DD_ASSERT(types.isNothing(dirRoot) || types.isArray(dirRoot) || types.isString(dirRoot), "Invalid root.");
 						root.DD_ASSERT(types.isArray(path) || types.isString(path), "Invalid path.");
 					};
-						
+
 					const dirChar = types.get(options, 'dirChar', '/');
 
 					if (types.isString(dirRoot)) {
 						dirRoot = dirRoot.split(dirChar);
 					};
-						
+
 					if (types.isString(path)) {
 						path = path.split(dirChar);
 					};
-						
+
 					const dontThrow = types.get(options, 'dontThrow', false),
 						trailing = types.get(options, 'trailing', true);
-						
+
 					const isTrailing = function isTrailing(path) {
 						const len = path.length;
 						return (len > 1) && (path[len - 1] === '');
 					};
-						
+
 					const rootTrailing = trailing && dirRoot && isTrailing(dirRoot),
 						pathTrailing = trailing && isTrailing(path);
-						
+
 					if (dirRoot) {
 						dirRoot = tools.filter(dirRoot, function (val) {
 							return !!val;
 						});
 					};
-						
+
 					path = tools.filter(path, function (val) {
 						return !!val;
 					});
-						
+
 					// Resolve ".." and "."
 					let pos = 0;
 					while (pos < path.length) {
@@ -310,27 +310,27 @@ exports.add = function add(modules) {
 							pos++;
 						};
 					};
-						
+
 					if (rootTrailing) {
 						dirRoot.push('');
 						if (dirRoot.length === 1) {
 							dirRoot.push('');
 						};
 					};
-						
+
 					if (pathTrailing) {
 						path.push('');
 						if (path.length === 1) {
 							path.push('');
 						};
 					};
-						
+
 					return {
 						dirRoot: dirRoot,
 						path: path,
 					};
 				});
-				
+
 			// Windows
 			// NOTE: "%NAME%" resolves to variable "NAME", but "%" or "%%" are valid names !
 			// NOTE: "^%" resolves to "%", but "^%NAME%" resolves to "%" plus variable "NAME" ! So we can't escape "%".
@@ -339,30 +339,30 @@ exports.add = function add(modules) {
 
 			__Internal__.windowsShellSpecialCharacters = '\\^&';
 			__Internal__.windowsShellVerySpecialCharacters = ' <>|\\?\\*"/';
-				
+
 			// group 1 = chars to unescape, group 2 = always invalid chars, group 3 = valid chars when escaped
 			__Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\^([^ ' + __Internal__.windowsShellVerySpecialCharacters + '])|([' + __Internal__.windowsShellSpecialCharacters + __Internal__.windowsShellVerySpecialCharacters + ']|%[^%]+%|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
-				
+
 			// group 1 = chars to escape
 			__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.windowsShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
-				
+
 			__Internal__.parsePathWindowsInvalidNamesRegEx = /:|^(com[1-9]|lpt[1-9]|con|nul|prn)$/i;    // <FUTURE> thread level
-				
-				
+
+
 			// Unix-like
 
 			__Internal__.unixShellSpecialCharacters = ' <>|?*"\'&`#;~!-()\\[\\]{}\\\\';
 
 			// group 1 = chars to unescape, group 2 = invalid chars
 			__Internal__.parsePathUnixUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\\\(.)|([' + __Internal__.unixShellSpecialCharacters + ']|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
-				
+
 			// group 1 = chars to escape
 			__Internal__.parsePathUnixEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.unixShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
 
 			//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
-				
+
 			__Internal__.pathData = {
-					drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect 
+					drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect
 					host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
 					root: types.READ_ONLY( null ),   // null = auto-detect
 					path: types.READ_ONLY( null ),
@@ -394,7 +394,7 @@ exports.add = function add(modules) {
 			__Internal__.pathAllKeysForSet = tools.filter(__Internal__.pathAllKeys, function(key) {
 						return (tools.indexOf(__Internal__.pathSetExcludedKeys, key) < 0);
 					});
-				
+
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -440,7 +440,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function parse(path, /*optional*/options) {
 								// WARNING: Validation is incomplete.
-									
+
 								// Flags
 								const dontThrow = types.get(options, 'dontThrow', false);
 
@@ -448,7 +448,7 @@ exports.add = function add(modules) {
 									const data = tools.fill(__Internal__.pathAllKeys, {}, path);
 									options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, data, {extension: null}, options);
 									path = null;
-										
+
 								} else if (types._instanceof(path, files.Url)) {
 									const proto = types.get(options, 'protocol', path.protocol);
 									if (proto && (proto !== 'file')) {
@@ -458,9 +458,9 @@ exports.add = function add(modules) {
 											throw new types.ParseError("Bad url protocol.");
 										}
 									};
-										
+
 									const pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
-										
+
 									if (path.isWindows) {
 										options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
 											os: 'windows',
@@ -488,7 +488,7 @@ exports.add = function add(modules) {
 										throw new types.ParseError("Invalid path.");
 									}
 								};
-									
+
 								// Options
 								let os = types.get(options, 'os', null),  // Default is Auto-set
 									dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
@@ -506,11 +506,11 @@ exports.add = function add(modules) {
 									allowTraverse = types.get(options, 'allowTraverse', false);  // Default is False
 
 								path = types.get(options, 'path', path);
-									
+
 								const pathIsString = types.isString(path),
 									fileIsString = types.isString(file),
 									dirRootIsString = types.isString(dirRoot);
-										
+
 								if (!dirRootIsString && !types.isNothing(dirRoot) && !types.isArray(dirRoot)) {
 									if (dontThrow) {
 										return null;
@@ -518,13 +518,13 @@ exports.add = function add(modules) {
 										throw new types.ParseError("Invalid root.");
 									}
 								};
-									
+
 								if (types.isNothing(os)) {
 									// Auto-set
 									const osInfo = tools.getOS();
 									os = osInfo.type;
 								};
-									
+
 								// Detect quotes character
 								if (types.isNothing(quote)) {
 									quote = '';
@@ -555,12 +555,12 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-									
+
 								// Get default shell
 								if (types.isNothing(shell)) {
 									shell = 'api';
 								};
-									
+
 								// If quoted, path and root must be quoted
 								if (quote) {
 									if (dirRoot && dirRootIsString && ((path.length < 2) || (dirRoot[0] !== quote) || (dirRoot[dirRoot.length - 1] !== quote))) {
@@ -578,7 +578,7 @@ exports.add = function add(modules) {
 										}
 									};
 								};
-									
+
 								// Trim quotes
 								if (dirRootIsString && quote) {
 									dirRoot = tools.trim(dirRoot, quote, 0, 1);
@@ -592,7 +592,7 @@ exports.add = function add(modules) {
 									const state = {
 										invalid: null,
 									};
-										
+
 									let unescapePath = null;
 
 									if (shell === 'dos') {
@@ -650,7 +650,7 @@ exports.add = function add(modules) {
 											};
 											return path;
 										};
-											
+
 										if (dirRoot) {
 											if (dirRootIsString) {
 												dirRoot = unescapePath(dirRoot);
@@ -678,7 +678,7 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-										
+
 								// Detect folder separator
 								if (types.isNothing(dirChar)) {
 									// Auto-set
@@ -691,7 +691,7 @@ exports.add = function add(modules) {
 										dirChar = [dirChar, '/', '\\']; // NOTE: 'dirChar' is first and will get selected later (see bottom).
 									};
 								};
-									
+
 								// Replace alternate folder separators by the first one
 								if (types.isArray(dirChar)) {
 									const sep = dirChar[0];
@@ -713,7 +713,7 @@ exports.add = function add(modules) {
 									};
 									dirChar = sep;
 								};
-									
+
 								// A folder separator is required
 								if (!types.isStringAndNotEmpty(dirChar)) {
 									if (dontThrow) {
@@ -722,7 +722,7 @@ exports.add = function add(modules) {
 										throw new types.ParseError("Invalid 'dirChar' option.");
 									}
 								};
-										
+
 								// Split paths
 								if (dirRootIsString) {
 									if (dirRoot) {
@@ -731,7 +731,7 @@ exports.add = function add(modules) {
 								} else if (types.isArray(dirRoot)) {
 									dirRoot = tools.append([], dirRoot);
 								};
-									
+
 								if (pathIsString) {
 									if (path) {
 										path = path.split(dirChar);
@@ -739,7 +739,7 @@ exports.add = function add(modules) {
 								} else if (types.isArray(path)) {
 									path = tools.append([], path);
 								};
-									
+
 								if (fileIsString) {
 									file = file.split(dirChar);
 								} else if (types.isArray(file)) {
@@ -791,14 +791,14 @@ exports.add = function add(modules) {
 										}
 									};
 								};
-									
+
 								if (os === 'windows') {
 									if (host || drive) {
 										isRelative = false;
 										if (!dirRoot || !dirRoot.length || (dirRoot[0] !== '')) {
 											dirRoot = tools.append([''], dirRoot);
 										};
-	
+
 										// Validate host
 										if (host) {
 											if (!drive) {
@@ -836,7 +836,7 @@ exports.add = function add(modules) {
 												}
 											};
 										};
-											
+
 									} else if (!isRelative && forceDrive) {
 										if (dontThrow) {
 											return null;
@@ -872,7 +872,7 @@ exports.add = function add(modules) {
 									// Auto-detect
 									isRelative = ((!dirRoot || !dirRoot.length || !!dirRoot[0].length) && (!path || !path.length || !!path[0].length));
 								};
-									
+
 								if (path) {
 									path = tools.trim(path, '');
 								};
@@ -896,7 +896,7 @@ exports.add = function add(modules) {
 										path = abs.dirRoot;
 										file = abs.path;
 									};
-									
+
 									// Resolve path
 									if (path) {
 										if (allowTraverse) {
@@ -927,7 +927,7 @@ exports.add = function add(modules) {
 								};
 
 								// Resolve root
-								if (dirRoot) {									
+								if (dirRoot) {
 									if (isRelative) {
 										// Remove empty names
 										// NOTE: Only root can be relative.
@@ -956,7 +956,7 @@ exports.add = function add(modules) {
 									const state = {
 										invalid: null,
 									};
-											
+
 									let validatePath = null;
 
 									if (shell === 'dos') {
@@ -964,13 +964,13 @@ exports.add = function add(modules) {
 											tools.forEach(pathArray, function(item, pos, items) {
 												// NOTE: DOS trims spaces at the end of path and file names but keeps them at the beginning
 												let tmp = tools.trim(item, ' ', -1);
-													
+
 												// NOTE: DOS also trims dots on the end
 												// NOTE: More than two dots resolves to one
 												if (tmp !== '..') {
 													tmp = tools.trim(tmp, '.', -1, tmp.length - 1);
 												};
-													
+
 												if (!isRelative) {
 													if ((tmp === '.') || (tmp === '..')) {
 														state.invalid = item;
@@ -978,7 +978,7 @@ exports.add = function add(modules) {
 												};
 
 												items[pos] = tmp;
-													
+
 												// NOTE: DOS has reserved file names
 												if (__Internal__.parsePathWindowsInvalidNamesRegEx.test(tmp)) {
 													state.invalid = item;
@@ -1012,12 +1012,12 @@ exports.add = function add(modules) {
 									//		});
 									//	};
 									//};
-										
+
 									if (validatePath) {
 										validatePath(dirRoot);
 										validatePath(path);
 										validatePath(file);
-											
+
 										if (state.invalid) {
 											if (dontThrow) {
 												return null;
@@ -1027,7 +1027,7 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-									
+
 								if (file) {
 									if (trailingSlash || !file.length) {
 										file = '';
@@ -1043,7 +1043,7 @@ exports.add = function add(modules) {
 								} else {
 									file = null;
 								};
-									
+
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
@@ -1066,7 +1066,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-									
+
 								return new this({
 									os: os,
 									dirChar: dirChar,
@@ -1101,7 +1101,7 @@ exports.add = function add(modules) {
 								tools.extend(this, attrs);
 							};
 						}),
-							
+
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1125,7 +1125,7 @@ exports.add = function add(modules) {
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
 							}),
-							
+
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1149,7 +1149,7 @@ exports.add = function add(modules) {
 
 								// Flags
 								const dontValidate = types.get(options, 'dontValidate', false);
-									
+
 								if (options) {
 									options = tools.nullObject(options);
 									if (types.has(options, 'os')) {
@@ -1157,7 +1157,7 @@ exports.add = function add(modules) {
 											options.dirChar = null;
 										};
 									};
-										
+
 									if (dontValidate) {
 										options = tools.extend({}, this, options);
 									} else {
@@ -1177,16 +1177,16 @@ exports.add = function add(modules) {
 								} else {
 									options = this;
 								};
-									
-									
+
+
 								let dirRoot = options.root,
 									path = options.path;
-									
+
 								const host = options.host,
 									drive = options.drive,
 									file = options.file,
 									hasRoot = path.length && !path[0].length;
-									
+
 								if (dirRoot) {
 									dirRoot = tools.trim(dirRoot, '');
 								};
@@ -1216,7 +1216,7 @@ exports.add = function add(modules) {
 								if (!options.isRelative || host || drive || hasRoot) {
 									result = (options.dirChar + result);
 								};
-									
+
 								if (host && drive) {
 									result = (options.dirChar + options.dirChar + host + options.dirChar + drive) + result;
 								} else if (drive) {
@@ -1226,7 +1226,7 @@ exports.add = function add(modules) {
 								if (options.quote) {
 									result = (options.quote + result + options.quote);
 								};
-									
+
 								return result;
 							}),
 
@@ -1249,7 +1249,7 @@ exports.add = function add(modules) {
 							, function toApiString(/*optional*/options) {
 								return this.toString(tools.extend({}, options, {os: null, dirChar: null, shell: 'api'}));
 							}),
-							
+
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1275,7 +1275,7 @@ exports.add = function add(modules) {
 								//options = tools.extend({isRelative: true}, options);
 
 								location = files.parseLocation(location, options);
-									
+
 								if (types.isNothing(location)) {
 									return this;
 								};
@@ -1285,11 +1285,11 @@ exports.add = function add(modules) {
 									allowTraverse = types.get(options, 'allowTraverse', false);
 
 								let includePathInRoot = types.get(options, 'includePathInRoot', null);
-									
+
 								const data = tools.fill(__Internal__.pathAllKeys, {}, this);
 
 								const thisRoot = tools.trim(this.root || [], '');
-									
+
 								const thisPath = tools.trim(this.path || [], '');
 
 								let dirRoot = types.get(options, 'root');
@@ -1299,7 +1299,7 @@ exports.add = function add(modules) {
 								if (dirRoot) {
 									dirRoot = tools.trim(dirRoot, '');
 								};
-										
+
 								let dir = types.get(options, 'path', location.path);
 								if (types.isString(dir)) {
 									dir = dir.split(data.dirChar);
@@ -1347,7 +1347,7 @@ exports.add = function add(modules) {
 										dir = null;
 									};
 								};
-									
+
 								data.dontThrow = dontThrow;
 								data.allowTraverse = allowTraverse;
 
@@ -1372,7 +1372,7 @@ exports.add = function add(modules) {
 									data.root = thisRoot;
 									data.path = tools.append([], dirRoot, dir);
 								};
-									
+
 								data.file = types.get(options, 'file', location.file || thisFile);
 
 								data.extension = types.get(options, 'extension', null);
@@ -1381,7 +1381,7 @@ exports.add = function add(modules) {
 
 								return location;
 							}),
-							
+
 						moveUp: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1429,7 +1429,7 @@ exports.add = function add(modules) {
 								const type = types.getType(this);
 								return type.parse(null, tools.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
 							}),
-							
+
 						pushFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1447,7 +1447,7 @@ exports.add = function add(modules) {
 									return this;
 								}
 							}),
-							
+
 						popFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1469,7 +1469,7 @@ exports.add = function add(modules) {
 									return null;
 								}
 							}),
-							
+
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1500,7 +1500,7 @@ exports.add = function add(modules) {
 									path = types.get(options, 'path', this.path);
 
 								if (pathOnly) {
-									host = null; 
+									host = null;
 									drive = null;
 									root = null;
 								};
@@ -1554,35 +1554,35 @@ exports.add = function add(modules) {
 
 								return newPath;
 							}),
-								
+
 						relative: function relative(to, /*optional*/options) {
 							if (this.isRelative) {
 								throw new types.ParseError("Path is not absolute.");
 							};
 
 							const type = types.getType(this);
-								
+
 							if (!types._instanceof(to, files.Path)) {
 								to = type.parse(to, options);
 							};
 							if (to.isRelative) {
 								throw new types.ParseError("Target must be an absolute path.");
 							};
-								
+
 							if ((this.os === 'windows') && (to.os !== 'windows')) {
 								throw new types.ParseError("Incompatible OSes.");
 							};
-								
+
 							if ((this.os === 'windows') && ((this.host !== to.host) || (this.drive !== to.drive))) {
 								throw new types.ParseError("Paths must be from the same network share or the same drive.");
 							};
-								
+
 							const os = tools.getOS(),
 								caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
 
 							const thisAr = this.toArray({trim: true}),
 								toAr = to.toArray({trim: true, pushFile: true});
-								
+
 							const pathAr = [];
 
 							let i = 0;
@@ -1598,21 +1598,21 @@ exports.add = function add(modules) {
 									};
 								};
 							};
-								
+
 							let j = i;
-								
+
 							for (; i < toAr.length; i++) {
 								pathAr.push('..');
 							};
-								
+
 							if (pathAr.length === 0) {
 								pathAr.push('.');
 							};
-								
+
 							for (; j < thisAr.length; j++) {
 								pathAr.push(thisAr[j]);
 							};
-								
+
 							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
 						},
 
@@ -1667,11 +1667,11 @@ exports.add = function add(modules) {
 						},
 					}, __Internal__.pathOptions)
 				)));
-				
+
 			//===================================
 			// URLs
 			//===================================
-				
+
 			__Internal__.decodeURIComponent = function(uri) {
 				// <PRB> decodeURIComponent doesn't unescape "+"
 				uri = tools.replace(uri || '', /\+/g,  " ");
@@ -1704,7 +1704,7 @@ exports.add = function add(modules) {
 							description: "Represents arguments to an URL.",
 				}
 				//! END_REPLACE()
-				, types.Type.$inherit( 
+				, types.Type.$inherit(
 					/*typeProto*/
 					{
 						$TYPE_NAME: 'UrlArguments',
@@ -1733,7 +1733,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function parse(/*optional*/args, /*optional*/options) {
 								// WARNING: Validation is incomplete.
-									
+
 								if (root.DD_ASSERT) {
 									root.DD_ASSERT(types.isNothing(args) || types.isString(args) || types.isJsObject(args) || types.isArray(args), "Invalid arguments.");
 									root.DD_ASSERT(types.isNothing(options) || types.isJsObject(options), "Invalid options.");
@@ -1784,7 +1784,7 @@ exports.add = function add(modules) {
 										}, []);
 									};
 								};
-									
+
 								return new this(args, options);
 							}),
 
@@ -1797,7 +1797,7 @@ exports.add = function add(modules) {
 					{
 						options: types.READ_ONLY( null ),
 						__args: types.READ_ONLY( null ),
-							
+
 						_new: types.SUPER(function(args, /*optional*/options) {
 							this._super();
 							if (root.DD_ASSERT) {
@@ -1807,7 +1807,7 @@ exports.add = function add(modules) {
 							types.setAttribute(this, 'options', options, {});
 							types.setAttribute(this, '__args', types.freezeObject(args), {});
 						}),
-							
+
 						toDataObject: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1934,7 +1934,7 @@ exports.add = function add(modules) {
 
 								return result.slice(0, result.length - 1);
 							}),
-							
+
 						has: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2024,7 +2024,7 @@ exports.add = function add(modules) {
 
 								return result;
 							}),
-							
+
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2140,7 +2140,7 @@ exports.add = function add(modules) {
 
 								return new type(args, types.clone(this.options));
 							}),
-							
+
 						remove: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2192,7 +2192,7 @@ exports.add = function add(modules) {
 
 								return new type(args, types.clone(this.options));
 							}),
-							
+
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2273,7 +2273,7 @@ exports.add = function add(modules) {
 
 								};
 
-								return new type(args, options);						
+								return new type(args, options);
 							}),
 					}
 				)));
@@ -2291,7 +2291,7 @@ exports.add = function add(modules) {
 				isNull: types.READ_ONLY( false ), // Read-only
 			};
 			__Internal__.urlDataKeys = types.keys(__Internal__.urlData);
-					
+
 			__Internal__.urlOptions = {
 				host: types.READ_ONLY( null ), // when set, changes 'domain' and 'port'
 				extension: types.READ_ONLY( null ), // when set, changes 'file'
@@ -2368,20 +2368,20 @@ exports.add = function add(modules) {
 								// WARNING: Validation is incomplete.
 
 								// TODO: Domain encoding/decoding to/from Punycode
-									
+
 								if (types.isNothing(url)) {
 									url = types.get(options, 'url', types.get(options, 'href', null));
 								};
-									
+
 								// Flags
 								const dontThrow = types.get(options, 'dontThrow', false);
 
 								let path = null; // Default is Auto-detect
-									
+
 								if (types.isArray(url)) {
 									path = url;
 									url = null;
-										
+
 								} else if (types._instanceof(url, files.Url)) {
 									const args = types.get(options, 'args', null);
 
@@ -2391,17 +2391,17 @@ exports.add = function add(modules) {
 									if (types.isJsObject(args)) {
 										options.args = url.args.combine(args, options);
 									};
-										
+
 									url = null;
-										
+
 								} else if (types._instanceof(url, files.Path)) {
 									const isWindows = (url.os === 'windows');
-										
+
 									let pathTmp = url.path;
 									if (isWindows) {
 										pathTmp = tools.append([], [url.drive + ':'], pathTmp);
 									};
-										
+
 									options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
 										protocol: 'file',
 										host: null,
@@ -2410,9 +2410,9 @@ exports.add = function add(modules) {
 										extension: null,
 										isWindows: isWindows,
 									}, options);
-										
+
 									url = null;
-										
+
 								} else if (types.isNothing(url) || types.isString(url)) {
 									// Valid
 
@@ -2454,7 +2454,7 @@ exports.add = function add(modules) {
 									anchor = types.get(options, 'anchor', null), // Default is Auto-detect
 									isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
-								
+
 								const noEscapes = types.get(options, 'noEscapes', false);
 
 								if (types.isNothing(args)) {
@@ -2474,7 +2474,7 @@ exports.add = function add(modules) {
 
 								if (url) {
 									url = tools.trim(url);
-										
+
 									// Auto-detect "protocol"
 									if (/^[A-Za-z+]+:\/\//.test(url)) {
 										const pos = url.indexOf(':');
@@ -2485,7 +2485,7 @@ exports.add = function add(modules) {
 											url = url.slice(pos + 3);
 										};
 									};
-										
+
 									if (!protocol || (protocol === 'file')) {
 										// Auto-detect "isWindows"
 										if (types.isNothing(isWindows)) {
@@ -2558,7 +2558,7 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-									
+
 								if (!noEscapes) {
 									if (domain) {
 										domain = __Internal__.decodeURIComponent(domain);
@@ -2573,7 +2573,7 @@ exports.add = function add(modules) {
 										port = __Internal__.decodeURIComponent(port) || null;
 									};
 								};
-									
+
 								if (domain) {
 									domain = domain.toLowerCase();
 									isRelative = false;
@@ -2585,7 +2585,7 @@ exports.add = function add(modules) {
 									password = null;
 									port = null;
 								};
-									
+
 								if (!types.isNothing(port)) {
 									port = types.toInteger(port);
 									if ((port <= 0) || (port > 65535)) {
@@ -2634,7 +2634,7 @@ exports.add = function add(modules) {
 								if (!noEscapes && anchor) {
 									anchor = __Internal__.decodeURIComponent(anchor);
 								};
-									
+
 								if (types.isNothing(path)) {
 									path = [];
 								} else if (types.isString(path)) {
@@ -2696,7 +2696,7 @@ exports.add = function add(modules) {
 									// Auto-detect
 									isRelative = !path || !path.length || !!path[0].length;
 								};
-									
+
 								if (path) {
 									path = tools.trim(path, '');
 								};
@@ -2731,7 +2731,7 @@ exports.add = function add(modules) {
 										path = abs.path;
 									};
 								};
-									
+
 								if (!isRelative && (path || file)) {
 									const state = {
 										invalid: null,
@@ -2756,7 +2756,7 @@ exports.add = function add(modules) {
 										}
 									};
 								};
-											
+
 								if (file) {
 									if (trailingSlash || !file.length) {
 										file = '';
@@ -2772,7 +2772,7 @@ exports.add = function add(modules) {
 								} else {
 									file = null;
 								};
-									
+
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
@@ -2794,7 +2794,7 @@ exports.add = function add(modules) {
 										file = file.slice(0, pos);
 									};
 								};
-									
+
 								return new this({
 									protocol: protocol,
 									domain: domain,
@@ -2830,7 +2830,7 @@ exports.add = function add(modules) {
 								tools.extend(this, attrs);
 							};
 						}),
-							
+
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2861,7 +2861,7 @@ exports.add = function add(modules) {
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
 							}),
-							
+
 						hasArg: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2881,7 +2881,7 @@ exports.add = function add(modules) {
 							, function hasArg(name) {
 								return !!this.args && this.args.has(name);
 							}),
-							
+
 						getArg: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2909,7 +2909,7 @@ exports.add = function add(modules) {
 								};
 								return undefined; // "consistent-return"
 							}),
-							
+
 						setArgs: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2936,7 +2936,7 @@ exports.add = function add(modules) {
 									args: this.args.set(args, null, replace),
 								});
 							}),
-							
+
 						removeArgs: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2964,7 +2964,7 @@ exports.add = function add(modules) {
 									});
 								}
 							}),
-							
+
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -2988,7 +2988,7 @@ exports.add = function add(modules) {
 
 								// Flags
 								const dontValidate = types.get(options, 'dontValidate', false);
-									
+
 								if (options) {
 									if (dontValidate) {
 										options = tools.extend({}, this, options);
@@ -3011,17 +3011,17 @@ exports.add = function add(modules) {
 									options = this;
 								};
 
-									
+
 								// Options
 								const noEscapes = types.get(options, 'noEscapes', false);
 
-									
+
 								let result = '';
-									
+
 								if (options.protocol) {
 									result += options.protocol + '://';
 								};
-									
+
 								if (!types.isNothing(options.domain)) {
 									if (!types.isNothing(options.user) || !types.isNothing(options.password)) {
 										if (!types.isNothing(options.user)) {
@@ -3037,7 +3037,7 @@ exports.add = function add(modules) {
 										result += ':' + options.port;
 									};
 								};
-									
+
 								if (options.path && options.path.length) {
 									let path = '';
 									if (!types.isNothing(options.domain) || !options.isRelative || options.isWindows) {
@@ -3062,20 +3062,20 @@ exports.add = function add(modules) {
 									};
 									result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
 								};
-									
+
 								if (options.args) {
 									if (!types.isNothing(options.args.__args)) {
 										result += '?' + options.args.toString(options);
 									};
 								};
-									
+
 								if (!types.isNothing(options.anchor)) {
 									result += '#' + (noEscapes ? options.anchor : _shared.Natives.windowEncodeURIComponent(options.anchor));
 								};
 
 								return result;
 							}),
-							
+
 						toApiString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3114,7 +3114,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function compare(url) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isString(url) || types._instanceof(url, files.Url), "Invalid url.");
-									
+
 								if (types.isString(url)) {
 									const type = types.getType(this);
 									url = type.parse(url);
@@ -3122,7 +3122,7 @@ exports.add = function add(modules) {
 								const result = (this.toString({anchor: null}) === url.toString({anchor: null}));
 								return (result ? ((this.anchor === url.anchor) ? 0 : 1) : -1); // 0=same, 1=different anchor, -1=different
 							}),
-							
+
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3156,7 +3156,7 @@ exports.add = function add(modules) {
 								const type = types.getType(this);
 
 								const dontThrow = types.get(options, 'dontThrow', false);
-									
+
 								const data = tools.fill(__Internal__.urlAllKeys, {}, this);
 
 								const thisPath = tools.trim(this.path || [], '');
@@ -3165,7 +3165,7 @@ exports.add = function add(modules) {
 								if (thisFile) {
 									thisPath.push(thisFile);
 								};
-									
+
 								let pathRoot = null;
 
 								let isRelative = false;
@@ -3211,7 +3211,7 @@ exports.add = function add(modules) {
 								};
 
 								data.dontThrow = dontThrow;
-									
+
 								let path = types.get(options, 'path', location.path);
 								if (types.isString(path)) {
 									path = path.split('/');
@@ -3245,10 +3245,10 @@ exports.add = function add(modules) {
 								data.file = file;
 
 								data.extension = types.get(options, 'extension', null);
-									
+
 								return type.parse(null, data);
 							}),
-								
+
 						moveUp: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3296,7 +3296,7 @@ exports.add = function add(modules) {
 								const type = types.getType(this);
 								return type.parse(null, tools.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
 							}),
-							
+
 						pushFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3314,7 +3314,7 @@ exports.add = function add(modules) {
 									return this;
 								}
 							}),
-								
+
 						popFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3336,7 +3336,7 @@ exports.add = function add(modules) {
 									return null;
 								}
 							}),
-							
+
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3429,7 +3429,7 @@ exports.add = function add(modules) {
 
 								return path;
 							}),
-								
+
 						getPath: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -3449,14 +3449,14 @@ exports.add = function add(modules) {
 									port: null,
 								});
 							}),
-								
+
 						relative: function relative(to, /*optional*/options) {
 								if (this.isRelative) {
 									throw new types.ParseError("Url is not absolute.");
 								};
 
 								const type = types.getType(this);
-								
+
 								if (!types._instanceof(to, files.Url)) {
 									to = type.parse(to, options);
 								};
@@ -3464,11 +3464,11 @@ exports.add = function add(modules) {
 								if (to.isRelative) {
 									throw new types.ParseError("Target must be an absolute url.");
 								};
-								
+
 								if (this.isWindows && !to.isWindows) {
 									throw new types.ParseError("Incompatible OSes.");
 								};
-								
+
 								if (this.isWindows && (this.path[0] !== to.path[0])) {
 									throw new types.ParseError("Urls must be from the same network share or the same drive.");
 								};
@@ -3476,16 +3476,16 @@ exports.add = function add(modules) {
 								if ((this.domain !== to.domain) && (this.port !== to.port)) {
 									throw new types.ParseError("Urls must be from the same domain and have the same port number.");
 								};
-								
+
 								if ((this.user !== to.user) || (this.password !== to.password)) {
 									throw new types.ParseError("Urls must be from the same credentials.");
 								};
-								
+
 								const caseSensitive = types.get(options, 'caseSensitive', false);
 
 								const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
 									toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
-								
+
 								const pathAr = [];
 
 								let i = 0;
@@ -3501,21 +3501,21 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-								
+
 								let j = i;
-								
+
 								for (; i < toAr.length; i++) {
 									pathAr.push('..');
 								};
-								
+
 								if (pathAr.length === 0) {
 									pathAr.push('.');
 								};
-								
+
 								for (; j < thisAr.length; j++) {
 									pathAr.push(thisAr[j]);
 								};
-								
+
 								return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
 							},
 

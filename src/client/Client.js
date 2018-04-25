@@ -34,14 +34,14 @@ exports.add = function add(modules) {
 	modules['Doodad.Client'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-			'Doodad.Types', 
-			'Doodad.Tools', 
-			'Doodad.Tools.Config', 
-			'Doodad.Tools.Files', 
+			'Doodad.Types',
+			'Doodad.Tools',
+			'Doodad.Tools.Config',
+			'Doodad.Tools.Files',
 			'Doodad',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -58,10 +58,10 @@ exports.add = function add(modules) {
 			//=============================
 			// Internals
 			//=============================
-					
+
 			const __Internal__ = {
 				//documentHasParentWindow: (!!global.document && (global.document.parentWindow === global)),
-					
+
 				loadedScripts: tools.nullObject(),   // <FUTURE> global to every thread
 
 				symbolHandler: types.getSymbol('__HANDLER__'),
@@ -73,7 +73,7 @@ exports.add = function add(modules) {
 			//=====================
 			// Options
 			//=====================
-				
+
 			const __options__ = tools.extend({
 				defaultScriptTimeout: 1000 * 60 * 2,		// milliseconds
 			}, _options);
@@ -85,11 +85,11 @@ exports.add = function add(modules) {
 			client.ADD('getOptions', function getOptions() {
 				return __options__;
 			});
-				
+
 			//========================
 			// Natives
 			//========================
-				
+
 			tools.complete(_shared.Natives, {
 				//windowObject: global.Object,
 				windowDocument: global.document,
@@ -102,7 +102,7 @@ exports.add = function add(modules) {
 
 				// Script loader
 				windowURL: (types.isFunction(global.URL) ? global.URL : null),
-					
+
 				// Script loader, readFile
 				windowBlob: (types.isFunction(global.Blob) ? global.Blob : null),
 
@@ -111,20 +111,20 @@ exports.add = function add(modules) {
 				windowFetch: (types.isFunction(global.fetch) ? global.fetch : null),
 				windowHeaders: (types.isFunction(global.Headers) ? global.Headers : null),
 				windowXMLHttpRequest: global.XMLHttpRequest,
-					
+
 				// isEventTarget
 				windowEventTarget: (types.isFunction(global.EventTarget) ? global.EventTarget : null),
-					
+
 				// isEvent
 				windowEvent: (types.isFunction(global.Event) ? global.Event : global.Event.constructor),
-					
+
 				// callAsync
 				mathMax: global.Math.max,
 				windowSetTimeout: global.setTimeout.bind(global),
 				windowClearTimeout: global.clearTimeout.bind(global),
-				windowRequestAnimationFrame: (types.isFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) || 
-                                            (types.isFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) || 
-                                            (types.isFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) || 
+				windowRequestAnimationFrame: (types.isFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) ||
+                                            (types.isFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) ||
+                                            (types.isFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) ||
                                             (types.isFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
 											null,
                 windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
@@ -150,20 +150,20 @@ exports.add = function add(modules) {
 				// alert
 				windowAlert: global.alert.bind(global) || global.console.log.bind(global.console),
 			});
-				
-				
+
+
 			//===================================
 			// Events
 			//===================================
-				
+
 			client.ADD('addListener', function addListener(element, name, handler, /*optional*/capture) {
 				element.addEventListener(name, handler, !!capture);
 			});
-				
+
 			client.ADD('removeListener', function removeListener(element, name, handler, /*optional*/capture) {
 				element.removeEventListener(name, handler, !!capture);
 			});
-				
+
 			//===================================
 			// Promise events
 			//===================================
@@ -171,7 +171,7 @@ exports.add = function add(modules) {
 			__Internal__.unhandledErrorEvent = new types.WeakMap();
 			__Internal__.unhandledRejectionEvent = new types.WeakMap();
 			__Internal__.handledRejectionEvent = new types.WeakMap();
-				
+
 			types.ADD('addAppEventListener', function addAppEventListener(event, listener) {
 				if (event === 'unhandlederror') {
 					if (!__Internal__.unhandledErrorEvent.has(listener)) {
@@ -231,7 +231,7 @@ exports.add = function add(modules) {
 					throw new types.Error("Unknow application event '~0~'.", [event]);
 				};
 			});
-				
+
 			types.ADD('removeAppEventListener', function removeAppEventListener(event, listener) {
 				if (event === 'unhandlederror') {
 					if (__Internal__.unhandledErrorEvent.has(listener)) {
@@ -255,11 +255,11 @@ exports.add = function add(modules) {
 					throw new types.Error("Unknow application event '~0~'.", [event]);
 				};
 			});
-				
+
 			//===================================
 			// Asynchronous functions
 			//===================================
-				
+
 			if (_shared.Natives.windowMutationObserver) {
 				__Internal__.nextTickQueue = [];
 				__Internal__.nextTickDone = true;
@@ -366,13 +366,13 @@ exports.add = function add(modules) {
 						} : undefined);
 					}
 				}));
-				
+
 			//=====================================
 			// Shutdown & Exit
 			//=====================================
-				
+
 			__Internal__.catchAndExitCalled = false;
-				
+
 			tools.ADD('catchAndExit', function catchAndExit(err) {
 				if (!err || err.trapped || (!err.critical && err.bubble)) {
 					// Ignore trapped errors or errors like "ScriptInterruptedError".
@@ -384,7 +384,7 @@ exports.add = function add(modules) {
 
 				// NOTE: This is the last resort error handling.
 				// NOTE: types.ScriptAbortedError should bubbles here
-					
+
 				let exitCode = 1; // 1 = General error
 				let isAborted = false;
 				try {
@@ -432,13 +432,13 @@ exports.add = function add(modules) {
 								// Do nothing
 							};
 						};
-						
+
 						try {
 							global.console.log("Page exited with code : " + types.toString(exitCode));
 						} catch(o) {
 							// Do nothing
 						};
-						
+
 						if (root.getOptions().debug) {
 							types.DEBUGGER();
 
@@ -449,7 +449,7 @@ exports.add = function add(modules) {
 								try {
 									let reload = false;
 									let url = files.Url.parse(_shared.Natives.windowLocation.href);
-							
+
 									// TODO: Better user message, with translation
 									_shared.Natives.windowDocument.open('text/plain', 'replace');
 									if (exitCode !== 0) {
@@ -461,7 +461,7 @@ exports.add = function add(modules) {
 										};
 									};
 									_shared.Natives.windowDocument.close();
-							
+
 									if (reload) {
 										url = url.setArgs({crashReport: true});
 										tools.setCurrentLocation(url, true);
@@ -500,11 +500,11 @@ exports.add = function add(modules) {
 
 				throw err;
 			});
-				
+
 			//===================================
 			// Client functions
 			//===================================
-				
+
 			client.ADD('isEvent', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -524,7 +524,7 @@ exports.add = function add(modules) {
 			, function isEvent(obj) {
 				return types._instanceof(obj, _shared.Natives.windowEvent);
 			}));
-				
+
 			client.ADD('isWindow', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -604,8 +604,8 @@ exports.add = function add(modules) {
 			, function isElement(obj) {
 				return types._instanceof(obj, _shared.Natives.windowHtmlElement);
 			}));
-				
-				
+
+
 			client.ADD('isEventTarget', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -627,7 +627,7 @@ exports.add = function add(modules) {
 			}) : (function isElement(obj) {
 				return client.isDocument(obj) || client.isElement(obj);
 			}))));
-				
+
 			client.ADD('getFirstElement', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -646,7 +646,7 @@ exports.add = function add(modules) {
 			//! END_REPLACE()
 			, function(parent) {
 				root.DD_ASSERT && root.DD_ASSERT(client.isNode(parent), "Invalid node.");
-					
+
 				// NOTE: Sorry for using the same variable
 				parent = parent.firstChild;
 				while (parent && (parent.nodeType !== 1)) {
@@ -659,7 +659,7 @@ exports.add = function add(modules) {
 			//===================================
 			// doodad-js extension
 			//===================================
-				
+
 			mixIns.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -673,9 +673,9 @@ exports.add = function add(modules) {
 			, doodad.MIX_IN(mixIns.Events.$extend({
 				$TYPE_NAME: "JsEvents",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
-					
+
 				__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
-						
+
 				detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 					const events = this.__JS_EVENTS,
 						eventsLen = events.length;
@@ -683,7 +683,7 @@ exports.add = function add(modules) {
 						this[events[i]].detach(elements, useCapture);
 					};
 				})))),
-					
+
 				clearJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearJsEvents() {
 					const events = this.__JS_EVENTS,
 						eventsLen = events.length;
@@ -701,9 +701,9 @@ exports.add = function add(modules) {
 					if (!types.isArrayLike(elements)) {
 						elements = [elements];
 					};
-							
+
 					useCapture = !!useCapture;
-							
+
 					const self = this;
 					const handler = self[__Internal__.symbolHandler];
 					const extender = self[_shared.ExtenderSymbol];
@@ -732,9 +732,9 @@ exports.add = function add(modules) {
 							};
 						}, null, null, _shared.SECRET);
 					};
-							
+
 					const eventType = this[_shared.ExtenderSymbol].eventType;
-								
+
 					const elementsLen = elements.length;
 					for (let j = 0; j < elementsLen; j++) {
 						if (types.has(elements, j)) {
@@ -766,11 +766,11 @@ exports.add = function add(modules) {
 						if (!types.isArrayLike(elements)) {
 							elements = [elements];
 						};
-								
+
 						root.DD_ASSERT && root.DD_ASSERT(tools.every(elements, function(element) {
 							return client.isEventTarget(element);
 						}), "Invalid elements.");
-								
+
 						const elementsLen = elements.length;
 						for (let i = 0; i < elementsLen; i++) {
 							const evs = this._super(this[_shared.ObjectSymbol], this, [elements[i]]);
@@ -792,7 +792,7 @@ exports.add = function add(modules) {
 			};
 
 			__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
-				
+
 			doodad.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -804,7 +804,7 @@ exports.add = function add(modules) {
 			}
 			//! END_REPLACE()
 			, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
-				
+
 			extenders.REGISTER([], root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -818,15 +818,15 @@ exports.add = function add(modules) {
 			, extenders.RawEvent.$inherit({
 				$TYPE_NAME: "JsEvent",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
-					
+
 				eventsPrefixed: types.READ_ONLY(false),
 				eventsAttr: types.READ_ONLY('__JS_EVENTS'),
 				errorEventAttr: types.READ_ONLY(null),
 				eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
-					
+
 				enableScopes: types.READ_ONLY(true),
 				eventType: types.READ_ONLY(null),
-					
+
 				getUnified: types.READ_ONLY(function getUnified() {
 					if (!this.__unified) {
 						const self = this;
@@ -838,9 +838,9 @@ exports.add = function add(modules) {
 					};
 					return this.__unified;
 				}),
-					
+
 				eventProto: types.READ_ONLY(doodad.JsEventHandler),
-					
+
 				_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
 					this._super(options);
 					if (!types.isType(this)) {
@@ -854,7 +854,7 @@ exports.add = function add(modules) {
 					if (types.isNothing(options)) {
 						options = {};
 					};
-					return this._super(options) + 
+					return this._super(options) +
 						',' + types.get(options, 'eventType', this.eventType);
 				})),
 
@@ -925,7 +925,7 @@ exports.add = function add(modules) {
 				}),
 			})));
 
-				
+
 			doodad.ADD('JS_EVENT', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -953,11 +953,11 @@ exports.add = function add(modules) {
 				};
 				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
 					const dispatch = this[_shared.CurrentDispatchSymbol];
-						
+
 					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
 
 					const stack = values[_shared.StackSymbol];
-						
+
 					let clonedStack;
 					if (values[_shared.SortedSymbol]) {
 						clonedStack = values[_shared.ClonedStackSymbol];
@@ -975,7 +975,7 @@ exports.add = function add(modules) {
 						values[_shared.ClonedStackSymbol] = clonedStack;
 						types.setAttributes(dispatch, values);
 					};
-							
+
 					const stackLen = clonedStack.length;
 
 					for (let i = 0; i < stackLen; i++) {
@@ -983,7 +983,7 @@ exports.add = function add(modules) {
 							obj = data[0],
 							evDatas = data[3],
 							element = evDatas[0];
-									
+
 						if (!ctx || (element === ctx.element)) {
 							const handler = evDatas[2];
 
@@ -996,11 +996,11 @@ exports.add = function add(modules) {
 
 				return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
 			}));
-				
+
 			//===================================
 			// Location functions
 			//===================================
-				
+
 			types.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1055,10 +1055,10 @@ exports.add = function add(modules) {
 				};
 				return files.Url.parse(_location.href);
 			}));
-				
-				
+
+
 			//__Internal__.setCurrentLocationPending = false;
-				
+
 			tools.ADD('setCurrentLocation', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1095,12 +1095,12 @@ exports.add = function add(modules) {
 					root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
 					root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
 				};
-					
+
 				//if (!__Internal__.setCurrentLocationPending) {
 					if (!types._instanceof(url, files.Url)) {
 						url = files.Url.parse(url);
 					};
-						
+
 					let _location = _shared.Natives.windowLocation;
 					if (_window) {
 						_location = _window.location;
@@ -1140,7 +1140,7 @@ exports.add = function add(modules) {
 					throw new types.PageMovedError();
 				};
 			}));
-				
+
 			//===================================
 			// Script loader functions
 			//===================================
@@ -1165,12 +1165,12 @@ exports.add = function add(modules) {
 					lastError: null,
 					timedout: false,
 					timeoutId: null,
-						
+
 					oninit: null,
 					onloading: null,
 					onload: null,
 					onerror: null,
-						
+
 					_new: types.READ_ONLY(types.SUPER(function _new(tag, target, /*optional*/timeout) {
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isStringAndNotEmpty(tag), "Invalid tag.");
@@ -1185,7 +1185,7 @@ exports.add = function add(modules) {
 							this.timeout = timeout;
 						};
 					})),
-						
+
 					__handleSuccess: function __handleSuccess(ev) {
 						if ((this.loadEv !== 'readystatechange') || (this.element.readyState === 'loaded') || (this.element.readyState === 'complete')) {
 							if (this.timeoutId) {
@@ -1236,7 +1236,7 @@ exports.add = function add(modules) {
 							};
 						} else {
 							this.launched = true;
-								
+
 							this.element = this.target.ownerDocument.createElement(this.tag);
 							if ('onreadystatechange' in this.element) {
 								// For previous versions of IE
@@ -1244,14 +1244,14 @@ exports.add = function add(modules) {
 							} else {
 								this.loadEv = 'load';
 							};
-								
+
 							const self = this;
-								
+
 							// NOTE: Safari: "onload" doesn't raise for the 'link' tag
 							client.addListener(this.element, this.loadEv, function scriptOnSuccess(ev) {
 								return self.__handleSuccess(ev);
 							});
-								
+
 							// NOTE: IE and Safari: "onerror" doesn't raise, so we can't know if there was an error
 							client.addListener(this.element, 'error', function scriptOnError(ev) {
 								return self.__handleError(ev.error);
@@ -1273,7 +1273,7 @@ exports.add = function add(modules) {
 							//} else {
 								this.target.appendChild(this.element);
 							//};
-								
+
 							this.dispatchEvent(new types.CustomEvent('loading'));
 							tools.dispatchEvent(new types.CustomEvent('scriptloading', {
 								detail: {
@@ -1296,18 +1296,18 @@ exports.add = function add(modules) {
 										self.loadEv = 'load';
 										self.__handleSuccess(ev);
 									});
-										
+
 									waitDownload.style.display = 'none';
-										
+
 									this.target.ownerDocument.body.appendChild(waitDownload);
-										
+
 									// NOTE: The "img" tag starts download as soon as "src" is set
 									waitDownload.src = url.toString({
 										anchor: 'sami', // "#sami" is a documented IE trick to load source as text instead of its mime type, preventing a download prompt to the user
 									});
 								};
 							};
-								
+
 							if (!types.isNothing(this.timeout)) {
 								this.timeoutId = tools.callAsync(function handleTimeout(ev) {
 									self.timeoutId = null;
@@ -1321,8 +1321,8 @@ exports.add = function add(modules) {
 					},
 				}
 			));
-				
-				
+
+
 			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1365,17 +1365,17 @@ exports.add = function add(modules) {
 				};
 
 				let loader = null;
-					
+
 				if (types._instanceof(url, files.Path)) {
 					url = files.Url.parse(url);
 				};
-					
+
 				if (types._instanceof(url, files.Url)) {
 					url = url.toString();
 				};
-					
+
 				root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
-					
+
 				if (url in __Internal__.loadedScripts) {
 					loader = __Internal__.loadedScripts[url];
 				};
@@ -1390,19 +1390,19 @@ exports.add = function add(modules) {
 					if (!_document) {
 						_document = _shared.Natives.windowDocument;
 					};
-						
+
 					__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
-						
+
 					loader.addEventListener('init', function() {
 						loader.async = this.element.async = !!async;
 						this.element.type = 'text/javascript';
 						this.element.src = url;
 					});
 				};
-					
+
 				return loader;
 			}));
-				
+
 			tools.ADD('getJsScriptBlockLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1443,9 +1443,9 @@ exports.add = function add(modules) {
 				if (!_document) {
 					_document = _shared.Natives.windowDocument;
 				};
-					
+
 				const loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
-					
+
 				loader.addEventListener('init', function() {
 					this.element.type = 'text/javascript';
 					loader.async = this.element.async = !!async;
@@ -1460,10 +1460,10 @@ exports.add = function add(modules) {
 						};
 					};
 				});
-					
+
 				return loader;
 			}));
-				
+
 			tools.ADD('getCssScriptFileLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -1513,13 +1513,13 @@ exports.add = function add(modules) {
 				if (types._instanceof(url, files.Path)) {
 					url = files.Url.parse(url);
 				};
-					
+
 				if (types._instanceof(url, files.Url)) {
 					url = url.toString();
 				};
-					
+
 				root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
-					
+
 				let loader = null;
 				if (url in __Internal__.loadedScripts) {
 					loader = __Internal__.loadedScripts[url];
@@ -1535,9 +1535,9 @@ exports.add = function add(modules) {
 					if (!_document) {
 						_document = _shared.Natives.windowDocument;
 					};
-						
+
 					__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
-						
+
 					loader.addEventListener('init', function() {
 						loader.async = !!async;
 						this.element.rel = 'stylesheet';
@@ -1548,7 +1548,7 @@ exports.add = function add(modules) {
 						this.element.href = url;
 					});
 				};
-					
+
 				return loader;
 			}));
 
@@ -1599,7 +1599,7 @@ exports.add = function add(modules) {
 				};
 
 				let loader;
-					
+
 				if (async && _shared.Natives.windowBlob && global.URL) {
 					// Firefox
 					loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
@@ -1628,14 +1628,14 @@ exports.add = function add(modules) {
 						};
 					});
 				};
-					
+
 				return loader;
 			}));
 
 			//===================================
 			// File functions
 			//===================================
-				
+
 			files.ADD('existsAsync', function existsAsync(url, /*optional*/options) {
 				const Promise = types.getPromise();
 
@@ -1689,7 +1689,7 @@ exports.add = function add(modules) {
 					throw new types.NotSupported("Synchronous version of 'exists' is not implemented.");
 				}
 			}));
-					
+
 
 			files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
 				throw new types.NotSupported("'readFile' is not supported synchronously because the W3C has decided to disable it from 'fetch' and 'XHR'.");
@@ -1713,7 +1713,7 @@ exports.add = function add(modules) {
 							},
 						},
 						returns: 'Promise',
-						description: 
+						description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
 			}
@@ -1917,7 +1917,7 @@ exports.add = function add(modules) {
 							},
 						},
 						returns: 'Promise',
-						description: 
+						description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
 			}
@@ -1931,7 +1931,7 @@ exports.add = function add(modules) {
 					return files.readFileSync(url, /*optional*/options);
 				}
 			}));
-				
+
 			files.ADD('watch', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{

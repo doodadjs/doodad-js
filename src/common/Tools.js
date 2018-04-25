@@ -37,24 +37,24 @@ exports.add = function add(modules) {
 			'Doodad.Types',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools;
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			// <FUTURE> Thread context
 			const __Internal__ = {
 			};
-				
+
 
 			tools.ADD('LogLevels', types.freezeObject(tools.nullObject({
 				Debug: 0,
@@ -62,12 +62,12 @@ exports.add = function add(modules) {
 				Warning: 2,
 				Error: 3,
 			})));
-				
-				
+
+
 			//===================================
 			// Options
 			//===================================
-					
+
 			let __options__ = tools.nullObject({
 				logLevel: tools.LogLevels.Error,
 				unhandledRejectionsTimeout: 5000,
@@ -100,7 +100,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Hooks
 			//===================================
-				
+
 			_shared.consoleHook = function consoleHook(level, message) {
 				if (global.console) {
 					let fn;
@@ -112,7 +112,7 @@ exports.add = function add(modules) {
 								fn = 'info';
 							};
 						//! END_REMOVE()
-							
+
 						//! IF_SET("serverSide")
 							//! INJECT("fn = 'warn'") // force stderr
 						//! ELSE()
@@ -130,7 +130,7 @@ exports.add = function add(modules) {
 								fn = 'log';
 							};
 						//! END_REMOVE()
-							
+
 						//! IF_SET("serverSide")
 							//! INJECT("fn = 'warn'") // force stderr
 						//! ELSE()
@@ -144,7 +144,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			tools.complete(_shared.Natives, {
 				// Prototype functions
 				stringIndexOfCall: global.String.prototype.indexOf.call.bind(global.String.prototype.indexOf),
@@ -152,7 +152,7 @@ exports.add = function add(modules) {
 				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
 				//stringSearchCall: global.String.prototype.search.call.bind(global.String.prototype.search),
 				stringSplitCall: global.String.prototype.split.call.bind(global.String.prototype.split),
-				
+
 				windowRegExp: global.RegExp,
 				windowObject: global.Object,
 
@@ -181,15 +181,15 @@ exports.add = function add(modules) {
 				arraySomeCall: global.Array.prototype.some.call.bind(global.Array.prototype.some),
 				arrayReduceCall: global.Array.prototype.reduce.call.bind(global.Array.prototype.reduce),
 				arrayReduceRightCall: global.Array.prototype.reduceRight.call.bind(global.Array.prototype.reduceRight),
-					
+
 				// ES7
 				regExpEscape: global.RegExp.escape || null,
 			});
-				
+
 			//===================================
 			// String Tools
 			//===================================
-		
+
 			tools.ADD('split', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -275,7 +275,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Array Tools
 			//===================================
-	
+
 			tools.ADD('indexOf', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -335,7 +335,7 @@ exports.add = function add(modules) {
 					};
 					return -1;
 				}));
-				
+
 			tools.ADD('lastIndexOf', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -395,7 +395,7 @@ exports.add = function add(modules) {
 					};
 					return -1;
 				}));
-				
+
 			tools.ADD('getFirstIndex', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -422,7 +422,7 @@ exports.add = function add(modules) {
 						};
 					};
 				}));
-				
+
 			tools.ADD('getFirstValue', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -449,7 +449,7 @@ exports.add = function add(modules) {
 						};
 					};
 				}));
-				
+
 			tools.ADD('popAt', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -493,7 +493,7 @@ exports.add = function add(modules) {
 					};
 					return item;
 				}));
-				
+
 			tools.ADD('popItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -605,7 +605,7 @@ exports.add = function add(modules) {
 					};
 					return undefined;
 				}));
-				
+
 			tools.ADD('popItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -641,7 +641,7 @@ exports.add = function add(modules) {
 					const result = [];
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
-								
+
 						if (types.isFunction(items)) {
 							if (types.isArray(obj)) {
 								for (let key = obj.length - 1; key >= 0; key--) {
@@ -739,7 +739,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('prepend', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -774,11 +774,11 @@ exports.add = function add(modules) {
 					};
 					return obj;
 				}));
-				
+
 			//===================================
 			// Search functions
 			//===================================
-					
+
 			tools.ADD('findItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -906,7 +906,7 @@ exports.add = function add(modules) {
 					};
 					return null;
 				}));
-				
+
 			tools.ADD('findLastItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1014,7 +1014,7 @@ exports.add = function add(modules) {
 					};
 					return null;
 				}));
-				
+
 			tools.ADD('findItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1136,7 +1136,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('getItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1264,8 +1264,8 @@ exports.add = function add(modules) {
 					};
 					return null;
 				}));
-				
-				
+
+
 			tools.ADD('getItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1404,8 +1404,8 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
-				
+
+
 			//===================================
 			// String functions
 			//===================================
@@ -1502,7 +1502,7 @@ exports.add = function add(modules) {
 						return text;
 					}
 				}));
-				
+
 			tools.ADD('search', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1559,7 +1559,7 @@ exports.add = function add(modules) {
 					if (types.isNothing(end)) {
 						end = str.length;
 					};
-						
+
 					let posText;
 					if (types.isString(text)) {
 						posText = str.indexOf(text, start);
@@ -1595,7 +1595,7 @@ exports.add = function add(modules) {
 							};
 						};
 					};
-						
+
 					if (((posText < 0) && (posStopStr < 0)) || (posText > end)) {
 						// No match
 						if (getText) {
@@ -1672,7 +1672,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-					
+
 			tools.ADD('title', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1716,18 +1716,18 @@ exports.add = function add(modules) {
 					};
 					return retval;
 				}));
-				
+
 			//===================================
 			// Log functions
 			//===================================
-					
+
 			__Internal__.logLevelsName = [
 				'debug',
 				'info',
 				'warning',
 				'error',
 			];
-					
+
 			tools.ADD('log', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1770,11 +1770,11 @@ exports.add = function add(modules) {
 					};
 				}));
 
-				
+
 			//===================================
 			// Compare functions
 			//===================================
-					
+
 			tools.ADD('compareNumbers', root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -1810,7 +1810,7 @@ exports.add = function add(modules) {
 						return 0;
 					}
 				}));
-				
+
 			tools.ADD('compareNumbersInverted', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1847,12 +1847,12 @@ exports.add = function add(modules) {
 						return 0;
 					}
 				}));
-				
+
 
 			//===================================
 			// Object functions
 			//===================================
-					
+
 			tools.ADD('depthComplete', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1912,7 +1912,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('fill', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1962,7 +1962,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('map', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1977,7 +1977,7 @@ exports.add = function add(modules) {
 							fn: {
 								type: 'function',
 								optional: false,
-								description: 
+								description:
 									"A function to call. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2092,7 +2092,7 @@ exports.add = function add(modules) {
 							fn: {
 								type: 'function',
 								optional: false,
-								description: 
+								description:
 									"A function to call. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2122,7 +2122,7 @@ exports.add = function add(modules) {
 					/* eslint consistent-return: "off" */
 
 					root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
-						
+
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -2164,7 +2164,7 @@ exports.add = function add(modules) {
 				};
 					};
 				}));
-				
+
 			tools.ADD('filter', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2179,7 +2179,7 @@ exports.add = function add(modules) {
 							items: {
 								type: 'any,arrayof(any),function',
 								optional: false,
-								description: 
+								description:
 									"Values to filter with, or a function used to filter. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2332,7 +2332,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('filterKeys', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2347,7 +2347,7 @@ exports.add = function add(modules) {
 							items: {
 								type: 'any,arrayof(any),function',
 								optional: false,
-								description: 
+								description:
 									"Keys to filter with, or a function used to filter. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2453,7 +2453,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			tools.ADD('every', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2468,7 +2468,7 @@ exports.add = function add(modules) {
 							items: {
 								type: 'any,arrayof(any),function',
 								optional: false,
-								description: 
+								description:
 									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2608,7 +2608,7 @@ exports.add = function add(modules) {
 					};
 					return true;
 				}));
-				
+
 			tools.ADD('some', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2623,7 +2623,7 @@ exports.add = function add(modules) {
 							items: {
 								type: 'any,arrayof(any),function',
 								optional: false,
-								description: 
+								description:
 									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
@@ -2766,7 +2766,7 @@ exports.add = function add(modules) {
 					};
 					return false;
 				}));
-				
+
 			tools.ADD('reduce', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2781,7 +2781,7 @@ exports.add = function add(modules) {
 							fn: {
 								type: 'function',
 								optional: false,
-								description: 
+								description:
 									"A function used to reduce. Arguments passed to the function are : \n" +
 									"  result (any): The result of the previous call, or the initial value, or the first item\n" +
 									"  value (any): The current value\n" +
@@ -2851,7 +2851,7 @@ exports.add = function add(modules) {
 						}
 					}
 				}));
-				
+
 			tools.ADD('reduceRight', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2866,7 +2866,7 @@ exports.add = function add(modules) {
 							fn: {
 								type: 'function',
 								optional: false,
-								description: 
+								description:
 									"A function used to reduce. Arguments passed to the function are : \n" +
 									"  result (any): The result of the previous call, or the initial value, or the first item\n" +
 									"  value (any): The current value\n" +
@@ -2937,7 +2937,7 @@ exports.add = function add(modules) {
 						}
 					}
 				}));
-				
+
 			//===================================
 			// Math functions
 			//===================================
@@ -2960,9 +2960,9 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function sign(obj) {
 					obj = +obj;
-					return (obj < 0 ? -1 : (obj > 0 ? 1 : obj)); 
+					return (obj < 0 ? -1 : (obj > 0 ? 1 : obj));
 				})));
-					
+
 			tools.ADD('round', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -3019,7 +3019,7 @@ exports.add = function add(modules) {
 			//===================================
 			// Escape functions
 			//===================================
-					
+
             tools.ADD('prepareMappingForEscape', function(mapping, /*optional*/prefix, /*optional*/suffix) {
                 const reserved = types.keys(mapping);
 
@@ -3118,7 +3118,7 @@ exports.add = function add(modules) {
 					return result;
 				}));
 
-				
+
 			__Internal__.regExMapping = tools.prepareMappingForEscape(tools.nullObject({
 				'\\': '\\\\',
 				'^': '\\^',
@@ -3132,7 +3132,7 @@ exports.add = function add(modules) {
 				'{': '\\{',
 				'}': '\\}',
 				'[': '\\[',
-				']': '\\]', 
+				']': '\\]',
 				'.': '\\.',
 			}));
 

@@ -41,28 +41,28 @@ exports.add = function add(mods) {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: ['Doodad.Types', 'Doodad.Tools'],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
 				//types = doodad.Types,
 				nodejs = doodad.NodeJs;
 
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			const __Internal__ = {
 				customInspectSymbol: ((typeof nodeUtilInspect.custom === 'symbol') ? nodeUtilInspect.custom : 'inspect'),
 			};
-				
+
 			//===================================
 			// Natives
 			//===================================
-				
+
 			//tools.complete(_shared.Natives, {
 			//});
-				
+
 			//===================================
 			// Util Extension
 			//===================================

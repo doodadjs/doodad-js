@@ -4,10 +4,10 @@
 	//! IF_SET("mjs")
 		//! INJECT("const exports = {};")
 	//! END_IF()
-		
+
 //! ELSE()
 	//! INJECT("const global = window, exports = {};")
-	
+
 //! END_IF()
 
 
@@ -84,7 +84,7 @@ exports.createEval = exports.eval(exports.generateCreateEval());
 exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 	/* eslint global-require: "off" */
 
-	(function checkRuntime() {		
+	(function checkRuntime() {
 		// <PRB> Firefox's "Function.prototype.toString" bug #1 : "incompatible object" error message raised with some constructors (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 		try {
 			if (typeof global.Event === 'function') {
@@ -93,7 +93,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		} catch(ex) {
 			throw new global.Error("Browser version not supported.");
 		};
-		
+
 		// <PRB> Firefox's "Function.prototype.toString" bug #2: Returns class's constructor function instead of the class.
 		if ((class{}).toString().slice(0, 5) !== 'class') {
 			throw new global.Error("Browser version not supported.");
@@ -129,7 +129,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.")
 		//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.")
 		//! END_IF()
-		
+
 		enableSymbols: true,					// (Read-Only) When 'true', symbols are enabled.
 		enableSafeObjects: false,				// When 'true', safe objects are enabled. NOTE: When enabled, it will significatively slow down everything. For intensive debug only.
 	};
@@ -214,7 +214,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isNothing(obj) {
 			return (obj == null); // Yes, "==", not "==="
 		}));
-		
+
 		// <PRB> JS has no function to test for strings
 		__Internal__.ADD('isString', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -253,7 +253,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 		__Internal__.ADD('isFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -273,7 +273,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isFunction(obj) {
 			return (typeof obj === 'function');
 		}));
-		
+
 		// <PRB> JS has no function to test for objects ( new Object() )
 		__Internal__.ADD('isObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -328,7 +328,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const type = typeof obj;
 			return !!obj && ((type === 'object') || (type === 'function'));
 		}));
-		
+
 		__Internal__.ADD('isArray', _shared.Natives.arrayIsArray);
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
@@ -361,7 +361,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return false;
 			}
 		}));
-		
+
 		__Internal__.ADD('has', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -429,11 +429,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (types.isNothing(obj)) {
 				return [];
 			};
-				
+
 			obj = _shared.Natives.windowObject(obj);
 
 			let result;
-				
+
 			if (types.isArrayLike(obj)) {
 				result = [];
 				for (const key in obj) {
@@ -444,10 +444,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			} else {
 				result = _shared.Natives.objectKeys(obj);
 			};
-				
+
 			return result;
 		}));
-		
+
 		__Internal__.ADD('symbols', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -480,7 +480,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return symbols;
 		}));
-		
+
 		__Internal__.ADD_TOOL('createObject', _shared.Natives.objectCreate);
 
 		__Internal__.ADD_TOOL('extend', _shared.Natives.objectAssign);
@@ -519,7 +519,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				return obj;
 			}));
-				
+
 		__Internal__.ADD_TOOL('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -539,7 +539,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			, function nullObject(/*paramarray*/...args) {
 				return tools.extend.apply(tools, tools.append([tools.createObject(null)], args));
 			}));
-	
+
 		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
@@ -623,7 +623,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				return result;
 			}));
-					
+
 		//===================================
 		// Options
 		//===================================
@@ -673,7 +673,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//===================================
 		// Return modified module constants
 		//===================================
-		
+
 		_shared.Natives = _shared.safeObject(natives);
 
 		return {
@@ -705,31 +705,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				// "hasInherited"
 				objectPrototype: global.Object.prototype,
-			
+
 				// "createObject"
 				objectCreate: global.Object.create,
-			
+
 				// "hasDefinePropertyEnabled" and "defineProperty"
 				objectDefineProperty: global.Object.defineProperty,
-			
+
 				// "defineProperties"
 				objectDefineProperties: global.Object.defineProperties,
-			
+
 				// "allKeys"
 				objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
-			
+
 				// "getOwnPropertyDescriptor"
 				objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
-			
+
 				// "getPrototypeOf"
 				objectGetPrototypeOf: global.Object.getPrototypeOf,
-			
+
 				// "isProtoOf"
 				objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
 
 				// "setPrototypeOf"
 				objectSetPrototypeOf: global.Object.setPrototypeOf,
-			
+
 				// "isArray"
 				arrayIsArray: global.Array.isArray,
 				arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
@@ -740,24 +740,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				windowArray: global.Array,
 				//arrayFrom: global.Array.from,
 				arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
-			
+
 				// "isError"
 				windowError: global.Error,
 
 				// "isNumber", "toInteger"
 				windowNumber: global.Number,
-			
+
 				// "hasSymbols", "isSymbol", "getSymbol"
 				windowSymbol: global.Symbol,
-			
+
 				// "getSymbolFor"
 				symbolFor: global.Symbol.for,
-			
+
 				// "getSymbolKey", "symbolIsGlobal"
 				symbolToStringCall: global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString),
 				symbolValueOfCall: global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf),
 				symbolKeyFor: global.Symbol.keyFor,
-			
+
 				// "createType", "_instanceof"
 				symbolHasInstance: global.Symbol.hasInstance,
 				functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
@@ -772,7 +772,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				// "isFinite"
 				numberIsFinite: global.Number.isFinite,
-			
+
 				// "concat"
 				arrayConcatApply: global.Array.prototype.concat.apply.bind(global.Array.prototype.concat),
 
@@ -784,7 +784,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				// "depthExtend"
 				functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
-			
+
 				// "isInteger", "isSafeInteger", "toInteger", "toFloat"
 				mathFloor: global.Math.floor,
 				mathAbs: global.Math.abs,
@@ -797,26 +797,26 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				// "toFloat"
 				mathPow: global.Math.pow,
-			
+
 				// "sealObject"
 				objectSeal: global.Object.seal,
-			
+
 				// "isFrozen"
 				objectIsFrozen: global.Object.isFrozen,
-			
+
 				// "freezeObject"
 				objectFreeze: global.Object.freeze,
-			
+
 				// "isExtensible"
 				objectIsExtensible: global.Object.isExtensible,
 
 				// "preventExtensions"
 				objectPreventExtensions: global.Object.preventExtensions,
-			
+
 				// "isSafeInteger", "getSafeIntegerBounds"
 				numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER,
 				numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER,
-			
+
 				// generateUUID
 				mathRandom: global.Math.random,
 
@@ -869,7 +869,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 			MIN_BITWISE_INTEGER: 0,
 			MAX_BITWISE_INTEGER: ((~0) >>> 0), //   MAX_BITWISE_INTEGER | 0 === -1  ((-1 >>> 0) === 0xFFFFFFFF)
-			
+
 			DD_ASSERT: null,
 
 			safeIntegerLen: null,
@@ -886,7 +886,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					root.DD_ASSERT = __Internal__.ASSERT;
 				};
 			},
-				
+
 			disableAsserts: function disableAsserts(__Internal__, root, types) {
 				if (types.hasDefinePropertyEnabled()) {
 					__Internal__.DD_ASSERT = null;
@@ -894,7 +894,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					root.DD_ASSERT = null;
 				};
 			},
-					
+
 			setOptions: function setOptions(__Internal__, types, tools, options) {
 				const newOptions = tools.nullObject(__options__, options);
 
@@ -931,7 +931,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Eval
 	//===================================
-		
+
 	// WARNING: NOT to be used with arbitrary expressions.
 
 	__Internal__.ADD_TOOL('eval', __Internal__.DD_DOC(
@@ -1008,7 +1008,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//==================================
 	// String Tools
 	//==================================
-		
+
 	__Internal__.ADD_TOOL('trim', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1049,10 +1049,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (types.isNothing(count)) {
 				count = Infinity;
 			};
-				
+
 			if (isArray) {
 				const strLen = str.length;
-					
+
 				let start = 0,
 					x = 0;
 				if (!direction || direction > 0) {
@@ -1108,7 +1108,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//==================================
 	// Conversion
 	//==================================
-		
+
 	__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1135,7 +1135,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return (obj < 0 ? -1 : 1) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj));
 		}));
-		
+
 	__Internal__.ADD('toFloat', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1169,7 +1169,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return obj;
 			}
 		}));
-		
+
 	__Internal__.ADD('toString', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1193,7 +1193,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Format functions
 	//===================================
-		
+
 	__Internal__.ADD_TOOL('format', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1242,11 +1242,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return isKey ? result : result + message.slice(lastPos);
 		}));
-		
+
 	//===================================
 	// ASSERTS functions
 	//===================================
-			
+
 	__Internal__.ASSERT = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1274,9 +1274,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function ASSERT(expr, /*optional*/message, /*optional*/params) {
-			// IMPORTANT: You must use it like this : 
+			// IMPORTANT: You must use it like this :
 			//          root.DD_ASSERT && root.DD_ASSERT(expr, message, params);
-				
+
 			// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
 			if (!expr) {
 				if (types.isString(message)) {
@@ -1286,11 +1286,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				throw new types.AssertionError(message);
 			};
 		});
-		
+
 	//==================
 	// Utilities
 	//==================
-		
+
 	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1313,7 +1313,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.ADD('isNativeFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1387,7 +1387,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1413,7 +1413,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const type = (typeof obj);
 			return (type !== "object") && (type !== "function");
 		}));
-		
+
 	__Internal__.ADD('isNumber', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1468,7 +1468,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return (num === num) && (num !== Infinity) && (num !== -Infinity);
 		}
 	};
-		
+
 	__Internal__.numberIsInteger = function numberIsInteger(num) {
 		/* eslint no-self-compare: "off" */
 
@@ -1524,7 +1524,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.numberIsSafeInteger = function numberIsSafeInteger(num) {
 		/* eslint no-self-compare: "off" */
 
@@ -1585,7 +1585,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.ADD('isFinite', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1624,7 +1624,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 	}));
-		
+
 	__Internal__.ADD('isInfinite', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1663,7 +1663,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.numberIsFloat = function numberIsFloat(num) {
 		/* eslint no-self-compare: "off" */
 
@@ -1713,7 +1713,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	// <PRB> JS has no function to test for booleans
 	__Internal__.ADD('isBoolean', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1752,7 +1752,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	// <PRB> JS has no function to test for dates
 	__Internal__.ADD('isDate', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1785,7 +1785,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	// <PRB> JS has no function to test for errors
 	__Internal__.ADD('isError', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1813,7 +1813,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.ADD('isNaN', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1857,7 +1857,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.ADD('isCallable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1895,7 +1895,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-			
+
 	//===================================
 	// Arrays
 	//===================================
@@ -1920,7 +1920,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function concat(/*paramarray*/...args) {
 			return _shared.Natives.arrayConcatApply(__Internal__.emptyArray, args);
 		}));
-			
+
 	__Internal__.ADD_TOOL('unique', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -1930,7 +1930,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					comparer: {
 						type: 'function',
 						optional: true,
-						description: 
+						description:
 							"A comparer function. Arguments passed to the function are : \n" +
 							"  value1 (any): The value to compare from\n" +
 							"  value2 (any): The value to compare to\n" +
@@ -1953,11 +1953,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				comparer = null;
 				start = 0;
 			};
-				
+
 			const result = [];
 
 			const argsLen = args.length;
-				
+
 			if (comparer) {
 				for (let i = start; i < argsLen; i++) {
 					let obj = args[i];
@@ -2010,10 +2010,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 				};
 			};
-				
+
 			return result;
 		}));
-			
+
 	__Internal__.ADD_TOOL('createArray', function(length, /*optional*/defaultValue) {
 		length = +length || 0;
 		if ((length <= 0) || types.isInfinite(length)) {
@@ -2036,7 +2036,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Stack functions
 	//===================================
 	// <PRB> JS has no official stack trace. They are non-standardized strings.
-		
+
 	__Internal__.stackToString = function stackToString() {
 		let str = '';
 		const len = this.length;
@@ -2071,29 +2071,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!types.isError(ex) && !types.isString(ex)) {
 				throw new types.ParseError("Invalid error object or stack trace.");
 			};
-				
+
 			let stack = ex;
 			if (types.isError(ex)) {
 				stack = ex.stack || null;
 			};
-				
+
 			if (!stack) {
 				return null;
 			};
-				
+
 			__Internal__.parseStackRegEx.lastIndex = 0;
 			let call = __Internal__.parseStackRegEx.exec(stack);
-				
+
 			if (!call) {
 				return null;
 			};
-				
+
 			const calls = [];
-				
+
 			do {
-				let functionName, 
+				let functionName,
 					pos;
-				
+
 				functionName = call[2] || '';
 				pos = functionName.indexOf(' at '); // Not Firefox beginning of function name
 				if (pos >= 0) {
@@ -2145,12 +2145,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					columnNumber: types.toInteger(call[15] || -1), // Starts at 1. Number -1 is for "unknown".
 					isSystemPath: isSystemPath,
 				});
-					
+
 				call = __Internal__.parseStackRegEx.exec(stack);
 			} while (call);
-				
+
 			calls.toString = __Internal__.stackToString;
-				
+
 			return calls;
 		}));
 
@@ -2172,11 +2172,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return stack;
 		}));
-		
+
 	//===================================
 	// Objects
 	//===================================
-		
+
 	__Internal__.ADD('hasInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2211,10 +2211,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					obj = types.getPrototypeOf(obj);
 				} while (obj);
 			};
-				
+
 			return false;
 		}));
-		
+
 	__Internal__.ADD('get', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2258,7 +2258,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return _default;
 			}
 		}));
-		
+
 	__Internal__.ADD('getDefault', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2309,7 +2309,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return _default;
 			}
 		}));
-		
+
 	__Internal__.ADD('allKeys', _shared.Natives.objectGetOwnPropertyNames);
 
 	__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
@@ -2358,7 +2358,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			obj = _shared.Natives.windowObject(obj);
 			return tools.unique(types.allKeys(obj), types.allKeysInherited(types.getPrototypeOf(obj)));
 		}));
-		
+
 	__Internal__.ADD('allSymbolsInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2382,7 +2382,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			obj = _shared.Natives.windowObject(obj);
 			return tools.unique(types.allSymbols(obj), types.allSymbolsInherited(types.getPrototypeOf(obj)));
 		}));
-		
+
 	__Internal__.hasGetOwnPropertyRestrictionOnCaller = false;
 	(function() {
 		// Edge
@@ -2415,7 +2415,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		} : function hasDefinePropertyEnabled() {
 			return false;
 		})));
-		
+
 	__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2489,7 +2489,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return desc;
 			}));
 	};
-		
+
 	__Internal__.ADD('getPropertyDescriptor', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2523,7 +2523,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return descriptor;
 		}));
-		
+
 	__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2567,9 +2567,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return obj;
 		}));
-		
+
 	__Internal__.ADD('getPrototypeOf', _shared.Natives.objectGetPrototypeOf);
-		
+
 	__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2620,7 +2620,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					});
 					tools.extend(tmp, obj);
 				};
-					
+
 				return tmp;
 			}
 		}));
@@ -2669,7 +2669,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return _default;
 			}
 		}));
-		
+
 	__Internal__.ADD('hasIn', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2712,7 +2712,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return false;
 		}));
-		
+
 	__Internal__.ADD_TOOL('extendProperties', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2760,7 +2760,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return result;
 		}));
-			
+
 	__Internal__.ADD_TOOL('complete', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2807,10 +2807,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					loopKeys(arg, types.symbols(arg));
 				};
 			};
-				
+
 			return result;
 		}));
-		
+
 	__Internal__.ADD_TOOL('completeProperties', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2862,7 +2862,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}));
 
 	__Internal__.ADD('isExtensible', _shared.Natives.objectIsExtensible);
-		
+
 	__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2887,7 +2887,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isEnumerable(obj, key) {
 			return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
 		}));
-		
+
 	__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2937,7 +2937,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 				return obj;
 			}));
-		
+
 	__Internal__.ADD('sealObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -2988,9 +2988,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return obj;
 				}
 			}));
-		
+
 	__Internal__.ADD('isFrozen', _shared.Natives.objectIsFrozen);
-		
+
 	__Internal__.ADD('freezeObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3041,7 +3041,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return obj;
 				}
 			}));
-		
+
 	//===================================
 	// Bounds
 	//===================================
@@ -3059,14 +3059,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function getSafeIntegerBounds() {
 			if (!__Internal__.safeIntegerLen) {
 				__Internal__.safeIntegerLen = types.freezeObject(tools.nullObject({
-					len: __Internal__.SAFE_INTEGER_LEN, 
-					min: _shared.Natives.numberMinSafeInteger, 
+					len: __Internal__.SAFE_INTEGER_LEN,
+					min: _shared.Natives.numberMinSafeInteger,
 					max: _shared.Natives.numberMaxSafeInteger,
 				}));
 			};
 			return __Internal__.safeIntegerLen;
 		}));
-		
+
 	__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3080,8 +3080,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function getBitwiseIntegerBounds() {
 			if (!__Internal__.bitwiseIntegerLen) {
 				__Internal__.bitwiseIntegerLen = types.freezeObject(tools.nullObject({
-					len: __Internal__.BITWISE_INTEGER_LEN, 
-					min: __Internal__.MIN_BITWISE_INTEGER, 
+					len: __Internal__.BITWISE_INTEGER_LEN,
+					min: __Internal__.MIN_BITWISE_INTEGER,
 					max: __Internal__.MAX_BITWISE_INTEGER,
 				}));
 			};
@@ -3114,7 +3114,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Symbols
 	//===================================
-		
+
 	__Internal__.ADD('hasSymbolsEnabled', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3130,7 +3130,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		} : function hasSymbolsEnabled() {
 			return false;
 		})));
-			
+
 	__Internal__.ADD('isSymbol', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3166,12 +3166,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return (typeof obj === 'symbol');
 		}));
-		
+
 	if (!__options__.enableSymbols) {
 		// eslint-disable-next-line semi-spacing
 		__Internal__.globalSymbolsUUID = /*! REPLACE_BY(TO_SOURCE(UUID('Symbol')), true) */ tools.generateUUID() /*! END_REPLACE() */;
 	};
-	
+
 	__Internal__.ADD('getSymbol', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3211,7 +3211,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		})
 	));
-			
+
 	__Internal__.extractSymbolKeyRegExp = /^Symbol[(]((.|\n)*)[)]$/gm;  // <FUTURE> Per thread
 
 	__Internal__.ADD('getSymbolKey', __Internal__.DD_DOC(
@@ -3247,7 +3247,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return key;
 			}
 		}));
-			
+
 	__Internal__.ADD('symbolIsGlobal', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3273,17 +3273,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return (_shared.Natives.symbolKeyFor(symbol) !== undefined);
 		}));
-			
+
 	//===================================
 	// "safeObject"
 	//===================================
 
 	_shared.TargetSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TARGET')), true) */ '__DD_TARGET' /*! END_REPLACE() */, true);
-		
+
 	//===================================
 	// Functions
 	//===================================
-		
+
 	__Internal__.ADD('getFunctionName', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3314,7 +3314,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return null;
 			}
 		}));
-		
+
 	//===================================
 	// Temporary REGISTER (for Doodad.Types)
 	//===================================
@@ -3333,9 +3333,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Box/Unbox
 	//===================================
-		
+
 	_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ORIGINAL_VALUE')), true) */ '__DD_ORIGINAL_VALUE' /*! END_REPLACE() */, true);
-		
+
 	__Internal__.ADD('box', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3393,7 +3393,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return this.setValue(this[_shared.OriginalValueSymbol]);
 		},
 	});
-			
+
 	__Internal__.ADD('unbox', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3413,25 +3413,25 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function unbox(value) {
 			return (types._instanceof(value, types.box) ? value.valueOf() : value);
 		}));
-					
+
 	//===================================
 	// Reserved attributes
 	//===================================
-		
+
 	// TODO: Find another way
 	_shared.reservedAttributes = tools.nullObject({
-		//name: null, 
-		//apply: null, 
-		//call: null, 
-		//bind: null, 
-		arguments: null, 
-		caller: null, 
-		length: null, 
+		//name: null,
+		//apply: null,
+		//call: null,
+		//bind: null,
+		arguments: null,
+		caller: null,
+		length: null,
 		prototype: null,
-			
+
 		//__proto__: null,   must be handled conditionally
-		constructor: null, 
-			
+		constructor: null,
+
 		__defineGetter__: null,
 		__lookupGetter__: null,
 		__defineSetter__: null,
@@ -3441,7 +3441,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Clone
 	//===================================
-		
+
 	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
 		// NOTE: This function will get overriden when "Doodad.js" is loaded.
 		// NOTE: Don't forget to also change '_shared.clone' !!!
@@ -3460,7 +3460,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const isArray = types.isArray(obj);
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 			cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-							
+
 			if (isArray) {
 				if (depth >= 0) {
 					result = tools.createArray(obj.length);
@@ -3520,7 +3520,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 			};
 		};
-						
+
 		return result;
 	};
 
@@ -3548,7 +3548,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isClonable(obj, /*optional*/cloneFunctions) {
 			return _shared.isClonable(obj, cloneFunctions);
 		}));
-				
+
 	__Internal__.ADD('clone', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -3588,7 +3588,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
 			return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
 		}));
-				
+
 	//===================================
 	// Type functions
 	//===================================
@@ -3625,8 +3625,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				return type;
 			}
 		}));
-		
-	// "types.DESTROY" Hook	
+
+	// "types.DESTROY" Hook
 	_shared.DESTROY = function DESTROY(obj) {
 		if (types.isInitialized(obj)) {
 			types.invoke(obj, '_delete', null, _shared.SECRET);
@@ -3652,9 +3652,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function DESTROY(obj) {
 			_shared.DESTROY(obj);
 		}));
-			
 
-	// "types.DESTROYED" Hook	
+
+	// "types.DESTROYED" Hook
 	_shared.DESTROYED = function DESTROYED(obj) {
 		return types.isNothing(obj) || ( !!(types.isLike(obj, types.Type) && !types.get(obj, __Internal__.symbolInitialized)) );
 	};
@@ -3678,7 +3678,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function DESTROYED(obj) {
 			return _shared.DESTROYED(obj);
 		}));
-			
+
 	__Internal__.ADD('isInitialized', function isInitialized(obj) {
 		return !!(types.isLike(obj, types.Type) && types.get(obj, __Internal__.symbolInitialized));
 	});
@@ -3702,7 +3702,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function isType(obj) {
 			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsType);
 		}));
-		
+
 	__Internal__.ADD('isErrorType', function isErrorType(obj) {
 			return types.isType(obj) && !!obj[__Internal__.symbolIsErrorType];
 		});
@@ -3895,7 +3895,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 				};
 			};
-				
+
 			return false;
 		}));
 
@@ -4015,7 +4015,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 				};
 			};
-				
+
 			return false;
 		}));
 
@@ -4152,7 +4152,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					} while (!types.isNothing(obj));
 				};
 			};
-				
+
 			return false;
 		}));
 
@@ -4178,7 +4178,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		}
 		//! END_REPLACE()
 		, function _instanceof(obj, type) {
-			// Uses prototypes chain like the operator "instanceof", but doesn't raise an exception when 'type' is not a type. 
+			// Uses prototypes chain like the operator "instanceof", but doesn't raise an exception when 'type' is not a type.
 			// NOTE: With Doodad objects it is recommended to use this function instead of the operator.
 			if (types.isNothing(obj)) {
 				return false;
@@ -4267,7 +4267,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					} while (!types.isNothing(obj));
 				};
 			};
-				
+
 			return false;
 		}));
 
@@ -4298,7 +4298,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return !!obj[__Internal__.symbol$IsSingleton];
 		}));
 
-		
+
 	__Internal__.ADD('getType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4354,7 +4354,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 			return types.getFunctionName(obj) || null;
 		}));
-		
+
 	__Internal__.ADD('getBase', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4397,7 +4397,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return fn.call(thisObj);
 		}
 	};
-			
+
 	__Internal__.ADD('invoke', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4441,7 +4441,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	_shared.getAttribute = function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
 		return obj[attr];
 	};
-			
+
 	__Internal__.ADD('getAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4524,7 +4524,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
 			return _shared.getAttributes(obj, attrs, options, secret);
 		}));
-			
+
 	_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
 		options = options && tools.nullObject(options);
 		const hasOwn = types.has(obj, attr),
@@ -4573,7 +4573,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		};
 		return value;
 	};
-	
+
 	__Internal__.ADD('setAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4666,7 +4666,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// "createType"
 	//===================================
-	
+
 	__Internal__.symbolIsType = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_TYPE')), true) */ '__DD_IS_TYPE' /*! END_REPLACE() */, true);
 	__Internal__.symbolTypeUUID = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE_UUID')), true) */ '__DD_TYPE_UUID' /*! END_REPLACE() */, true);
 	__Internal__.symbolInitialized = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_INITIALIZED')), true) */ '__DD_INITIALIZED' /*! END_REPLACE() */, true);
@@ -4723,7 +4723,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				// Already inherits base
 				return type;
 			};
-				
+
 			// console.log(Object.prototype.isPrototypeOf.call(Error.prototype, TypeError.prototype));
 			// >>> true
 			// let t1 = function(){};
@@ -4736,7 +4736,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			// t2.prototype = Object.setPrototypeOf(t2.prototype, t1.prototype);
 			// console.log(Object.prototype.isPrototypeOf.call(t1.prototype, t2.prototype));
 			// >>> true    // OK
-				
+
 			type = types.setPrototypeOf(type, base);
 
 			type.prototype = tools.createObject(base.prototype, {
@@ -4786,9 +4786,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	//tools.extend(types.AttributeBox.prototype, {
 	//});
-			
+
 	__Internal__.emptyFunction = function empty() {};
-		
+
 	__Internal__.ADD('SUPER', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -4810,7 +4810,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			fn[_shared.SuperEnabledSymbol] = true;
 			return fn;
 		}));
-		
+
 	__Internal__.ADD('NOT_ENUMERABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5054,7 +5054,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		};
 	})();
 	*/
-		
+
 	__Internal__.createCaller = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5268,9 +5268,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 								if (cf && enu) {
 									code += "if (!ro && " + (isSymbol ? "!(key in target)" : "!(" + keyStr + " in target)") + ") {" +
-												(isSymbol ? 
-													"target[key] = value;" 
-												: 
+												(isSymbol ?
+													"target[key] = value;"
+												:
 													"target[" + keyStr + "] = value;"
 												) +
 											"} else {" +
@@ -5536,7 +5536,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				base: base,
 				baseIsType: baseIsType,
-				typeProto: typeProto, 
+				typeProto: typeProto,
 				instanceProto: instanceProto,
 				instanceBase: instanceBase,
 				applyProtoToType: typeProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
@@ -5613,7 +5613,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			// Return type
 			return type;
 		}));
-		
+
 	__Internal__.$inherit = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5648,7 +5648,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto) {
 			// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
 			const base = ((this === global) ? undefined : this);
-				
+
 			let name = null,
 				constructor = null,
 				_new = null,
@@ -5663,33 +5663,33 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				name = (types.isNothing(name) ? '' : types.toString(name));
 				uuid = (types.isNothing(uuid) ? '' : types.toString(uuid));
 			};
-	
+
 			const type = types.createType(
 					/*name*/
 					name,
-						
+
 					/*base*/
-					base, 
-						
+					base,
+
 					/*constructor*/
 					constructor,
 
 					/*_new*/
-					_new, 
-						
+					_new,
+
 					/*typeProto*/
-					typeProto, 
-						
+					typeProto,
+
 					/*instanceProto*/
-					instanceProto, 
-						
+					instanceProto,
+
 					/*uuid*/
 					uuid
 				);
-				
+
 			return type;
 		});
-		
+
 	//===================================
 	// Errors
 	//===================================
@@ -5790,7 +5790,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				toString(/*paramarray*/...args) {
 					return this.message;
 				},
-					
+
 				toLocaleString(/*paramarray*/...args) {
 					return this.toString(...args);
 				},
@@ -5809,7 +5809,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 							this.parsedStack = stack;
 						};
-							
+
 						let fileName,
 							lineNumber,
 							columnNumber,
@@ -5937,7 +5937,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Parse error.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5967,7 +5967,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Not supported.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -5997,7 +5997,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Not available.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6033,7 +6033,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || 'HTTP error. The status code is : ~0~.', params || [code]];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6063,7 +6063,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Buffer overflow.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6093,7 +6093,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Operation timed out.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6123,7 +6123,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Operation canceled.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6153,7 +6153,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return [message || "Access denied.", params];
 				},
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6189,7 +6189,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			{
 				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 			})));
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6235,11 +6235,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// DD_DOC
 	//===================================
-		
+
 	__Internal__.symbolDD_DOC = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DOCUMENTATION')), true) */ '__DD_DOC' /*! END_REPLACE() */, true);
 
 	_shared.reservedAttributes[__Internal__.symbolDD_DOC] = null;
-		
+
 	__Internal__.DD_DOC = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6286,7 +6286,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function GET_DD_DOC(value) {
 			return value[__Internal__.symbolDD_DOC];
 		});
-		
+
 	(function() {
 		for (let i = 0; i < __Internal__.tempDocs.length; i++) {
 			__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
@@ -6324,10 +6324,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (!types.isSingleton(type)) {
 				types.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true, direct: true});
 			};
-				
+
 			return type;
 		}));
-		
+
 	types.Type = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6348,9 +6348,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				[__Internal__.symbolSingleton]: types.READ_ONLY(null),
 
 				_super: null,
-			
+
 				$inherit: __Internal__.$inherit,
-			
+
 				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
 
 				_delete() {
@@ -6370,13 +6370,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return this.toString(...args);
 				},
 			},
-				
+
 			/*instanceProto*/
 			{
 				[_shared.Natives.symbolToStringTag]: types.NOT_CONFIGURABLE(types.READ_ONLY('Object')),
 
 				_super: null,
-			
+
 				_new: types.NOT_CONFIGURABLE(types.READ_ONLY(null)), //__Internal__.typeNew,
 
 				_delete() {
@@ -6403,7 +6403,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//===================================
 	// Event functions
 	//===================================
-			
+
 	// NOTE: 2015/04/16 We can't inherit from the actual implementations of Event and CustomEvent !
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6438,11 +6438,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				bubbles: types.READ_ONLY(false),
 				cancelable: types.READ_ONLY(false),
 				detail: types.READ_ONLY(null),
-					
+
 				canceled: false,   // preventDefault
 				bubbling: false,   // stopPropagation
 				stopped: false,    // stopImmediatePropagation
-					
+
 				_new: types.SUPER(function _new(type, /*optional*/init) {
 					this._super();
 					init = tools.nullObject(init);
@@ -6455,7 +6455,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					});
 					this.bubbling = this.bubbles;
 				}),
-					
+
 				preventDefault: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6472,7 +6472,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							this.canceled = true;
 						};
 					}),
-						
+
 				stopPropagation: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6487,7 +6487,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						// NOTE: "stopPropagation" should be "preventBubbling".
 						this.bubbling = false;
 					}),
-						
+
 				stopImmediatePropagation: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6505,9 +6505,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					}),
 			}
 		)));
-		
+
 	__Internal__.symbolEventListeners = types.getSymbol('__EVENT_LISTENERS__');
-		
+
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 		{
@@ -6535,7 +6535,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					delete this[__Internal__.symbolEventListeners];
 					this._super();
 				}),
-					
+
 				addEventListener: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6546,17 +6546,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												type: 'string',
 												optional: false,
 												description: "Event name.",
-											}, 
+											},
 											handler: {
 												type: 'function',
 												optional: false,
 												description: "Callback function",
-											}, 
+											},
 											options: {
 												type: 'boolean,object',
 												optional: true,
 												description: "Options.",
-											}, 
+											},
 										},
 										returns: 'undefined',
 										description: "Adds an event listener for the specified event name.",
@@ -6583,7 +6583,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							listeners.push([handler, useCapture, once]);
 						};
 					}),
-						
+
 				removeEventListener: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6594,17 +6594,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												type: 'string',
 												optional: false,
 												description: "Event name.",
-											}, 
+											},
 											handler: {
 												type: 'function',
 												optional: false,
 												description: "Original callback function",
-											}, 
+											},
 											options: {
 												type: 'boolean,object',
 												optional: true,
 												description: "Options.",
-											}, 
+											},
 										},
 										returns: 'undefined',
 										description: "Removes an event listener for the specified event name.",
@@ -6636,7 +6636,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							};
 						};
 					}),
-						
+
 				dispatchEvent: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6647,7 +6647,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 												type: 'string',
 												optional: false,
 												description: "Event name.",
-											}, 
+											},
 										},
 										returns: 'any',
 										description: "Raises an event by its name.",
@@ -6657,9 +6657,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						// TODO: What should I do with "useCapture" ???
 						// TODO: Implement "wantsUntrusted" ?
 						const type = event.type.toLowerCase();
-							
+
 						let res = true;
-							
+
 						if (!event.stopped) {
 							const events = this[__Internal__.symbolEventListeners];
 							const listeners = types.get(events, type);
@@ -6668,7 +6668,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									return res;
 									//throw new types.Error("Listeners locked for event '~0~'.", [type]);
 								};
-								
+
 								const ar = types.clone(listeners);
 
 								let arLen = ar.length,
@@ -6730,10 +6730,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								};
 							};
 						};
-							
+
 						return res;
 					}),
-						
+
 				clearListeners: __Internal__.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -6749,11 +6749,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					}),
 			}
 		)));
-		
+
 	//===================================
 	// Namespace
 	//===================================
-		
+
 	_shared.ADD = function ADD(name, obj, /*optional*/protect, /*optional*/args) {
 			// NOTE: "name" is a String or a Symbol.
 			// NOTE: "obj" is a Doodad Type, a Doodad Error Type, or any object.
@@ -6791,11 +6791,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 			return obj;
 		};
-				
+
 	_shared.REMOVE = function REMOVE(name) {
 			delete this[name];
 		};
-				
+
 	// Temporary, and not for registering classes.
 	__Internal__.tempRegisteredOthers = [];
 	__Internal__.registerOthers = _shared.REGISTER = function REGISTER(type, args, protect) {
@@ -6823,7 +6823,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 			__Internal__.tempRegisteredOthers.push([this, [type, args, protect]]);
 		};
-	
+
 	// NOTE: Will get overriden by Doodad.js
 	_shared.UNREGISTER = function(type) {
 			throw new types.NotSupported("Module 'Doodad.js' is not loaded.");
@@ -6839,12 +6839,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							type: 'Doodad.Types.Namespace',
 							optional: false,
 							description: "Parent namespace.",
-						}, 
+						},
 						name: {
 							type: 'string',
 							optional: false,
 							description: "Short name.",
-						}, 
+						},
 						fullName: {
 							type: 'string',
 							optional: false,
@@ -6877,12 +6877,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									type: 'string',
 									optional: false,
 									description: "Name of the object.",
-								}, 
+								},
 								obj: {
 									type: 'object,Type',
 									optional: false,
 									description: "Object to add.",
-								}, 
+								},
 								protect: {
 									type: 'bool',
 									optional: true,
@@ -6892,7 +6892,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									type: 'arrayof(any)',
 									optional: true,
 									description: "Arguments of the constructor.",
-								}, 
+								},
 							},
 							returns: 'object',
 							description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
@@ -6901,7 +6901,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
 					return _shared.ADD.call(this, name, obj, protect, args);
 				}),
-					
+
 				REMOVE: __Internal__.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -6912,7 +6912,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									type: 'string',
 									optional: false,
 									description: "Name of the object.",
-								}, 
+								},
 							},
 							returns: 'undefined',
 							description: "Removes the object from the current namespace object.",
@@ -6921,7 +6921,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				, function REMOVE(name) {
 					return _shared.REMOVE.call(this, name);
 				}),
-					
+
 				REGISTER: function REGISTER(/*<<< optional*/protect, /*optional*/args, type) {
 					if (arguments.length < 2) {
 						type = protect;
@@ -6933,14 +6933,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 					return _shared.REGISTER.call(this, type, args, protect);
 				},
-					
+
 				UNREGISTER: function UNREGISTER(type) {
 					return _shared.UNREGISTER.call(this, type);
 				},
-					
+
 				_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
 					this._super();
-						
+
 					types.setAttributes(this, {
 						DD_PARENT: parent,
 						DD_NAME: name,
@@ -6956,7 +6956,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	//==============
 	// SECRET
 	//==============
-		
+
 	_shared.SECRET = types.get(__options__, 'secret') || null;
 	delete __options__.secret;
 	//__options__.secret = null;
@@ -6979,7 +6979,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							type: 'object',
 							optional: true,
 							description: "Object of modules to load.",
-						}, 
+						},
 						options: {
 							type: 'object',
 							optional: true,
@@ -7003,12 +7003,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				createRoot: exports.createRoot,
 				DD_DOC: __Internal__.DD_DOC,
 				GET_DD_DOC: __Internal__.GET_DD_DOC,
-					
+
 				_new: types.SUPER(function _new(/*optional*/modules, /*optional*/options) {
 					this._super(null, 'Root', 'Root');
 
 					options = tools.nullObject(options);
-						
+
 					const root = this;
 
 					// Prebuild "Doodad", "Doodad.Types" and "Doodad.Tools"
@@ -7066,13 +7066,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							},
 						});
 					};
-						
+
 					if (__options__.enableAsserts) {
 						__Internal__.enableAsserts(__Internal__, root, types);
 					} else {
 						__Internal__.disableAsserts(__Internal__, root, types);
 					};
-						
+
 					// Load bootstrap modules
 
 					if (!modules) {
@@ -7086,13 +7086,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						type: 'Package',
 						version: MODULE_VERSION,
 					};
-					
+
 					const names = types.keys(modules),
 						inits = tools.nullObject();
 
 					let namespaces = null,
 						entries = null;
-							
+
 					let name = names.shift();
 					while (name) {
 						const spec = modules[name];
@@ -7123,7 +7123,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									};
 								};
 							};
-								
+
 							if (ok) {
 								const baseName = name.split('/', 2)[0],
 									shortNames = baseName.split('.'),
@@ -7132,7 +7132,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								let nsObj = null,
 									parent = root,
 									fullName = '';
-									
+
 								for (let k = 0; k < shortNames.length; k++) {
 									const shortName = shortNames[k];
 									fullName += '.' + shortName;
@@ -7170,7 +7170,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 									};
 									parent = nsObj;
 								};
-								
+
 								nsObjs[name] = nsObj;
 
 								const nsList = (types.get(spec, 'namespaces') || []);
@@ -7233,7 +7233,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						//delete nsObjs[name];
 						nsObjs[name] = null;
 					};
-						
+
 					const nsNames = types.keys(nsObjs);
 					for (let i = 0; i < nsNames.length; i++) {
 						const name = nsNames[i];
@@ -7246,7 +7246,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							namespaces.add(name, entry, nsOptions);
 						};
 					};
-						
+
 					//delete types.Namespace[__Internal__.symbolInitialized];
 					types.setAttribute(types.Namespace, __Internal__.symbolInitialized, null, {configurable: true});
 					_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
@@ -7258,7 +7258,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					//delete __Internal__.tempTypesRegistered;
 					__Internal__.tempTypesRegistered = null;
 
-					if (_shared.REGISTER !== __Internal__.registerOthers) { 
+					if (_shared.REGISTER !== __Internal__.registerOthers) {
 						for (let i = 0; i < __Internal__.tempRegisteredOthers.length; i++) {
 							const type = __Internal__.tempRegisteredOthers[i],
 								namespace = type[0],
@@ -7274,7 +7274,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					__Internal__.registerOthers = null;
 					__Internal__.tempRegisteredOthers = null;
 				}),
-					
+
 				//! BEGIN_REMOVE()
 					serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null))),
 				//! END_REMOVE()
@@ -7300,7 +7300,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							__Internal__.disableAsserts(root);
 						};
 					};
-	
+
 					// Read-Only
 					newOptions.enableSymbols = __options__.enableSymbols;
 

@@ -34,7 +34,7 @@ exports.add = function add(modules) {
 	modules['Doodad.Types'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -43,18 +43,18 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,  // pre-defined from Bootstrap.js
 				types = doodad.Types,  // pre-defined from Bootstrap.js
 				tools = doodad.Tools;  // pre-defined from Bootstrap.js
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			const __Internal__ = {
 			};
 
 			//===================================
 			// Options
 			//===================================
-					
+
 			//const __options__ = tools.nullObject({
 			//}, _options);
 
@@ -67,28 +67,28 @@ exports.add = function add(modules) {
 			//===================================
 			// Native functions
 			//===================================
-					
+
 			// NOTE: Store everything because third-parties can override them.
-				
+
 			tools.complete(_shared.Natives, {
 				// No polyfills
 
 				// "toArray"
 				windowArrayApply: global.Array.apply.bind(global.Array),
-					
+
 				// "clone", "toArray"
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
-					
+
 				// "popAt", "popItem", "popItems"
 				arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
-					
+
 				// "prepend"
 				arrayUnshiftApply: global.Array.prototype.unshift.apply.bind(global.Array.prototype.unshift),
-					
+
 				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 
 				windowObject: global.Object,
-					
+
 				// "toString"
 				//windowString: global.String,
 
@@ -97,7 +97,7 @@ exports.add = function add(modules) {
 
 				// "keysInherited", "symbolsInherited"
 				objectPrototype: global.Object.prototype,
-					
+
 				// "isArrowFunction", "isAsyncFunction"
 				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
 
@@ -106,18 +106,18 @@ exports.add = function add(modules) {
 
 				// "values"
 				objectValues: (types.isFunction(global.Object.values) ? global.Object.values : null),
-					
+
 				// "entries"
 				objectEntries: (types.isFunction(global.Object.entries) ? global.Object.entries : null),
-					
+
 				// "toArray"
 				arrayFrom: global.Array.from,
 			});
-				
+
 			//===================================
 			// Conversion
 			//===================================
-				
+
 			__Internal__.returnUndefined = function() {
 				return undefined;
 			};
@@ -130,7 +130,7 @@ exports.add = function add(modules) {
 			__Internal__.returnNullString = function() {
 				return 'null';
 			};
-				
+
 			types.ADD('Undefined', function Undefined() {});
 			tools.extend(types.Undefined.prototype, {
 				valueOf: __Internal__.returnUndefined,
@@ -144,7 +144,7 @@ exports.add = function add(modules) {
 				toString: __Internal__.returnNullString,
 				toSource: __Internal__.returnNullString,
 			});
-				
+
 			types.ADD('toObject', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -170,13 +170,13 @@ exports.add = function add(modules) {
 						return _shared.Natives.windowObject(val);
 					}
 				}));
-				
+
 			types.ADD('toArray', _shared.Natives.arrayFrom);
-				
+
 			//===================================
 			// Shared Symbols
 			//===================================
-				
+
 			_shared.NameSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_NAME')), true) */ '__NAME__' /*! END_REPLACE() */, true);
 
 
@@ -231,11 +231,11 @@ exports.add = function add(modules) {
 				} : function isArrowFunction(obj) {
 					return false;
 				}));
-		
+
 			//===================================
 			// ES7 async/await
 			//===================================
-			
+
 			__Internal__.hasAsyncAwait = false;
 			//__Internal__.hasAsyncAwaitBug = false;
 			try {
@@ -245,7 +245,7 @@ exports.add = function add(modules) {
 				// No need to test for it: It will never change.
 				//// <PRB> Once again, ES specs are wrong because we SHOULD reuse Thenables instead of coercing them to an ES6 native Promise.
 				//tools.eval(
-				//	"(async function() {return {then: (res, rej) => {" + 
+				//	"(async function() {return {then: (res, rej) => {" +
 				//		"ctx.Internal.hasAsyncAwaitBug = true;" +
 				//		"res(1);" +
 				//	"}}})()"
@@ -296,11 +296,11 @@ exports.add = function add(modules) {
 				} : function isAsyncFunction(obj) {
 					return false;
 				}));
-		
+
 			//===================================
 			// ES6 Proxy
 			//===================================
-/*	NOT USED		
+/*	NOT USED
 			types.ADD('hasProxies', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -328,13 +328,13 @@ exports.add = function add(modules) {
 				return !!obj.__isProxy__;
 			})));
 */
-		
+
 			//===================================
 			// Bindable
 			//===================================
 
 			_shared.BoundObjectSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BOUND_OBJECT')), true) */ '__BOUND_OBJECT__' /*! END_REPLACE() */, true);
-				
+
 			// Test for my dream to realize !
 			__Internal__.arrowIsBindable = false;
 			try {
@@ -342,7 +342,7 @@ exports.add = function add(modules) {
 			} catch(ex) {
 				// Do nothing
 			};
-				
+
 			types.ADD('isBindable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -363,7 +363,7 @@ exports.add = function add(modules) {
 					// NOTE: Native functions may or may not be bindable and there is no way to know it !!!
 					return types.isCustomFunction(obj) && !types.has(obj, _shared.BoundObjectSymbol) && (__Internal__.arrowIsBindable || !types.isArrowFunction(obj));
 				}));
-				
+
 			//===================================
 			// is*
 			//===================================
@@ -395,7 +395,7 @@ exports.add = function add(modules) {
 					};
 					return false;
 				}));
-				
+
 			types.ADD('isArrayLikeAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -424,7 +424,7 @@ exports.add = function add(modules) {
 					};
 					return false;
 				}));
-				
+
 			types.ADD('isNothingOrEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -471,7 +471,7 @@ exports.add = function add(modules) {
 						return false;
 					}
 				}));
-				
+
 			types.ADD('isEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -515,7 +515,7 @@ exports.add = function add(modules) {
 						return false;
 					}
 				}));
-				
+
 			types.ADD('isStringAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -535,7 +535,7 @@ exports.add = function add(modules) {
 				, function isStringAndNotEmpty(obj) {
 					return types.isString(obj) && !!obj.length;
 				}));
-				
+
 			types.ADD('isStringAndNotEmptyTrim', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -555,7 +555,7 @@ exports.add = function add(modules) {
 				, function isStringAndNotEmptyTrim(obj) {
 					return types.isString(obj) && !!tools.trim(obj).length;
 				}));
-				
+
 			types.ADD('isObjectAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -585,7 +585,7 @@ exports.add = function add(modules) {
 					};
 					return false;
 				}));
-				
+
 			types.ADD('isObjectLikeAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -630,7 +630,7 @@ exports.add = function add(modules) {
 			//=======================================================
 			// Objects
 			//=======================================================
-					
+
 			types.ADD('gets', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -685,7 +685,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			types.ADD('set', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -728,7 +728,7 @@ exports.add = function add(modules) {
 						return obj[key] = value;
 					};
 				}));
-				
+
 			types.ADD('sets', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -772,7 +772,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			types.ADD('getsDefault', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -830,7 +830,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			types.ADD('keysInherited', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -857,7 +857,7 @@ exports.add = function add(modules) {
 					};
 					return tools.unique(types.keys(obj), types.keysInherited(types.getPrototypeOf(obj)));
 				}));
-				
+
 			types.ADD('symbolsInherited', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -884,11 +884,11 @@ exports.add = function add(modules) {
 					};
 					return tools.unique(types.symbols(obj), types.symbolsInherited(types.getPrototypeOf(obj)));
 				}));
-				
+
 			//========================================
 			// Arrays
 			//========================================
-				
+
 			types.ADD('hasIndex', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -933,7 +933,7 @@ exports.add = function add(modules) {
 						return false;
 					}
 				}));
-				
+
 			types.ADD('indexes', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -963,7 +963,7 @@ exports.add = function add(modules) {
 					};
 					return result;
 				}));
-				
+
 			types.ADD('values', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1006,7 +1006,7 @@ exports.add = function add(modules) {
 					};
 					return [];
 				}));
-				
+
 			types.ADD('entries', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1040,7 +1040,7 @@ exports.add = function add(modules) {
 					};
 					return [];
 				}));
-				
+
 			types.ADD('items', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1076,7 +1076,7 @@ exports.add = function add(modules) {
 						}
 					}
 				}));
-				
+
 			types.ADD('available', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1105,7 +1105,7 @@ exports.add = function add(modules) {
 					};
 					return -1;
 				}));
-				
+
 			types.ADD('availables', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1135,11 +1135,11 @@ exports.add = function add(modules) {
 					};
 					return keys;
 				}));
-				
+
 			//===================================
 			// Make inside
 			//===================================
-				
+
 			// NOTE: Will be replaced by "Doodad.js"
 			_shared.makeInside = function makeInside(/*optional*/obj, fn) {
 				fn = types.unbind(fn) || fn;
@@ -1147,7 +1147,7 @@ exports.add = function add(modules) {
 				return (types.isNothing(obj) ? fn : types.bind(obj, fn));
 			};
 
-				
+
 			//===================================
 			// Init
 			//===================================

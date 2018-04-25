@@ -34,15 +34,15 @@ exports.add = function add(modules) {
 	modules['Doodad.Modules'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-			'Doodad.Tools', 
-			'Doodad.Tools.Config', 
-			'Doodad.Tools.Files', 
-			'Doodad.Types', 
-			'Doodad.Namespaces', 
+			'Doodad.Tools',
+			'Doodad.Tools.Config',
+			'Doodad.Tools.Files',
+			'Doodad.Types',
+			'Doodad.Namespaces',
 			'Doodad.Client',
 		],
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
@@ -148,7 +148,7 @@ exports.add = function add(modules) {
 						return location;
 					});
 				}));
-				
+
 			modules.ADD('loadFiles', function loadFiles(filesToLoad, /*optional*/options) {
 				const Promise = types.getPromise();
 
@@ -217,7 +217,7 @@ exports.add = function add(modules) {
 						});
 				});
 			});
-				
+
 			modules.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -302,8 +302,8 @@ exports.add = function add(modules) {
 							return root;
 						});
 				}));
-				
-				
+
+
 			//===================================
 			// Init
 			//===================================

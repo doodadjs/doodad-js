@@ -57,7 +57,7 @@ exports.add = function add(modules) {
 		replaceEntry: true,
 		//replaceObject: true,
 		bootstrap: true,
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			// Class entry
 			const doodad = root.Doodad,
@@ -116,7 +116,7 @@ exports.add = function add(modules) {
 			_shared.ToInitializeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_INITIALIZE')), true) */ '__DD_TO_INITIALIZE' /*! END_REPLACE() */, true);
 			_shared.ToExtendLaterSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TO_EXTEND_LATER')), true) */ '__DD_TO_EXTEND_LATER' /*! END_REPLACE() */, true);
 			_shared.CreatorSymbol = (root.getOptions().debug ? types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CREATOR')), true) */ '__DD_CREATOR' /*! END_REPLACE() */, true) : null);  // debug only
-					
+
 			// Class, Methods, Callers, AttributeBox
 			_shared.PrototypeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_PROTOTYPE')), true) */ '__DD_PROTOTYPE' /*! END_REPLACE() */, true);
 			_shared.ModifiersSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_MODIFIERS')), true) */ '__DD_MODIFIERS' /*! END_REPLACE() */, true);
@@ -126,7 +126,7 @@ exports.add = function add(modules) {
 
 			// Interface
 			_shared.HostSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_HOST')), true) */ '__DD_HOST' /*! END_REPLACE() */, true);
-					
+
 			// EventHandler, AttributeBox
 			_shared.ExtenderSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_EXTENDER')), true) */ '__DD_EXTENDER' /*! END_REPLACE() */, true);
 
@@ -149,7 +149,7 @@ exports.add = function add(modules) {
 			_shared.CalledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLED')), true) */ '__DD_CALLED__' /*! END_REPLACE() */, true);
 			_shared.PositionSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_POSITION')), true) */ '__DD_POSITION' /*! END_REPLACE() */, true);
 			_shared.UsageMessageSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_USAGE_MESSAGE')), true) */ '__DD_USAGE_MESSAGE' /*! END_REPLACE() */, true);
-					
+
 			// AttributeBox
 			_shared.ScopeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SCOPE')), true) */ '__DD_SCOPE' /*! END_REPLACE() */, true);
 			_shared.ReturnsSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_RETURNS')), true) */ '__DD_RETURNS' /*! END_REPLACE() */, true);
@@ -163,7 +163,7 @@ exports.add = function add(modules) {
 
 			// Prototype
 			_shared.TypeSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_TYPE')), true) */ '__DD_TYPE' /*! END_REPLACE() */, true);
-					
+
 			// Creatable
 			_shared.DestroyedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_DESTROYED')), true) */ '__DD_DESTROYED' /*! END_REPLACE() */, true);
 
@@ -175,7 +175,7 @@ exports.add = function add(modules) {
 			//=====================
 			// Options
 			//=====================
-				
+
 			const __options__ = tools.nullObject({
 				enforceScopes: false,    // for performance, set it to "false"
 				enforcePolicies: false,  // for performance, set it to "false"
@@ -195,7 +195,7 @@ exports.add = function add(modules) {
 
 			__Internal__.hasScopes = types.hasDefinePropertyEnabled() && (root.getOptions().debug || __options__.enforceScopes);
 			__Internal__.hasPolicies = __Internal__.hasScopes && (root.getOptions().debug || __options__.enforcePolicies);
-	
+
 			doodad.ADD('hasScopes', function hasScopes() {
 				return __Internal__.hasScopes;
 			});
@@ -207,29 +207,29 @@ exports.add = function add(modules) {
 			//=======================
 			// Hooks
 			//=======================
-				
+
 			_shared.popupExceptionHook = function popupExceptionHook(ex, /*optional*/obj, /*optional*/attr) {
 				root.DD_ASSERT && root.DD_ASSERT(types.isError(ex));
 				global.alert && global.alert(ex.message);
 			};
-				
+
 			_shared.catchExceptionHook = function catchExceptionHook(ex, /*optional*/obj, /*optional*/attr) {
 				if (ex.stack) {
 					tools.log(tools.LogLevels.Error, ex.stack);
 				} else {
 					types.Error.prototype.parse.call(ex);
 					tools.log(tools.LogLevels.Error, "[~0~] in '~1~.~2~' at '~3~:~4~:~5~'.", [
-						/*0*/ ex.toString(), 
+						/*0*/ ex.toString(),
 						/*1*/ types.getTypeName(obj) || '<unknown>',
 						/*2*/ attr || ex.functionName || '<unknown>',
-						/*3*/ ex.fileName || '<unknown>', 
-						/*4*/ types.isNothing(ex.lineNumber) ? -1 : ex.lineNumber, 
+						/*3*/ ex.fileName || '<unknown>',
+						/*4*/ types.isNothing(ex.lineNumber) ? -1 : ex.lineNumber,
 						/*5*/ types.isNothing(ex.columnNumber) ? -1 : ex.columnNumber
 					]);
 				};
 				types.DEBUGGER();
 			};
-				
+
 			//=======================
 			// Namespace entries
 			//=======================
@@ -294,7 +294,7 @@ exports.add = function add(modules) {
 					};
 					return types.isLike(obj, doodad.Class);
 				}));
-				
+
 			types.ADD('isInterfaceClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -317,7 +317,7 @@ exports.add = function add(modules) {
 					};
 					return types.isLike(obj, doodad.Interface);
 				}));
-				
+
 			types.ADD('isBase', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -337,7 +337,7 @@ exports.add = function add(modules) {
 				, function isBase(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Base);
 				}));
-				
+
 			types.ADD('isMixIn', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -417,7 +417,7 @@ exports.add = function add(modules) {
 				, function isNewable(obj) {
 					return types.isClass(obj) && !((obj[_shared.ModifiersSymbol] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
 				}));
-				
+
 			types.ADD('isSealedClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -437,7 +437,7 @@ exports.add = function add(modules) {
 				, function isSealedClass(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Sealed);
 				}));
-				
+
 			types.ADD('isSerializable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -457,7 +457,7 @@ exports.add = function add(modules) {
 				, function isSerializable(obj) {
 					return types.isNothing(obj) || (types.isPrimitive(obj) && !types.isSymbol(obj)) || types.isArray(obj) || types.isJsObject(obj) || types.isError(obj) || types._implements(obj, interfaces.Serializable);
 				}));
-				
+
 			types.ADD('_implements', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -550,7 +550,7 @@ exports.add = function add(modules) {
 						cls = (isType ? obj : types.getType(obj));
 					return types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, null, _shared.SECRET);
 				}));
-				
+
 			types.ADD('isMethod', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -633,7 +633,7 @@ exports.add = function add(modules) {
 					const method = types.getAttribute(obj, name, null, _shared.SECRET);
 					return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
 				}));
-				
+
 			types.ADD('isEntrant', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -777,7 +777,7 @@ exports.add = function add(modules) {
 					_shared.registerCallback(callback);
 					return callback;
 				})));
-				
+
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -872,7 +872,7 @@ exports.add = function add(modules) {
 					_shared.registerCallback(callback);
 					return callback;
 				})));
-				
+
 
 			//==================================
 			// Inside
@@ -1004,7 +1004,7 @@ exports.add = function add(modules) {
 					return _insider;
 				}
 			);
-				
+
 			__Internal__.insideNew = (__Internal__.hasScopes ?
 				function insideNew(...args) {
 					const oldInside = __Internal__.setInside(this, _shared.SECRET, true);
@@ -1027,9 +1027,9 @@ exports.add = function add(modules) {
 					return this._new && this._new(...args) || this;
 				}
 			);
-				
+
 			__Internal__.oldMakeInside = _shared.makeInside;
-				
+
 			_shared.makeInside = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1071,7 +1071,7 @@ exports.add = function add(modules) {
 						}
 					}
 				});
-				
+
 			//==================================
 			// Reflection
 			//==================================
@@ -1145,7 +1145,7 @@ exports.add = function add(modules) {
 					return __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
 				}
 			};
-				
+
 			__Internal__.oldGetAttributes = _shared.getAttributes;
 			_shared.getAttributes = function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
@@ -1185,7 +1185,7 @@ exports.add = function add(modules) {
 					return __Internal__.oldGetAttributes(obj, attrs, optsDirect, secret);
 				}
 			};
-				
+
 			__Internal__.oldSetAttribute = _shared.setAttribute;
 			_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
@@ -1218,7 +1218,7 @@ exports.add = function add(modules) {
 					return __Internal__.oldSetAttribute(obj, attr, value, optsDirect, secret);
 				}
 			};
-				
+
 			__Internal__.oldSetAttributes = _shared.setAttributes;
 			_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
 				const type = types.getType(obj);
@@ -1273,7 +1273,7 @@ exports.add = function add(modules) {
 					return __Internal__.oldTypesClone.call(this, obj, depth, cloneFunctions, keepUnlocked, keepNonClonable);
 				}
 			};
-				
+
 			//==================================
 			// Utilities
 			//==================================
@@ -1310,7 +1310,7 @@ exports.add = function add(modules) {
 					};
 					return attrs[name];
 				});
-					
+
 			__Internal__.oldDESTROY = _shared.DESTROY;
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types._implements(obj, mixIns.Creatable)) {
@@ -1351,12 +1351,12 @@ exports.add = function add(modules) {
 									type: 'Type',
 									optional: false,
 									description: "Type to register.",
-								}, 
+								},
 								args: {
 									type: 'arrayof(any)',
 									optional: true,
 									description: "Arguments of the constructor.",
-								}, 
+								},
 								protect: {
 									type: 'bool',
 									optional: true,
@@ -1369,7 +1369,7 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function REGISTER(type, args, protect) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
-						
+
 					let isType = types.isType(type),
 						isErrorType = !isType && types.isErrorType(type),
 						newType = type;
@@ -1378,7 +1378,7 @@ exports.add = function add(modules) {
 						name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 						fullName = (name ? (types._instanceof(this, types.Namespace) && !types.is(this, root) ? this.DD_FULL_NAME + '.' : '') + name : null),
 						isPrivate = (isType || isErrorType) && (!name || (name.slice(0, 2) === '__'));
-						
+
 					if (isType && !types.isInitialized(type)) {
 						newType = types.INIT(type);
 					};
@@ -1430,17 +1430,17 @@ exports.add = function add(modules) {
 								return null;
 							};
 						};
-							
+
 						const entryType = (isType || isErrorType ? entries.Type : entries.Object);
 						const entry = new entryType(root, null, newType, {protect: protect});
 						entry.init();
 
 						namespaces.add(fullName, entry, {secret: _shared.SECRET});
 					};
-						
+
 					return newType;
 				});
-				
+
 			// TODO: Review and test
 			_shared.UNREGISTER = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -1452,7 +1452,7 @@ exports.add = function add(modules) {
 									type: 'Type',
 									optional: false,
 									description: "Type to unregister.",
-								}, 
+								},
 							},
 							returns: 'bool',
 							description: "Unregisters the specified type from its namespace object and returns 'true' when successful. Returns 'false' otherwise. Also destroys that type.",
@@ -1460,11 +1460,11 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function UNREGISTER(type) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type) || types.isErrorType(type), "Invalid type.");
-						
+
 					const name = (type.DD_NAME || ''),
 						isPrivate = (!name || (name.slice(0, 2) === '__')),
 						isSingleton = types.isSingleton(type);
-						
+
 					if (!isPrivate) {
 						const fullName = (isSingleton ? types.getType(type) : type).DD_FULL_NAME;
 						const regNamespace = namespaces.get(fullName);
@@ -1478,23 +1478,23 @@ exports.add = function add(modules) {
 							};
 						};
 					};
-						
+
 					if (isSingleton) {
 						types.DESTROY(type);
 						type = types.getType(type);
 					};
-						
+
 					if (!isPrivate && !types.isErrorType(type) && !types.isMixIn(type) && !types.isInterface(type) && !types.isBase(type)) {
 						types.DESTROY(type);
 					};
-						
+
 					return true;
 				});
-				
+
 			//==================================
 			// Exceptions
 			//==================================
-				
+
 			exceptions.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1601,7 +1601,7 @@ exports.add = function add(modules) {
 			//==================================
 			// Attribute extenders
 			//==================================
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -1623,7 +1623,7 @@ exports.add = function add(modules) {
 					{
 						$TYPE_NAME: "Extender",
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Extender')), true) */,
-							
+
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1708,7 +1708,7 @@ exports.add = function add(modules) {
 									isProto: types.get(options, 'isProto', this.isProto),
 								});
 							}),
-							
+
 						getCacheName: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
@@ -1728,10 +1728,10 @@ exports.add = function add(modules) {
 							, function getCacheName(/*optional*/options) {
 								const isProto = types.get(options, 'isProto', this.isProto);
 								return (types.get(options, 'notInherited', this.notInherited) ? '1' : '0') +
-									',' + (types.get(options, 'preExtend', this.preExtend) ? '1' : '0') + 
-									',' + (types.get(options, 'isType', this.isType) ? '1' : '0') + 
+									',' + (types.get(options, 'preExtend', this.preExtend) ? '1' : '0') +
+									',' + (types.get(options, 'isType', this.isType) ? '1' : '0') +
 									',' + (types.get(options, 'isInstance', this.isInstance) ? '1' : '0') +
-									',' + (types.get(options, 'isPersistent', this.isPersistent) ? '1' : '0') + 
+									',' + (types.get(options, 'isPersistent', this.isPersistent) ? '1' : '0') +
 									',' + (types.get(options, 'isPreserved', this.isPreserved) ? '1' : '0') +
 									',' + (isProto === null ? 'N' : (isProto ? '1' : '0'));
 							}),
@@ -1843,7 +1843,7 @@ exports.add = function add(modules) {
 						remove: types.READ_ONLY(null), // function remove(attr, obj, storage, forType, attribute)
 					}
 				)));
-				
+
 			doodad.ADD('CallerFunction', function CallerFunction() {});
 			doodad.ADD('DispatchFunction', function DispatchFunction() {});
 
@@ -1871,12 +1871,12 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.Extender.$inherit({
 					$TYPE_NAME: "Attribute",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('AttributeExtender')), true) */,
-						
+
 					isReadOnly: types.READ_ONLY(false),
 					isEnumerable: types.READ_ONLY(true),
 					enableScopes: types.READ_ONLY(true),
 					enableStorage: types.READ_ONLY(true),
-						
+
 					getterTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -2019,7 +2019,7 @@ exports.add = function add(modules) {
 								return value;
 							});
 						}),
-						
+
 					_new: types.SUPER(function _new(/*optional*/options) {
 							this._super(options);
 							types.setAttributes(this, {
@@ -2031,10 +2031,10 @@ exports.add = function add(modules) {
 						}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) + 
+							return this._super(options) +
 								',' + (types.get(options, 'isReadOnly', this.isReadOnly) ? '1' : '0') +
 								',' + (types.get(options, 'isEnumerable', this.isEnumerable) ? '1' : '0') +
-								',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0') + 
+								',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0') +
 								',' + (types.get(options, 'enableStorage', this.enableStorage) ? '1' : '0');
 						}),
 
@@ -2050,7 +2050,7 @@ exports.add = function add(modules) {
 							};
 							return options;
 						}),
-						
+
 					extend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -2130,17 +2130,17 @@ exports.add = function add(modules) {
 									&&
 									(
 										(
-											__Internal__.hasScopes 
-											&& 
+											__Internal__.hasScopes
+											&&
 											(this.enableScopes && (destAttribute[_shared.ScopeSymbol] !== doodad.Scopes.Public))
-										) 
+										)
 										||
 										(
 											__Internal__.hasPolicies
 											&&
 											this.isReadOnly
 										)
-									) 
+									)
 							);
 						},
 
@@ -2271,7 +2271,7 @@ exports.add = function add(modules) {
 								} else {
 									desc = types.freezeObject({
 										configurable: cf,
-										enumerable: enu, 
+										enumerable: enu,
 										writable: !ro,
 										direct: true,
 									});
@@ -2283,7 +2283,7 @@ exports.add = function add(modules) {
 
 								if (cf && enu && !ro) {
 									generator.code.add(
-										"if (" + attrId + " in " + generator.objId + ") {" + 
+										"if (" + attrId + " in " + generator.objId + ") {" +
 											"types.setAttribute(" + generator.objId + ", " + attrId + ", " + valueId + ", " + descId /*+ ", " + secretId*/ + ")" +
 										"} else {" +
 											generator.objId + "[" + attrId + "] = " + valueId + ";" +
@@ -2327,7 +2327,7 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "Null",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NullExtender')), true) */,
-						
+
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 						this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute.setValue(null), destAttribute, sourceIsProto, proto, protoName);
 					}),
@@ -2336,7 +2336,7 @@ exports.add = function add(modules) {
 							this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
 						}),
 				})));
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2356,12 +2356,12 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "ClonedAttribute",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ClonedAttributeExtender')), true) */,
-						
+
 					maxDepth: types.READ_ONLY(0),
 					keepUnlocked: types.READ_ONLY(false),
 					cloneOnInit: types.READ_ONLY(false),
 					cloneOnGetValue: types.READ_ONLY(true),
-						
+
 					_new: types.SUPER(function _new(/*optional*/options) {
 							this._super(options);
 							types.setAttributes(this, {
@@ -2373,7 +2373,7 @@ exports.add = function add(modules) {
 						}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) + 
+							return this._super(options) +
 								',' + types.get(options, 'maxDepth', this.maxDepth) +
 								',' + (types.get(options, 'keepUnlocked', this.keepUnlocked) ? '1' : '0') +
 								',' + (types.get(options, 'cloneOnInit', this.cloneOnInit) ? '1' : '0') +
@@ -2392,7 +2392,7 @@ exports.add = function add(modules) {
 							};
 							return options;
 						}),
-						
+
 					getValue: types.SUPER(function getValue(attr, attribute, forType) {
 							if (this.cloneOnGetValue) {
 								let val = types.unbox(attribute);
@@ -2413,7 +2413,7 @@ exports.add = function add(modules) {
 								const valueId = generator.vars.add(value);
 								value = new generator.DynamicValue("types.clone(" + valueId + ", " + tools.toSource(this.maxDepth) + ", false, " + tools.toSource(this.keepUnlocked) + ", true)");
 							};
-								
+
 							this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 						}),
 				})));
@@ -2437,26 +2437,26 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "ExtendObject",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
-						
+
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								
+
 							let dest = types.unbox(destAttribute);
 							if (!dest) {
 								dest = {};
 							};
-									
+
 							const src = types.unbox(sourceAttribute);
 							if (src) {
 								tools.depthExtend(this.maxDepth, dest, src);
 							};
-								
+
 							sourceAttribute = sourceAttribute.setValue(dest);  // keep attribute flags of "sourceAttribute"
-								
+
 							return sourceAttribute;
 						}),
 				})));
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2476,22 +2476,22 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "UniqueArray",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
-						
+
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								
+
 							let dest = types.unbox(destAttribute);
 							if (!dest) {
 								dest = [];
 							};
-									
+
 							const src = types.unbox(sourceAttribute);
 							if (src) {
 								tools.append(dest, src);
 							};
-								
+
 							sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
-								
+
 							return sourceAttribute;
 						}),
 
@@ -2506,7 +2506,7 @@ exports.add = function add(modules) {
 						return destAttribute;
 					}),
 				})));
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -2526,7 +2526,7 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "Method",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('MethodExtender')), true) */,
-						
+
 					keepUnlocked: types.READ_ONLY(true),
 
 					bindMethod: types.READ_ONLY(false),
@@ -2534,7 +2534,7 @@ exports.add = function add(modules) {
 					isReadOnly: types.READ_ONLY(true),
 					byReference: types.READ_ONLY(true),
 					isExternal: types.READ_ONLY(false),
-						
+
 					callerTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -2578,7 +2578,7 @@ exports.add = function add(modules) {
 
 							const _caller = types.INHERIT(doodad.CallerFunction, function caller(/*paramarray*/...params) {
 								//const type = types.getType(this);
-										
+
 								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], null, _shared.SECRET),
 									currentDispatch = result[_shared.CurrentDispatchSymbol],
 									currentCaller = result[_shared.CurrentCallerIndexSymbol] + 1,
@@ -2606,18 +2606,18 @@ exports.add = function add(modules) {
 									};
 									types.setAttribute(this, '_super', _super, null, _shared.SECRET);
 									types.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller, null, _shared.SECRET);
-										
+
 									const callFn = (extender.byReference ? fn : types.unbox(_caller[_shared.PrototypeSymbol][attr]));
-										
+
 									_caller[_shared.CalledSymbol] = true;
-										
+
 									let retVal = callFn.apply(this, params);
 
 									if (modifiers & doodad.MethodModifiers.Async) {
 										const Promise = types.getPromise();
 										retVal = Promise.resolve(retVal);
 									};
-										
+
 									if (__Internal__.hasPolicies) {
 										if ((_caller[_shared.ModifiersSymbol] & doodad.MethodModifiers.Override) && !_super[_shared.CalledSymbol]) {
 											throw new types.Error("You must always call '_super' for method '~0~' of '~1~'. Use 'doodad.REPLACE' when '_super' is never called. Or call 'overrideSuper' instead of '_super' when '_super' is conditionally called.", [attr, types.getTypeName(this) || __Internal__.ANONYMOUS]);
@@ -2625,7 +2625,7 @@ exports.add = function add(modules) {
 									};
 
 									return retVal;
-										
+
 								} catch(ex) {
 									if (attr === 'toString') {
 										// <PRB> Javascript debugger calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
@@ -2642,7 +2642,7 @@ exports.add = function add(modules) {
 											throw ex;
 										}
 									}
-										
+
 								} finally {
 									types.setAttribute(this, '_super', oldSuper, null, _shared.SECRET);
 									if (!types.isNothing(currentCaller)) {
@@ -2784,7 +2784,7 @@ exports.add = function add(modules) {
 									// No caller
 									return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 								};
-									
+
 								if (!canBeDestroyed) {
 									//if (_shared.DESTROYED(this)) {
 									//	throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
@@ -2804,8 +2804,8 @@ exports.add = function add(modules) {
 									};
 								};
 
-								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], null, _shared.SECRET), 
-									oldDispatch = result[_shared.CurrentDispatchSymbol], 
+								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], null, _shared.SECRET),
+									oldDispatch = result[_shared.CurrentDispatchSymbol],
 									oldCaller = result[_shared.CurrentCallerIndexSymbol];
 									//attributes = result[_shared.AttributesSymbol];
 
@@ -2827,7 +2827,7 @@ exports.add = function add(modules) {
 										};
 									};
 								};
-									
+
 								if (__Internal__.hasPolicies) {
 									// External methods (can't be called internally)
 									if (extender.isExternal && __Internal__.isInside(this)) {
@@ -2893,11 +2893,11 @@ exports.add = function add(modules) {
 										[_shared.CurrentCallerIndexSymbol]: 0,
 									};
 									types.setAttributes(this, values, null, _shared.SECRET);
-									
+
 									//if (host) {
 									//	types.setAttributes(host, values, null, _shared.SECRET);
 									//};
-									
+
 //										_dispatch[_shared.SuperAsyncSymbol] = false;
 
 									if (notReentrant) {
@@ -2905,7 +2905,7 @@ exports.add = function add(modules) {
 									};
 
 									caller[_shared.CalledSymbol] = false;
-										
+
 									retVal = caller.apply(this, params);
 
 //									if (!_dispatch[_shared.SuperAsyncSymbol]) {
@@ -2929,7 +2929,7 @@ exports.add = function add(modules) {
 											extender.handleDispatchError(ex, attr, this);
 										};
 									};
-										
+
 								} finally {
 //									if (!_dispatch[_shared.SuperAsyncSymbol]) {
 										if (notReentrant) {
@@ -2965,12 +2965,12 @@ exports.add = function add(modules) {
 										[_shared.CurrentCallerIndexSymbol]: oldCaller,
 									};
 									types.setAttributes(this, values, null, _shared.SECRET);
-										
+
 									//if (host) {
 									//	const values = {
 									//		[_shared.CurrentDispatchSymbol]: oldHostDispatch,
 									//		[_shared.CurrentCallerIndexSymbol]: oldHostCaller,
-									//	};										
+									//	};
 									//	types.setAttributes(host, values, null, _shared.SECRET);
 									//};
 								};
@@ -3009,7 +3009,7 @@ exports.add = function add(modules) {
 						//! END_REPLACE()
 						, function createCaller(attr, sourceAttribute, destAttribute) {
 							const fn = types.unbox(sourceAttribute);
-								
+
 							if (root.DD_ASSERT) {
 								root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 							};
@@ -3025,7 +3025,7 @@ exports.add = function add(modules) {
 								[_shared.UsageMessageSymbol]: sourceAttribute[_shared.UsageMessageSymbol],
 							};
 							types.setAttributes(caller, values, {});
-								
+
 							return caller;
 						}),
 
@@ -3064,13 +3064,13 @@ exports.add = function add(modules) {
 							if (root.DD_ASSERT) {
 								root.DD_ASSERT(types.isArray(callers), "Invalid callers array.");
 							};
-								
+
 							// Create dispatch function
 							const dispatch = this.dispatchTemplate(attr, attribute, callers);
 
 							types.setAttribute(dispatch, _shared.NameSymbol, attr, {});
 							types.setAttribute(dispatch, _shared.CallersSymbol, callers, {});
-								
+
 							let modifiers = attribute[_shared.ModifiersSymbol] || 0;
 
 							// Clear "MustOverride" if method has been overriden
@@ -3086,7 +3086,7 @@ exports.add = function add(modules) {
 
 							return dispatch;
 						}),
-						
+
 					_new: types.SUPER(function _new(/*optional*/options) {
 							this._super(options);
 							types.setAttributes(this, {
@@ -3098,7 +3098,7 @@ exports.add = function add(modules) {
 						}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) + 
+							return this._super(options) +
 								',' + (types.get(options, 'bindMethod', this.bindMethod) ? '1' : '0') +
 								',' + (types.get(options, 'notReentrant', this.notReentrant) ? '1' : '0') +
 								',' + (types.get(options, 'byReference', this.byReference) ? '1' : '0') +
@@ -3117,13 +3117,13 @@ exports.add = function add(modules) {
 							};
 							return options;
 						}),
-						
+
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								
+
 							let srcIsInterface = types.isInterface(source),
 								callersOrFn = types.unbox(sourceAttribute);
-									
+
 							const callersIsFn = types.isNothing(callersOrFn) || types.isJsFunction(callersOrFn);
 
 							if (root.DD_ASSERT) {
@@ -3133,7 +3133,7 @@ exports.add = function add(modules) {
 									root.DD_ASSERT(callersIsFn || types.isArray(callersOrFn), "Invalid source value.");
 								};
 							};
-								
+
 							let destCallers = types.unbox(destAttribute);
 							const hasDestCallers = types.isArray(destCallers);
 							if (hasDestCallers) {
@@ -3145,7 +3145,7 @@ exports.add = function add(modules) {
 								destCallers = [];
 								destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
 							};
-								
+
 							let replacedCallers = sourceAttribute[_shared.ReplacedCallersSymbol];
 							if (replacedCallers) {
 								destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers = tools.unique(replacedCallers);
@@ -3154,7 +3154,7 @@ exports.add = function add(modules) {
 							};
 
 							let modifiers = ((destAttribute[_shared.ModifiersSymbol] || 0) & _shared.preservedMethodModifiers) | (sourceAttribute[_shared.ModifiersSymbol] || 0);
-								
+
 							if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
 								// Override or replace
 								let start = destAttribute[_shared.CallFirstLengthSymbol];
@@ -3268,7 +3268,7 @@ exports.add = function add(modules) {
 						//! END_REPLACE()
 						, types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
 							destAttribute = this._super(attr, destAttributes, destAttribute) || destAttribute;
-								
+
 							const callers = types.unbox(destAttribute);
 
 							const replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
@@ -3404,7 +3404,7 @@ exports.add = function add(modules) {
 							};
 
 							types.freezeObject(callers);
-								
+
 							return destAttribute;
 						})),
 
@@ -3471,9 +3471,9 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "JsMethod",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsMethodExtender')), true) */,
-						
+
 					dontSetSuper: types.READ_ONLY(false),
-						
+
 					_new: types.SUPER(function _new(/*optional*/options) {
 							this._super(options);
 							types.setAttributes(this, {
@@ -3482,7 +3482,7 @@ exports.add = function add(modules) {
 						}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) + 
+							return this._super(options) +
 								',' + (types.get(options, 'dontSetSuper', this.dontSetSuper) ? '1' : '0');
 						}),
 
@@ -3495,7 +3495,7 @@ exports.add = function add(modules) {
 							};
 							return options;
 						}),
-						
+
 					callerTemplate: function callerTemplate(attr, sourceAttribute, destAttribute) {
 							let fn = types.unbox(sourceAttribute);
 
@@ -3594,12 +3594,12 @@ exports.add = function add(modules) {
 
 							return _dispatch;
 						},
-						
+
 					extend: function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								
+
 							let destCallers = types.unbox(destAttribute);
-								
+
 							if (!types.isArray(destCallers)) {
 								if (sourceAttribute[_shared.SuperEnabledSymbol] && types.isFunction(destCallers)) {
 									destCallers = [this.createCaller(attr, destAttribute, null)];
@@ -3610,11 +3610,11 @@ exports.add = function add(modules) {
 							};
 
 							let callersOrFn = types.unbox(sourceAttribute);
-								
+
 							if (!sourceAttribute[_shared.SuperEnabledSymbol]) {
 								destCallers.length = 0;
 							};
-								
+
 							if (sourceIsProto) {
 								if (__Internal__.hasPolicies) {
 									if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
@@ -3623,12 +3623,12 @@ exports.add = function add(modules) {
 								};
 								callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
 							};
-								
+
 							_shared.Natives.arrayUnshiftApply(destCallers, callersOrFn);
-								
+
 							return destAttribute;
 						},
-							
+
 					postExtend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -3657,7 +3657,7 @@ exports.add = function add(modules) {
 						//! END_REPLACE()
 						, function postExtend(attr, destAttributes, destAttribute) {
 							//destAttribute = extenders.ClonedAttribute.postExtend.call(this, attr, destAttributes, destAttribute) || destAttribute;
-								
+
 							const callers = types.unbox(destAttribute);
 
 							// Remove duplicated callers
@@ -3684,7 +3684,7 @@ exports.add = function add(modules) {
 							};
 
 							types.freezeObject(callers);
-								
+
 							return destAttribute;
 						}),
 				})));
@@ -3708,27 +3708,27 @@ exports.add = function add(modules) {
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "Property",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PropertyExtender')), true) */,
-						
+
 					isReadOnly: types.READ_ONLY(false),
 					bindMethod: types.READ_ONLY(true),
-						
+
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
 							const srcDesc = types.unbox(sourceAttribute);
-									
+
 							if (types.isNothing(srcDesc)) {
 								return sourceAttribute;
 							};
 
 							let destDesc;
-										
+
 							if (types.isNothing(destAttribute)) {
 								destDesc = {};
 							} else {
 								destDesc = types.unbox(destAttribute);
 							};
-									
+
 							const srcGet = types.get(srcDesc, 'get', null);
 							const srcSet = types.get(srcDesc, 'set', null);
 							const destGet = types.get(destDesc, 'get', null);
@@ -3748,13 +3748,13 @@ exports.add = function add(modules) {
 									};
 								})(srcGet, srcSet, destGet, destSet, destDesc.value);
 							};
-									
+
 							const descriptor = tools.extend({}, srcDesc);
 
 							if (srcGet) {
 								descriptor.get = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcGet), types.AttributeBox(destGet), sourceIsProto);
 							};
-									
+
 							if (srcSet) {
 								descriptor.set = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcSet), types.AttributeBox(destSet), sourceIsProto);
 							};
@@ -3775,7 +3775,7 @@ exports.add = function add(modules) {
 							const extenderId = generator.vars.add(this);
 							const attrId = generator.vars.add(attr);
 							const attributeId = generator.vars.add(attribute);
-								
+
 							const valueId = generator.vars.add(value);
 							const descriptorId = generator.vars.add(new generator.DynamicValue("tools.extend({}, " + valueId + ")"));
 
@@ -3791,7 +3791,7 @@ exports.add = function add(modules) {
 								};
 								generator.code.add(descriptorId + ".get = " + dispatchId);
 							};
-									
+
 							const set = types.get(value, 'set');
 							if (set) {
 								const setId = generator.vars.add(types.unbox(set));
@@ -3804,16 +3804,16 @@ exports.add = function add(modules) {
 								};
 								generator.code.add(descriptorId + ".set = " + dispatchId);
 							};
-									
+
 							generator.code.add(descriptorId + ".enumerable = " + tools.toSource(this.isEnumerable));
-									
+
 							if (get || set) {
 								generator.code.add(descriptorId + ".configurable = false");
 							} else {
 								generator.code.add(descriptorId + ".configurable = " + tools.toSource(this.isReadOnly));
 								generator.code.add(descriptorId + ".writable = " + tools.toSource(!this.isReadOnly));
 							};
-									
+
 							generator.define(attrId, descriptorId);
 						},
 
@@ -3821,17 +3821,17 @@ exports.add = function add(modules) {
 						extenders.ClonedAttribute.remove.call(this, attr, obj, storage, forType, attribute);
 					}),
 				})));
-				
+
 			//==================================
 			// Scopes
 			//==================================
-				
+
 			doodad.ADD('Scopes', types.freezeObject(tools.nullObject({
 				Public: 1,
 				Protected: 2,
 				Private: 3,
 			})));
-				
+
 			doodad.ADD('PUBLIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -3861,7 +3861,7 @@ exports.add = function add(modules) {
 					};
 					return value;
 				}));
-				
+
 			doodad.ADD('PROTECTED', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -3922,11 +3922,11 @@ exports.add = function add(modules) {
 					};
 					return value;
 				})));
-				
+
 			//==================================
 			// Class Modifiers
 			//==================================
-				
+
 			// Can be combined
 			doodad.ADD('ClassModifiers', types.freezeObject(tools.nullObject({
 				Base: 1,
@@ -3965,7 +3965,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Base, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
 			doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3997,7 +3997,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true}, _shared.SECRET);
 					return cls;
 				})));
-				
+
 			doodad.ADD('INTERFACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4028,7 +4028,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			doodad.ADD('SEALED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4053,7 +4053,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Sealed, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			doodad.ADD('STATIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4078,7 +4078,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Static, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			doodad.ADD('ISOLATED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4108,7 +4108,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Isolated, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			doodad.ADD('EXPANDABLE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4138,7 +4138,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Expandable, {configurable: true}, _shared.SECRET);
 					return cls;
 				}));
-				
+
 			//===================================
 			// Attribute modifiers
 			//===================================
@@ -4169,8 +4169,8 @@ exports.add = function add(modules) {
 					value[_shared.WhenSymbol] = tools.unique(value[_shared.WhenSymbol], (types.isArrayLike(type) ? type : [type]));
 					return value;
 				}));
-				
-				
+
+
 			doodad.ADD('ATTRIBUTE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4215,7 +4215,7 @@ exports.add = function add(modules) {
 						root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(options), "Invalid options.");
 						oldExtender = oldExtender.get(options);
 					};
-						
+
 					value[_shared.ExtenderSymbol] = oldExtender;
 					return value;
 				}));
@@ -4243,11 +4243,11 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function OPTIONS(options, value) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(options), "Invalid options.");
-						
+
 					const valueIsExtender = types._instanceof(value, types.getType(extenders.Extender));
 
 					let extender;
-						
+
 					if (valueIsExtender) {
 						extender = value;
 						value = undefined;
@@ -4255,7 +4255,7 @@ exports.add = function add(modules) {
 						value = types.AttributeBox(value);
 						extender = value[_shared.ExtenderSymbol];
 					};
-						
+
 					if (!extender) {
 						if (types.isJsFunction(types.unbox(value))) {
 							extender = extenders.Method;
@@ -4263,12 +4263,12 @@ exports.add = function add(modules) {
 							extender = extenders.ClonedAttribute;
 						};
 					};
-						
+
 					root.DD_ASSERT && root.DD_ASSERT(types._instanceof(extender, types.getType(extenders.Extender)), "Invalid extender.");
-						
+
 					options = extender.overrideOptions({}, options, true);
 					extender = extender.get(options);
-						
+
 					if (valueIsExtender) {
 						return extender;
 					} else {
@@ -4276,7 +4276,7 @@ exports.add = function add(modules) {
 						return value;
 					}
 				}));
-				
+
 			doodad.ADD('NOT_INHERITED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4430,7 +4430,7 @@ exports.add = function add(modules) {
 						notReentrant: true,
 					}, value);
 				}));
-				
+
 			doodad.ADD('EXTERNAL', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4452,7 +4452,7 @@ exports.add = function add(modules) {
 						isExternal: true,
 					}, value);
 				}));
-				
+
 			doodad.ADD('READ_ONLY', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4553,10 +4553,10 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function JS_METHOD(fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(fn) && types.isBindable(fn), "Invalid function.");
-						
+
 					return doodad.ATTRIBUTE(fn, extenders.JsMethod);
 				}));
-				
+
 			doodad.ADD('SUPER', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4575,7 +4575,7 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function(fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(fn) && types.isBindable(fn), "Invalid function.");
-						
+
 					fn = doodad.ATTRIBUTE(fn, extenders.JsMethod);
 					fn[_shared.SuperEnabledSymbol] = true;
 					return fn;
@@ -4599,12 +4599,12 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function PROPERTY(descriptor) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(descriptor), "Invalid descriptor.");
-						
+
 					const enumerable = types.getDefault(descriptor, 'enumerable', true);
 
 					return doodad.ATTRIBUTE(descriptor, extenders.Property, {isEnumerable: enumerable});
 				}));
-				
+
 			//==================================
 			// Method Positioning
 			//==================================
@@ -4698,7 +4698,7 @@ exports.add = function add(modules) {
 			//==================================
 			// Method Modifiers
 			//==================================
-				
+
 			// Can be combined
 			doodad.ADD('MethodModifiers', types.freezeObject(tools.nullObject({
 				Replace: 1,
@@ -4713,7 +4713,7 @@ exports.add = function add(modules) {
 			})));
 
 			_shared.preservedMethodModifiers = doodad.MethodModifiers.Obsolete | doodad.MethodModifiers.CanBeDestroyed | doodad.MethodModifiers.Async;
-				
+
 			doodad.ADD('REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4753,7 +4753,7 @@ exports.add = function add(modules) {
 					fn[_shared.InterfaceSymbol] = _interface;
 					return fn;
 				}));
-				
+
 			doodad.ADD('OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4793,7 +4793,7 @@ exports.add = function add(modules) {
 					fn[_shared.InterfaceSymbol] = _interface;
 					return fn;
 				}));
-				
+
 			doodad.ADD('CREATE_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4821,7 +4821,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.ForceCreate;
 					return fn;
 				}));
-				
+
 			doodad.ADD('CREATE_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4849,7 +4849,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.ForceCreate;
 					return fn;
 				}));
-				
+
 			doodad.ADD('MUST_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4871,7 +4871,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.MustOverride;
 					return fn;
 				}));
-				
+
 			doodad.ADD('OBSOLETE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4925,7 +4925,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.CallFirst;
 					return fn;
 				}));
-				
+
 			doodad.ADD('CAN_BE_DESTROYED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4947,7 +4947,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.CanBeDestroyed;
 					return fn;
 				}));
-				
+
 			doodad.ADD('ABSTRACT', doodad.ADD('NOT_IMPLEMENTED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -4963,7 +4963,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.NotImplemented;
 					return fn;
 				})));
-				
+
 			doodad.ADD('RETURNS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -5007,7 +5007,7 @@ exports.add = function add(modules) {
 					fn[_shared.ModifiersSymbol] = (fn[_shared.ModifiersSymbol] || 0) | doodad.MethodModifiers.Async;
 					return fn;
 				}));
-				
+
 			doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -5049,7 +5049,7 @@ exports.add = function add(modules) {
 					fn[_shared.RenamedToSymbol] = name;
 					return fn;
 				}));
-				
+
 			doodad.ADD('RENAME_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -5095,7 +5095,7 @@ exports.add = function add(modules) {
 			//==================================
 			// Class
 			//==================================
-				
+
 			__Internal__.defaultAttributes = types.freezeObject(tools.nullObject({
 				[_shared.AttributesSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
 				[_shared.AttributesStorageSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.NOT_INHERITED(doodad.PERSISTENT(doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isEnumerable: false, isProto: null})))))))),
@@ -5172,7 +5172,7 @@ exports.add = function add(modules) {
 
 				return destAttribute;
 			};
-				
+
 			__Internal__.preExtendAttribute = function preExtendAttribute(attr, base, baseIsClass, baseAttributes, source, sourceProto, sourceAttributes, destAttributes, baseIsProto, sourceIsProto, forType, _isolated, extendedAttributes, toInitialize, proto, protoName, _implements, toExtendLater, sources, isExtendLater) {
 				const attrs = (sourceAttributes ? sourceAttributes : sourceProto);
 
@@ -5229,7 +5229,7 @@ exports.add = function add(modules) {
 						extender = sourceExtender;
 					};
 				};
-						
+
 				if (!extender) {
 					if (sourceIsProto) {
 						if (types.isJsFunction(types.unbox(sourceAttribute))) {
@@ -5241,7 +5241,7 @@ exports.add = function add(modules) {
 						extender = extenders.Null;
 					};
 				};
-						
+
 				if (!extender.isType && !extender.isInstance) {
 					if (!types.isSymbol(attr) && (attr[0] === '$')) {
 						extender = doodad.TYPE(extender);
@@ -5249,7 +5249,7 @@ exports.add = function add(modules) {
 						extender = doodad.INSTANCE(extender);
 					};
 				};
-						
+
 				if (types.isSymbol(attr)) {
 					// <FUTURE> When transpiling "ddclass" to "class"...
 						//if (scope === doodad.Scopes.Private) {
@@ -5348,7 +5348,7 @@ exports.add = function add(modules) {
 									destAttribute[_shared.ScopeSymbol] = scope;
 								};
 							};
-									
+
 							if (extender.preExtend) {
 								const result = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 								destAttribute = destAttribute.setValue(result);
@@ -5381,7 +5381,7 @@ exports.add = function add(modules) {
 							} else {
 								retval = [
 									// eslint-disable-next-line array-bracket-spacing
-									/* 0 : data   */ [/*0*/ extender], 
+									/* 0 : data   */ [/*0*/ extender],
 									// eslint-disable-next-line array-bracket-spacing
 									/* 1 : params */ [/*0*/ attr, /*1*/ source, /*2*/ sourceProto, /*3*/ destAttributes, /*4*/ forType, /*5*/ sourceAttribute, /*6*/ destAttribute, /*7*/ sourceIsProto, /*8*/ proto, /*9*/ protoName, /*10*/ extendedAttributes, /*11*/ toInitialize, /*12*/ toExtendLater]
 								];
@@ -5392,7 +5392,7 @@ exports.add = function add(modules) {
 
 				return retval; // "consistent-return"
 			};
-				
+
 			__Internal__.extendSource = function extendSource(base, baseTypeAttributes, baseInstanceAttributes, source, sourceTypeAttributes, sourceInstanceAttributes, destTypeAttributes, destInstanceAttributes, baseType, baseIsType, baseIsClass, sourceIsType, sourceIsClass, _isolated, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, proto, protoName, _implements, typeToExtendLater, instanceToExtendLater, sources) {
 				const baseIsProto = false;
 
@@ -5401,7 +5401,7 @@ exports.add = function add(modules) {
 					baseTypeAttributes = baseType;
 					baseInstanceAttributes = baseType.prototype;
 				};
-					
+
 				let sourceIsProto = false,
 					sourceTypeProto,
 					sourceInstanceProto;
@@ -5437,7 +5437,7 @@ exports.add = function add(modules) {
 					sourceInstanceToExtend2 = sourceSymbols;
 					sourceIsProto = true;
 				};
-					
+
 				// Pre-extend
 				const preExtendLoop = function _preExtendLoop(sourceAttrs, isExtendLater, forType) {
 					const toExtend = [];
@@ -5565,7 +5565,7 @@ exports.add = function add(modules) {
 					extendLoop(toExtend4);
 				};
 			};
-				
+
 			__Internal__.addImplements = function addImplements(_implements, _isolated, typeToInitialize, instanceToInitialize, typeToExtendLater, instanceToExtendLater, source, sourceBase, sourceTypeAttributes, sourceInstanceAttributes, sourceImplements, sourceIsolated, baseIsType, sourceTypeToInitialize, sourceInstanceToInitialize, sourceTypeToExtendLater, sourceInstanceToExtendLater) {
 				// Add new implement
 				_implements.add(source);
@@ -5585,7 +5585,7 @@ exports.add = function add(modules) {
 						};
 					};
 				};
-					
+
 				if (sourceImplements) {
 					//const isIsolated = types.isIsolated(source);
 					sourceImplements.forEach(function(item) {
@@ -5602,7 +5602,7 @@ exports.add = function add(modules) {
 						};
 					});
 				};
-					
+
 				if (sourceIsolated) {
 					sourceIsolated.forEach(function(data, _interface) {
 						if (!types.isString(_interface)) {
@@ -5659,7 +5659,7 @@ exports.add = function add(modules) {
 					};
 				});
 			};
-				
+
 			__Internal__.implementSource = function implementSource(base, baseTypeAttributes, baseInstanceAttributes, source, destTypeAttributes, destInstanceAttributes, _implements, _isolated, typeStorage, instanceStorage, baseType, baseIsType, baseIsClass, baseIsBase, baseIsMixIn, baseIsInterface, proto, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, protoName, typeToExtendLater, instanceToExtendLater, sources) {
 				const sourceType = types.getType(source);
 
@@ -5689,7 +5689,7 @@ exports.add = function add(modules) {
 								};
 							};
 						};
-							
+
 						if (types.isIsolated(source) && !types.isIsolated(base)) {
 							if (!baseIsClass) {
 								throw new types.TypeError("To implement an isolated 'Class', base must be a 'Class'.");
@@ -5885,7 +5885,7 @@ exports.add = function add(modules) {
 					root.DD_ASSERT && root.DD_ASSERT(attribute, "Attribute '~0~' is missing.", [attr]);
 
 					const extender = attribute[_shared.ExtenderSymbol];
-						
+
 					if (extender && extender.init && extender.preExtend) {
 						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
 							const value = types.get(values, attr, types.unbox(attribute));
@@ -5903,7 +5903,7 @@ exports.add = function add(modules) {
 					root.DD_ASSERT && root.DD_ASSERT(attribute, "Attribute '~0~' is missing.", [attr]);
 
 					const extender = attribute[_shared.ExtenderSymbol];
-							
+
 					if (extender && extender.init && !extender.preExtend) {
 						if ((forType && extender.isType) || (!forType && extender.isInstance)) {
 							const value = types.get(values, attr, types.unbox(attribute));
@@ -5920,17 +5920,17 @@ exports.add = function add(modules) {
 				for (let i = 0; i < dvars; i++) {
 					dvarsStr += '$' + types.toString(i) + (i < dvars - 1 ? ',' : '');
 				};
-				const code = "(function(" + generator.objId + "," + generator.storageId + ") {" + 
-						(dvarsStr ? "let " + dvarsStr + ";" : "") + 
+				const code = "(function(" + generator.objId + "," + generator.storageId + ") {" +
+						(dvarsStr ? "let " + dvarsStr + ";" : "") +
 						(generator.__hasProps ? "const " + generator.propsId + " = tools.nullObject();" : "") +
-						generator.__code + 
-						(generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") + 
+						generator.__code +
+						(generator.__hasProps ? "types.defineProperties(" + generator.objId + ", " + generator.propsId + ");" : "") +
 					"})";
 				const evalFn = tools.createEval(['doodad', 'types', 'tools', '_shared', generator.varsId], true)(doodad, types, tools, _shared, types.freezeObject(generator.__vars));
 				const fn = evalFn(code);
 				return fn;
 			};
-				
+
 			__Internal__.postExtend = function postExtend(attributes, extendedAttributes) {
 				for (let k = 0; k < extendedAttributes.length; k++) {
 					const attr = extendedAttributes[k];
@@ -5944,12 +5944,12 @@ exports.add = function add(modules) {
 						if (newAttribute !== attribute) {
 							attributes[attr] = newAttribute;
 						};
-						
+
 						types.freezeObject(newAttribute);
 					};
 				};
 			};
-				
+
 			__Internal__.createType = function createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, destTypeAttributes, destInstanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, existingAttributes) {
 				typeExtendedAttributes = tools.unique(typeExtendedAttributes);
 				instanceExtendedAttributes = tools.unique(instanceExtendedAttributes);
@@ -5961,7 +5961,7 @@ exports.add = function add(modules) {
 				// Post-Extend
 				__Internal__.postExtend(destTypeAttributes, typeExtendedAttributes);
 				__Internal__.postExtend(destInstanceAttributes, instanceExtendedAttributes);
-					
+
 				if (baseIsType) {
 					const typeProto = {
 							$TYPE_NAME: protoName,
@@ -5971,7 +5971,7 @@ exports.add = function add(modules) {
 						},
 
 						instanceProto = {};
-						
+
 					if (types.has(proto, '_new')) {
 						instanceProto._new = typeProto._new = proto._new;
 					};
@@ -5979,11 +5979,11 @@ exports.add = function add(modules) {
 					if (types.has(proto, '_delete')) {
 						instanceProto._delete = typeProto._delete = proto._delete;
 					};
-					
+
 					const newType = base.$inherit(
 						/*typeProto*/
 						typeProto,
-						
+
 						/*instanceProto*/
 						instanceProto
 					);
@@ -5993,7 +5993,7 @@ exports.add = function add(modules) {
 					types.setAttribute(proto, _shared.TypeSymbol, newType, {}, _shared.SECRET);
 
 					const newProto = newType.prototype;
-					
+
 					const newTypeValues = {
 						[_shared.AttributesStorageSymbol]: typeStorage,
 						[_shared.AttributesSymbol]: destTypeAttributes,
@@ -6020,7 +6020,7 @@ exports.add = function add(modules) {
 
 				} else {
 					// Expandable objects
-						
+
 					// NOTE: If we need to extend the Type, don't forget to remove "EXPANDABLE" from "Object" and change the example in README.md.
 
 					if (instanceToInitialize.length) {
@@ -6035,7 +6035,7 @@ exports.add = function add(modules) {
 					return base;
 				}
 			};
-				
+
 			__Internal__.$extend = function $extend(/*paramarray*/...args) {
 				const base = ((this === global) ? undefined : this) || types.Type,
 					baseType = types.getType(base);
@@ -6044,8 +6044,8 @@ exports.add = function add(modules) {
 
 				const index = tools.findLastItem(args, types.isJsObject),
 					proto = (index !== null) && args[index] || {};
-					
-				let protoName = '', 
+
+				let protoName = '',
 					protoUUID = '';
 
 				if (proto) {
@@ -6062,7 +6062,7 @@ exports.add = function add(modules) {
 					baseIsBase = baseIsClass && types.isBase(baseType),
 					baseIsMixIn = baseIsClass && types.isMixIn(baseType),
 					baseIsInterface = baseIsClass && types.isInterface(baseType);
-						
+
 				let _implements = null,
 					_isolated = null,
 					destTypeAttributes = null,
@@ -6188,13 +6188,13 @@ exports.add = function add(modules) {
 							//cls = (forType ? this : types.getType(this)),
 							attributes = this[_shared.AttributesSymbol],
 							storage = this[_shared.AttributesStorageSymbol];
-							
+
 						const preLoopAttrs = function _preLoopAttrs(attrs) {
 							for (let i = attrs.length - 1; i >= 0; i--) {
 								const attr = attrs[i],
 									attribute = attributes[attr],
 									extender = attribute[_shared.ExtenderSymbol];
-								
+
 								if (extender) {
 									if (extender.isPersistent) {
 										//attrs.splice(i, 1);
@@ -6212,7 +6212,7 @@ exports.add = function add(modules) {
 								};
 							};
 						};
-							
+
 						const loopAttrs = function _loopAttrs(attrs) {
 							for (let i = attrs.length - 1; i >= 0; i--) {
 								const attr = attrs[i];
@@ -6220,7 +6220,7 @@ exports.add = function add(modules) {
 								if (attr) {
 									const attribute = attributes[attr],
 										extender = attribute[_shared.ExtenderSymbol];
-									
+
 									// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
 									if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 										extender.remove && extender.remove(attr, this, storage, forType, attribute);
@@ -6228,7 +6228,7 @@ exports.add = function add(modules) {
 								};
 							};
 						};
-							
+
 						const attrsKeys = types.keys(attributes);
 						const attrsSymbols = types.symbols(attributes);
 						preLoopAttrs.call(this, attrsKeys);
@@ -6263,20 +6263,20 @@ exports.add = function add(modules) {
 						if (!dispatch) {
 							throw new types.Error("Invalid call to '_superFrom'.");
 						};
-							
+
 						if (!types.isType(cls)) {
 							throw new types.ValueError("The 'cls' argument must be a type.");
 						};
-							
+
 						if (!types._implements(this, cls)) {
 							throw new types.ValueError("Type '~0~' is not implemented by '~1~'.", [types.getTypeName(cls) || __Internal__.ANONYMOUS, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 						};
-							
+
 						let proto = cls;
 						if (!types.isType(this)) {
 							proto = cls.prototype;
 						};
-							
+
 						const name = dispatch[_shared.NameSymbol];
 
 						if (!types.isMethod(proto, name)) {
@@ -6311,7 +6311,7 @@ exports.add = function add(modules) {
 							}
 						};
 					}))))))));
-				
+
 			__Internal__.overrideSuper = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6389,7 +6389,7 @@ exports.add = function add(modules) {
 									[_shared.CurrentCallerIndexSymbol]: index,
 								};
 								types.setAttributes(this, attrs, null, _shared.SECRET);
-										
+
 								_super[_shared.CalledSymbol] = false;
 
 								retVal = _super.apply(this, params);
@@ -6413,7 +6413,7 @@ exports.add = function add(modules) {
 										extender.handleDispatchError(ex, attr, this);
 									};
 								};
-									
+
 							} finally {
 								if (notReentrant) {
 									if (async && retVal) {
@@ -6543,7 +6543,7 @@ exports.add = function add(modules) {
 			__Internal__.classProto = {
 				$TYPE_NAME: "Class",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Class')), true) */,
-					
+
 				_new: types.SUPER(
 					function _new(/*paramarray*/...args) {
 						const cls = types.getType(this),
@@ -6557,7 +6557,7 @@ exports.add = function add(modules) {
 						};
 
 						const modifiers = (types.get(cls, _shared.ModifiersSymbol) || 0);
-							
+
 						// Must not be a base class
 						const isBase = !!(modifiers & (doodad.ClassModifiers.Base | doodad.ClassModifiers.MixIn | doodad.ClassModifiers.Interface));
 						if (isBase) {
@@ -6565,7 +6565,7 @@ exports.add = function add(modules) {
 								throw new types.Error("Bases, mix-ins and interfaces must be inherited first.");
 							};
 						};
-							
+
 						// Static types can't be instantiated
 						const isStatic = !!(modifiers & doodad.ClassModifiers.Static);
 						if (isStatic) {
@@ -6636,7 +6636,7 @@ exports.add = function add(modules) {
 
 							cls[_shared.InitInstanceSymbol](this, instanceStorage);
 						};
-	
+
 						// Call constructor
 						if (!isBase) {
 							if (this._implements(mixIns.Creatable)) {
@@ -6647,13 +6647,13 @@ exports.add = function add(modules) {
 								};
 							};
 						};
-							
+
 						// Seal object if it is of a sealed class
 						return (!forType && types.isSealedClass(cls) ? types.sealObject(this) : this);
 					}),
-					
+
 				_delete: __Internal__._delete,
-					
+
 				toString: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6691,7 +6691,7 @@ exports.add = function add(modules) {
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
-					
+
 				extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6709,7 +6709,7 @@ exports.add = function add(modules) {
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.JS_METHOD( __Internal__.$extend ))))),
-					
+
 				getInterface: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6816,7 +6816,7 @@ exports.add = function add(modules) {
 
 						return obj;
 					})))),
-					
+
 				getPreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6846,7 +6846,7 @@ exports.add = function add(modules) {
 						};
 						return undefined; // "consistent-return"
 					}))))),
-					
+
 				restorePreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6944,7 +6944,7 @@ exports.add = function add(modules) {
 							return false;
 						}
 					}))))),
-						
+
 				isImplemented: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -6985,7 +6985,7 @@ exports.add = function add(modules) {
 			tools.extend(__Internal__.classProto, tools.map(__Internal__.defaultAttributes, function(attr) {
 				return attr.clone();
 			}, /*thisObj*/undefined, /*start*/null, /*end*/null, /*sparsed*/false, /*includeSymbols*/true));
-				
+
 			//! IF_SET("serverSide")
 			(function() {
 				//! BEGIN_REMOVE()
@@ -7021,7 +7021,7 @@ exports.add = function add(modules) {
 				//! END_REMOVE()
 			})();
 			//! END_IF()
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -7033,7 +7033,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.classProto))));
-				
+
 			//==================================
 			// Interface
 			//==================================
@@ -7041,7 +7041,7 @@ exports.add = function add(modules) {
 			__Internal__.interfaceProto = {
 				$TYPE_NAME: "Interface",
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Interface')), true) */,
-						
+
 				_new: types.SUPER(
 					function _new(host) {
 						// TODO: Merge _new with Class's _new
@@ -7061,7 +7061,7 @@ exports.add = function add(modules) {
 						};
 
 						const modifiers = (types.get(cls, _shared.ModifiersSymbol) || 0);
-							
+
 						// Must not be a base class
 						const isBase = !!(modifiers & doodad.ClassModifiers.Base);
 						if (isBase) {
@@ -7119,7 +7119,7 @@ exports.add = function add(modules) {
 
 							types.setAttribute(this, _shared.HostSymbol, host, null, _shared.SECRET);
 						};
-	
+
 						return this;
 					}),
 
@@ -7158,7 +7158,7 @@ exports.add = function add(modules) {
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
-					
+
 				overrideSuper: __Internal__.overrideSuper,
 				_superFrom: __Internal__._superFrom,
 //					_superAsync: __Internal__.superAsync,
@@ -7167,7 +7167,7 @@ exports.add = function add(modules) {
 
 				[_shared.HostSymbol]: doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: false})))),
 			};
-				
+
 			tools.extend(__Internal__.interfaceProto, tools.map(__Internal__.defaultAttributes, function(attr) {
 				return attr.clone();
 			}, /*thisObj*/undefined, /*start*/null, /*end*/null, /*sparsed*/false, /*includeSymbols*/true));
@@ -7241,24 +7241,24 @@ exports.add = function add(modules) {
 				/*instanceProto*/
 				{
 					data: types.READ_ONLY(null),
-						
+
 					// dynamic
 					obj: null,
 					name: null,
 					handlerData: null,
 
 					prevent: false,
-						
+
 					_new: types.SUPER(function _new(/*optional*/data) {
 						//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
 
 						this._super();
-							
+
 						if (!types.isType(this)) {
 							types.setAttribute(this, 'data', data || {});
 						};
 					}),
-						
+
 					preventDefault: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -7327,13 +7327,13 @@ exports.add = function add(modules) {
 				/*instanceProto*/
 				{
 					error: types.READ_ONLY(null),
-						
+
 					_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
 						this._super(data);
 
 						if (!types.isType(this)) {
 							root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
-								
+
 							types.setAttribute(this, 'error', error);
 						};
 					}),
@@ -7345,16 +7345,16 @@ exports.add = function add(modules) {
 					}),
 				})));
 
-					
+
 			__Internal__.eventHandlerProto = {
 					$TYPE_NAME: 'EventHandler',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
 
 					stackSize: doodad.PUBLIC(10),
-						
+
 					_new: types.SUPER(function _new(/*optional*/obj, /*optional*/extender) {
 						this._super();
-							
+
 						if (!types.isType(this)) {
 							this[_shared.ObjectSymbol] = obj;
 							this[_shared.ExtenderSymbol] = extender;
@@ -7432,7 +7432,7 @@ exports.add = function add(modules) {
 								root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
 								root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
 							};
-								
+
 							const stack = this[_shared.StackSymbol];
 
 							const indexes = tools.findItems(stack, function(ev) {
@@ -7441,7 +7441,7 @@ exports.add = function add(modules) {
 									return types.hasIndex(evData, key) && (evData[key] === data);
 								});
 							});
-								
+
 							const indexesLen = indexes.length;
 							if (indexesLen) {
 								let clearSorted = false;
@@ -7694,7 +7694,7 @@ exports.add = function add(modules) {
 				, doodad.REGISTER(doodad.Class.$extend(
 					__Internal__.eventHandlerProto
 				)));
-				
+
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -7733,7 +7733,7 @@ exports.add = function add(modules) {
 						}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) + 
+							return this._super(options) +
 								',' + (types.get(options, 'errorEvent', this.errorEvent) ? '1' : '0');
 						}),
 
@@ -7768,10 +7768,10 @@ exports.add = function add(modules) {
 									};
 								};
 							};
-								
+
 							const events = types.unbox(destAttributes[this.eventsAttr]);
 							events.push(attr);
-								
+
 							if (this.errorEvent) {
 								destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
 							};
@@ -7954,7 +7954,7 @@ exports.add = function add(modules) {
 
 				return eventFn;
 			};
-				
+
 			__Internal__.RAW_EVENT_CACHE = tools.nullObject();
 
 			__Internal__.RAW_EVENT = function RAW_EVENT(errorEvent, /*optional*/fn) {
@@ -7973,7 +7973,7 @@ exports.add = function add(modules) {
 
 						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
 						const stack = values[_shared.StackSymbol];
-						
+
 						let clonedStack;
 						if (values[_shared.SortedSymbol]) {
 							clonedStack = values[_shared.ClonedStackSymbol];
@@ -7992,7 +7992,7 @@ exports.add = function add(modules) {
 							};
 							types.setAttributes(dispatch, values, null, _shared.SECRET);
 						};
-							
+
 						const stackLen = clonedStack.length;
 
 						try {
@@ -8000,7 +8000,7 @@ exports.add = function add(modules) {
 								const data = clonedStack[i],
 									obj = data[0],
 									cb = data[5];
-									
+
 								if (data[4] > 0) {
 									data[4]--;
 
@@ -8052,7 +8052,7 @@ exports.add = function add(modules) {
 
 				return eventFn;
 			};
-				
+
 			doodad.ADD('EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -8154,7 +8154,7 @@ exports.add = function add(modules) {
 			//==================================
 			// Interfaces
 			//==================================
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -8183,7 +8183,7 @@ exports.add = function add(modules) {
 							return (val !== this) && types.is(val, this);
 						}))),  // function()
 				}))));
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -8197,7 +8197,7 @@ exports.add = function add(modules) {
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 					$TYPE_NAME: 'Serializable',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Serializable')), true) */,
-					
+
 					serialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8209,7 +8209,7 @@ exports.add = function add(modules) {
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
-								
+
 					$unserialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8234,7 +8234,7 @@ exports.add = function add(modules) {
 			//==================================
 			// Mix-ins
 			//==================================
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -8248,14 +8248,14 @@ exports.add = function add(modules) {
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: "Events",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Events')), true) */,
-					
+
 					__EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray))))))),
 					__ERROR_EVENT: doodad.PUBLIC(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(null)))))),
-						
+
 					onEventAttached: doodad.TYPE(doodad.INSTANCE(__Internal__.EVENT(false))),
 					onEventDetached: doodad.TYPE(doodad.INSTANCE(__Internal__.EVENT(false))),
 					onEventCancelled: doodad.TYPE(doodad.INSTANCE(__Internal__.CANCEL_EVENT())), // function onEventCancelled(ev)
-							
+
 					detachEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8289,7 +8289,7 @@ exports.add = function add(modules) {
 								this[events[i]].detach(obj, fn, datas);
 							};
 						})))),
-						
+
 					clearEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8329,7 +8329,7 @@ exports.add = function add(modules) {
 							};
 						})))),
 				}))));
-				
+
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -8344,9 +8344,9 @@ exports.add = function add(modules) {
 				, mixIns.REGISTER(doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "RawEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Events')), true) */,
-					
+
 					__RAW_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray))))))),
-					
+
 					detachEvents: doodad.OVERRIDE(function detachEvents(obj, fn, /*optional*/datas) {
 							const rawEvents = this.__RAW_EVENTS,
 								rawEventsLen = rawEvents.length;
@@ -8356,7 +8356,7 @@ exports.add = function add(modules) {
 
 							this._super(obj, fn, datas);
 						}),
-						
+
 					clearEvents: doodad.OVERRIDE(function clearEvents(/*optional*/objs) {
 							const events = this.__RAW_EVENTS,
 								eventsLen = events.length;
@@ -8382,7 +8382,7 @@ exports.add = function add(modules) {
 							this._super(objs);
 						}),
 				}))));
-				
+
 
 			__Internal__.creatablePrototype = {
 					$TYPE_NAME: 'Creatable',
@@ -8426,7 +8426,7 @@ exports.add = function add(modules) {
 								throw ex;
 							};
 						})))),
-						
+
 					$destroy: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8452,7 +8452,7 @@ exports.add = function add(modules) {
 							};
 						})))),
 
-						
+
 					$createInstance: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8503,7 +8503,7 @@ exports.add = function add(modules) {
 								throw ex;
 							};
 						})))),
-						
+
 					fastDestroy: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8524,7 +8524,7 @@ exports.add = function add(modules) {
 								types.Type.prototype._delete.call(this);
 							};
 						})))),
-						
+
 					destroy: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8578,9 +8578,9 @@ exports.add = function add(modules) {
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: 'Translatable',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Translatable')), true) */,
-					
+
 					$__translations: doodad.PROTECTED(doodad.ATTRIBUTE(tools.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
-					
+
 					$getTranslation: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8602,23 +8602,23 @@ exports.add = function add(modules) {
 							if (types.isNothing(name)) {
 								return this.$__translations;
 							};
-								
+
 							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid translation name.");
-								
+
 							const names = name.split('.'),
 								namesLen = names.length;
 
 							let translations = this.$__translations;
-									
+
 							for (let i = 0; translations && (i < namesLen); i++) {
 								const n = names[i];
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 								translations = translations[n];
 							};
-								
+
 							return translations;
 						})),
-							
+
 					$setTranslation: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8645,11 +8645,11 @@ exports.add = function add(modules) {
 							if (types.isNothing(name)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
 								tools.depthExtend(this[_shared.AttributesSymbol].$__translations[_shared.ExtenderSymbol].maxDepth, this.$__translations, value);
-									
+
 							} else if (types.isStringAndNotEmpty(name)) {
 								const names = name.split('.'),
 									namesLen = names.length;
-										
+
 								let translations = this.$__translations;
 
 								for (let i = 0; translations && (i < namesLen - 1); i++) {
@@ -8657,14 +8657,14 @@ exports.add = function add(modules) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									translations = translations[n];
 								};
-									
+
 								if (types.isJsObject(translations)) {
 									translations[names[namesLen - 1]] = value;
 								};
-									
+
 							} else {
 								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid translation name.");
-									
+
 							};
 						})),
 				}))));
@@ -8682,9 +8682,9 @@ exports.add = function add(modules) {
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: 'Configurable',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Configurable')), true) */,
-					
+
 					$__config: doodad.PROTECTED(doodad.ATTRIBUTE(tools.nullObject(), extenders.ExtendObject, {maxDepth: 5, cloneOnInit: true})),
-					
+
 					$getConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8706,12 +8706,12 @@ exports.add = function add(modules) {
 							if (types.isNothing(name)) {
 								return this.$__config;
 							};
-								
+
 							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid configuration name.");
-								
+
 							const names = name.split('.'),
 								namesLen = names.length;
-									
+
 							let config = this.$__config;
 
 							for (let i = 0; config && (i < namesLen); i++) {
@@ -8719,10 +8719,10 @@ exports.add = function add(modules) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 								config = config[n];
 							};
-								
+
 							return config;
 						})),
-							
+
 					$setConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
@@ -8748,11 +8748,11 @@ exports.add = function add(modules) {
 							if (types.isNothing(name)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid configuration value.");
 								tools.depthExtend(this[_shared.AttributesSymbol].$__config[_shared.ExtenderSymbol].maxDepth, this.$__config, value);
-									
+
 							} else if (types.isStringAndNotEmpty(name)) {
 								const names = name.split('.'),
 									namesLen = names.length;
-									
+
 								let config = this.$__config;
 
 								for (let i = 0; config && (i < namesLen - 1); i++) {
@@ -8760,23 +8760,23 @@ exports.add = function add(modules) {
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									config = config[n];
 								};
-									
+
 								if (types.isJsObject(config)) {
 									config[names[namesLen - 1]] = value;
 								};
-									
+
 							} else {
 								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid configuration name.");
-									
+
 							};
 						})),
 				}))));
 
-				
+
 			//==================================
 			// Object class
 			//==================================
-				
+
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -8793,7 +8793,7 @@ exports.add = function add(modules) {
 					$TYPE_NAME: "Object",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
 				}))));
-				
+
 			//==================================
 			// Serializable objects
 			//==================================
@@ -8824,16 +8824,16 @@ exports.add = function add(modules) {
 				{
 					$TYPE_NAME: "PackedValue",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackedValue')), true) */,
-						
+
 					$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
 						'name',
 						'message',
 						'code',  // Node.Js
 						'innerStack',
 					], extenders.UniqueArray))),
-						
+
 					__value: doodad.PROTECTED(doodad.READ_ONLY(null)),
-						
+
 					create: doodad.OVERRIDE(function create(value) {
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isSerializable(value), "Invalid value");
@@ -8844,7 +8844,7 @@ exports.add = function add(modules) {
 						};
 						types.setAttribute(this, '__value', value);
 					}),
-						
+
 					$pack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $pack(value) {
 						let data;
 						if (types.isNothing(value)) {
@@ -8915,7 +8915,7 @@ exports.add = function add(modules) {
 						};
 						return data;
 					}))),
-						
+
 					$unpack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $unpack(data) {
 						let value;
 						if (types.isJsObject(data)) {
@@ -8981,20 +8981,20 @@ exports.add = function add(modules) {
 						};
 						return value;
 					}))),
-						
+
 					serialize: doodad.OVERRIDE(function serialize() {
 						return types.getType(this).$pack(this.__value);
 					}),
-						
+
 					$unserialize: doodad.OVERRIDE(function $unserialize(data) {
 						return new this(this.$unpack(data));
 					}),
-						
+
 					valueOf: function valueOf() {
 						return this.__value;
 					},
 				})));
-			
+
 
 			types.preventExtensions(__Internal__[_shared.TargetSymbol]);
 		},

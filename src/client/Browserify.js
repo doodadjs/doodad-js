@@ -34,11 +34,11 @@ exports.add = function add(modules) {
 	modules['Doodad.NodeJs'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
-			'Doodad.Types', 
-			'Doodad.Tools', 
+			'Doodad.Types',
+			'Doodad.Tools',
 		],
 		bootstrap: true,
-					
+
 		create: function create(root, /*optional*/_options) {
 			//===================================
 			// Get namespaces
@@ -51,7 +51,7 @@ exports.add = function add(modules) {
 
 	//		tools.complete(_shared.Natives, {
 	//		});
-					
+
 			//===================================
 			// Util Extension
 			//===================================

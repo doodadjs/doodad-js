@@ -33,7 +33,7 @@ exports.add = function add(modules) {
 	modules = (modules || {});
 	modules['Doodad.Types/HttpStatus'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			
+
 		dependencies: [
 			'Doodad.Tools',
 		],
@@ -46,11 +46,11 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				types = doodad.Types;
-				
+
 			//===================================
 			// Internal
 			//===================================
-				
+
 			//const __Internal__ = {
 			//};
 
@@ -58,12 +58,12 @@ exports.add = function add(modules) {
 			// HTTP Status Codes
 			// TODO: Add other non-standard or strange status ?
 			//===================================
-				
+
 			types.ADD('HttpStatus', types.freezeObject(tools.nullObject({
 				// Information
 				Continue: 100,
 				SwitchingProtocol: 101,
-					
+
 				// Success
 				OK: 200,
 				Created: 201,
@@ -72,7 +72,7 @@ exports.add = function add(modules) {
 				NoContent: 204,
 				ResetContent: 205,
 				PartialContent: 206,
-					
+
 				// Redirect
 				MultipleChoices: 300,
 				MovedPermanently: 301,
@@ -81,7 +81,7 @@ exports.add = function add(modules) {
 				NotModified: 304,
 				UseProxy: 305,
 				TemporaryRedirect: 307,
-					
+
 				// Client errors
 				BadRequest: 400,
 				Unauthorized: 401,
@@ -113,29 +113,29 @@ exports.add = function add(modules) {
 				isInformative: function isInformative(status) {
 					return (status >= 100) && (status < 200);
 				},
-					
+
 				isSuccessful: function isSuccessful(status) {
 					return (status >= 200) && (status < 300);
 				},
-					
+
 				isRedirect: function isRedirect(status) {
 					return (status >= 300) && (status < 400);
 				},
-					
+
 				isClientError: function isClientError(status) {
 					return (status >= 400) && (status < 500);
 				},
-					
+
 				isServerError: function isServerError(status) {
 					return (status >= 500);
 				},
-					
+
 				isError: function isError(status) {
 					return (status >= 400);
 				},
 			})));
-					
-				
+
+
 			//===================================
 			// Init
 			//===================================
