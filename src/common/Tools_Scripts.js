@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -80,25 +80,25 @@ exports.add = function add(modules) {
 			//===================================
 
 			tools.ADD('getCurrentScript', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								currentScript: {
-									type: 'string,object,error',
-									optional: true,
-									description: "Some Javascript engines provide a way to get the information. You should give it here.",
-								},
-							},
-							returns: 'Url,Path',
-							description:
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						currentScript: {
+							type: 'string,object,error',
+							optional: true,
+							description: "Some Javascript engines provide a way to get the information. You should give it here.",
+						},
+					},
+					returns: 'Url,Path',
+					description:
 								"Returns location of the current running script. Multiple usages :\n" +
 								'- Client-side only: root.Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Client-side and server-side: root.Doodad.Tools.getCurrentScript((root.serverSide?module.filename:document.currentScript)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.Files.Path.parse(module.filename)\n',
-					}
-					//! END_REPLACE()
+				}
+				//! END_REPLACE()
 				, function getCurrentScript(/*optional*/currentScript) {
 					let url,
 						ex,
@@ -156,17 +156,17 @@ exports.add = function add(modules) {
 			tools.ADD('abortScript', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							exitCode: {
-								type: 'integer',
-								optional: true,
-								description: "Exit code",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						exitCode: {
+							type: 'integer',
+							optional: true,
+							description: "Exit code",
 						},
-						returns: 'error',
-						description: "Emits \"script aborted\" signal.",
+					},
+					returns: 'error',
+					description: "Emits \"script aborted\" signal.",
 				}
 				//! END_REPLACE()
 				, function abortScript(/*optional*/exitCode) {
@@ -180,11 +180,11 @@ exports.add = function add(modules) {
 			tools.ADD('trapUnhandledErrors', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'undefined',
-						description: "Trap unhandled errors and unhandled Promise rejections.",
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'undefined',
+					description: "Trap unhandled errors and unhandled Promise rejections.",
 				}
 				//! END_REPLACE()
 				, function trapUnhandledErrors() {
@@ -204,10 +204,10 @@ exports.add = function add(modules) {
 						types.addAppEventListener('unhandledrejection', function(ev) {
 							if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
 								if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
-										__Internal__.unhandledRejections.set(ev.detail.promise, {
+									__Internal__.unhandledRejections.set(ev.detail.promise, {
 										reason: ev.detail.reason,
 										time: (new Date()).valueOf(),
-										});
+									});
 								};
 							};
 						});
@@ -239,19 +239,19 @@ exports.add = function add(modules) {
 
 							const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
-								if (types.isObject(timer) && types.isFunction(timer.unref)) {
-									// Node.Js: Allows the process to exit
-									timer.unref();
-								};
+							if (types.isObject(timer) && types.isFunction(timer.unref)) {
+								// Node.Js: Allows the process to exit
+								timer.unref();
+							};
 							//! END_IF()
 						};
 
 						const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 						//! IF_SET("serverSide")
-							if (types.isObject(timer) && types.isFunction(timer.unref)) {
-								// Node.Js: Allows the process to exit
-								timer.unref();
-							};
+						if (types.isObject(timer) && types.isFunction(timer.unref)) {
+							// Node.Js: Allows the process to exit
+							timer.unref();
+						};
 						//! END_IF()
 					};
 				}));

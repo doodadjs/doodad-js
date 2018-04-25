@@ -25,11 +25,11 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeUtil} from 'util';");
+//! INJECT("import {default as nodeUtil} from 'util';");
 //! ELSE()
-	"use strict";
+"use strict";
 
-	const nodeUtil = require('util');
+const nodeUtil = require('util');
 //! END_IF()
 
 const nodeUtilInspect = nodeUtil.inspect;

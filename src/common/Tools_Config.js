@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -92,22 +92,22 @@ exports.add = function add(modules) {
 			config.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							url: {
-								type: 'Url,Path',
-								optional: false,
-								description: "File location.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						url: {
+							type: 'Url,Path',
+							optional: false,
+							description: "File location.",
 						},
-						returns: 'Promise',
-						description: "Loads a configuration file written in JSON and returns the parsed result."
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Promise',
+					description: "Loads a configuration file written in JSON and returns the parsed result."
 				}
 				//! END_REPLACE()
 				, function load(location, /*optional*/options) {

@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 // Naming conventions :
@@ -139,7 +139,7 @@ exports.add = function add(modules) {
 
 			// Methods (Dispatches)
 			_shared.ObsoleteWarnedSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('OBSOLETE_WARNED')), true) */ '__DD_OBSOLETE_WARNED__' /*! END_REPLACE() */, true);
-//			_shared.SuperAsyncSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ASYNC_SUPER')), true) */ '__DD_ASYNC_SUPER__' /*! END_REPLACE() */, true);
+			//			_shared.SuperAsyncSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ASYNC_SUPER')), true) */ '__DD_ASYNC_SUPER__' /*! END_REPLACE() */, true);
 
 			// Callers
 			_shared.OkSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_OK')), true) */ '__DD_OK__' /*! END_REPLACE() */, true);
@@ -237,27 +237,27 @@ exports.add = function add(modules) {
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							root: {
-								type: 'Root',
-								optional: false,
-								description: "Root namespace object",
-							},
-							spec: {
-								type: 'object',
-								optional: false,
-								description: "Namespace specifications",
-							},
-							namespace: {
-								type: 'Namespace',
-								optional: false,
-								description: "Namespace object",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						root: {
+							type: 'Root',
+							optional: false,
+							description: "Root namespace object",
 						},
-						returns: 'Type',
-						description: "Type registry entry.",
+						spec: {
+							type: 'object',
+							optional: false,
+							description: "Namespace specifications",
+						},
+						namespace: {
+							type: 'Namespace',
+							optional: false,
+							description: "Namespace object",
+						},
+					},
+					returns: 'Type',
+					description: "Type registry entry.",
 				}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
@@ -275,17 +275,17 @@ exports.add = function add(modules) {
 			types.ADD('isClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when object is a class. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when object is a class. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isClass(obj) {
@@ -298,17 +298,17 @@ exports.add = function add(modules) {
 			types.ADD('isInterfaceClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Type',
-									optional: false,
-									description: "Type to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when object is an interface class. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Type',
+							optional: false,
+							description: "Type to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when object is an interface class. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isInterfaceClass(obj) {
@@ -321,17 +321,17 @@ exports.add = function add(modules) {
 			types.ADD('isBase', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when object is a base type. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when object is a base type. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isBase(obj) {
@@ -341,17 +341,17 @@ exports.add = function add(modules) {
 			types.ADD('isMixIn', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when class is a mix-in. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when class is a mix-in. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isMixIn(obj) {
@@ -361,17 +361,17 @@ exports.add = function add(modules) {
 			types.ADD('isInterface', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when class is an interface. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when class is an interface. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isInterface(obj) {
@@ -381,17 +381,17 @@ exports.add = function add(modules) {
 			types.ADD('isIsolated', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when class is an isolated interface. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when class is an isolated interface. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isIsolated(obj) {
@@ -401,17 +401,17 @@ exports.add = function add(modules) {
 			types.ADD('isNewable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when class is a class that can be instantiated. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when class is a class that can be instantiated. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isNewable(obj) {
@@ -421,17 +421,17 @@ exports.add = function add(modules) {
 			types.ADD('isSealedClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'Class',
-									optional: false,
-									description: "Class to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when class is a sealed class. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'Class',
+							optional: false,
+							description: "Class to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when class is a sealed class. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isSealedClass(obj) {
@@ -441,17 +441,17 @@ exports.add = function add(modules) {
 			types.ADD('isSerializable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "Object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when object is serealizable. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "Object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when object is serealizable. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isSerializable(obj) {
@@ -461,22 +461,22 @@ exports.add = function add(modules) {
 			types.ADD('_implements', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 5,
-							params: {
-								obj: {
-									type: 'Object,Class',
-									optional: false,
-									description: "Object to test for.",
-								},
-								type: {
-									type: 'arrayof(Class),Class,arrayof(Object),Object',
-									optional: false,
-									description: "Classes.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						obj: {
+							type: 'Object,Class',
+							optional: false,
+							description: "Object to test for.",
+						},
+						type: {
+							type: 'arrayof(Class),Class,arrayof(Object),Object',
+							optional: false,
+							description: "Classes.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function _implements(obj, type) {
@@ -529,17 +529,17 @@ exports.add = function add(modules) {
 			types.ADD('getImplements', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'Object,Class',
-									optional: false,
-									description: "Object to test for.",
-								},
-							},
-							returns: 'objectof(Class)',
-							description: "Returns the implementations of an object.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'Object,Class',
+							optional: false,
+							description: "Object to test for.",
+						},
+					},
+					returns: 'objectof(Class)',
+					description: "Returns the implementations of an object.",
 				}
 				//! END_REPLACE()
 				, function getImplements(obj) {
@@ -554,22 +554,22 @@ exports.add = function add(modules) {
 			types.ADD('isMethod', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'Object,Class',
-									optional: false,
-									description: "Object to test for.",
-								},
-								name: {
-									type: 'string,Symbol',
-									optional: false,
-									description: "Method name.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if method exists. Returns 'false' otherwise. Note: That doesn't validate if method is implemented. Please use 'types.isImplemented' instead if you need that information.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'Object,Class',
+							optional: false,
+							description: "Object to test for.",
+						},
+						name: {
+							type: 'string,Symbol',
+							optional: false,
+							description: "Method name.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if method exists. Returns 'false' otherwise. Note: That doesn't validate if method is implemented. Please use 'types.isImplemented' instead if you need that information.",
 				}
 				//! END_REPLACE()
 				, function isMethod(obj, name) {
@@ -595,22 +595,22 @@ exports.add = function add(modules) {
 			types.ADD('isImplemented', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'Object,Class',
-									optional: false,
-									description: "Object to test for.",
-								},
-								name: {
-									type: 'string,Symbol',
-									optional: false,
-									description: "Method name.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise. Note: That doesn't validate if the method is entrant. If you need that information, please combine with 'types.isEntrant'.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'Object,Class',
+							optional: false,
+							description: "Object to test for.",
+						},
+						name: {
+							type: 'string,Symbol',
+							optional: false,
+							description: "Method name.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise. Note: That doesn't validate if the method is entrant. If you need that information, please combine with 'types.isEntrant'.",
 				}
 				//! END_REPLACE()
 				, function isImplemented(obj, name) {
@@ -667,11 +667,11 @@ exports.add = function add(modules) {
 			types.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'undefined',
-						description: "Base of every callback handlers.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'undefined',
+					description: "Base of every callback handlers.",
 				}
 				//! END_REPLACE()
 				, function(/*optional*/obj, fn) {
@@ -691,37 +691,37 @@ exports.add = function add(modules) {
 			doodad.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 8,
-						params: {
-							obj: {
-								type: 'object,Object',
-								optional: true,
-								description: "Object to bind with the callback function.",
-							},
-							fn: {
-								type: 'function,string,symbol',
-								optional: false,
-								description: "Callback function.",
-							},
-							bubbleError: {
-								type: 'bool,function',
-								optional: true,
-								description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
-							},
-							args: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Callback arguments.",
-							},
-							secret: {
-								type: 'any',
-								optional: true,
-								description: "Secret.",
-							},
+					author: "Claude Petit",
+					revision: 8,
+					params: {
+						obj: {
+							type: 'object,Object',
+							optional: true,
+							description: "Object to bind with the callback function.",
 						},
-						returns: 'function',
-						description: "Creates a callback handler.",
+						fn: {
+							type: 'function,string,symbol',
+							optional: false,
+							description: "Callback function.",
+						},
+						bubbleError: {
+							type: 'bool,function',
+							optional: true,
+							description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Callback arguments.",
+						},
+						secret: {
+							type: 'any',
+							optional: true,
+							description: "Secret.",
+						},
+					},
+					returns: 'function',
+					description: "Creates a callback handler.",
 				}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
@@ -781,37 +781,37 @@ exports.add = function add(modules) {
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 9,
-						params: {
-							obj: {
-								type: 'object,Object',
-								optional: true,
-								description: "Object to bind with the callback function.",
-							},
-							fn: {
-								type: 'function,string,symbol',
-								optional: false,
-								description: "Callback function.",
-							},
-							bubbleError: {
-								type: 'bool,function',
-								optional: true,
-								description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
-							},
-							args: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Callback arguments.",
-							},
-							secret: {
-								type: 'any',
-								optional: true,
-								description: "Secret.",
-							},
+					author: "Claude Petit",
+					revision: 9,
+					params: {
+						obj: {
+							type: 'object,Object',
+							optional: true,
+							description: "Object to bind with the callback function.",
 						},
-						returns: 'function',
-						description: "Creates an asynchronous callback handler.",
+						fn: {
+							type: 'function,string,symbol',
+							optional: false,
+							description: "Callback function.",
+						},
+						bubbleError: {
+							type: 'bool,function',
+							optional: true,
+							description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Callback arguments.",
+						},
+						secret: {
+							type: 'any',
+							optional: true,
+							description: "Secret.",
+						},
+					},
+					returns: 'function',
+					description: "Creates an asynchronous callback handler.",
 				}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
@@ -897,7 +897,7 @@ exports.add = function add(modules) {
 						}
 					}
 				}
-			:
+				:
 				function isInside(obj, /*optional*/state) {
 					return true;
 				}
@@ -917,7 +917,7 @@ exports.add = function add(modules) {
 					};
 					return null;
 				}
-			:
+				:
 				function setInside(obj, secret) {
 				}
 			);
@@ -926,7 +926,7 @@ exports.add = function add(modules) {
 				function preserveInside() {
 					return [__Internal__.currentInstance, __Internal__.currentType];
 				}
-			:
+				:
 				function preserveInside() {
 					return null;
 				}
@@ -937,7 +937,7 @@ exports.add = function add(modules) {
 					__Internal__.currentInstance = state[0];
 					__Internal__.currentType = state[1];
 				}
-			:
+				:
 				function restoreInside(state) {
 				}
 			);
@@ -983,7 +983,7 @@ exports.add = function add(modules) {
 					types.setAttribute(_insider, _shared.OriginalValueSymbol, fn, {});
 					return _insider;
 				}
-			:
+				:
 				function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn), "Invalid function.");
 					fn = types.unbind(fn) || fn;
@@ -1022,7 +1022,7 @@ exports.add = function add(modules) {
 						};
 					}
 				}
-			:
+				:
 				function insideNew(...args) {
 					return this._new && this._new(...args) || this;
 				}
@@ -1033,27 +1033,27 @@ exports.add = function add(modules) {
 			_shared.makeInside = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							obj: {
-								type: 'any',
-								optional: true,
-								description: "Object to bind to.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Function.",
-							},
-							secret: {
-								type: 'any',
-								optional: true,
-								description: "Confirms the secret.",
-							},
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: true,
+							description: "Object to bind to.",
 						},
-						returns: 'function',
-						description: "Makes a function called like from inside an object.",
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Function.",
+						},
+						secret: {
+							type: 'any',
+							optional: true,
+							description: "Confirms the secret.",
+						},
+					},
+					returns: 'function',
+					description: "Makes a function called like from inside an object.",
 				}
 				//! END_REPLACE()
 				, function makeInside(/*optional*/obj, fn, /*optional*/secret) {
@@ -1281,22 +1281,22 @@ exports.add = function add(modules) {
 			_shared.getAttributeDescriptor = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 6,
-							params: {
-								obj: {
-									type: 'Object,Type',
-									optional: false,
-									description: "Object to test for.",
-								},
-								name: {
-									type: 'string,Symbol',
-									optional: false,
-									description: "Attribute name.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Returns the descriptor of an attribute, or 'null' if attribute doesn't exist.",
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						obj: {
+							type: 'Object,Type',
+							optional: false,
+							description: "Object to test for.",
+						},
+						name: {
+							type: 'string,Symbol',
+							optional: false,
+							description: "Attribute name.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Returns the descriptor of an attribute, or 'null' if attribute doesn't exist.",
 				}
 				//! END_REPLACE()
 				, function getAttributeDescriptor(obj, name) {
@@ -1344,27 +1344,27 @@ exports.add = function add(modules) {
 			_shared.REGISTER = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 7,
-							params: {
-								type: {
-									type: 'Type',
-									optional: false,
-									description: "Type to register.",
-								},
-								args: {
-									type: 'arrayof(any)',
-									optional: true,
-									description: "Arguments of the constructor.",
-								},
-								protect: {
-									type: 'bool',
-									optional: true,
-									description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
-								},
-							},
-							returns: 'Type',
-							description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
+					author: "Claude Petit",
+					revision: 7,
+					params: {
+						type: {
+							type: 'Type',
+							optional: false,
+							description: "Type to register.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Arguments of the constructor.",
+						},
+						protect: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
+						},
+					},
+					returns: 'Type',
+					description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
 				}
 				//! END_REPLACE()
 				, function REGISTER(type, args, protect) {
@@ -1445,17 +1445,17 @@ exports.add = function add(modules) {
 			_shared.UNREGISTER = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								type: {
-									type: 'Type',
-									optional: false,
-									description: "Type to unregister.",
-								},
-							},
-							returns: 'bool',
-							description: "Unregisters the specified type from its namespace object and returns 'true' when successful. Returns 'false' otherwise. Also destroys that type.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						type: {
+							type: 'Type',
+							optional: false,
+							description: "Type to unregister.",
+						},
+					},
+					returns: 'bool',
+					description: "Unregisters the specified type from its namespace object and returns 'true' when successful. Returns 'false' otherwise. Also destroys that type.",
 				}
 				//! END_REPLACE()
 				, function UNREGISTER(type) {
@@ -1498,27 +1498,27 @@ exports.add = function add(modules) {
 			exceptions.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								title: {
-									type: 'string',
-									optional: false,
-									description: "Message title",
-								},
-								message: {
-									type: 'string',
-									optional: false,
-									description: "Error message",
-								},
-								params: {
-									type: 'arrayof(any),objectof(any)',
-									optional: true,
-									description: "Parameters of the error message",
-								},
-							},
-							returns: 'undefined',
-							description: "Application error with title and message formatting.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						title: {
+							type: 'string',
+							optional: false,
+							description: "Message title",
+						},
+						message: {
+							type: 'string',
+							optional: false,
+							description: "Error message",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'undefined',
+					description: "Application error with title and message formatting.",
 				}
 				//! END_REPLACE()
 				, types.Error.$inherit(
@@ -1537,27 +1537,27 @@ exports.add = function add(modules) {
 			doodad.ADD('trapException', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								ex: {
-									type: 'error',
-									optional: false,
-									description: "Trapped error object.",
-								},
-								obj: {
-									type: 'object',
-									optional: true,
-									description: "Object.",
-								},
-								attr: {
-									type: 'string,symbol',
-									optional: true,
-									description: "Attribute name.",
-								},
-							},
-							returns: 'error',
-							description: "Errors manager.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						ex: {
+							type: 'error',
+							optional: false,
+							description: "Trapped error object.",
+						},
+						obj: {
+							type: 'object',
+							optional: true,
+							description: "Object.",
+						},
+						attr: {
+							type: 'string,symbol',
+							optional: true,
+							description: "Attribute name.",
+						},
+					},
+					returns: 'error',
+					description: "Errors manager.",
 				}
 				//! END_REPLACE()
 				, function trapException(ex, /*optional*/obj, /*optional*/attr) {
@@ -1605,17 +1605,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Base of every attribute extenders. Not to be used directly.",
+					},
+					returns: 'Extender',
+					description: "Base of every attribute extenders. Not to be used directly.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER(types.Type.$inherit(
@@ -1627,17 +1627,17 @@ exports.add = function add(modules) {
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										proto: {
-											type: 'object',
-											optional: false,
-											description: "Instance prototype, including '$TYPE_NAME'.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									proto: {
+										type: 'object',
+										optional: false,
+										description: "Instance prototype, including '$TYPE_NAME'.",
 									},
-									returns: 'Extender',
-									description: "Extends an extender with the specified prototype and returns a new extender.",
+								},
+								returns: 'Extender',
+								description: "Extends an extender with the specified prototype and returns a new extender.",
 							}
 							//! END_REPLACE()
 							, types.SUPER(function $inherit(proto) {
@@ -1662,9 +1662,9 @@ exports.add = function add(modules) {
 							})),
 
 						_new: types.SUPER(function _new() {
-								this._super();
-								__Internal__.extendersCache.set(this, tools.nullObject());
-							}),
+							this._super();
+							__Internal__.extendersCache.set(this, tools.nullObject());
+						}),
 					},
 					/*instanceProto*/
 					{
@@ -1679,17 +1679,17 @@ exports.add = function add(modules) {
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										proto: {
-											type: 'object',
-											optional: false,
-											description: "Instance prototype, including '$TYPE_NAME'.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									proto: {
+										type: 'object',
+										optional: false,
+										description: "Instance prototype, including '$TYPE_NAME'.",
 									},
-									returns: 'Extender',
-									description: "Extends an extender with the specified prototype and returns a new extender.",
+								},
+								returns: 'Extender',
+								description: "Extends an extender with the specified prototype and returns a new extender.",
 							}
 							//! END_REPLACE()
 							, function $inherit(proto) {
@@ -1697,32 +1697,32 @@ exports.add = function add(modules) {
 							}),
 
 						_new: types.SUPER(function _new(/*optional*/options) {
-								this._super();
-								types.setAttributes(this, {
-									notInherited: types.get(options, 'notInherited', this.notInherited),
-									preExtend: types.get(options, 'preExtend', this.preExtend),
-									isType: types.get(options, 'isType', this.isType),
-									isInstance: types.get(options, 'isInstance', this.isInstance),
-									isPersistent: types.get(options, 'isPersistent', this.isPersistent),
-									isPreserved: types.get(options, 'isPreserved', this.isPreserved),
-									isProto: types.get(options, 'isProto', this.isProto),
-								});
-							}),
+							this._super();
+							types.setAttributes(this, {
+								notInherited: types.get(options, 'notInherited', this.notInherited),
+								preExtend: types.get(options, 'preExtend', this.preExtend),
+								isType: types.get(options, 'isType', this.isType),
+								isInstance: types.get(options, 'isInstance', this.isInstance),
+								isPersistent: types.get(options, 'isPersistent', this.isPersistent),
+								isPreserved: types.get(options, 'isPreserved', this.isPreserved),
+								isProto: types.get(options, 'isProto', this.isProto),
+							});
+						}),
 
 						getCacheName: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'string',
-									description: "Builds a cache key from the extender's options so the extender object can be re-used. You can optionally override options with specified ones to retrieve or create a similar extender object.",
+								},
+								returns: 'string',
+								description: "Builds a cache key from the extender's options so the extender object can be re-used. You can optionally override options with specified ones to retrieve or create a similar extender object.",
 							}
 							//! END_REPLACE()
 							, function getCacheName(/*optional*/options) {
@@ -1739,17 +1739,17 @@ exports.add = function add(modules) {
 						get: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'Extender',
-									description: "Retrieves a similar extender object from the cache having the specified options. If none exists, creates a new one. If no options is specified, should returns itself.",
+								},
+								returns: 'Extender',
+								description: "Retrieves a similar extender object from the cache having the specified options. If none exists, creates a new one. If no options is specified, should returns itself.",
 							}
 							//! END_REPLACE()
 							, function get(/*optional*/options) {
@@ -1770,27 +1770,27 @@ exports.add = function add(modules) {
 						overrideOptions: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										options: {
-											type: 'object',
-											optional: false,
-											description: "Object where to store the result.",
-										},
-										newOptions: {
-											type: 'object,Extender',
-											optional: false,
-											description: "Options to apply.",
-										},
-										replace: {
-											type: 'boolean',
-											optional: false,
-											description: "When true, replace options. When false, merge them.",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									options: {
+										type: 'object',
+										optional: false,
+										description: "Object where to store the result.",
 									},
-									returns: 'object',
-									description: "Overrides the current options by the specified ones. Returns the 'options' parameter value, where result has been stored.",
+									newOptions: {
+										type: 'object,Extender',
+										optional: false,
+										description: "Options to apply.",
+									},
+									replace: {
+										type: 'boolean',
+										optional: false,
+										description: "When true, replace options. When false, merge them.",
+									},
+								},
+								returns: 'object',
+								description: "Overrides the current options by the specified ones. Returns the 'options' parameter value, where result has been stored.",
 							}
 							//! END_REPLACE()
 							, function overrideOptions(options, newOptions, /*optional*/replace) {
@@ -1811,17 +1811,17 @@ exports.add = function add(modules) {
 						override: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										extender: {
-											type: 'Extender',
-											optional: false,
-											description: "Extender object to override with.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									extender: {
+										type: 'Extender',
+										optional: false,
+										description: "Extender object to override with.",
 									},
-									returns: 'Extender',
-									description: "Overrides the current extender object by another extender object and returns the resulting extender object.",
+								},
+								returns: 'Extender',
+								description: "Overrides the current extender object by another extender object and returns the resulting extender object.",
 							}
 							//! END_REPLACE()
 							, function override(extender) {
@@ -1855,17 +1855,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Extender.$inherit({
@@ -1880,32 +1880,32 @@ exports.add = function add(modules) {
 					getterTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									boxed: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute box.",
-									},
-									forType: {
-										type: 'bool',
-										optional: false,
-										description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
-									},
-									storage: {
-										type: 'object',
-										optional: false,
-										description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
-									},
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Creates a getter function for an attribute.",
+								boxed: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute box.",
+								},
+								forType: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
+								},
+								storage: {
+									type: 'object',
+									optional: false,
+									description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a getter function for an attribute.",
 						}
 						//! END_REPLACE()
 						, function getterTemplate(attr, boxed, forType, storage) {
@@ -1950,32 +1950,32 @@ exports.add = function add(modules) {
 					setterTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									boxed: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute box.",
-									},
-									forType: {
-										type: 'bool',
-										optional: false,
-										description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
-									},
-									storage: {
-										type: 'object',
-										optional: false,
-										description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
-									},
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Creates a setter function for an attribute.",
+								boxed: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute box.",
+								},
+								forType: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
+								},
+								storage: {
+									type: 'object',
+									optional: false,
+									description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a setter function for an attribute.",
 						}
 						//! END_REPLACE()
 						, function setterTemplate(attr, boxed, forType, storage) {
@@ -2021,95 +2021,95 @@ exports.add = function add(modules) {
 						}),
 
 					_new: types.SUPER(function _new(/*optional*/options) {
-							this._super(options);
-							types.setAttributes(this, {
-								isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
-								isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
-								enableScopes: types.get(options, 'enableScopes', this.enableScopes),
-								enableStorage: types.get(options, 'enableStorage', this.enableStorage),
-							});
-						}),
+						this._super(options);
+						types.setAttributes(this, {
+							isReadOnly: types.get(options, 'isReadOnly', this.isReadOnly),
+							isEnumerable: types.get(options, 'isEnumerable', this.isEnumerable),
+							enableScopes: types.get(options, 'enableScopes', this.enableScopes),
+							enableStorage: types.get(options, 'enableStorage', this.enableStorage),
+						});
+					}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) +
+						return this._super(options) +
 								',' + (types.get(options, 'isReadOnly', this.isReadOnly) ? '1' : '0') +
 								',' + (types.get(options, 'isEnumerable', this.isEnumerable) ? '1' : '0') +
 								',' + (types.get(options, 'enableScopes', this.enableScopes) ? '1' : '0') +
 								',' + (types.get(options, 'enableStorage', this.enableStorage) ? '1' : '0');
-						}),
+					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-							options = this._super(options, newOptions, replace);
-							if (replace) {
-								tools.fill(['isReadOnly', 'isEnumerable', 'enableScopes', 'enableStorage'], options, this, newOptions);
-							} else {
-								options.isReadOnly = !!newOptions.isReadOnly || this.isReadOnly;
-								options.isEnumerable = !!newOptions.isEnumerable || this.isEnumerable;
-								options.enableScopes = !!newOptions.enableScopes || this.enableScopes;
-								options.enableStorage = !!newOptions.enableStorage || this.enableStorage;
-							};
-							return options;
-						}),
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['isReadOnly', 'isEnumerable', 'enableScopes', 'enableStorage'], options, this, newOptions);
+						} else {
+							options.isReadOnly = !!newOptions.isReadOnly || this.isReadOnly;
+							options.isEnumerable = !!newOptions.isEnumerable || this.isEnumerable;
+							options.enableScopes = !!newOptions.enableScopes || this.enableScopes;
+							options.enableStorage = !!newOptions.enableStorage || this.enableStorage;
+						};
+						return options;
+					}),
 
 					extend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									source: {
-										type: 'Class,object',
-										optional: false,
-										description: "Source class.",
-									},
-									sourceProto: {
-										type: 'object',
-										optional: false,
-										description: "Source prototype.",
-									},
-									destAttributes: {
-										type: 'objectof(AttributeBox)',
-										optional: false,
-										description: "Attributes of the new class.",
-									},
-									forType: {
-										type: 'bool',
-										optional: false,
-										description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
-									},
-									sourceAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Current source attribute.",
-									},
-									destAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute value already present in the destination.",
-									},
-									sourceIsProto: {
-										type: 'bool',
-										optional: false,
-										description: "When 'true', the source is a prototype. When 'false', the source is a Class.",
-									},
-									proto: {
-										type: 'object',
-										optional: false,
-										description: "The prototype.",
-									},
-									protoName: {
-										type: 'string',
-										optional: false,
-										description: "Name of the prototype.",
-									},
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'AttributeBox',
-								description: "Extends an attributes, taking the base value into account.",
+								source: {
+									type: 'Class,object',
+									optional: false,
+									description: "Source class.",
+								},
+								sourceProto: {
+									type: 'object',
+									optional: false,
+									description: "Source prototype.",
+								},
+								destAttributes: {
+									type: 'objectof(AttributeBox)',
+									optional: false,
+									description: "Attributes of the new class.",
+								},
+								forType: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
+								},
+								sourceAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Current source attribute.",
+								},
+								destAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute value already present in the destination.",
+								},
+								sourceIsProto: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true', the source is a prototype. When 'false', the source is a Class.",
+								},
+								proto: {
+									type: 'object',
+									optional: false,
+									description: "The prototype.",
+								},
+								protoName: {
+									type: 'string',
+									optional: false,
+									description: "Name of the prototype.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Extends an attributes, taking the base value into account.",
 						}
 						//! END_REPLACE()
 						, function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
@@ -2125,8 +2125,8 @@ exports.add = function add(modules) {
 						}),
 
 					__isFromStorage: function __isFromStorage(destAttribute) {
-							return (
-									this.enableStorage
+						return (
+							this.enableStorage
 									&&
 									(
 										(
@@ -2141,62 +2141,62 @@ exports.add = function add(modules) {
 											this.isReadOnly
 										)
 									)
-							);
-						},
+						);
+					},
 
 					preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							return !((isProto === null) || (this.isProto === null) || (this.isProto === isProto)); // true === Cancel
-						},
+						return !((isProto === null) || (this.isProto === null) || (this.isProto === isProto)); // true === Cancel
+					},
 
 					init: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									attributes: {
-										type: 'objectof(AttributeBox)',
-										optional: false,
-										description: "Attributes of the target class.",
-									},
-									forType: {
-										type: 'bool',
-										optional: false,
-										description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
-									},
-									attribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Current attribute.",
-									},
-									value: {
-										type: 'any',
-										optional: false,
-										description: "Current attribute value.",
-									},
-									generator: {
-										type: 'object',
-										optional: false,
-										description: "Code generator.",
-									},
-									isProto: {
-										type: 'boolean',
-										optional: false,
-										description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
-									},
-									existingAttributes: {
-										type: 'arrayof(string,symbol)',
-										optional: true,
-										description: "List of already existing object attributes. Reserved for expanding objects only when in storage mode.",
-									},
+							author: "Claude Petit",
+							revision: 5,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'undefined',
-								description: "Initializes an attribute for a new object instance.",
+								attributes: {
+									type: 'objectof(AttributeBox)',
+									optional: false,
+									description: "Attributes of the target class.",
+								},
+								forType: {
+									type: 'bool',
+									optional: false,
+									description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
+								},
+								attribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Current attribute.",
+								},
+								value: {
+									type: 'any',
+									optional: false,
+									description: "Current attribute value.",
+								},
+								generator: {
+									type: 'object',
+									optional: false,
+									description: "Code generator.",
+								},
+								isProto: {
+									type: 'boolean',
+									optional: false,
+									description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
+								},
+								existingAttributes: {
+									type: 'arrayof(string,symbol)',
+									optional: true,
+									description: "List of already existing object attributes. Reserved for expanding objects only when in storage mode.",
+								},
+							},
+							returns: 'undefined',
+							description: "Initializes an attribute for a new object instance.",
 						}
 						//! END_REPLACE()
 						, function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
@@ -2221,9 +2221,9 @@ exports.add = function add(modules) {
 									const set = (
 										this.isReadOnly ?
 											undefined
-										:
+											:
 											new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")")
-										);
+									);
 
 									const getId = generator.vars.add(get);
 									const setId = generator.vars.add(set);
@@ -2298,30 +2298,30 @@ exports.add = function add(modules) {
 						}),
 
 					remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
-							if (!this.isPersistent) {
-								if (storage && this.__isFromStorage(attribute)) {
-									delete storage[attr];
-								} else {
-									delete obj[attr];
-								};
+						if (!this.isPersistent) {
+							if (storage && this.__isFromStorage(attribute)) {
+								delete storage[attr];
+							} else {
+								delete obj[attr];
 							};
-						}),
+						};
+					}),
 				})));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender where the value will be always 'null'.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender where the value will be always 'null'.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
@@ -2333,24 +2333,24 @@ exports.add = function add(modules) {
 					}),
 
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
-						}),
+						this._super(attr, attributes, forType, attribute, null, generator, isProto, existingAttributes);
+					}),
 				})));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender where the value will get cloned if possible. Additionally, the attribute itself can get cloned.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender where the value will get cloned if possible. Additionally, the attribute itself can get cloned.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
@@ -2363,75 +2363,75 @@ exports.add = function add(modules) {
 					cloneOnGetValue: types.READ_ONLY(true),
 
 					_new: types.SUPER(function _new(/*optional*/options) {
-							this._super(options);
-							types.setAttributes(this, {
-								maxDepth: types.get(options, 'maxDepth', this.maxDepth),
-								keepUnlocked: types.get(options, 'keepUnlocked', this.keepUnlocked),
-								cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
-								cloneOnGetValue: types.get(options, 'cloneOnGetValue', this.cloneOnGetValue),
-							});
-						}),
+						this._super(options);
+						types.setAttributes(this, {
+							maxDepth: types.get(options, 'maxDepth', this.maxDepth),
+							keepUnlocked: types.get(options, 'keepUnlocked', this.keepUnlocked),
+							cloneOnInit: types.get(options, 'cloneOnInit', this.cloneOnInit),
+							cloneOnGetValue: types.get(options, 'cloneOnGetValue', this.cloneOnGetValue),
+						});
+					}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) +
+						return this._super(options) +
 								',' + types.get(options, 'maxDepth', this.maxDepth) +
 								',' + (types.get(options, 'keepUnlocked', this.keepUnlocked) ? '1' : '0') +
 								',' + (types.get(options, 'cloneOnInit', this.cloneOnInit) ? '1' : '0') +
 								',' + (types.get(options, 'cloneOnGetValue', this.cloneOnGetValue) ? '1' : '0');
-						}),
+					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-							options = this._super(options, newOptions, replace);
-							if (replace) {
-								tools.fill(['maxDepth', 'keepUnlocked', 'cloneOnInit', 'cloneOnGetValue'], options, this, newOptions);
-							} else {
-								options.maxDepth = Math.max(newOptions.maxDepth | 0, this.maxDepth);
-								options.keepUnlocked = !!newOptions.keepUnlocked || this.keepUnlocked;
-								options.cloneOnInit = !!newOptions.cloneOnInit || this.cloneOnInit;
-								options.cloneOnGetValue = !!newOptions.cloneOnGetValue || this.cloneOnGetValue;
-							};
-							return options;
-						}),
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['maxDepth', 'keepUnlocked', 'cloneOnInit', 'cloneOnGetValue'], options, this, newOptions);
+						} else {
+							options.maxDepth = Math.max(newOptions.maxDepth | 0, this.maxDepth);
+							options.keepUnlocked = !!newOptions.keepUnlocked || this.keepUnlocked;
+							options.cloneOnInit = !!newOptions.cloneOnInit || this.cloneOnInit;
+							options.cloneOnGetValue = !!newOptions.cloneOnGetValue || this.cloneOnGetValue;
+						};
+						return options;
+					}),
 
 					getValue: types.SUPER(function getValue(attr, attribute, forType) {
-							if (this.cloneOnGetValue) {
-								let val = types.unbox(attribute);
-								if (types.isClonable(val)) {
-									val = types.clone(val, this.maxDepth, false, this.keepUnlocked, true);
-									attribute = attribute.setValue(val);
-								};
+						if (this.cloneOnGetValue) {
+							let val = types.unbox(attribute);
+							if (types.isClonable(val)) {
+								val = types.clone(val, this.maxDepth, false, this.keepUnlocked, true);
+								attribute = attribute.setValue(val);
 							};
-							return attribute;
-						}),
+						};
+						return attribute;
+					}),
 
 					preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.cloneOnInit && types.isClonable(value)); // true === Cancel
-						}),
+						return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.cloneOnInit && types.isClonable(value)); // true === Cancel
+					}),
 
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							if (this.cloneOnInit && types.isClonable(value)) {
-								const valueId = generator.vars.add(value);
-								value = new generator.DynamicValue("types.clone(" + valueId + ", " + tools.toSource(this.maxDepth) + ", false, " + tools.toSource(this.keepUnlocked) + ", true)");
-							};
+						if (this.cloneOnInit && types.isClonable(value)) {
+							const valueId = generator.vars.add(value);
+							value = new generator.DynamicValue("types.clone(" + valueId + ", " + tools.toSource(this.maxDepth) + ", false, " + tools.toSource(this.keepUnlocked) + ", true)");
+						};
 
-							this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
-						}),
+						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
+					}),
 				})));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends an object.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends an object.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
@@ -2439,38 +2439,38 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ExtendObjectExtender')), true) */,
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+						sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
-							let dest = types.unbox(destAttribute);
-							if (!dest) {
-								dest = {};
-							};
+						let dest = types.unbox(destAttribute);
+						if (!dest) {
+							dest = {};
+						};
 
-							const src = types.unbox(sourceAttribute);
-							if (src) {
-								tools.depthExtend(this.maxDepth, dest, src);
-							};
+						const src = types.unbox(sourceAttribute);
+						if (src) {
+							tools.depthExtend(this.maxDepth, dest, src);
+						};
 
-							sourceAttribute = sourceAttribute.setValue(dest);  // keep attribute flags of "sourceAttribute"
+						sourceAttribute = sourceAttribute.setValue(dest);  // keep attribute flags of "sourceAttribute"
 
-							return sourceAttribute;
-						}),
+						return sourceAttribute;
+					}),
 				})));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends an array with unique items.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends an array with unique items.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
@@ -2478,22 +2478,22 @@ exports.add = function add(modules) {
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('UniqueArrayExtender')), true) */,
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+						sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
-							let dest = types.unbox(destAttribute);
-							if (!dest) {
-								dest = [];
-							};
+						let dest = types.unbox(destAttribute);
+						if (!dest) {
+							dest = [];
+						};
 
-							const src = types.unbox(sourceAttribute);
-							if (src) {
-								tools.append(dest, src);
-							};
+						const src = types.unbox(sourceAttribute);
+						if (src) {
+							tools.append(dest, src);
+						};
 
-							sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
+						sourceAttribute = sourceAttribute.setValue(dest);  // preserve attribute flags of "sourceAttribute"
 
-							return sourceAttribute;
-						}),
+						return sourceAttribute;
+					}),
 
 					postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
 						destAttribute = this._super(attr, destAttributes, destAttribute) || destAttribute;
@@ -2510,17 +2510,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends a method.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends a method.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
@@ -2538,27 +2538,27 @@ exports.add = function add(modules) {
 					callerTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									sourceAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Current attribute.",
-									},
-									destAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute already present in the destination.",
-									},
+							author: "Claude Petit",
+							revision: 5,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Template function to create a caller.",
+								sourceAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Current attribute.",
+								},
+								destAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute already present in the destination.",
+								},
+							},
+							returns: 'function',
+							description: "Template function to create a caller.",
 						}
 						//! END_REPLACE()
 						, function callerTemplate(attr, sourceAttribute, destAttribute) {
@@ -2658,113 +2658,113 @@ exports.add = function add(modules) {
 						}),
 
 					validateDispatchResult: function validateDispatchResult(result, attr, async, attribute, obj, secret) {
-							if (async) {
-								// Asynchronous methods must always return a Promise
-								const Promise = types.getPromise();
-								result = Promise.resolve(result);
-								if (__Internal__.hasPolicies) {
-									const validator = attribute[_shared.ReturnsSymbol];
-									if (validator) {
-										result = result.then(function(val) {
-											if (!validator.call(obj, val)) {
-												throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
-											};
-											return val;
-										}, null, obj, secret);
-									};
-								};
-							} else {
-								if (__Internal__.hasPolicies) {
-									const validator = attribute[_shared.ReturnsSymbol];
-									// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
-									if (validator && !validator.call(obj, result)) {
-										if (attr === 'toString') {
-											result = tools.format("Invalid returned value from method '~0~'.", [attr]);
-										} else {
+						if (async) {
+							// Asynchronous methods must always return a Promise
+							const Promise = types.getPromise();
+							result = Promise.resolve(result);
+							if (__Internal__.hasPolicies) {
+								const validator = attribute[_shared.ReturnsSymbol];
+								if (validator) {
+									result = result.then(function(val) {
+										if (!validator.call(obj, val)) {
 											throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 										};
+										return val;
+									}, null, obj, secret);
+								};
+							};
+						} else {
+							if (__Internal__.hasPolicies) {
+								const validator = attribute[_shared.ReturnsSymbol];
+								// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
+								if (validator && !validator.call(obj, result)) {
+									if (attr === 'toString') {
+										result = tools.format("Invalid returned value from method '~0~'.", [attr]);
+									} else {
+										throw new types.Error("Invalid returned value from method '~0~'.", [attr]);
 									};
 								};
 							};
-							return result;
-						},
+						};
+						return result;
+					},
 
 					handleDispatchError: function handleDispatchError(ex, attr, obj) {
-							const isType = types.isType(obj),
-								type = (isType ? obj : types.getType(obj));
-							const attributes = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
-							const notReentrantMap = __Internal__.notReentrantMap.get(obj);
-							let emitted = false;
-							if (!ex.bubble /*&& !ex.trapped*/) {
-								if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
-									let destroyed = false;
-									if (obj._implements(mixIns.Creatable)) {
-										destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, null, _shared.SECRET);
-									};
-									if (destroyed === false) { // NOTE: Can be 'null' for "not created".
-										const errorEvent = obj.__ERROR_EVENT;
-										if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
-											const errorAttr = attributes[errorEvent];
-											const onError = types.getAttribute(obj, errorEvent, null, _shared.SECRET);
-											if (types.isLike(errorAttr[_shared.ExtenderSymbol], extenders.RawEvent)) {
-												if (onError.getCount() > 0) {
-													// <PRB> Node.Js re-emits 'error'.
-													const noop = function _noop(err) {};
-													try {
-														onError.attachOnce(null, noop);
-														emitted = types.invoke(obj, onError, [ex], _shared.SECRET);
-													} catch(o) {
-														throw o;
-													} finally {
-														onError.detach(null, noop);
-													};
-												} else {
+						const isType = types.isType(obj),
+							type = (isType ? obj : types.getType(obj));
+						const attributes = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
+						const notReentrantMap = __Internal__.notReentrantMap.get(obj);
+						let emitted = false;
+						if (!ex.bubble /*&& !ex.trapped*/) {
+							if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
+								let destroyed = false;
+								if (obj._implements(mixIns.Creatable)) {
+									destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, null, _shared.SECRET);
+								};
+								if (destroyed === false) { // NOTE: Can be 'null' for "not created".
+									const errorEvent = obj.__ERROR_EVENT;
+									if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
+										const errorAttr = attributes[errorEvent];
+										const onError = types.getAttribute(obj, errorEvent, null, _shared.SECRET);
+										if (types.isLike(errorAttr[_shared.ExtenderSymbol], extenders.RawEvent)) {
+											if (onError.getCount() > 0) {
+												// <PRB> Node.Js re-emits 'error'.
+												const noop = function _noop(err) {};
+												try {
+													onError.attachOnce(null, noop);
 													emitted = types.invoke(obj, onError, [ex], _shared.SECRET);
+												} catch(o) {
+													throw o;
+												} finally {
+													onError.detach(null, noop);
 												};
 											} else {
-												const ev = new doodad.ErrorEvent(ex);
-												types.invoke(obj, onError, [ev], _shared.SECRET);
-												if (ev.prevent) {
-													ex.trapped = true;
-												};
-												//if (ex.trapped) {
-												//	emitted = true;
-												//};
+												emitted = types.invoke(obj, onError, [ex], _shared.SECRET);
 											};
+										} else {
+											const ev = new doodad.ErrorEvent(ex);
+											types.invoke(obj, onError, [ev], _shared.SECRET);
+											if (ev.prevent) {
+												ex.trapped = true;
+											};
+											//if (ex.trapped) {
+											//	emitted = true;
+											//};
 										};
 									};
 								};
 							};
-							// <PRB> Node.Js doesn't trap errors. So we don't throw if the error has been emitted.
-							if (!emitted) {
-								throw ex;
-							};
-						},
+						};
+						// <PRB> Node.Js doesn't trap errors. So we don't throw if the error has been emitted.
+						if (!emitted) {
+							throw ex;
+						};
+					},
 
 					dispatchTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 9,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									attribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Callers attribute.",
-									},
-									value: {
-										type: 'arrayof(function)',
-										optional: false,
-										description: "Callers.",
-									},
+							author: "Claude Petit",
+							revision: 9,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Template function to create a dispatch.",
+								attribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Callers attribute.",
+								},
+								value: {
+									type: 'arrayof(function)',
+									optional: false,
+									description: "Callers.",
+								},
+							},
+							returns: 'function',
+							description: "Template function to create a dispatch.",
 						}
 						//! END_REPLACE()
 						, function dispatchTemplate(attr, attribute, callers) {
@@ -2810,7 +2810,7 @@ exports.add = function add(modules) {
 									//attributes = result[_shared.AttributesSymbol];
 
 								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null);
-									//hostType = types.getType(host);
+								//hostType = types.getType(host);
 
 								if (__Internal__.hasScopes) {
 									// Private methods
@@ -2898,7 +2898,7 @@ exports.add = function add(modules) {
 									//	types.setAttributes(host, values, null, _shared.SECRET);
 									//};
 
-//										_dispatch[_shared.SuperAsyncSymbol] = false;
+									//										_dispatch[_shared.SuperAsyncSymbol] = false;
 
 									if (notReentrant) {
 										notReentrantMap.set(attr, true);
@@ -2908,9 +2908,9 @@ exports.add = function add(modules) {
 
 									retVal = caller.apply(this, params);
 
-//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
-										retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
-//									};
+									//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
+									retVal = extender.validateDispatchResult(retVal, attr, async, attribute, this, _shared.SECRET);
+									//									};
 
 								} catch(ex) {
 									if (attr === 'toString') {
@@ -2931,28 +2931,28 @@ exports.add = function add(modules) {
 									};
 
 								} finally {
-//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
-										if (notReentrant) {
-											if (async && retVal) {
-												const self = this;
-												retVal = retVal.nodeify(_shared.PromiseCallback(null, function resetCalled(err, result) {
-													notReentrantMap.set(attr, false);
-													if (err) {
-														return extender.handleDispatchError(err, attr, self);
-													} else {
-														return result;
-													};
-												}));
-											} else {
-												notReentrantMap.set(attr, false);
-											};
-										} else if (async && retVal) {
+									//									if (!_dispatch[_shared.SuperAsyncSymbol]) {
+									if (notReentrant) {
+										if (async && retVal) {
 											const self = this;
-											retVal = retVal.catch(_shared.PromiseCallback(null, function(err) {
+											retVal = retVal.nodeify(_shared.PromiseCallback(null, function resetCalled(err, result) {
+												notReentrantMap.set(attr, false);
+												if (err) {
 													return extender.handleDispatchError(err, attr, self);
-												}));
+												} else {
+													return result;
+												};
+											}));
+										} else {
+											notReentrantMap.set(attr, false);
 										};
-//									};
+									} else if (async && retVal) {
+										const self = this;
+										retVal = retVal.catch(_shared.PromiseCallback(null, function(err) {
+											return extender.handleDispatchError(err, attr, self);
+										}));
+									};
+									//									};
 
 									if (oldInside) {
 										__Internal__.restoreInside(oldInside);
@@ -2984,27 +2984,27 @@ exports.add = function add(modules) {
 					createCaller: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									sourceAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Source attribute.",
-									},
-									destAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute already present in the destination.",
-									},
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Creates a caller from the template.",
+								sourceAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Source attribute.",
+								},
+								destAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute already present in the destination.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a caller from the template.",
 						}
 						//! END_REPLACE()
 						, function createCaller(attr, sourceAttribute, destAttribute) {
@@ -3032,32 +3032,32 @@ exports.add = function add(modules) {
 					createDispatch: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 2,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									obj: {
-										type: 'object',
-										optional: false,
-										description: "Target object.",
-									},
-									attribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Array of callers.",
-									},
-									callers: {
-										type: 'arrayof(function)',
-										optional: false,
-										description: "Array of callers.",
-									},
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Creates a dispatch from the template.",
+								obj: {
+									type: 'object',
+									optional: false,
+									description: "Target object.",
+								},
+								attribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Array of callers.",
+								},
+								callers: {
+									type: 'arrayof(function)',
+									optional: false,
+									description: "Array of callers.",
+								},
+							},
+							returns: 'function',
+							description: "Creates a dispatch from the template.",
 						}
 						//! END_REPLACE()
 						, function createDispatch(attr, obj, attribute, callers) {
@@ -3088,182 +3088,182 @@ exports.add = function add(modules) {
 						}),
 
 					_new: types.SUPER(function _new(/*optional*/options) {
-							this._super(options);
-							types.setAttributes(this, {
-								bindMethod: types.get(options, 'bindMethod', this.bindMethod),
-								notReentrant: types.get(options, 'notReentrant', this.notReentrant),
-								byReference: types.get(options, 'byReference', this.byReference),
-								isExternal: types.get(options, 'isExternal', this.isExternal),
-							});
-						}),
+						this._super(options);
+						types.setAttributes(this, {
+							bindMethod: types.get(options, 'bindMethod', this.bindMethod),
+							notReentrant: types.get(options, 'notReentrant', this.notReentrant),
+							byReference: types.get(options, 'byReference', this.byReference),
+							isExternal: types.get(options, 'isExternal', this.isExternal),
+						});
+					}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) +
+						return this._super(options) +
 								',' + (types.get(options, 'bindMethod', this.bindMethod) ? '1' : '0') +
 								',' + (types.get(options, 'notReentrant', this.notReentrant) ? '1' : '0') +
 								',' + (types.get(options, 'byReference', this.byReference) ? '1' : '0') +
 								',' + (types.get(options, 'isExternal', this.isExternal) ? '1' : '0');
-						}),
+					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-							options = this._super(options, newOptions, replace);
-							if (replace) {
-								tools.fill(['bindMethod', 'notReentrant', 'byReference', 'isExternal'], options, this, newOptions);
-							} else {
-								options.bindMethod = !!newOptions.bindMethod || this.bindMethod;
-								options.notReentrant = !!newOptions.notReentrant || this.notReentrant;
-								options.byReference = !!newOptions.byReference || this.byReference;
-								options.isExternal = !!newOptions.isExternal || this.isExternal;
-							};
-							return options;
-						}),
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['bindMethod', 'notReentrant', 'byReference', 'isExternal'], options, this, newOptions);
+						} else {
+							options.bindMethod = !!newOptions.bindMethod || this.bindMethod;
+							options.notReentrant = !!newOptions.notReentrant || this.notReentrant;
+							options.byReference = !!newOptions.byReference || this.byReference;
+							options.isExternal = !!newOptions.isExternal || this.isExternal;
+						};
+						return options;
+					}),
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+						sourceAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
-							let srcIsInterface = types.isInterface(source),
-								callersOrFn = types.unbox(sourceAttribute);
+						let srcIsInterface = types.isInterface(source),
+							callersOrFn = types.unbox(sourceAttribute);
 
-							const callersIsFn = types.isNothing(callersOrFn) || types.isJsFunction(callersOrFn);
+						const callersIsFn = types.isNothing(callersOrFn) || types.isJsFunction(callersOrFn);
 
-							if (root.DD_ASSERT) {
+						if (root.DD_ASSERT) {
+							if (sourceIsProto) {
+								root.DD_ASSERT(callersIsFn, "Invalid source value.");
+							} else {
+								root.DD_ASSERT(callersIsFn || types.isArray(callersOrFn), "Invalid source value.");
+							};
+						};
+
+						let destCallers = types.unbox(destAttribute);
+						const hasDestCallers = types.isArray(destCallers);
+						if (hasDestCallers) {
+							if (types.isFrozen(destCallers)) {
+								destCallers = tools.append([], destCallers);
+								destAttribute = destAttribute.setValue(destCallers);  // copy attribute flags of "destAttribute"
+							};
+						} else {
+							destCallers = [];
+							destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
+						};
+
+						let replacedCallers = sourceAttribute[_shared.ReplacedCallersSymbol];
+						if (replacedCallers) {
+							destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers = tools.unique(replacedCallers);
+						} else {
+							replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
+						};
+
+						let modifiers = ((destAttribute[_shared.ModifiersSymbol] || 0) & _shared.preservedMethodModifiers) | (sourceAttribute[_shared.ModifiersSymbol] || 0);
+
+						if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
+							// Override or replace
+							let start = destAttribute[_shared.CallFirstLengthSymbol];
+							if (callersOrFn) {
 								if (sourceIsProto) {
-									root.DD_ASSERT(callersIsFn, "Invalid source value.");
-								} else {
-									root.DD_ASSERT(callersIsFn || types.isArray(callersOrFn), "Invalid source value.");
-								};
-							};
-
-							let destCallers = types.unbox(destAttribute);
-							const hasDestCallers = types.isArray(destCallers);
-							if (hasDestCallers) {
-								if (types.isFrozen(destCallers)) {
-									destCallers = tools.append([], destCallers);
-									destAttribute = destAttribute.setValue(destCallers);  // copy attribute flags of "destAttribute"
-								};
-							} else {
-								destCallers = [];
-								destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
-							};
-
-							let replacedCallers = sourceAttribute[_shared.ReplacedCallersSymbol];
-							if (replacedCallers) {
-								destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers = tools.unique(replacedCallers);
-							} else {
-								replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
-							};
-
-							let modifiers = ((destAttribute[_shared.ModifiersSymbol] || 0) & _shared.preservedMethodModifiers) | (sourceAttribute[_shared.ModifiersSymbol] || 0);
-
-							if (hasDestCallers && !srcIsInterface && (!sourceIsProto || (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)))) {
-								// Override or replace
-								let start = destAttribute[_shared.CallFirstLengthSymbol];
-								if (callersOrFn) {
-									if (sourceIsProto) {
-										if (__Internal__.hasPolicies) {
-											if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
-												throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
-											};
-										};
-										const caller = this.createCaller(attr, sourceAttribute, destAttribute);
-										callersOrFn = [caller];
-									};
-									let toRemove = 0;
-									let caller = callersOrFn[start - 1];
-									let callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
-									if ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) {
-										// Replace "call firsts"
-										if (sourceIsProto) {
-											toRemove = start;
-										};
-										start = 0;
-									};
-									caller = callersOrFn[callersOrFn.length - 1];
-									callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
-									if (sourceIsProto && ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === doodad.MethodModifiers.Replace)) {
-										// Replace non "call firsts"
-										toRemove = destCallers.length - start;
-									};
-									const removed = _shared.Natives.arraySpliceApply(destCallers, tools.append([start, toRemove], callersOrFn));
-									destAttribute[_shared.ReplacedCallersSymbol] = tools.append(replacedCallers, removed);
-									destAttribute[_shared.CallFirstLengthSymbol] = start + (sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
-								};
-							} else {
-								// Create
-								if (sourceIsProto || callersIsFn) {
 									if (__Internal__.hasPolicies) {
-										if (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)) {
-											if (!hasDestCallers && !(modifiers & doodad.MethodModifiers.ForceCreate)) {
-												throw new types.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, protoName || __Internal__.ANONYMOUS]);
-											};
-										} else {
-											if (hasDestCallers) {
-												throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
-											};
+										if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
+											throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 										};
 									};
-								} else if (srcIsInterface) {
-									if (callersOrFn && (sourceAttribute[_shared.PrototypeSymbol] === sourceProto)) {
-										if (__Internal__.hasPolicies) {
-											if (hasDestCallers) {
-												throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
-											};
-											if (callersOrFn.length) {
-												throw new types.Error("Interface '~0~' must not have a body for method '~1~'. You should create a mix-in instead.", [types.getTypeName(source) || __Internal__.ANONYMOUS, attr]);
-											};
+									const caller = this.createCaller(attr, sourceAttribute, destAttribute);
+									callersOrFn = [caller];
+								};
+								let toRemove = 0;
+								let caller = callersOrFn[start - 1];
+								let callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
+								if ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) {
+									// Replace "call firsts"
+									if (sourceIsProto) {
+										toRemove = start;
+									};
+									start = 0;
+								};
+								caller = callersOrFn[callersOrFn.length - 1];
+								callerModifiers = caller && caller[_shared.ModifiersSymbol] || 0;
+								if (sourceIsProto && ((callerModifiers & (doodad.MethodModifiers.CallFirst | doodad.MethodModifiers.Replace)) === doodad.MethodModifiers.Replace)) {
+									// Replace non "call firsts"
+									toRemove = destCallers.length - start;
+								};
+								const removed = _shared.Natives.arraySpliceApply(destCallers, tools.append([start, toRemove], callersOrFn));
+								destAttribute[_shared.ReplacedCallersSymbol] = tools.append(replacedCallers, removed);
+								destAttribute[_shared.CallFirstLengthSymbol] = start + (sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
+							};
+						} else {
+							// Create
+							if (sourceIsProto || callersIsFn) {
+								if (__Internal__.hasPolicies) {
+									if (modifiers & (doodad.MethodModifiers.Override | doodad.MethodModifiers.Replace)) {
+										if (!hasDestCallers && !(modifiers & doodad.MethodModifiers.ForceCreate)) {
+											throw new types.Error("Method '~0~' of '~1~' can't be overridden or replaced because the method doesn't exist.", [attr, protoName || __Internal__.ANONYMOUS]);
 										};
-										// Create method with an empty body and the MustOverride flag.
-										callersOrFn.length = 0;
-										modifiers |= doodad.MethodModifiers.MustOverride;
-										srcIsInterface = false;
+									} else {
+										if (hasDestCallers) {
+											throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
+										};
 									};
 								};
-								if (!srcIsInterface) {
-									if (callersOrFn) {
-										if (types.isFunction(callersOrFn)) {
-											callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
+							} else if (srcIsInterface) {
+								if (callersOrFn && (sourceAttribute[_shared.PrototypeSymbol] === sourceProto)) {
+									if (__Internal__.hasPolicies) {
+										if (hasDestCallers) {
+											throw new types.Error("Method '~0~' of '~1~' can't be created because the method already exists.", [attr, protoName || __Internal__.ANONYMOUS]);
 										};
-										destCallers.length = 0;
-										tools.append(destCallers, callersOrFn);
+										if (callersOrFn.length) {
+											throw new types.Error("Interface '~0~' must not have a body for method '~1~'. You should create a mix-in instead.", [types.getTypeName(source) || __Internal__.ANONYMOUS, attr]);
+										};
 									};
-									destAttribute[_shared.CallFirstLengthSymbol] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
+									// Create method with an empty body and the MustOverride flag.
+									callersOrFn.length = 0;
+									modifiers |= doodad.MethodModifiers.MustOverride;
+									srcIsInterface = false;
 								};
 							};
-
 							if (!srcIsInterface) {
-								destAttribute[_shared.ModifiersSymbol] = modifiers;
-								destAttribute[_shared.ReturnsSymbol] = (sourceAttribute[_shared.ReturnsSymbol] || destAttribute[_shared.ReturnsSymbol]);
-								destAttribute[_shared.UsageMessageSymbol] = (sourceAttribute[_shared.UsageMessageSymbol] || destAttribute[_shared.UsageMessageSymbol]);
-								destAttribute[_shared.RenamedToSymbol] = sourceAttribute[_shared.RenamedToSymbol];
+								if (callersOrFn) {
+									if (types.isFunction(callersOrFn)) {
+										callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
+									};
+									destCallers.length = 0;
+									tools.append(destCallers, callersOrFn);
+								};
+								destAttribute[_shared.CallFirstLengthSymbol] = ((modifiers & doodad.MethodModifiers.CallFirst) ? 1 : sourceAttribute[_shared.CallFirstLengthSymbol] || 0);
 							};
+						};
 
-							return destAttribute;
-						}),
+						if (!srcIsInterface) {
+							destAttribute[_shared.ModifiersSymbol] = modifiers;
+							destAttribute[_shared.ReturnsSymbol] = (sourceAttribute[_shared.ReturnsSymbol] || destAttribute[_shared.ReturnsSymbol]);
+							destAttribute[_shared.UsageMessageSymbol] = (sourceAttribute[_shared.UsageMessageSymbol] || destAttribute[_shared.UsageMessageSymbol]);
+							destAttribute[_shared.RenamedToSymbol] = sourceAttribute[_shared.RenamedToSymbol];
+						};
+
+						return destAttribute;
+					}),
 
 					postExtend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									destAttributes: {
-										type: 'objectof(AttributeBox)',
-										optional: false,
-										description: "Attributes of the new class.",
-									},
-									destAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute value already present in the destination.",
-									},
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'AttributeBox',
-								description: "Finalizes the extension of an attribute.",
+								destAttributes: {
+									type: 'objectof(AttributeBox)',
+									optional: false,
+									description: "Attributes of the new class.",
+								},
+								destAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute value already present in the destination.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Finalizes the extension of an attribute.",
 						}
 						//! END_REPLACE()
 						, types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
@@ -3409,45 +3409,45 @@ exports.add = function add(modules) {
 						})),
 
 					preInit: types.SUPER(function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.bindMethod && !types.isNothing(value)); // true === Cancel
-						}),
+						return this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) && !(this.bindMethod && !types.isNothing(value)); // true === Cancel
+					}),
 
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							const attrId = generator.vars.add(attr);
+						const attrId = generator.vars.add(attr);
 
-							if (this.bindMethod && !types.isNothing(value)) {
-								const extender = this;
-								const extenderId = generator.vars.add(extender);
-								const attributeId = generator.vars.add(attribute);
-								const valueId = generator.vars.add(value);
-								const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
-								const dispatchId = generator.vars.add(dispatch);
-								value = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
-								dispatch.release();
-							} else {
-								const extender = this;
-								const extenderId = generator.vars.add(extender);
-								const attributeId = generator.vars.add(attribute);
-								const valueId = generator.vars.add(value);
-								value = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
-							};
+						if (this.bindMethod && !types.isNothing(value)) {
+							const extender = this;
+							const extenderId = generator.vars.add(extender);
+							const attributeId = generator.vars.add(attribute);
+							const valueId = generator.vars.add(value);
+							const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
+							const dispatchId = generator.vars.add(dispatch);
+							value = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+							dispatch.release();
+						} else {
+							const extender = this;
+							const extenderId = generator.vars.add(extender);
+							const attributeId = generator.vars.add(attribute);
+							const valueId = generator.vars.add(value);
+							value = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
+						};
 
-							this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
+						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 
-							if (__Internal__.hasPolicies) {
-								const valueId = generator.vars.fromKey(attr);
-								const symbolModifiersId = generator.vars.add(_shared.ModifiersSymbol);
-								const symbolMustOverrideId = generator.vars.add(_shared.MustOverrideSymbol);
+						if (__Internal__.hasPolicies) {
+							const valueId = generator.vars.fromKey(attr);
+							const symbolModifiersId = generator.vars.add(_shared.ModifiersSymbol);
+							const symbolMustOverrideId = generator.vars.add(_shared.MustOverrideSymbol);
 
-								generator.code.add(
-									"if (" + valueId + "[" + symbolModifiersId + "] & doodad.MethodModifiers.MustOverride) {" +
+							generator.code.add(
+								"if (" + valueId + "[" + symbolModifiersId + "] & doodad.MethodModifiers.MustOverride) {" +
 										"if (!" + generator.storageId + "[" + symbolMustOverrideId + "]) {" +
 											generator.storageId + "[" + symbolMustOverrideId + "] = " + attrId + ";" +
 										"};" +
 									"};"
-								);
-							};
-						}),
+							);
+						};
+					}),
 
 					remove: types.READ_ONLY(null),
 				})));
@@ -3455,17 +3455,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends a JS method.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends a JS method.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
@@ -3475,67 +3475,67 @@ exports.add = function add(modules) {
 					dontSetSuper: types.READ_ONLY(false),
 
 					_new: types.SUPER(function _new(/*optional*/options) {
-							this._super(options);
-							types.setAttributes(this, {
-								dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
-							});
-						}),
+						this._super(options);
+						types.setAttributes(this, {
+							dontSetSuper: types.get(options, 'dontSetSuper', this.dontSetSuper),
+						});
+					}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) +
+						return this._super(options) +
 								',' + (types.get(options, 'dontSetSuper', this.dontSetSuper) ? '1' : '0');
-						}),
+					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-							options = this._super(options, newOptions, replace);
-							if (replace) {
-								tools.fill(['dontSetSuper'], options, this, newOptions);
-							} else {
-								options.dontSetSuper = !!newOptions.dontSetSuper || this.dontSetSuper;
-							};
-							return options;
-						}),
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['dontSetSuper'], options, this, newOptions);
+						} else {
+							options.dontSetSuper = !!newOptions.dontSetSuper || this.dontSetSuper;
+						};
+						return options;
+					}),
 
 					callerTemplate: function callerTemplate(attr, sourceAttribute, destAttribute) {
-							let fn = types.unbox(sourceAttribute);
+						let fn = types.unbox(sourceAttribute);
 
-							if (root.DD_ASSERT) {
-								root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
-							};
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
+						};
 
-							const _caller = tools.nullObject();
+						const _caller = tools.nullObject();
 
-							fn = types.INHERIT(doodad.CallerFunction, fn);
+						fn = types.INHERIT(doodad.CallerFunction, fn);
 
-							_caller[_shared.FunctionSymbol] = fn;
+						_caller[_shared.FunctionSymbol] = fn;
 
-							return _caller;
-						},
+						return _caller;
+					},
 
 					jsCallerTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "Method function.",
-									},
-									_super: {
-										type: 'function',
-										optional: true,
-										description: "Method function already present in the destination. Default is none.",
-									},
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'function',
-								description: "Template to create a caller for a JS method.",
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Method function.",
+								},
+								_super: {
+									type: 'function',
+									optional: true,
+									description: "Method function already present in the destination. Default is none.",
+								},
+							},
+							returns: 'function',
+							description: "Template to create a caller for a JS method.",
 						}
 						//! END_REPLACE()
 						, function jsCallerTemplate(attr, fn, /*optional*/_super) {
@@ -3577,82 +3577,82 @@ exports.add = function add(modules) {
 						}),
 
 					dispatchTemplate: function dispatchTemplate(attr, attribute, callers) {
-							const callersLen = callers.length;
+						const callersLen = callers.length;
 
-							let _super = null;
-							for (let i = callersLen - 1; i >= 0; i--) {
-								const caller = callers[i];
+						let _super = null;
+						for (let i = callersLen - 1; i >= 0; i--) {
+							const caller = callers[i];
 
-								_super = this.jsCallerTemplate(attr, caller[_shared.FunctionSymbol], _super);
+							_super = this.jsCallerTemplate(attr, caller[_shared.FunctionSymbol], _super);
 
-								types.setAttribute(_super, _shared.PrototypeSymbol, caller[_shared.PrototypeSymbol], {});
-							};
+							types.setAttribute(_super, _shared.PrototypeSymbol, caller[_shared.PrototypeSymbol], {});
+						};
 
-							let _dispatch = __Internal__.makeInside(null, _super, _shared.SECRET);
+						let _dispatch = __Internal__.makeInside(null, _super, _shared.SECRET);
 
-							_dispatch = types.INHERIT(doodad.DispatchFunction, _dispatch);
+						_dispatch = types.INHERIT(doodad.DispatchFunction, _dispatch);
 
-							return _dispatch;
-						},
+						return _dispatch;
+					},
 
 					extend: function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+						sourceAttribute = extenders.ClonedAttribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
-							let destCallers = types.unbox(destAttribute);
+						let destCallers = types.unbox(destAttribute);
 
-							if (!types.isArray(destCallers)) {
-								if (sourceAttribute[_shared.SuperEnabledSymbol] && types.isFunction(destCallers)) {
-									destCallers = [this.createCaller(attr, destAttribute, null)];
-								} else {
-									destCallers = [];
+						if (!types.isArray(destCallers)) {
+							if (sourceAttribute[_shared.SuperEnabledSymbol] && types.isFunction(destCallers)) {
+								destCallers = [this.createCaller(attr, destAttribute, null)];
+							} else {
+								destCallers = [];
+							};
+							destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
+						};
+
+						let callersOrFn = types.unbox(sourceAttribute);
+
+						if (!sourceAttribute[_shared.SuperEnabledSymbol]) {
+							destCallers.length = 0;
+						};
+
+						if (sourceIsProto) {
+							if (__Internal__.hasPolicies) {
+								if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
+									throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
 								};
-								destAttribute = sourceAttribute.setValue(destCallers);  // copy attribute flags of "sourceAttribute"
 							};
+							callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
+						};
 
-							let callersOrFn = types.unbox(sourceAttribute);
+						_shared.Natives.arrayUnshiftApply(destCallers, callersOrFn);
 
-							if (!sourceAttribute[_shared.SuperEnabledSymbol]) {
-								destCallers.length = 0;
-							};
-
-							if (sourceIsProto) {
-								if (__Internal__.hasPolicies) {
-									if (destAttribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
-										throw new types.Error("Private method '~0~' of '~1~' can't be overridden or replaced.", [attr, protoName || __Internal__.ANONYMOUS]);
-									};
-								};
-								callersOrFn = [this.createCaller(attr, sourceAttribute, destAttribute)];
-							};
-
-							_shared.Natives.arrayUnshiftApply(destCallers, callersOrFn);
-
-							return destAttribute;
-						},
+						return destAttribute;
+					},
 
 					postExtend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									attr: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Attribute name.",
-									},
-									destAttributes: {
-										type: 'objectof(AttributeBox)',
-										optional: false,
-										description: "Attributes of the new class.",
-									},
-									destAttribute: {
-										type: 'AttributeBox',
-										optional: false,
-										description: "Attribute value already present in the destination.",
-									},
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								attr: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Attribute name.",
 								},
-								returns: 'AttributeBox',
-								description: "Finalizes the extension of an attribute.",
+								destAttributes: {
+									type: 'objectof(AttributeBox)',
+									optional: false,
+									description: "Attributes of the new class.",
+								},
+								destAttribute: {
+									type: 'AttributeBox',
+									optional: false,
+									description: "Attribute value already present in the destination.",
+								},
+							},
+							returns: 'AttributeBox',
+							description: "Finalizes the extension of an attribute.",
 						}
 						//! END_REPLACE()
 						, function postExtend(attr, destAttributes, destAttribute) {
@@ -3692,17 +3692,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends a property.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends a property.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
@@ -3713,54 +3713,54 @@ exports.add = function add(modules) {
 					bindMethod: types.READ_ONLY(true),
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+						sourceAttribute = extenders.Attribute.extend.call(this, attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
 
-							const srcDesc = types.unbox(sourceAttribute);
+						const srcDesc = types.unbox(sourceAttribute);
 
-							if (types.isNothing(srcDesc)) {
-								return sourceAttribute;
-							};
+						if (types.isNothing(srcDesc)) {
+							return sourceAttribute;
+						};
 
-							let destDesc;
+						let destDesc;
 
-							if (types.isNothing(destAttribute)) {
-								destDesc = {};
-							} else {
-								destDesc = types.unbox(destAttribute);
-							};
+						if (types.isNothing(destAttribute)) {
+							destDesc = {};
+						} else {
+							destDesc = types.unbox(destAttribute);
+						};
 
-							const srcGet = types.get(srcDesc, 'get', null);
-							const srcSet = types.get(srcDesc, 'set', null);
-							const destGet = types.get(destDesc, 'get', null);
-							const destSet = types.get(destDesc, 'set', null);
+						const srcGet = types.get(srcDesc, 'get', null);
+						const srcSet = types.get(srcDesc, 'set', null);
+						const destGet = types.get(destDesc, 'get', null);
+						const destSet = types.get(destDesc, 'set', null);
 
-							if (types.has(destDesc, 'value')) {
-								(function(srcGet, srcSet, destGet, destSet, destVal) {
-									if (srcGet && !destGet) {
-										destGet = function get(value) {
-											return destVal;
-										};
+						if (types.has(destDesc, 'value')) {
+							(function(srcGet, srcSet, destGet, destSet, destVal) {
+								if (srcGet && !destGet) {
+									destGet = function get(value) {
+										return destVal;
 									};
-									if (srcSet && !destSet) {
-										destSet = function set(value) {
-											destVal = value;
-										};
+								};
+								if (srcSet && !destSet) {
+									destSet = function set(value) {
+										destVal = value;
 									};
-								})(srcGet, srcSet, destGet, destSet, destDesc.value);
-							};
+								};
+							})(srcGet, srcSet, destGet, destSet, destDesc.value);
+						};
 
-							const descriptor = tools.extend({}, srcDesc);
+						const descriptor = tools.extend({}, srcDesc);
 
-							if (srcGet) {
-								descriptor.get = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcGet), types.AttributeBox(destGet), sourceIsProto);
-							};
+						if (srcGet) {
+							descriptor.get = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcGet), types.AttributeBox(destGet), sourceIsProto);
+						};
 
-							if (srcSet) {
-								descriptor.set = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcSet), types.AttributeBox(destSet), sourceIsProto);
-							};
+						if (srcSet) {
+							descriptor.set = this._super(attr, source, sourceProto, destAttributes, forType, types.AttributeBox(srcSet), types.AttributeBox(destSet), sourceIsProto);
+						};
 
-							return sourceAttribute.setValue(descriptor);  // copy attribute flags of "sourceAttribute"
-						}),
+						return sourceAttribute.setValue(descriptor);  // copy attribute flags of "sourceAttribute"
+					}),
 
 					//preInit: function preInit(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 					//		return false; // true === Cancel
@@ -3768,54 +3768,54 @@ exports.add = function add(modules) {
 					preInit: types.READ_ONLY(null),
 
 					init: function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							if (tools.indexOf(existingAttributes, attr) >= 0) {
-								throw new types.Error("Property attributes can't be extended within an expandable object.");
+						if (tools.indexOf(existingAttributes, attr) >= 0) {
+							throw new types.Error("Property attributes can't be extended within an expandable object.");
+						};
+
+						const extenderId = generator.vars.add(this);
+						const attrId = generator.vars.add(attr);
+						const attributeId = generator.vars.add(attribute);
+
+						const valueId = generator.vars.add(value);
+						const descriptorId = generator.vars.add(new generator.DynamicValue("tools.extend({}, " + valueId + ")"));
+
+						const get = types.get(value, 'get');
+						if (get) {
+							const getId = generator.vars.add(types.unbox(get));
+							const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + getId + ")");
+							let dispatchId = generator.vars.add(dispatch);
+							if (this.bindMethod) {
+								const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+								dispatch.release();
+								dispatchId = generator.vars.add(newDispatch);
 							};
+							generator.code.add(descriptorId + ".get = " + dispatchId);
+						};
 
-							const extenderId = generator.vars.add(this);
-							const attrId = generator.vars.add(attr);
-							const attributeId = generator.vars.add(attribute);
-
-							const valueId = generator.vars.add(value);
-							const descriptorId = generator.vars.add(new generator.DynamicValue("tools.extend({}, " + valueId + ")"));
-
-							const get = types.get(value, 'get');
-							if (get) {
-								const getId = generator.vars.add(types.unbox(get));
-								const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + getId + ")");
-								let dispatchId = generator.vars.add(dispatch);
-								if (this.bindMethod) {
-									const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
-									dispatch.release();
-									dispatchId = generator.vars.add(newDispatch);
-								};
-								generator.code.add(descriptorId + ".get = " + dispatchId);
+						const set = types.get(value, 'set');
+						if (set) {
+							const setId = generator.vars.add(types.unbox(set));
+							const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + setId + ")");
+							let dispatchId = generator.vars.add(dispatch);
+							if (this.bindMethod) {
+								const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
+								dispatch.release();
+								dispatchId = generator.vars.add(newDispatch);
 							};
+							generator.code.add(descriptorId + ".set = " + dispatchId);
+						};
 
-							const set = types.get(value, 'set');
-							if (set) {
-								const setId = generator.vars.add(types.unbox(set));
-								const dispatch = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + setId + ")");
-								let dispatchId = generator.vars.add(dispatch);
-								if (this.bindMethod) {
-									const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
-									dispatch.release();
-									dispatchId = generator.vars.add(newDispatch);
-								};
-								generator.code.add(descriptorId + ".set = " + dispatchId);
-							};
+						generator.code.add(descriptorId + ".enumerable = " + tools.toSource(this.isEnumerable));
 
-							generator.code.add(descriptorId + ".enumerable = " + tools.toSource(this.isEnumerable));
+						if (get || set) {
+							generator.code.add(descriptorId + ".configurable = false");
+						} else {
+							generator.code.add(descriptorId + ".configurable = " + tools.toSource(this.isReadOnly));
+							generator.code.add(descriptorId + ".writable = " + tools.toSource(!this.isReadOnly));
+						};
 
-							if (get || set) {
-								generator.code.add(descriptorId + ".configurable = false");
-							} else {
-								generator.code.add(descriptorId + ".configurable = " + tools.toSource(this.isReadOnly));
-								generator.code.add(descriptorId + ".writable = " + tools.toSource(!this.isReadOnly));
-							};
-
-							generator.define(attrId, descriptorId);
-						},
+						generator.define(attrId, descriptorId);
+					},
 
 					remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
 						extenders.ClonedAttribute.remove.call(this, attr, obj, storage, forType, attribute);
@@ -3835,17 +3835,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PUBLIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a public attribute.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a public attribute.",
 				}
 				//! END_REPLACE()
 				, function PUBLIC(value) {
@@ -3865,17 +3865,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PROTECTED', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a protected attribute.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a protected attribute.",
 				}
 				//! END_REPLACE()
 				, function PROTECTED(value) {
@@ -3895,17 +3895,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PRIVATE', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a private attribute.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a private attribute.",
 				}
 				//! END_REPLACE()
 				, function PRIVATE(value) {
@@ -3944,17 +3944,17 @@ exports.add = function add(modules) {
 			doodad.ADD('BASE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Sets a class, interface or mix-in as base.",
+					},
+					returns: 'Class',
+					description: "Sets a class, interface or mix-in as base.",
 				}
 				//! END_REPLACE()
 				, function BASE(cls) {
@@ -3970,17 +3970,17 @@ exports.add = function add(modules) {
 			doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Transforms a class to a mix-in.",
+					},
+					returns: 'Class',
+					description: "Transforms a class to a mix-in.",
 				}
 				//! END_REPLACE()
 				, function MIX_IN(cls) {
@@ -4001,17 +4001,17 @@ exports.add = function add(modules) {
 			doodad.ADD('INTERFACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Transforms a class to an interface.",
+					},
+					returns: 'Class',
+					description: "Transforms a class to an interface.",
 				}
 				//! END_REPLACE()
 				, function INTERFACE(cls) {
@@ -4032,17 +4032,17 @@ exports.add = function add(modules) {
 			doodad.ADD('SEALED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Sets a class, interface or mix-in to a sealed one.",
+					},
+					returns: 'Class',
+					description: "Sets a class, interface or mix-in to a sealed one.",
 				}
 				//! END_REPLACE()
 				, function SEALED(cls) {
@@ -4057,17 +4057,17 @@ exports.add = function add(modules) {
 			doodad.ADD('STATIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Transforms a class to a static class.",
+					},
+					returns: 'Class',
+					description: "Transforms a class to a static class.",
 				}
 				//! END_REPLACE()
 				, function STATIC(cls) {
@@ -4082,17 +4082,17 @@ exports.add = function add(modules) {
 			doodad.ADD('ISOLATED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Transforms a mix-in or an interface to an isolated one.",
+					},
+					returns: 'Class',
+					description: "Transforms a mix-in or an interface to an isolated one.",
 				}
 				//! END_REPLACE()
 				, function ISOLATED(cls) {
@@ -4112,17 +4112,17 @@ exports.add = function add(modules) {
 			doodad.ADD('EXPANDABLE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'Class',
-						description: "Makes expandable objects.",
+					},
+					returns: 'Class',
+					description: "Makes expandable objects.",
 				}
 				//! END_REPLACE()
 				, function EXPANDABLE(cls) {
@@ -4146,22 +4146,22 @@ exports.add = function add(modules) {
 			doodad.ADD('WHEN', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							type: {
-								type: 'Class,Interface,arrayof(Class,Interface)',
-								optional: false,
-								descripion: "Class or interface type.",
-							},
-							value: {
-								type: 'AttributeBox,any',
-								optional: true,
-								description: "Value or attribute.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						type: {
+							type: 'Class,Interface,arrayof(Class,Interface)',
+							optional: false,
+							descripion: "Class or interface type.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that the attribute is skipped until every specified types gets implemented.",
+						value: {
+							type: 'AttributeBox,any',
+							optional: true,
+							description: "Value or attribute.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that the attribute is skipped until every specified types gets implemented.",
 				}
 				//! END_REPLACE()
 				, function WHEN(type, /*optional*/value) {
@@ -4174,27 +4174,27 @@ exports.add = function add(modules) {
 			doodad.ADD('ATTRIBUTE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'any',
-								optional: false,
-								description: "Value.",
-							},
-							extender: {
-								type: 'Extender',
-								optional: true,
-								description: "Extender. Default is 'ClonedAttribute' extender.'",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Extender options.'",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'any',
+							optional: false,
+							description: "Value.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates an attribute from a value with the specified extender.",
+						extender: {
+							type: 'Extender',
+							optional: true,
+							description: "Extender. Default is 'ClonedAttribute' extender.'",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Extender options.'",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Creates an attribute from a value with the specified extender.",
 				}
 				//! END_REPLACE()
 				, function ATTRIBUTE(value, /*optional*/extender, /*optional*/options) {
@@ -4223,22 +4223,22 @@ exports.add = function add(modules) {
 			doodad.ADD('OPTIONS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							options: {
-								type: 'object',
-								optional: false,
-								description: "Extender options.'",
-							},
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						options: {
+							type: 'object',
+							optional: false,
+							description: "Extender options.'",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Sets the options of the extender of an attribute or sets the options of an extender.",
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
+						},
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Sets the options of the extender of an attribute or sets the options of an extender.",
 				}
 				//! END_REPLACE()
 				, function OPTIONS(options, value) {
@@ -4280,17 +4280,17 @@ exports.add = function add(modules) {
 			doodad.ADD('NOT_INHERITED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute will always override.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute will always override.",
 				}
 				//! END_REPLACE()
 				, function NOT_INHERITED(value) {
@@ -4302,17 +4302,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PRE_EXTEND', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute needs to be extended before others.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute needs to be extended before others.",
 				}
 				//! END_REPLACE()
 				, function PRE_EXTEND(value) {
@@ -4324,17 +4324,17 @@ exports.add = function add(modules) {
 			doodad.ADD('TYPE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute is a type attribute.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute is a type attribute.",
 				}
 				//! END_REPLACE()
 				, function TYPE(value) {
@@ -4346,17 +4346,17 @@ exports.add = function add(modules) {
 			doodad.ADD('INSTANCE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute is an instance attribute.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute is an instance attribute.",
 				}
 				//! END_REPLACE()
 				, function INSTANCE(value) {
@@ -4368,17 +4368,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PERSISTENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute will not get deleted on object destruction.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute will not get deleted on object destruction.",
 				}
 				//! END_REPLACE()
 				, function PERSISTENT(value) {
@@ -4390,17 +4390,17 @@ exports.add = function add(modules) {
 			doodad.ADD('BIND', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that a method will bind to the object.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that a method will bind to the object.",
 				}
 				//! END_REPLACE()
 				, function BIND(value) {
@@ -4412,17 +4412,17 @@ exports.add = function add(modules) {
 			doodad.ADD('NON_REENTRANT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that a method is non-reentrant.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that a method is non-reentrant.",
 				}
 				//! END_REPLACE()
 				, function NON_REENTRANT(value) {
@@ -4434,17 +4434,17 @@ exports.add = function add(modules) {
 			doodad.ADD('EXTERNAL', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that a method can only be called from outside the object.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that a method can only be called from outside the object.",
 				}
 				//! END_REPLACE()
 				, function EXTERNAL(value) {
@@ -4456,17 +4456,17 @@ exports.add = function add(modules) {
 			doodad.ADD('READ_ONLY', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute is read-only (the opposite of 'doodad.WRITABLE').",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute is read-only (the opposite of 'doodad.WRITABLE').",
 				}
 				//! END_REPLACE()
 				, function READ_ONLY(value) {
@@ -4478,17 +4478,17 @@ exports.add = function add(modules) {
 			doodad.ADD('WRITABLE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value: {
-								type: 'AttributeBox,Extender,any',
-								optional: false,
-								description: "Attribute or extender or value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value: {
+							type: 'AttributeBox,Extender,any',
+							optional: false,
+							description: "Attribute or extender or value.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Specifies that an attribute is writable (the opposite of 'doodad.READ_ONLY'). That's the default behavior.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Specifies that an attribute is writable (the opposite of 'doodad.READ_ONLY'). That's the default behavior.",
 				}
 				//! END_REPLACE()
 				, function WRITABLE(value) {
@@ -4500,17 +4500,17 @@ exports.add = function add(modules) {
 			doodad.ADD('METHOD', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Function.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Function.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a method.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a method.",
 				}
 				//! END_REPLACE()
 				, function METHOD(/*optional*/fn) {
@@ -4538,17 +4538,17 @@ exports.add = function add(modules) {
 			doodad.ADD('JS_METHOD', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Function.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Function.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a JS method.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a JS method.",
 				}
 				//! END_REPLACE()
 				, function JS_METHOD(fn) {
@@ -4560,17 +4560,17 @@ exports.add = function add(modules) {
 			doodad.ADD('SUPER', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Function.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Function.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a JS method with '_super'.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a JS method with '_super'.",
 				}
 				//! END_REPLACE()
 				, function(fn) {
@@ -4584,17 +4584,17 @@ exports.add = function add(modules) {
 			doodad.ADD('PROPERTY', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							descriptor: {
-								type: 'object',
-								optional: false,
-								description: "Property descriptor.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						descriptor: {
+							type: 'object',
+							optional: false,
+							description: "Property descriptor.",
 						},
-						returns: 'AttributeBox',
-						description: "Creates a property.",
+					},
+					returns: 'AttributeBox',
+					description: "Creates a property.",
 				}
 				//! END_REPLACE()
 				, function PROPERTY(descriptor) {
@@ -4612,27 +4612,27 @@ exports.add = function add(modules) {
 			doodad.ADD('POSITION', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							position: {
-								type: 'integer',
-								optional: false,
-								description: "'-1': Before class. '1': After class. '0': Replace class.",
-							},
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						position: {
+							type: 'integer',
+							optional: false,
+							description: "'-1': Before class. '1': After class. '0': Replace class.",
 						},
-						returns: 'AttributeBox',
-						description: "Positions an attribute relatively to the same attribute of another class.",
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
+						},
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Positions an attribute relatively to the same attribute of another class.",
 				}
 				//! END_REPLACE()
 				, function POSITION(position, cls, value) {
@@ -4648,22 +4648,22 @@ exports.add = function add(modules) {
 			doodad.ADD('AFTER', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'AttributeBox',
-						description: "Positions an attribute after to the same attribute of another class.",
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Positions an attribute after to the same attribute of another class.",
 				}
 				//! END_REPLACE()
 				, function AFTER(cls, value) {
@@ -4673,22 +4673,22 @@ exports.add = function add(modules) {
 			doodad.ADD('BEFORE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							cls: {
-								type: 'Class',
-								optional: false,
-								description: "Class.",
-							},
-							value: {
-								type: 'AttributeBox,any',
-								optional: false,
-								description: "Value.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
 						},
-						returns: 'AttributeBox',
-						description: "Positions an attribute before to the same attribute of another class.",
+						value: {
+							type: 'AttributeBox,any',
+							optional: false,
+							description: "Value.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Positions an attribute before to the same attribute of another class.",
 				}
 				//! END_REPLACE()
 				, function BEFORE(cls, value) {
@@ -4717,23 +4717,23 @@ exports.add = function add(modules) {
 			doodad.ADD('REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							_interface: {
-								type: 'Class',
-								optional: true,
-								description: "Interface class.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will replace the existing one.",
+						_interface: {
+							type: 'Class',
+							optional: true,
+							description: "Interface class.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will replace the existing one.",
 				}
 				//! END_REPLACE()
 				, function REPLACE(/*<<< optional[_interface]*/ /*optional fn*/...args) {
@@ -4757,23 +4757,23 @@ exports.add = function add(modules) {
 			doodad.ADD('OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							_interface: {
-								type: 'Class',
-								optional: true,
-								description: "Interface class.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will override the existing one.",
+						_interface: {
+							type: 'Class',
+							optional: true,
+							description: "Interface class.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will override the existing one.",
 				}
 				//! END_REPLACE()
 				, function OVERRIDE(/*<<< optional[_interface]*/ /*optional fn*/ ...args) {
@@ -4797,23 +4797,23 @@ exports.add = function add(modules) {
 			doodad.ADD('CREATE_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							_interface: {
-								type: 'Class',
-								optional: true,
-								description: "Interface class.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will create or replace the existing one.",
+						_interface: {
+							type: 'Class',
+							optional: true,
+							description: "Interface class.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will create or replace the existing one.",
 				}
 				//! END_REPLACE()
 				, function CREATE_REPLACE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
@@ -4825,23 +4825,23 @@ exports.add = function add(modules) {
 			doodad.ADD('CREATE_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							_interface: {
-								type: 'Class',
-								optional: true,
-								description: "Interface class.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will create or override the existing one.",
+						_interface: {
+							type: 'Class',
+							optional: true,
+							description: "Interface class.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will create or override the existing one.",
 				}
 				//! END_REPLACE()
 				, function CREATE_OVERRIDE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
@@ -4853,17 +4853,17 @@ exports.add = function add(modules) {
 			doodad.ADD('MUST_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method must be overridden (or replaced).",
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method must be overridden (or replaced).",
 				}
 				//! END_REPLACE()
 				, function MUST_OVERRIDE(/*optional*/fn) {
@@ -4875,23 +4875,23 @@ exports.add = function add(modules) {
 			doodad.ADD('OBSOLETE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							message: {
-								type: 'string',
-								optional: true,
-								description: "Explanation.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method is obsolete.",
+						message: {
+							type: 'string',
+							optional: true,
+							description: "Explanation.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method is obsolete.",
 				}
 				//! END_REPLACE()
 				, function OBSOLETE(/* <<< optional[message], optional[fn]*/...args) {
@@ -4907,17 +4907,17 @@ exports.add = function add(modules) {
 			doodad.ADD('CALL_FIRST', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that this method function is called first.",
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that this method function is called first.",
 				}
 				//! END_REPLACE()
 				, function CALL_FIRST(/*optional*/fn) {
@@ -4929,17 +4929,17 @@ exports.add = function add(modules) {
 			doodad.ADD('CAN_BE_DESTROYED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that the method can be called when the object is destroyed.",
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that the method can be called when the object is destroyed.",
 				}
 				//! END_REPLACE()
 				, function CAN_BE_DESTROYED(/*optional*/fn) {
@@ -4951,11 +4951,11 @@ exports.add = function add(modules) {
 			doodad.ADD('ABSTRACT', doodad.ADD('NOT_IMPLEMENTED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'AttributeBox',
-						description: "Specifies that this method is not implemented and can be overridden.",
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'AttributeBox',
+					description: "Specifies that this method is not implemented and can be overridden.",
 				}
 				//! END_REPLACE()
 				, function NOT_IMPLEMENTED(/*optional*/fn) {
@@ -4967,22 +4967,22 @@ exports.add = function add(modules) {
 			doodad.ADD('RETURNS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							validator: {
-								type: 'function',
-								optional: true,
-								description: "Method function.",
-							},
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						validator: {
+							type: 'function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that this method should returns a value validated by the specified validator.",
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that this method should returns a value validated by the specified validator.",
 				}
 				//! END_REPLACE()
 				, function RETURNS(validator, /*optional*/fn) {
@@ -4995,11 +4995,11 @@ exports.add = function add(modules) {
 			doodad.ADD('ASYNC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'AttributeBox',
-						description: "Specifies that this method is async and always returns a Promise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'AttributeBox',
+					description: "Specifies that this method is async and always returns a Promise.",
 				}
 				//! END_REPLACE()
 				, function ASYNC(/*optional*/fn) {
@@ -5011,23 +5011,23 @@ exports.add = function add(modules) {
 			doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							name: {
-								type: 'string',
-								optional: true,
-								description: "New name. If not specified, the name of the provided function will be taken.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will override the existing one with a new name.",
+						name: {
+							type: 'string',
+							optional: true,
+							description: "New name. If not specified, the name of the provided function will be taken.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will override the existing one with a new name.",
 				}
 				//! END_REPLACE()
 				, function RENAME_OVERRIDE(/*<<< optional[name], optional[fn]*/...args) {
@@ -5053,23 +5053,23 @@ exports.add = function add(modules) {
 			doodad.ADD('RENAME_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						paramsDirection: 'rightToLeft',
-						params: {
-							fn: {
-								type: 'AttributeBox,function',
-								optional: true,
-								description: "Method function.",
-							},
-							name: {
-								type: 'string',
-								optional: true,
-								description: "New name. If not specified, the name of the provided function will be taken.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					paramsDirection: 'rightToLeft',
+					params: {
+						fn: {
+							type: 'AttributeBox,function',
+							optional: true,
+							description: "Method function.",
 						},
-						returns: 'AttributeBox',
-						description: "Specifies that a method will be renamed and replace the previous one.",
+						name: {
+							type: 'string',
+							optional: true,
+							description: "New name. If not specified, the name of the provided function will be taken.",
+						},
+					},
+					returns: 'AttributeBox',
+					description: "Specifies that a method will be renamed and replace the previous one.",
 				}
 				//! END_REPLACE()
 				, function RENAME_REPLACE(/*<<< optional[name]*/ /*optional[fn]*/...args) {
@@ -5129,7 +5129,7 @@ exports.add = function add(modules) {
 				});
 			};
 
-/*
+			/*
 			__Internal__.defaultAttributesKeys = types.freezeObject(types.keys(__Internal__.defaultAttributes));
 			__Internal__.defaultAttributesSymbols = types.freezeObject(types.symbols(__Internal__.defaultAttributes));
 
@@ -5252,21 +5252,21 @@ exports.add = function add(modules) {
 
 				if (types.isSymbol(attr)) {
 					// <FUTURE> When transpiling "ddclass" to "class"...
-						//if (scope === doodad.Scopes.Private) {
-						//	throw new types.Error("Symbol attributes can't be made private.");
-						//};
+					//if (scope === doodad.Scopes.Private) {
+					//	throw new types.Error("Symbol attributes can't be made private.");
+					//};
 					// </FUTURE>
 				} else if (types.hasSymbolsEnabled()) {
 					if (__Internal__.hasPolicies) {
 						const pos = 0;
 						// <FUTURE> When transpiling "ddclass" to "class"...
-							//if (scope === doodad.Scopes.Private) {
-							//	// Private fields must start with a vigil...
-							//	if (attr[pos] !== '#') {
-							//		throw new types.Error("Private attribute name must begin with '#'.");
-							//	};
-							//	pos++;
-							//};
+						//if (scope === doodad.Scopes.Private) {
+						//	// Private fields must start with a vigil...
+						//	if (attr[pos] !== '#') {
+						//		throw new types.Error("Private attribute name must begin with '#'.");
+						//	};
+						//	pos++;
+						//};
 						// </FUTURE>
 						if (!!extender.isType !== !!extender.isInstance) {
 							if (attr[pos] === '$') {
@@ -5296,22 +5296,22 @@ exports.add = function add(modules) {
 							if (sourceAttribute[_shared.WhenSymbol] || destAttribute[_shared.WhenSymbol]) {
 								const whenTypes = tools.unique(sourceAttribute[_shared.WhenSymbol], destAttribute[_shared.WhenSymbol]);
 								if (tools.every(whenTypes, function(type) {
-											if (_implements.has(type)) {
-												return true;
-											};
-											const uuid = _shared.getUUID(type);
-											if (uuid) {
-												return _implements.has(uuid);
-											};
-											//return tools.some(sources, function(source) {
-											//		const sourceType = types.getType(source);
-											//		if (!sourceType) {
-											//			return false;
-											//		};
-											//		return (sourceType === type) || types.baseof(type, sourceType) || types._implements(sourceType, type);
-											//	});
-											return false;
-										})) {
+									if (_implements.has(type)) {
+										return true;
+									};
+									const uuid = _shared.getUUID(type);
+									if (uuid) {
+										return _implements.has(uuid);
+									};
+									//return tools.some(sources, function(source) {
+									//		const sourceType = types.getType(source);
+									//		if (!sourceType) {
+									//			return false;
+									//		};
+									//		return (sourceType === type) || types.baseof(type, sourceType) || types._implements(sourceType, type);
+									//	});
+									return false;
+								})) {
 
 									destAttribute[_shared.WhenSymbol] = null;
 
@@ -5336,8 +5336,8 @@ exports.add = function add(modules) {
 								const scope = types.get(sourceAttribute, _shared.ScopeSymbol);
 								if (types.isNothing(scope)) {
 									// <FUTURE> When transpiling "ddclass" to "class"...
-										//if (!types.isSymbol(attr) && (attr[0] === '#')) {
-										//	destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Private;
+									//if (!types.isSymbol(attr) && (attr[0] === '#')) {
+									//	destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Private;
 									// </FUTURE>
 									if (!types.isSymbol(attr) && ( (attr.slice(0, 2) === '__') || (attr.slice(0, 3) === '$__') )) {
 										destAttribute[_shared.ScopeSymbol] = doodad.Scopes.Protected;
@@ -6176,87 +6176,87 @@ exports.add = function add(modules) {
 			};
 
 			__Internal__._delete = types.SUPER(
-					function _delete() {
-						const cache = this[_shared.IsolatedCacheSymbol];
-						if (cache) {
-							cache.forEach(function destroyEachInterface(_interface) {
-								types.DESTROY(_interface);
-							});
-						};
+				function _delete() {
+					const cache = this[_shared.IsolatedCacheSymbol];
+					if (cache) {
+						cache.forEach(function destroyEachInterface(_interface) {
+							types.DESTROY(_interface);
+						});
+					};
 
-						const forType = types.isType(this),
-							//cls = (forType ? this : types.getType(this)),
-							attributes = this[_shared.AttributesSymbol],
-							storage = this[_shared.AttributesStorageSymbol];
+					const forType = types.isType(this),
+						//cls = (forType ? this : types.getType(this)),
+						attributes = this[_shared.AttributesSymbol],
+						storage = this[_shared.AttributesStorageSymbol];
 
-						const preLoopAttrs = function _preLoopAttrs(attrs) {
-							for (let i = attrs.length - 1; i >= 0; i--) {
-								const attr = attrs[i],
-									attribute = attributes[attr],
-									extender = attribute[_shared.ExtenderSymbol];
+					const preLoopAttrs = function _preLoopAttrs(attrs) {
+						for (let i = attrs.length - 1; i >= 0; i--) {
+							const attr = attrs[i],
+								attribute = attributes[attr],
+								extender = attribute[_shared.ExtenderSymbol];
 
-								if (extender) {
-									if (extender.isPersistent) {
-										//attrs.splice(i, 1);
-										attrs[i] = null;
-									} else if (!extender.preExtend) {
-										if ((extender.isType && forType) || (extender.isInstance && !forType)) {
-											extender.remove && extender.remove(attr, this, storage, forType, attribute);
-										};
-										//attrs.splice(i, 1);
-										attrs[i] = null;
-									};
-								} else {
+							if (extender) {
+								if (extender.isPersistent) {
 									//attrs.splice(i, 1);
 									attrs[i] = null;
-								};
-							};
-						};
-
-						const loopAttrs = function _loopAttrs(attrs) {
-							for (let i = attrs.length - 1; i >= 0; i--) {
-								const attr = attrs[i];
-
-								if (attr) {
-									const attribute = attributes[attr],
-										extender = attribute[_shared.ExtenderSymbol];
-
-									// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
+								} else if (!extender.preExtend) {
 									if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 										extender.remove && extender.remove(attr, this, storage, forType, attribute);
 									};
+									//attrs.splice(i, 1);
+									attrs[i] = null;
+								};
+							} else {
+								//attrs.splice(i, 1);
+								attrs[i] = null;
+							};
+						};
+					};
+
+					const loopAttrs = function _loopAttrs(attrs) {
+						for (let i = attrs.length - 1; i >= 0; i--) {
+							const attr = attrs[i];
+
+							if (attr) {
+								const attribute = attributes[attr],
+									extender = attribute[_shared.ExtenderSymbol];
+
+									// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
+								if ((extender.isType && forType) || (extender.isInstance && !forType)) {
+									extender.remove && extender.remove(attr, this, storage, forType, attribute);
 								};
 							};
 						};
+					};
 
-						const attrsKeys = types.keys(attributes);
-						const attrsSymbols = types.symbols(attributes);
-						preLoopAttrs.call(this, attrsKeys);
-						preLoopAttrs.call(this, attrsSymbols);
-						loopAttrs.call(this, attrsKeys);
-						loopAttrs.call(this, attrsSymbols);
+					const attrsKeys = types.keys(attributes);
+					const attrsSymbols = types.symbols(attributes);
+					preLoopAttrs.call(this, attrsKeys);
+					preLoopAttrs.call(this, attrsSymbols);
+					loopAttrs.call(this, attrsKeys);
+					loopAttrs.call(this, attrsSymbols);
 
-						this._super();
-					}
-				);
+					this._super();
+				}
+			);
 
 			__Internal__._superFrom = root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									cls: {
-										type: 'Class',
-										optional: false,
-										description: "Class.",
-									},
-								},
-								returns: 'any',
-								description: "Call '_super' from the specified implemented class.",
-					}
-					//! END_REPLACE()
-					, doodad.PROTECTED(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						cls: {
+							type: 'Class',
+							optional: false,
+							description: "Class.",
+						},
+					},
+					returns: 'any',
+					description: "Call '_super' from the specified implemented class.",
+				}
+				//! END_REPLACE()
+				, doodad.PROTECTED(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function superFrom(cls) {
 						const dispatch = this && this[_shared.CurrentDispatchSymbol];
 
@@ -6313,23 +6313,23 @@ exports.add = function add(modules) {
 					}))))))));
 
 			__Internal__.overrideSuper = root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'undefined',
-							description: "Prevents the need to call '_super'. Use when '_super' is conditionally called.",
-					}
-					//! END_REPLACE()
-					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'undefined',
+					description: "Prevents the need to call '_super'. Use when '_super' is conditionally called.",
+				}
+				//! END_REPLACE()
+				, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
 					function overrideSuper() {
 						if (this._super) {
 							this._super[_shared.CalledSymbol] = true;
 						};
 					}))))));
 
-/* TODO: Complete
+			/* TODO: Complete
 			// TODO: Try re-using "dispatchTemplate"
 			__Internal__._superAsync = root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6450,65 +6450,65 @@ exports.add = function add(modules) {
 */
 
 			__Internal__.callOutsideFn = (__Internal__.hasScopes ?
-					function callOutside(fn, /*optional*/args) {
-						const isInside = __Internal__.isInside(this);
-						const oldValues = isInside && types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], null, _shared.SECRET);
-						const dispatch = isInside && oldValues[_shared.CurrentDispatchSymbol];
-						const callers = dispatch && dispatch[_shared.CallersSymbol];
-						const caller = callers && callers[oldValues[_shared.CurrentCallerIndexSymbol] - 1];
-						const oldCallerCalled = caller && caller[_shared.CalledSymbol];
-						const oldInside = __Internal__.setInside(null, null, true);
-						try {
-							if (args) {
-								return fn.apply(null, args);
-							} else {
-								return fn();
-							}
-						} catch(ex) {
-							throw ex;
-						} finally {
-							if (oldInside) {
-								__Internal__.restoreInside(oldInside);
-							};
-							if (caller) {
-								caller[_shared.CalledSymbol] = oldCallerCalled;
-							};
-							if (dispatch) {
-								types.setAttributes(this, oldValues, null, _shared.SECRET);
-							};
-						}
-					}
-				:
-					function callOutside(fn, /*optional*/args) {
+				function callOutside(fn, /*optional*/args) {
+					const isInside = __Internal__.isInside(this);
+					const oldValues = isInside && types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], null, _shared.SECRET);
+					const dispatch = isInside && oldValues[_shared.CurrentDispatchSymbol];
+					const callers = dispatch && dispatch[_shared.CallersSymbol];
+					const caller = callers && callers[oldValues[_shared.CurrentCallerIndexSymbol] - 1];
+					const oldCallerCalled = caller && caller[_shared.CalledSymbol];
+					const oldInside = __Internal__.setInside(null, null, true);
+					try {
 						if (args) {
 							return fn.apply(null, args);
 						} else {
 							return fn();
 						}
+					} catch(ex) {
+						throw ex;
+					} finally {
+						if (oldInside) {
+							__Internal__.restoreInside(oldInside);
+						};
+						if (caller) {
+							caller[_shared.CalledSymbol] = oldCallerCalled;
+						};
+						if (dispatch) {
+							types.setAttributes(this, oldValues, null, _shared.SECRET);
+						};
 					}
-				);
+				}
+				:
+				function callOutside(fn, /*optional*/args) {
+					if (args) {
+						return fn.apply(null, args);
+					} else {
+						return fn();
+					}
+				}
+			);
 
 			__Internal__.callOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(__Internal__.callOutsideFn)))));
 
 			doodad.ADD('OutsideCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'Class,Object',
-								optional: false,
-								description: "Target.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Callback function.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'Class,Object',
+							optional: false,
+							description: "Target.",
 						},
-						returns: 'function',
-						description: "Creates a callback running outside of a class or class instance.",
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Callback function.",
+						},
+					},
+					returns: 'function',
+					description: "Creates a callback running outside of a class or class instance.",
 				}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function OutsideCallback(obj, fn) {
@@ -6525,18 +6525,18 @@ exports.add = function add(modules) {
 				})));
 
 			__Internal__.makeOutsideFn = (__Internal__.hasScopes ?
-					function makeOutside(fn) {
-						if (types.isCallback(fn)) {
-							// Already a safe callback.
-							return fn;
-						};
-						return doodad.OutsideCallback(this, fn);
-					}
-				:
-					function makeOutside(fn) {
+				function makeOutside(fn) {
+					if (types.isCallback(fn)) {
+						// Already a safe callback.
 						return fn;
-					}
-				);
+					};
+					return doodad.OutsideCallback(this, fn);
+				}
+				:
+				function makeOutside(fn) {
+					return fn;
+				}
+			);
 
 			__Internal__.makeOutside = doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(__Internal__.makeOutsideFn)))));
 
@@ -6657,37 +6657,37 @@ exports.add = function add(modules) {
 				toString: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 2,
-							params: null,
-							returns: 'string',
-							description: "Converts object to a string.",
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'string',
+						description: "Converts object to a string.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.RETURNS(types.isString, doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function toString() {
-						if (types.isClass(this)) {
-							return '[class ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
-						} else {
-							return '[object ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
-						}
-					}))))))),
+						function toString() {
+							if (types.isClass(this)) {
+								return '[class ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
+							} else {
+								return '[object ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
+							}
+						}))))))),
 
 
 				$extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								paramarray: {
-									type: 'arrayof(object,Class)',
-									optional: false,
-									description: "Prototypes and classes to extend with.",
-								},
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							paramarray: {
+								type: 'arrayof(object,Class)',
+								optional: false,
+								description: "Prototypes and classes to extend with.",
 							},
-							returns: 'Class',
-							description: "Returns a new extended class.",
+						},
+						returns: 'Class',
+						description: "Returns a new extended class.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
@@ -6695,17 +6695,17 @@ exports.add = function add(modules) {
 				extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								paramarray: {
-									type: 'arrayof(object,Class)',
-									optional: false,
-									description: "Prototypes and classes to extend with.",
-								},
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'arrayof(object,Class)',
+								optional: false,
+								description: "Prototypes and classes to extend with.",
 							},
-							returns: 'Object',
-							description: "Extends an object and returns that same object.",
+						},
+						returns: 'Object',
+						description: "Extends an object and returns that same object.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.JS_METHOD( __Internal__.$extend ))))),
@@ -6713,272 +6713,272 @@ exports.add = function add(modules) {
 				getInterface: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								type: {
-									type: 'Class',
-									optional: false,
-									description: "Isolated interface class.",
-								},
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							type: {
+								type: 'Class',
+								optional: false,
+								description: "Isolated interface class.",
 							},
-							returns: 'Interface',
-							description: "Returns the instance of the specified isolated interface.",
+						},
+						returns: 'Interface',
+						description: "Returns the instance of the specified isolated interface.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(
-					function getInterface(type) {
-						const cls = types.getType(this);
-						if (!cls) {
-							return null;
-						};
-						if (!types.isInterface(type) && !types.isMixIn(type)) {
-							return null;
-						};
-
-						let cache = this[_shared.IsolatedCacheSymbol];
-						if (!cache) {
-							cache = types.setAttribute(this, _shared.IsolatedCacheSymbol, new types.Map(), null, _shared.SECRET);
-						};
-
-						if (cache.has(type)) {
-							return cache.get(type);
-						};
-
-						const uuid = _shared.getUUID(type);
-
-						if (uuid && cache.has(uuid)) {
-							return cache.get(uuid);
-						};
-
-						const _isolated = cls[_shared.IsolatedSymbol];
-
-						let data = _isolated.get(type);
-						if (!data) {
-							data = _isolated.get(uuid);
-						};
-
-						if (!data) {
-							return null;
-						};
-
-						let _interface = data[6];
-
-						if (!_interface) {
-							const protoName = data[0],
-								typeExtendedAttributes = data[1],
-								typeAttributes = data[2],
-								typeStorage = data[4],
-								instanceStorage = data[5],
-								base = data[7],
-								baseType = types.getType(base),
-								baseIsType = types.isType(base),
-								_isolated = data[8],
-								_implements = data[9],
-								proto = data[10],
-								modifiers = data[11],
-								protoUUID = null, //data[12],
-								typeToInitialize = data[13],
-								instanceToInitialize = data[14],
-								typeToExtendLater = data[15],
-								instanceToExtendLater = data[16],
-								instanceAttributes = data[17],
-								instanceExtendedAttributes = data[18];
-
-							_interface = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, typeAttributes, instanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, null);
-
-							_interface = types.INIT(_interface, [cls]);
-
-							if (!types.baseof(doodad.Interface, _interface)) {
+						function getInterface(type) {
+							const cls = types.getType(this);
+							if (!cls) {
+								return null;
+							};
+							if (!types.isInterface(type) && !types.isMixIn(type)) {
 								return null;
 							};
 
-							data[6] = _interface;
-						};
+							let cache = this[_shared.IsolatedCacheSymbol];
+							if (!cache) {
+								cache = types.setAttribute(this, _shared.IsolatedCacheSymbol, new types.Map(), null, _shared.SECRET);
+							};
 
-						const obj = new _interface(this);
+							if (cache.has(type)) {
+								return cache.get(type);
+							};
 
-						const _implements = types.getAttribute(_interface, _shared.ImplementsSymbol, null, _shared.SECRET);
+							const uuid = _shared.getUUID(type);
 
-						_implements.forEach(function(impl) {
-							if (!types.isString(impl)) {
-								const uuid = _shared.getUUID(impl);
+							if (uuid && cache.has(uuid)) {
+								return cache.get(uuid);
+							};
 
-								if (types.isIsolated(impl) && !cache.has(impl) && (!uuid || !cache.has(uuid))) {
-									cache.set(impl, obj);
+							const _isolated = cls[_shared.IsolatedSymbol];
 
-									if (uuid) {
-										cache.set(uuid, obj);
+							let data = _isolated.get(type);
+							if (!data) {
+								data = _isolated.get(uuid);
+							};
+
+							if (!data) {
+								return null;
+							};
+
+							let _interface = data[6];
+
+							if (!_interface) {
+								const protoName = data[0],
+									typeExtendedAttributes = data[1],
+									typeAttributes = data[2],
+									typeStorage = data[4],
+									instanceStorage = data[5],
+									base = data[7],
+									baseType = types.getType(base),
+									baseIsType = types.isType(base),
+									_isolated = data[8],
+									_implements = data[9],
+									proto = data[10],
+									modifiers = data[11],
+									protoUUID = null, //data[12],
+									typeToInitialize = data[13],
+									instanceToInitialize = data[14],
+									typeToExtendLater = data[15],
+									instanceToExtendLater = data[16],
+									instanceAttributes = data[17],
+									instanceExtendedAttributes = data[18];
+
+								_interface = __Internal__.createType(base, baseType, baseIsType, proto, protoName, protoUUID, typeStorage, instanceStorage, typeAttributes, instanceAttributes, typeExtendedAttributes, instanceExtendedAttributes, typeToInitialize, instanceToInitialize, _isolated, _implements, modifiers, typeToExtendLater, instanceToExtendLater, null);
+
+								_interface = types.INIT(_interface, [cls]);
+
+								if (!types.baseof(doodad.Interface, _interface)) {
+									return null;
+								};
+
+								data[6] = _interface;
+							};
+
+							const obj = new _interface(this);
+
+							const _implements = types.getAttribute(_interface, _shared.ImplementsSymbol, null, _shared.SECRET);
+
+							_implements.forEach(function(impl) {
+								if (!types.isString(impl)) {
+									const uuid = _shared.getUUID(impl);
+
+									if (types.isIsolated(impl) && !cache.has(impl) && (!uuid || !cache.has(uuid))) {
+										cache.set(impl, obj);
+
+										if (uuid) {
+											cache.set(uuid, obj);
+										};
 									};
 								};
-							};
-						});
+							});
 
-						return obj;
-					})))),
+							return obj;
+						})))),
 
 				getPreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								attr: {
-									type: 'string',
-									optional: false,
-									description: "Attribute name.",
-								},
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							attr: {
+								type: 'string',
+								optional: false,
+								description: "Attribute name.",
 							},
-							returns: 'any',
-							description: "Returns the preserved value of an attribute.",
+						},
+						returns: 'any',
+						description: "Returns the preserved value of an attribute.",
 					}
 					//! END_REPLACE()
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function getPreserved(attr) {
-						if (!types.isSymbol(attr)) {
-							const attributes = this[_shared.AttributesSymbol],
-								attribute = attributes[attr],
-								extender = attribute[_shared.ExtenderSymbol];
-							if (extender && extender.isPreserved) {
-								const preservedAttr = '__' + attr + '_preserved__';
-								return this[preservedAttr];
+						function getPreserved(attr) {
+							if (!types.isSymbol(attr)) {
+								const attributes = this[_shared.AttributesSymbol],
+									attribute = attributes[attr],
+									extender = attribute[_shared.ExtenderSymbol];
+								if (extender && extender.isPreserved) {
+									const preservedAttr = '__' + attr + '_preserved__';
+									return this[preservedAttr];
+								};
 							};
-						};
-						return undefined; // "consistent-return"
-					}))))),
+							return undefined; // "consistent-return"
+						}))))),
 
 				restorePreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								attr: {
-									type: 'string',
-									optional: false,
-									description: "Attribute name.",
-								},
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							attr: {
+								type: 'string',
+								optional: false,
+								description: "Attribute name.",
 							},
-							returns: 'bool',
-							description: "Reverts an attribute to its preserved value. Returns 'true' if attribute is reverted. Returns 'false' if it failed.",
+						},
+						returns: 'bool',
+						description: "Reverts an attribute to its preserved value. Returns 'true' if attribute is reverted. Returns 'false' if it failed.",
 					}
 					//! END_REPLACE()
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function restorePreserved(attr) {
-						if (!types.isSymbol(attr)) {
-							const attributes = this[_shared.AttributesSymbol],
-								attribute = attributes[attr],
-								extender = attribute[_shared.ExtenderSymbol];
-							if (extender && extender.isPreserved) {
-								const preservedAttr = '__' + attr + '_preserved__';
-								types.setAttribute(this, attr, this[preservedAttr], null, _shared.SECRET);
-								return true;
+						function restorePreserved(attr) {
+							if (!types.isSymbol(attr)) {
+								const attributes = this[_shared.AttributesSymbol],
+									attribute = attributes[attr],
+									extender = attribute[_shared.ExtenderSymbol];
+								if (extender && extender.isPreserved) {
+									const preservedAttr = '__' + attr + '_preserved__';
+									types.setAttribute(this, attr, this[preservedAttr], null, _shared.SECRET);
+									return true;
+								};
 							};
-						};
-						return false;
-					}))))),
+							return false;
+						}))))),
 
 				overrideSuper: __Internal__.overrideSuper,
 				_superFrom: __Internal__._superFrom,
-//					_superAsync: __Internal__._superAsync,
+				//					_superAsync: __Internal__._superAsync,
 				callOutside: __Internal__.callOutside,
 				makeOutside: __Internal__.makeOutside,
 
 				_implements: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-								author: "Claude Petit",
-								revision: 5,
-								params: {
-									type: {
-										type: 'arrayof(Class),Class,arrayof(Object),Object',
-										optional: false,
-										description: "Classes.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
+						author: "Claude Petit",
+						revision: 5,
+						params: {
+							type: {
+								type: 'arrayof(Class),Class,arrayof(Object),Object',
+								optional: false,
+								description: "Classes.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function _implements(type) {
-						const forType = types.isType(this),
-							cls = (forType ? this : types.getType(this));
-						const impls = (!forType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? this : cls)[_shared.ImplementsSymbol];
-						if (types.isArray(type)) {
-							const typeLen = type.length;
-							for (let i = 0; i < typeLen; i++) {
-								if (types.has(type, i)) {
-									const typ = types.getType(type[i]);
-									if (!typ) {
-										continue;
-									};
-									if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
-										continue;
-									};
-									if (impls.has(typ)) {
-										return true;
-									};
-									const uuid = _shared.getUUID(typ);
-									if (uuid && impls.has(uuid)) {
-										return true;
+						function _implements(type) {
+							const forType = types.isType(this),
+								cls = (forType ? this : types.getType(this));
+							const impls = (!forType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? this : cls)[_shared.ImplementsSymbol];
+							if (types.isArray(type)) {
+								const typeLen = type.length;
+								for (let i = 0; i < typeLen; i++) {
+									if (types.has(type, i)) {
+										const typ = types.getType(type[i]);
+										if (!typ) {
+											continue;
+										};
+										if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
+											continue;
+										};
+										if (impls.has(typ)) {
+											return true;
+										};
+										const uuid = _shared.getUUID(typ);
+										if (uuid && impls.has(uuid)) {
+											return true;
+										};
 									};
 								};
-							};
-							return false;
-						} else {
-							const typ = types.getType(type);
-							if (!typ) {
 								return false;
-							};
-							if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
+							} else {
+								const typ = types.getType(type);
+								if (!typ) {
+									return false;
+								};
+								if (!types.isLike(typ, __Internal__.CLASS_OR_INTERFACE)) {
+									return false;
+								};
+								if (impls.has(typ)) {
+									return true;
+								};
+								const uuid = _shared.getUUID(typ);
+								if (uuid && impls.has(uuid)) {
+									return true;
+								};
 								return false;
-							};
-							if (impls.has(typ)) {
-								return true;
-							};
-							const uuid = _shared.getUUID(typ);
-							if (uuid && impls.has(uuid)) {
-								return true;
-							};
-							return false;
-						}
-					}))))),
+							}
+						}))))),
 
 				isImplemented: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									name: {
-										type: 'string,symbol',
-										optional: false,
-										description: "Method name.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							name: {
+								type: 'string,symbol',
+								optional: false,
+								description: "Method name.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function isImplemented(name) {
-						const attrs = this[_shared.AttributesSymbol];
-						if (!(name in attrs)) {
-							return false;
-						};
-						const attr = attrs[name],
-							extender = attr[_shared.ExtenderSymbol];
-						if (!types.isLike(extender, extenders.Method)) {
-							return false;
-						};
-						const isType = types.isType(this);
-						if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
-							return false;
-						};
-						const method = types.getAttribute(this, name, null, _shared.SECRET);
-						return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
-					}))))),
+						function isImplemented(name) {
+							const attrs = this[_shared.AttributesSymbol];
+							if (!(name in attrs)) {
+								return false;
+							};
+							const attr = attrs[name],
+								extender = attr[_shared.ExtenderSymbol];
+							if (!types.isLike(extender, extenders.Method)) {
+								return false;
+							};
+							const isType = types.isType(this);
+							if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
+								return false;
+							};
+							const method = types.getAttribute(this, name, null, _shared.SECRET);
+							return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
+						}))))),
 
 			};
 
@@ -7025,11 +7025,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'Class',
-						description: "Main class of every Doodad classes.",
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'Class',
+					description: "Main class of every Doodad classes.",
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.classProto))));
@@ -7128,40 +7128,40 @@ exports.add = function add(modules) {
 				toString: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 2,
-							params: null,
-							returns: 'string',
-							description: "Converts object to a string.",
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'string',
+						description: "Converts object to a string.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.RETURNS(types.isString, doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
-					function toString() {
-						return '[interface ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
-					}))))))),
+						function toString() {
+							return '[interface ' + (types.getTypeName(this) || __Internal__.ANONYMOUS) + ']';
+						}))))))),
 
 
 				$extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								paramarray: {
-									type: 'arrayof(object,Class)',
-									optional: false,
-									description: "Prototypes and classes to extend with.",
-								},
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'arrayof(object,Class)',
+								optional: false,
+								description: "Prototypes and classes to extend with.",
 							},
-							returns: 'Interface',
-							description: "Returns a new extended interface class.",
+						},
+						returns: 'Interface',
+						description: "Returns a new extended interface class.",
 					}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
 
 				overrideSuper: __Internal__.overrideSuper,
 				_superFrom: __Internal__._superFrom,
-//					_superAsync: __Internal__.superAsync,
+				//					_superAsync: __Internal__.superAsync,
 				callOutside: __Internal__.callOutside,
 				makeOutside: __Internal__.makeOutside,
 
@@ -7175,17 +7175,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							host: {
-								type: 'Object',
-								optional: false,
-								description: "Object host of the new isolated interface instance.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						host: {
+							type: 'Object',
+							optional: false,
+							description: "Object host of the new isolated interface instance.",
 						},
-						returns: 'Interface',
-						description: "Isolated interface instance.",
+					},
+					returns: 'Interface',
+					description: "Isolated interface instance.",
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.interfaceProto))));
@@ -7219,476 +7219,476 @@ exports.add = function add(modules) {
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							data: {
-								type: 'any',
-								optional: true,
-								description: "Custom event data.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						data: {
+							type: 'any',
+							optional: true,
+							description: "Custom event data.",
 						},
-						returns: 'Event',
-						description: "Event object.",
+					},
+					returns: 'Event',
+					description: "Event object.",
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
 				/*typeProto*/
-				{
-					$TYPE_NAME: "Event",
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
-				},
-				/*instanceProto*/
-				{
-					data: types.READ_ONLY(null),
+					{
+						$TYPE_NAME: "Event",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
+					},
+					/*instanceProto*/
+					{
+						data: types.READ_ONLY(null),
 
-					// dynamic
-					obj: null,
-					name: null,
-					handlerData: null,
+						// dynamic
+						obj: null,
+						name: null,
+						handlerData: null,
 
-					prevent: false,
+						prevent: false,
 
-					_new: types.SUPER(function _new(/*optional*/data) {
+						_new: types.SUPER(function _new(/*optional*/data) {
 						//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
 
-						this._super();
+							this._super();
 
-						if (!types.isType(this)) {
-							types.setAttribute(this, 'data', data || {});
-						};
-					}),
+							if (!types.isType(this)) {
+								types.setAttribute(this, 'data', data || {});
+							};
+						}),
 
-					preventDefault: root.DD_DOC(
+						preventDefault: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
+							{
 								author: "Claude Petit",
 								revision: 0,
 								params: null,
 								returns: 'undefined',
 								description: "Prevents default behavior.",
-						}
-						//! END_REPLACE()
-						, function preventDefault() {
-							this.prevent = true;
+							}
+							//! END_REPLACE()
+							, function preventDefault() {
+								this.prevent = true;
+							}),
+					})));
+
+			doodad.REGISTER(root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						data: {
+							type: 'any',
+							optional: true,
+							description: "Custom event data.",
+						},
+					},
+					returns: 'CancelEvent',
+					description: "Canceled event object.",
+				}
+				//! END_REPLACE()
+				, doodad.Event.$inherit(
+				/*typeProto*/
+					{
+						$TYPE_NAME: 'CancelEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
+					})));
+
+			doodad.REGISTER(root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						error: {
+							type: 'error',
+							optional: true,
+							description: "Error object.",
+						},
+						data: {
+							type: 'any',
+							optional: true,
+							description: "Custom event data.",
+						},
+					},
+					returns: 'ErrorEvent',
+					description: "Error event object.",
+				}
+				//! END_REPLACE()
+				, doodad.Event.$inherit(
+				/*typeProto*/
+					{
+						$TYPE_NAME: 'ErrorEvent',
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,
+					},
+					/*instanceProto*/
+					{
+						error: types.READ_ONLY(null),
+
+						_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
+							this._super(data);
+
+							if (!types.isType(this)) {
+								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
+
+								types.setAttribute(this, 'error', error);
+							};
 						}),
-				})));
 
-			doodad.REGISTER(root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							data: {
-								type: 'any',
-								optional: true,
-								description: "Custom event data.",
-							},
-						},
-						returns: 'CancelEvent',
-						description: "Canceled event object.",
-				}
-				//! END_REPLACE()
-				, doodad.Event.$inherit(
-				/*typeProto*/
-				{
-					$TYPE_NAME: 'CancelEvent',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
-				})));
+						preventDefault: types.SUPER(function preventDefault() {
+							this._super();
 
-			doodad.REGISTER(root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							error: {
-								type: 'error',
-								optional: true,
-								description: "Error object.",
-							},
-							data: {
-								type: 'any',
-								optional: true,
-								description: "Custom event data.",
-							},
-						},
-						returns: 'ErrorEvent',
-						description: "Error event object.",
-				}
-				//! END_REPLACE()
-				, doodad.Event.$inherit(
-				/*typeProto*/
-				{
-					$TYPE_NAME: 'ErrorEvent',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,
-				},
-				/*instanceProto*/
-				{
-					error: types.READ_ONLY(null),
-
-					_new: types.SUPER(function _new(/*optional*/error, /*optional*/data) {
-						this._super(data);
-
-						if (!types.isType(this)) {
-							root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
-
-							types.setAttribute(this, 'error', error);
-						};
-					}),
-
-					preventDefault: types.SUPER(function preventDefault() {
-						this._super();
-
-						this.error.trapped = true;
-					}),
-				})));
+							this.error.trapped = true;
+						}),
+					})));
 
 
 			__Internal__.eventHandlerProto = {
-					$TYPE_NAME: 'EventHandler',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
+				$TYPE_NAME: 'EventHandler',
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('EventHandler')), true) */,
 
-					stackSize: doodad.PUBLIC(10),
+				stackSize: doodad.PUBLIC(10),
 
-					_new: types.SUPER(function _new(/*optional*/obj, /*optional*/extender) {
-						this._super();
+				_new: types.SUPER(function _new(/*optional*/obj, /*optional*/extender) {
+					this._super();
 
-						if (!types.isType(this)) {
-							this[_shared.ObjectSymbol] = obj;
-							this[_shared.ExtenderSymbol] = extender;
-							this[_shared.StackSymbol] = [];
+					if (!types.isType(this)) {
+						this[_shared.ObjectSymbol] = obj;
+						this[_shared.ExtenderSymbol] = extender;
+						this[_shared.StackSymbol] = [];
+					};
+				}),
+
+				apply: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionApply)),
+				call: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionCall)),
+				bind: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionBind)),
+
+				getCount: function getCount() {
+					const stack = this[_shared.StackSymbol];
+					return tools.reduce(stack, function(result, data) {
+						if (data[4] > 0) {
+							result++;
 						};
+						return result;
+					}, 0);
+				},
+
+				attach: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							obj: {
+								type: 'object',
+								optional: true,
+								description: "Object to have in 'this' of the callback function.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function.",
+							},
+							priority: {
+								type: 'integer',
+								optional: true,
+								description: "Priority. Default is '20'.",
+							},
+							datas: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Data to attach with the event.",
+							},
+							count: {
+								type: 'integer',
+								optional: true,
+								description: "Number of times the callback function will be called before been detached. Default is Infinity.",
+							},
+						},
+						returns: 'undefined',
+						description: "Attach a callback function to an event.",
+					}
+					//! END_REPLACE()
+					, function attach(/*optional*/obj, fn, /*optional*/priority, /*optional*/datas, /*optional*/count) {
+						if (types.isNothing(priority)) {
+							priority = 20;
+						};
+
+						if (types.isNothing(count)) {
+							count = Infinity;
+						};
+
+						if (!types.isNothing(datas)) {
+							types.freezeObject(datas);
+						};
+
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
+							root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
+							root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
+							root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+							root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
+						};
+
+						const stack = this[_shared.StackSymbol];
+
+						const indexes = tools.findItems(stack, function(ev) {
+							const evData = ev[3];
+							return ((ev[0] || null) === (obj || null)) && (ev[1] === fn) && tools.every(datas, function(data, key) {
+								return types.hasIndex(evData, key) && (evData[key] === data);
+							});
+						});
+
+						const indexesLen = indexes.length;
+						if (indexesLen) {
+							let clearSorted = false;
+							for (let i = 0; i < indexesLen; i++) {
+								const ev = stack[indexes[i]];
+								if (ev[2] !== priority) {
+									ev[2] = priority;
+									clearSorted = true;
+								};
+							};
+							if (clearSorted) {
+								this[_shared.SortedSymbol] = false;
+								this[_shared.ClonedStackSymbol] = null;
+							};
+							return false;
+						} else if (stack.length < this.stackSize) {
+							const eventObj = this[_shared.ObjectSymbol];
+							let cb = fn;
+							if (obj) {
+								if ((obj === eventObj) || __Internal__.isInside(obj, this[_shared.EventInsideSymbol])) {
+									cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
+								} else {
+									cb = doodad.Callback(obj, cb, true);
+								};
+							};
+							// eslint-disable-next-line array-bracket-spacing
+							stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
+							this[_shared.SortedSymbol] = false;
+							this[_shared.ClonedStackSymbol] = null;
+							const ev = new doodad.Event({event: this[_shared.NameSymbol], obj: obj, handler: fn, datas: datas});
+							//if (types.isEntrant(eventObj, 'onEventAttached')) {
+							types.invoke(eventObj, eventObj.onEventAttached, [ev], _shared.SECRET);
+							//};
+							return true;
+						} else {
+							throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
+						}
 					}),
 
-					apply: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionApply)),
-					call: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionCall)),
-					bind: doodad.PUBLIC(doodad.READ_ONLY(_shared.Natives.functionBind)),
+				detach: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'object',
+								optional: true,
+								description: "Object linked with the callback function.",
+							},
+							fn: {
+								type: 'function',
+								optional: true,
+								description: "Callback function.",
+							},
+							datas: {
+								type: 'array',
+								optional: true,
+								description: "Data attached with the event.",
+							},
+						},
+						returns: 'undefined',
+						description: "Detach a callback function from an event.",
+					}
+					//! END_REPLACE()
+					, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
+						if (root.DD_ASSERT) {
+							root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
+							root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
+							root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+						};
 
-					getCount: function getCount() {
 						const stack = this[_shared.StackSymbol];
-						return tools.reduce(stack, function(result, data) {
-							if (data[4] > 0) {
-								result++;
-							};
-							return result;
-						}, 0);
-					},
 
-					attach: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									obj: {
-										type: 'object',
-										optional: true,
-										description: "Object to have in 'this' of the callback function.",
-									},
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "Callback function.",
-									},
-									priority: {
-										type: 'integer',
-										optional: true,
-										description: "Priority. Default is '20'.",
-									},
-									datas: {
-										type: 'arrayof(any)',
-										optional: true,
-										description: "Data to attach with the event.",
-									},
-									count: {
-										type: 'integer',
-										optional: true,
-										description: "Number of times the callback function will be called before been detached. Default is Infinity.",
-									},
-								},
-								returns: 'undefined',
-								description: "Attach a callback function to an event.",
-						}
-						//! END_REPLACE()
-						, function attach(/*optional*/obj, fn, /*optional*/priority, /*optional*/datas, /*optional*/count) {
-							if (types.isNothing(priority)) {
-								priority = 20;
-							};
-
-							if (types.isNothing(count)) {
-								count = Infinity;
-							};
-
-							if (!types.isNothing(datas)) {
-								types.freezeObject(datas);
-							};
-
-							if (root.DD_ASSERT) {
-								root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
-								root.DD_ASSERT(types.isFunction(fn), "Invalid function.");
-								root.DD_ASSERT(types.isInteger(priority), "Invalid priority.");
-								root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
-								root.DD_ASSERT(types.isInfinite(count) || types.isInteger(count), "Invalid count.");
-							};
-
-							const stack = this[_shared.StackSymbol];
-
-							const indexes = tools.findItems(stack, function(ev) {
-								const evData = ev[3];
-								return ((ev[0] || null) === (obj || null)) && (ev[1] === fn) && tools.every(datas, function(data, key) {
-									return types.hasIndex(evData, key) && (evData[key] === data);
-								});
+						const evs = tools.popItems(stack, function(ev) {
+							const evData = ev[3];
+							return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
+								return types.hasIndex(evData, key) && (evData[key] === value);
 							});
+						});
 
-							const indexesLen = indexes.length;
-							if (indexesLen) {
-								let clearSorted = false;
-								for (let i = 0; i < indexesLen; i++) {
-									const ev = stack[indexes[i]];
-									if (ev[2] !== priority) {
-										ev[2] = priority;
-										clearSorted = true;
-									};
+						const evsLen = evs.length;
+						if (evsLen) {
+							this[_shared.SortedSymbol] = false;
+							this[_shared.ClonedStackSymbol] = null;
+
+							const eventObj = this[_shared.ObjectSymbol];
+
+							if (!_shared.DESTROYED(eventObj)) {
+								//if (types.isEntrant(eventObj, 'onEventDetached')) {
+								const eventName = this[_shared.NameSymbol],
+									onEventDetached = eventObj.onEventDetached;
+
+								for (let i = 0; i < evsLen; i++) {
+									const data = evs[i];
+									const ev = new doodad.Event({event: eventName, obj: data[0], handler: data[1], datas: data[3]});
+									types.invoke(eventObj, onEventDetached, [ev], _shared.SECRET);
 								};
-								if (clearSorted) {
-									this[_shared.SortedSymbol] = false;
-									this[_shared.ClonedStackSymbol] = null;
-								};
-								return false;
-							} else if (stack.length < this.stackSize) {
-								const eventObj = this[_shared.ObjectSymbol];
-								let cb = fn;
-								if (obj) {
-									if ((obj === eventObj) || __Internal__.isInside(obj, this[_shared.EventInsideSymbol])) {
-										cb = doodad.Callback(obj, cb, true, null, _shared.SECRET);
-									} else {
-										cb = doodad.Callback(obj, cb, true);
-									};
-								};
-								// eslint-disable-next-line array-bracket-spacing
-								stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
-								this[_shared.SortedSymbol] = false;
-								this[_shared.ClonedStackSymbol] = null;
-								const ev = new doodad.Event({event: this[_shared.NameSymbol], obj: obj, handler: fn, datas: datas});
-								//if (types.isEntrant(eventObj, 'onEventAttached')) {
-									types.invoke(eventObj, eventObj.onEventAttached, [ev], _shared.SECRET);
 								//};
-								return true;
-							} else {
-								throw new types.Error("Stack size limit reached for event method '~0~'. This can be due to a leak, or increase its 'stackSize' attribute.", [this[_shared.NameSymbol]]);
-							}
-						}),
+							};
+						};
 
-					detach: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									obj: {
-										type: 'object',
-										optional: true,
-										description: "Object linked with the callback function.",
-									},
-									fn: {
-										type: 'function',
-										optional: true,
-										description: "Callback function.",
-									},
-									datas: {
-										type: 'array',
-										optional: true,
-										description: "Data attached with the event.",
-									},
-								},
-								returns: 'undefined',
-								description: "Detach a callback function from an event.",
-						}
-						//! END_REPLACE()
-						, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
-							if (root.DD_ASSERT) {
-								root.DD_ASSERT(types.isNothing(obj) || types.isObject(obj), "Invalid object.");
-								root.DD_ASSERT(types.isNothing(fn) || types.isFunction(fn), "Invalid function.");
-								root.DD_ASSERT(types.isNothing(datas) || types.isArray(datas), "Invalid datas.");
+						return evs;
+					}),
+
+				clear: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'undefined',
+						description: "Detach every callback function from an event.",
+					}
+					//! END_REPLACE()
+					, function clear() {
+						this.detach();
+					}),
+
+				attachOnce: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'object',
+								optional: true,
+								description: "Object to have in 'this' of the callback function.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function.",
+							},
+							priority: {
+								type: 'integer',
+								optional: true,
+								description: "Priority. Default is '20'.",
+							},
+							datas: {
+								type: 'array',
+								optional: true,
+								description: "Data to attach with the event.",
+							},
+						},
+						returns: 'undefined',
+						description: "Attach a callback function to an event that will get called only once.",
+					}
+					//! END_REPLACE()
+					, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
+						return this.attach(obj, fn, priority, datas, 1);
+					}),
+
+				promise: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'Promise',
+						description: "Creates a promise for an event.",
+					}
+					//! END_REPLACE()
+					, function promise(/*optional*/callback, /*optional*/thisObj, /*optional*/secret) {
+						// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
+						const Promise = types.getPromise();
+						return Promise.create(function eventPromise(resolve, reject) {
+							if (callback) {
+								callback = _shared.PromiseCallback(thisObj, callback, secret || (thisObj === this[_shared.ObjectSymbol] ? _shared.SECRET : null));
 							};
 
-							const stack = this[_shared.StackSymbol];
+							const self = this,
+								obj = this[_shared.ObjectSymbol],
+								errorEvent = obj.__ERROR_EVENT,
+								destroy = types.isImplemented(obj, 'onDestroy');
 
-							const evs = tools.popItems(stack, function(ev) {
-								const evData = ev[3];
-								return (!obj || (ev[0] === obj)) && (!fn || (ev[1] === fn)) && tools.every(datas, function(value, key) {
-									return types.hasIndex(evData, key) && (evData[key] === value);
-								});
+							let successFn = null,
+								errorFn = null,
+								destroyFn = null,
+								detachedFn = null;
+
+							const cleanup = function cleanup() {
+								detachedFn && obj.onEventDetached.detach(null, detachedFn); // Must be first to be detached
+								self.detach(null, successFn);
+								errorEvent && obj[errorEvent].detach(null, errorFn);
+								destroy && obj.onDestroy.detach(null, destroyFn);
+							};
+
+							this.attach(null, successFn = function onSuccess(ev) {
+								let retval = undefined;
+								if (callback) {
+									try {
+										retval = callback(ev);
+									} catch(ex) {
+										cleanup();
+										reject(ex);
+										retval = false;
+									};
+								};
+								if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
+									cleanup();
+									resolve(retval);
+								};
 							});
 
-							const evsLen = evs.length;
-							if (evsLen) {
-								this[_shared.SortedSymbol] = false;
-								this[_shared.ClonedStackSymbol] = null;
-
-								const eventObj = this[_shared.ObjectSymbol];
-
-								if (!_shared.DESTROYED(eventObj)) {
-									//if (types.isEntrant(eventObj, 'onEventDetached')) {
-										const eventName = this[_shared.NameSymbol],
-											onEventDetached = eventObj.onEventDetached;
-
-										for (let i = 0; i < evsLen; i++) {
-											const data = evs[i];
-											const ev = new doodad.Event({event: eventName, obj: data[0], handler: data[1], datas: data[3]});
-											types.invoke(eventObj, onEventDetached, [ev], _shared.SECRET);
-										};
-									//};
-								};
+							if (errorEvent) {
+								obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
+									cleanup();
+									reject(ev.error);
+								});
 							};
 
-							return evs;
-						}),
+							if (destroy) {
+								obj.onDestroy.attachOnce(null, destroyFn = function(ev) {
+									cleanup();
+									// NOTE: We absolutly must reject the Promise.
+									reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
+								});
+							};
 
-					clear: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 2,
-								params: null,
-								returns: 'undefined',
-								description: "Detach every callback function from an event.",
-						}
-						//! END_REPLACE()
-						, function clear() {
-							this.detach();
-						}),
+							obj.onEventDetached.attach(null, detachedFn = function(ev) {
+								if (ev.data.handler === successFn) {
+									tools.callAsync(cleanup, -1); // Must be async
+									// NOTE: We absolutly must reject the Promise.
+									reject(new types.ScriptInterruptedError("Target event has been detached."));
+								};
+							});
+						}, this);
+					}),
 
-					attachOnce: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									obj: {
-										type: 'object',
-										optional: true,
-										description: "Object to have in 'this' of the callback function.",
-									},
-									fn: {
-										type: 'function',
-										optional: false,
-										description: "Callback function.",
-									},
-									priority: {
-										type: 'integer',
-										optional: true,
-										description: "Priority. Default is '20'.",
-									},
-									datas: {
-										type: 'array',
-										optional: true,
-										description: "Data to attach with the event.",
-									},
-								},
-								returns: 'undefined',
-								description: "Attach a callback function to an event that will get called only once.",
-						}
-						//! END_REPLACE()
-						, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
-							return this.attach(obj, fn, priority, datas, 1);
-						}),
-
-					promise: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 1,
-								params: null,
-								returns: 'Promise',
-								description: "Creates a promise for an event.",
-						}
-						//! END_REPLACE()
-						, function promise(/*optional*/callback, /*optional*/thisObj, /*optional*/secret) {
-							// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
-							const Promise = types.getPromise();
-							return Promise.create(function eventPromise(resolve, reject) {
-									if (callback) {
-										callback = _shared.PromiseCallback(thisObj, callback, secret || (thisObj === this[_shared.ObjectSymbol] ? _shared.SECRET : null));
-									};
-
-									const self = this,
-										obj = this[_shared.ObjectSymbol],
-										errorEvent = obj.__ERROR_EVENT,
-										destroy = types.isImplemented(obj, 'onDestroy');
-
-									let successFn = null,
-										errorFn = null,
-										destroyFn = null,
-										detachedFn = null;
-
-									const cleanup = function cleanup() {
-										detachedFn && obj.onEventDetached.detach(null, detachedFn); // Must be first to be detached
-										self.detach(null, successFn);
-										errorEvent && obj[errorEvent].detach(null, errorFn);
-										destroy && obj.onDestroy.detach(null, destroyFn);
-									};
-
-									this.attach(null, successFn = function onSuccess(ev) {
-										let retval = undefined;
-										if (callback) {
-											try {
-												retval = callback(ev);
-											} catch(ex) {
-												cleanup();
-												reject(ex);
-												retval = false;
-											};
-										};
-										if (retval !== false) {  // 'false' to prevent resolve and to allows filters on event. To really return 'false', use 'DDPromise.resolve(false)'.
-											cleanup();
-											resolve(retval);
-										};
-									});
-
-									if (errorEvent) {
-										obj[errorEvent].attachOnce(null, errorFn = function onError(ev) {
-											cleanup();
-											reject(ev.error);
-										});
-									};
-
-									if (destroy) {
-										obj.onDestroy.attachOnce(null, destroyFn = function(ev) {
-											cleanup();
-											// NOTE: We absolutly must reject the Promise.
-											reject(new types.ScriptInterruptedError("Target object is about to be destroyed."));
-										});
-									};
-
-									obj.onEventDetached.attach(null, detachedFn = function(ev) {
-										if (ev.data.handler === successFn) {
-											tools.callAsync(cleanup, -1); // Must be async
-											// NOTE: We absolutly must reject the Promise.
-											reject(new types.ScriptInterruptedError("Target event has been detached."));
-										};
-									});
-								}, this);
-						}),
-
-					[_shared.ObjectSymbol]: doodad.PROTECTED(null),
-					[_shared.ExtenderSymbol]: doodad.PROTECTED(null),
-					[_shared.StackSymbol]: doodad.PROTECTED(null),
-					[_shared.SortedSymbol]: doodad.PROTECTED(false),
-					[_shared.ClonedStackSymbol]: doodad.PROTECTED(null),
-					[_shared.EventInsideSymbol]: doodad.PROTECTED(null),
-				};
+				[_shared.ObjectSymbol]: doodad.PROTECTED(null),
+				[_shared.ExtenderSymbol]: doodad.PROTECTED(null),
+				[_shared.StackSymbol]: doodad.PROTECTED(null),
+				[_shared.SortedSymbol]: doodad.PROTECTED(false),
+				[_shared.ClonedStackSymbol]: doodad.PROTECTED(null),
+				[_shared.EventInsideSymbol]: doodad.PROTECTED(null),
+			};
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 4,
-						params: null,
-						returns: 'Class',
-						description: "Event handler prototype.",
+					author: "Claude Petit",
+					revision: 4,
+					params: null,
+					returns: 'Class',
+					description: "Event handler prototype.",
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.Class.$extend(
@@ -7699,17 +7699,17 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
 						},
-						returns: 'Extender',
-						description: "Attribute extender which extends an event.",
+					},
+					returns: 'Extender',
+					description: "Attribute extender which extends an event.",
 				}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
@@ -7727,79 +7727,79 @@ exports.add = function add(modules) {
 					isProto: types.READ_ONLY(false), // must be created on Class instances, not on the prototype
 
 					_new: types.SUPER(function _new(/*optional*/options) {
-							this._super(options);
+						this._super(options);
 
-							types.setAttribute(this, 'errorEvent', !!types.get(options, 'errorEvent', this.errorEvent));
-						}),
+						types.setAttribute(this, 'errorEvent', !!types.get(options, 'errorEvent', this.errorEvent));
+					}),
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-							return this._super(options) +
+						return this._super(options) +
 								',' + (types.get(options, 'errorEvent', this.errorEvent) ? '1' : '0');
-						}),
+					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-							options = this._super(options, newOptions, replace);
-							if (replace) {
-								tools.fill(['errorEvent'], options, this, newOptions);
-							} else {
-								options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
-							};
-							return options;
-						}),
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['errorEvent'], options, this, newOptions);
+						} else {
+							options.errorEvent = !!newOptions.errorEvent || this.errorEvent;
+						};
+						return options;
+					}),
 
 					getterTemplate: types.SUPER(function getterTemplate(attr, boxed, forType, storage) {
-							const getter = this._super(attr, boxed, forType, storage);
-							return types.INHERIT(doodad.AttributeGetter, function eventGetter() {
-								const eventHandler = getter.call(this);
-								types.setAttribute(eventHandler, _shared.EventInsideSymbol, __Internal__.preserveInside(), null, _shared.SECRET);
-								return eventHandler;
-							});
-						}),
+						const getter = this._super(attr, boxed, forType, storage);
+						return types.INHERIT(doodad.AttributeGetter, function eventGetter() {
+							const eventHandler = getter.call(this);
+							types.setAttribute(eventHandler, _shared.EventInsideSymbol, __Internal__.preserveInside(), null, _shared.SECRET);
+							return eventHandler;
+						});
+					}),
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-							if (root.getOptions().debug) {
-								if (!types.has(destAttributes, this.eventsAttr)) {
-									throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
-								};
-
-								if (this.eventsPrefixed) {
-									if (attr.slice(0, _shared.EVENT_NAME_PREFIX_LEN) !== _shared.EVENT_NAME_PREFIX) {
-										throw new types.Error("The event named '~0~' must be prefixed by '~1~.", [attr, _shared.EVENT_NAME_PREFIX]);
-									};
-								};
+						if (root.getOptions().debug) {
+							if (!types.has(destAttributes, this.eventsAttr)) {
+								throw new types.Error("You must implement '~0~'.", [this.eventsImplementation]);
 							};
 
-							const events = types.unbox(destAttributes[this.eventsAttr]);
-							events.push(attr);
-
-							if (this.errorEvent) {
-								destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
+							if (this.eventsPrefixed) {
+								if (attr.slice(0, _shared.EVENT_NAME_PREFIX_LEN) !== _shared.EVENT_NAME_PREFIX) {
+									throw new types.Error("The event named '~0~' must be prefixed by '~1~.", [attr, _shared.EVENT_NAME_PREFIX]);
+								};
 							};
+						};
 
-							return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-						}),
+						const events = types.unbox(destAttributes[this.eventsAttr]);
+						events.push(attr);
+
+						if (this.errorEvent) {
+							destAttributes.__ERROR_EVENT = destAttributes.__ERROR_EVENT.setValue(attr);
+						};
+
+						return this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+					}),
 
 					createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
-							const dispatch = this._super(attr, obj, attribute, callers);
-							return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
-						}),
+						const dispatch = this._super(attr, obj, attribute, callers);
+						return types.setPrototypeOf(dispatch, new this.eventProto(obj, this));
+					}),
 
 					remove: function remove(attr, obj, storage, forType, attribute) {
-							const handler = obj[attr];
-							if (types._instanceof(handler, doodad.EventHandler)) {
-								handler.clear();
-							};
-							//extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
-						},
+						const handler = obj[attr];
+						if (types._instanceof(handler, doodad.EventHandler)) {
+							handler.clear();
+						};
+						//extenders.Attribute.remove.call(this, attr, obj, storage, forType, attribute);
+					},
 				})));
 
 			extenders.REGISTER([], extenders.Event.$inherit({
-					$TYPE_NAME: "RawEvent",
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
+				$TYPE_NAME: "RawEvent",
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('RawEventExtender')), true) */,
 
-					eventsPrefixed: types.READ_ONLY(true),
-					eventsAttr: types.READ_ONLY('__RAW_EVENTS'),
-					eventsImplementation: types.READ_ONLY('Doodad.MixIns.RawEvents'),
+				eventsPrefixed: types.READ_ONLY(true),
+				eventsAttr: types.READ_ONLY('__RAW_EVENTS'),
+				eventsImplementation: types.READ_ONLY('Doodad.MixIns.RawEvents'),
 			}));
 
 			__Internal__.EVENT_CACHE = tools.nullObject();
@@ -8056,22 +8056,22 @@ exports.add = function add(modules) {
 			doodad.ADD('EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							cancellable: {
-								type: 'bool',
-								optional: true,
-								description: "Function. Default is 'true'.",
-							},
-							fn: {
-								type: 'function',
-								optional: true,
-								description: "Event handler.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						cancellable: {
+							type: 'bool',
+							optional: true,
+							description: "Function. Default is 'true'.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Creates an event.",
+						fn: {
+							type: 'function',
+							optional: true,
+							description: "Event handler.",
+						},
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Creates an event.",
 				}
 				//! END_REPLACE()
 				, function EVENT(/*optional*/cancellable, /*optional*/fn) {
@@ -8082,17 +8082,17 @@ exports.add = function add(modules) {
 			doodad.ADD('ERROR_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							fn: {
-								type: 'function',
-								optional: true,
-								description: "Event handler.",
-							},
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						fn: {
+							type: 'function',
+							optional: true,
+							description: "Event handler.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Creates an error event ('onError').",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Creates an error event ('onError').",
 				}
 				//! END_REPLACE()
 				, function ERROR_EVENT(/*optional*/fn) {
@@ -8103,11 +8103,11 @@ exports.add = function add(modules) {
 			doodad.ADD('RAW_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'AttributeBox,Extender',
-						description: "Creates a special event.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'AttributeBox,Extender',
+					description: "Creates a special event.",
 				}
 				//! END_REPLACE()
 				, function RAW_EVENT(/*optional*/fn) {
@@ -8133,17 +8133,17 @@ exports.add = function add(modules) {
 			__Internal__.CANCEL_EVENT = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							fn: {
-								type: 'function',
-								optional: true,
-								description: "Event handler.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						fn: {
+							type: 'function',
+							optional: true,
+							description: "Event handler.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "Creates an 'event cancelled' event.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "Creates an 'event cancelled' event.",
 				}
 				//! END_REPLACE()
 				, function CANCEL_EVENT(/*optional*/fn) {
@@ -8158,11 +8158,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Interface that represents a clonable object.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Interface that represents a clonable object.",
 				}
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
@@ -8172,11 +8172,11 @@ exports.add = function add(modules) {
 					clone: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'Object',
-								description: "Returns a clone of the object.",
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'Object',
+							description: "Returns a clone of the object.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(function clone(val) {
@@ -8187,11 +8187,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Interface that represents a serializable object.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Interface that represents a serializable object.",
 				}
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
@@ -8201,11 +8201,11 @@ exports.add = function add(modules) {
 					serialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'object',
-								description: "Serializes the object and returns the result.",
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'object',
+							description: "Serializes the object and returns the result.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
@@ -8213,17 +8213,17 @@ exports.add = function add(modules) {
 					$unserialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									data: {
-										type: 'object',
-										optional: false,
-										description: "Serialized object.",
-									},
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								data: {
+									type: 'object',
+									optional: false,
+									description: "Serialized object.",
 								},
-								returns: 'Object',
-								description: "Deserializes an object.",
+							},
+							returns: 'Object',
+							description: "Deserializes an object.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(function(val) {
@@ -8238,11 +8238,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Mix-in that implements events in a class.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Mix-in that implements events in a class.",
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
@@ -8259,27 +8259,27 @@ exports.add = function add(modules) {
 					detachEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									obj: {
-										type: 'object',
-										optional: true,
-										description: "Object linked with the callback function.",
-									},
-									fn: {
-										type: 'function',
-										optional: true,
-										description: "Callback function.",
-									},
-									datas: {
-										type: 'array',
-										optional: true,
-										description: "Data attached with the event.",
-									},
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								obj: {
+									type: 'object',
+									optional: true,
+									description: "Object linked with the callback function.",
 								},
-								returns: 'undefined',
-								description: "Detaches the callback function from every events.",
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Callback function.",
+								},
+								datas: {
+									type: 'array',
+									optional: true,
+									description: "Data attached with the event.",
+								},
+							},
+							returns: 'undefined',
+							description: "Detaches the callback function from every events.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function detachEvents(obj, fn, /*optional*/datas) {
@@ -8293,17 +8293,17 @@ exports.add = function add(modules) {
 					clearEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 4,
-								params: {
-									objs: {
-										type: 'object,arrayof(object)',
-										optional: true,
-										description: "List of objects to detach from every events.",
-									},
+							author: "Claude Petit",
+							revision: 4,
+							params: {
+								objs: {
+									type: 'object,arrayof(object)',
+									optional: true,
+									description: "List of objects to detach from every events.",
 								},
-								returns: 'undefined',
-								description: "Detaches every callback functions from every events.",
+							},
+							returns: 'undefined',
+							description: "Detaches every callback functions from every events.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function clearEvents(/*optional*/objs) {
@@ -8334,11 +8334,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Mix-in that implements raw events (and normal events) in a class.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Mix-in that implements raw events (and normal events) in a class.",
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(mixIns.Events.$extend({
@@ -8348,96 +8348,96 @@ exports.add = function add(modules) {
 					__RAW_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray))))))),
 
 					detachEvents: doodad.OVERRIDE(function detachEvents(obj, fn, /*optional*/datas) {
-							const rawEvents = this.__RAW_EVENTS,
-								rawEventsLen = rawEvents.length;
-							for (let i = 0; i < rawEventsLen; i++) {
-								this[rawEvents[i]].detach(obj, fn);
-							};
+						const rawEvents = this.__RAW_EVENTS,
+							rawEventsLen = rawEvents.length;
+						for (let i = 0; i < rawEventsLen; i++) {
+							this[rawEvents[i]].detach(obj, fn);
+						};
 
-							this._super(obj, fn, datas);
-						}),
+						this._super(obj, fn, datas);
+					}),
 
 					clearEvents: doodad.OVERRIDE(function clearEvents(/*optional*/objs) {
-							const events = this.__RAW_EVENTS,
-								eventsLen = events.length;
-							if (types.isNothing(objs)) {
-								for (let i = 0; i < eventsLen; i++) {
-									this[events[i]].clear();
-								};
-							} else if (types.isArray(objs)) {
-								const objsLen = objs.length;
-								for (let i = 0; i < eventsLen; i++) {
-									for (let j = 0; j < objsLen; j++) {
-										if (types.has(objs, j)) {
-											this[events[i]].detach(objs[j]);
-										};
+						const events = this.__RAW_EVENTS,
+							eventsLen = events.length;
+						if (types.isNothing(objs)) {
+							for (let i = 0; i < eventsLen; i++) {
+								this[events[i]].clear();
+							};
+						} else if (types.isArray(objs)) {
+							const objsLen = objs.length;
+							for (let i = 0; i < eventsLen; i++) {
+								for (let j = 0; j < objsLen; j++) {
+									if (types.has(objs, j)) {
+										this[events[i]].detach(objs[j]);
 									};
 								};
-							} else {
-								for (let i = 0; i < eventsLen; i++) {
-									this[events[i]].detach(objs);
-								};
 							};
+						} else {
+							for (let i = 0; i < eventsLen; i++) {
+								this[events[i]].detach(objs);
+							};
+						};
 
-							this._super(objs);
-						}),
+						this._super(objs);
+					}),
 				}))));
 
 
 			__Internal__.creatablePrototype = {
-					$TYPE_NAME: 'Creatable',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
+				$TYPE_NAME: 'Creatable',
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Creatable')), true) */,
 
-					[_shared.DestroyedSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null})))))),
+				[_shared.DestroyedSymbol]: doodad.PRIVATE(doodad.READ_ONLY(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE(null, extenders.Attribute, {isProto: null})))))),
 
-					$onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
-					onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
+				$onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
+				onDestroy: doodad.WHEN(mixIns.Events, doodad.EVENT(false)),
 
-					isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function isDestroyed() {
-						const destroyed = this[_shared.DestroyedSymbol];
-						return (destroyed !== false); // NOTE: Can be "null" for "not created".
-					}))))),
+				isDestroyed: doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function isDestroyed() {
+					const destroyed = this[_shared.DestroyedSymbol];
+					return (destroyed !== false); // NOTE: Can be "null" for "not created".
+				}))))),
 
-					$create: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									paramarray: {
-										type: 'any',
-										optional: true,
-										description: "Arguments.",
-									},
-								},
-								returns: 'undefined',
-								description: "Creates the class.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/...args) {
-							if (this[_shared.DestroyedSymbol] !== null) {
-								throw new types.Error("Object already created.");
-							};
-							types.setAttribute(this, _shared.DestroyedSymbol, false);
-							try {
-								this._super(...args);
-							} catch(ex) {
-								types.invoke(null, this.$destroy, null, _shared.SECRET, this);
-								throw ex;
-							};
-						})))),
+				$create: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							paramarray: {
+								type: 'any',
+								optional: true,
+								description: "Arguments.",
+							},
+						},
+						returns: 'undefined',
+						description: "Creates the class.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/...args) {
+						if (this[_shared.DestroyedSymbol] !== null) {
+							throw new types.Error("Object already created.");
+						};
+						types.setAttribute(this, _shared.DestroyedSymbol, false);
+						try {
+							this._super(...args);
+						} catch(ex) {
+							types.invoke(null, this.$destroy, null, _shared.SECRET, this);
+							throw ex;
+						};
+					})))),
 
-					$destroy: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 2,
-								params: null,
-								returns: 'undefined',
-								description: "Destroys the class.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
+				$destroy: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'undefined',
+						description: "Destroys the class.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function $destroy() {
 							if (this[_shared.DestroyedSymbol] === false) {
 								if (this._implements(mixIns.Events)) {
@@ -8453,68 +8453,68 @@ exports.add = function add(modules) {
 						})))),
 
 
-					$createInstance: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									paramarray: {
-										type: 'any',
-										optional: true,
-										description: "Arguments to the constructor.",
-									},
-								},
-								returns: 'Object',
-								description: "Creates a new instance of the class.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.CALL_FIRST(
+				$createInstance: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							paramarray: {
+								type: 'any',
+								optional: true,
+								description: "Arguments to the constructor.",
+							},
+						},
+						returns: 'Object',
+						description: "Creates a new instance of the class.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.CALL_FIRST(
 						function $createInstance(/*paramarray*/...args) {
 							return types.newInstance(this, args);
 						}))),
 
 
-					create: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									paramarray: {
-										type: 'any',
-										optional: true,
-										description: "Arguments.",
-									},
-								},
-								returns: 'undefined',
-								description: "Creates the class object instance.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/...args) {
-							if (this[_shared.DestroyedSymbol] !== null) {
-								throw new types.Error("Object already created.");
-							};
-							types.setAttribute(this, _shared.DestroyedSymbol, false);
-							try {
-								this._super(...args);
-							} catch(ex) {
-								types.invoke(null, this.destroy, null, _shared.SECRET, this);
-								throw ex;
-							};
-						})))),
+				create: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							paramarray: {
+								type: 'any',
+								optional: true,
+								description: "Arguments.",
+							},
+						},
+						returns: 'undefined',
+						description: "Creates the class object instance.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/...args) {
+						if (this[_shared.DestroyedSymbol] !== null) {
+							throw new types.Error("Object already created.");
+						};
+						types.setAttribute(this, _shared.DestroyedSymbol, false);
+						try {
+							this._super(...args);
+						} catch(ex) {
+							types.invoke(null, this.destroy, null, _shared.SECRET, this);
+							throw ex;
+						};
+					})))),
 
-					fastDestroy: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 2,
-								params: null,
-								returns: 'undefined',
-								description: "Rapidly destroys the class object instance.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
+				fastDestroy: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'undefined',
+						description: "Rapidly destroys the class object instance.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function fastDestroy() {
 							if (this[_shared.DestroyedSymbol] === false) {
 								this._super();
@@ -8525,17 +8525,17 @@ exports.add = function add(modules) {
 							};
 						})))),
 
-					destroy: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 2,
-								params: null,
-								returns: 'undefined',
-								description: "Fully destroys the class object instance.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
+				destroy: root.DD_DOC(
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'undefined',
+						description: "Fully destroys the class object instance.",
+					}
+					//! END_REPLACE()
+					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function destroy() {
 							if (this[_shared.DestroyedSymbol] === false) {
 								if (this._implements(mixIns.Events)) {
@@ -8550,16 +8550,16 @@ exports.add = function add(modules) {
 							};
 						})))),
 
-				};
+			};
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Implements a creatable object.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Implements a creatable object.",
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend(__Internal__.creatablePrototype))));
@@ -8568,11 +8568,11 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Implements a translatable (localized) object.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Implements a translatable (localized) object.",
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
@@ -8584,99 +8584,99 @@ exports.add = function add(modules) {
 					$getTranslation: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									name: {
-										type: 'string',
-										optional: true,
-										description: "Name of the localized string. Default will returns an object with all localized strings.",
-									},
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								name: {
+									type: 'string',
+									optional: true,
+									description: "Name of the localized string. Default will returns an object with all localized strings.",
 								},
-								returns: 'string,object',
-								description: "Returns a localized string.",
+							},
+							returns: 'string,object',
+							description: "Returns a localized string.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(
-						function $getTranslation(/*optional*/name) {
-							if (types.isNothing(name)) {
-								return this.$__translations;
-							};
+							function $getTranslation(/*optional*/name) {
+								if (types.isNothing(name)) {
+									return this.$__translations;
+								};
 
-							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid translation name.");
+								root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid translation name.");
 
-							const names = name.split('.'),
-								namesLen = names.length;
-
-							let translations = this.$__translations;
-
-							for (let i = 0; translations && (i < namesLen); i++) {
-								const n = names[i];
-								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
-								translations = translations[n];
-							};
-
-							return translations;
-						})),
-
-					$setTranslation: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									value: {
-										type: 'string,object',
-										optional: false,
-										description: "Value of the localized string.",
-									},
-									name: {
-										type: 'string',
-										optional: true,
-										description: "Name of the localized string. Default will set all localized strings by the object value.",
-									},
-								},
-								returns: 'undefined',
-								description: "Sets a localized string.",
-						}
-						//! END_REPLACE()
-						, doodad.PUBLIC(
-						function $setTranslation(value, /*optional*/name) {
-							if (types.isNothing(name)) {
-								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
-								tools.depthExtend(this[_shared.AttributesSymbol].$__translations[_shared.ExtenderSymbol].maxDepth, this.$__translations, value);
-
-							} else if (types.isStringAndNotEmpty(name)) {
 								const names = name.split('.'),
 									namesLen = names.length;
 
 								let translations = this.$__translations;
 
-								for (let i = 0; translations && (i < namesLen - 1); i++) {
+								for (let i = 0; translations && (i < namesLen); i++) {
 									const n = names[i];
 									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
 									translations = translations[n];
 								};
 
-								if (types.isJsObject(translations)) {
-									translations[names[namesLen - 1]] = value;
+								return translations;
+							})),
+
+					$setTranslation: root.DD_DOC(
+						//! REPLACE_IF(IS_UNSET('debug'), "null")
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								value: {
+									type: 'string,object',
+									optional: false,
+									description: "Value of the localized string.",
+								},
+								name: {
+									type: 'string',
+									optional: true,
+									description: "Name of the localized string. Default will set all localized strings by the object value.",
+								},
+							},
+							returns: 'undefined',
+							description: "Sets a localized string.",
+						}
+						//! END_REPLACE()
+						, doodad.PUBLIC(
+							function $setTranslation(value, /*optional*/name) {
+								if (types.isNothing(name)) {
+									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(value), "Invalid translation value.");
+									tools.depthExtend(this[_shared.AttributesSymbol].$__translations[_shared.ExtenderSymbol].maxDepth, this.$__translations, value);
+
+								} else if (types.isStringAndNotEmpty(name)) {
+									const names = name.split('.'),
+										namesLen = names.length;
+
+									let translations = this.$__translations;
+
+									for (let i = 0; translations && (i < namesLen - 1); i++) {
+										const n = names[i];
+										root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(translations) && types.has(translations, n), "Translation '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+										translations = translations[n];
+									};
+
+									if (types.isJsObject(translations)) {
+										translations[names[namesLen - 1]] = value;
+									};
+
+								} else {
+									root.DD_ASSERT && root.DD_ASSERT(false, "Invalid translation name.");
+
 								};
-
-							} else {
-								root.DD_ASSERT && root.DD_ASSERT(false, "Invalid translation name.");
-
-							};
-						})),
+							})),
 				}))));
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Class',
-						description: "Implements a configurable object.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Class',
+					description: "Implements a configurable object.",
 				}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
@@ -8688,60 +8688,60 @@ exports.add = function add(modules) {
 					$getConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									name: {
-										type: 'string',
-										optional: true,
-										description: "Name of the configuration value. Default will returns an object with all configuration values.",
-									},
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								name: {
+									type: 'string',
+									optional: true,
+									description: "Name of the configuration value. Default will returns an object with all configuration values.",
 								},
-								returns: 'string,object',
-								description: "Returns a configuration value.",
+							},
+							returns: 'string,object',
+							description: "Returns a configuration value.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(
-						function $getConfig(/*optional*/name) {
-							if (types.isNothing(name)) {
-								return this.$__config;
-							};
+							function $getConfig(/*optional*/name) {
+								if (types.isNothing(name)) {
+									return this.$__config;
+								};
 
-							root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid configuration name.");
+								root.DD_ASSERT && root.DD_ASSERT(types.isStringAndNotEmpty(name), "Invalid configuration name.");
 
-							const names = name.split('.'),
-								namesLen = names.length;
+								const names = name.split('.'),
+									namesLen = names.length;
 
-							let config = this.$__config;
+								let config = this.$__config;
 
-							for (let i = 0; config && (i < namesLen); i++) {
-								const n = names[i];
-								root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
-								config = config[n];
-							};
+								for (let i = 0; config && (i < namesLen); i++) {
+									const n = names[i];
+									root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(config) && types.has(config, n), "Configuration '~0~' for '~1~' doesn't exist.", [name, types.getTypeName(this) || __Internal__.ANONYMOUS]);
+									config = config[n];
+								};
 
-							return config;
-						})),
+								return config;
+							})),
 
 					$setConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									value: {
-										type: 'string,object',
-										optional: false,
-										description: "Value of the configuration.",
-									},
-									name: {
-										type: 'string',
-										optional: true,
-										description: "Name of the configuration value. Default will set all configuration values by the object value.",
-									},
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								value: {
+									type: 'string,object',
+									optional: false,
+									description: "Value of the configuration.",
 								},
-								returns: 'undefined',
-								description: "Sets a configuration value.",
+								name: {
+									type: 'string',
+									optional: true,
+									description: "Name of the configuration value. Default will set all configuration values by the object value.",
+								},
+							},
+							returns: 'undefined',
+							description: "Sets a configuration value.",
 						}
 						//! END_REPLACE()
 						, doodad.PUBLIC(function $setConfig(value, /*optional*/name) {
@@ -8780,19 +8780,19 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'Object',
-						description: "Main class of every Doodad objects.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'Object',
+					description: "Main class of every Doodad objects.",
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.EXPANDABLE(doodad.Class.$extend(
-						mixIns.Creatable,
-				{
-					$TYPE_NAME: "Object",
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
-				}))));
+					mixIns.Creatable,
+					{
+						$TYPE_NAME: "Object",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Object')), true) */,
+					}))));
 
 			//==================================
 			// Serializable objects
@@ -8801,162 +8801,143 @@ exports.add = function add(modules) {
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							value: {
-								type: 'any',
-								optional: false,
-								description: "Serializable value.",
-							},
-							type: {
-								type: 'string',
-								optional: true,
-								description: "Type of the value. Default is taken from a call to 'types._typeof'.",
-							},
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						value: {
+							type: 'any',
+							optional: false,
+							description: "Serializable value.",
 						},
-						returns: 'Object',
-						description: "Packed value.",
+						type: {
+							type: 'string',
+							optional: true,
+							description: "Type of the value. Default is taken from a call to 'types._typeof'.",
+						},
+					},
+					returns: 'Object',
+					description: "Packed value.",
 				}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.Object.$extend(
-								interfaces.Serializable,
-				{
-					$TYPE_NAME: "PackedValue",
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackedValue')), true) */,
+					interfaces.Serializable,
+					{
+						$TYPE_NAME: "PackedValue",
+						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackedValue')), true) */,
 
-					$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
-						'name',
-						'message',
-						'code',  // Node.Js
-						'innerStack',
-					], extenders.UniqueArray))),
+						$ERROR_ATTRIBUTES: doodad.PROTECTED(doodad.TYPE(doodad.ATTRIBUTE([
+							'name',
+							'message',
+							'code',  // Node.Js
+							'innerStack',
+						], extenders.UniqueArray))),
 
-					__value: doodad.PROTECTED(doodad.READ_ONLY(null)),
+						__value: doodad.PROTECTED(doodad.READ_ONLY(null)),
 
-					create: doodad.OVERRIDE(function create(value) {
-						if (root.DD_ASSERT) {
-							root.DD_ASSERT(types.isSerializable(value), "Invalid value");
-							if (types._implements(value, interfaces.Serializable)) {
-								const type = types.getType(value);
-								root.DD_ASSERT(namespaces.get(type.DD_FULL_NAME) === type, "Value is not of a registered type.");
-							};
-						};
-						types.setAttribute(this, '__value', value);
-					}),
-
-					$pack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $pack(value) {
-						let data;
-						if (types.isNothing(value)) {
-							data = undefined;
-						} else if (types.isInfinite(value)) {
-							if (value < 0) {
-								value = -1;
-							} else {
-								value = 1;
-							};
-							data = {
-								type: 'infinity',
-								value: value,
-							};
-						} else if (types.isNumber(value)) {
-							data = value;
-						} else if (types.isBoolean(value)) {
-							data = value;
-						} else if (types.isString(value)) {
-							data = value;
-						} else if (types.isDate(value)) {
-							value = value.valueOf();
-							data = {
-								type: 'date',
-								value: value,
-							};
-						} else if (types.isNaN(value)) {
-							data = {
-								type: 'nan',
-								value: undefined,
-							};
-						} else if (types.isError(value)) {
-							types.Error.prototype.parse.call(value);
-							const type = value.constructor;
-							const details = tools.reduce(this.$ERROR_ATTRIBUTES, function(result, key) {
-								const valKey = (key === 'innerStack' ? 'stack' : key);
-								if (types.hasInherited(value, valKey)) {
-									result[key] = this.$pack(value[valKey]);
+						create: doodad.OVERRIDE(function create(value) {
+							if (root.DD_ASSERT) {
+								root.DD_ASSERT(types.isSerializable(value), "Invalid value");
+								if (types._implements(value, interfaces.Serializable)) {
+									const type = types.getType(value);
+									root.DD_ASSERT(namespaces.get(type.DD_FULL_NAME) === type, "Value is not of a registered type.");
 								};
-								return result;
-							}, {}, this);
-							data = {
-								type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'error'),
-								value: details,
 							};
-						} else if (types.isArray(value)) {
-							value = tools.map(value, this.$pack, this);
-							data = value;
-						} else if (types._implements(value, interfaces.Serializable)) {
-							data = {
-								type: '{' + types.getType(value).DD_FULL_NAME + '}',
-								value: this.$pack(value.serialize()),
-							};
-						} else if (types.isObject(value) && types.isFunction(value.toJSON)) {
-							const type = types.getType(value);
-							data = {
-								type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'object'),
-								value: this.$pack(value.toJSON('')),
-							};
-						} else if (types.isJsObject(value)) {
-							value = tools.map(value, this.$pack, this);
-							data = {
-								type: 'object',
-								value: value,
-							};
-						} else {
-							throw new types.ValueError("Value can't be packed.");
-						};
-						return data;
-					}))),
+							types.setAttribute(this, '__value', value);
+						}),
 
-					$unpack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $unpack(data) {
-						let value;
-						if (types.isJsObject(data)) {
-							const type = types.toString(types.get(data, 'type'));
-							value = types.get(data, 'value');
-							if (type === 'undefined') {
-								value = undefined;
-							} else if (type === 'infinity') {
-								value = types.toInteger(value) || 0;
+						$pack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $pack(value) {
+							let data;
+							if (types.isNothing(value)) {
+								data = undefined;
+							} else if (types.isInfinite(value)) {
 								if (value < 0) {
-									value = -Infinity;
+									value = -1;
 								} else {
-									value = Infinity;
+									value = 1;
 								};
-							} else if (type === 'date') {
-								if (!types.isNothing(value)) {
-									value = new Date(types.toInteger(value));
+								data = {
+									type: 'infinity',
+									value: value,
 								};
-							} else if (type === 'nan') {
-								value = NaN;
-							} else if (type === 'error') {
-								const cls = _shared.Natives.windowError;
-								const tmp = new cls();
-								tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
-									if (types.has(value, key)) {
-										types.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true}, _shared.SECRET);
+							} else if (types.isNumber(value)) {
+								data = value;
+							} else if (types.isBoolean(value)) {
+								data = value;
+							} else if (types.isString(value)) {
+								data = value;
+							} else if (types.isDate(value)) {
+								value = value.valueOf();
+								data = {
+									type: 'date',
+									value: value,
+								};
+							} else if (types.isNaN(value)) {
+								data = {
+									type: 'nan',
+									value: undefined,
+								};
+							} else if (types.isError(value)) {
+								types.Error.prototype.parse.call(value);
+								const type = value.constructor;
+								const details = tools.reduce(this.$ERROR_ATTRIBUTES, function(result, key) {
+									const valKey = (key === 'innerStack' ? 'stack' : key);
+									if (types.hasInherited(value, valKey)) {
+										result[key] = this.$pack(value[valKey]);
 									};
-								}, this);
-								value = tmp;
-							} else if (type === 'object') {
-								value = tools.map(value, this.$unpack, this);
-							} else if (type[0] === '{') {
-								const clsName = type.slice(1, -1),
-									cls = namespaces.get(clsName);
-								const isError = types.isErrorType(cls);
-								const isSerializable = !isError && types._implements(cls, interfaces.Serializable);
-								const fromJSON = (cls && !isError && !isSerializable ? cls.fromJSON : null);
-								if (!isError && !isSerializable && !types.isFunction(fromJSON)) {
-									throw new types.ValueError("Object of type '~0~' can't be deserialized.", [clsName]);
+									return result;
+								}, {}, this);
+								data = {
+									type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'error'),
+									value: details,
 								};
-								if (isError) {
+							} else if (types.isArray(value)) {
+								value = tools.map(value, this.$pack, this);
+								data = value;
+							} else if (types._implements(value, interfaces.Serializable)) {
+								data = {
+									type: '{' + types.getType(value).DD_FULL_NAME + '}',
+									value: this.$pack(value.serialize()),
+								};
+							} else if (types.isObject(value) && types.isFunction(value.toJSON)) {
+								const type = types.getType(value);
+								data = {
+									type: (type && type.DD_FULL_NAME ? '{' + type.DD_FULL_NAME + '}' : 'object'),
+									value: this.$pack(value.toJSON('')),
+								};
+							} else if (types.isJsObject(value)) {
+								value = tools.map(value, this.$pack, this);
+								data = {
+									type: 'object',
+									value: value,
+								};
+							} else {
+								throw new types.ValueError("Value can't be packed.");
+							};
+							return data;
+						}))),
+
+						$unpack: doodad.PUBLIC(doodad.TYPE(doodad.JS_METHOD(function $unpack(data) {
+							let value;
+							if (types.isJsObject(data)) {
+								const type = types.toString(types.get(data, 'type'));
+								value = types.get(data, 'value');
+								if (type === 'undefined') {
+									value = undefined;
+								} else if (type === 'infinity') {
+									value = types.toInteger(value) || 0;
+									if (value < 0) {
+										value = -Infinity;
+									} else {
+										value = Infinity;
+									};
+								} else if (type === 'date') {
+									if (!types.isNothing(value)) {
+										value = new Date(types.toInteger(value));
+									};
+								} else if (type === 'nan') {
+									value = NaN;
+								} else if (type === 'error') {
+									const cls = _shared.Natives.windowError;
 									const tmp = new cls();
 									tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 										if (types.has(value, key)) {
@@ -8964,36 +8945,55 @@ exports.add = function add(modules) {
 										};
 									}, this);
 									value = tmp;
-								} else if (isSerializable) {
-									value = this.$unpack(value);
-									value = cls.$unserialize(value);
+								} else if (type === 'object') {
+									value = tools.map(value, this.$unpack, this);
+								} else if (type[0] === '{') {
+									const clsName = type.slice(1, -1),
+										cls = namespaces.get(clsName);
+									const isError = types.isErrorType(cls);
+									const isSerializable = !isError && types._implements(cls, interfaces.Serializable);
+									const fromJSON = (cls && !isError && !isSerializable ? cls.fromJSON : null);
+									if (!isError && !isSerializable && !types.isFunction(fromJSON)) {
+										throw new types.ValueError("Object of type '~0~' can't be deserialized.", [clsName]);
+									};
+									if (isError) {
+										const tmp = new cls();
+										tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
+											if (types.has(value, key)) {
+												types.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true}, _shared.SECRET);
+											};
+										}, this);
+										value = tmp;
+									} else if (isSerializable) {
+										value = this.$unpack(value);
+										value = cls.$unserialize(value);
+									} else {
+										value = this.$unpack(value);
+										value = fromJSON.call(cls, value);
+									};
 								} else {
-									value = this.$unpack(value);
-									value = fromJSON.call(cls, value);
+									throw new types.ValueError("Invalid packet.");
 								};
+							} else if (types.isArray(data)) {
+								value = tools.map(data, this.$unpack, this);
 							} else {
-								throw new types.ValueError("Invalid packet.");
+								value = data;
 							};
-						} else if (types.isArray(data)) {
-							value = tools.map(data, this.$unpack, this);
-						} else {
-							value = data;
-						};
-						return value;
-					}))),
+							return value;
+						}))),
 
-					serialize: doodad.OVERRIDE(function serialize() {
-						return types.getType(this).$pack(this.__value);
-					}),
+						serialize: doodad.OVERRIDE(function serialize() {
+							return types.getType(this).$pack(this.__value);
+						}),
 
-					$unserialize: doodad.OVERRIDE(function $unserialize(data) {
-						return new this(this.$unpack(data));
-					}),
+						$unserialize: doodad.OVERRIDE(function $unserialize(data) {
+							return new this(this.$unpack(data));
+						}),
 
-					valueOf: function valueOf() {
-						return this.__value;
-					},
-				})));
+						valueOf: function valueOf() {
+							return this.__value;
+						},
+					})));
 
 
 			types.preventExtensions(__Internal__[_shared.TargetSymbol]);

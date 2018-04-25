@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -73,17 +73,17 @@ exports.add = function add(modules) {
 			types.ADD('isArrayBuffer', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an array buffer. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, (_shared.Natives.windowArrayBuffer ? (function isArrayBuffer(obj) {
@@ -107,8 +107,8 @@ exports.add = function add(modules) {
 						//delete _shared.Natives.windowTypedArray;
 						_shared.Natives.windowTypedArray = null;
 						__Internal__.TypedArrays = [global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array,
-												global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array,
-												global.Float64Array];
+							global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array,
+							global.Float64Array];
 					} else {
 						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
 						// eslint-disable-next-line semi-spacing
@@ -122,17 +122,17 @@ exports.add = function add(modules) {
 			types.ADD('isTypedArray', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a typed array (an array buffer view). Returns 'false' otherwise. Note: May not be cross-realm.",
 				}
 				//! END_REPLACE()
 				, (_shared.Natives.windowTypedArray ? (function isTypedArray(obj) {

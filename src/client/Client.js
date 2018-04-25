@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -127,7 +127,7 @@ exports.add = function add(modules) {
                                             (types.isFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) ||
                                             (types.isFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
 											null,
-                windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
+				windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
                                             (types.isFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
 											null,
 				windowMutationObserver: (types.isFunction(global.MutationObserver) ? global.MutationObserver : null),
@@ -446,34 +446,34 @@ exports.add = function add(modules) {
 
 						} else {
 							//if (!__Internal__.setCurrentLocationPending) {
-								try {
-									let reload = false;
-									let url = files.Url.parse(_shared.Natives.windowLocation.href);
+							try {
+								let reload = false;
+								let url = files.Url.parse(_shared.Natives.windowLocation.href);
 
-									// TODO: Better user message, with translation
-									_shared.Natives.windowDocument.open('text/plain', 'replace');
-									if (exitCode !== 0) {
-										if (types.toBoolean(url.args.get('crashReport', true))) {
-											_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
-										} else {
-											reload = true;
-											_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
-										};
+								// TODO: Better user message, with translation
+								_shared.Natives.windowDocument.open('text/plain', 'replace');
+								if (exitCode !== 0) {
+									if (types.toBoolean(url.args.get('crashReport', true))) {
+										_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+									} else {
+										reload = true;
+										_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
 									};
-									_shared.Natives.windowDocument.close();
-
-									if (reload) {
-										url = url.setArgs({crashReport: true});
-										tools.setCurrentLocation(url, true);
-									};
-
-									__Internal__.catchAndExitCalled = true;
-
-								} catch(o) {
-									//if (root.getOptions().debug) {
-									//	types.DEBUGGER();
-									//};
 								};
+								_shared.Natives.windowDocument.close();
+
+								if (reload) {
+									url = url.setArgs({crashReport: true});
+									tools.setCurrentLocation(url, true);
+								};
+
+								__Internal__.catchAndExitCalled = true;
+
+							} catch(o) {
+								//if (root.getOptions().debug) {
+								//	types.DEBUGGER();
+								//};
+							};
 							//};
 
 							if (!__Internal__.catchAndExitCalled) {
@@ -507,153 +507,153 @@ exports.add = function add(modules) {
 
 			client.ADD('isEvent', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is a DOM 'event' object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isEvent(obj) {
-				return types._instanceof(obj, _shared.Natives.windowEvent);
-			}));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a DOM 'event' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isEvent(obj) {
+					return types._instanceof(obj, _shared.Natives.windowEvent);
+				}));
 
 			client.ADD('isWindow', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isWindow(obj) {
-				return types._instanceof(obj, _shared.Natives.windowWindow);
-			}));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isWindow(obj) {
+					return types._instanceof(obj, _shared.Natives.windowWindow);
+				}));
 
 			client.ADD('isDocument', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isDocument(obj) {
-				return types._instanceof(obj, _shared.Natives.windowHtmlDocument);
-			}));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isDocument(obj) {
+					return types._instanceof(obj, _shared.Natives.windowHtmlDocument);
+				}));
 
 			client.ADD('isNode', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isNode(obj) {
-				return types._instanceof(obj, _shared.Natives.windowNode);
-			}));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isNode(obj) {
+					return types._instanceof(obj, _shared.Natives.windowNode);
+				}));
 
 			client.ADD('isElement', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function isElement(obj) {
-				return types._instanceof(obj, _shared.Natives.windowHtmlElement);
-			}));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, function isElement(obj) {
+					return types._instanceof(obj, _shared.Natives.windowHtmlElement);
+				}));
 
 
 			client.ADD('isEventTarget', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "An object to test for.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' when the object is an event target. Returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
-				return types._instanceof(obj, _shared.Natives.windowEventTarget);
-			}) : (function isElement(obj) {
-				return client.isDocument(obj) || client.isElement(obj);
-			}))));
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is an event target. Returns 'false' otherwise.",
+				}
+				//! END_REPLACE()
+				, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
+					return types._instanceof(obj, _shared.Natives.windowEventTarget);
+				}) : (function isElement(obj) {
+					return client.isDocument(obj) || client.isElement(obj);
+				}))));
 
 			client.ADD('getFirstElement', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							parent: {
-								type: 'any',
-								optional: false,
-								description: "A node.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						parent: {
+							type: 'any',
+							optional: false,
+							description: "A node.",
 						},
-						returns: 'HtmlElement',
-						description: "Returns the first child element of a node. Returns 'null' if no element.",
-			}
-			//! END_REPLACE()
-			, function(parent) {
-				root.DD_ASSERT && root.DD_ASSERT(client.isNode(parent), "Invalid node.");
-
-				// NOTE: Sorry for using the same variable
-				parent = parent.firstChild;
-				while (parent && (parent.nodeType !== 1)) {
-					parent = parent.nextSibling;
+					},
+					returns: 'HtmlElement',
+					description: "Returns the first child element of a node. Returns 'null' if no element.",
 				}
-				return parent;
-			}));
+				//! END_REPLACE()
+				, function(parent) {
+					root.DD_ASSERT && root.DD_ASSERT(client.isNode(parent), "Invalid node.");
+
+					// NOTE: Sorry for using the same variable
+					parent = parent.firstChild;
+					while (parent && (parent.nodeType !== 1)) {
+						parent = parent.nextSibling;
+					}
+					return parent;
+				}));
 
 
 			//===================================
@@ -662,36 +662,36 @@ exports.add = function add(modules) {
 
 			mixIns.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: null,
-						description: "Class mix-in to implement for JS events.",
-			}
-			//! END_REPLACE()
-			, doodad.MIX_IN(mixIns.Events.$extend({
-				$TYPE_NAME: "JsEvents",
-				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: null,
+					description: "Class mix-in to implement for JS events.",
+				}
+				//! END_REPLACE()
+				, doodad.MIX_IN(mixIns.Events.$extend({
+					$TYPE_NAME: "JsEvents",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 
-				__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
+					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
 
-				detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
-					const events = this.__JS_EVENTS,
-						eventsLen = events.length;
-					for (let i = 0; i < eventsLen; i++) {
-						this[events[i]].detach(elements, useCapture);
-					};
-				})))),
+					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
+						const events = this.__JS_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].detach(elements, useCapture);
+						};
+					})))),
 
-				clearJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearJsEvents() {
-					const events = this.__JS_EVENTS,
-						eventsLen = events.length;
-					for (let i = 0; i < eventsLen; i++) {
-						this[events[i]].clear();
-					};
-				})))),
-			}))));
+					clearJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearJsEvents() {
+						const events = this.__JS_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].clear();
+						};
+					})))),
+				}))));
 
 			__Internal__.eventHandlerProto = {
 				$TYPE_NAME: 'JsEventHandler',
@@ -795,207 +795,207 @@ exports.add = function add(modules) {
 
 			doodad.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: null,
-						description: "JS event handler prototype.",
-			}
-			//! END_REPLACE()
-			, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: null,
+					description: "JS event handler prototype.",
+				}
+				//! END_REPLACE()
+				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: null,
-						description: "JS event extender.",
-			}
-			//! END_REPLACE()
-			, extenders.RawEvent.$inherit({
-				$TYPE_NAME: "JsEvent",
-				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: null,
+					description: "JS event extender.",
+				}
+				//! END_REPLACE()
+				, extenders.RawEvent.$inherit({
+					$TYPE_NAME: "JsEvent",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
 
-				eventsPrefixed: types.READ_ONLY(false),
-				eventsAttr: types.READ_ONLY('__JS_EVENTS'),
-				errorEventAttr: types.READ_ONLY(null),
-				eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
+					eventsPrefixed: types.READ_ONLY(false),
+					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
+					errorEventAttr: types.READ_ONLY(null),
+					eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
 
-				enableScopes: types.READ_ONLY(true),
-				eventType: types.READ_ONLY(null),
+					enableScopes: types.READ_ONLY(true),
+					eventType: types.READ_ONLY(null),
 
-				getUnified: types.READ_ONLY(function getUnified() {
-					if (!this.__unified) {
-						const self = this;
-						this.__unified = {
+					getUnified: types.READ_ONLY(function getUnified() {
+						if (!this.__unified) {
+							const self = this;
+							this.__unified = {
 							// TODO: Unify event properties between browsers
-							which: (types.isNothing(self.which) ? self.keyCode : ((self.which !== 0) && (self.charCode !== 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
+								which: (types.isNothing(self.which) ? self.keyCode : ((self.which !== 0) && (self.charCode !== 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
 							//preventDefault: (types.isNothing(self.preventDefault) ? function() {ev.returnValue = false; ev.keyCode = 0;} : self.preventDefault),
+							};
 						};
-					};
-					return this.__unified;
-				}),
+						return this.__unified;
+					}),
 
-				eventProto: types.READ_ONLY(doodad.JsEventHandler),
+					eventProto: types.READ_ONLY(doodad.JsEventHandler),
 
-				_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
-					this._super(options);
-					if (!types.isType(this)) {
-						types.setAttributes(this, {
-							eventType: types.get(options, 'eventType', this.eventType),
-						});
-					};
-				})),
+					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
+						this._super(options);
+						if (!types.isType(this)) {
+							types.setAttributes(this, {
+								eventType: types.get(options, 'eventType', this.eventType),
+							});
+						};
+					})),
 
-				getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
-					if (types.isNothing(options)) {
-						options = {};
-					};
-					return this._super(options) +
+					getCacheName: types.READ_ONLY(types.SUPER(function getCacheName(/*optional*/options) {
+						if (types.isNothing(options)) {
+							options = {};
+						};
+						return this._super(options) +
 						',' + types.get(options, 'eventType', this.eventType);
-				})),
+					})),
 
-				overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions) {
-					this._super(options, newOptions);
-					options.eventType = newOptions.eventType || this.eventType;
-					return options;
-				})),
+					overrideOptions: types.READ_ONLY(types.SUPER(function overrideOptions(options, newOptions) {
+						this._super(options, newOptions);
+						options.eventType = newOptions.eventType || this.eventType;
+						return options;
+					})),
 
-				extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-					if (sourceIsProto) {
-						const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
-						const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
-						if (handlerSrc) {
-							const extender = handlerSrc[_shared.ExtenderSymbol];
-							if (extender.extend) {
-								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
+						if (sourceIsProto) {
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
+							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+							if (handlerSrc) {
+								const extender = handlerSrc[_shared.ExtenderSymbol];
+								if (extender.extend) {
+									destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+									handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+								};
+							} else {
+								const extender = handlerDest[_shared.ExtenderSymbol];
+								if (extender.extend) {
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								};
 							};
 						} else {
-							const extender = handlerDest[_shared.ExtenderSymbol];
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
+							const extender = handlerSrc[_shared.ExtenderSymbol];
 							if (extender.extend) {
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
+								const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
 							};
 						};
-					} else {
-						const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
-						const extender = handlerSrc[_shared.ExtenderSymbol];
-						if (extender.extend) {
-							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
-							destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
-							const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
+						return destAttribute;
+					}),
+
+					postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
+						const handler = destAttribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							if (extender.postExtend) {
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+							};
 						};
-					};
-					return destAttribute;
-				}),
 
-				postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
-					const handler = destAttribute[__Internal__.symbolHandlerExtended];
-					if (handler) {
-						const extender = handler[_shared.ExtenderSymbol];
-						if (extender.postExtend) {
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+						return this._super(attr, destAttributes, destAttribute);
+					}),
+
+					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
+
+						const handler = attribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							if (extender.init) {
+								const oldObjId = generator.objId;
+								generator.objId = generator.vars.fromKey(attr);
+								const oldKeyVars = generator.__kvars;
+								generator.__kvars = tools.nullObject();
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
+								generator.objId = oldObjId;
+								generator.__kvars = oldKeyVars;
+							};
 						};
-					};
-
-					return this._super(attr, destAttributes, destAttribute);
-				}),
-
-				init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-					this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
-
-					const handler = attribute[__Internal__.symbolHandlerExtended];
-					if (handler) {
-						const extender = handler[_shared.ExtenderSymbol];
-						if (extender.init) {
-							const oldObjId = generator.objId;
-							generator.objId = generator.vars.fromKey(attr);
-							const oldKeyVars = generator.__kvars;
-							generator.__kvars = tools.nullObject();
-							extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
-							generator.objId = oldObjId;
-							generator.__kvars = oldKeyVars;
-						};
-					};
-				}),
-			})));
+					}),
+				})));
 
 
 			doodad.ADD('JS_EVENT', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 3,
-						eventType: {
-							type: 'string',
-							optional: true,
-							description: "Event name.",
-						},
-						fn: {
-							type: 'function',
-							optional: true,
-							description: "Event handler.",
-						},
-						returns: 'AttributeBox,Extender',
-						description: "JS event attribute modifier.",
-			}
-			//! END_REPLACE()
-			, function JS_EVENT(eventType, /*optional*/fn) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid event type.");
-					const val = types.unbox(fn);
-					root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-				};
-				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
-					const dispatch = this[_shared.CurrentDispatchSymbol];
+				{
+					author: "Claude Petit",
+					revision: 3,
+					eventType: {
+						type: 'string',
+						optional: true,
+						description: "Event name.",
+					},
+					fn: {
+						type: 'function',
+						optional: true,
+						description: "Event handler.",
+					},
+					returns: 'AttributeBox,Extender',
+					description: "JS event attribute modifier.",
+				}
+				//! END_REPLACE()
+				, function JS_EVENT(eventType, /*optional*/fn) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid event type.");
+						const val = types.unbox(fn);
+						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+					};
+					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
+						const dispatch = this[_shared.CurrentDispatchSymbol];
 
-					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
 
-					const stack = values[_shared.StackSymbol];
+						const stack = values[_shared.StackSymbol];
 
-					let clonedStack;
-					if (values[_shared.SortedSymbol]) {
-						clonedStack = values[_shared.ClonedStackSymbol];
-					} else {
-						if (stack.length) {
-							stack.sort(function(value1, value2) {
-								return tools.compareNumbers(value1[2], value2[2]);
-							});
-							clonedStack = types.clone(stack);
+						let clonedStack;
+						if (values[_shared.SortedSymbol]) {
+							clonedStack = values[_shared.ClonedStackSymbol];
 						} else {
-							clonedStack = [];
+							if (stack.length) {
+								stack.sort(function(value1, value2) {
+									return tools.compareNumbers(value1[2], value2[2]);
+								});
+								clonedStack = types.clone(stack);
+							} else {
+								clonedStack = [];
+							};
+							const values = {};
+							values[_shared.SortedSymbol] = true;
+							values[_shared.ClonedStackSymbol] = clonedStack;
+							types.setAttributes(dispatch, values);
 						};
-						const values = {};
-						values[_shared.SortedSymbol] = true;
-						values[_shared.ClonedStackSymbol] = clonedStack;
-						types.setAttributes(dispatch, values);
-					};
 
-					const stackLen = clonedStack.length;
+						const stackLen = clonedStack.length;
 
-					for (let i = 0; i < stackLen; i++) {
-						const data = clonedStack[i],
-							obj = data[0],
-							evDatas = data[3],
-							element = evDatas[0];
+						for (let i = 0; i < stackLen; i++) {
+							const data = clonedStack[i],
+								obj = data[0],
+								evDatas = data[3],
+								element = evDatas[0];
 
-						if (!ctx || (element === ctx.element)) {
-							const handler = evDatas[2];
+							if (!ctx || (element === ctx.element)) {
+								const handler = evDatas[2];
 
-							handler.call(obj, ctx);
+								handler.call(obj, ctx);
+							};
 						};
-					};
-				}, extenders.JsEvent, {enableScopes: true, eventType: eventType}))));
+					}, extenders.JsEvent, {enableScopes: true, eventType: eventType}))));
 
-				eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
+					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
 
-				return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
-			}));
+					return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
+				}));
 
 			//===================================
 			// Location functions
@@ -1003,100 +1003,100 @@ exports.add = function add(modules) {
 
 			types.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							message: {
-								type: 'string',
-								optional: true,
-								description: "A message explaining that location has changed.",
-							},
-							params: {
-								type: 'arrayof(any),objectof(any)',
-								optional: true,
-								description: "Parameters of the error message",
-							},
-						},
-						returns: 'error',
-						description: "Signals that the current location has been moved to another one.",
-			}
-			//! END_REPLACE()
-			, types.ScriptAbortedError.$inherit(
 				{
-					$TYPE_NAME: "PageMovedError",
-					$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PageMovedError')), true) */ null /*! END_REPLACE() */,
-
-					[types.ConstructorSymbol](message, /*optional*/params) {
-						return [message || "Page moved.", params];
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						message: {
+							type: 'string',
+							optional: true,
+							description: "A message explaining that location has changed.",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
 					},
-				})));
+					returns: 'error',
+					description: "Signals that the current location has been moved to another one.",
+				}
+				//! END_REPLACE()
+				, types.ScriptAbortedError.$inherit(
+					{
+						$TYPE_NAME: "PageMovedError",
+						$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('PageMovedError')), true) */ null /*! END_REPLACE() */,
+
+						[types.ConstructorSymbol](message, /*optional*/params) {
+							return [message || "Page moved.", params];
+						},
+					})));
 
 			tools.ADD('getCurrentLocation', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							_window: {
-								type: 'Window',
-								optional: true,
-								description: "Reference to the window object. Default is global 'window' object.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						_window: {
+							type: 'Window',
+							optional: true,
+							description: "Reference to the window object. Default is global 'window' object.",
 						},
-						returns: 'Url',
-						description: "Returns current location.",
-			}
-			//! END_REPLACE()
-			, function getCurrentLocation(/*optional*/_window) {
-				let _location = _shared.Natives.windowLocation;
-				if (_window) {
-					_location = _window.location;
-				};
-				return files.Url.parse(_location.href);
-			}));
+					},
+					returns: 'Url',
+					description: "Returns current location.",
+				}
+				//! END_REPLACE()
+				, function getCurrentLocation(/*optional*/_window) {
+					let _location = _shared.Natives.windowLocation;
+					if (_window) {
+						_location = _window.location;
+					};
+					return files.Url.parse(_location.href);
+				}));
 
 
 			//__Internal__.setCurrentLocationPending = false;
 
 			tools.ADD('setCurrentLocation', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "Url to new location",
-							},
-							dontAbort: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will not throws the PageMovedError signal. 'false' will throws the signal. Default is 'false'.",
-							},
-							noReload: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will not reload the page when moving to the same location. 'false' will reload the page. Default is 'false'.",
-							},
-							_window: {
-								type: 'Window',
-								optional: true,
-								description: "Reference to the window object. Default is global 'window' object.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "Url to new location",
 						},
-						returns: 'undefined',
-						description: "Set current location.",
-			}
-			//! END_REPLACE()
-			, function setCurrentLocation(url, /*optional*/dontAbort, /*optional*/noReload, /*optional*/_window) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
-					root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
-				};
+						dontAbort: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will not throws the PageMovedError signal. 'false' will throws the signal. Default is 'false'.",
+						},
+						noReload: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will not reload the page when moving to the same location. 'false' will reload the page. Default is 'false'.",
+						},
+						_window: {
+							type: 'Window',
+							optional: true,
+							description: "Reference to the window object. Default is global 'window' object.",
+						},
+					},
+					returns: 'undefined',
+					description: "Set current location.",
+				}
+				//! END_REPLACE()
+				, function setCurrentLocation(url, /*optional*/dontAbort, /*optional*/noReload, /*optional*/_window) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isStringAndNotEmpty(url) || types._instanceof(url, files.Url), "Invalid url.");
+						root.DD_ASSERT(types.isNothing(_window) || client.isWindow(_window), "Invalid window object.");
+					};
 
-				//if (!__Internal__.setCurrentLocationPending) {
+					//if (!__Internal__.setCurrentLocationPending) {
 					if (!types._instanceof(url, files.Url)) {
 						url = files.Url.parse(url);
 					};
@@ -1134,12 +1134,12 @@ exports.add = function add(modules) {
 
 						//__Internal__.setCurrentLocationPending = (result !== 0);
 					};
-				//};
+					//};
 
-				if (!dontAbort) {
-					throw new types.PageMovedError();
-				};
-			}));
+					if (!dontAbort) {
+						throw new types.PageMovedError();
+					};
+				}));
 
 			//===================================
 			// Script loader functions
@@ -1271,7 +1271,7 @@ exports.add = function add(modules) {
 							//	};
 							//	_shared.Natives.windowSetTimeout(appendElement, 1);
 							//} else {
-								this.target.appendChild(this.element);
+							this.target.appendChild(this.element);
 							//};
 
 							this.dispatchEvent(new types.CustomEvent('loading'));
@@ -1325,312 +1325,312 @@ exports.add = function add(modules) {
 
 			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "Target file Url",
-							},
-							async: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-							},
-							timeout: {
-								type: 'integer',
-								optional: true,
-								description: "Timeout delay in milliseconds.",
-							},
-							reload: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-							},
-							_document: {
-								type: 'HtmlDocument',
-								optional: true,
-								description: "Reference to the window document object. Default is global 'document' object.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "Target file Url",
 						},
-						returns: 'ScriptLoader',
-						description: "Load specified JS script file.",
-			}
-			//! END_REPLACE()
-			, function getJsScriptFileLoader(url, /*optional*/async, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
-				};
-
-				let loader = null;
-
-				if (types._instanceof(url, files.Path)) {
-					url = files.Url.parse(url);
-				};
-
-				if (types._instanceof(url, files.Url)) {
-					url = url.toString();
-				};
-
-				root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
-
-				if (url in __Internal__.loadedScripts) {
-					loader = __Internal__.loadedScripts[url];
-				};
-				if (reload && loader) {
-					if (loader.element && loader.element.parentNode) {
-						loader.element.parentNode.removeChild(loader.element);
-						loader.element = null;
-					};
-					loader = null;
-				};
-				if (!loader) {
-					if (!_document) {
-						_document = _shared.Natives.windowDocument;
+						async: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+						},
+						timeout: {
+							type: 'integer',
+							optional: true,
+							description: "Timeout delay in milliseconds.",
+						},
+						reload: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+						},
+						_document: {
+							type: 'HtmlDocument',
+							optional: true,
+							description: "Reference to the window document object. Default is global 'document' object.",
+						},
+					},
+					returns: 'ScriptLoader',
+					description: "Load specified JS script file.",
+				}
+				//! END_REPLACE()
+				, function getJsScriptFileLoader(url, /*optional*/async, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
 
-					__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
+					let loader = null;
 
-					loader.addEventListener('init', function() {
-						loader.async = this.element.async = !!async;
-						this.element.type = 'text/javascript';
-						this.element.src = url;
-					});
-				};
+					if (types._instanceof(url, files.Path)) {
+						url = files.Url.parse(url);
+					};
 
-				return loader;
-			}));
+					if (types._instanceof(url, files.Url)) {
+						url = url.toString();
+					};
+
+					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
+
+					if (url in __Internal__.loadedScripts) {
+						loader = __Internal__.loadedScripts[url];
+					};
+					if (reload && loader) {
+						if (loader.element && loader.element.parentNode) {
+							loader.element.parentNode.removeChild(loader.element);
+							loader.element = null;
+						};
+						loader = null;
+					};
+					if (!loader) {
+						if (!_document) {
+							_document = _shared.Natives.windowDocument;
+						};
+
+						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
+
+						loader.addEventListener('init', function() {
+							loader.async = this.element.async = !!async;
+							this.element.type = 'text/javascript';
+							this.element.src = url;
+						});
+					};
+
+					return loader;
+				}));
 
 			tools.ADD('getJsScriptBlockLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							script: {
-								type: 'string',
-								optional: false,
-								description: "Target JS script",
-							},
-							async: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will load script in asynchronous mode. 'false' will load script synchronously. Default is 'false'.",
-							},
-							timeout: {
-								type: 'integer',
-								optional: true,
-								description: "Timeout delay in milliseconds.",
-							},
-							_document: {
-								type: 'HtmlDocument',
-								optional: true,
-								description: "Reference to the window document object. Default is global 'document' object.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						script: {
+							type: 'string',
+							optional: false,
+							description: "Target JS script",
 						},
-						returns: 'ScriptLoader',
-						description: "Load specified JS script block.",
-			}
-			//! END_REPLACE()
-			, function getJsScriptBlockLoader(script, /*optional*/async, /*optional*/timeout, /*optional*/_document) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isStringAndNotEmpty(script), "Invalid script.");
-					root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
-				};
-
-				if (!_document) {
-					_document = _shared.Natives.windowDocument;
-				};
-
-				const loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
-
-				loader.addEventListener('init', function() {
-					this.element.type = 'text/javascript';
-					loader.async = this.element.async = !!async;
-					if (async && _shared.Natives.windowBlob && _shared.Natives.windowURL) {
-						// Firefox
-						this.element.src = _shared.Natives.windowURL.createObjectURL(new _shared.Natives.windowBlob(script));
-					} else {
-						if (_document.createCDATASection) {
-							this.element.appendChild(_document.createCDATASection(script));
-						} else {
-							this.element.innerHTML = script;
-						};
-					};
-				});
-
-				return loader;
-			}));
-
-			tools.ADD('getCssScriptFileLoader', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "Target file Url",
-							},
-							async: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-							},
-							media: {
-								type: 'string',
-								optional: true,
-								description: "Target media(s). Default is none.",
-							},
-							timeout: {
-								type: 'integer',
-								optional: true,
-								description: "Timeout delay in milliseconds.",
-							},
-							reload: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-							},
-							_document: {
-								type: 'HtmlDocument',
-								optional: true,
-								description: "Reference to the window document object. Default is global 'document' object.",
-							},
+						async: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will load script in asynchronous mode. 'false' will load script synchronously. Default is 'false'.",
 						},
-						returns: 'ScriptLoader',
-						description: "Load specified CSS script file.",
-			}
-			//! END_REPLACE()
-			, function getCssScriptFileLoader(url, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
-				};
-
-				if (types._instanceof(url, files.Path)) {
-					url = files.Url.parse(url);
-				};
-
-				if (types._instanceof(url, files.Url)) {
-					url = url.toString();
-				};
-
-				root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
-
-				let loader = null;
-				if (url in __Internal__.loadedScripts) {
-					loader = __Internal__.loadedScripts[url];
-				};
-				if (reload) {
-					if (loader.element && loader.element.parentNode) {
-						loader.element.parentNode.removeChild(loader.element);
-						loader.element = null;
+						timeout: {
+							type: 'integer',
+							optional: true,
+							description: "Timeout delay in milliseconds.",
+						},
+						_document: {
+							type: 'HtmlDocument',
+							optional: true,
+							description: "Reference to the window document object. Default is global 'document' object.",
+						},
+					},
+					returns: 'ScriptLoader',
+					description: "Load specified JS script block.",
+				}
+				//! END_REPLACE()
+				, function getJsScriptBlockLoader(script, /*optional*/async, /*optional*/timeout, /*optional*/_document) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isStringAndNotEmpty(script), "Invalid script.");
+						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
 					};
-					loader = null;
-				};
-				if (!loader) {
+
 					if (!_document) {
 						_document = _shared.Natives.windowDocument;
 					};
 
-					__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
+					const loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
 
 					loader.addEventListener('init', function() {
-						loader.async = !!async;
-						this.element.rel = 'stylesheet';
-						this.element.type = 'text/css';
-						if (media) {
-							this.element.media = media;
+						this.element.type = 'text/javascript';
+						loader.async = this.element.async = !!async;
+						if (async && _shared.Natives.windowBlob && _shared.Natives.windowURL) {
+						// Firefox
+							this.element.src = _shared.Natives.windowURL.createObjectURL(new _shared.Natives.windowBlob(script));
+						} else {
+							if (_document.createCDATASection) {
+								this.element.appendChild(_document.createCDATASection(script));
+							} else {
+								this.element.innerHTML = script;
+							};
 						};
-						this.element.href = url;
 					});
-				};
 
-				return loader;
-			}));
+					return loader;
+				}));
+
+			tools.ADD('getCssScriptFileLoader', root.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "Target file Url",
+						},
+						async: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+						},
+						media: {
+							type: 'string',
+							optional: true,
+							description: "Target media(s). Default is none.",
+						},
+						timeout: {
+							type: 'integer',
+							optional: true,
+							description: "Timeout delay in milliseconds.",
+						},
+						reload: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+						},
+						_document: {
+							type: 'HtmlDocument',
+							optional: true,
+							description: "Reference to the window document object. Default is global 'document' object.",
+						},
+					},
+					returns: 'ScriptLoader',
+					description: "Load specified CSS script file.",
+				}
+				//! END_REPLACE()
+				, function getCssScriptFileLoader(url, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
+					};
+
+					if (types._instanceof(url, files.Path)) {
+						url = files.Url.parse(url);
+					};
+
+					if (types._instanceof(url, files.Url)) {
+						url = url.toString();
+					};
+
+					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
+
+					let loader = null;
+					if (url in __Internal__.loadedScripts) {
+						loader = __Internal__.loadedScripts[url];
+					};
+					if (reload) {
+						if (loader.element && loader.element.parentNode) {
+							loader.element.parentNode.removeChild(loader.element);
+							loader.element = null;
+						};
+						loader = null;
+					};
+					if (!loader) {
+						if (!_document) {
+							_document = _shared.Natives.windowDocument;
+						};
+
+						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
+
+						loader.addEventListener('init', function() {
+							loader.async = !!async;
+							this.element.rel = 'stylesheet';
+							this.element.type = 'text/css';
+							if (media) {
+								this.element.media = media;
+							};
+							this.element.href = url;
+						});
+					};
+
+					return loader;
+				}));
 
 			tools.ADD('getCssScriptBlockLoader', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							script: {
-								type: 'string',
-								optional: false,
-								description: "Target CSS script",
-							},
-							async: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-							},
-							media: {
-								type: 'string',
-								optional: true,
-								description: "Target media(s). Default is none.",
-							},
-							timeout: {
-								type: 'integer',
-								optional: true,
-								description: "Timeout delay in milliseconds.",
-							},
-							_document: {
-								type: 'HtmlDocument',
-								optional: true,
-								description: "Reference to the window document object. Default is global 'document' object.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						script: {
+							type: 'string',
+							optional: false,
+							description: "Target CSS script",
 						},
-						returns: 'ScriptLoader',
-						description: "Load specified CSS script block.",
-			}
-			//! END_REPLACE()
-			, function getCssScriptBlockLoader(script, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/_document) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isStringAndNotEmpty(script), "Invalid script.");
-					root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
-				};
+						async: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+						},
+						media: {
+							type: 'string',
+							optional: true,
+							description: "Target media(s). Default is none.",
+						},
+						timeout: {
+							type: 'integer',
+							optional: true,
+							description: "Timeout delay in milliseconds.",
+						},
+						_document: {
+							type: 'HtmlDocument',
+							optional: true,
+							description: "Reference to the window document object. Default is global 'document' object.",
+						},
+					},
+					returns: 'ScriptLoader',
+					description: "Load specified CSS script block.",
+				}
+				//! END_REPLACE()
+				, function getCssScriptBlockLoader(script, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/_document) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isStringAndNotEmpty(script), "Invalid script.");
+						root.DD_ASSERT(types.isNothing(_document) || client.isDocument(_document), "Invalid document.");
+					};
 
-				if (!_document) {
-					_document = _shared.Natives.windowDocument;
-				};
+					if (!_document) {
+						_document = _shared.Natives.windowDocument;
+					};
 
-				let loader;
+					let loader;
 
-				if (async && _shared.Natives.windowBlob && global.URL) {
+					if (async && _shared.Natives.windowBlob && global.URL) {
 					// Firefox
-					loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
+						loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
-					loader.addEventListener('init', function() {
-						loader.async = !!async;
-						this.element.rel = 'stylesheet';
-						this.element.type = 'text/css';
-						if (media) {
-							this.element.media = media;
-						};
-						this.element.href = URL.createObjectURL(new Blob(script));
-					});
-				} else {
-					loader = new __Internal__.ScriptLoader(/*tag*/'style', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
+						loader.addEventListener('init', function() {
+							loader.async = !!async;
+							this.element.rel = 'stylesheet';
+							this.element.type = 'text/css';
+							if (media) {
+								this.element.media = media;
+							};
+							this.element.href = URL.createObjectURL(new Blob(script));
+						});
+					} else {
+						loader = new __Internal__.ScriptLoader(/*tag*/'style', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
-					loader.addEventListener('init', function() {
-						loader.async = !!async;
-						if (media) {
-							this.element.media = media;
-						};
-						if (_document.createCDATASection) {
-							this.element.appendChild(_document.createCDATASection(script));
-						} else {
-							this.element.innerHTML = script;
-						};
-					});
-				};
+						loader.addEventListener('init', function() {
+							loader.async = !!async;
+							if (media) {
+								this.element.media = media;
+							};
+							if (_document.createCDATASection) {
+								this.element.appendChild(_document.createCDATASection(script));
+							} else {
+								this.element.innerHTML = script;
+							};
+						});
+					};
 
-				return loader;
-			}));
+					return loader;
+				}));
 
 			//===================================
 			// File functions
@@ -1661,34 +1661,34 @@ exports.add = function add(modules) {
 
 			files.ADD('exists', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "Target folder url.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "Target folder url.",
 						},
-						returns: 'bool,Promise(bool)',
-						description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function exists(url, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.existsAsync(url, options);
-				} else {
-					throw new types.NotSupported("Synchronous version of 'exists' is not implemented.");
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'bool,Promise(bool)',
+					description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
 				}
-			}));
+				//! END_REPLACE()
+				, function exists(url, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.existsAsync(url, options);
+					} else {
+						throw new types.NotSupported("Synchronous version of 'exists' is not implemented.");
+					}
+				}));
 
 
 			files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
@@ -1697,300 +1697,300 @@ exports.add = function add(modules) {
 
 			files.ADD('readFileAsync', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 8,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "File Url.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 8,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "File Url.",
 						},
-						returns: 'Promise',
-						description:
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Promise',
+					description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
-			}
-			//! END_REPLACE()
-			, function readFileAsync(url, /*optional*/options) {
-				const Promise = types.getPromise();
-				return Promise.try(function readFilePromise() {
-					options = tools.nullObject(options);
+				}
+				//! END_REPLACE()
+				, function readFileAsync(url, /*optional*/options) {
+					const Promise = types.getPromise();
+					return Promise.try(function readFilePromise() {
+						options = tools.nullObject(options);
 
-					url = files.parseUrl(url);
+						url = files.parseUrl(url);
 
-					let encoding = options.encoding;
-					if (encoding === 'iso-8859') {
+						let encoding = options.encoding;
+						if (encoding === 'iso-8859') {
 						// Fix for some browsers
-						encoding = 'iso-8859-1';
-					} else if (encoding === 'utf8') {
+							encoding = 'iso-8859-1';
+						} else if (encoding === 'utf8') {
 						// Fix
-						encoding = 'utf-8';
-					};
-
-					const method = (options.method || 'GET');
-
-					const timeout = options.timeout;
-
-					// <PRB> A supposedly better API (fetch), but coming with no way to abort or specify a timeout !!!!!!
-					if (types.isNothing(timeout) && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
-						url = url.toString({
-							noEscapes: true,
-						});
-
-						const headers = new _shared.Natives.windowHeaders(options.headers);
-						if (!headers.has('Accept')) {
-							if (encoding) {
-								headers.set('Accept', 'text/plain');
-							} else {
-								headers.set('Accept', '*/*');
-							};
+							encoding = 'utf-8';
 						};
 
-						const init = {
-							method: method,
-							headers: headers,
-						};
+						const method = (options.method || 'GET');
 
-						if (!types.isNothing(options.body)) {
-							init.body = options.body;
-						};
+						const timeout = options.timeout;
 
-						if (!options.enableCache) {
-							init.cache = 'no-cache';
-						};
-
-						if (options.enableCookies) {
-							// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
-							init.credentials = 'include';
-						};
-
-						return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
-							if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
-								return response.blob().then(function(blob) {
-									const reader = new _shared.Natives.windowFileReader();
-									const promise = Promise.create(function readerPromise(resolve, reject) {
-										reader.onloadend = function(ev) {
-											if (reader.error) {
-												reject(reader.error);
-											} else {
-												resolve(reader.result);
-											};
-										};
-									});
-									if (encoding) {
-										reader.readAsText(blob, encoding);
-									} else {
-										reader.readAsArrayBuffer(blob);
-									};
-									return promise;
-								});
-							} else {
-								throw new types.HttpError(response.status, response.statusText);
-							}
-						});
-					} else {
-						const xhr = new _shared.Natives.windowXMLHttpRequest();
-
-						if (!('response' in xhr) && !('responseBody' in xhr)) {
-							throw new types.NotSupported("Incompatible browser.");
-						};
-
-						let args = url.args;
-
-						const rootUrl = tools.getCurrentLocation();
-						if ((rootUrl.protocol !== 'file') && !options.enableCache) {
-							args = url.args.set('XHR_DISABLE_CACHE', tools.generateUUID(), true);
-						};
-
-						url = url.toString({
-							args: args,
-							noEscapes: true,
-						});
-
-						const state = {
-							timeoutId: null,
-							ready: false,
-						};
-
-						xhr.open(method, url, true);
-
-						const headers = options.headers;
-						if (headers) {
-							tools.forEach(headers, function(value, name) {
-								xhr.setRequestHeader(name, value);
-							});
-						};
-
-						if (encoding) {
-							xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
-						} else {
-							xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', '*/*'));
-						};
-
-						xhr.responseType = (encoding ? 'text' : 'blob');
-
-						const loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
-
-						return Promise.create(function readerPromise(resolve, reject) {
-							const handleError = function handleError(ex) {
-								if (state.timeoutId) {
-									state.timeoutId.cancel();
-									state.timeoutId = null;
-								};
-								if (!state.ready) {
-									state.ready = true;
-									reject(ex);
-								};
-							};
-
-							client.addListener(xhr, loadEv, function(ev) {
-								if ((loadEv !== 'readystatechange') || (xhr.readyState === 4)) {
-									if (types.HttpStatus.isSuccessful(xhr.status)) {
-										if (state.timeoutId) {
-											state.timeoutId.cancel();
-											state.timeoutId = null;
-										};
-										if (!this.ready) {
-											this.ready = true;
-											resolve(xhr.response);
-										};
-									} else {
-										handleError(new types.HttpError(xhr.status, xhr.statusText));
-									};
-								};
+						// <PRB> A supposedly better API (fetch), but coming with no way to abort or specify a timeout !!!!!!
+						if (types.isNothing(timeout) && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
+							url = url.toString({
+								noEscapes: true,
 							});
 
-							client.addListener(xhr, 'error', function(ev) {
-								handleError(ev.error);
-							});
-
-							if (!types.isNothing(timeout)) {
-								if ('timeout' in xhr) {
-									// Wow ! A timeout option !!!
-									xhr.timeout = timeout;
+							const headers = new _shared.Natives.windowHeaders(options.headers);
+							if (!headers.has('Accept')) {
+								if (encoding) {
+									headers.set('Accept', 'text/plain');
 								} else {
-									// No timeout option !
-									state.timeoutId = tools.callAsync(function(ev) {
-										state.timeoutId = null;
-										if (!state.ready) {
-											xhr.abort();
-											handleError(new types.TimeoutError("Request has timed out."));
-										};
-									}, timeout, null, null, true);
+									headers.set('Accept', '*/*');
 								};
 							};
 
-							try {
-								xhr.send(options.body);
-							} catch(ex) {
-								if (!state.ready) {
-									handleError(ex);
-								};
+							const init = {
+								method: method,
+								headers: headers,
 							};
-						});
-					}
-				});
-			}));
+
+							if (!types.isNothing(options.body)) {
+								init.body = options.body;
+							};
+
+							if (!options.enableCache) {
+								init.cache = 'no-cache';
+							};
+
+							if (options.enableCookies) {
+							// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
+								init.credentials = 'include';
+							};
+
+							return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
+								if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
+									return response.blob().then(function(blob) {
+										const reader = new _shared.Natives.windowFileReader();
+										const promise = Promise.create(function readerPromise(resolve, reject) {
+											reader.onloadend = function(ev) {
+												if (reader.error) {
+													reject(reader.error);
+												} else {
+													resolve(reader.result);
+												};
+											};
+										});
+										if (encoding) {
+											reader.readAsText(blob, encoding);
+										} else {
+											reader.readAsArrayBuffer(blob);
+										};
+										return promise;
+									});
+								} else {
+									throw new types.HttpError(response.status, response.statusText);
+								}
+							});
+						} else {
+							const xhr = new _shared.Natives.windowXMLHttpRequest();
+
+							if (!('response' in xhr) && !('responseBody' in xhr)) {
+								throw new types.NotSupported("Incompatible browser.");
+							};
+
+							let args = url.args;
+
+							const rootUrl = tools.getCurrentLocation();
+							if ((rootUrl.protocol !== 'file') && !options.enableCache) {
+								args = url.args.set('XHR_DISABLE_CACHE', tools.generateUUID(), true);
+							};
+
+							url = url.toString({
+								args: args,
+								noEscapes: true,
+							});
+
+							const state = {
+								timeoutId: null,
+								ready: false,
+							};
+
+							xhr.open(method, url, true);
+
+							const headers = options.headers;
+							if (headers) {
+								tools.forEach(headers, function(value, name) {
+									xhr.setRequestHeader(name, value);
+								});
+							};
+
+							if (encoding) {
+								xhr.overrideMimeType(types.getIn(options, 'contentType', 'text/plain') + '; charset=' + encoding);
+							} else {
+								xhr.setRequestHeader('Accept', types.getIn(options, 'contentType', '*/*'));
+							};
+
+							xhr.responseType = (encoding ? 'text' : 'blob');
+
+							const loadEv = (('onload' in xhr) ? 'load' : 'readystatechange');
+
+							return Promise.create(function readerPromise(resolve, reject) {
+								const handleError = function handleError(ex) {
+									if (state.timeoutId) {
+										state.timeoutId.cancel();
+										state.timeoutId = null;
+									};
+									if (!state.ready) {
+										state.ready = true;
+										reject(ex);
+									};
+								};
+
+								client.addListener(xhr, loadEv, function(ev) {
+									if ((loadEv !== 'readystatechange') || (xhr.readyState === 4)) {
+										if (types.HttpStatus.isSuccessful(xhr.status)) {
+											if (state.timeoutId) {
+												state.timeoutId.cancel();
+												state.timeoutId = null;
+											};
+											if (!this.ready) {
+												this.ready = true;
+												resolve(xhr.response);
+											};
+										} else {
+											handleError(new types.HttpError(xhr.status, xhr.statusText));
+										};
+									};
+								});
+
+								client.addListener(xhr, 'error', function(ev) {
+									handleError(ev.error);
+								});
+
+								if (!types.isNothing(timeout)) {
+									if ('timeout' in xhr) {
+									// Wow ! A timeout option !!!
+										xhr.timeout = timeout;
+									} else {
+									// No timeout option !
+										state.timeoutId = tools.callAsync(function(ev) {
+											state.timeoutId = null;
+											if (!state.ready) {
+												xhr.abort();
+												handleError(new types.TimeoutError("Request has timed out."));
+											};
+										}, timeout, null, null, true);
+									};
+								};
+
+								try {
+									xhr.send(options.body);
+								} catch(ex) {
+									if (!state.ready) {
+										handleError(ex);
+									};
+								};
+							});
+						}
+					});
+				}));
 
 			files.ADD('readFile', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url',
-								optional: false,
-								description: "File Url.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "File Url.",
 						},
-						returns: 'Promise',
-						description:
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Promise',
+					description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
-			}
-			//! END_REPLACE()
-			, function readFile(url, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.readFileAsync(url, /*optional*/options);
-				} else {
-					return files.readFileSync(url, /*optional*/options);
 				}
-			}));
+				//! END_REPLACE()
+				, function readFile(url, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.readFileAsync(url, /*optional*/options);
+					} else {
+						return files.readFileSync(url, /*optional*/options);
+					}
+				}));
 
 			files.ADD('watch', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							url: {
-								type: 'string,Url,Blob,File',
-								optional: false,
-								description: "File Url.",
-							},
-							callbacks: {
-								type: 'arrayof(function),function',
-								optional: false,
-								description: "Callback functions.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Callback options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						url: {
+							type: 'string,Url,Blob,File',
+							optional: false,
+							description: "File Url.",
 						},
-						returns: 'undefined',
-						description: "Not implemented.",
-			}
-			//! END_REPLACE()
-			, function watch(url, callbacks, /*optional*/options) {
+						callbacks: {
+							type: 'arrayof(function),function',
+							optional: false,
+							description: "Callback functions.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Callback options.",
+						},
+					},
+					returns: 'undefined',
+					description: "Not implemented.",
+				}
+				//! END_REPLACE()
+				, function watch(url, callbacks, /*optional*/options) {
 				// Do nothing
-			}));
+				}));
 
 			files.ADD('unwatch', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							url: {
-								type: 'string,Url,Blob,File',
-								optional: false,
-								description: "File Url.",
-							},
-							callbacks: {
-								type: 'arrayof(function),function',
-								optional: true,
-								description: "Callback functions.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Callback options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url,Blob,File',
+							optional: false,
+							description: "File Url.",
 						},
-						returns: 'undefined',
-						description: "Not implemented.",
-			}
-			//! END_REPLACE()
-			, function unwatch(url, callbacks, /*optional*/options) {
+						callbacks: {
+							type: 'arrayof(function),function',
+							optional: true,
+							description: "Callback functions.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Callback options.",
+						},
+					},
+					returns: 'undefined',
+					description: "Not implemented.",
+				}
+				//! END_REPLACE()
+				, function unwatch(url, callbacks, /*optional*/options) {
 				// Do nothing
-			}));
+				}));
 
 
 			//===================================

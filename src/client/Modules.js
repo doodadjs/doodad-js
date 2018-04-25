@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -78,27 +78,27 @@ exports.add = function add(modules) {
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								module: {
-									type: 'string',
-									optional: true,
-									description: "Module name.",
-								},
-								path: {
-									type: 'string,Path,Url',
-									optional: true,
-									description: "Module file path.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'Promise(string)',
-							description: "Locates a module and returns its path.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						module: {
+							type: 'string',
+							optional: true,
+							description: "Module name.",
+						},
+						path: {
+							type: 'string,Path,Url',
+							optional: true,
+							description: "Module file path.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'Promise(string)',
+					description: "Locates a module and returns its path.",
 				}
 				//! END_REPLACE()
 				, function locate(/*optional*/module, /*optional*/path, /*optional*/options) {
@@ -169,16 +169,16 @@ exports.add = function add(modules) {
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
 								promise = Promise.create(function startScriptLoader(resolve, reject) {
-										const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
-										scriptLoader.addEventListener('load', function() {
-											//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
-											resolve(null);
-										});
-										scriptLoader.addEventListener('error', function(ev) {
-											reject(ev.detail ? ev.detail : new types.Error("Unspecified error (the browser didn't give any error detail)."));
-										});
-										scriptLoader.start();
+									const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+									scriptLoader.addEventListener('load', function() {
+										//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
+										resolve(null);
 									});
+									scriptLoader.addEventListener('error', function(ev) {
+										reject(ev.detail ? ev.detail : new types.Error("Unspecified error (the browser didn't give any error detail)."));
+									});
+									scriptLoader.start();
+								});
 							} else {
 								promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: true})
 									.then(function(code) {
@@ -221,22 +221,22 @@ exports.add = function add(modules) {
 			modules.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 6,
-							params: {
-								files: {
-									type: 'arrayof(object)',
-									optional: false,
-									description: "Module files.",
-								},
-								options: {
-									type: 'arrayof(object),object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'Promise(bool)',
-							description: "Loads one or more Doodad module file(s).",
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						files: {
+							type: 'arrayof(object)',
+							optional: false,
+							description: "Module files.",
+						},
+						options: {
+							type: 'arrayof(object),object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'Promise(bool)',
+					description: "Loads one or more Doodad module file(s).",
 				}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
@@ -247,23 +247,23 @@ exports.add = function add(modules) {
 					};
 
 					const trapMissingDeps = function _trapMissingDeps(err) {
-							const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
-							const missingDeps = tools.filter(err.missingDeps, function(dep1) {
-								return dep1.autoLoad && (tools.findItem(ignoredMissingDeps, function(dep2) {
-									return ((dep1.module || '') === (dep2.module || '')) && ((dep1.path || '') === (dep2.path || ''));
-								}) === null);
-							});
-							if (missingDeps.length) {
-								const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
-								return modules.load(missingDeps, newOptions)
-									.then(function(dummy) {
-										return namespaces.load(err.modules, newOptions)
-											.catch(types.MissingDependencies, trapMissingDeps);
-									});
-							} else {
-								throw err;
-							}
-						};
+						const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
+						const missingDeps = tools.filter(err.missingDeps, function(dep1) {
+							return dep1.autoLoad && (tools.findItem(ignoredMissingDeps, function(dep2) {
+								return ((dep1.module || '') === (dep2.module || '')) && ((dep1.path || '') === (dep2.path || ''));
+							}) === null);
+						});
+						if (missingDeps.length) {
+							const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
+							return modules.load(missingDeps, newOptions)
+								.then(function(dummy) {
+									return namespaces.load(err.modules, newOptions)
+										.catch(types.MissingDependencies, trapMissingDeps);
+								});
+						} else {
+							throw err;
+						}
+					};
 
 					if (root.getOptions().debug) {
 						global.DD_MODULES = {};

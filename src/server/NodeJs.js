@@ -27,19 +27,19 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeOs} from 'os';");
-	//! INJECT("import {default as nodeChildProcess} from 'child_process';");
-	//! INJECT("import {default as nodeFs} from 'fs';");
-	//! INJECT("import {default as nodeHttp} from 'http';");
-	//! INJECT("import {default as nodeConsole} from 'console';");
+//! INJECT("import {default as nodeOs} from 'os';");
+//! INJECT("import {default as nodeChildProcess} from 'child_process';");
+//! INJECT("import {default as nodeFs} from 'fs';");
+//! INJECT("import {default as nodeHttp} from 'http';");
+//! INJECT("import {default as nodeConsole} from 'console';");
 //! ELSE()
-	"use strict";
+"use strict";
 
-	const nodeOs = require('os'),
-		nodeChildProcess = require('child_process'),
-		nodeFs = require('fs'),
-		nodeHttp = require('http'),
-		nodeConsole = require('console');
+const nodeOs = require('os'),
+	nodeChildProcess = require('child_process'),
+	nodeFs = require('fs'),
+	nodeHttp = require('http'),
+	nodeConsole = require('console');
 //! END_IF()
 
 const nodeOsTmpdir = nodeOs.tmpdir,
@@ -204,7 +204,7 @@ exports.add = function add(mods) {
 					types.isFunction(emitter.removeAllListeners) &&
 					types.isFunction(emitter.removeListener) &&
 					types.isFunction(emitter.setMaxListeners);
-					//types.isFunction(emitter.eventNames) // NOTE: "eventNames" is new since Node.js v. 6.0.0
+				//types.isFunction(emitter.eventNames) // NOTE: "eventNames" is new since Node.js v. 6.0.0
 			});
 
 			// <PRB> Some libraries don't inherit from EventEmitter, but use it internally and exposes only a few of its methods.
@@ -440,42 +440,42 @@ exports.add = function add(mods) {
 			tools.ADD('callAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								fn: {
-									type: 'function',
-									optional: false,
-									description: "Callback function",
-								},
-								delay: {
-									type: 'integer',
-									optional: true,
-									description: "Time to wait in milliseconds. Value of zero calls the function immediately after processing events. Value less than zero calls the function before processing events. Default is zero.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "Value of 'this' when calling the function. Default is 'undefined'.",
-								},
-								args: {
-									type: 'arrayof(any)',
-									optional: true,
-									description: "Function arguments.",
-								},
-								cancelable: {
-									type: 'bool',
-									optional: true,
-									description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
-								},
-								secret: {
-									type: 'any',
-									optional: true,
-									description: "Secret.",
-								},
-							},
-							returns: 'undefined,object',
-							description: "Asynchronously calls a function.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Callback function",
+						},
+						delay: {
+							type: 'integer',
+							optional: true,
+							description: "Time to wait in milliseconds. Value of zero calls the function immediately after processing events. Value less than zero calls the function before processing events. Default is zero.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Function arguments.",
+						},
+						cancelable: {
+							type: 'bool',
+							optional: true,
+							description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+						},
+						secret: {
+							type: 'any',
+							optional: true,
+							description: "Secret.",
+						},
+					},
+					returns: 'undefined,object',
+					description: "Asynchronously calls a function.",
 				}
 				//! END_REPLACE()
 				, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
@@ -584,18 +584,18 @@ exports.add = function add(mods) {
 			// "Client.js" Extension
 			//=====================================
 
-				//===================================
-				// Location functions
-				//===================================
+			//===================================
+			// Location functions
+			//===================================
 
-				tools.ADD('getCurrentLocation', root.DD_DOC(
+			tools.ADD('getCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: 'Url',
-							description: "Returns startup script location and arguments.",
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'Url',
+					description: "Returns startup script location and arguments.",
 				}
 				//! END_REPLACE()
 				, function getCurrentLocation() {
@@ -610,25 +610,25 @@ exports.add = function add(mods) {
 					});
 				}));
 
-				tools.ADD('setCurrentLocation', root.DD_DOC(
+			tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								url: {
-									type: 'string,Url',
-									optional: false,
-									description: "Url to script file with arguments",
-								},
-								dontAbort: {
-									type: 'bool',
-									optional: true,
-									description: "'true' will not throws the ScriptAbortedError signal. 'false' will throws the signal. Default is 'false'.",
-								},
-							},
-							returns: 'undefined',
-							description: "Forks current V8 engine with the specified script file and arguments, then aborts current script.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url',
+							optional: false,
+							description: "Url to script file with arguments",
+						},
+						dontAbort: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will not throws the ScriptAbortedError signal. 'false' will throws the signal. Default is 'false'.",
+						},
+					},
+					returns: 'undefined',
+					description: "Forks current V8 engine with the specified script file and arguments, then aborts current script.",
 				}
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort) {
@@ -675,132 +675,132 @@ exports.add = function add(mods) {
 					};
 				}));
 
-				//===================================
-				// Script loader functions
-				//===================================
+			//===================================
+			// Script loader functions
+			//===================================
 
-				__Internal__.ScriptLoader = types.INIT(types.CustomEventTarget.$inherit(
-					/*typeProto*/
-					{
-						$TYPE_NAME: 'ScriptLoader',
-						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ScriptLoader')), true) */,
-					},
-					/*instanceProto*/
-					{
-						file: null,
-						createOptions: null,
-						initOptions: null,
+			__Internal__.ScriptLoader = types.INIT(types.CustomEventTarget.$inherit(
+				/*typeProto*/
+				{
+					$TYPE_NAME: 'ScriptLoader',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ScriptLoader')), true) */,
+				},
+				/*instanceProto*/
+				{
+					file: null,
+					createOptions: null,
+					initOptions: null,
 
-						launched: false,
-						ready: false,
-						failed: false,
-						lastError: null,
+					launched: false,
+					ready: false,
+					failed: false,
+					lastError: null,
 
-						oninit: null,
-						onloading: null,
-						onload: null,
-						onerror: null,
+					oninit: null,
+					onloading: null,
+					onload: null,
+					onerror: null,
 
-						_new: types.SUPER(function _new(file, /*optional*/createOptions, /*optional*/initOptions) {
-							this._super();
+					_new: types.SUPER(function _new(file, /*optional*/createOptions, /*optional*/initOptions) {
+						this._super();
 
-							this.file = file;
+						this.file = file;
 
-							this.createOptions = createOptions;
-							this.initOptions = initOptions;
-						}),
+						this.createOptions = createOptions;
+						this.initOptions = initOptions;
+					}),
 
-						start: function start() {
-							/* eslint global-require: "off", import/no-dynamic-require: "off" */
+					start: function start() {
+						/* eslint global-require: "off", import/no-dynamic-require: "off" */
 
-							if (this.launched) {
-								if (this.ready) {
-									if (this.failed) {
-										this.dispatchEvent(new types.CustomEvent('error', {detail: this.lastError}));
-									} else {
-										this.dispatchEvent(new types.CustomEvent('load'));
-									};
-								};
-							} else {
-								this.launched = true;
-
-								this.dispatchEvent(new types.CustomEvent('init'));
-								tools.dispatchEvent(new types.CustomEvent('scriptinit', {
-									detail: {
-										loader: this,
-									},
-								}));
-
-								this.dispatchEvent(new types.CustomEvent('loading'));
-								tools.dispatchEvent(new types.CustomEvent('scriptloading', {
-									detail: {
-										loader: this,
-									},
-								}));
-
-								try {
-									require(this.file);
-
-									this.ready = true;
-
+						if (this.launched) {
+							if (this.ready) {
+								if (this.failed) {
+									this.dispatchEvent(new types.CustomEvent('error', {detail: this.lastError}));
+								} else {
 									this.dispatchEvent(new types.CustomEvent('load'));
-									tools.dispatchEvent(new types.CustomEvent('scriptload', {
+								};
+							};
+						} else {
+							this.launched = true;
+
+							this.dispatchEvent(new types.CustomEvent('init'));
+							tools.dispatchEvent(new types.CustomEvent('scriptinit', {
+								detail: {
+									loader: this,
+								},
+							}));
+
+							this.dispatchEvent(new types.CustomEvent('loading'));
+							tools.dispatchEvent(new types.CustomEvent('scriptloading', {
+								detail: {
+									loader: this,
+								},
+							}));
+
+							try {
+								require(this.file);
+
+								this.ready = true;
+
+								this.dispatchEvent(new types.CustomEvent('load'));
+								tools.dispatchEvent(new types.CustomEvent('scriptload', {
+									detail: {
+										loader: this,
+									},
+								}));
+
+							} catch(ex) {
+								if (this.ready) {
+									throw ex;
+								} else {
+									this.ready = true;
+									this.failed = true;
+									this.lastError = ex;
+									this.dispatchEvent(new types.CustomEvent('error', {detail: ex}));
+									tools.dispatchEvent(new types.CustomEvent('scripterror', {
 										detail: {
 											loader: this,
+											error: ex,
 										},
 									}));
-
-								} catch(ex) {
-									if (this.ready) {
-										throw ex;
-									} else {
-										this.ready = true;
-										this.failed = true;
-										this.lastError = ex;
-										this.dispatchEvent(new types.CustomEvent('error', {detail: ex}));
-										tools.dispatchEvent(new types.CustomEvent('scripterror', {
-											detail: {
-												loader: this,
-												error: ex,
-											},
-										}));
-									};
 								};
-
 							};
-						},
-					}
-				));
 
-				tools.ADD('getJsScriptFileLoader', root.DD_DOC(
+						};
+					},
+				}
+			));
+
+			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								url: {
-									type: 'string,Url,Path',
-									optional: false,
-									description: "Target file path",
-								},
-								async: {
-									type: 'bool',
-									optional: true,
-									description: "Reserved.",
-								},
-								timeout: {
-									type: 'integer',
-									optional: true,
-									description: "Reserved.",
-								},
-								reload: {
-									type: 'bool',
-									optional: true,
-									description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-								},
-							},
-							returns: 'ScriptLoader',
-							description: "Load specified JS script file.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						url: {
+							type: 'string,Url,Path',
+							optional: false,
+							description: "Target file path",
+						},
+						async: {
+							type: 'bool',
+							optional: true,
+							description: "Reserved.",
+						},
+						timeout: {
+							type: 'integer',
+							optional: true,
+							description: "Reserved.",
+						},
+						reload: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+						},
+					},
+					returns: 'ScriptLoader',
+					description: "Load specified JS script file.",
 				}
 				//! END_REPLACE()
 				, function getJsScriptFileLoader(file, /*optional*/async, /*optional*/timeout, /*optional*/reload) {
@@ -882,34 +882,34 @@ exports.add = function add(mods) {
 
 			files.ADD('exists', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Target folder path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Target folder path.",
 						},
-						returns: 'bool,Promise(bool)',
-						description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
-			}
-			//! END_REPLACE()
-			, function exists(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.existsAsync(path, options);
-				} else {
-					return files.existsSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'bool,Promise(bool)',
+					description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
 				}
-			}));
+				//! END_REPLACE()
+				, function exists(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.existsAsync(path, options);
+					} else {
+						return files.existsSync(path, options);
+					}
+				}));
 
 			files.ADD('rmSync', function rmSync(path, /*optional*/options) {
 				path = files.parsePath(path);
@@ -956,34 +956,34 @@ exports.add = function add(mods) {
 
 			files.ADD('rm', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Target folder path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Target folder path.",
 						},
-						returns: 'bool,Promise(bool)',
-						description: "Removes specified system file.",
-			}
-			//! END_REPLACE()
-			, function rm(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.rmAsync(path, options);
-				} else {
-					return files.rmSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'bool,Promise(bool)',
+					description: "Removes specified system file.",
 				}
-			}));
+				//! END_REPLACE()
+				, function rm(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.rmAsync(path, options);
+					} else {
+						return files.rmSync(path, options);
+					}
+				}));
 
 			files.ADD('rmdirSync', function rmdirSync(path, /*optional*/options) {
 				const force = types.get(options, 'force', false);
@@ -1237,34 +1237,34 @@ exports.add = function add(mods) {
 
 			files.ADD('rmdir', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Target folder path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Target folder path.",
 						},
-						returns: 'bool,Promise(bool)',
-						description: "Removes specified system folder.",
-			}
-			//! END_REPLACE()
-			, function rmdir(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.rmdirAsync(path, options);
-				} else {
-					return files.rmdirSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'bool,Promise(bool)',
+					description: "Removes specified system folder.",
 				}
-			}));
+				//! END_REPLACE()
+				, function rmdir(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.rmdirAsync(path, options);
+					} else {
+						return files.rmdirSync(path, options);
+					}
+				}));
 
 			files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
 				path = files.parsePath(path);
@@ -1368,34 +1368,34 @@ exports.add = function add(mods) {
 
 			files.ADD('mkdir', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Target folder path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Target folder path.",
 						},
-						returns: 'undefined,Promise(unedfined)',
-						description: "Creates specified system folder.",
-			}
-			//! END_REPLACE()
-			, function mkdir(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.mkdirAsync(path, options);
-				} else {
-					return files.mkdirSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'undefined,Promise(unedfined)',
+					description: "Creates specified system folder.",
 				}
-			}));
+				//! END_REPLACE()
+				, function mkdir(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.mkdirAsync(path, options);
+					} else {
+						return files.mkdirSync(path, options);
+					}
+				}));
 
 			files.ADD('copySync', function copySync(source, destination, /*optional*/options) {
 				/* eslint no-unsafe-finally: "off" */
@@ -1723,9 +1723,9 @@ exports.add = function add(mods) {
 										})
 										.nodeify(function(err, dummy) {
 											let promise = Promise.all([
-													((sourceFd === null) ? undefined : close(sourceFd)),
-													((destFd === null) ? undefined : close(destFd))
-												]);
+												((sourceFd === null) ? undefined : close(sourceFd)),
+												((destFd === null) ? undefined : close(destFd))
+											]);
 											if (err) {
 												promise = promise.then(function(dummy) {
 													if (err) {
@@ -1774,12 +1774,12 @@ exports.add = function add(mods) {
 							};
 
 							return Promise.try(function() {
-									if (followLinks) {
-										return stat(sourceStr);
-									} else {
-										return lstat(sourceStr);
-									}
-								})
+								if (followLinks) {
+									return stat(sourceStr);
+								} else {
+									return lstat(sourceStr);
+								}
+							})
 								.then(function(stats) {
 									if (stats.isSymbolicLink()) {
 										return copyLink(stats);
@@ -1846,39 +1846,39 @@ exports.add = function add(mods) {
 
 			files.ADD('copy', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 7,
-						params: {
-							source: {
-								type: 'string,Path',
-								optional: false,
-								description: "Source folder or file path.",
-							},
-							destination: {
-								type: 'string,Path',
-								optional: false,
-								description: "Destination folder or file path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 7,
+					params: {
+						source: {
+							type: 'string,Path',
+							optional: false,
+							description: "Source folder or file path.",
 						},
-						returns: 'undefined,Promise(undefined)',
-						description: "Copies source file or folder to destination.",
-			}
-			//! END_REPLACE()
-			, function copy(source, destination, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.copyAsync(source, destination, options);
-				} else {
-					return files.copySync(source, destination, options);
+						destination: {
+							type: 'string,Path',
+							optional: false,
+							description: "Destination folder or file path.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'undefined,Promise(undefined)',
+					description: "Copies source file or folder to destination.",
 				}
-			}));
+				//! END_REPLACE()
+				, function copy(source, destination, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.copyAsync(source, destination, options);
+					} else {
+						return files.copySync(source, destination, options);
+					}
+				}));
 
 			__Internal__.readdirAddFile = function readdirAddFile(result, base, name, stats, followLinks, type) {
 				const isFolder = stats.isDirectory(),
@@ -2090,34 +2090,34 @@ exports.add = function add(mods) {
 
 			files.ADD('readdir', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Target folder path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Target folder path.",
 						},
-						returns: 'arrayof(object),Promise(arrayof(object))',
-						description: "Returns files and folders list with stats.",
-			}
-			//! END_REPLACE()
-			, function readdir(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.readdirAsync(path, options);
-				} else {
-					return files.readdirSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'arrayof(object),Promise(arrayof(object))',
+					description: "Returns files and folders list with stats.",
 				}
-			}));
+				//! END_REPLACE()
+				, function readdir(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.readdirAsync(path, options);
+					} else {
+						return files.readdirSync(path, options);
+					}
+				}));
 
 			files.ADD('getCanonicalSync', function getCanonicalSync(path, /*optional*/options) {
 				path = files.parsePath(path);
@@ -2230,76 +2230,76 @@ exports.add = function add(mods) {
 
 			files.ADD('getCanonical', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							path: {
-								type: 'string,Path',
-								optional: false,
-								description: "Path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						path: {
+							type: 'string,Path',
+							optional: false,
+							description: "Path.",
 						},
-						returns: 'Path',
-						description: "Returns the canonical path of the specified path (for case-insensitive file systems).",
-			}
-			//! END_REPLACE()
-			, function getCanonical(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.getCanonicalAsync(path, options);
-				} else {
-					return files.getCanonicalSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Path',
+					description: "Returns the canonical path of the specified path (for case-insensitive file systems).",
 				}
-			}));
+				//! END_REPLACE()
+				, function getCanonical(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.getCanonicalAsync(path, options);
+					} else {
+						return files.getCanonicalSync(path, options);
+					}
+				}));
 
 			files.ADD('getTempFolder', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'string',
-						description: "Returns system temporary folder path.",
-			}
-			//! END_REPLACE()
-			, function getTempFolder() {
-				if (__Internal__.tmpdir) {
-					return __Internal__.tmpdir;
-				};
-
-				let folder = nodeOsTmpdir();
-
-				let stats = null;
-
-				try {
-					stats = nodeFsStatSync(folder);
-				} catch(ex) {
-					// Do nothing
-				};
-
-				if (!stats || !stats.isDirectory()) {
-					// Android or other
-					folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
-					try {
-						files.mkdir(folder);
-					} catch(ex) {
-						// Do nothing
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'string',
+					description: "Returns system temporary folder path.",
+				}
+				//! END_REPLACE()
+				, function getTempFolder() {
+					if (__Internal__.tmpdir) {
+						return __Internal__.tmpdir;
 					};
-				} else {
-					folder = files.Path.parse(folder);
-				};
 
-				__Internal__.tmpdir = folder;
+					let folder = nodeOsTmpdir();
 
-				return folder;
-			}));
+					let stats = null;
+
+					try {
+						stats = nodeFsStatSync(folder);
+					} catch(ex) {
+					// Do nothing
+					};
+
+					if (!stats || !stats.isDirectory()) {
+					// Android or other
+						folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
+						try {
+							files.mkdir(folder);
+						} catch(ex) {
+						// Do nothing
+						};
+					} else {
+						folder = files.Path.parse(folder);
+					};
+
+					__Internal__.tmpdir = folder;
+
+					return folder;
+				}));
 
 			files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {
 				if (types.isString(path)) {
@@ -2396,46 +2396,46 @@ exports.add = function add(mods) {
 
 							try {
 								state.request = nodeHttpRequest({
-										hostname: path.domain || 'localhost',
-										port: path.port || 80,
-										path: (tools.trim(path.path, '/', -1) || '') + '/' + (path.file || ''),
-										method: types.get(options, 'method', 'GET').toUpperCase(),
-										headers: types.get(options, 'headers', undefined), // defaults to "no header"
-										auth: auth,
-										agent: types.get(options, 'connectionPool', false), // defaults to "no pool"
-										keepAlive: types.get(options, 'keepAlive', false), // defaults to "don't keep alive"
-										keepAliveMsecs: types.get(options, 'keepAliveInterval', undefined),  // defaults to nodejs's default value
-									}, function(response) {
-										if (encoding) {
-											response.setEncoding(encoding);
-										};
+									hostname: path.domain || 'localhost',
+									port: path.port || 80,
+									path: (tools.trim(path.path, '/', -1) || '') + '/' + (path.file || ''),
+									method: types.get(options, 'method', 'GET').toUpperCase(),
+									headers: types.get(options, 'headers', undefined), // defaults to "no header"
+									auth: auth,
+									agent: types.get(options, 'connectionPool', false), // defaults to "no pool"
+									keepAlive: types.get(options, 'keepAlive', false), // defaults to "don't keep alive"
+									keepAliveMsecs: types.get(options, 'keepAliveInterval', undefined),  // defaults to nodejs's default value
+								}, function(response) {
+									if (encoding) {
+										response.setEncoding(encoding);
+									};
 
-										response.on('data', function(chunk) {
-											if (!state.data || ((state.data.length + chunk.length) < maxLength)) {
-												if (encoding) {
-													state.data = (state.data || '') + chunk;
-												} else if (state.data) {
-													state.data = global.Buffer.concat([state.data, chunk]);
-												} else {
-													state.data = chunk;
-												};
+									response.on('data', function(chunk) {
+										if (!state.data || ((state.data.length + chunk.length) < maxLength)) {
+											if (encoding) {
+												state.data = (state.data || '') + chunk;
+											} else if (state.data) {
+												state.data = global.Buffer.concat([state.data, chunk]);
 											} else {
-												state.request.abort();
+												state.data = chunk;
 											};
-										});
-
-										response.on('error', onEnd);
-
-										response.on('end', onEnd);
-
-										response.on('close', function() {
-											onEnd(new types.Error("The transfer has been interrupted."));
-										});
-
-										response.on('abort', function() {
-											onEnd(new types.Error("The transfer has been aborted."));
-										});
+										} else {
+											state.request.abort();
+										};
 									});
+
+									response.on('error', onEnd);
+
+									response.on('end', onEnd);
+
+									response.on('close', function() {
+										onEnd(new types.Error("The transfer has been interrupted."));
+									});
+
+									response.on('abort', function() {
+										onEnd(new types.Error("The transfer has been aborted."));
+									});
+								});
 
 								state.request.on('error', onEnd);
 
@@ -2471,34 +2471,34 @@ exports.add = function add(mods) {
 
 			files.ADD('readFile', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							path: {
-								type: 'string,Url,Path',
-								optional: false,
-								description: "File Url or Path.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						path: {
+							type: 'string,Url,Path',
+							optional: false,
+							description: "File Url or Path.",
 						},
-						returns: 'Promise',
-						description: "Reads a remote or local file.",
-			}
-			//! END_REPLACE()
-			, function readFile(path, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.readFileAsync(path, options);
-				} else {
-					return files.readFileSync(path, options);
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Promise',
+					description: "Reads a remote or local file.",
 				}
-			}));
+				//! END_REPLACE()
+				, function readFile(path, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.readFileAsync(path, options);
+					} else {
+						return files.readFileSync(path, options);
+					}
+				}));
 
 			files.ADD('writeFileAsync', function writeFileAsync(path, data, /*optional*/options) {
 				const Promise = types.getPromise();
@@ -2514,18 +2514,18 @@ exports.add = function add(mods) {
 						let wf;
 
 						switch (mode) {
-							case 'forceUpdate':
-							case 'update':
-								wf = 'w';
-								break;
+						case 'forceUpdate':
+						case 'update':
+							wf = 'w';
+							break;
 
-							case 'forceAppend':
-							case 'append':
-								wf = 'a';
-								break;
+						case 'forceAppend':
+						case 'append':
+							wf = 'a';
+							break;
 
-							default:
-								throw new types.Error("Invalid write mode : '~0~'.", [mode]);
+						default:
+							throw new types.Error("Invalid write mode : '~0~'.", [mode]);
 						};
 
 						if (types._instanceof(path, files.Url)) {
@@ -2535,26 +2535,26 @@ exports.add = function add(mods) {
 						path = path.toApiString();
 
 						return Promise.create(function statFile(resolve, reject) {
-								nodeFsStat(path, function(ex, stats) {
-									if (ex) {
-										if (ex.code === 'ENOENT') {
-											switch (mode) {
-												case 'forceUpdate':
-												case 'forceAppend':
-													reject(new types.Error("File '~0~' doesn't exists.", [path]));
-													break;
+							nodeFsStat(path, function(ex, stats) {
+								if (ex) {
+									if (ex.code === 'ENOENT') {
+										switch (mode) {
+										case 'forceUpdate':
+										case 'forceAppend':
+											reject(new types.Error("File '~0~' doesn't exists.", [path]));
+											break;
 
-												default:
-													resolve();
-											};
-										} else {
-											reject(ex);
+										default:
+											resolve();
 										};
 									} else {
-										resolve();
+										reject(ex);
 									};
-								});
-							})
+								} else {
+									resolve();
+								};
+							});
+						})
 							.thenCreate(function writeFile(stats, resolve, reject) {
 								nodeFsWriteFile(path, data, {encoding: encoding, flag: wf}, function(ex) {
 									if (ex) {
@@ -2574,177 +2574,177 @@ exports.add = function add(mods) {
 
 			files.ADD('writeFile', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							path: {
-								type: 'string,Url,Path',
-								optional: false,
-								description: "File Url or Path.",
-							},
-							data: {
-								type: 'any',
-								optional: false,
-								description: "File content.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						path: {
+							type: 'string,Url,Path',
+							optional: false,
+							description: "File Url or Path.",
 						},
-						returns: 'Promise',
-						description: "Writes to a remote or local file.",
-			}
-			//! END_REPLACE()
-			, function writeFile(path, data, /*optional*/options) {
-				const async = types.get(options, 'async', false);
-
-				if (async) {
-					return files.writeFileAsync(path, data, options);
-				} else {
-					throw new types.NotSupported("Synchronous write is not implemented.");
+						data: {
+							type: 'any',
+							optional: false,
+							description: "File content.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'Promise',
+					description: "Writes to a remote or local file.",
 				}
-			}));
+				//! END_REPLACE()
+				, function writeFile(path, data, /*optional*/options) {
+					const async = types.get(options, 'async', false);
+
+					if (async) {
+						return files.writeFileAsync(path, data, options);
+					} else {
+						throw new types.NotSupported("Synchronous write is not implemented.");
+					}
+				}));
 
 			files.ADD('watch', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							path: {
-								type: 'string,Url,Path',
-								optional: false,
-								description: "File Url or Path.",
-							},
-							callbacks: {
-								type: 'arrayof(function),function',
-								optional: false,
-								description: "Callback functions.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						path: {
+							type: 'string,Url,Path',
+							optional: false,
+							description: "File Url or Path.",
 						},
-						returns: 'undefined',
-						description: "Creates a file watcher.",
-			}
-			//! END_REPLACE()
-			, function watch(path, callbacks, /*optional*/options) {
-				path = files.parseLocation(path);
-				if (!types.isArray(callbacks)) {
-					callbacks = [callbacks];
-				};
-
-				if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
-					if (types._instanceof(path, files.Url)) {
-						path = files.Path.parse(path);
-					};
-
-					if (tools.getOptions().noWatch) {
-						// NOTE: We parse location before "return".
-						return;
-					};
-
-					const pathStr = path.toApiString();
-
-					let data;
-					if (types.has(__Internal__.watchedFiles, pathStr)) {
-						data = __Internal__.watchedFiles[pathStr];
-					} else {
-						data = {
-							callbacks: [],
-							watcher: nodeFsWatch(pathStr, {persistent: false}, doodad.Callback(null, function(...args) {
-								const data = __Internal__.watchedFiles[pathStr],
-									len = data.callbacks.length;
-								for (let i = len - 1; i >= 0; i--) {
-									let callback = data.callbacks[i];
-									if (callback) {
-										try {
-											callback(...args);
-										} catch(ex) {
-											// Do nothing
-										};
-										if (types.get(callback.__OPTIONS__, 'once', false)) {
-											callback = null;
-										};
-									};
-									if (!callback) {
-										data.callbacks.splice(i, 1);
-									};
-								};
-							})),
-						};
-						__Internal__.watchedFiles[pathStr] = data;
-					};
-
-					tools.forEach(callbacks, function(callback) {
-						callback.__OPTIONS__ = options;
-					});
-
-					data.callbacks = tools.unique(data.callbacks, callbacks);
-
-				} else {
-					throw new types.NotSupported("Remote files are not supported.");
-				};
-			}));
-
-			files.ADD('unwatch', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							path: {
-								type: 'string,Url,Path',
-								optional: false,
-								description: "File Url or Path.",
-							},
-							callbacks: {
-								type: 'arrayof(function),function',
-								optional: true,
-								description: "Callback functions.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options.",
-							},
+						callbacks: {
+							type: 'arrayof(function),function',
+							optional: false,
+							description: "Callback functions.",
 						},
-						returns: 'undefined',
-						description: "Removes a file watcher.",
-			}
-			//! END_REPLACE()
-			, function unwatch(path, /*optional*/callbacks, /*optional*/options) {
-				path = files.parseLocation(path);
-				if (!types.isNothing(callbacks)) {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'undefined',
+					description: "Creates a file watcher.",
+				}
+				//! END_REPLACE()
+				, function watch(path, callbacks, /*optional*/options) {
+					path = files.parseLocation(path);
 					if (!types.isArray(callbacks)) {
 						callbacks = [callbacks];
 					};
-				};
 
-				if (types._instanceof(path, files.Url)) {
-					path = files.Path.parse(path);
-				};
-				const pathStr = path.toApiString();
+					if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
+						if (types._instanceof(path, files.Url)) {
+							path = files.Path.parse(path);
+						};
 
-				if (types.has(__Internal__.watchedFiles, pathStr)) {
-					const data = __Internal__.watchedFiles[pathStr];
-					if (types.isNothing(callbacks)) {
-						data.callbacks = null;
+						if (tools.getOptions().noWatch) {
+						// NOTE: We parse location before "return".
+							return;
+						};
+
+						const pathStr = path.toApiString();
+
+						let data;
+						if (types.has(__Internal__.watchedFiles, pathStr)) {
+							data = __Internal__.watchedFiles[pathStr];
+						} else {
+							data = {
+								callbacks: [],
+								watcher: nodeFsWatch(pathStr, {persistent: false}, doodad.Callback(null, function(...args) {
+									const data = __Internal__.watchedFiles[pathStr],
+										len = data.callbacks.length;
+									for (let i = len - 1; i >= 0; i--) {
+										let callback = data.callbacks[i];
+										if (callback) {
+											try {
+												callback(...args);
+											} catch(ex) {
+											// Do nothing
+											};
+											if (types.get(callback.__OPTIONS__, 'once', false)) {
+												callback = null;
+											};
+										};
+										if (!callback) {
+											data.callbacks.splice(i, 1);
+										};
+									};
+								})),
+							};
+							__Internal__.watchedFiles[pathStr] = data;
+						};
+
+						tools.forEach(callbacks, function(callback) {
+							callback.__OPTIONS__ = options;
+						});
+
+						data.callbacks = tools.unique(data.callbacks, callbacks);
+
 					} else {
-						tools.popItems(data.callbacks, callbacks);
+						throw new types.NotSupported("Remote files are not supported.");
 					};
-					if (!data.callbacks || !data.callbacks.length) {
-						data.watcher.close();
-						delete __Internal__.watchedFiles[pathStr];
+				}));
+
+			files.ADD('unwatch', root.DD_DOC(
+			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						path: {
+							type: 'string,Url,Path',
+							optional: false,
+							description: "File Url or Path.",
+						},
+						callbacks: {
+							type: 'arrayof(function),function',
+							optional: true,
+							description: "Callback functions.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'undefined',
+					description: "Removes a file watcher.",
+				}
+				//! END_REPLACE()
+				, function unwatch(path, /*optional*/callbacks, /*optional*/options) {
+					path = files.parseLocation(path);
+					if (!types.isNothing(callbacks)) {
+						if (!types.isArray(callbacks)) {
+							callbacks = [callbacks];
+						};
 					};
-				};
-			}));
+
+					if (types._instanceof(path, files.Url)) {
+						path = files.Path.parse(path);
+					};
+					const pathStr = path.toApiString();
+
+					if (types.has(__Internal__.watchedFiles, pathStr)) {
+						const data = __Internal__.watchedFiles[pathStr];
+						if (types.isNothing(callbacks)) {
+							data.callbacks = null;
+						} else {
+							tools.popItems(data.callbacks, callbacks);
+						};
+						if (!data.callbacks || !data.callbacks.length) {
+							data.watcher.close();
+							delete __Internal__.watchedFiles[pathStr];
+						};
+					};
+				}));
 
 
 			//===================================
@@ -2753,35 +2753,35 @@ exports.add = function add(mods) {
 
 			nodejs.ADD('forkSync', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							modulePath: {
-								type: 'string',
-								optional: false,
-								description: "JS script file path.",
-							},
-							args: {
-								type: 'arrayof(string)',
-								optional: true,
-								description: "Script arguments.",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Spawn options.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						modulePath: {
+							type: 'string',
+							optional: false,
+							description: "JS script file path.",
 						},
-						returns: 'undefined',
-						description: "Forks the current V8 engine and synchronously runs the specified JS file.",
-			}
-			//! END_REPLACE()
-			, function forkSync(modulePath, /*optional*/args, /*optional*/options) {
-				args = tools.append([], process.execArgv, [modulePath], args);
-				options = tools.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
-				return nodeChildProcessSpawnSync(process.execPath, args, options);
-			}));
+						args: {
+							type: 'arrayof(string)',
+							optional: true,
+							description: "Script arguments.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Spawn options.",
+						},
+					},
+					returns: 'undefined',
+					description: "Forks the current V8 engine and synchronously runs the specified JS file.",
+				}
+				//! END_REPLACE()
+				, function forkSync(modulePath, /*optional*/args, /*optional*/options) {
+					args = tools.append([], process.execArgv, [modulePath], args);
+					options = tools.extend({}, {stdio: [0, 1, 2], env: process.env}, options);
+					return nodeChildProcessSpawnSync(process.execPath, args, options);
+				}));
 
 			//=====================================
 			// Console
@@ -2790,64 +2790,64 @@ exports.add = function add(mods) {
 			nodejs.ADD('Console', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							hook: {
-								type: 'function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						hook: {
+							type: 'function',
+							optional: false,
+							description:
 									"Hook function. Arguments :\n" +
 									"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
 									"  (arrayof(any)) args : Arguments passed to function\n" +
 									"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
-							},
-							stdout: {
-								type: 'object',
-								optional: true,
-								description: "Writable NodeJs output stream. Default is 'process.stdout'.",
-							},
-							stderr: {
-								type: 'object',
-								optional: true,
-								description: "Writable NodeJs stream for errors. Default is 'stdout'.",
-							},
 						},
-						returns: 'Console',
-						description: "NodeJS Console with hooks.",
-			}
-			//! END_REPLACE()
-			, types.createType(
+						stdout: {
+							type: 'object',
+							optional: true,
+							description: "Writable NodeJs output stream. Default is 'process.stdout'.",
+						},
+						stderr: {
+							type: 'object',
+							optional: true,
+							description: "Writable NodeJs stream for errors. Default is 'stdout'.",
+						},
+					},
+					returns: 'Console',
+					description: "NodeJS Console with hooks.",
+				}
+				//! END_REPLACE()
+				, types.createType(
 				/*name*/
-				"Console",
+					"Console",
 
-				/*base*/
-				nodeConsoleConsole,
+					/*base*/
+					nodeConsoleConsole,
 
-				/*_super*/
-				function(hook, /*optional*/stdout, /*optional*/stderr) {
-					if (!types.isJsFunction(hook)) {
-						throw new types.ValueError("Invalid hook function.");
-					};
-					this.__hook = hook;
-					this.__hasStd = !!stdout || !!stderr;
-					if (!stdout) {
-						stdout = process.stdout;
-					};
-					if (!stderr) {
-						stderr = stdout;
-					};
-					return [stdout, stderr];
-				},
+					/*_super*/
+					function(hook, /*optional*/stdout, /*optional*/stderr) {
+						if (!types.isJsFunction(hook)) {
+							throw new types.ValueError("Invalid hook function.");
+						};
+						this.__hook = hook;
+						this.__hasStd = !!stdout || !!stderr;
+						if (!stdout) {
+							stdout = process.stdout;
+						};
+						if (!stderr) {
+							stderr = stdout;
+						};
+						return [stdout, stderr];
+					},
 
-				/*constructor*/
-				null,
+					/*constructor*/
+					null,
 
-				/*typeProto*/
-				{
-					capture: root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
+					/*typeProto*/
 					{
+						capture: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
 								author: "Claude Petit",
 								revision: 0,
 								params: {
@@ -2873,128 +2873,128 @@ exports.add = function add(mods) {
 								},
 								returns: 'undefined',
 								description: "Captures the console.",
-					}
-					//! END_REPLACE()
-					, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
-						if (__Internal__.oldConsole) {
-							throw new types.Error("'global.console' already captured.");
-						};
-						const newConsole = new this(hook, stdout, stderr);
-						const oldConsole = global.console;
-						types.defineProperty(global, 'console', {
-							configurable: true,
-							enumerable: true,
-							value: newConsole,
-							writable: false,
-						});
-						__Internal__.oldConsole = oldConsole;
-					}),
+							}
+							//! END_REPLACE()
+							, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
+								if (__Internal__.oldConsole) {
+									throw new types.Error("'global.console' already captured.");
+								};
+								const newConsole = new this(hook, stdout, stderr);
+								const oldConsole = global.console;
+								types.defineProperty(global, 'console', {
+									configurable: true,
+									enumerable: true,
+									value: newConsole,
+									writable: false,
+								});
+								__Internal__.oldConsole = oldConsole;
+							}),
 
-					release: root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
+						release: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+							{
 								author: "Claude Petit",
 								revision: 0,
 								params: null,
 								returns: 'undefined',
 								description: "Releases the console previously captured.",
+							}
+							//! END_REPLACE()
+							, function release() {
+								if (__Internal__.oldConsole) {
+									types.defineProperty(global, 'console', {
+										configurable: true,
+										enumerable: true,
+										value: __Internal__.oldConsole,
+										writable: false,
+									});
+									__Internal__.oldConsole = null;
+								};
+							}),
+					},
+
+					/*instanceProto*/
+					{
+						__hook: null,
+						__hasStd: false,
+
+						log: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
+							try {
+								const message = this.__hook('log', args);
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super(...args);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
+								};
+							};
+						})),
+
+						info: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
+							try {
+								const message = this.__hook('info', args);
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super(...args);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
+								};
+							};
+						})),
+
+						error: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
+							try {
+								const message = this.__hook('error', args);
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super(...args);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
+								};
+							};
+						})),
+
+						warn: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
+							try {
+								const message = this.__hook('warn', args);
+								if (this.__hasStd) {
+									if (message) {
+										this._super(message);
+									} else {
+										this._super(...args);
+									};
+								};
+							} catch(ex) {
+								if (global.console === this) {
+									const type = types.getType(this);
+									type.release();
+									throw ex;
+								};
+							};
+						})),
 					}
-					//! END_REPLACE()
-					, function release() {
-						if (__Internal__.oldConsole) {
-							types.defineProperty(global, 'console', {
-								configurable: true,
-								enumerable: true,
-								value: __Internal__.oldConsole,
-								writable: false,
-							});
-							__Internal__.oldConsole = null;
-						};
-					}),
-				},
-
-				/*instanceProto*/
-				{
-					__hook: null,
-					__hasStd: false,
-
-					log: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
-						try {
-							const message = this.__hook('log', args);
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super(...args);
-								};
-							};
-						} catch(ex) {
-							if (global.console === this) {
-								const type = types.getType(this);
-								type.release();
-								throw ex;
-							};
-						};
-					})),
-
-					info: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
-						try {
-							const message = this.__hook('info', args);
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super(...args);
-								};
-							};
-						} catch(ex) {
-							if (global.console === this) {
-								const type = types.getType(this);
-								type.release();
-								throw ex;
-							};
-						};
-					})),
-
-					error: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
-						try {
-							const message = this.__hook('error', args);
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super(...args);
-								};
-							};
-						} catch(ex) {
-							if (global.console === this) {
-								const type = types.getType(this);
-								type.release();
-								throw ex;
-							};
-						};
-					})),
-
-					warn: types.SUPER(types.WRITABLE(function(/*paramarray*/...args) {
-						try {
-							const message = this.__hook('warn', args);
-							if (this.__hasStd) {
-								if (message) {
-									this._super(message);
-								} else {
-									this._super(...args);
-								};
-							};
-						} catch(ex) {
-							if (global.console === this) {
-								const type = types.getType(this);
-								type.release();
-								throw ex;
-							};
-						};
-					})),
-				}
-			)));
+				)));
 
 
 			//===================================
@@ -3003,102 +3003,122 @@ exports.add = function add(mods) {
 
 			mixIns.REGISTER(root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: null,
-						description: "Class mix-in to implement for NodeJs events.",
-			}
-			//! END_REPLACE()
-			, doodad.MIX_IN(mixIns.Events.$extend({
-				$TYPE_NAME: "NodeEvents",
-				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: null,
+					description: "Class mix-in to implement for NodeJs events.",
+				}
+				//! END_REPLACE()
+				, doodad.MIX_IN(mixIns.Events.$extend({
+					$TYPE_NAME: "NodeEvents",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
 
-				__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
+					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
 
-				detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
-					const events = this.__NODE_EVENTS,
-						eventsLen = events.length;
-					for (let i = 0; i < eventsLen; i++) {
-						this[events[i]].detach(emitters);
-					};
-				})))),
+					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
+						const events = this.__NODE_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].detach(emitters);
+						};
+					})))),
 
-				clearNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearNodeEvents() {
-					const events = this.__NODE_EVENTS,
-						eventsLen = events.length;
-					for (let i = 0; i < eventsLen; i++) {
-						this[events[i]].clear();
-					};
-				})))),
-			}))));
+					clearNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function clearNodeEvents() {
+						const events = this.__NODE_EVENTS,
+							eventsLen = events.length;
+						for (let i = 0; i < eventsLen; i++) {
+							this[events[i]].clear();
+						};
+					})))),
+				}))));
 
 			__Internal__.eventHandlerProto = {
-					$TYPE_NAME: 'NodeEventHandler',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventHandler')), true) */,
+				$TYPE_NAME: 'NodeEventHandler',
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventHandler')), true) */,
 
-					attach: doodad.OVERRIDE(function attach(emitters, /*optional*/context, /*optional*/once, /*optional*/prepend) {
-						if (!types.isArray(emitters)) {
-							emitters = [emitters];
-						};
+				attach: doodad.OVERRIDE(function attach(emitters, /*optional*/context, /*optional*/once, /*optional*/prepend) {
+					if (!types.isArray(emitters)) {
+						emitters = [emitters];
+					};
 
-						const self = this,
-							handler = self[__Internal__.symbolHandler];
+					const self = this,
+						handler = self[__Internal__.symbolHandler];
 
-						const createHandler = function(emitter, eventType) {
-							let ignore = false;
-							return doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/...args) {
-								if (!ignore) {
-									if (once) {
-										self.detach(emitter);
+					const createHandler = function(emitter, eventType) {
+						let ignore = false;
+						return doodad.Callback(self[_shared.ObjectSymbol], function nodeEventHandler(/*paramarray*/...args) {
+							if (!ignore) {
+								if (once) {
+									self.detach(emitter);
 
-										// <PRB> Sometimes "once" is raised more than once (it might have been fixed since we wrote that patch)
-										ignore = true;
-									};
-									const ctx = {
-										emitter: emitter,
-										type: eventType,
-										data: context,
-									};
-									return handler.apply(this, tools.append([ctx], args));
+									// <PRB> Sometimes "once" is raised more than once (it might have been fixed since we wrote that patch)
+									ignore = true;
 								};
-							}, null, null, _shared.SECRET);
-						};
+								const ctx = {
+									emitter: emitter,
+									type: eventType,
+									data: context,
+								};
+								return handler.apply(this, tools.append([ctx], args));
+							};
+						}, null, null, _shared.SECRET);
+					};
 
-						const eventType = this[_shared.ExtenderSymbol].eventType;
+					const eventType = this[_shared.ExtenderSymbol].eventType;
 
-						for (let j = 0; j < emitters.length; j++) {
-							if (types.has(emitters, j)) {
-								const emitter = emitters[j];
-								root.DD_ASSERT && root.DD_ASSERT(types.isEmitter(emitter), "Invalid emitter.");
-								const handler = createHandler(emitter, eventType);
-								if (this._super(this[_shared.ObjectSymbol], this, (prepend ? 10 : null), [emitter, eventType, handler])) {
-									if (once) {
-										if (prepend) {
-											emitter.prependOnceListener(eventType, handler);
-										} else {
-											emitter.once(eventType, handler);
-										};
+					for (let j = 0; j < emitters.length; j++) {
+						if (types.has(emitters, j)) {
+							const emitter = emitters[j];
+							root.DD_ASSERT && root.DD_ASSERT(types.isEmitter(emitter), "Invalid emitter.");
+							const handler = createHandler(emitter, eventType);
+							if (this._super(this[_shared.ObjectSymbol], this, (prepend ? 10 : null), [emitter, eventType, handler])) {
+								if (once) {
+									if (prepend) {
+										emitter.prependOnceListener(eventType, handler);
 									} else {
-										if (prepend) {
-											emitter.prependListener(eventType, handler);
-										} else {
-											emitter.on(eventType, handler);
-										};
+										emitter.once(eventType, handler);
+									};
+								} else {
+									if (prepend) {
+										emitter.prependListener(eventType, handler);
+									} else {
+										emitter.on(eventType, handler);
 									};
 								};
 							};
 						};
-					}),
+					};
+				}),
 
-					attachOnce: doodad.REPLACE(function attachOnce(emitters, /*optional*/context, /*optional*/prepend) {
-						this.attach(emitters, context, true, prepend);
-					}),
+				attachOnce: doodad.REPLACE(function attachOnce(emitters, /*optional*/context, /*optional*/prepend) {
+					this.attach(emitters, context, true, prepend);
+				}),
 
-					detach: doodad.OVERRIDE(function detach(/*optional*/emitters) {
-						if (types.isNothing(emitters)) {
-							const evs = this._super(this[_shared.ObjectSymbol], this);
+				detach: doodad.OVERRIDE(function detach(/*optional*/emitters) {
+					if (types.isNothing(emitters)) {
+						const evs = this._super(this[_shared.ObjectSymbol], this);
+						if (evs) {
+							for (let j = 0; j < evs.length; j++) {
+								const evData = evs[j][3],
+									emitter = evData[0],
+									type = evData[1],
+									handler = evData[2];
+								emitter.removeListener(type, handler);
+							};
+						};
+					} else {
+						if (!types.isArray(emitters)) {
+							emitters = [emitters];
+						};
+
+						//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
+						//	return nodeJs.isEventEmitter(emitter);
+						//}), "Invalid emitters.");
+
+						for (let i = 0; i < emitters.length; i++) {
+							const evs = this._super(this[_shared.ObjectSymbol], this, [emitters[i]]);
 							if (evs) {
 								for (let j = 0; j < evs.length; j++) {
 									const evData = evs[j][3],
@@ -3108,419 +3128,399 @@ exports.add = function add(mods) {
 									emitter.removeListener(type, handler);
 								};
 							};
-						} else {
-							if (!types.isArray(emitters)) {
-								emitters = [emitters];
-							};
-
-							//root.DD_ASSERT && root.DD_ASSERT(tools.every(emitters, function(emitter) {
-							//	return nodeJs.isEventEmitter(emitter);
-							//}), "Invalid emitters.");
-
-							for (let i = 0; i < emitters.length; i++) {
-								const evs = this._super(this[_shared.ObjectSymbol], this, [emitters[i]]);
-								if (evs) {
-									for (let j = 0; j < evs.length; j++) {
-										const evData = evs[j][3],
-											emitter = evData[0],
-											type = evData[1],
-											handler = evData[2];
-										emitter.removeListener(type, handler);
-									};
-								};
-							};
 						};
-					}),
-				};
+					};
+				}),
+			};
 
 			__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: null,
-							returns: null,
-							description: "NodeJs event handler prototype.",
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: null,
+					description: "NodeJs event handler prototype.",
 				}
 				//! END_REPLACE()
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: null,
-						description: "Node.Js event extender.",
-			}
-			//! END_REPLACE()
-			, extenders.RawEvent.$inherit({
-				$TYPE_NAME: "NodeEvent",
-				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: null,
+					description: "Node.Js event extender.",
+				}
+				//! END_REPLACE()
+				, extenders.RawEvent.$inherit({
+					$TYPE_NAME: "NodeEvent",
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
 
-				eventsPrefixed: types.READ_ONLY(false),
-				eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
-				eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
-				eventProto: types.READ_ONLY(doodad.NodeEventHandler),
+					eventsPrefixed: types.READ_ONLY(false),
+					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
+					eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
+					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
 
-				enableScopes: types.READ_ONLY(true),
-				canReject: types.READ_ONLY(true),
-				eventType: types.READ_ONLY(null),
+					enableScopes: types.READ_ONLY(true),
+					canReject: types.READ_ONLY(true),
+					eventType: types.READ_ONLY(null),
 
-				_new: types.SUPER(function _new(/*optional*/options) {
-					this._super(options);
-					if (!types.isType(this)) {
-						types.setAttributes(this, {
-							canReject: types.get(options, 'canReject', this.canReject),
-							eventType: types.get(options, 'eventType', this.eventType),
-						});
-					};
-				}),
+					_new: types.SUPER(function _new(/*optional*/options) {
+						this._super(options);
+						if (!types.isType(this)) {
+							types.setAttributes(this, {
+								canReject: types.get(options, 'canReject', this.canReject),
+								eventType: types.get(options, 'eventType', this.eventType),
+							});
+						};
+					}),
 
-				getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
-					return this._super(options) +
+					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
+						return this._super(options) +
 						',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
 						',' + types.get(options, 'eventType', this.eventType);
-				}),
+					}),
 
-				overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
-					options = this._super(options, newOptions, replace);
-					if (replace) {
-						tools.fill(['canReject', 'eventType'], options, this, newOptions);
-					} else {
-						options.canReject = !!newOptions.canReject || this.canReject;
-						options.eventType = newOptions.eventType || this.eventType;
-					};
-					return options;
-				}),
+					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
+						options = this._super(options, newOptions, replace);
+						if (replace) {
+							tools.fill(['canReject', 'eventType'], options, this, newOptions);
+						} else {
+							options.canReject = !!newOptions.canReject || this.canReject;
+							options.eventType = newOptions.eventType || this.eventType;
+						};
+						return options;
+					}),
 
-				extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
-					if (sourceIsProto) {
-						const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
-						if (handlerSrc) {
-							const extender = handlerSrc[_shared.ExtenderSymbol];
-							if (extender.extend) {
-								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
-								handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
+						if (sourceIsProto) {
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandler];
+							if (handlerSrc) {
+								const extender = handlerSrc[_shared.ExtenderSymbol];
+								if (extender.extend) {
+									destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName);
+									handlerSrc[_shared.PrototypeSymbol] = sourceAttribute[_shared.PrototypeSymbol];
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, handlerSrc, handlerSrc.setValue(undefined), true, proto, protoName);
+								};
+							} else {
+								const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+								const extender = handlerDest[_shared.ExtenderSymbol];
+								if (extender.extend) {
+									destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								};
 							};
 						} else {
-							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
-							const extender = handlerDest[_shared.ExtenderSymbol];
+							const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
+							const extender = handlerSrc[_shared.ExtenderSymbol];
 							if (extender.extend) {
-								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, handlerDest, true, proto, protoName);
+								const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
+								destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
+								const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
 							};
 						};
-					} else {
-						const handlerSrc = sourceAttribute[__Internal__.symbolHandlerExtended];
-						const extender = handlerSrc[_shared.ExtenderSymbol];
-						if (extender.extend) {
-							const handlerDest = destAttribute[__Internal__.symbolHandlerExtended];
-							destAttribute = this._super(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, false, proto, protoName);
-							const newHandlerSrc = (extender.getValue ? extender.getValue(attr, handlerSrc, forType) : handlerSrc);
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.extend(attr, source, sourceProto, destAttributes, forType, newHandlerSrc, handlerDest || newHandlerSrc.setValue(undefined), false, proto, protoName);
+						return destAttribute;
+					}),
+
+					postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
+						const handler = destAttribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							if (extender.postExtend) {
+								destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+							};
 						};
-					};
-					return destAttribute;
-				}),
 
-				postExtend: types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
-					const handler = destAttribute[__Internal__.symbolHandlerExtended];
-					if (handler) {
-						const extender = handler[_shared.ExtenderSymbol];
-						if (extender.postExtend) {
-							destAttribute[__Internal__.symbolHandlerExtended] = extender.postExtend(attr, destAttributes, handler);
+						return this._super(attr, destAttributes, destAttribute);
+					}),
+
+					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
+						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
+
+						const handler = attribute[__Internal__.symbolHandlerExtended];
+						if (handler) {
+							const extender = handler[_shared.ExtenderSymbol];
+							if (extender.init) {
+								const oldObjId = generator.objId;
+								generator.objId = generator.vars.fromKey(attr);
+								const oldKeyVars = generator.__kvars;
+								generator.__kvars = tools.nullObject();
+								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
+								generator.objId = oldObjId;
+								generator.__kvars = oldKeyVars;
+							};
 						};
-					};
-
-					return this._super(attr, destAttributes, destAttribute);
-				}),
-
-				init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-					this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
-
-					const handler = attribute[__Internal__.symbolHandlerExtended];
-					if (handler) {
-						const extender = handler[_shared.ExtenderSymbol];
-						if (extender.init) {
-							const oldObjId = generator.objId;
-							generator.objId = generator.vars.fromKey(attr);
-							const oldKeyVars = generator.__kvars;
-							generator.__kvars = tools.nullObject();
-							extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
-							generator.objId = oldObjId;
-							generator.__kvars = oldKeyVars;
-						};
-					};
-				}),
-			})));
+					}),
+				})));
 
 
 			doodad.ADD('NODE_EVENT', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							eventType: {
-								type: 'string',
-								optional: false,
-								description: "Event name.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Event handler.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						eventType: {
+							type: 'string',
+							optional: false,
+							description: "Event name.",
 						},
-						returns: 'AttributeBox,Extender',
-						description: "NodeJs event attribute modifier.",
-			}
-			//! END_REPLACE()
-			, function NODE_EVENT(eventType, /*optional*/fn) {
-				if (root.DD_ASSERT) {
-					root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid type.");
-					const val = types.unbox(fn);
-					root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
-				};
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Event handler.",
+						},
+					},
+					returns: 'AttributeBox,Extender',
+					description: "NodeJs event attribute modifier.",
+				}
+				//! END_REPLACE()
+				, function NODE_EVENT(eventType, /*optional*/fn) {
+					if (root.DD_ASSERT) {
+						root.DD_ASSERT(types.isStringAndNotEmpty(eventType), "Invalid type.");
+						const val = types.unbox(fn);
+						root.DD_ASSERT(types.isNothing(val) || types.isJsFunction(val), "Invalid function.");
+					};
 
-				const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*paramarray*/...args) {
-					const dispatch = this[_shared.CurrentDispatchSymbol];
+					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx, /*paramarray*/...args) {
+						const dispatch = this[_shared.CurrentDispatchSymbol];
 
-					const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
+						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
 
-					const stack = values[_shared.StackSymbol];
+						const stack = values[_shared.StackSymbol];
 
-					let clonedStack;
-					if (values[_shared.SortedSymbol]) {
-						clonedStack = values[_shared.ClonedStackSymbol];
-					} else {
-						if (stack.length) {
-							stack.sort(function(value1, value2) {
-								return tools.compareNumbers(value1[2], value2[2]);
-							});
-							clonedStack = types.clone(stack);
+						let clonedStack;
+						if (values[_shared.SortedSymbol]) {
+							clonedStack = values[_shared.ClonedStackSymbol];
 						} else {
-							clonedStack = [];
+							if (stack.length) {
+								stack.sort(function(value1, value2) {
+									return tools.compareNumbers(value1[2], value2[2]);
+								});
+								clonedStack = types.clone(stack);
+							} else {
+								clonedStack = [];
+							};
+							const values = {};
+							values[_shared.SortedSymbol] = true;
+							values[_shared.ClonedStackSymbol] = clonedStack;
+							types.setAttributes(dispatch, values, null, _shared.SECRET);
 						};
-						const values = {};
-						values[_shared.SortedSymbol] = true;
-						values[_shared.ClonedStackSymbol] = clonedStack;
-						types.setAttributes(dispatch, values, null, _shared.SECRET);
-					};
 
-					const stackLen = clonedStack.length;
+						const stackLen = clonedStack.length;
 
-					for (let i = 0; i < stackLen; i++) {
-						const data = clonedStack[i],
-							obj = data[0],
-							evDatas = data[3],
-							emitter = evDatas[0];
+						for (let i = 0; i < stackLen; i++) {
+							const data = clonedStack[i],
+								obj = data[0],
+								evDatas = data[3],
+								emitter = evDatas[0];
 
-						if (!ctx || (emitter === ctx.emitter)) {
-							const handler = evDatas[2];
+							if (!ctx || (emitter === ctx.emitter)) {
+								const handler = evDatas[2];
 
-							handler.apply(obj, args);
+								handler.apply(obj, args);
+							};
 						};
-					};
 
-				}, extenders.NodeEvent, {enableScopes: true, eventType: eventType}))));
+					}, extenders.NodeEvent, {enableScopes: true, eventType: eventType}))));
 
-				eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
+					eventFn[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.OPTIONS({enableStorage: false}, doodad.METHOD(fn)));
 
-				return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
-			}));
+					return (types.isNothing(fn) ? doodad.MUST_OVERRIDE(eventFn) : eventFn);
+				}));
 
 			//*********************************************
 			// Emitter
 			//*********************************************
 
 			nodejsInterfaces.REGISTER(doodad.ISOLATED(doodad.MIX_IN(doodad.Class.$extend(
-									mixIns.RawEvents,
-			{
-				$TYPE_NAME: 'IEmitter',
-				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('IEmitter')), true) */,
+				mixIns.RawEvents,
+				{
+					$TYPE_NAME: 'IEmitter',
+					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('IEmitter')), true) */,
 
-				onnewListener: doodad.RAW_EVENT(),
-				onremoveListener: doodad.RAW_EVENT(),
+					onnewListener: doodad.RAW_EVENT(),
+					onremoveListener: doodad.RAW_EVENT(),
 
-				__currentlyEmitted: doodad.PRIVATE(null),
+					__currentlyEmitted: doodad.PRIVATE(null),
 
-				prependListener: doodad.PUBLIC(function prependListener(event, listener) {
+					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
 					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].attach(null, listener, 10);
-						this.emit(__Internal__.newListener, event, listener);
-					};
-					return this;
-				}),
-
-				prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].attach(null, listener, 10, null, 1);
-						this.emit(__Internal__.newListener, event, listener);
-					};
-					return this;
-				}),
-
-				addListener: doodad.PUBLIC(function addListener(event, listener) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].attach(null, listener);
-						this.emit(__Internal__.newListener, event, listener);
-					};
-					return this;
-				}),
-
-				emit: doodad.PUBLIC(function emit(event, ...args) {
-					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						const oldCurrentlyEmitted = this.__currentlyEmitted;
-						const isOnError = (event === 'error');
-						if (!isOnError || (oldCurrentlyEmitted !== event)) {
-							this.__currentlyEmitted = event;
-							try {
-								return this[name](...args);
-							} catch(ex) {
-								throw ex;
-							} finally {
-								this.__currentlyEmitted = oldCurrentlyEmitted;
-							}
-						} else if (isOnError && (this.listenerCount(event) === 0)) {
-							const ex = args[0];
-							if (!ex.trapped) {
-								tools.catchAndExit(ex);
-							};
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].attach(null, listener, 10);
+							this.emit(__Internal__.newListener, event, listener);
 						};
-					};
-					return false;
-				}),
+						return this;
+					}),
 
-				getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
-					let max = 10; // NodeJs default value
-					if (this.__RAW_EVENTS.length) {
-						max = this[this.__RAW_EVENTS[0]].stackSize;
-					};
-					return max;
-				}),
+					prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].attach(null, listener, 10, null, 1);
+							this.emit(__Internal__.newListener, event, listener);
+						};
+						return this;
+					}),
 
-				listenerCount: doodad.PUBLIC(function listenerCount(event) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
-						return (stack ? tools.reduce(stack, function(result, data) {
-							if (data[4] > 0) {
-								result++;
-							};
-							return result;
-						}, 0) : 0);
-					};
-					return 0;
-				}),
+					addListener: doodad.PUBLIC(function addListener(event, listener) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].attach(null, listener);
+							this.emit(__Internal__.newListener, event, listener);
+						};
+						return this;
+					}),
 
-				listeners: doodad.PUBLIC(function listeners(event) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
-						return (stack ? tools.reduce(stack, function(result, data) {
-							if (data[4] > 0) {
-								result.push(data[1]);
-							};
-							return result;
-						}, []) : []);
-					};
-					return [];
-				}),
-
-				on: doodad.PUBLIC(function on(event, listener) {
-					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].attach(null, listener);
-						this.emit(__Internal__.newListener, event, listener);
-					};
-					return this;
-				}),
-
-				once: doodad.PUBLIC(function once(event, listener) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].attachOnce(null, listener);
-						this.emit(__Internal__.newListener, event, listener);
-					};
-					return this;
-				}),
-
-				removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
-					const removeListeners = function _removeListeners(name) {
-						const eventFn = this[name];
-						const stack = types.getAttribute(eventFn, _shared.StackSymbol, null, _shared.SECRET);
-						for (let j = 0; j < stack.length; j++) {
-							const data = stack[j];
-							if (data[4] > 0) {
-								const listener = data[1];
-								eventFn.detach(null, listener);
-								if (name !== __Internal__.removeListenerPrefixed) {
-									const event = name.slice(_shared.EVENT_NAME_PREFIX_LEN);
-									this.emit(__Internal__.removeListener, event, listener);
+					emit: doodad.PUBLIC(function emit(event, ...args) {
+					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							const oldCurrentlyEmitted = this.__currentlyEmitted;
+							const isOnError = (event === 'error');
+							if (!isOnError || (oldCurrentlyEmitted !== event)) {
+								this.__currentlyEmitted = event;
+								try {
+									return this[name](...args);
+								} catch(ex) {
+									throw ex;
+								} finally {
+									this.__currentlyEmitted = oldCurrentlyEmitted;
+								}
+							} else if (isOnError && (this.listenerCount(event) === 0)) {
+								const ex = args[0];
+								if (!ex.trapped) {
+									tools.catchAndExit(ex);
 								};
 							};
 						};
-					};
-					const events = (event ? [_shared.EVENT_NAME_PREFIX + event] : this.__RAW_EVENTS);
-					for (let i = 0; i < events.length; i++) {
-						const name = events[i];
-						if (name !== __Internal__.removeListenerPrefixed) {
-							removeListeners.call(this, name);
-						};
-					};
-					if (!event || (event === __Internal__.removeListener)) {
-						removeListeners.call(this, __Internal__.removeListenerPrefixed);
-					};
-					return this;
-				}),
+						return false;
+					}),
 
-				removeListener: doodad.PUBLIC(function removeListener(event, listener) {
-					const name = _shared.EVENT_NAME_PREFIX + event;
-					if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
-						this[name].detach(null, listener);
-						if (event !== __Internal__.removeListener) {
-							this.emit(__Internal__.removeListener, event, listener);
+					getMaxListeners: doodad.PUBLIC(function getMaxListeners() {
+						let max = 10; // NodeJs default value
+						if (this.__RAW_EVENTS.length) {
+							max = this[this.__RAW_EVENTS[0]].stackSize;
 						};
-					};
-					return this;
-				}),
+						return max;
+					}),
 
-				setMaxListeners: doodad.PUBLIC(function setMaxListeners(number) {
-					const events = this.__RAW_EVENTS;
-					for (let i = 0; i < events.length; i++) {
-						this[events[i]].stackSize = number;
-					};
-					return this;
-				}),
-
-				// New since Node.js v. 6.0.0
-				eventNames: doodad.PUBLIC(function eventNames() {
-					const names = [];
-					const events = this.__RAW_EVENTS;
-					for (let i = 0; i < events.length; i++) {
-						const name = events[i];
-						const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
-						if (stack && tools.some(stack, function(data) {
-							return (data[4] > 0);
-						})) {
-							names.push(name.slice(_shared.EVENT_NAME_PREFIX_LEN));
+					listenerCount: doodad.PUBLIC(function listenerCount(event) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
+							return (stack ? tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result++;
+								};
+								return result;
+							}, 0) : 0);
 						};
-					};
-					return names;
-				}),
-			}))));
+						return 0;
+					}),
+
+					listeners: doodad.PUBLIC(function listeners(event) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
+							return (stack ? tools.reduce(stack, function(result, data) {
+								if (data[4] > 0) {
+									result.push(data[1]);
+								};
+								return result;
+							}, []) : []);
+						};
+						return [];
+					}),
+
+					on: doodad.PUBLIC(function on(event, listener) {
+					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].attach(null, listener);
+							this.emit(__Internal__.newListener, event, listener);
+						};
+						return this;
+					}),
+
+					once: doodad.PUBLIC(function once(event, listener) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].attachOnce(null, listener);
+							this.emit(__Internal__.newListener, event, listener);
+						};
+						return this;
+					}),
+
+					removeAllListeners: doodad.PUBLIC(function removeAllListeners(event) {
+						const removeListeners = function _removeListeners(name) {
+							const eventFn = this[name];
+							const stack = types.getAttribute(eventFn, _shared.StackSymbol, null, _shared.SECRET);
+							for (let j = 0; j < stack.length; j++) {
+								const data = stack[j];
+								if (data[4] > 0) {
+									const listener = data[1];
+									eventFn.detach(null, listener);
+									if (name !== __Internal__.removeListenerPrefixed) {
+										const event = name.slice(_shared.EVENT_NAME_PREFIX_LEN);
+										this.emit(__Internal__.removeListener, event, listener);
+									};
+								};
+							};
+						};
+						const events = (event ? [_shared.EVENT_NAME_PREFIX + event] : this.__RAW_EVENTS);
+						for (let i = 0; i < events.length; i++) {
+							const name = events[i];
+							if (name !== __Internal__.removeListenerPrefixed) {
+								removeListeners.call(this, name);
+							};
+						};
+						if (!event || (event === __Internal__.removeListener)) {
+							removeListeners.call(this, __Internal__.removeListenerPrefixed);
+						};
+						return this;
+					}),
+
+					removeListener: doodad.PUBLIC(function removeListener(event, listener) {
+						const name = _shared.EVENT_NAME_PREFIX + event;
+						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
+							this[name].detach(null, listener);
+							if (event !== __Internal__.removeListener) {
+								this.emit(__Internal__.removeListener, event, listener);
+							};
+						};
+						return this;
+					}),
+
+					setMaxListeners: doodad.PUBLIC(function setMaxListeners(number) {
+						const events = this.__RAW_EVENTS;
+						for (let i = 0; i < events.length; i++) {
+							this[events[i]].stackSize = number;
+						};
+						return this;
+					}),
+
+					// New since Node.js v. 6.0.0
+					eventNames: doodad.PUBLIC(function eventNames() {
+						const names = [];
+						const events = this.__RAW_EVENTS;
+						for (let i = 0; i < events.length; i++) {
+							const name = events[i];
+							const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
+							if (stack && tools.some(stack, function(data) {
+								return (data[4] > 0);
+							})) {
+								names.push(name.slice(_shared.EVENT_NAME_PREFIX_LEN));
+							};
+						};
+						return names;
+					}),
+				}))));
 
 
 			//===================================

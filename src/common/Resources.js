@@ -75,12 +75,12 @@ exports.add = function add(modules) {
 					load: function load(fileName, /*optional*/options) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryLoad() {
-								const path = files.parsePath(fileName);
-								if (path.isRelative) {
-									return this.locate(path, options);
-								};
-								return path;
-							}, this)
+							const path = files.parsePath(fileName);
+							if (path.isRelative) {
+								return this.locate(path, options);
+							};
+							return path;
+						}, this)
 							.then(function(path) {
 								const watchCb = types.get(options, 'watchCb', null);
 								let promise = null;

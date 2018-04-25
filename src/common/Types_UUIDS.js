@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -83,9 +83,9 @@ exports.add = function add(modules) {
 			return function init(/*optional*/options) {
 				const tempNatives = [
 						//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
-							//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
+						//! INCLUDE("%SOURCEDIR%/make/res/Natives_Node.inc.js", 'utf-8')
 						//! ELSE()
-							//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
+						//! INCLUDE("%SOURCEDIR%/make/res/Natives.inc.js", 'utf-8')
 						//! END_IF()
 					],
 
@@ -152,8 +152,8 @@ exports.add = function add(modules) {
 						uuids[uuid] = true;
 
 						//try {
-							types.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
-							types.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
+						types.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
+						types.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
 						//} catch(ex) {
 						//	console.log(name);
 						//};

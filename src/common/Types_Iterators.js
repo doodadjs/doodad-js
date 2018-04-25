@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -70,17 +70,17 @@ exports.add = function add(modules) {
 			types.ADD('isIterable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is iterable. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isIterable(obj) {
@@ -95,17 +95,17 @@ exports.add = function add(modules) {
 			types.ADD('isIteratorLike', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object looks like an iterator. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isIteratorLike(obj) {

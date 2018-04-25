@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -49,8 +49,8 @@ exports.add = function add(modules) {
 				//tools = doodad.Tools,
 				nodejs = doodad.NodeJs;
 
-	//		tools.complete(_shared.Natives, {
-	//		});
+			//		tools.complete(_shared.Natives, {
+			//		});
 
 			//===================================
 			// Util Extension

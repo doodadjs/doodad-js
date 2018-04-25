@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -63,10 +63,10 @@ exports.add = function add(modules) {
 				functionIsGeneratorCall: (types.isFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : null),
 
 				GeneratorFunction: types.getPrototypeOf(
-						function* () {
-							/* eslint no-empty-function: "off" */
-						}
-					).constructor,
+					function* () {
+						/* eslint no-empty-function: "off" */
+					}
+				).constructor,
 			});
 
 			//===================================
@@ -84,11 +84,11 @@ exports.add = function add(modules) {
 			types.ADD('getGeneratorFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'function',
-							description: "Returns the 'GeneratorFunction' constructor.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'function',
+					description: "Returns the 'GeneratorFunction' constructor.",
 				}
 				//! END_REPLACE()
 				, function getGeneratorFunction() {
@@ -98,17 +98,17 @@ exports.add = function add(modules) {
 			types.ADD('isGeneratorFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a generator function. Returns 'false' otherwise. Note: May not be cross-realm.",
 				}
 				//! END_REPLACE()
 				, (_shared.Natives.functionIsGeneratorCall ? function isGeneratorFunction(obj) {
@@ -120,17 +120,17 @@ exports.add = function add(modules) {
 			types.ADD('isGenerator', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a generator iterator. Returns 'false' otherwise. Note: Not cross-realm.",
 				}
 				//! END_REPLACE()
 				, function isGenerator(obj) {

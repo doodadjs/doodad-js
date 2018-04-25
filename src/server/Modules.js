@@ -25,17 +25,17 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeModule} from 'module';");
-	//! INJECT("import {default as nodeProcess} from 'process';");
-	//! INJECT("import {default as nodeFs} from 'fs';");
-	//! INJECT("import {default as amp} from 'app-module-path';")
+//! INJECT("import {default as nodeModule} from 'module';");
+//! INJECT("import {default as nodeProcess} from 'process';");
+//! INJECT("import {default as nodeFs} from 'fs';");
+//! INJECT("import {default as amp} from 'app-module-path';")
 //! ELSE()
-	"use strict";
+"use strict";
 
-	const nodeModule = require('module'),
-		nodeProcess = require('process'),
-		nodeFs = require('fs'),
-		amp = require('app-module-path');
+const nodeModule = require('module'),
+	nodeProcess = require('process'),
+	nodeFs = require('fs'),
+	amp = require('app-module-path');
 //! END_IF()
 
 const nodeModuleModule = nodeModule.Module,
@@ -161,27 +161,27 @@ exports.add = function add(mods) {
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								module: {
-									type: 'string',
-									optional: true,
-									description: "Module name",
-								},
-								file: {
-									type: 'string,Path,Url',
-									optional: true,
-									description: "Module file",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'Promise(string)',
-							description: "Locates a module and returns its path.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						module: {
+							type: 'string',
+							optional: true,
+							description: "Module name",
+						},
+						file: {
+							type: 'string,Path,Url',
+							optional: true,
+							description: "Module file",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'Promise(string)',
+					description: "Locates a module and returns its path.",
 				}
 				//! END_REPLACE()
 				, function locate(/*optional*/_module, /*optional*/path, /*optional*/options) {
@@ -265,22 +265,22 @@ exports.add = function add(mods) {
 			modules.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								files: {
-									type: 'arrayof(object)',
-									optional: false,
-									description: "Module files.",
-								},
-								options: {
-									type: 'arrayof(object),object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'Promise(bool)',
-							description: "Loads a module.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						files: {
+							type: 'arrayof(object)',
+							optional: false,
+							description: "Module files.",
+						},
+						options: {
+							type: 'arrayof(object),object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'Promise(bool)',
+					description: "Loads a module.",
 				}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
@@ -293,23 +293,23 @@ exports.add = function add(mods) {
 					};
 
 					const trapMissingDeps = function _trapMissingDeps(err) {
-							const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
-							const missingDeps = tools.filter(err.missingDeps, function(dep1) {
-								return dep1.autoLoad && (tools.findItem(ignoredMissingDeps, function(dep2) {
-									return ((dep1.module || '') === (dep2.module || '')) && ((dep1.path || '') === (dep2.path || ''));
-								}) === null);
-							});
-							if (missingDeps.length) {
-								const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
-								return modules.load(missingDeps, newOptions)
-									.then(function(dummy) {
-										return namespaces.load(err.modules, newOptions)
-											.catch(types.MissingDependencies, trapMissingDeps);
-									});
-							} else {
-								throw err;
-							}
-						};
+						const ignoredMissingDeps = types.get(options, 'ignoredMissingDeps', null);
+						const missingDeps = tools.filter(err.missingDeps, function(dep1) {
+							return dep1.autoLoad && (tools.findItem(ignoredMissingDeps, function(dep2) {
+								return ((dep1.module || '') === (dep2.module || '')) && ((dep1.path || '') === (dep2.path || ''));
+							}) === null);
+						});
+						if (missingDeps.length) {
+							const newOptions = tools.extend({}, options, {ignoredMissingDeps: missingDeps});
+							return modules.load(missingDeps, newOptions)
+								.then(function(dummy) {
+									return namespaces.load(err.modules, newOptions)
+										.catch(types.MissingDependencies, trapMissingDeps);
+								});
+						} else {
+							throw err;
+						}
+					};
 
 					const pkgModules = {};
 
@@ -377,9 +377,9 @@ exports.add = function add(mods) {
 			modules.ADD('loadManifest', function loadManifest(pkg, /*optional*/options) {
 				//const Promise = types.getPromise();
 				return modules.loadFiles([
-						{module: pkg, path: 'package.json'},
-						{module: pkg, path: 'make.json'},
-					], options)
+					{module: pkg, path: 'package.json'},
+					{module: pkg, path: 'make.json'},
+				], options)
 					.then(function(files) {
 						const manifest = files[0].exports.default,
 							makeManifest = files[1].exports.default;
@@ -409,10 +409,10 @@ exports.add = function add(mods) {
 											return {
 												module: manifest.name,
 												path: (fromSource ?
-														(makeManifest.sourceDir || './src') + '/' + file.src
+													(makeManifest.sourceDir || './src') + '/' + file.src
 													:
-														(makeManifest.buildDir || './build') + '/' + file.src.replace(/([.]js)$/, ".min.js")
-													),
+													(makeManifest.buildDir || './build') + '/' + file.src.replace(/([.]js)$/, ".min.js")
+												),
 												optional: types.get(file, 'optional', false),
 											};
 										}, []);

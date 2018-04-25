@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -92,8 +92,8 @@ exports.add = function add(modules) {
 					};
 					if (types.get(options, 'noEscapes', false)) {
 						return url.set({
-								noEscapes: false,
-							});
+							noEscapes: false,
+						});
 					};
 				};
 				return url;
@@ -113,10 +113,10 @@ exports.add = function add(modules) {
 					};
 					if (types.get(options, 'os', null) || types.get(options, 'dirChar', null) || types.get(options, 'noEscapes', false)) {
 						return path.set({
-								os: null, // switch to default
-								dirChar: null, // switch to default
-								noEscapes: false, // switch to default
-							});
+							os: null, // switch to default
+							dirChar: null, // switch to default
+							noEscapes: false, // switch to default
+						});
 					};
 				};
 				return path;
@@ -167,22 +167,22 @@ exports.add = function add(modules) {
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								message: {
-									type: 'string',
-									optional: false,
-									description: "Error message",
-								},
-								params: {
-									type: 'arrayof(any),objectof(any)',
-									optional: true,
-									description: "Parameters of the error message",
-								},
-							},
-							returns: 'string',
-							description: "Path error.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						message: {
+							type: 'string',
+							optional: false,
+							description: "Error message",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'string',
+					description: "Path error.",
 				}
 				//! END_REPLACE()
 				, types.Error.$inherit(
@@ -198,27 +198,27 @@ exports.add = function add(modules) {
 			__Internal__.relativeToAbsolute = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								path: {
-									type: 'string,array',
-									optional: false,
-									description: "Path to resolve",
-								},
-								dirRoot: {
-									type: 'string,array',
-									optional: true,
-									description: "Path root",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'object',
-							description: "Resolves a relative path.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						path: {
+							type: 'string,array',
+							optional: false,
+							description: "Path to resolve",
+						},
+						dirRoot: {
+							type: 'string,array',
+							optional: true,
+							description: "Path root",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'object',
+					description: "Resolves a relative path.",
 				}
 				//! END_REPLACE()
 				, function relativeToAbsolute(path, /*optional*/dirRoot, /*optional*/options) {
@@ -362,26 +362,26 @@ exports.add = function add(modules) {
 			//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
 
 			__Internal__.pathData = {
-					drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect
-					host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
-					root: types.READ_ONLY( null ),   // null = auto-detect
-					path: types.READ_ONLY( null ),
-					file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
-					isNull: types.READ_ONLY( false ), // Read-only
-				};
+				drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect
+				host: types.READ_ONLY( null ), // For Windows only. null = auto-detect
+				root: types.READ_ONLY( null ),   // null = auto-detect
+				path: types.READ_ONLY( null ),
+				file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
+				isNull: types.READ_ONLY( false ), // Read-only
+			};
 			__Internal__.pathDataKeys = types.keys(__Internal__.pathData);
 
 			__Internal__.pathOptions = {
-					os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
-					dirChar: types.READ_ONLY( '/' ),
-					extension: types.READ_ONLY( null ), // when set, changes 'file'
-					quote: types.READ_ONLY( null ),  // null = auto-detect
-					isRelative: types.READ_ONLY( false ),
-					noEscapes: types.READ_ONLY( false ),
-					shell: types.READ_ONLY( null ),  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash', 'sh'
-					forceDrive: types.READ_ONLY( false ),
-					allowTraverse: types.READ_ONLY( false ),
-				};
+				os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
+				dirChar: types.READ_ONLY( '/' ),
+				extension: types.READ_ONLY( null ), // when set, changes 'file'
+				quote: types.READ_ONLY( null ),  // null = auto-detect
+				isRelative: types.READ_ONLY( false ),
+				noEscapes: types.READ_ONLY( false ),
+				shell: types.READ_ONLY( null ),  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash', 'sh'
+				forceDrive: types.READ_ONLY( false ),
+				allowTraverse: types.READ_ONLY( false ),
+			};
 			__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 
 			__Internal__.pathNonStoredKeys = ['dontThrow'];
@@ -392,23 +392,23 @@ exports.add = function add(modules) {
 			// NOTE: To prevent using "delete"
 			__Internal__.pathSetExcludedKeys = ['extension'];
 			__Internal__.pathAllKeysForSet = tools.filter(__Internal__.pathAllKeys, function(key) {
-						return (tools.indexOf(__Internal__.pathSetExcludedKeys, key) < 0);
-					});
+				return (tools.indexOf(__Internal__.pathSetExcludedKeys, key) < 0);
+			});
 
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options",
-								},
-							},
-							returns: 'Path',
-							description: "Represents a system path.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'Path',
+					description: "Represents a system path.",
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
@@ -420,22 +420,22 @@ exports.add = function add(modules) {
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 8,
-										params: {
-											path: {
-												type: 'string,array',
-												optional: false,
-												description: "Path to parse",
-											},
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Parse options",
-											},
-										},
-										returns: 'Path',
-										description: "Parse a string to a system path.",
+								author: "Claude Petit",
+								revision: 8,
+								params: {
+									path: {
+										type: 'string,array',
+										optional: false,
+										description: "Path to parse",
+									},
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Parse options",
+									},
+								},
+								returns: 'Path',
+								description: "Parse a string to a system path.",
 							}
 							//! END_REPLACE()
 							, function parse(path, /*optional*/options) {
@@ -1105,22 +1105,22 @@ exports.add = function add(modules) {
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 3,
-										params: {
-											options: {
-												type: 'object',
-												optional: false,
-												description: "Options",
-											},
-										},
-										returns: 'Path',
-										description: "Set system path options with specified ones and returns a new Path object.",
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									options: {
+										type: 'object',
+										optional: false,
+										description: "Options",
+									},
+								},
+								returns: 'Path',
+								description: "Set system path options with specified ones and returns a new Path object.",
 							}
 							//! END_REPLACE()
 							, function set(options) {
 								let newOptions = tools.fill(__Internal__.pathAllKeysForSet, {}, this);
-									//delete newOptions.extension;
+								//delete newOptions.extension;
 								newOptions = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
@@ -1129,17 +1129,17 @@ exports.add = function add(modules) {
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 1,
-										params: {
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Options",
-											},
-										},
-										returns: 'string',
-										description: "Converts to a string.",
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'string',
+								description: "Converts to a string.",
 							}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
@@ -1233,17 +1233,17 @@ exports.add = function add(modules) {
 						toApiString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 1,
-										params: {
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Options",
-											},
-										},
-										returns: 'string',
-										description: "Converts to a string for the APIs.",
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'string',
+								description: "Converts to a string for the APIs.",
 							}
 							//! END_REPLACE()
 							, function toApiString(/*optional*/options) {
@@ -1253,22 +1253,22 @@ exports.add = function add(modules) {
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 12,
-										params: {
-											location: {
-												type: 'string,Path,Url',
-												optional: true,
-												description: "'Path' or 'Url' object to combine with.",
-											},
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Options",
-											},
-										},
-										returns: 'Path',
-										description: "Combines the Path with the specified Path or Url, then returns the result.",
+								author: "Claude Petit",
+								revision: 12,
+								params: {
+									location: {
+										type: 'string,Path,Url',
+										optional: true,
+										description: "'Path' or 'Url' object to combine with.",
+									},
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'Path',
+								description: "Combines the Path with the specified Path or Url, then returns the result.",
 							}
 							//! END_REPLACE()
 							, function combine(/*optional*/location, /*optional*/options) {
@@ -1385,17 +1385,17 @@ exports.add = function add(modules) {
 						moveUp: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 1,
-										params: {
-											count: {
-												type: 'integer',
-												optional: true,
-												description: "Number of times to move up. Default is '1'.",
-											},
-										},
-										returns: 'Path',
-										description: "Moves up to parent folder the specified number of times and returns a new Path object.",
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									count: {
+										type: 'integer',
+										optional: true,
+										description: "Number of times to move up. Default is '1'.",
+									},
+								},
+								returns: 'Path',
+								description: "Moves up to parent folder the specified number of times and returns a new Path object.",
 							}
 							//! END_REPLACE()
 							, function moveUp(/*optional*/count) {
@@ -1433,11 +1433,11 @@ exports.add = function add(modules) {
 						pushFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 4,
-										params: null,
-										returns: 'Path',
-										description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
+								author: "Claude Petit",
+								revision: 4,
+								params: null,
+								returns: 'Path',
+								description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
 							}
 							//! END_REPLACE()
 							, function pushFile() {
@@ -1451,11 +1451,11 @@ exports.add = function add(modules) {
 						popFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 0,
-										params: null,
-										returns: 'Path',
-										description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'Path',
+								description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
 							}
 							//! END_REPLACE()
 							, function popFile() {
@@ -1473,17 +1473,17 @@ exports.add = function add(modules) {
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 4,
-										params: {
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Options.",
-											},
-										},
-										returns: 'arrayof(string)',
-										description: "Returns the path as an array.",
+								author: "Claude Petit",
+								revision: 4,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
+									},
+								},
+								returns: 'arrayof(string)',
+								description: "Returns the path as an array.",
 							}
 							//! END_REPLACE()
 							, function toArray(/*optional*/options) {
@@ -1619,17 +1619,17 @@ exports.add = function add(modules) {
 						toDataObject: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'object',
-									description: "Converts the Path to a normal Javascript object.",
+								},
+								returns: 'object',
+								description: "Converts the Path to a normal Javascript object.",
 							}
 							//! END_REPLACE()
 							, function toDataObject(/*optional*/options) {
@@ -1686,22 +1686,22 @@ exports.add = function add(modules) {
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								args: {
-									type: 'arrayof(object)',
-									optional: true,
-									description: "Arguments.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Arguments options.",
-								},
-							},
-							returns: 'UrlArguments',
-							description: "Represents arguments to an URL.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						args: {
+							type: 'arrayof(object)',
+							optional: true,
+							description: "Arguments.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Arguments options.",
+						},
+					},
+					returns: 'UrlArguments',
+					description: "Represents arguments to an URL.",
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
@@ -1713,22 +1713,22 @@ exports.add = function add(modules) {
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: {
-										args: {
-											type: 'string,object,array',
-											optional: true,
-											description: "Arguments to parse.",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Parse options.",
-										},
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									args: {
+										type: 'string,object,array',
+										optional: true,
+										description: "Arguments to parse.",
 									},
-									returns: 'UrlArguments',
-									description: "Parses a string and returns an 'UrlArguments' object.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Parse options.",
+									},
+								},
+								returns: 'UrlArguments',
+								description: "Parses a string and returns an 'UrlArguments' object.",
 							}
 							//! END_REPLACE()
 							, function parse(/*optional*/args, /*optional*/options) {
@@ -1811,17 +1811,17 @@ exports.add = function add(modules) {
 						toDataObject: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'object',
-									description: "Converts to a normal Javascript object.",
+								},
+								returns: 'object',
+								description: "Converts to a normal Javascript object.",
 							}
 							//! END_REPLACE()
 							, function toDataObject(/*optional*/options) {
@@ -1867,11 +1867,11 @@ exports.add = function add(modules) {
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: null,
-									returns: 'array',
-									description: "Return arguments in an array of name-value pairs.",
+								author: "Claude Petit",
+								revision: 2,
+								params: null,
+								returns: 'array',
+								description: "Return arguments in an array of name-value pairs.",
 							}
 							//! END_REPLACE()
 							, function toArray() {
@@ -1881,17 +1881,17 @@ exports.add = function add(modules) {
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'string',
-									description: "Converts to a string with the specified options.",
+								},
+								returns: 'string',
+								description: "Converts to a string with the specified options.",
 							}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
@@ -1938,17 +1938,17 @@ exports.add = function add(modules) {
 						has: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										name: {
-											type: 'string',
-											optional: false,
-											description: "Name of the argument.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Name of the argument.",
 									},
-									returns: 'bool',
-									description: "Returns 'true' if there exists an argument with the specified name. Returns 'false' otherwise.",
+								},
+								returns: 'bool',
+								description: "Returns 'true' if there exists an argument with the specified name. Returns 'false' otherwise.",
 							}
 							//! END_REPLACE()
 							, function has(name) {
@@ -1969,22 +1969,22 @@ exports.add = function add(modules) {
 						get: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										name: {
-											type: 'string',
-											optional: false,
-											description: "Name of the argument.",
-										},
-										singleValue: {
-											type: 'boolean',
-											optional: true,
-											description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Name of the argument.",
 									},
-									returns: 'string,arrayof(string)',
-									description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
+									singleValue: {
+										type: 'boolean',
+										optional: true,
+										description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
+									},
+								},
+								returns: 'string,arrayof(string)',
+								description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
 							}
 							//! END_REPLACE()
 							, function get(name, /*optional*/singleValue) {
@@ -2028,27 +2028,27 @@ exports.add = function add(modules) {
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: {
-										name: {
-											type: 'string,arrayof(string),object',
-											optional: false,
-											description: "Name of the argument. When an object, it is used as name/value pairs.",
-										},
-										value: {
-											type: 'any,arrayof(any)',
-											optional: true,
-											description: "Value of the argument. When value is nothing and the name is not an object, the name is parsed as a single \"name=value\" pair.",
-										},
-										replace: {
-											type: 'bool',
-											optional: true,
-											description: "When 'true', function will replace every matching arguments. When 'false', function will append a new value. Default is 'true'.",
-										},
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									name: {
+										type: 'string,arrayof(string),object',
+										optional: false,
+										description: "Name of the argument. When an object, it is used as name/value pairs.",
 									},
-									returns: 'this',
-									description: "Sets the specified argument with the specified value.",
+									value: {
+										type: 'any,arrayof(any)',
+										optional: true,
+										description: "Value of the argument. When value is nothing and the name is not an object, the name is parsed as a single \"name=value\" pair.",
+									},
+									replace: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true', function will replace every matching arguments. When 'false', function will append a new value. Default is 'true'.",
+									},
+								},
+								returns: 'this',
+								description: "Sets the specified argument with the specified value.",
 							}
 							//! END_REPLACE()
 							, function set(name, /*optional*/value, /*optional*/replace) {
@@ -2144,17 +2144,17 @@ exports.add = function add(modules) {
 						remove: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 3,
-									params: {
-										names: {
-											type: 'string,arrayof(string)',
-											optional: false,
-											description: "Name of the argument(s).",
-										},
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									names: {
+										type: 'string,arrayof(string)',
+										optional: false,
+										description: "Name of the argument(s).",
 									},
-									returns: 'UrlArguments',
-									description: "Removes every occurrences of the specified argument(s) and returns a new UrlArguments object.",
+								},
+								returns: 'UrlArguments',
+								description: "Removes every occurrences of the specified argument(s) and returns a new UrlArguments object.",
 							}
 							//! END_REPLACE()
 							, function remove(names) {
@@ -2196,22 +2196,22 @@ exports.add = function add(modules) {
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										args: {
-											type: 'string,UrlArguments,object',
-											optional: false,
-											description: "Argument to combine.",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									args: {
+										type: 'string,UrlArguments,object',
+										optional: false,
+										description: "Argument to combine.",
 									},
-									returns: 'UrlArguments',
-									description: "Combines arguments with other arguments and the specified options.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
+									},
+								},
+								returns: 'UrlArguments',
+								description: "Combines arguments with other arguments and the specified options.",
 							}
 							//! END_REPLACE()
 							, function combine(args, /*optional*/options) {
@@ -2309,8 +2309,8 @@ exports.add = function add(modules) {
 			// NOTE: To prevent using "delete"
 			__Internal__.urlSetExcludedKeys = ['host', 'path', 'file', 'extension'];
 			__Internal__.urlAllKeysForSet = tools.filter(__Internal__.urlAllKeys, function(key) {
-						return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
-					});
+				return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
+			});
 
 			__Internal__.defaultPorts = tools.nullObject({
 				http: 80,
@@ -2324,17 +2324,17 @@ exports.add = function add(modules) {
 			files.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								options: {
-									type: 'object',
-									optional: false,
-									description: "URL options.",
-								},
-							},
-							returns: 'Url',
-							description: "Represents an URL.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						options: {
+							type: 'object',
+							optional: false,
+							description: "URL options.",
+						},
+					},
+					returns: 'Url',
+					description: "Represents an URL.",
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
@@ -2346,22 +2346,22 @@ exports.add = function add(modules) {
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 9,
-									params: {
-										url: {
-											type: 'string,Url,Path',
-											optional: true,
-											description: "URL to parse.",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Parse options.",
-										},
+								author: "Claude Petit",
+								revision: 9,
+								params: {
+									url: {
+										type: 'string,Url,Path',
+										optional: true,
+										description: "URL to parse.",
 									},
-									returns: 'Url',
-									description: "Represents an URL.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Parse options.",
+									},
+								},
+								returns: 'Url',
+								description: "Represents an URL.",
 							}
 							//! END_REPLACE()
 							, function parse(/*optional*/url, /*optional*/options) {
@@ -2834,28 +2834,28 @@ exports.add = function add(modules) {
 						set: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 3,
-									params: {
-										options: {
-											type: 'object',
-											optional: false,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									options: {
+										type: 'object',
+										optional: false,
+										description: "Options.",
 									},
-									returns: 'Url',
-									description: "Sets URL options and returns a new Url object.",
+								},
+								returns: 'Url',
+								description: "Sets URL options and returns a new Url object.",
 							}
 							//! END_REPLACE()
 							, function set(options) {
 								let newOptions = tools.fill(__Internal__.urlAllKeysForSet, {}, this);
-									//delete newOptions.extension;
-									//delete newOptions.host;
+								//delete newOptions.extension;
+								//delete newOptions.host;
 								if (!types.has(options, 'url')) {
 									newOptions.path = this.path;
 									newOptions.file = this.file;
-										//delete newOptions.path;
-										//delete newOptions.file;
+									//delete newOptions.path;
+									//delete newOptions.file;
 								};
 								newOptions = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
 								const type = types.getType(this);
@@ -2865,17 +2865,17 @@ exports.add = function add(modules) {
 						hasArg: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										name: {
-											type: 'string',
-											optional: false,
-											description: "Argument name.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Argument name.",
 									},
-									returns: 'boolean',
-									description: "Return 'true' if argument exists. Returns false otherwise.",
+								},
+								returns: 'boolean',
+								description: "Return 'true' if argument exists. Returns false otherwise.",
 							}
 							//! END_REPLACE()
 							, function hasArg(name) {
@@ -2885,22 +2885,22 @@ exports.add = function add(modules) {
 						getArg: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										name: {
-											type: 'string',
-											optional: false,
-											description: "Argument name.",
-										},
-										singleValue: {
-											type: 'boolean',
-											optional: true,
-											description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: false,
+										description: "Argument name.",
 									},
-									returns: 'string,arrayof(string)',
-									description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
+									singleValue: {
+										type: 'boolean',
+										optional: true,
+										description: "When 'true', function will returns only the first occurrence as a single value. When 'false', all occurrences will be returned as an array. Default is 'false'.",
+									},
+								},
+								returns: 'string,arrayof(string)',
+								description: "Return the argument's value(s) if it exists. Returns 'undefined' otherwise.",
 							}
 							//! END_REPLACE()
 							, function getArg(name, /*optional*/singleValue) {
@@ -2913,22 +2913,22 @@ exports.add = function add(modules) {
 						setArgs: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										args: {
-											type: 'object',
-											optional: false,
-											description: "name/value pairs.",
-										},
-										replace: {
-											type: 'bool',
-											optional: true,
-											description: "When 'true', function will replace every matching arguments. When 'false', function will append a new value. Default is 'true'.",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									args: {
+										type: 'object',
+										optional: false,
+										description: "name/value pairs.",
 									},
-									returns: 'Url',
-									description: "Sets URL arguments and returns a new Url object.",
+									replace: {
+										type: 'bool',
+										optional: true,
+										description: "When 'true', function will replace every matching arguments. When 'false', function will append a new value. Default is 'true'.",
+									},
+								},
+								returns: 'Url',
+								description: "Sets URL arguments and returns a new Url object.",
 							}
 							//! END_REPLACE()
 							, function setArgs(args, /*optional*/replace) {
@@ -2940,17 +2940,17 @@ exports.add = function add(modules) {
 						removeArgs: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										name: {
-											type: 'string,arrayof(string)',
-											optional: true,
-											description: "Name of the argument.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string,arrayof(string)',
+										optional: true,
+										description: "Name of the argument.",
 									},
-									returns: 'Url',
-									description: "Removes URL arguments and returns a new Url object.",
+								},
+								returns: 'Url',
+								description: "Removes URL arguments and returns a new Url object.",
 							}
 							//! END_REPLACE()
 							, function removeArgs(/*optional*/name) {
@@ -2968,17 +2968,17 @@ exports.add = function add(modules) {
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'string',
-									description: "Converts to a string.",
+								},
+								returns: 'string',
+								description: "Converts to a string.",
 							}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
@@ -3079,17 +3079,17 @@ exports.add = function add(modules) {
 						toApiString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'string',
-									description: "Converts to a string for the APIs.",
+								},
+								returns: 'string',
+								description: "Converts to a string for the APIs.",
 							}
 							//! END_REPLACE()
 							, function toApiString(/*optional*/options) {
@@ -3099,17 +3099,17 @@ exports.add = function add(modules) {
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										url: {
-											type: 'string,Url',
-											optional: true,
-											description: "URL to compare with.",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									url: {
+										type: 'string,Url',
+										optional: true,
+										description: "URL to compare with.",
 									},
-									returns: 'integer',
-									description: "Compares URL with another URL. Returns '0' when exactly the same URL. Returns '1' when same URL, but different anchor. Returns '-1' when different URL.",
+								},
+								returns: 'integer',
+								description: "Compares URL with another URL. Returns '0' when exactly the same URL. Returns '1' when same URL, but different anchor. Returns '-1' when different URL.",
 							}
 							//! END_REPLACE()
 							, function compare(url) {
@@ -3126,22 +3126,22 @@ exports.add = function add(modules) {
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 9,
-									params: {
-										location: {
-											type: 'string,Url,Path',
-											optional: false,
-											description: "Url or Path to combine with.",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 9,
+								params: {
+									location: {
+										type: 'string,Url,Path',
+										optional: false,
+										description: "Url or Path to combine with.",
 									},
-									returns: 'Url',
-									description: "Combines the Url with another Url or Path, then returns the result.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
+									},
+								},
+								returns: 'Url',
+								description: "Combines the Url with another Url or Path, then returns the result.",
 							}
 							//! END_REPLACE()
 							, function combine(location, /*optional*/options) {
@@ -3252,17 +3252,17 @@ exports.add = function add(modules) {
 						moveUp: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 0,
-										params: {
-											count: {
-												type: 'integer',
-												optional: true,
-												description: "Number of times to move up. Default is '1'.",
-											},
-										},
-										returns: 'Url',
-										description: "Moves up to parent folder the specified number of times and returns a new Url object.",
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									count: {
+										type: 'integer',
+										optional: true,
+										description: "Number of times to move up. Default is '1'.",
+									},
+								},
+								returns: 'Url',
+								description: "Moves up to parent folder the specified number of times and returns a new Url object.",
 							}
 							//! END_REPLACE()
 							, function moveUp(/*optional*/count) {
@@ -3300,11 +3300,11 @@ exports.add = function add(modules) {
 						pushFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 3,
-										params: null,
-										returns: 'Url',
-										description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
+								author: "Claude Petit",
+								revision: 3,
+								params: null,
+								returns: 'Url',
+								description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
 							}
 							//! END_REPLACE()
 							, function pushFile() {
@@ -3318,11 +3318,11 @@ exports.add = function add(modules) {
 						popFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 0,
-										params: null,
-										returns: 'Path',
-										description: "Excludes file from the path and returns a new Url object. Will returns 'null' when there is no file that can be extracted from the url.",
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'Path',
+								description: "Excludes file from the path and returns a new Url object. Will returns 'null' when there is no file that can be extracted from the url.",
 							}
 							//! END_REPLACE()
 							, function popFile() {
@@ -3340,17 +3340,17 @@ exports.add = function add(modules) {
 						toArray: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 4,
-										params: {
-											options: {
-												type: 'object',
-												optional: true,
-												description: "Options.",
-											},
-										},
-										returns: 'arrayof(string)',
-										description: "Returns the URL as an array.",
+								author: "Claude Petit",
+								revision: 4,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
+									},
+								},
+								returns: 'arrayof(string)',
+								description: "Returns the URL as an array.",
 							}
 							//! END_REPLACE()
 							, function toArray(/*optional*/options) {
@@ -3433,11 +3433,11 @@ exports.add = function add(modules) {
 						getPath: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-										author: "Claude Petit",
-										revision: 0,
-										params: null,
-										returns: 'Url',
-										description: "Returns the path as an Url without dommain.",
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'Url',
+								description: "Returns the path as an Url without dommain.",
 							}
 							//! END_REPLACE()
 							, function getPath() {
@@ -3451,88 +3451,88 @@ exports.add = function add(modules) {
 							}),
 
 						relative: function relative(to, /*optional*/options) {
-								if (this.isRelative) {
-									throw new types.ParseError("Url is not absolute.");
-								};
+							if (this.isRelative) {
+								throw new types.ParseError("Url is not absolute.");
+							};
 
-								const type = types.getType(this);
+							const type = types.getType(this);
 
-								if (!types._instanceof(to, files.Url)) {
-									to = type.parse(to, options);
-								};
+							if (!types._instanceof(to, files.Url)) {
+								to = type.parse(to, options);
+							};
 
-								if (to.isRelative) {
-									throw new types.ParseError("Target must be an absolute url.");
-								};
+							if (to.isRelative) {
+								throw new types.ParseError("Target must be an absolute url.");
+							};
 
-								if (this.isWindows && !to.isWindows) {
-									throw new types.ParseError("Incompatible OSes.");
-								};
+							if (this.isWindows && !to.isWindows) {
+								throw new types.ParseError("Incompatible OSes.");
+							};
 
-								if (this.isWindows && (this.path[0] !== to.path[0])) {
-									throw new types.ParseError("Urls must be from the same network share or the same drive.");
-								};
+							if (this.isWindows && (this.path[0] !== to.path[0])) {
+								throw new types.ParseError("Urls must be from the same network share or the same drive.");
+							};
 
-								if ((this.domain !== to.domain) && (this.port !== to.port)) {
-									throw new types.ParseError("Urls must be from the same domain and have the same port number.");
-								};
+							if ((this.domain !== to.domain) && (this.port !== to.port)) {
+								throw new types.ParseError("Urls must be from the same domain and have the same port number.");
+							};
 
-								if ((this.user !== to.user) || (this.password !== to.password)) {
-									throw new types.ParseError("Urls must be from the same credentials.");
-								};
+							if ((this.user !== to.user) || (this.password !== to.password)) {
+								throw new types.ParseError("Urls must be from the same credentials.");
+							};
 
-								const caseSensitive = types.get(options, 'caseSensitive', false);
+							const caseSensitive = types.get(options, 'caseSensitive', false);
 
-								const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
-									toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
+							const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
+								toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
 
-								const pathAr = [];
+							const pathAr = [];
 
-								let i = 0;
+							let i = 0;
 
-								for (; (i < thisAr.length) && (i < toAr.length); i++) {
-									if (caseSensitive) {
-										if (thisAr[i] !== toAr[i]) {
-											break;
-										};
-									} else {
-										if (thisAr[i].toLowerCase() !== toAr[i].toLowerCase()) {
-											break;
-										};
+							for (; (i < thisAr.length) && (i < toAr.length); i++) {
+								if (caseSensitive) {
+									if (thisAr[i] !== toAr[i]) {
+										break;
+									};
+								} else {
+									if (thisAr[i].toLowerCase() !== toAr[i].toLowerCase()) {
+										break;
 									};
 								};
+							};
 
-								let j = i;
+							let j = i;
 
-								for (; i < toAr.length; i++) {
-									pathAr.push('..');
-								};
+							for (; i < toAr.length; i++) {
+								pathAr.push('..');
+							};
 
-								if (pathAr.length === 0) {
-									pathAr.push('.');
-								};
+							if (pathAr.length === 0) {
+								pathAr.push('.');
+							};
 
-								for (; j < thisAr.length; j++) {
-									pathAr.push(thisAr[j]);
-								};
+							for (; j < thisAr.length; j++) {
+								pathAr.push(thisAr[j]);
+							};
 
-								return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
-							},
+							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
+						},
 
 						toDataObject: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 2,
-									params: {
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options.",
-										},
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options.",
 									},
-									returns: 'object',
-									description: "Converts the URL to a normal Javascript object.",
+								},
+								returns: 'object',
+								description: "Converts the URL to a normal Javascript object.",
 							}
 							//! END_REPLACE()
 							, function toDataObject(/*optional*/options) {

@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -76,17 +76,17 @@ exports.add = function add(modules) {
 			types.ADD('isPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object to test for.",
-							},
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' if object is a Promise, 'false' otherwise.",
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a Promise, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isPromise(obj) {
@@ -96,17 +96,17 @@ exports.add = function add(modules) {
 			types.ADD('isExtendedPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'object',
-								optional: false,
-								description: "An object to test for.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object to test for.",
 						},
-						returns: 'bool',
-						description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isExtendedPromise(obj) {
@@ -116,11 +116,11 @@ exports.add = function add(modules) {
 			types.ADD('getPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'Promise',
-						description: "Returns the ES6 Promise class or a polyfill.",
+					author: "Claude Petit",
+					revision: 1,
+					params: null,
+					returns: 'Promise',
+					description: "Returns the ES6 Promise class or a polyfill.",
 				}
 				//! END_REPLACE()
 				, function getPromise() {
@@ -142,15 +142,15 @@ exports.add = function add(modules) {
 				if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 					Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
 						const promise = this.then(function _then(result) {
-								let retval = callback(null, result);
-								if (retval === undefined) {
-									retval = result;
-								};
-								return retval;
-							}, function(err) {
-								const retval = callback(err, undefined);
-								return retval;
-							});
+							let retval = callback(null, result);
+							if (retval === undefined) {
+								retval = result;
+							};
+							return retval;
+						}, function(err) {
+							const retval = callback(err, undefined);
+							return retval;
+						});
 						return promise;
 					};
 				} else if (!types.isFunction(Promise.prototype.asCallback)) {
@@ -165,14 +165,14 @@ exports.add = function add(modules) {
 					Promise.prototype.finally = function _finally(callback) {
 						const P = this.constructor || Promise;
 						const promise = this.then(function(result) {
-								return P.resolve(callback()).then(function() {
-									return result;
-								});
-							}, function(err) {
-								return P.resolve(callback()).then(function() {
-									throw err;
-								});
+							return P.resolve(callback()).then(function() {
+								return result;
 							});
+						}, function(err) {
+							return P.resolve(callback()).then(function() {
+								throw err;
+							});
+						});
 						return promise;
 					};
 				};
@@ -512,10 +512,10 @@ exports.add = function add(modules) {
 				Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
 					const P = this.constructor || Promise;
 					const promise = this.then(function(result) {
-							return P.create(function(resolve, reject) {
-								return callback.call(thisObj, result, resolve, reject);
-							}, thisObj);
-						}, null, thisObj);
+						return P.create(function(resolve, reject) {
+							return callback.call(thisObj, result, resolve, reject);
+						}, thisObj);
+					}, null, thisObj);
 					return promise;
 				};
 			};
@@ -547,17 +547,17 @@ exports.add = function add(modules) {
 			types.ADD('setPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 7,
-						params: {
-							Promise: {
-								type: 'Promise',
-								optional: false,
-								description: "A Promise polyfill.",
-							},
+					author: "Claude Petit",
+					revision: 7,
+					params: {
+						Promise: {
+							type: 'Promise',
+							optional: false,
+							description: "A Promise polyfill.",
 						},
-						returns: 'Promise',
-						description: "Sets a custom polyfill for ES6 Promises.",
+					},
+					returns: 'Promise',
+					description: "Sets a custom polyfill for ES6 Promises.",
 				}
 				//! END_REPLACE()
 				, function setPromise(Promise) {
@@ -578,7 +578,7 @@ exports.add = function add(modules) {
 
 					// Make some tests...
 					if (
-							!types.isFunction(Promise) ||
+						!types.isFunction(Promise) ||
 							!types.isFunction(Promise.resolve) ||
 							!types.isFunction(Promise.reject) ||
 							!types.isFunction(Promise.all) ||
@@ -652,27 +652,27 @@ exports.add = function add(modules) {
 			_shared.PromiseCallback = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							obj: {
-								type: 'object,Object',
-								optional: true,
-								description: "Object to bind with the callback function.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Callback function.",
-							},
-							secret: {
-								type: 'any',
-								optional: true,
-								description: "Secret.",
-							},
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						obj: {
+							type: 'object,Object',
+							optional: true,
+							description: "Object to bind with the callback function.",
 						},
-						returns: 'function',
-						description: "Creates a callback handler for DDPromise.",
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "Callback function.",
+						},
+						secret: {
+							type: 'any',
+							optional: true,
+							description: "Secret.",
+						},
+					},
+					returns: 'function',
+					description: "Creates a callback handler for DDPromise.",
 				}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {

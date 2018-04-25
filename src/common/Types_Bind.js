@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -71,27 +71,27 @@ exports.add = function add(modules) {
 			types.ADD('bind', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "An object.",
-								},
-								fn: {
-									type: 'function',
-									optional: false,
-									description: "A function.",
-								},
-								args: {
-									type: 'arrayof(any)',
-									optional: true,
-									description: "Function arguments.",
-								},
-							},
-							returns: 'object',
-							description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "A function.",
+						},
+						args: {
+							type: 'arrayof(any)',
+							optional: true,
+							description: "Function arguments.",
+						},
+					},
+					returns: 'object',
+					description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
 				}
 				//! END_REPLACE()
 				, function bind(obj, fn, /*optional*/args) {
@@ -114,17 +114,17 @@ exports.add = function add(modules) {
 			types.ADD('unbind', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 6,
-							params: {
-								fn: {
-									type: 'function',
-									optional: false,
-									description: "A function.",
-								},
-							},
-							returns: 'object',
-							description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						fn: {
+							type: 'function',
+							optional: false,
+							description: "A function.",
+						},
+					},
+					returns: 'object',
+					description: "Unbinds a function and returns the resulting function. Owned properties are also updated. Returns 'null' when function can't be unbound.",
 				}
 				//! END_REPLACE()
 				, function unbind(fn) {

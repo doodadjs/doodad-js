@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -106,17 +106,17 @@ exports.add = function add(modules) {
 					let fn;
 					if ((level === tools.LogLevels.Info) && global.console.info) {
 						//! BEGIN_REMOVE()
-							if ((typeof process === 'object') && (typeof module === 'object')) {
-								fn = 'warn'; // force stderr
-							} else {
-								fn = 'info';
-							};
+						if ((typeof process === 'object') && (typeof module === 'object')) {
+							fn = 'warn'; // force stderr
+						} else {
+							fn = 'info';
+						};
 						//! END_REMOVE()
 
 						//! IF_SET("serverSide")
-							//! INJECT("fn = 'warn'") // force stderr
+						//! INJECT("fn = 'warn'") // force stderr
 						//! ELSE()
-							//! INJECT("fn = 'info'")
+						//! INJECT("fn = 'info'")
 						//! END_IF()
 					} else if ((level === tools.LogLevels.Warning) && global.console.warn) {
 						fn = 'warn';
@@ -124,17 +124,17 @@ exports.add = function add(modules) {
 						fn = 'error';
 					} else {
 						//! BEGIN_REMOVE()
-							if ((typeof process === 'object') && (typeof module === 'object')) {
-								fn = 'warn'; // force stderr
-							} else {
-								fn = 'log';
-							};
+						if ((typeof process === 'object') && (typeof module === 'object')) {
+							fn = 'warn'; // force stderr
+						} else {
+							fn = 'log';
+						};
 						//! END_REMOVE()
 
 						//! IF_SET("serverSide")
-							//! INJECT("fn = 'warn'") // force stderr
+						//! INJECT("fn = 'warn'") // force stderr
 						//! ELSE()
-							//! INJECT("fn = 'log'")
+						//! INJECT("fn = 'log'")
 						//! END_IF()
 					};
 					global.console[fn](message);
@@ -193,27 +193,27 @@ exports.add = function add(modules) {
 			tools.ADD('split', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								str: {
-									type: 'string',
-									optional: false,
-									description: "String to split",
-								},
-								separator: {
-									type: 'string,RegExp',
-									optional: true,
-									description: "Separator",
-								},
-								limit: {
-									type: 'integer',
-									optional: true,
-									description: "Number of items.",
-								},
-							},
-							returns: 'arrayof(string)',
-							description: "Proper 'limit' argument for the 'String.prototype.split' function.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						str: {
+							type: 'string',
+							optional: false,
+							description: "String to split",
+						},
+						separator: {
+							type: 'string,RegExp',
+							optional: true,
+							description: "Separator",
+						},
+						limit: {
+							type: 'integer',
+							optional: true,
+							description: "Number of items.",
+						},
+					},
+					returns: 'arrayof(string)',
+					description: "Proper 'limit' argument for the 'String.prototype.split' function.",
 				}
 				//! END_REPLACE()
 				, function split(str, /*optional*/separator, /*optional*/limit) {
@@ -279,32 +279,32 @@ exports.add = function add(modules) {
 			tools.ADD('indexOf', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'arraylike',
-								optional: false,
-								description: "Array value.",
-							},
-							item: {
-								type: 'any',
-								optional: false,
-								description: "Value to search for.",
-							},
-							from: {
-								type: 'integer',
-								optional: true,
-								description: "Index to start searching from. Default is '0'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "Array value.",
 						},
-						returns: 'integer',
-						description: "Returns the index of the first occurrence of the item. Returns '-1' when item is not found.",
+						item: {
+							type: 'any',
+							optional: false,
+							description: "Value to search for.",
+						},
+						from: {
+							type: 'integer',
+							optional: true,
+							description: "Index to start searching from. Default is '0'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+					},
+					returns: 'integer',
+					description: "Returns the index of the first occurrence of the item. Returns '-1' when item is not found.",
 				}
 				//! END_REPLACE()
 				, function indexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
@@ -339,32 +339,32 @@ exports.add = function add(modules) {
 			tools.ADD('lastIndexOf', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'arraylike',
-								optional: false,
-								description: "Array value.",
-							},
-							item: {
-								type: 'any',
-								optional: false,
-								description: "Value to search for.",
-							},
-							from: {
-								type: 'integer',
-								optional: true,
-								description: "Index to start searching from. Default is 'end of array'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "Array value.",
 						},
-						returns: 'integer',
-						description: "Returns the index of the last occurrence of the item. Returns '-1' when item is not found.",
+						item: {
+							type: 'any',
+							optional: false,
+							description: "Value to search for.",
+						},
+						from: {
+							type: 'integer',
+							optional: true,
+							description: "Index to start searching from. Default is 'end of array'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+					},
+					returns: 'integer',
+					description: "Returns the index of the last occurrence of the item. Returns '-1' when item is not found.",
 				}
 				//! END_REPLACE()
 				, function lastIndexOf(obj, item, /*optional*/from, /*optional*/sparsed) {
@@ -399,17 +399,17 @@ exports.add = function add(modules) {
 			tools.ADD('getFirstIndex', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-							},
-							returns: 'integer',
-							description: "Returns the index of the first available value (the index of the first non-empty slot).",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+					},
+					returns: 'integer',
+					description: "Returns the index of the first available value (the index of the first non-empty slot).",
 				}
 				//! END_REPLACE()
 				, function getFirstIndex(obj) {
@@ -426,17 +426,17 @@ exports.add = function add(modules) {
 			tools.ADD('getFirstValue', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-							},
-							returns: 'any',
-							description: "Returns the first available value (the value of the first non-empty slot).",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+					},
+					returns: 'any',
+					description: "Returns the first available value (the value of the first non-empty slot).",
 				}
 				//! END_REPLACE()
 				, function getFirstValue(obj) {
@@ -453,22 +453,22 @@ exports.add = function add(modules) {
 			tools.ADD('popAt', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'object,array',
-									optional: false,
-									description: "An object or an array.",
-								},
-								key: {
-									type: 'string,integer',
-									optional: false,
-									description: "An attribute name or an array index.",
-								},
-							},
-							returns: 'any',
-							description: "Deletes the named own property of an object and returns its value. If object is an array, splices at the specified array index if 'key' is any existing array index.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'object,array',
+							optional: false,
+							description: "An object or an array.",
+						},
+						key: {
+							type: 'string,integer',
+							optional: false,
+							description: "An attribute name or an array index.",
+						},
+					},
+					returns: 'any',
+					description: "Deletes the named own property of an object and returns its value. If object is an array, splices at the specified array index if 'key' is any existing array index.",
 				}
 				//! END_REPLACE()
 				, function popAt(obj, key) {
@@ -497,37 +497,37 @@ exports.add = function add(modules) {
 			tools.ADD('popItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'object,array',
-									optional: false,
-									description: "An object or an array.",
-								},
-								item: {
-									type: 'any,function',
-									optional: false,
-									description: "The value of the item to pop out. When it is a function, calls it to get the item to pop out.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'any',
-							description: "Search the first occurrence of the specified value among owned properties of an object, than deletes it and returns that value. When not found, returns 'undefined'. If object is an array, splices at the index of the first occurrence.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'object,array',
+							optional: false,
+							description: "An object or an array.",
+						},
+						item: {
+							type: 'any,function',
+							optional: false,
+							description: "The value of the item to pop out. When it is a function, calls it to get the item to pop out.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'any',
+					description: "Search the first occurrence of the specified value among owned properties of an object, than deletes it and returns that value. When not found, returns 'undefined'. If object is an array, splices at the index of the first occurrence.",
 				}
 				//! END_REPLACE()
 				, function popItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/includeSymbols) {
@@ -609,32 +609,32 @@ exports.add = function add(modules) {
 			tools.ADD('popItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 6,
-							params: {
-								obj: {
-									type: 'object,array',
-									optional: false,
-									description: "An object or an array.",
-								},
-								items: {
-									type: 'any,arrayof(any),function',
-									optional: false,
-									description: "The values of the items to pop out. When it is a function, calls it to get the items to pop out.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'arrayof(any)',
-							description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						obj: {
+							type: 'object,array',
+							optional: false,
+							description: "An object or an array.",
+						},
+						items: {
+							type: 'any,arrayof(any),function',
+							optional: false,
+							description: "The values of the items to pop out. When it is a function, calls it to get the items to pop out.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'arrayof(any)',
+					description: "Search all occurrence of the specified values among owned properties of an object, than deletes them and returns these values in an array. If object is an array, splices at the indexes of each occurrences.",
 				}
 				//! END_REPLACE()
 				, function popItems(obj, items, /*optional*/thisObj, /*optional*/includeSymbols) {
@@ -669,7 +669,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else if (types.isArray(items)) {
 							const itemsLen = items.length;
 							if (types.isArray(obj)) {
@@ -706,7 +706,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else {
 							if (types.isArray(obj)) {
 								for (let key = obj.length - 1; key >= 0; key--) {
@@ -734,7 +734,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						};
 					};
 					return result;
@@ -743,22 +743,22 @@ exports.add = function add(modules) {
 			tools.ADD('prepend', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "Target array.",
-								},
-								paramarray: {
-									type: 'arrayof(arraylike)',
-									optional: true,
-									description: "An array.",
-								},
-							},
-							returns: 'array',
-							description: "Prepends the items of each array to the first argument than returns that array.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "Target array.",
+						},
+						paramarray: {
+							type: 'arrayof(arraylike)',
+							optional: true,
+							description: "An array.",
+						},
+					},
+					returns: 'array',
+					description: "Prepends the items of each array to the first argument than returns that array.",
 				}
 				//! END_REPLACE()
 				, function prepend(obj, /*paramarray*/...args) {
@@ -782,42 +782,42 @@ exports.add = function add(modules) {
 			tools.ADD('findItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 5,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to scan",
-								},
-								item: {
-									type: 'any',
-									optional: false,
-									description: "Value to find. If item is a function, call this function to find item.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'integer,string',
-							description: "Returns the array index or the attribute name of the specified item. Returns 'null' when item is not found.",
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to scan",
+						},
+						item: {
+							type: 'any',
+							optional: false,
+							description: "Value to find. If item is a function, call this function to find item.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'integer,string',
+					description: "Returns the array index or the attribute name of the specified item. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
 				, function findItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -910,42 +910,42 @@ exports.add = function add(modules) {
 			tools.ADD('findLastItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to scan",
-								},
-								item: {
-									type: 'any',
-									optional: false,
-									description: "Value to find. If item is a function, call this function to find item.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'integer,string',
-							description: "Returns the array index or the attribute name of the specified item, by searching from the end. Returns 'null' when item is not found.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to scan",
+						},
+						item: {
+							type: 'any',
+							optional: false,
+							description: "Value to find. If item is a function, call this function to find item.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'integer,string',
+					description: "Returns the array index or the attribute name of the specified item, by searching from the end. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
 				, function findLastItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -1018,42 +1018,42 @@ exports.add = function add(modules) {
 			tools.ADD('findItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to scan",
-								},
-								items: {
-									type: 'any,arrayof(any)',
-									optional: false,
-									description: "Values to find. If items is a function, call this function to find items.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'items' is a function, considers that function as a value. Default is 'false'",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'arrayof(integer,string)',
-							description: "Returns the array indexes or the attribute names of the specified items.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to scan",
+						},
+						items: {
+							type: 'any,arrayof(any)',
+							optional: false,
+							description: "Values to find. If items is a function, call this function to find items.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'items' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'items' is a function, considers that function as a value. Default is 'false'",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'arrayof(integer,string)',
+					description: "Returns the array indexes or the attribute names of the specified items.",
 				}
 				//! END_REPLACE()
 				, function findItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -1095,7 +1095,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else {
 							if (!types.isArray(items)) {
 								items = [items];
@@ -1131,7 +1131,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						};
 					};
 					return result;
@@ -1140,42 +1140,42 @@ exports.add = function add(modules) {
 			tools.ADD('getItem', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 5,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to scan",
-								},
-								item: {
-									type: 'any',
-									optional: false,
-									description: "Value to find. If item is a function, call this function to find item.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'any',
-							description: "Returns the found item. Returns 'null' when item is not found.",
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to scan",
+						},
+						item: {
+							type: 'any',
+							optional: false,
+							description: "Value to find. If item is a function, call this function to find item.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'any',
+					description: "Returns the found item. Returns 'null' when item is not found.",
 				}
 				//! END_REPLACE()
 				, function getItem(obj, item, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -1269,42 +1269,42 @@ exports.add = function add(modules) {
 			tools.ADD('getItems', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "Object to scan",
-								},
-								items: {
-									type: 'any,arrayof(any)',
-									optional: false,
-									description: "Values to find. If items is a function, call this function to find items.",
-								},
-								thisObj: {
-									type: 'any',
-									optional: true,
-									description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
-								},
-								includeFunctions: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-								includeSymbols: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-								},
-							},
-							returns: 'any',
-							description: "Returns the found items.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "Object to scan",
+						},
+						items: {
+							type: 'any,arrayof(any)',
+							optional: false,
+							description: "Values to find. If items is a function, call this function to find items.",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "When 'item' is a function, specifies 'this'. Default is 'undefined'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'item' is a function, considers that function as a value. Default is 'false'",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'any',
+					description: "Returns the found items.",
 				}
 				//! END_REPLACE()
 				, function getItems(obj, items, /*optional*/thisObj, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -1348,7 +1348,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else {
 							if (!types.isArrayLike(items)) {
 								items = [items];
@@ -1399,7 +1399,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						};
 					};
 					return result;
@@ -1413,22 +1413,22 @@ exports.add = function add(modules) {
 			tools.ADD('repeat', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								str: {
-									type: 'string',
-									optional: false,
-									description: "String to repeat",
-								},
-								n: {
-									type: 'integer',
-									optional: false,
-									description: "Number of string occurrences.",
-								},
-							},
-							returns: 'string',
-							description: "Returns the string repeated 'n' occurrences.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						str: {
+							type: 'string',
+							optional: false,
+							description: "String to repeat",
+						},
+						n: {
+							type: 'integer',
+							optional: false,
+							description: "Number of string occurrences.",
+						},
+					},
+					returns: 'string',
+					description: "Returns the string repeated 'n' occurrences.",
 				}
 				//! END_REPLACE()
 				, function repeat(str, n) {
@@ -1454,32 +1454,32 @@ exports.add = function add(modules) {
 			tools.ADD('replace', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								text: {
-									type: 'string,arrayof(string)',
-									optional: false,
-									description: "String or array to search into",
-								},
-								from: {
-									type: 'string,RegExp',
-									optional: false,
-									description: "Value to search for.",
-								},
-								to: {
-									type: 'string',
-									optional: false,
-									description: "String to replace with.",
-								},
-								options: {
-									type: 'string',
-									optional: true,
-									description: "Search options. Options are 'RegExp' ones.",
-								},
-							},
-							returns: 'string',
-							description: "Replaces 'from' with 'to' and returns the result.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						text: {
+							type: 'string,arrayof(string)',
+							optional: false,
+							description: "String or array to search into",
+						},
+						from: {
+							type: 'string,RegExp',
+							optional: false,
+							description: "Value to search for.",
+						},
+						to: {
+							type: 'string',
+							optional: false,
+							description: "String to replace with.",
+						},
+						options: {
+							type: 'string',
+							optional: true,
+							description: "Search options. Options are 'RegExp' ones.",
+						},
+					},
+					returns: 'string',
+					description: "Replaces 'from' with 'to' and returns the result.",
 				}
 				//! END_REPLACE()
 				, function replace(text, from, to, /*optional*/options) {
@@ -1506,42 +1506,42 @@ exports.add = function add(modules) {
 			tools.ADD('search', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								str: {
-									type: 'string',
-									optional: false,
-									description: "String to search into",
-								},
-								text: {
-									type: 'string,RegExp',
-									optional: false,
-									description: "Value to search for.",
-								},
-								start: {
-									type: 'integer',
-									optional: true,
-									description: "Position from which to start searching.",
-								},
-								end: {
-									type: 'integer',
-									optional: true,
-									description: "Position from which to stop searching.",
-								},
-								stopStr: {
-									type: 'string,RegExp',
-									optional: true,
-									description: "Value from which to stop searching.",
-								},
-								getText: {
-									type: 'bool',
-									optional: true,
-									description: "'true' will returns the text found. 'false' will returns its position. Default is 'false'.",
-								},
-							},
-							returns: 'undefined,null,NaN,integer,string',
-							description: "Returns the position of 'text' in 'str'. If 'text' is not found, return '-1' (when 'getText' is 'false') or 'undefined' (when 'getText' is 'true'). If 'stopStr' is met before 'text', returns 'NaN' (when 'getText' is 'false') or 'null' (when 'getText' is 'true').",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						str: {
+							type: 'string',
+							optional: false,
+							description: "String to search into",
+						},
+						text: {
+							type: 'string,RegExp',
+							optional: false,
+							description: "Value to search for.",
+						},
+						start: {
+							type: 'integer',
+							optional: true,
+							description: "Position from which to start searching.",
+						},
+						end: {
+							type: 'integer',
+							optional: true,
+							description: "Position from which to stop searching.",
+						},
+						stopStr: {
+							type: 'string,RegExp',
+							optional: true,
+							description: "Value from which to stop searching.",
+						},
+						getText: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will returns the text found. 'false' will returns its position. Default is 'false'.",
+						},
+					},
+					returns: 'undefined,null,NaN,integer,string',
+					description: "Returns the position of 'text' in 'str'. If 'text' is not found, return '-1' (when 'getText' is 'false') or 'undefined' (when 'getText' is 'true'). If 'stopStr' is met before 'text', returns 'NaN' (when 'getText' is 'false') or 'null' (when 'getText' is 'true').",
 				}
 				//! END_REPLACE()
 				, function search(str, text, /*optional*/start, /*optional*/end, /*optional*/stopStr, /*optional*/getText) {
@@ -1627,27 +1627,27 @@ exports.add = function add(modules) {
 			tools.ADD('join', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								ar: {
-									type: 'array',
-									optional: false,
-									description: "Array to join",
-								},
-								str: {
-									type: 'string',
-									optional: true,
-									description: "String separator. Default is none.",
-								},
-								sparsed: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-								},
-							},
-							returns: 'string',
-							description: "Returns a string with joined values.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						ar: {
+							type: 'array',
+							optional: false,
+							description: "Array to join",
+						},
+						str: {
+							type: 'string',
+							optional: true,
+							description: "String separator. Default is none.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+					},
+					returns: 'string',
+					description: "Returns a string with joined values.",
 				}
 				//! END_REPLACE()
 				, function join(ar, /*optional*/str, /*optional*/sparsed) {
@@ -1676,22 +1676,22 @@ exports.add = function add(modules) {
 			tools.ADD('title', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								str: {
-									type: 'string',
-									optional: false,
-									description: "String value",
-								},
-								separator: {
-									type: 'string',
-									optional: true,
-									description: "Word separator. Default is a space.",
-								},
-							},
-							returns: 'string',
-							description: "Returns a string with separated lowered-case words each beginning with an upper-case.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						str: {
+							type: 'string',
+							optional: false,
+							description: "String value",
+						},
+						separator: {
+							type: 'string',
+							optional: true,
+							description: "Word separator. Default is a space.",
+						},
+					},
+					returns: 'string',
+					description: "Returns a string with separated lowered-case words each beginning with an upper-case.",
 				}
 				//! END_REPLACE()
 				, function title(str, /*optional*/separator) {
@@ -1731,27 +1731,27 @@ exports.add = function add(modules) {
 			tools.ADD('log', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								leval: {
-									type: 'integer',
-									optional: false,
-									description: "Log level",
-								},
-								message: {
-									type: 'any',
-									optional: false,
-									description: "Error message or value",
-								},
-								params: {
-									type: 'arrayof(any),objectof(any)',
-									optional: true,
-									description: "Parameters of the error message",
-								},
-							},
-							returns: 'string',
-							description: "Writes message in the console only when the log level is greater or equal to the active one.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						leval: {
+							type: 'integer',
+							optional: false,
+							description: "Log level",
+						},
+						message: {
+							type: 'any',
+							optional: false,
+							description: "Error message or value",
+						},
+						params: {
+							type: 'arrayof(any),objectof(any)',
+							optional: true,
+							description: "Parameters of the error message",
+						},
+					},
+					returns: 'string',
+					description: "Writes message in the console only when the log level is greater or equal to the active one.",
 				}
 				//! END_REPLACE()
 				, function log(level, message, /*optional*/params) {
@@ -1776,28 +1776,28 @@ exports.add = function add(modules) {
 			//===================================
 
 			tools.ADD('compareNumbers', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value1: {
-									type: 'any',
-									optional: false,
-									description: "Value to compare from.",
-								},
-								value2: {
-									type: 'any',
-									optional: false,
-									description: "Value to compare to.",
-								},
-							},
-							returns: 'integer',
-							description:
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value1: {
+							type: 'any',
+							optional: false,
+							description: "Value to compare from.",
+						},
+						value2: {
+							type: 'any',
+							optional: false,
+							description: "Value to compare to.",
+						},
+					},
+					returns: 'integer',
+					description:
 								"Usable ascendant comparer function. Returns '0' when values are equals. Returns '1' when 'value1' is greater than 'value2'. Returns '-1' when 'value1' is lower than 'value2'.\n" +
 								"NOTE: This changes the default behavior of \"sort\" so \"null/NaN/String/Object/Array\" are all evaluated to 0 and \"-1 is > -Infinity\"",
-					}
-					//! END_REPLACE()
+				}
+				//! END_REPLACE()
 				, function compareNumbers(value1, value2) {
 					// null/NaN/undefined/String/Object/Array  are   0
 					value1 = ((+value1 === value1) ? value1 : (value1 | 0));
@@ -1814,22 +1814,22 @@ exports.add = function add(modules) {
 			tools.ADD('compareNumbersInverted', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							value1: {
-								type: 'any',
-								optional: false,
-								description: "Value to compare from.",
-							},
-							value2: {
-								type: 'any',
-								optional: false,
-								description: "Value to compare to.",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						value1: {
+							type: 'any',
+							optional: false,
+							description: "Value to compare from.",
 						},
-						returns: 'integer',
-						description:
+						value2: {
+							type: 'any',
+							optional: false,
+							description: "Value to compare to.",
+						},
+					},
+					returns: 'integer',
+					description:
 							"Usable descendant comparer function. Returns '0' when values are equals. Returns '-1' when 'value1' is greater than 'value2'. Returns '1' when 'value1' is lower than 'value2'.\n" +
 							"NOTE: This changes the default behavior of \"sort\" so \"null/NaN/String/Object/Array\" are all evaluated to 0 and \"-1 is > -Infinity\"",
 				}
@@ -1856,22 +1856,22 @@ exports.add = function add(modules) {
 			tools.ADD('depthComplete', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								depth: {
-									type: 'integer',
-									optional: false,
-									description: "Depth.",
-								},
-								paramarray: {
-									type: 'any',
-									optional: false,
-									description: "An object.",
-								},
-							},
-							returns: 'object',
-							description: "Extends the first object with owned properties of the other objects using the specified depth. Existing owned properties are excluded.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						depth: {
+							type: 'integer',
+							optional: false,
+							description: "Depth.",
+						},
+						paramarray: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'object',
+					description: "Extends the first object with owned properties of the other objects using the specified depth. Existing owned properties are excluded.",
 				}
 				//! END_REPLACE()
 				, function depthComplete(depth, obj, /*paramarray*/...args) {
@@ -1916,22 +1916,22 @@ exports.add = function add(modules) {
 			tools.ADD('fill', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								keys: {
-									type: 'arrayof(string,symbol),string,symbol',
-									optional: false,
-									description: "Attribute names.",
-								},
-								paramarray: {
-									type: 'any',
-									optional: false,
-									description: "An object.",
-								},
-							},
-							returns: 'object',
-							description: "Extends the first object with named owned properties of the other objects.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						keys: {
+							type: 'arrayof(string,symbol),string,symbol',
+							optional: false,
+							description: "Attribute names.",
+						},
+						paramarray: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'object',
+					description: "Extends the first object with named owned properties of the other objects.",
 				}
 				//! END_REPLACE()
 				, function fill(keys, obj, /*paramarray*/...args) {
@@ -1966,51 +1966,51 @@ exports.add = function add(modules) {
 			tools.ADD('map', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set',
-								optional: false,
-								description: "An object to scan.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set',
+							optional: false,
+							description: "An object to scan.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description:
 									"A function to call. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object,Map,Set): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							start: {
-								type: 'integer',
-								optional: true,
-								description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
-							},
-							end: {
-								type: 'integer',
-								optional: true,
-								description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						start: {
+							type: 'integer',
+							optional: true,
+							description: "For array-like 'obj' only... Start position (inclusive). Default is '0'.",
+						},
+						end: {
+							type: 'integer',
+							optional: true,
+							description: "For array-like 'obj' only... End position (exclusive). Default is 'obj.length'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
 					},
-						returns: 'array,object',
-						description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
+					returns: 'array,object',
+					description: "For each item of the array (or the object), maps the value to another value than returns a new array (or a new object instance).",
 				}
 				//! END_REPLACE()
 				, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2081,41 +2081,41 @@ exports.add = function add(modules) {
 			tools.ADD('forEach', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set,Iterable',
-								optional: false,
-								description: "An object to browse.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 5,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set,Iterable',
+							optional: false,
+							description: "An object to browse.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description:
 									"A function to call. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'undefined',
-						description: "For each item of the array (or the object), simply calls the specified function.",
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'undefined',
+					description: "For each item of the array (or the object), simply calls the specified function.",
 				}
 				//! END_REPLACE()
 				, function forEach(obj, fn, /*optional*/thisObj, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2161,58 +2161,58 @@ exports.add = function add(modules) {
 							if (includeSymbols) {
 								loopKeys(types.symbols(obj));
 							};
-				};
+						};
 					};
 				}));
 
 			tools.ADD('filter', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 6,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set,Iterable',
-								optional: false,
-								description: "An object to filter.",
-							},
-							items: {
-								type: 'any,arrayof(any),function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set,Iterable',
+							optional: false,
+							description: "An object to filter.",
+						},
+						items: {
+							type: 'any,arrayof(any),function',
+							optional: false,
+							description:
 									"Values to filter with, or a function used to filter. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							invert: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will inverts filtering. Default is 'false'.",
-							},
-							includeFunctions: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'array,object',
-						description: "Filters array (or object) with the specified items, and returns a new array (or object) with matching items.",
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						invert: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will inverts filtering. Default is 'false'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'items' is a function, the function will be considered like a value.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'array,object',
+					description: "Filters array (or object) with the specified items, and returns a new array (or object) with matching items.",
 				}
 				//! END_REPLACE()
 				, function filter(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2277,7 +2277,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else {
 							if (types._instanceof(obj, types.Map)) {
 								result = new types.Map();
@@ -2327,7 +2327,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						};
 					};
 					return result;
@@ -2336,51 +2336,51 @@ exports.add = function add(modules) {
 			tools.ADD('filterKeys', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'arraylike,object',
-								optional: false,
-								description: "An object to filter.",
-							},
-							items: {
-								type: 'any,arrayof(any),function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike,object',
+							optional: false,
+							description: "An object to filter.",
+						},
+						items: {
+							type: 'any,arrayof(any),function',
+							optional: false,
+							description:
 									"Keys to filter with, or a function used to filter. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							invert: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will invert filtering. Default is 'false'.",
-							},
-							includeFunctions: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'array,object',
-						description: "Filters array (or object) with the specified keys, and returns a new array (or object) with matching items.",
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						invert: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will invert filtering. Default is 'false'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'items' is a function, the function will be considered like a value.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'array,object',
+					description: "Filters array (or object) with the specified keys, and returns a new array (or object) with matching items.",
 				}
 				//! END_REPLACE()
 				, function filterKeys(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2419,7 +2419,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						} else {
 							if (types.isArrayLike(obj)) {
 								result = [];
@@ -2448,7 +2448,7 @@ exports.add = function add(modules) {
 								if (includeSymbols) {
 									loopKeys(types.symbols(obj));
 								};
-						};
+							};
 						};
 					};
 					return result;
@@ -2457,51 +2457,51 @@ exports.add = function add(modules) {
 			tools.ADD('every', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 8,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set,Iterable',
-								optional: false,
-								description: "An object to analyze.",
-							},
-							items: {
-								type: 'any,arrayof(any),function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 8,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set,Iterable',
+							optional: false,
+							description: "An object to analyze.",
+						},
+						items: {
+							type: 'any,arrayof(any),function',
+							optional: false,
+							description:
 									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							invert: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will invert the filter. Default is 'false'.",
-							},
-							includeFunctions: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'bool',
-						description: "Returns 'true' when every items of an array (or an object) match the filter. Returns 'false' otherwise.",
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						invert: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will invert the filter. Default is 'false'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'items' is a function, the function will be considered like a value.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when every items of an array (or an object) match the filter. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function every(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2612,51 +2612,51 @@ exports.add = function add(modules) {
 			tools.ADD('some', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 7,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set,Iterable',
-								optional: false,
-								description: "An object to analyze.",
-							},
-							items: {
-								type: 'any,arrayof(any),function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 7,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set,Iterable',
+							optional: false,
+							description: "An object to analyze.",
+						},
+						items: {
+							type: 'any,arrayof(any),function',
+							optional: false,
+							description:
 									"A list of values to filter with, or a filter function. Arguments passed to the function are : \n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Value of 'this' when calling the function. Default is 'undefined'.",
-							},
-							invert: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will invert the filter. Default is 'false'.",
-							},
-							includeFunctions: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true' and 'items' is a function, the function will be considered like a value.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'bool',
-						description: "Returns 'true' when at least one item of an array (or an object) matches the filter. Returns 'false' otherwise.",
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Value of 'this' when calling the function. Default is 'undefined'.",
+						},
+						invert: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will invert the filter. Default is 'false'.",
+						},
+						includeFunctions: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true' and 'items' is a function, the function will be considered like a value.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when at least one item of an array (or an object) matches the filter. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function some(obj, items, /*optional*/thisObj, /*optional*/invert, /*optional*/includeFunctions, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2770,47 +2770,47 @@ exports.add = function add(modules) {
 			tools.ADD('reduce', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							obj: {
-								type: 'arraylike,object,Map,Set',
-								optional: false,
-								description: "An object to reduce.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'arraylike,object,Map,Set',
+							optional: false,
+							description: "An object to reduce.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description:
 									"A function used to reduce. Arguments passed to the function are : \n" +
 									"  result (any): The result of the previous call, or the initial value, or the first item\n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							initialValue: {
-								type: 'any',
-								optional: true,
-								description: "Initial value. Default is the first item of the array (or object).",
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
-							includeSymbols: {
-								type: 'bool',
-								optional: false,
-								description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
-							},
 						},
-						returns: 'any',
-						description: "Reduces every items of an array (or object) to a single value.",
+						initialValue: {
+							type: 'any',
+							optional: true,
+							description: "Initial value. Default is the first item of the array (or object).",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+						includeSymbols: {
+							type: 'bool',
+							optional: false,
+							description: "When 'true' and 'obj' is an object, will include symbols. Default is 'false'",
+						},
+					},
+					returns: 'any',
+					description: "Reduces every items of an array (or object) to a single value.",
 				}
 				//! END_REPLACE()
 				, function reduce(obj, fn, /*optional*/initialValue, /*optional*/thisObj, /*optional*/sparsed, /*optional*/includeSymbols) {
@@ -2855,42 +2855,42 @@ exports.add = function add(modules) {
 			tools.ADD('reduceRight', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							obj: {
-								type: 'arraylike',
-								optional: false,
-								description: "An array to reduce.",
-							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description:
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array to reduce.",
+						},
+						fn: {
+							type: 'function',
+							optional: false,
+							description:
 									"A function used to reduce. Arguments passed to the function are : \n" +
 									"  result (any): The result of the previous call, or the initial value, or the first item\n" +
 									"  value (any): The current value\n" +
 									"  key (integer,string): The current index or attribute name\n" +
 									"  obj (arraylike,object): A reference to the object"
-							},
-							initialValue: {
-								type: 'any',
-								optional: true,
-								description: "Initial value. Default is the last item of the array (or object).",
-							},
-							thisObj: {
-								type: 'any',
-								optional: true,
-								description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
-							},
-							sparsed: {
-								type: 'bool',
-								optional: true,
-								description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
-							},
 						},
-						returns: 'any',
-						description: "Reduces every items of an array (or object) to a single value, starting from the last item.",
+						initialValue: {
+							type: 'any',
+							optional: true,
+							description: "Initial value. Default is the last item of the array (or object).",
+						},
+						thisObj: {
+							type: 'any',
+							optional: true,
+							description: "Specifies 'this' for 'fn'. Default is 'undefined'.",
+						},
+						sparsed: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', empty slots are ignored. When 'false', empty slots are included. Default is 'true'.",
+						},
+					},
+					returns: 'any',
+					description: "Reduces every items of an array (or object) to a single value, starting from the last item.",
 				}
 				//! END_REPLACE()
 				, function reduceRight(obj, fn, /*optional*/initialValue, /*optional*/thisObj, /*optional*/sparsed) {
@@ -2945,17 +2945,17 @@ exports.add = function add(modules) {
 			tools.ADD('sign', (_shared.Natives.mathSign || root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'any',
-								optional: false,
-								description: "A value",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "A value",
 						},
-						returns: 'integer',
-						description: "Returns '-1' for negative values. Returns '1' for positive values. Returns '0' for neutral values. Otherwise, returns 'NaN'.",
+					},
+					returns: 'integer',
+					description: "Returns '-1' for negative values. Returns '1' for positive values. Returns '0' for neutral values. Otherwise, returns 'NaN'.",
 				}
 				//! END_REPLACE()
 				, function sign(obj) {
@@ -2966,22 +2966,22 @@ exports.add = function add(modules) {
 			tools.ADD('round', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								number: {
-									type: 'number',
-									optional: false,
-									description: "Number to round.",
-								},
-								precision: {
-									type: 'integer',
-									optional: true,
-									description: "Decimal precision. Default is 0.",
-								},
-							},
-							returns: 'number',
-							description: "Rounds a number with the specified precision.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						number: {
+							type: 'number',
+							optional: false,
+							description: "Number to round.",
+						},
+						precision: {
+							type: 'integer',
+							optional: true,
+							description: "Decimal precision. Default is 0.",
+						},
+					},
+					returns: 'number',
+					description: "Rounds a number with the specified precision.",
 				}
 				//! END_REPLACE()
 				, function round(number, /*optional*/precision) {
@@ -2992,22 +2992,22 @@ exports.add = function add(modules) {
 			tools.ADD('floor', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								number: {
-									type: 'number',
-									optional: false,
-									description: "Number to round.",
-								},
-								precision: {
-									type: 'integer',
-									optional: true,
-									description: "Decimal precision. Default is 0.",
-								},
-							},
-							returns: 'number',
-							description: "Floors a number with the specified precision.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						number: {
+							type: 'number',
+							optional: false,
+							description: "Number to round.",
+						},
+						precision: {
+							type: 'integer',
+							optional: true,
+							description: "Decimal precision. Default is 0.",
+						},
+					},
+					returns: 'number',
+					description: "Floors a number with the specified precision.",
 				}
 				//! END_REPLACE()
 				, function floor(number, /*optional*/precision) {
@@ -3020,54 +3020,54 @@ exports.add = function add(modules) {
 			// Escape functions
 			//===================================
 
-            tools.ADD('prepareMappingForEscape', function(mapping, /*optional*/prefix, /*optional*/suffix) {
-                const reserved = types.keys(mapping);
+			tools.ADD('prepareMappingForEscape', function(mapping, /*optional*/prefix, /*optional*/suffix) {
+				const reserved = types.keys(mapping);
 
-                reserved.sort(function(v1, v2) {
-                    if (v1.length > v2.length) {
-                        return -1;
-                    } else if (v1.length < v2.length) {
-                        return 1;
-                    } else {
-                        return 0;
-                    };
-                });
+				reserved.sort(function(v1, v2) {
+					if (v1.length > v2.length) {
+						return -1;
+					} else if (v1.length < v2.length) {
+						return 1;
+					} else {
+						return 0;
+					};
+				});
 
-                types.freezeObject(reserved);
+				types.freezeObject(reserved);
 
-                const substitutions = tools.map(reserved, function(key) {
-                    return (prefix || '') + mapping[key] + (suffix || '');
+				const substitutions = tools.map(reserved, function(key) {
+					return (prefix || '') + mapping[key] + (suffix || '');
 				});
 
 				types.freezeObject(substitutions);
 
 				return types.freezeObject([reserved, substitutions]);
-            });
+			});
 
 			tools.ADD('escape', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "Text to escape",
-								},
-								reserved: {
-									type: 'arrayof(string)',
-									optional: false,
-									description: "Reserved characters to substitute, sorted by their length descendent.",
-								},
-								substitutions: {
-									type: 'arrayof(string)',
-									optional: false,
-									description: "Substitutions of the reserved characters in their string position order",
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string by replacing reserved characters with their substitution.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						text: {
+							type: 'string',
+							optional: false,
+							description: "Text to escape",
+						},
+						reserved: {
+							type: 'arrayof(string)',
+							optional: false,
+							description: "Reserved characters to substitute, sorted by their length descendent.",
+						},
+						substitutions: {
+							type: 'arrayof(string)',
+							optional: false,
+							description: "Substitutions of the reserved characters in their string position order",
+						},
+					},
+					returns: 'string',
+					description: "Escapes a string by replacing reserved characters with their substitution.",
 				}
 				//! END_REPLACE()
 				, function escape(text, reserved, substitutions) {
@@ -3139,17 +3139,17 @@ exports.add = function add(modules) {
 			tools.ADD('escapeRegExp', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "String to escape",
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string to a regular expression.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						text: {
+							type: 'string',
+							optional: false,
+							description: "String to escape",
+						},
+					},
+					returns: 'string',
+					description: "Escapes a string to a regular expression.",
 				}
 				//! END_REPLACE()
 				, (_shared.Natives.regExpEscape || function escapeRegExp(text) {

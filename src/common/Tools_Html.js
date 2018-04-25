@@ -83,7 +83,7 @@ exports.add = function add(modules) {
 			};
 
 			// See "http://stackoverflow.com/questions/2083754/why-shouldnt-apos-be-used-to-escape-single-quotes"
-            __Internal__.entitiesMapping = {
+			__Internal__.entitiesMapping = {
 				standard: tools.prepareMappingForEscape(__Internal__.entitiesReverted.standard, '&', ';'),
 
 				full: null,
@@ -91,34 +91,34 @@ exports.add = function add(modules) {
 
 
 			html.ADD('getEntities', function() {
-                return __Internal__.entities.full || __Internal__.entities.standard;
-            });
+				return __Internal__.entities.full || __Internal__.entities.standard;
+			});
 
 
-            html.ADD('getEntitiesReverted', function() {
-                return __Internal__.entitiesReverted.full || __Internal__.entitiesReverted.standard;
-            });
+			html.ADD('getEntitiesReverted', function() {
+				return __Internal__.entitiesReverted.full || __Internal__.entitiesReverted.standard;
+			});
 
 
 			tools.ADD('escapeHtml', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								text: {
-									type: 'string',
-									optional: false,
-									description: "String to escape",
-								},
-								full: {
-									type: 'bool',
-									optional: true,
-									description: "Default is 'false'."
-								},
-							},
-							returns: 'string',
-							description: "Escapes a string to HTML.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						text: {
+							type: 'string',
+							optional: false,
+							description: "String to escape",
+						},
+						full: {
+							type: 'bool',
+							optional: true,
+							description: "Default is 'false'."
+						},
+					},
+					returns: 'string',
+					description: "Escapes a string to HTML.",
 				}
 				//! END_REPLACE()
 				, function escapeHtml(text, /*optional*/full) {

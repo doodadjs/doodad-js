@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 // Examples :
@@ -149,70 +149,70 @@ exports.add = function add(modules) {
 					start: function start(/*optional*/resolveCb, /*optional*/rejectCb, /*optional*/thisObj) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryStart() {
-								const state = __Internal__.cancelableStates.get(this);
-								const startCb = state.startCb;
-								let promise = null;
-								if (startCb) {
-									state.startCb = null;
-									promise = Promise.try(startCb)
-										.then(function thenReturnRacer() {
-											return state.racer;
-										}, null, this);
-								} else {
-									promise = state.racer;
-								};
-								if (resolveCb || rejectCb) {
-									promise = promise
-										.then(resolveCb, rejectCb, thisObj);
-								};
-								return promise || null;
-							}, this);
+							const state = __Internal__.cancelableStates.get(this);
+							const startCb = state.startCb;
+							let promise = null;
+							if (startCb) {
+								state.startCb = null;
+								promise = Promise.try(startCb)
+									.then(function thenReturnRacer() {
+										return state.racer;
+									}, null, this);
+							} else {
+								promise = state.racer;
+							};
+							if (resolveCb || rejectCb) {
+								promise = promise
+									.then(resolveCb, rejectCb, thisObj);
+							};
+							return promise || null;
+						}, this);
 					},
 
 					cancel: function cancel(/*optional*/reason) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryCancel() {
-								const state = __Internal__.cancelableStates.get(this);
-								if (types.isNothing(reason)) {
-									reason = new types.CanceledError("Cancelable object '~0~' has been canceled.", [this.name || '<anonymous>']);
+							const state = __Internal__.cancelableStates.get(this);
+							if (types.isNothing(reason)) {
+								reason = new types.CanceledError("Cancelable object '~0~' has been canceled.", [this.name || '<anonymous>']);
+							};
+							const cancelCb = !state.startCb && state.cancelCb;
+							if (cancelCb) {
+								state.cancelCb = null;
+								return Promise.try(cancelCb)
+									.then(function thenReject() {
+										const racer = state.racer;
+										if (!racer.isSolved()) {
+											racer.reject(reason);
+										};
+										return racer;
+									}, null, this)
+									.catch(function(err) {
+										if (err !== reason) {
+											throw err;
+										};
+									});
+							} else {
+								const racer = state.racer;
+								if (!racer.isSolved()) {
+									racer.reject(reason);
 								};
-								const cancelCb = !state.startCb && state.cancelCb;
-								if (cancelCb) {
-									state.cancelCb = null;
-									return Promise.try(cancelCb)
-										.then(function thenReject() {
-												const racer = state.racer;
-												if (!racer.isSolved()) {
-													racer.reject(reason);
-												};
-												return racer;
-										}, null, this)
-										.catch(function(err) {
-											if (err !== reason) {
-												throw err;
-											};
-										});
-								} else {
-									const racer = state.racer;
-									if (!racer.isSolved()) {
-										racer.reject(reason);
-									};
-									return racer
-										.catch(function(err) {
-											if (err !== reason) {
-												throw err;
-											};
-										});
-								}
-							}, this);
+								return racer
+									.catch(function(err) {
+										if (err !== reason) {
+											throw err;
+										};
+									});
+							}
+						}, this);
 					},
 
 					race: function race(promise) {
 						const Promise = types.getPromise();
 						return Promise.try(function tryRace() {
-								const state = __Internal__.cancelableStates.get(this);
-								return state.racer.race(promise);
-							}, this);
+							const state = __Internal__.cancelableStates.get(this);
+							return state.racer.race(promise);
+						}, this);
 					},
 
 					//then: function then(/*optional*/resolveCb, /*optional*/rejectCb, /*optional*/thisObj) {

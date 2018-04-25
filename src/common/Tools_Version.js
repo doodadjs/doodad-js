@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -49,22 +49,22 @@ exports.add = function add(modules) {
 			tools.ADD('Version', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							data: {
-								type: 'array',
-								optional: false,
-								description: "Version data",
-							},
-							options: {
-								type: 'object',
-								optional: true,
-								description: "Options",
-							},
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						data: {
+							type: 'array',
+							optional: false,
+							description: "Version data",
 						},
-						returns: 'error',
-						description: "Represents a software version.",
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options",
+						},
+					},
+					returns: 'error',
+					description: "Represents a software version.",
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
@@ -113,22 +113,22 @@ exports.add = function add(modules) {
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										str: {
-											type: 'string',
-											optional: false,
-											description: "A string",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									str: {
+										type: 'string',
+										optional: false,
+										description: "A string",
 									},
-									returns: 'Version',
-									description: "Parses a string to a 'Version' object with the specified options.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'Version',
+								description: "Parses a string to a 'Version' object with the specified options.",
 							}
 							//! END_REPLACE()
 							, function parse(str, /*optional*/options) {
@@ -160,27 +160,27 @@ exports.add = function add(modules) {
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 0,
-									params: {
-										version1: {
-											type: 'string,Version',
-											optional: false,
-											description: "A version to compare from",
-										},
-										version2: {
-											type: 'string,Version',
-											optional: false,
-											description: "A version to compare to",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options",
-										},
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									version1: {
+										type: 'string,Version',
+										optional: false,
+										description: "A version to compare from",
 									},
-									returns: 'integer',
-									description: "Compares two software versions together. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
+									version2: {
+										type: 'string,Version',
+										optional: false,
+										description: "A version to compare to",
+									},
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'integer',
+								description: "Compares two software versions together. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
 							}
 							//! END_REPLACE()
 							, function compare(version1, version2, /*optional*/options) {
@@ -206,22 +206,22 @@ exports.add = function add(modules) {
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: {
-										version: {
-											type: 'string,Version',
-											optional: false,
-											description: "A version to compare to",
-										},
-										options: {
-											type: 'object',
-											optional: true,
-											description: "Options",
-										},
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									version: {
+										type: 'string,Version',
+										optional: false,
+										description: "A version to compare to",
 									},
-									returns: 'integer',
-									description: "Compares software version with another software version. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
+									options: {
+										type: 'object',
+										optional: true,
+										description: "Options",
+									},
+								},
+								returns: 'integer',
+								description: "Compares software version with another software version. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
 							}
 							//! END_REPLACE()
 							, function compare(version, /*optional*/options) {
@@ -265,11 +265,11 @@ exports.add = function add(modules) {
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
-									author: "Claude Petit",
-									revision: 1,
-									params: null,
-									returns: 'string',
-									description: "Converts to string.",
+								author: "Claude Petit",
+								revision: 1,
+								params: null,
+								returns: 'string',
+								description: "Converts to string.",
 							}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {

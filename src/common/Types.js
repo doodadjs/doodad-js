@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -148,17 +148,17 @@ exports.add = function add(modules) {
 			types.ADD('toObject', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value to convert.",
-								},
-							},
-							returns: 'object',
-							description: "Converts any value to its object equivalent.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "A value to convert.",
+						},
+					},
+					returns: 'object',
+					description: "Converts any value to its object equivalent.",
 				}
 				//! END_REPLACE()
 				, function(val) {
@@ -195,11 +195,11 @@ exports.add = function add(modules) {
 			types.ADD('hasArrows', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'bool',
-						description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 0,
+					params: null,
+					returns: 'bool',
+					description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function hasArrows() {
@@ -209,17 +209,17 @@ exports.add = function add(modules) {
 			types.ADD('isArrowFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, __Internal__.hasArrows ? function isArrowFunction(obj) {
@@ -258,11 +258,11 @@ exports.add = function add(modules) {
 			types.ADD('hasAsyncAwait', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'bool',
-						description: "Returns 'true' if the Javascript engine has ES6 async/await support, 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'bool',
+					description: "Returns 'true' if the Javascript engine has ES6 async/await support, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, (__Internal__.hasAsyncAwait /*&& !__Internal__.hasAsyncAwaitBug*/ ? function hasAsyncAwait() {
@@ -274,17 +274,17 @@ exports.add = function add(modules) {
 			types.ADD('isAsyncFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is an async function, 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is an async function, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, __Internal__.hasAsyncAwait ? function isAsyncFunction(obj) {
@@ -300,7 +300,7 @@ exports.add = function add(modules) {
 			//===================================
 			// ES6 Proxy
 			//===================================
-/*	NOT USED
+			/*	NOT USED
 			types.ADD('hasProxies', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
@@ -346,17 +346,17 @@ exports.add = function add(modules) {
 			types.ADD('isBindable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' if object is a bindable function, 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' if object is a bindable function, 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isBindable(obj) {
@@ -371,17 +371,17 @@ exports.add = function add(modules) {
 			types.ADD('isArrayAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is an array and is not empty. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is an array and is not empty. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isArrayAndNotEmpty(obj) {
@@ -399,17 +399,17 @@ exports.add = function add(modules) {
 			types.ADD('isArrayLikeAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is an array-like object and is not empty. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is an array-like object and is not empty. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isArrayLikeAndNotEmpty(obj) {
@@ -428,17 +428,17 @@ exports.add = function add(modules) {
 			types.ADD('isNothingOrEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is nothing (is 'undefined' or 'null') or empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is nothing (is 'undefined' or 'null') or empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isNothingOrEmpty(obj) {
@@ -475,17 +475,17 @@ exports.add = function add(modules) {
 			types.ADD('isEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is empty (has no own properties or is an empty native string). Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isEmpty(obj) {
@@ -519,17 +519,17 @@ exports.add = function add(modules) {
 			types.ADD('isStringAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is a non-empty string. Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a non-empty string. Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isStringAndNotEmpty(obj) {
@@ -539,17 +539,17 @@ exports.add = function add(modules) {
 			types.ADD('isStringAndNotEmptyTrim', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the object is a non-empty string when trimmed (spaces removed). Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the object is a non-empty string when trimmed (spaces removed). Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isStringAndNotEmptyTrim(obj) {
@@ -559,17 +559,17 @@ exports.add = function add(modules) {
 			types.ADD('isObjectAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the value is a non-empty object (has own properties). Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the value is a non-empty object (has own properties). Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isObjectAndNotEmpty(obj) {
@@ -589,17 +589,17 @@ exports.add = function add(modules) {
 			types.ADD('isObjectLikeAndNotEmpty', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object to test for.",
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the value is like a non-empty object (has own properties). Returns 'false' otherwise.",
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the value is like a non-empty object (has own properties). Returns 'false' otherwise.",
 				}
 				//! END_REPLACE()
 				, function isObjectLikeAndNotEmpty(obj) {
@@ -634,32 +634,32 @@ exports.add = function add(modules) {
 			types.ADD('gets', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "An object.",
-								},
-								keys: {
-									type: 'arrayof(string,symbol),string,symbol',
-									optional: false,
-									description: "Attribute names.",
-								},
-								_defaults: {
-									type: 'objectof(any)',
-									optional: true,
-									description: "Default values.",
-								},
-								inherited: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-								},
-							},
-							returns: 'objectof(any)',
-							description: "Returns an object with the value of each named own property. When an own property doesn't exist, gets its value from the '_defaults' parameter.",
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						keys: {
+							type: 'arrayof(string,symbol),string,symbol',
+							optional: false,
+							description: "Attribute names.",
+						},
+						_defaults: {
+							type: 'objectof(any)',
+							optional: true,
+							description: "Default values.",
+						},
+						inherited: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+						},
+					},
+					returns: 'objectof(any)',
+					description: "Returns an object with the value of each named own property. When an own property doesn't exist, gets its value from the '_defaults' parameter.",
 				}
 				//! END_REPLACE()
 				, function gets(obj, keys, /*optional*/_defaults, /*optional*/inherited) {
@@ -689,32 +689,32 @@ exports.add = function add(modules) {
 			types.ADD('set', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "An object.",
-								},
-								key: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
-								},
-								value: {
-									type: 'any',
-									optional: false,
-									description: "Attribute's new value.",
-								},
-								inherited: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-								},
-							},
-							returns: 'any',
-							description: "Sets the value of an own property and returns that value. When this own property doesn't exist, it only returns 'undefined'.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						key: {
+							type: 'string,symbol',
+							optional: false,
+							description: "Attribute name.",
+						},
+						value: {
+							type: 'any',
+							optional: false,
+							description: "Attribute's new value.",
+						},
+						inherited: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+						},
+					},
+					returns: 'any',
+					description: "Sets the value of an own property and returns that value. When this own property doesn't exist, it only returns 'undefined'.",
 				}
 				//! END_REPLACE()
 				, function set(obj, key, value, /*optional*/inherited) {
@@ -732,27 +732,27 @@ exports.add = function add(modules) {
 			types.ADD('sets', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "An object.",
-								},
-								values: {
-									type: 'objectof(any)',
-									optional: false,
-									description: "Values.",
-								},
-								inherited: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-								},
-							},
-							returns: 'objectof(any)',
-							description: "Sets the value of each provided own property and returns these values. When an own property doesn't exist, does nothing.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						values: {
+							type: 'objectof(any)',
+							optional: false,
+							description: "Values.",
+						},
+						inherited: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+						},
+					},
+					returns: 'objectof(any)',
+					description: "Sets the value of each provided own property and returns these values. When an own property doesn't exist, does nothing.",
 				}
 				//! END_REPLACE()
 				, function sets(obj, values, /*optional*/inherited) {
@@ -776,32 +776,32 @@ exports.add = function add(modules) {
 			types.ADD('getsDefault', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "An object.",
-								},
-								keys: {
-									type: 'arrayof(string,symbol),string,symbol',
-									optional: false,
-									description: "Attribute names.",
-								},
-								_defaults: {
-									type: 'objectof(any)',
-									optional: true,
-									description: "Default values.",
-								},
-								inherited: {
-									type: 'bool',
-									optional: true,
-									description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-								},
-							},
-							returns: 'objectof(any)',
-							description: "Returns an object with the value of each named own property. When an own property doesn't exist, creates that own property using the value from the '_defaults' parameter.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						keys: {
+							type: 'arrayof(string,symbol),string,symbol',
+							optional: false,
+							description: "Attribute names.",
+						},
+						_defaults: {
+							type: 'objectof(any)',
+							optional: true,
+							description: "Default values.",
+						},
+						inherited: {
+							type: 'bool',
+							optional: true,
+							description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+						},
+					},
+					returns: 'objectof(any)',
+					description: "Returns an object with the value of each named own property. When an own property doesn't exist, creates that own property using the value from the '_defaults' parameter.",
 				}
 				//! END_REPLACE()
 				, function getsDefault(obj, keys, /*optional*/_defaults, /*optional*/inherited) {
@@ -834,17 +834,17 @@ exports.add = function add(modules) {
 			types.ADD('keysInherited', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object.",
-								},
-							},
-							returns: 'arrayof(string)',
-							description: "Returns an array of enumerable owned property names and inherited property names of an object. For array-like objects, index properties are excluded.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(string)',
+					description: "Returns an array of enumerable owned property names and inherited property names of an object. For array-like objects, index properties are excluded.",
 				}
 				//! END_REPLACE()
 				, function keysInherited(obj) {
@@ -861,17 +861,17 @@ exports.add = function add(modules) {
 			types.ADD('symbolsInherited', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object.",
-								},
-							},
-							returns: 'arrayof(symbol)',
-							description: "Returns an array of enumerable owned property symbols and inherited property symbols of an object. For array-like objects, index properties are excluded.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(symbol)',
+					description: "Returns an array of enumerable owned property symbols and inherited property symbols of an object. For array-like objects, index properties are excluded.",
 				}
 				//! END_REPLACE()
 				, function symbolsInherited(obj) {
@@ -892,21 +892,21 @@ exports.add = function add(modules) {
 			types.ADD('hasIndex', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-								indexes: {
-									type: 'arrayof(integer)',
-									optional: false,
-								},
-							},
-							returns: 'bool',
-							description: "Returns 'true' when the array has a value (non-empty slot) among specified array indexes.",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+						indexes: {
+							type: 'arrayof(integer)',
+							optional: false,
+						},
+					},
+					returns: 'bool',
+					description: "Returns 'true' when the array has a value (non-empty slot) among specified array indexes.",
 				}
 				//! END_REPLACE()
 				, function hasIndex(obj, indexes) {
@@ -937,17 +937,17 @@ exports.add = function add(modules) {
 			types.ADD('indexes', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-							},
-							returns: 'arrayof(integer)',
-							description: "Returns every array indexes where there is a value (non-empty slot).",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+					},
+					returns: 'arrayof(integer)',
+					description: "Returns every array indexes where there is a value (non-empty slot).",
 				}
 				//! END_REPLACE()
 				, function indexes(obj) {
@@ -967,17 +967,17 @@ exports.add = function add(modules) {
 			types.ADD('values', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'object,arraylike',
-									optional: false,
-									description: "An object or an array-like object.",
-								},
-							},
-							returns: 'arrayof(any)',
-							description: "Returns the values of an array-like object, or the values of the owned properties of an object.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'object,arraylike',
+							optional: false,
+							description: "An object or an array-like object.",
+						},
+					},
+					returns: 'arrayof(any)',
+					description: "Returns the values of an array-like object, or the values of the owned properties of an object.",
 				}
 				//! END_REPLACE()
 				, function values(obj) {
@@ -1010,17 +1010,17 @@ exports.add = function add(modules) {
 			types.ADD('entries', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "An object.",
-								},
-							},
-							returns: 'arrayof(array)',
-							description: "Returns key-value pairs of the owned properties of an object. Also includes indexes of array-like objects.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+					},
+					returns: 'arrayof(array)',
+					description: "Returns key-value pairs of the owned properties of an object. Also includes indexes of array-like objects.",
 				}
 				//! END_REPLACE()
 				, function entries(obj) {
@@ -1044,17 +1044,17 @@ exports.add = function add(modules) {
 			types.ADD('items', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								obj: {
-									type: 'object,arraylike',
-									optional: false,
-									description: "An object or an array-like object.",
-								},
-							},
-							returns: 'arrayof(array)',
-							description: "Returns the indexes and the values of an array-like object, or the names and values of the owned properties of an object.",
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'object,arraylike',
+							optional: false,
+							description: "An object or an array-like object.",
+						},
+					},
+					returns: 'arrayof(array)',
+					description: "Returns the indexes and the values of an array-like object, or the names and values of the owned properties of an object.",
 				}
 				//! END_REPLACE()
 				, function items(obj) {
@@ -1080,17 +1080,17 @@ exports.add = function add(modules) {
 			types.ADD('available', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-							},
-							returns: 'integer',
-							description: "Returns the first available array index (the index of the first empty slot).",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+					},
+					returns: 'integer',
+					description: "Returns the first available array index (the index of the first empty slot).",
 				}
 				//! END_REPLACE()
 				, function available(obj) {
@@ -1109,17 +1109,17 @@ exports.add = function add(modules) {
 			types.ADD('availables', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'arraylike',
-									optional: false,
-									description: "An array-like object.",
-								},
-							},
-							returns: 'arrayof(integer)',
-							description: "Returns all available array indexes (the indexes of every empty slots).",
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "An array-like object.",
+						},
+					},
+					returns: 'arrayof(integer)',
+					description: "Returns all available array indexes (the indexes of every empty slots).",
 				}
 				//! END_REPLACE()
 				, function availables(obj) {

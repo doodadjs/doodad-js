@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -71,27 +71,27 @@ exports.add = function add(modules) {
 			tools.ADD('toSource', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								obj: {
-									type: 'any',
-									optional: false,
-									description: "A value.",
-								},
-								depth: {
-									type: 'integer',
-									optional: true,
-									description: "Depth.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options.",
-								},
-							},
-							returns: 'string',
-							description: "Converts a value to its source code equivalent.",
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "A value.",
+						},
+						depth: {
+							type: 'integer',
+							optional: true,
+							description: "Depth.",
+						},
+						options: {
+							type: 'object',
+							optional: true,
+							description: "Options.",
+						},
+					},
+					returns: 'string',
+					description: "Converts a value to its source code equivalent.",
 				}
 				//! END_REPLACE()
 				, function toSource(obj, /*optional*/depth, /*optional*/options) {

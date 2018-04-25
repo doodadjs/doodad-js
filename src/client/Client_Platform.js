@@ -26,7 +26,7 @@
 
 //! IF_SET("mjs")
 //! ELSE()
-	"use strict";
+"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -84,64 +84,64 @@ exports.add = function add(modules) {
 
 			tools.ADD('getOS', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'object',
-						description: "Returns OS information.",
-			}
-			//! END_REPLACE()
-			, function getOS() {
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: null,
+					returns: 'object',
+					description: "Returns OS information.",
+				}
+				//! END_REPLACE()
+				, function getOS() {
 				// TODO: Complete this function
 				// NOTE: This function will get replaced when "NodeJs.js" is loaded.
 				// NOTE: Why it's never simple like this ?
 				// NOTE: Windows older than Windows NT not supported
 				// NOTE: Macintosh older than OS/X not supported
-				let os = __Internal__.os;
-				if (!os) {
-					const platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
-						name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
-						type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
-						caseSensitive = tools.getOptions().caseSensitive;
-					__Internal__.os = os = types.freezeObject(tools.nullObject({
-						name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
-						type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
-						//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
-						//architecture: ...,
-						dirChar: ((name === 'win32') ? '\\' : '/'),
-						newLine: ((name === 'win32') ? '\r\n' : '\n'),
-						caseSensitive: (types.isNothing(caseSensitive) ? ((name === 'win32') || (name === 'darwin') ? false : true) : caseSensitive), // NOTE: Because it is impossible to detect, we give what is the most popular per os
-					}));
-				};
-				return os;
-			}));
+					let os = __Internal__.os;
+					if (!os) {
+						const platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
+							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
+							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
+							caseSensitive = tools.getOptions().caseSensitive;
+						__Internal__.os = os = types.freezeObject(tools.nullObject({
+							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
+							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
+							//mobile: false, // TODO: "true" for Android, Windows CE, Windows Mobile, iOS, ...
+							//architecture: ...,
+							dirChar: ((name === 'win32') ? '\\' : '/'),
+							newLine: ((name === 'win32') ? '\r\n' : '\n'),
+							caseSensitive: (types.isNothing(caseSensitive) ? ((name === 'win32') || (name === 'darwin') ? false : true) : caseSensitive), // NOTE: Because it is impossible to detect, we give what is the most popular per os
+						}));
+					};
+					return os;
+				}));
 
 			tools.ADD('getDefaultLanguage', root.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							alt: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will returns the alternate language. 'false' will returns the default language. Default is 'false'.",
-							},
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						alt: {
+							type: 'bool',
+							optional: true,
+							description: "'true' will returns the alternate language. 'false' will returns the default language. Default is 'false'.",
 						},
-						returns: 'string',
-						description: "Returns default or alternate language.",
-			}
-			//! END_REPLACE()
-			, function getDefaultLanguage(/*optional*/alt) {
+					},
+					returns: 'string',
+					description: "Returns default or alternate language.",
+				}
+				//! END_REPLACE()
+				, function getDefaultLanguage(/*optional*/alt) {
 				// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
-				const navigator = _shared.Natives.windowNavigator;
-				const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
-				if (tmp.length < 2) {
-					return tmp[0];
-				};
-				return tmp[0] + '_' + tmp[1].toUpperCase();
-			}));
+					const navigator = _shared.Natives.windowNavigator;
+					const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
+					if (tmp.length < 2) {
+						return tmp[0];
+					};
+					return tmp[0] + '_' + tmp[1].toUpperCase();
+				}));
 		},
 	};
 	return modules;
