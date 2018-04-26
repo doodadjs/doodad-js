@@ -305,7 +305,8 @@ exports.add = function add(modules) {
 							let deps = types.get(spec, 'dependencies');
 							if (spec.name !== baseName) {
 								if (!deps) {
-									spec.dependencies = deps = [];
+									deps = [];
+									spec.dependencies = deps;
 								};
 								if (tools.findItem(deps, function(dep) {
 									if (types.isString(dep)) {

@@ -140,7 +140,7 @@ exports.add = function add(modules) {
 				// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
 				// Bluebird "asCallback" polyfill. NOTE: "spread" option has not been implemented.
 				if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
-					Promise.prototype.nodeify = Promise.prototype.asCallback = function asCallback(callback) {
+					const asCallback = function asCallback(callback) {
 						const promise = this.then(function _then(result) {
 							let retval = callback(null, result);
 							if (retval === undefined) {
@@ -153,6 +153,8 @@ exports.add = function add(modules) {
 						});
 						return promise;
 					};
+					Promise.prototype.nodeify = asCallback;
+					Promise.prototype.asCallback = asCallback;
 				} else if (!types.isFunction(Promise.prototype.asCallback)) {
 					Promise.prototype.asCallback = Promise.prototype.nodeify;
 				} else if (!types.isFunction(Promise.prototype.nodeify)) {
@@ -481,7 +483,7 @@ exports.add = function add(modules) {
 				// Add "thisObj" argument
 				// Add promise name
 				const oldAsCallbackCall = Promise.prototype.asCallback.call.bind(Promise.prototype.asCallback);
-				Promise.prototype.asCallback = Promise.prototype.nodeify = function asCallback(callback, /*optional*/thisObj) {
+				const asCallback = function asCallback(callback, /*optional*/thisObj) {
 					if (callback && thisObj) {
 						callback = _shared.PromiseCallback(thisObj, callback);
 					};
@@ -490,6 +492,8 @@ exports.add = function add(modules) {
 					promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
 					return promise;
 				};
+				Promise.prototype.asCallback = asCallback;
+				Promise.prototype.nodeify = asCallback;
 
 				// Add "thisObj" argument
 				// Add promise name

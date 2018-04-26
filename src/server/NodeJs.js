@@ -822,7 +822,8 @@ exports.add = function add(mods) {
 						loader = null;
 					};
 					if (!loader) {
-						__Internal__.loadedScripts[file] = loader = new __Internal__.ScriptLoader(/*file*/file, /*createOptions*/null, /*initOptions*/null);
+						loader = new __Internal__.ScriptLoader(/*file*/file, /*createOptions*/null, /*initOptions*/null);
+						__Internal__.loadedScripts[file] = loader;
 					};
 
 					return loader;

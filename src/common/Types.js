@@ -767,7 +767,9 @@ exports.add = function add(modules) {
 					for (let i = 0; i < keysLen; i++) {
 						const key = keys[i];
 						if (hasKey(obj, key)) {
-							result[key] = obj[key] = values[key];
+							const val = values[key];
+							obj[key] = val;
+							result[key] = val;
 						};
 					};
 					return result;
@@ -823,7 +825,8 @@ exports.add = function add(modules) {
 							} else if (types.has(_defaults, key)) {
 								const val = _defaults[key];
 								if (obj) {
-									result[key] = obj[key] = val;
+									obj[key] = val;
+									result[key] = val;
 								};
 							};
 						};

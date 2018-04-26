@@ -184,8 +184,10 @@ exports.add = function add(modules) {
 									// <PRB> Not every browsers supports the "error" argument
 									error = new types.Error(msg);
 									error.stack = "";
-									error.fileName = error.sourceURL = url;
-									error.line = error.lineNumber = lineNo;
+									error.fileName = url;
+									error.sourceURL = url;
+									error.lineNumber = lineNo;
+									error.line = lineNo;
 									error.columnNumber = columnNo;
 									error.functionName = "";
 									error.parsed = true;
@@ -1391,13 +1393,16 @@ exports.add = function add(modules) {
 							_document = _shared.Natives.windowDocument;
 						};
 
-						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
+						loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
 
 						loader.addEventListener('init', function() {
-							loader.async = this.element.async = !!async;
+							loader.async = !!async;
 							this.element.type = 'text/javascript';
+							this.element.async = loader.async;
 							this.element.src = url;
 						});
+
+						__Internal__.loadedScripts[url] = loader;
 					};
 
 					return loader;
@@ -1447,8 +1452,9 @@ exports.add = function add(modules) {
 					const loader = new __Internal__.ScriptLoader(/*tag*/'script', /*target*/_document.body, /*timeout*/timeout);
 
 					loader.addEventListener('init', function() {
+						loader.async = !!async;
 						this.element.type = 'text/javascript';
-						loader.async = this.element.async = !!async;
+						this.element.async = loader.async;
 						if (async && _shared.Natives.windowBlob && _shared.Natives.windowURL) {
 						// Firefox
 							this.element.src = _shared.Natives.windowURL.createObjectURL(new _shared.Natives.windowBlob(script));
@@ -1536,7 +1542,7 @@ exports.add = function add(modules) {
 							_document = _shared.Natives.windowDocument;
 						};
 
-						__Internal__.loadedScripts[url] = loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
+						loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
 						loader.addEventListener('init', function() {
 							loader.async = !!async;
@@ -1547,6 +1553,8 @@ exports.add = function add(modules) {
 							};
 							this.element.href = url;
 						});
+
+						__Internal__.loadedScripts[url] = loader;
 					};
 
 					return loader;

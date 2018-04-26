@@ -3148,7 +3148,8 @@ exports.add = function add(modules) {
 
 						let replacedCallers = sourceAttribute[_shared.ReplacedCallersSymbol];
 						if (replacedCallers) {
-							destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers = tools.unique(replacedCallers);
+							replacedCallers = tools.unique(replacedCallers);
+							destAttribute[_shared.ReplacedCallersSymbol] = replacedCallers;
 						} else {
 							replacedCallers = destAttribute[_shared.ReplacedCallersSymbol] || [];
 						};
@@ -5413,7 +5414,8 @@ exports.add = function add(modules) {
 
 				if (sourceIsClass) {
 					// doodad-js Class
-					sourceTypeProto = sourceInstanceProto = types.getAttribute(source, _shared.PrototypeSymbol, null, _shared.SECRET);
+					sourceTypeProto = types.getAttribute(source, _shared.PrototypeSymbol, null, _shared.SECRET);
+					sourceInstanceProto = sourceTypeProto;
 					sourceTypeToExtend1 = types.keys(sourceTypeAttributes);
 					sourceTypeToExtend2 = types.symbols(sourceTypeAttributes);
 					sourceInstanceToExtend1 = types.keys(sourceInstanceAttributes);
@@ -5428,7 +5430,8 @@ exports.add = function add(modules) {
 					sourceInstanceToExtend2 = types.symbols(sourceInstanceProto);
 				} else {
 					// Prototype
-					sourceTypeProto = sourceInstanceProto = source;
+					sourceTypeProto = source;
+					sourceInstanceProto = source;
 					const sourceKeys = types.keys(source);
 					const sourceSymbols = types.symbols(source);
 					sourceTypeToExtend1 = sourceKeys;
@@ -5973,11 +5976,13 @@ exports.add = function add(modules) {
 						instanceProto = {};
 
 					if (types.has(proto, '_new')) {
-						instanceProto._new = typeProto._new = proto._new;
+						typeProto._new = proto._new;
+						instanceProto._new = proto._new;
 					};
 
 					if (types.has(proto, '_delete')) {
-						instanceProto._delete = typeProto._delete = proto._delete;
+						typeProto._delete = proto._delete;
+						instanceProto._delete = proto._delete;
 					};
 
 					const newType = base.$inherit(

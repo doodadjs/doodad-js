@@ -6569,7 +6569,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							once = types.get(opts, 'once', false);
 						let listeners = this[__Internal__.symbolEventListeners][type];
 						if (!types.isArray(listeners)) {
-							this[__Internal__.symbolEventListeners][type] = listeners = [];
+							listeners = [];
+							this[__Internal__.symbolEventListeners][type] = listeners;
 						};
 						let found = false;
 						for (let i = 0; i < listeners.length; i++) {
@@ -6798,7 +6799,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	// Temporary, and not for registering classes.
 	__Internal__.tempRegisteredOthers = [];
-	__Internal__.registerOthers = _shared.REGISTER = function REGISTER(type, args, protect) {
+	__Internal__.registerOthers = function REGISTER(type, args, protect) {
 		// NOTE: "type" is a Doodad Type, or a Doodad Error Type.
 		const name = (types.getTypeName(type) || types.getFunctionName(type) || null),
 			fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
@@ -6823,6 +6824,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.tempRegisteredOthers.push([this, [type, args, protect]]);
 	};
+
+	_shared.REGISTER = __Internal__.registerOthers;
 
 	// NOTE: Will get overriden by Doodad.js
 	_shared.UNREGISTER = function(type) {
@@ -7183,7 +7186,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 											name += '.' + shortName;
 											const fn = name.slice(1);
 											if (!(fn in nsObjs)) {
-												nsObjs[fn] = parent[shortName] = new types.Namespace(parent, shortName, fn);
+												const nsObj = new types.Namespace(parent, shortName, fn);
+												nsObjs[fn] = nsObj;
+												parent[shortName] = nsObj;
 											};
 											parent = parent[shortName];
 										};
