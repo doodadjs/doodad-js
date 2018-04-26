@@ -118,16 +118,16 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	let __options__ = {
 		//! IF_SET('debug')
 		debug: true,                        // When 'true', will be in 'debug mode'.
-		fromSource: true,                   // When 'true', loads source code instead of built code
+		fromSource: true,                   // When 'true', loads source code instead of built code.
 		enableDebugger: true,               // When 'true', enables 'types.DEBUGGER'.
 		enableProperties: true,             // When 'true', enables 'types.defineProperty'.
 		enableAsserts: true,                // When 'true', enables 'root.DD_ASSERT'.
 		//! ELSE()
-		//!	INJECT("debug: false,                       // When 'true', will be in 'debug mode'.")
-		//!	INJECT("fromSource: false,                  // When 'true', loads source code instead of built code.")
-		//!	INJECT("enableDebugger: false,              // When 'true', enables 'types.DEBUGGER'.")
-		//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.")
-		//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.")
+		//!	INJECT("debug: false,                       // When 'true', will be in 'debug mode'.\n")
+		//!	INJECT("fromSource: false,                  // When 'true', loads source code instead of built code.\n")
+		//!	INJECT("enableDebugger: false,              // When 'true', enables 'types.DEBUGGER'.\n")
+		//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.\n")
+		//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.\n")
 		//! END_IF()
 
 		enableSymbols: true,					// (Read-Only) When 'true', symbols are enabled.
