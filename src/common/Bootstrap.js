@@ -7300,9 +7300,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					if (types.has(options, 'enableAsserts')) {
 						if (newOptions.enableAsserts) {
-							__Internal__.enableAsserts(root);
+							__Internal__.enableAsserts(__Internal__, root, types);
 						} else {
-							__Internal__.disableAsserts(root);
+							__Internal__.disableAsserts(__Internal__, root, types);
 						};
 					};
 
