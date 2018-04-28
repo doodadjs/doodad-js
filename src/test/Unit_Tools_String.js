@@ -49,11 +49,11 @@ exports.add = function add(mods) {
 					unit = test.Types.Is,
 					io = doodad.IO;
 
-						
+
 				if (!options) {
 					options = {};
 				};
-					
+
 
 				test.runCommand(tools.findItem, "Doodad.Tools.findItem", function(command, options) {
 					command.runStep(null,                                             {repetitions: 100}  /**/);
@@ -64,8 +64,8 @@ exports.add = function add(mods) {
 						return val === "e";
 					});
 				});
-					
-					
+
+
 				test.runCommand(tools.findLastItem, "Doodad.Tools.findLastItem", function(command, options) {
 					command.runStep(null,                                             {repetitions: 100}  /**/);
 					command.runStep(null,                                             {repetitions: 100}, /**/ "hi there !");
@@ -75,8 +75,8 @@ exports.add = function add(mods) {
 						return val === "e";
 					});
 				});
-					
-					
+
+
 				test.runCommand(tools.findItems, "Doodad.Tools.findItems", function(command, options) {
 					command.runStep([],                                               {repetitions: 100}  /**/);
 					command.runStep([],                                               {repetitions: 100}, /**/ "hi there !");
@@ -86,26 +86,26 @@ exports.add = function add(mods) {
 						return val === "e";
 					});
 				});
-					
-					
+
+
 				test.runCommand(tools.repeat, "Doodad.Tools.repeat", function(command, options) {
-					
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "a");
+
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "a");
 					command.runStep("",                                               {repetitions: 100}, /**/ "a", 0);
 					command.runStep("a",                                              {repetitions: 100}, /**/ "a", 1);
 					command.runStep("aa",                                             {repetitions: 100}, /**/ "a", 2);
 					command.runStep("aaaaa",                                          {repetitions: 100}, /**/ "a", 5);
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.trim, "Doodad.Tools.trim", function(command, options) {
-					
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "a", 0);
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "  a  ", " ", "");
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "  a  ", " ", 0, "");
+
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "a", 0);
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "  a  ", " ", "");
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "  a  ", " ", 0, "");
 					command.runStep("a",                                              {repetitions: 100}, /**/ "  a  ");
 					command.runStep("a",                                              {repetitions: 100}, /**/ "  a  ", " ");
 					command.runStep("a",                                              {repetitions: 100}, /**/ "  a  ", " ", 0);
@@ -114,32 +114,32 @@ exports.add = function add(mods) {
 					command.runStep(" a ",                                            {repetitions: 100}, /**/ "  a  ", " ", 0, 1);
 					command.runStep("  a  ",                                          {repetitions: 100}, /**/ "  a  ", "_");
 					command.runStep(" a ",                                            {repetitions: 100}, /**/ "_ a _", "_");
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.replace, "Doodad.Tools.replace", function(command, options) {
-					
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", 0);
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "a");
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "a", 0);
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "a", " ", 0);
+
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", 0);
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "a");
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "a", 0);
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "a", " ", 0);
 					command.runStep(" bcabcabc",                                      {repetitions: 100}, /**/ "abcabcabc", "a", " ");
 					command.runStep(" bc bc bc",                                      {repetitions: 100}, /**/ "abcabcabc", "a", " ", "g");
 					command.runStep(" bc bc bc",                                      {repetitions: 100}, /**/ "abcabcabc", new RegExp("a", "g"), " ");
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.search, "Doodad.Tools.search", function(command, options) {
-					
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc");
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", 1);
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "b", "");
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "b", 0, "");
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcabcabc", "b", 0, 1, 0);
+
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc");
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", 1);
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "b", "");
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "b", 0, "");
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcabcabc", "b", 0, 1, 0);
 					command.runStep(1,                                                {repetitions: 100}, /**/ "abcabcabc", "b");
 					command.runStep(1,                                                {repetitions: 100}, /**/ "abcabcabc", "b", 0);
 					command.runStep(4,                                                {repetitions: 100}, /**/ "abcabcabc", "b", 2);
@@ -158,27 +158,27 @@ exports.add = function add(mods) {
 					command.runStep(NaN,                                              {repetitions: 100}, /**/ "abcabcabc", new RegExp("b"), undefined, undefined, "a");
 					command.runStep(types.ValueError,                              {mode: 'isinstance', repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 1, undefined, new RegExp("a"));
 					command.runStep(1,                                                {repetitions: 100}, /**/ "abcabcabc", new RegExp("b", "g"), 1, undefined, new RegExp("a", "g"));
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.join, "Doodad.Tools.join", function(command, options) {
-					
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "");
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ ['a', 'b', 'c'], 0);
+
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "");
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ ['a', 'b', 'c'], 0);
 					command.runStep("abc",                                            {repetitions: 100}, /**/ ['a', 'b', 'c']);
 					command.runStep("a,b,c",                                          {repetitions: 100}, /**/ ['a', 'b', 'c'], ",");
 					command.runStep("1,2,3",                                          {repetitions: 100}, /**/ [1, 2, 3], ",");
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.title, "Doodad.Tools.title", function(command, options) {
-					
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ 0);
-					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "cHarLie bRaVO", 0);
+
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ 0);
+					command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "cHarLie bRaVO", 0);
 					command.runStep("",                                               {repetitions: 100}, /**/ "");
 					command.runStep(" ",                                              {repetitions: 100}, /**/ " ");
 					command.runStep("Charlie Bravo",                                  {repetitions: 100}, /**/ "cHarLie bRaVO");
@@ -186,52 +186,52 @@ exports.add = function add(mods) {
 					command.runStep("Charlie Bravo",                                  {repetitions: 100}, /**/ "cHarLie bRaVO", " ");
 					command.runStep("Charlie-bravo",                                  {repetitions: 100}, /**/ "cHarLie-bRaVO");
 					command.runStep("Charlie-Bravo",                                  {repetitions: 100}, /**/ "cHarLie-bRaVO", "-");
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.format, "Doodad.Tools.format", function(command, options) {
-					
+
 					command.runStep("hi",                                             {repetitions: 100}, /**/ "~0~", ["hi", "there"]);
 					command.runStep("there",                                          {repetitions: 100}, /**/ "~1~", ["hi", "there"]);
 					command.runStep("hi hi",                                          {repetitions: 100}, /**/ "~0~ ~0~", ["hi", "there"]);
 					command.runStep("hi there",                                       {repetitions: 100}, /**/ "~0~ ~1~", ["hi", "there"]);
 					command.runStep(" hi there !",                                    {repetitions: 100}, /**/ " ~0~ ~1~ !", ["hi", "there"]);
 					command.runStep(" hi there !",                                    {repetitions: 100}, /**/ " ~a~ ~b~ !", {a: "hi", b: "there"});
-					
+
 				});
-					
-					
+
+
 				test.runCommand(tools.indexOf, "Doodad.Tools.indexOf", function(command, options) {
-					
+
 					command.runStep(-1,                                               {repetitions: 100}  /**/);
 					command.runStep(-1,                                               {repetitions: 100}, /**/ "hi there !");
 					command.runStep(-1,                                               {repetitions: 100}, /**/ "hi there !", "z");
 					command.runStep(5,                                                {repetitions: 100}, /**/ "hi there !", "e");
 
 				});
-					
-					
+
+
 				test.runCommand(tools.lastIndexOf, "Doodad.Tools.lastIndexOf", function(command, options) {
-					
+
 					command.runStep(-1,                                               {repetitions: 100}  /**/);
 					command.runStep(-1,                                               {repetitions: 100}, /**/ "hi there !");
 					command.runStep(-1,                                               {repetitions: 100}, /**/ "hi there !", "z");
 					command.runStep(7,                                                {repetitions: 100}, /**/ "hi there !", "e");
 
 				});
-					
-					
+
+
 				test.runCommand(tools.map, "Doodad.Tools.map", function(command, options) {
-					
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}  /**/ );
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcdef");
-					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.DD_ASSERT}, /**/ "abcdef", "");
+
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}  /**/ );
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcdef");
+					//command.runStep(types.AssertionError,    {mode: 'isinstance', skip: !root.getOptions().enableAsserts}, /**/ "abcdef", "");
 					command.runStep(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ "abcdef", function(val, key, obj) {return val});
 
 				});
-					
-					
+
+
 				test.runCommand(function(obj) {
 					const result = [];
 					tools.forEach(obj, function(val, key, obj) {
@@ -239,15 +239,15 @@ exports.add = function add(mods) {
 					});
 					return result;
 				}, "Doodad.Tools.forEach", function(command, options) {
-					
+
 					command.runStep([],                                               {repetitions: 100}  /**/ );
 					command.runStep(['a', 'b', 'c', 'd', 'e', 'f'],                   {repetitions: 100}, /**/ "abcdef");
 
 				});
-					
-					
+
+
 				test.runCommand(tools.filter, "Doodad.Tools.filter", function(command, options) {
-					
+
 					command.runStep(undefined,                                        {repetitions: 100}  /**/);
 					command.runStep([],                                               {repetitions: 100}, /**/ "abcdefabcdef");
 					command.runStep(['a', 'a'],                                       {repetitions: 100}, /**/ "abcdefabcdef", "a");
@@ -262,10 +262,10 @@ exports.add = function add(mods) {
 					}, null, true);
 
 				});
-					
-					
+
+
 				test.runCommand(tools.filterKeys, "Doodad.Tools.filterKeys", function(command, options) {
-					
+
 					command.runStep(undefined,                                        {repetitions: 100}  /**/);
 					command.runStep([],                                               {repetitions: 100}, /**/ "abcdefabcdef");
 					command.runStep(['a'],                                            {repetitions: 100}, /**/ "abcdefabcdef", [0]);
@@ -279,10 +279,10 @@ exports.add = function add(mods) {
 					}, null, true);
 
 				});
-					
-					
+
+
 				test.runCommand(tools.every, "Doodad.Tools.every", function(command, options) {
-					
+
 					command.runStep(true,                                             {repetitions: 100}  /**/);
 					command.runStep(true,                                             {repetitions: 100}, /**/ "");
 					command.runStep(true,                                             {repetitions: 100}, /**/ "", "a");
@@ -306,10 +306,10 @@ exports.add = function add(mods) {
 					}, null, true);
 
 				});
-					
-					
+
+
 				test.runCommand(tools.some, "Doodad.Tools.some", function(command, options) {
-					
+
 					command.runStep(false,                                            {repetitions: 100}  /**/);
 					command.runStep(false,                                            {repetitions: 100}, /**/ "");
 					command.runStep(false,                                            {repetitions: 100}, /**/ "", "b");
@@ -330,13 +330,13 @@ exports.add = function add(mods) {
 					}, null, true);
 
 				});
-					
-					
+
+
 				test.runCommand(tools.reduce, "Doodad.Tools.reduce", function(command, options) {
-					
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT}   /**/);
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT},  /**/ "");
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT},  /**/ "", 1);
+
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts}   /**/);
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts},  /**/ "");
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts},  /**/ "", 1);
 					command.runStep(types.ValueError,                              {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {
 						return result + val.charCodeAt(0) - 48;
 					});
@@ -351,13 +351,13 @@ exports.add = function add(mods) {
 					}, "");
 
 				});
-					
-					
+
+
 				test.runCommand(tools.reduceRight, "Doodad.Tools.reduceRight", function(command, options) {
-					
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT}   /**/);
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT},  /**/ "");
-					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.DD_ASSERT},  /**/ "", 1);
+
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts}   /**/);
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts},  /**/ "");
+					command.runStep(types.AssertionError,                         {mode: 'isinstance', skip: !root.getOptions().enableAsserts},  /**/ "", 1);
 					command.runStep(types.ValueError,                             {mode: 'isinstance'},  /**/ "", function(result, val, key, obj) {
 						return result + val.charCodeAt(0) - 48;
 					});
@@ -373,7 +373,7 @@ exports.add = function add(mods) {
 
 				});
 
-					
+
 			},
 		},
 	};
