@@ -440,6 +440,9 @@ But I'll have to see what is feasible after current proposals like "decorators",
 
 ~~I'm also looking more forward on the future : WASM. With that, I hope to be able to make my own JS derived language, cleaned from everything that some like me (or just me) doesn't like, with the addition of my own (and, I believe, more realistic) classes.~~ (Suspended)
 
+### Wiped out ?
+
+A good thing is "@doodad-js/core" might be reduced to some custom decorators, small utility functions and some prebuilt classes.
 
 ## Other available packages
 
