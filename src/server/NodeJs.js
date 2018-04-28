@@ -3439,6 +3439,10 @@ exports.add = function add(mods) {
 						return [];
 					}),
 
+					off: doodad.PUBLIC(function off(event, listener) {
+						return this.removeListener(event, listener);
+					}),
+
 					on: doodad.PUBLIC(function on(event, listener) {
 					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 						const name = _shared.EVENT_NAME_PREFIX + event;
