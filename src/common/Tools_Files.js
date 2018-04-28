@@ -985,7 +985,7 @@ exports.add = function add(modules) {
 												};
 											});
 										};
-									//} else if (shell === 'api') {
+										//} else if (shell === 'api') {
 									} else {
 										if (!isRelative) {
 											validatePath = function validatePathApi(pathArray) {

@@ -261,7 +261,7 @@ exports.add = function add(modules) {
 								if (types.isString(entryType)) {
 									const tmp = types.get(entries, entryType);
 									if (tmp && types.baseof(entries.Entry, tmp)) {
-									//spec.type = tmp;
+										//spec.type = tmp;
 										return tmp;
 									} else {
 										throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
@@ -272,7 +272,7 @@ exports.add = function add(modules) {
 									return entryType;
 								}
 							} else {
-							//spec.type = _default || entries.Module;
+								//spec.type = _default || entries.Module;
 								return _default || entries.Module;
 							}
 						};
@@ -281,10 +281,10 @@ exports.add = function add(modules) {
 							const namespaceType = types.get(spec, 'namespaceType');
 							if (namespaceType) {
 								if (types.isString(namespaceType)) {
-								// TODO: Place namespace types in their own Namespace, like 'entries'.
+									// TODO: Place namespace types in their own Namespace, like 'entries'.
 									const tmp = namespaces[namespaceType];
 									if (tmp && (tmp === types.Namespace) || types.baseof(types.Namespace, tmp)) {
-									//spec.namespaceType = tmp;
+										//spec.namespaceType = tmp;
 										return tmp;
 									} else {
 										throw new types.Error("Invalid namespace object type : '~0~'.", [types.toString(namespaceType).slice(0, 50)]);
@@ -295,7 +295,7 @@ exports.add = function add(modules) {
 									return namespaceType;
 								}
 							} else {
-							//spec.namespaceType = types.Namespace;
+								//spec.namespaceType = types.Namespace;
 								return types.Namespace;
 							}
 						};
@@ -344,7 +344,7 @@ exports.add = function add(modules) {
 										let versionMismatch = false;
 										if (version && depEntry && depEntry.version) {
 											if (tools.Version.compare(depEntry.version, tools.Version.parse(version, namespaces.VersionIdentifiers)) > 0) {
-											// Higher version expected
+												// Higher version expected
 												versionMismatch = true;
 											};
 										};
@@ -457,13 +457,13 @@ exports.add = function add(modules) {
 											const key = keys[i];
 											let val = prevNamespace[key];
 											if (!types._instanceof(val, types.AttributeBox)) {
-											// Sets everything to READ_ONLY by default
+												// Sets everything to READ_ONLY by default
 												val = types.READ_ONLY(types.ENUMERABLE(val));
 											};
 											proto[key] = val;
 										};
 										namespaceType = types.INIT(namespaceType.$inherit(
-										/*typeProto*/
+											/*typeProto*/
 											{
 												$TYPE_NAME: types.getTypeName(namespaceType),
 											},
@@ -474,7 +474,7 @@ exports.add = function add(modules) {
 
 									let proto = types.get(spec, 'proto');
 									if (proto) {
-									// Extend namespace object
+										// Extend namespace object
 										if (types.isFunction(proto)) {
 											proto = proto(root);
 										};
@@ -649,7 +649,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
-				/* eslint no-loop-func: "off" */
+					/* eslint no-loop-func: "off" */
 
 					const Promise = types.getPromise();
 
@@ -810,7 +810,7 @@ exports.add = function add(modules) {
 						});
 
 						const doCallback = function _doCallback() {
-						// Create Promise for callback result
+							// Create Promise for callback result
 							let cbPromise = null;
 							if (callback) {
 								cbPromise = Promise.create(function readyPromise(resolve, reject) {
@@ -844,7 +844,7 @@ exports.add = function add(modules) {
 
 							// Returns the callback promise or nothing.
 							if (cbPromise) {
-							// NOTE: Returns "cbPromise". This allows to catch callback errors.
+								// NOTE: Returns "cbPromise". This allows to catch callback errors.
 								return cbPromise;
 							};
 
@@ -953,7 +953,7 @@ exports.add = function add(modules) {
 							.then(doCallback)
 							.catch(function(err) {
 								if (!__Internal__.waiting) {
-								// Dispatches "onerror"
+									// Dispatches "onerror"
 									namespaces.dispatchEvent(new types.CustomEvent('error', {detail: {error: err}}));
 								};
 								if (!dontThrow || err.bubble) {
@@ -1143,7 +1143,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, types.INIT(types.Type.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Registry',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Registry')), true) */,
@@ -1399,7 +1399,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Entry',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Entry')), true) */,
@@ -1493,7 +1493,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Object',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ObjectEntry')), true) */,
@@ -1531,7 +1531,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Namespace',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NamespaceEntry')), true) */,
@@ -1568,7 +1568,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Namespace.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Module',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ModuleEntry')), true) */,
@@ -1605,7 +1605,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Special',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('SpecialEntry')), true) */,
@@ -1643,7 +1643,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Special.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Package',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('PackageEntry')), true) */,
@@ -1681,7 +1681,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, entries.Special.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'Application',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ApplicationEntry')), true) */,

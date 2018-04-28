@@ -243,7 +243,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							_shared.Natives.stringValueOfCall(obj);
 							return true;
 						} catch(o) {
-						// Do nothing
+							// Do nothing
 						};
 					} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
 						return true;
@@ -298,7 +298,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						if (proto) {
 							return types.isObject(proto);
 						} else {
-						// Null object
+							// Null object
 							return true;
 						}
 					} else if (_shared.Natives.objectToStringCall(obj) === '[object Object]') {
@@ -6871,7 +6871,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				DD_FULL_NAME: types.READ_ONLY(null),
 
 				ADD: __Internal__.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
 						revision: 1,
@@ -6906,7 +6906,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					}),
 
 				REMOVE: __Internal__.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
 						revision: 0,
@@ -7324,7 +7324,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 //! BEGIN_REMOVE()
 if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
-//! END_REMOVE()
+	//! END_REMOVE()
 
 	//! IF_SET("serverSide")
 	//! IF_SET('mjs')
@@ -7332,9 +7332,9 @@ if ((typeof process === 'object') && (process !== null) && (typeof module === 'o
 	//! END_IF()
 	//! END_IF()
 
-//! BEGIN_REMOVE()
+	//! BEGIN_REMOVE()
 } else {
-//! END_REMOVE()
+	//! END_REMOVE()
 
 	//! IF_UNSET("serverSide")
 	//! IF_SET('mjs')
@@ -7348,6 +7348,6 @@ if ((typeof process === 'object') && (process !== null) && (typeof module === 'o
 	//! END_IF()
 	//! END_IF()
 
-//! BEGIN_REMOVE()
+	//! BEGIN_REMOVE()
 };
 //! END_REMOVE()

@@ -882,7 +882,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('exists', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -956,7 +956,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('rm', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -1237,7 +1237,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('rmdir', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 4,
@@ -1368,7 +1368,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('mkdir', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 6,
@@ -1846,7 +1846,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('copy', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 7,
@@ -2090,7 +2090,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('readdir', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 4,
@@ -2230,7 +2230,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('getCanonical', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 5,
@@ -2261,7 +2261,7 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('getTempFolder', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -2282,16 +2282,16 @@ exports.add = function add(mods) {
 					try {
 						stats = nodeFsStatSync(folder);
 					} catch(ex) {
-					// Do nothing
+						// Do nothing
 					};
 
 					if (!stats || !stats.isDirectory()) {
-					// Android or other
+						// Android or other
 						folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
 						try {
 							files.mkdir(folder);
 						} catch(ex) {
-						// Do nothing
+							// Do nothing
 						};
 					} else {
 						folder = files.Path.parse(folder);
@@ -2354,9 +2354,9 @@ exports.add = function add(mods) {
 							});
 						});
 
-					// "path" is a URL
-					// TODO: Test
-					// TODO: HTTPS
+						// "path" is a URL
+						// TODO: Test
+						// TODO: HTTPS
 					} else if (path.protocol === 'http') {
 						return Promise.create(function remoteReadFile(resolve, reject) {
 							const user = types.get(options, 'user', undefined),
@@ -2471,7 +2471,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('readFile', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 6,
@@ -2574,7 +2574,7 @@ exports.add = function add(mods) {
 			});
 
 			files.ADD('writeFile', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -2610,7 +2610,7 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('watch', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 5,
@@ -2647,7 +2647,7 @@ exports.add = function add(mods) {
 						};
 
 						if (tools.getOptions().noWatch) {
-						// NOTE: We parse location before "return".
+							// NOTE: We parse location before "return".
 							return;
 						};
 
@@ -2668,7 +2668,7 @@ exports.add = function add(mods) {
 											try {
 												callback(...args);
 											} catch(ex) {
-											// Do nothing
+												// Do nothing
 											};
 											if (types.get(callback.__OPTIONS__, 'once', false)) {
 												callback = null;
@@ -2695,7 +2695,7 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('unwatch', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -2753,7 +2753,7 @@ exports.add = function add(mods) {
 			//===================================
 
 			nodejs.ADD('forkSync', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -2819,7 +2819,7 @@ exports.add = function add(mods) {
 				}
 				//! END_REPLACE()
 				, types.createType(
-				/*name*/
+					/*name*/
 					"Console",
 
 					/*base*/
@@ -3003,7 +3003,7 @@ exports.add = function add(mods) {
 			//===================================
 
 			mixIns.REGISTER(root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -3149,7 +3149,7 @@ exports.add = function add(mods) {
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -3261,7 +3261,7 @@ exports.add = function add(mods) {
 
 
 			doodad.ADD('NODE_EVENT', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 4,
@@ -3351,7 +3351,7 @@ exports.add = function add(mods) {
 					__currentlyEmitted: doodad.PRIVATE(null),
 
 					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
-					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
+						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 						const name = _shared.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener, 10);
@@ -3379,7 +3379,7 @@ exports.add = function add(mods) {
 					}),
 
 					emit: doodad.PUBLIC(function emit(event, ...args) {
-					// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
+						// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
 						const name = _shared.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							const oldCurrentlyEmitted = this.__currentlyEmitted;
@@ -3444,7 +3444,7 @@ exports.add = function add(mods) {
 					}),
 
 					on: doodad.PUBLIC(function on(event, listener) {
-					// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
+						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
 						const name = _shared.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener);

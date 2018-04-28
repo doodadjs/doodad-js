@@ -2807,7 +2807,7 @@ exports.add = function add(modules) {
 								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], null, _shared.SECRET),
 									oldDispatch = result[_shared.CurrentDispatchSymbol],
 									oldCaller = result[_shared.CurrentCallerIndexSymbol];
-									//attributes = result[_shared.AttributesSymbol];
+								//attributes = result[_shared.AttributesSymbol];
 
 								const host = (types.baseof(doodad.Interface, type) ? this[_shared.HostSymbol] : null);
 								//hostType = types.getType(host);
@@ -6226,7 +6226,7 @@ exports.add = function add(modules) {
 								const attribute = attributes[attr],
 									extender = attribute[_shared.ExtenderSymbol];
 
-									// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
+								// NOTE: "if (!extender.isPersistent && extender.preExtend) {...}" --> Done with "attrs.splice()".
 								if ((extender.isType && forType) || (extender.isInstance && !forType)) {
 									extender.remove && extender.remove(attr, this, storage, forType, attribute);
 								};
@@ -6995,7 +6995,7 @@ exports.add = function add(modules) {
 			(function() {
 				//! BEGIN_REMOVE()
 				if (nodejs) {
-				//! END_REMOVE()
+					//! END_REMOVE()
 					const customSymbol = nodejs.getCustomInspectSymbol();
 					if (customSymbol) {
 						__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
@@ -7021,7 +7021,7 @@ exports.add = function add(modules) {
 							return result;
 						})))));
 					};
-				//! BEGIN_REMOVE()
+					//! BEGIN_REMOVE()
 				};
 				//! END_REMOVE()
 			})();
@@ -7238,7 +7238,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, types.Type.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: "Event",
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Event')), true) */,
@@ -7255,7 +7255,7 @@ exports.add = function add(modules) {
 						prevent: false,
 
 						_new: types.SUPER(function _new(/*optional*/data) {
-						//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
+							//root.DD_ASSERT && root.DD_ASSERT(types.isNothing(data) || types.isObject(data), "Invalid data.");
 
 							this._super();
 
@@ -7265,7 +7265,7 @@ exports.add = function add(modules) {
 						}),
 
 						preventDefault: root.DD_DOC(
-						//! REPLACE_IF(IS_UNSET('debug'), "null")
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
 							{
 								author: "Claude Petit",
 								revision: 0,
@@ -7296,7 +7296,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, doodad.Event.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'CancelEvent',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('CancelEvent')), true) */,
@@ -7324,7 +7324,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, doodad.Event.$inherit(
-				/*typeProto*/
+					/*typeProto*/
 					{
 						$TYPE_NAME: 'ErrorEvent',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ErrorEvent')), true) */,

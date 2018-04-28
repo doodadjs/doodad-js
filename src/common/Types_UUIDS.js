@@ -135,14 +135,14 @@ exports.add = function add(modules) {
 
 						if (types.has(native, _shared.UUIDSymbol) || types.has(native.prototype, _shared.UUIDSymbol)) {
 							continue;
-						//	// Aliases
-						//	if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
-						//		continue;
-						//	} else {
-						//		//console.log(name);
-						//		//continue;
-						//		throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
-						//	};
+							//	// Aliases
+							//	if ((native[_shared.UUIDSymbol] === nativeUUID) && (native.prototype[_shared.UUIDSymbol] === nativeUUID)) {
+							//		continue;
+							//	} else {
+							//		//console.log(name);
+							//		//continue;
+							//		throw new types.Error("Wrong UUID for native constructor '~0~'.", [name]);
+							//	};
 						};
 
 						if (types.has(uuids, uuid)) {

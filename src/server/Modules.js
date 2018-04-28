@@ -94,7 +94,7 @@ exports.add = function add(mods) {
 
 			//! BEGIN_REMOVE()
 			if (typeof require !== 'function') {
-			//! END_REMOVE()
+				//! END_REMOVE()
 
 				//! IF_SET("mjs")
 
@@ -114,9 +114,9 @@ exports.add = function add(mods) {
 					__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
 				})();
 
-			//! BEGIN_REMOVE()
+				//! BEGIN_REMOVE()
 			} else {
-			//! END_REMOVE()
+				//! END_REMOVE()
 
 				//! ELSE()
 
@@ -124,7 +124,7 @@ exports.add = function add(mods) {
 
 				//! END_IF()
 
-			//! BEGIN_REMOVE()
+				//! BEGIN_REMOVE()
 			};
 			//! END_REMOVE()
 

@@ -97,7 +97,7 @@ exports.add = function add(mods) {
 			//===================================
 
 			tools.ADD('getOS', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 3,
@@ -132,7 +132,7 @@ exports.add = function add(mods) {
 			//=====================================
 
 			tools.ADD('getDefaultLanguage', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -148,7 +148,7 @@ exports.add = function add(mods) {
 				}
 				//! END_REPLACE()
 				, function getDefaultLanguage(/*optional*/alt) {
-				// TODO: Windows
+					// TODO: Windows
 					const lang = process.env.LANG || '';
 					return lang.split('.')[0] || 'en_US';
 				}));

@@ -83,7 +83,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			tools.ADD('getOS', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -93,11 +93,11 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, function getOS() {
-				// TODO: Complete this function
-				// NOTE: This function will get replaced when "NodeJs.js" is loaded.
-				// NOTE: Why it's never simple like this ?
-				// NOTE: Windows older than Windows NT not supported
-				// NOTE: Macintosh older than OS/X not supported
+					// TODO: Complete this function
+					// NOTE: This function will get replaced when "NodeJs.js" is loaded.
+					// NOTE: Why it's never simple like this ?
+					// NOTE: Windows older than Windows NT not supported
+					// NOTE: Macintosh older than OS/X not supported
 					let os = __Internal__.os;
 					if (!os) {
 						const platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
@@ -119,7 +119,7 @@ exports.add = function add(modules) {
 				}));
 
 			tools.ADD('getDefaultLanguage', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -135,7 +135,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, function getDefaultLanguage(/*optional*/alt) {
-				// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
+					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
 					const navigator = _shared.Natives.windowNavigator;
 					const tmp = tools.split(((navigator.languages && navigator.languages[+alt || 0]) || navigator.language || navigator.userLanguage || 'en_US').replace('-', '_'), '_', 2);
 					if (tmp.length < 2) {

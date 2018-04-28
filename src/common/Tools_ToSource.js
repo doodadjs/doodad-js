@@ -157,8 +157,8 @@ exports.add = function add(modules) {
 										str += '\\u2029';
 									} else if (code === 0xFEFF) { // Byte order mark
 										str += '\\uFEFF';
-									//} else if (allowCodePoint && (code >= 0x10000)) {
-									//	str += '\\u{' + ('0000000' + code.toString(16)).slice(-8) + '}';
+										//} else if (allowCodePoint && (code >= 0x10000)) {
+										//	str += '\\u{' + ('0000000' + code.toString(16)).slice(-8) + '}';
 									} else if (((code >= 0x0000) && (code <= 0x001F)) || ((code >= 0x007F) && (code <= 0x009F)) || ((code >= 0xD800) && (code <= 0xDFFF))) { // Other control chars
 										str += '\\u' + ('000' + code.toString(16)).slice(-4);
 									} else {

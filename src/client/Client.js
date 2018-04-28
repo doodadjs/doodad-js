@@ -508,7 +508,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			client.ADD('isEvent', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -528,7 +528,7 @@ exports.add = function add(modules) {
 				}));
 
 			client.ADD('isWindow', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -548,7 +548,7 @@ exports.add = function add(modules) {
 				}));
 
 			client.ADD('isDocument', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -568,7 +568,7 @@ exports.add = function add(modules) {
 				}));
 
 			client.ADD('isNode', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -588,7 +588,7 @@ exports.add = function add(modules) {
 				}));
 
 			client.ADD('isElement', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -609,7 +609,7 @@ exports.add = function add(modules) {
 
 
 			client.ADD('isEventTarget', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -631,7 +631,7 @@ exports.add = function add(modules) {
 				}))));
 
 			client.ADD('getFirstElement', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -663,7 +663,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			mixIns.REGISTER(root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -796,7 +796,7 @@ exports.add = function add(modules) {
 			__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
 
 			doodad.REGISTER(root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -808,7 +808,7 @@ exports.add = function add(modules) {
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 2,
@@ -833,9 +833,9 @@ exports.add = function add(modules) {
 						if (!this.__unified) {
 							const self = this;
 							this.__unified = {
-							// TODO: Unify event properties between browsers
+								// TODO: Unify event properties between browsers
 								which: (types.isNothing(self.which) ? self.keyCode : ((self.which !== 0) && (self.charCode !== 0) ? self.which : null)),  // source: http://javascript.info/tutorial/keyboard-events
-							//preventDefault: (types.isNothing(self.preventDefault) ? function() {ev.returnValue = false; ev.keyCode = 0;} : self.preventDefault),
+								//preventDefault: (types.isNothing(self.preventDefault) ? function() {ev.returnValue = false; ev.keyCode = 0;} : self.preventDefault),
 							};
 						};
 						return this.__unified;
@@ -929,7 +929,7 @@ exports.add = function add(modules) {
 
 
 			doodad.ADD('JS_EVENT', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 3,
@@ -1004,7 +1004,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			types.REGISTER(root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -1035,7 +1035,7 @@ exports.add = function add(modules) {
 					})));
 
 			tools.ADD('getCurrentLocation', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1062,7 +1062,7 @@ exports.add = function add(modules) {
 			//__Internal__.setCurrentLocationPending = false;
 
 			tools.ADD('setCurrentLocation', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1326,7 +1326,7 @@ exports.add = function add(modules) {
 
 
 			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1409,7 +1409,7 @@ exports.add = function add(modules) {
 				}));
 
 			tools.ADD('getJsScriptBlockLoader', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1456,7 +1456,7 @@ exports.add = function add(modules) {
 						this.element.type = 'text/javascript';
 						this.element.async = loader.async;
 						if (async && _shared.Natives.windowBlob && _shared.Natives.windowURL) {
-						// Firefox
+							// Firefox
 							this.element.src = _shared.Natives.windowURL.createObjectURL(new _shared.Natives.windowBlob(script));
 						} else {
 							if (_document.createCDATASection) {
@@ -1471,7 +1471,7 @@ exports.add = function add(modules) {
 				}));
 
 			tools.ADD('getCssScriptFileLoader', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1561,7 +1561,7 @@ exports.add = function add(modules) {
 				}));
 
 			tools.ADD('getCssScriptBlockLoader', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -1609,7 +1609,7 @@ exports.add = function add(modules) {
 					let loader;
 
 					if (async && _shared.Natives.windowBlob && global.URL) {
-					// Firefox
+						// Firefox
 						loader = new __Internal__.ScriptLoader(/*tag*/'link', /*target*/_document.getElementsByTagName('head')[0], /*timeout*/timeout);
 
 						loader.addEventListener('init', function() {
@@ -1668,7 +1668,7 @@ exports.add = function add(modules) {
 			});
 
 			files.ADD('exists', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1704,7 +1704,7 @@ exports.add = function add(modules) {
 			});
 
 			files.ADD('readFileAsync', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 8,
@@ -1735,10 +1735,10 @@ exports.add = function add(modules) {
 
 						let encoding = options.encoding;
 						if (encoding === 'iso-8859') {
-						// Fix for some browsers
+							// Fix for some browsers
 							encoding = 'iso-8859-1';
 						} else if (encoding === 'utf8') {
-						// Fix
+							// Fix
 							encoding = 'utf-8';
 						};
 
@@ -1775,7 +1775,7 @@ exports.add = function add(modules) {
 							};
 
 							if (options.enableCookies) {
-							// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
+								// http://stackoverflow.com/questions/30013131/how-do-i-use-window-fetch-with-httponly-cookies
 								init.credentials = 'include';
 							};
 
@@ -1881,10 +1881,10 @@ exports.add = function add(modules) {
 
 								if (!types.isNothing(timeout)) {
 									if ('timeout' in xhr) {
-									// Wow ! A timeout option !!!
+										// Wow ! A timeout option !!!
 										xhr.timeout = timeout;
 									} else {
-									// No timeout option !
+										// No timeout option !
 										state.timeoutId = tools.callAsync(function(ev) {
 											state.timeoutId = null;
 											if (!state.ready) {
@@ -1908,7 +1908,7 @@ exports.add = function add(modules) {
 				}));
 
 			files.ADD('readFile', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1941,7 +1941,7 @@ exports.add = function add(modules) {
 				}));
 
 			files.ADD('watch', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 1,
@@ -1967,11 +1967,11 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, function watch(url, callbacks, /*optional*/options) {
-				// Do nothing
+					// Do nothing
 				}));
 
 			files.ADD('unwatch', root.DD_DOC(
-			//! REPLACE_IF(IS_UNSET('debug'), "null")
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
 					revision: 0,
@@ -1997,7 +1997,7 @@ exports.add = function add(modules) {
 				}
 				//! END_REPLACE()
 				, function unwatch(url, callbacks, /*optional*/options) {
-				// Do nothing
+					// Do nothing
 				}));
 
 
