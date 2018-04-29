@@ -1,6 +1,6 @@
 Object-oriented programming framework for Javascript.
 
-[![NPM Version][npm-image]][npm-url]
+Latest version is : [![NPM Version][npm-image]][npm-url]
  
 <<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
 
@@ -442,7 +442,7 @@ But I'll have to see what is feasible after current proposals like "decorators",
 
 ### Wiped out ?
 
-A good thing is "@doodad-js/core" might be reduced to some custom decorators, small utility functions and some prebuilt classes.
+"@doodad-js/core" might be reduced to some custom decorators, small utility functions and some prebuilt classes.
 
 ## Other available packages
 
