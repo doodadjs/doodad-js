@@ -442,7 +442,7 @@ But I'll have to see what is feasible after current proposals like "decorators",
 
 ### Wiped out ?
 
-"@doodad-js/core" might be reduced to some custom decorators, small utility functions and some prebuilt classes.
+With all the incoming changes to the Javascript language, "@doodad-js/core" could be reduced to some custom decorators, small utility functions and some prebuilt classes.
 
 ## Other available packages
 
