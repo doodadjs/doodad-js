@@ -7307,6 +7307,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					};
 
 					// Read-Only
+					newOptions.enableProperties = __options__.enableProperties;
 					newOptions.enableSymbols = __options__.enableSymbols;
 
 					__options__ = types.freezeObject(newOptions);
