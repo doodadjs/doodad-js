@@ -628,11 +628,27 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		// Options
 		//===================================
 
+		__Internal__.enableAsserts = null; // Will be set at "root" creation.
+		__Internal__.disableAsserts = null; // Will be set at "root" creation.
+
+		__Internal__._setOptions = function setOptions(...args) {
+			const newOptions = tools.nullObject(__options__, ...args);
+
+			newOptions.debug = types.toBoolean(newOptions.debug);
+			newOptions.fromSource = types.toBoolean(newOptions.fromSource);
+			newOptions.enableProperties = types.toBoolean(newOptions.enableProperties);
+			newOptions.enableAsserts = types.toBoolean(newOptions.enableAsserts);
+			newOptions.enableSymbols = types.toBoolean(newOptions.enableSymbols);
+			newOptions.enableSafeObjects = types.toBoolean(newOptions.enableSafeObjects);
+
+			return newOptions;
+		};
+
 		if (global.Array.isArray(_options)) {
 			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {}], _options));
 		};
 
-		__options__ = __Internal__.setOptions(__Internal__, types, tools, _options.startup);
+		__options__ = __Internal__._setOptions(_options.startup);
 
 		//===================================
 		// "safeObject"
@@ -878,35 +894,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			OPTIONS_DEPTH: 15,
 
 			isArrayIndexRegExp: /^(0|[1-9][0-9]*)$/,
-
-			enableAsserts: function enableAsserts(__Internal__, root, types) {
-				if (types.hasDefinePropertyEnabled()) {
-					__Internal__.DD_ASSERT = __Internal__.ASSERT;
-				} else {
-					root.DD_ASSERT = __Internal__.ASSERT;
-				};
-			},
-
-			disableAsserts: function disableAsserts(__Internal__, root, types) {
-				if (types.hasDefinePropertyEnabled()) {
-					__Internal__.DD_ASSERT = null;
-				} else {
-					root.DD_ASSERT = null;
-				};
-			},
-
-			setOptions: function setOptions(__Internal__, types, tools, options) {
-				const newOptions = tools.nullObject(__options__, options);
-
-				newOptions.debug = types.toBoolean(newOptions.debug);
-				newOptions.fromSource = types.toBoolean(newOptions.fromSource);
-				newOptions.enableProperties = types.toBoolean(newOptions.enableProperties);
-				newOptions.enableAsserts = types.toBoolean(newOptions.enableAsserts);
-				newOptions.enableSymbols = types.toBoolean(newOptions.enableSymbols);
-				newOptions.enableSafeObjects = types.toBoolean(newOptions.enableSafeObjects);
-
-				return newOptions;
-			},
 		}
 	);
 
@@ -7070,10 +7057,28 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						});
 					};
 
+					// Options
+
+					__Internal__.enableAsserts = function enableAsserts() {
+						if (types.hasDefinePropertyEnabled()) {
+							__Internal__.DD_ASSERT = __Internal__.ASSERT;
+						} else {
+							root.DD_ASSERT = __Internal__.ASSERT;
+						};
+					};
+
+					__Internal__.disableAsserts = function disableAsserts() {
+						if (types.hasDefinePropertyEnabled()) {
+							__Internal__.DD_ASSERT = null;
+						} else {
+							root.DD_ASSERT = null;
+						};
+					};
+
 					if (__options__.enableAsserts) {
-						__Internal__.enableAsserts(__Internal__, root, types);
+						__Internal__.enableAsserts();
 					} else {
-						__Internal__.disableAsserts(__Internal__, root, types);
+						__Internal__.disableAsserts();
 					};
 
 					// Load bootstrap modules
@@ -7293,20 +7298,30 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return __options__;
 				},
 
-				setOptions: function(options) {
-					const root = this;
+				setOptions: function(...args) {
+					const root = this,
+						doodad = root.Doodad,
+						types = doodad.Types,
+						tools = doodad.Tools;
 
-					const newOptions = __Internal__.setOptions(__Internal__, types, tools, options);
+					const newOptions = __Internal__._setOptions(...args);
 
-					if (types.has(options, 'enableAsserts')) {
+					if (newOptions.secret !== _shared.SECRET) {
+						throw new types.Error("Invalid secret.");
+					};
+
+					delete newOptions.secret;
+
+					if (tools.some(args, arg => types.has(arg, 'enableAsserts'))) {
 						if (newOptions.enableAsserts) {
-							__Internal__.enableAsserts(__Internal__, root, types);
+							__Internal__.enableAsserts();
 						} else {
-							__Internal__.disableAsserts(__Internal__, root, types);
+							__Internal__.disableAsserts();
 						};
 					};
 
 					// Read-Only
+					newOptions.debug = __options__.debug;
 					newOptions.enableProperties = __options__.enableProperties;
 					newOptions.enableSymbols = __options__.enableSymbols;
 
