@@ -176,21 +176,44 @@ exports.add = function add(modules) {
 			// Options
 			//=====================
 
-			const __options__ = tools.nullObject({
+			let __options__ = tools.nullObject({
 				enforceScopes: false,    // for performance, set it to "false"
 				enforcePolicies: false,  // for performance, set it to "false"
 				publicOnDebug: false,    // to be able to read PROTECTED/PRIVATE attributes in debug mode, set it to "true"
 			}, _options);
 
-			__options__.enforceScopes = types.toBoolean(__options__.enforceScopes);
-			__options__.enforcePolicies = types.toBoolean(__options__.enforcePolicies);
-			__options__.publicOnDebug = types.toBoolean(__options__.publicOnDebug);
-
-			types.freezeObject(__options__);
 
 			doodad.ADD('getOptions', function getOptions() {
 				return __options__;
 			});
+
+			doodad.ADD('setOptions', function setOptions(...args) {
+				const newOptions = tools.nullObject(__options__, ...args);
+
+				if (newOptions.secret !== _shared.SECRET) {
+					throw new types.Error("Invalid secret.");
+				};
+
+				delete newOptions.secret;
+
+				newOptions.enforceScopes = types.toBoolean(newOptions.enforceScopes);
+				newOptions.enforcePolicies = types.toBoolean(newOptions.enforcePolicies);
+				newOptions.publicOnDebug = types.toBoolean(newOptions.publicOnDebug);
+
+				// Read-Only
+				newOptions.publicOnDebug = __options__.publicOnDebug;
+
+				__options__ = types.freezeObject(newOptions);
+
+				return __options__;
+			});
+
+			doodad.setOptions(
+				{
+					secret: _shared.SECRET,
+				},
+				_options
+			);
 
 
 			__Internal__.hasScopes = types.hasDefinePropertyEnabled() && (root.getOptions().debug || __options__.enforceScopes);
@@ -5124,7 +5147,7 @@ exports.add = function add(modules) {
 			__Internal__.switchToExpandable = function switchToExpandable(attributes) {
 				tools.forEach(__Internal__.defaultAttributesExpandable, function(attribute, attr) {
 					const oldAttribute = attributes[attr];
-					root.DD_ASSERT && root.DD_ASSERT(oldAttribute, "Adding new attributes there is not supportedÂ­.");
+					root.DD_ASSERT && root.DD_ASSERT(oldAttribute, "Adding new attributes there is not supported­.");
 					const newAttribute = attribute.setValue(oldAttribute);
 					attributes[attr] = types.freezeObject(newAttribute);
 				});
