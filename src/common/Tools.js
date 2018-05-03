@@ -81,21 +81,36 @@ exports.add = function add(modules) {
 				return __options__;
 			});
 
-			tools.ADD('setOptions', function setOptions(options) {
-				const newOptions = tools.nullObject(__options__, options);
+			tools.ADD('setOptions', function setOptions(...args) {
+				const newOptions = tools.nullObject(__options__, ...args);
+
+				if (newOptions.secret !== _shared.SECRET) {
+					throw new types.Error("Invalid secret.");
+				};
+
+				delete newOptions.secret;
+
 				newOptions.logLevel = types.toInteger(newOptions.logLevel);
 				newOptions.unhandledRejectionsTimeout = types.toInteger(newOptions.unhandledRejectionsTimeout);
 				newOptions.unhandledRejectionsMaxSize = types.toInteger(newOptions.unhandledRejectionsMaxSize);
 				newOptions.noWatch = types.toBoolean(newOptions.noWatch);
 				newOptions.toSourceItemsCount = types.toInteger(newOptions.toSourceItemsCount);
+
 				if (!types.isNothing(newOptions.caseSensitive)) {
 					newOptions.caseSensitive = types.toBoolean(newOptions.caseSensitive);
 				};
+
 				__options__ = types.freezeObject(newOptions);
+
 				return __options__;
 			});
 
-			tools.setOptions(_options);
+			tools.setOptions(
+				{
+					secret: _shared.SECRET,
+				},
+				_options
+			);
 
 			//===================================
 			// Hooks
