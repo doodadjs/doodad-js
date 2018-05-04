@@ -182,23 +182,28 @@ exports.add = function add(modules) {
 				publicOnDebug: false,    // to be able to read PROTECTED/PRIVATE attributes in debug mode, set it to "true"
 			}, _options);
 
+			__Internal__._setOptions = function setOptions(...args) {
+				const newOptions = tools.nullObject(__options__, ...args);
+
+				newOptions.enforceScopes = types.toBoolean(newOptions.enforceScopes);
+				newOptions.enforcePolicies = types.toBoolean(newOptions.enforcePolicies);
+				newOptions.publicOnDebug = types.toBoolean(newOptions.publicOnDebug);
+
+				return newOptions;
+			};
 
 			doodad.ADD('getOptions', function getOptions() {
 				return __options__;
 			});
 
 			doodad.ADD('setOptions', function setOptions(...args) {
-				const newOptions = tools.nullObject(__options__, ...args);
+				const newOptions = __Internal__._setOptions(...args);
 
 				if (newOptions.secret !== _shared.SECRET) {
 					throw new types.Error("Invalid secret.");
 				};
 
 				delete newOptions.secret;
-
-				newOptions.enforceScopes = types.toBoolean(newOptions.enforceScopes);
-				newOptions.enforcePolicies = types.toBoolean(newOptions.enforcePolicies);
-				newOptions.publicOnDebug = types.toBoolean(newOptions.publicOnDebug);
 
 				// Read-Only
 				newOptions.publicOnDebug = __options__.publicOnDebug;
@@ -208,13 +213,7 @@ exports.add = function add(modules) {
 				return __options__;
 			});
 
-			doodad.setOptions(
-				{
-					secret: _shared.SECRET,
-				},
-				_options
-			);
-
+			__options__ = types.freezeObject(__Internal__._setOptions(_options));
 
 			__Internal__.hasScopes = types.hasDefinePropertyEnabled() && (root.getOptions().debug || __options__.enforceScopes);
 			__Internal__.hasPolicies = __Internal__.hasScopes && (root.getOptions().debug || __options__.enforcePolicies);

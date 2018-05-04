@@ -77,18 +77,8 @@ exports.add = function add(modules) {
 				toSourceItemsCount: 255,		// Max number of items
 			});
 
-			tools.ADD('getOptions', function getOptions() {
-				return __options__;
-			});
-
-			tools.ADD('setOptions', function setOptions(...args) {
+			__Internal__._setOptions = function setOptions(...args) {
 				const newOptions = tools.nullObject(__options__, ...args);
-
-				if (newOptions.secret !== _shared.SECRET) {
-					throw new types.Error("Invalid secret.");
-				};
-
-				delete newOptions.secret;
 
 				newOptions.logLevel = types.toInteger(newOptions.logLevel);
 				newOptions.unhandledRejectionsTimeout = types.toInteger(newOptions.unhandledRejectionsTimeout);
@@ -100,17 +90,28 @@ exports.add = function add(modules) {
 					newOptions.caseSensitive = types.toBoolean(newOptions.caseSensitive);
 				};
 
+				return newOptions;
+			};
+
+			tools.ADD('getOptions', function getOptions() {
+				return __options__;
+			});
+
+			tools.ADD('setOptions', function setOptions(...args) {
+				const newOptions = __Internal__._setOptions(...args);
+
+				if (newOptions.secret !== _shared.SECRET) {
+					throw new types.Error("Invalid secret.");
+				};
+
+				delete newOptions.secret;
+
 				__options__ = types.freezeObject(newOptions);
 
 				return __options__;
 			});
 
-			tools.setOptions(
-				{
-					secret: _shared.SECRET,
-				},
-				_options
-			);
+			__options__ = types.freezeObject(__Internal__._setOptions(_options));
 
 			//===================================
 			// Hooks
