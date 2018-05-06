@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Doodad.js - Main file
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Doodad.js - Main file
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 // Naming conventions :
@@ -200,7 +200,7 @@ exports.add = function add(modules) {
 				const newOptions = __Internal__._setOptions(...args);
 
 				if (newOptions.secret !== _shared.SECRET) {
-					throw new types.Error("Invalid secret.");
+					throw new types.AccessDenied("Secrets mismatch.");
 				};
 
 				delete newOptions.secret;
@@ -258,29 +258,29 @@ exports.add = function add(modules) {
 
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Type registry entry.",
-				}
+						returns: 'Type',
+						description: "Type registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
 					/*typeProto*/
@@ -296,19 +296,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when object is a class. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when object is a class. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isClass(obj) {
 					if (!types.isFunction(obj)) {
@@ -319,19 +319,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isInterfaceClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Type',
-							optional: false,
-							description: "Type to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Type',
+								optional: false,
+								description: "Type to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when object is an interface class. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when object is an interface class. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isInterfaceClass(obj) {
 					if (!types.isFunction(obj)) {
@@ -342,19 +342,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isBase', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when object is a base type. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when object is a base type. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isBase(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Base);
@@ -362,19 +362,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isMixIn', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when class is a mix-in. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when class is a mix-in. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isMixIn(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.MixIn);
@@ -382,19 +382,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isInterface', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when class is an interface. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when class is an interface. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isInterface(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Interface);
@@ -402,19 +402,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isIsolated', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when class is an isolated interface. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when class is an isolated interface. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isIsolated(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Isolated);
@@ -422,19 +422,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isNewable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when class is a class that can be instantiated. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when class is a class that can be instantiated. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isNewable(obj) {
 					return types.isClass(obj) && !((obj[_shared.ModifiersSymbol] || 0) & (doodad.ClassModifiers.Base | doodad.ClassModifiers.Interface | doodad.ClassModifiers.MixIn));
@@ -442,19 +442,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isSealedClass', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'Class',
-							optional: false,
-							description: "Class to test for.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'Class',
+								optional: false,
+								description: "Class to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when class is a sealed class. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when class is a sealed class. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isSealedClass(obj) {
 					return types.isClass(obj) && !!((obj[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Sealed);
@@ -462,19 +462,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isSerializable', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'object',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "Object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when object is serealizable. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when object is serealizable. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isSerializable(obj) {
 					return types.isNothing(obj) || (types.isPrimitive(obj) && !types.isSymbol(obj)) || types.isArray(obj) || types.isJsObject(obj) || types.isError(obj) || types._implements(obj, interfaces.Serializable);
@@ -482,24 +482,24 @@ exports.add = function add(modules) {
 
 			types.ADD('_implements', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 5,
-					params: {
-						obj: {
-							type: 'Object,Class',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 5,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
+							type: {
+								type: 'arrayof(Class),Class,arrayof(Object),Object',
+								optional: false,
+								description: "Classes.",
+							},
 						},
-						type: {
-							type: 'arrayof(Class),Class,arrayof(Object),Object',
-							optional: false,
-							description: "Classes.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function _implements(obj, type) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
@@ -550,19 +550,19 @@ exports.add = function add(modules) {
 
 			types.ADD('getImplements', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'Object,Class',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
 						},
-					},
-					returns: 'objectof(Class)',
-					description: "Returns the implementations of an object.",
-				}
+						returns: 'objectof(Class)',
+						description: "Returns the implementations of an object.",
+					}
 				//! END_REPLACE()
 				, function getImplements(obj) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
@@ -575,24 +575,24 @@ exports.add = function add(modules) {
 
 			types.ADD('isMethod', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'Object,Class',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
+							name: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Method name.",
+							},
 						},
-						name: {
-							type: 'string,Symbol',
-							optional: false,
-							description: "Method name.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if method exists. Returns 'false' otherwise. Note: That doesn't validate if method is implemented. Please use 'types.isImplemented' instead if you need that information.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' if method exists. Returns 'false' otherwise. Note: That doesn't validate if method is implemented. Please use 'types.isImplemented' instead if you need that information.",
+					}
 				//! END_REPLACE()
 				, function isMethod(obj, name) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
@@ -616,24 +616,24 @@ exports.add = function add(modules) {
 
 			types.ADD('isImplemented', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						obj: {
-							type: 'Object,Class',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
+							name: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Method name.",
+							},
 						},
-						name: {
-							type: 'string,Symbol',
-							optional: false,
-							description: "Method name.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise. Note: That doesn't validate if the method is entrant. If you need that information, please combine with 'types.isEntrant'.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise. Note: That doesn't validate if the method is entrant. If you need that information, please combine with 'types.isEntrant'.",
+					}
 				//! END_REPLACE()
 				, function isImplemented(obj, name) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
@@ -658,24 +658,24 @@ exports.add = function add(modules) {
 
 			types.ADD('isEntrant', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'Object,Class',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'Object,Class',
+								optional: false,
+								description: "Object to test for.",
+							},
+							name: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Method name.",
+							},
 						},
-						name: {
-							type: 'string,Symbol',
-							optional: false,
-							description: "Method name.",
-						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if method is entrant. Returns 'false' otherwise. Note: That doesn't validate if 'name' is a really method and if it has been implemented. If you need that information, please combine with 'types.isImplemented'.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' if method is entrant. Returns 'false' otherwise. Note: That doesn't validate if 'name' is a really method and if it has been implemented. If you need that information, please combine with 'types.isImplemented'.",
+					}
 				//! END_REPLACE()
 				, function isEntrant(obj, name) {
 					const notReentrantMap = __Internal__.notReentrantMap.get(obj);
@@ -688,13 +688,13 @@ exports.add = function add(modules) {
 
 			types.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'undefined',
-					description: "Base of every callback handlers.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'undefined',
+						description: "Base of every callback handlers.",
+					}
 				//! END_REPLACE()
 				, function(/*optional*/obj, fn) {
 					throw new types.NotSupported("Type is a base type.");
@@ -712,39 +712,39 @@ exports.add = function add(modules) {
 
 			doodad.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 8,
-					params: {
-						obj: {
-							type: 'object,Object',
-							optional: true,
-							description: "Object to bind with the callback function.",
+					{
+						author: "Claude Petit",
+						revision: 8,
+						params: {
+							obj: {
+								type: 'object,Object',
+								optional: true,
+								description: "Object to bind with the callback function.",
+							},
+							fn: {
+								type: 'function,string,symbol',
+								optional: false,
+								description: "Callback function.",
+							},
+							bubbleError: {
+								type: 'bool,function',
+								optional: true,
+								description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Callback arguments.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
 						},
-						fn: {
-							type: 'function,string,symbol',
-							optional: false,
-							description: "Callback function.",
-						},
-						bubbleError: {
-							type: 'bool,function',
-							optional: true,
-							description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'true'.",
-						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Callback arguments.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Secret.",
-						},
-					},
-					returns: 'function',
-					description: "Creates a callback handler.",
-				}
+						returns: 'function',
+						description: "Creates a callback handler.",
+					}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function Callback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 					// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
@@ -802,39 +802,39 @@ exports.add = function add(modules) {
 
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 9,
-					params: {
-						obj: {
-							type: 'object,Object',
-							optional: true,
-							description: "Object to bind with the callback function.",
+					{
+						author: "Claude Petit",
+						revision: 9,
+						params: {
+							obj: {
+								type: 'object,Object',
+								optional: true,
+								description: "Object to bind with the callback function.",
+							},
+							fn: {
+								type: 'function,string,symbol',
+								optional: false,
+								description: "Callback function.",
+							},
+							bubbleError: {
+								type: 'bool,function',
+								optional: true,
+								description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Callback arguments.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
 						},
-						fn: {
-							type: 'function,string,symbol',
-							optional: false,
-							description: "Callback function.",
-						},
-						bubbleError: {
-							type: 'bool,function',
-							optional: true,
-							description: "If 'true', error will bubble. If a function, error will be pass to it as argument. Otherwise, error will be managed. Default is 'false'.",
-						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Callback arguments.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Secret.",
-						},
-					},
-					returns: 'function',
-					description: "Creates an asynchronous callback handler.",
-				}
+						returns: 'function',
+						description: "Creates an asynchronous callback handler.",
+					}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function AsyncCallback(/*optional*/obj, fn, /*optional*/bubbleError, /*optional*/args, /*optional*/secret) {
 					// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
@@ -1054,29 +1054,29 @@ exports.add = function add(modules) {
 
 			_shared.makeInside = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						obj: {
-							type: 'any',
-							optional: true,
-							description: "Object to bind to.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							obj: {
+								type: 'any',
+								optional: true,
+								description: "Object to bind to.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Function.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Confirms the secret.",
+							},
 						},
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Function.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Confirms the secret.",
-						},
-					},
-					returns: 'function',
-					description: "Makes a function called like from inside an object.",
-				}
+						returns: 'function',
+						description: "Makes a function called like from inside an object.",
+					}
 				//! END_REPLACE()
 				, function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					if (types.isCallback(fn)) {
@@ -1302,24 +1302,24 @@ exports.add = function add(modules) {
 
 			_shared.getAttributeDescriptor = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						obj: {
-							type: 'Object,Type',
-							optional: false,
-							description: "Object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							obj: {
+								type: 'Object,Type',
+								optional: false,
+								description: "Object to test for.",
+							},
+							name: {
+								type: 'string,Symbol',
+								optional: false,
+								description: "Attribute name.",
+							},
 						},
-						name: {
-							type: 'string,Symbol',
-							optional: false,
-							description: "Attribute name.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Returns the descriptor of an attribute, or 'null' if attribute doesn't exist.",
-				}
+						returns: 'AttributeBox',
+						description: "Returns the descriptor of an attribute, or 'null' if attribute doesn't exist.",
+					}
 				//! END_REPLACE()
 				, function getAttributeDescriptor(obj, name) {
 					const type = types.getType(obj);
@@ -1365,29 +1365,29 @@ exports.add = function add(modules) {
 
 			_shared.REGISTER = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 7,
-					params: {
-						type: {
-							type: 'Type',
-							optional: false,
-							description: "Type to register.",
+					{
+						author: "Claude Petit",
+						revision: 7,
+						params: {
+							type: {
+								type: 'Type',
+								optional: false,
+								description: "Type to register.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Arguments of the constructor.",
+							},
+							protect: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
+							},
 						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Arguments of the constructor.",
-						},
-						protect: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will protect the namespace object. 'false' will not. Default is 'true'."
-						},
-					},
-					returns: 'Type',
-					description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
-				}
+						returns: 'Type',
+						description: "Registers the specified type to the current namespace object and returns the specified type. Also validates and initializes that type.",
+					}
 				//! END_REPLACE()
 				, function REGISTER(type, args, protect) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isErrorType(type), "Invalid type.");
@@ -1466,19 +1466,19 @@ exports.add = function add(modules) {
 			// TODO: Review and test
 			_shared.UNREGISTER = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						type: {
-							type: 'Type',
-							optional: false,
-							description: "Type to unregister.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							type: {
+								type: 'Type',
+								optional: false,
+								description: "Type to unregister.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Unregisters the specified type from its namespace object and returns 'true' when successful. Returns 'false' otherwise. Also destroys that type.",
-				}
+						returns: 'bool',
+						description: "Unregisters the specified type from its namespace object and returns 'true' when successful. Returns 'false' otherwise. Also destroys that type.",
+					}
 				//! END_REPLACE()
 				, function UNREGISTER(type) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isType(type) || types.isSingleton(type) || types.isErrorType(type), "Invalid type.");
@@ -1519,29 +1519,29 @@ exports.add = function add(modules) {
 
 			exceptions.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						title: {
-							type: 'string',
-							optional: false,
-							description: "Message title",
-						},
-						message: {
-							type: 'string',
-							optional: false,
-							description: "Error message",
-						},
+					{
+						author: "Claude Petit",
+						revision: 0,
 						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
+							title: {
+								type: 'string',
+								optional: false,
+								description: "Message title",
+							},
+							message: {
+								type: 'string',
+								optional: false,
+								description: "Error message",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
 						},
-					},
-					returns: 'undefined',
-					description: "Application error with title and message formatting.",
-				}
+						returns: 'undefined',
+						description: "Application error with title and message formatting.",
+					}
 				//! END_REPLACE()
 				, types.Error.$inherit(
 					/*typeProto*/
@@ -1558,29 +1558,29 @@ exports.add = function add(modules) {
 
 			doodad.ADD('trapException', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						ex: {
-							type: 'error',
-							optional: false,
-							description: "Trapped error object.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							ex: {
+								type: 'error',
+								optional: false,
+								description: "Trapped error object.",
+							},
+							obj: {
+								type: 'object',
+								optional: true,
+								description: "Object.",
+							},
+							attr: {
+								type: 'string,symbol',
+								optional: true,
+								description: "Attribute name.",
+							},
 						},
-						obj: {
-							type: 'object',
-							optional: true,
-							description: "Object.",
-						},
-						attr: {
-							type: 'string,symbol',
-							optional: true,
-							description: "Attribute name.",
-						},
-					},
-					returns: 'error',
-					description: "Errors manager.",
-				}
+						returns: 'error',
+						description: "Errors manager.",
+					}
 				//! END_REPLACE()
 				, function trapException(ex, /*optional*/obj, /*optional*/attr) {
 					if (!__Internal__.inTrapException) {
@@ -1626,19 +1626,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Base of every attribute extenders. Not to be used directly.",
-				}
+						returns: 'Extender',
+						description: "Base of every attribute extenders. Not to be used directly.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER(types.Type.$inherit(
 					/*typeProto*/
@@ -1648,19 +1648,19 @@ exports.add = function add(modules) {
 
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									proto: {
-										type: 'object',
-										optional: false,
-										description: "Instance prototype, including '$TYPE_NAME'.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										proto: {
+											type: 'object',
+											optional: false,
+											description: "Instance prototype, including '$TYPE_NAME'.",
+										},
 									},
-								},
-								returns: 'Extender',
-								description: "Extends an extender with the specified prototype and returns a new extender.",
-							}
+									returns: 'Extender',
+									description: "Extends an extender with the specified prototype and returns a new extender.",
+								}
 							//! END_REPLACE()
 							, types.SUPER(function $inherit(proto) {
 								if (root.DD_ASSERT) {
@@ -1700,19 +1700,19 @@ exports.add = function add(modules) {
 
 						$inherit: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									proto: {
-										type: 'object',
-										optional: false,
-										description: "Instance prototype, including '$TYPE_NAME'.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										proto: {
+											type: 'object',
+											optional: false,
+											description: "Instance prototype, including '$TYPE_NAME'.",
+										},
 									},
-								},
-								returns: 'Extender',
-								description: "Extends an extender with the specified prototype and returns a new extender.",
-							}
+									returns: 'Extender',
+									description: "Extends an extender with the specified prototype and returns a new extender.",
+								}
 							//! END_REPLACE()
 							, function $inherit(proto) {
 								return types.getType(this).$inherit(proto);
@@ -1733,19 +1733,19 @@ exports.add = function add(modules) {
 
 						getCacheName: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options.",
+										},
 									},
-								},
-								returns: 'string',
-								description: "Builds a cache key from the extender's options so the extender object can be re-used. You can optionally override options with specified ones to retrieve or create a similar extender object.",
-							}
+									returns: 'string',
+									description: "Builds a cache key from the extender's options so the extender object can be re-used. You can optionally override options with specified ones to retrieve or create a similar extender object.",
+								}
 							//! END_REPLACE()
 							, function getCacheName(/*optional*/options) {
 								const isProto = types.get(options, 'isProto', this.isProto);
@@ -1760,19 +1760,19 @@ exports.add = function add(modules) {
 
 						get: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options.",
+										},
 									},
-								},
-								returns: 'Extender',
-								description: "Retrieves a similar extender object from the cache having the specified options. If none exists, creates a new one. If no options is specified, should returns itself.",
-							}
+									returns: 'Extender',
+									description: "Retrieves a similar extender object from the cache having the specified options. If none exists, creates a new one. If no options is specified, should returns itself.",
+								}
 							//! END_REPLACE()
 							, function get(/*optional*/options) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(options) || types.isObject(options), "Invalid options.");
@@ -1791,29 +1791,29 @@ exports.add = function add(modules) {
 
 						overrideOptions: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									options: {
-										type: 'object',
-										optional: false,
-										description: "Object where to store the result.",
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										options: {
+											type: 'object',
+											optional: false,
+											description: "Object where to store the result.",
+										},
+										newOptions: {
+											type: 'object,Extender',
+											optional: false,
+											description: "Options to apply.",
+										},
+										replace: {
+											type: 'boolean',
+											optional: false,
+											description: "When true, replace options. When false, merge them.",
+										},
 									},
-									newOptions: {
-										type: 'object,Extender',
-										optional: false,
-										description: "Options to apply.",
-									},
-									replace: {
-										type: 'boolean',
-										optional: false,
-										description: "When true, replace options. When false, merge them.",
-									},
-								},
-								returns: 'object',
-								description: "Overrides the current options by the specified ones. Returns the 'options' parameter value, where result has been stored.",
-							}
+									returns: 'object',
+									description: "Overrides the current options by the specified ones. Returns the 'options' parameter value, where result has been stored.",
+								}
 							//! END_REPLACE()
 							, function overrideOptions(options, newOptions, /*optional*/replace) {
 								if (replace) {
@@ -1832,19 +1832,19 @@ exports.add = function add(modules) {
 
 						override: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									extender: {
-										type: 'Extender',
-										optional: false,
-										description: "Extender object to override with.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										extender: {
+											type: 'Extender',
+											optional: false,
+											description: "Extender object to override with.",
+										},
 									},
-								},
-								returns: 'Extender',
-								description: "Overrides the current extender object by another extender object and returns the resulting extender object.",
-							}
+									returns: 'Extender',
+									description: "Overrides the current extender object by another extender object and returns the resulting extender object.",
+								}
 							//! END_REPLACE()
 							, function override(extender) {
 								if (types._instanceof(extender, types.getType(this))) {
@@ -1876,19 +1876,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Extender.$inherit({
 					$TYPE_NAME: "Attribute",
@@ -1901,34 +1901,34 @@ exports.add = function add(modules) {
 
 					getterTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									boxed: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute box.",
+									},
+									forType: {
+										type: 'bool',
+										optional: false,
+										description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
+									},
+									storage: {
+										type: 'object',
+										optional: false,
+										description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
+									},
 								},
-								boxed: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute box.",
-								},
-								forType: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
-								},
-								storage: {
-									type: 'object',
-									optional: false,
-									description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
-								},
-							},
-							returns: 'function',
-							description: "Creates a getter function for an attribute.",
-						}
+								returns: 'function',
+								description: "Creates a getter function for an attribute.",
+							}
 						//! END_REPLACE()
 						, function getterTemplate(attr, boxed, forType, storage) {
 							const extender = this;
@@ -1971,34 +1971,34 @@ exports.add = function add(modules) {
 
 					setterTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 3,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 3,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									boxed: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute box.",
+									},
+									forType: {
+										type: 'bool',
+										optional: false,
+										description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
+									},
+									storage: {
+										type: 'object',
+										optional: false,
+										description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
+									},
 								},
-								boxed: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute box.",
-								},
-								forType: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true', 'this' will be the type. When 'false', 'this' will be an instance.",
-								},
-								storage: {
-									type: 'object',
-									optional: false,
-									description: "Storage object. Default is attribute '__ATTRIBUTES_STORAGE' for instances, or attribute '$__ATTRIBUTES_STORAGE' for types.",
-								},
-							},
-							returns: 'function',
-							description: "Creates a setter function for an attribute.",
-						}
+								returns: 'function',
+								description: "Creates a setter function for an attribute.",
+							}
 						//! END_REPLACE()
 						, function setterTemplate(attr, boxed, forType, storage) {
 							const extender = this;
@@ -2075,64 +2075,64 @@ exports.add = function add(modules) {
 
 					extend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									source: {
+										type: 'Class,object',
+										optional: false,
+										description: "Source class.",
+									},
+									sourceProto: {
+										type: 'object',
+										optional: false,
+										description: "Source prototype.",
+									},
+									destAttributes: {
+										type: 'objectof(AttributeBox)',
+										optional: false,
+										description: "Attributes of the new class.",
+									},
+									forType: {
+										type: 'bool',
+										optional: false,
+										description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
+									},
+									sourceAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Current source attribute.",
+									},
+									destAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute value already present in the destination.",
+									},
+									sourceIsProto: {
+										type: 'bool',
+										optional: false,
+										description: "When 'true', the source is a prototype. When 'false', the source is a Class.",
+									},
+									proto: {
+										type: 'object',
+										optional: false,
+										description: "The prototype.",
+									},
+									protoName: {
+										type: 'string',
+										optional: false,
+										description: "Name of the prototype.",
+									},
 								},
-								source: {
-									type: 'Class,object',
-									optional: false,
-									description: "Source class.",
-								},
-								sourceProto: {
-									type: 'object',
-									optional: false,
-									description: "Source prototype.",
-								},
-								destAttributes: {
-									type: 'objectof(AttributeBox)',
-									optional: false,
-									description: "Attributes of the new class.",
-								},
-								forType: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
-								},
-								sourceAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Current source attribute.",
-								},
-								destAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute value already present in the destination.",
-								},
-								sourceIsProto: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true', the source is a prototype. When 'false', the source is a Class.",
-								},
-								proto: {
-									type: 'object',
-									optional: false,
-									description: "The prototype.",
-								},
-								protoName: {
-									type: 'string',
-									optional: false,
-									description: "Name of the prototype.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Extends an attributes, taking the base value into account.",
-						}
+								returns: 'AttributeBox',
+								description: "Extends an attributes, taking the base value into account.",
+							}
 						//! END_REPLACE()
 						, function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 							if (__Internal__.hasPolicies) {
@@ -2172,54 +2172,54 @@ exports.add = function add(modules) {
 
 					init: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 5,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 5,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									attributes: {
+										type: 'objectof(AttributeBox)',
+										optional: false,
+										description: "Attributes of the target class.",
+									},
+									forType: {
+										type: 'bool',
+										optional: false,
+										description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
+									},
+									attribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Current attribute.",
+									},
+									value: {
+										type: 'any',
+										optional: false,
+										description: "Current attribute value.",
+									},
+									generator: {
+										type: 'object',
+										optional: false,
+										description: "Code generator.",
+									},
+									isProto: {
+										type: 'boolean',
+										optional: false,
+										description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
+									},
+									existingAttributes: {
+										type: 'arrayof(string,symbol)',
+										optional: true,
+										description: "List of already existing object attributes. Reserved for expanding objects only when in storage mode.",
+									},
 								},
-								attributes: {
-									type: 'objectof(AttributeBox)',
-									optional: false,
-									description: "Attributes of the target class.",
-								},
-								forType: {
-									type: 'bool',
-									optional: false,
-									description: "When 'true', the target object is the type. When 'false', the target object is an instance.",
-								},
-								attribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Current attribute.",
-								},
-								value: {
-									type: 'any',
-									optional: false,
-									description: "Current attribute value.",
-								},
-								generator: {
-									type: 'object',
-									optional: false,
-									description: "Code generator.",
-								},
-								isProto: {
-									type: 'boolean',
-									optional: false,
-									description: "'true' when 'obj' is a Class prototype. 'false' when 'obj' is a Class instance. 'null' when attribute must be unconditionally set.",
-								},
-								existingAttributes: {
-									type: 'arrayof(string,symbol)',
-									optional: true,
-									description: "List of already existing object attributes. Reserved for expanding objects only when in storage mode.",
-								},
-							},
-							returns: 'undefined',
-							description: "Initializes an attribute for a new object instance.",
-						}
+								returns: 'undefined',
+								description: "Initializes an attribute for a new object instance.",
+							}
 						//! END_REPLACE()
 						, function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 							const attrId = generator.vars.add(attr);
@@ -2332,19 +2332,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender where the value will be always 'null'.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender where the value will be always 'null'.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "Null",
@@ -2361,19 +2361,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender where the value will get cloned if possible. Additionally, the attribute itself can get cloned.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender where the value will get cloned if possible. Additionally, the attribute itself can get cloned.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Attribute.$inherit({
 					$TYPE_NAME: "ClonedAttribute",
@@ -2442,19 +2442,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends an object.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends an object.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "ExtendObject",
@@ -2481,19 +2481,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends an array with unique items.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends an array with unique items.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "UniqueArray",
@@ -2531,19 +2531,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends a method.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends a method.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.ClonedAttribute.$inherit({
 					$TYPE_NAME: "Method",
@@ -2559,29 +2559,29 @@ exports.add = function add(modules) {
 
 					callerTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 5,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 5,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									sourceAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Current attribute.",
+									},
+									destAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute already present in the destination.",
+									},
 								},
-								sourceAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Current attribute.",
-								},
-								destAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute already present in the destination.",
-								},
-							},
-							returns: 'function',
-							description: "Template function to create a caller.",
-						}
+								returns: 'function',
+								description: "Template function to create a caller.",
+							}
 						//! END_REPLACE()
 						, function callerTemplate(attr, sourceAttribute, destAttribute) {
 							const extender = this;
@@ -2765,29 +2765,29 @@ exports.add = function add(modules) {
 
 					dispatchTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 9,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 9,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									attribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Callers attribute.",
+									},
+									value: {
+										type: 'arrayof(function)',
+										optional: false,
+										description: "Callers.",
+									},
 								},
-								attribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Callers attribute.",
-								},
-								value: {
-									type: 'arrayof(function)',
-									optional: false,
-									description: "Callers.",
-								},
-							},
-							returns: 'function',
-							description: "Template function to create a dispatch.",
-						}
+								returns: 'function',
+								description: "Template function to create a dispatch.",
+							}
 						//! END_REPLACE()
 						, function dispatchTemplate(attr, attribute, callers) {
 							/* eslint consistent-return: "off" */
@@ -3005,29 +3005,29 @@ exports.add = function add(modules) {
 
 					createCaller: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									sourceAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Source attribute.",
+									},
+									destAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute already present in the destination.",
+									},
 								},
-								sourceAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Source attribute.",
-								},
-								destAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute already present in the destination.",
-								},
-							},
-							returns: 'function',
-							description: "Creates a caller from the template.",
-						}
+								returns: 'function',
+								description: "Creates a caller from the template.",
+							}
 						//! END_REPLACE()
 						, function createCaller(attr, sourceAttribute, destAttribute) {
 							const fn = types.unbox(sourceAttribute);
@@ -3053,34 +3053,34 @@ exports.add = function add(modules) {
 
 					createDispatch: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 2,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 2,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									obj: {
+										type: 'object',
+										optional: false,
+										description: "Target object.",
+									},
+									attribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Array of callers.",
+									},
+									callers: {
+										type: 'arrayof(function)',
+										optional: false,
+										description: "Array of callers.",
+									},
 								},
-								obj: {
-									type: 'object',
-									optional: false,
-									description: "Target object.",
-								},
-								attribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Array of callers.",
-								},
-								callers: {
-									type: 'arrayof(function)',
-									optional: false,
-									description: "Array of callers.",
-								},
-							},
-							returns: 'function',
-							description: "Creates a dispatch from the template.",
-						}
+								returns: 'function',
+								description: "Creates a dispatch from the template.",
+							}
 						//! END_REPLACE()
 						, function createDispatch(attr, obj, attribute, callers) {
 							if (root.DD_ASSERT) {
@@ -3265,29 +3265,29 @@ exports.add = function add(modules) {
 
 					postExtend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									destAttributes: {
+										type: 'objectof(AttributeBox)',
+										optional: false,
+										description: "Attributes of the new class.",
+									},
+									destAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute value already present in the destination.",
+									},
 								},
-								destAttributes: {
-									type: 'objectof(AttributeBox)',
-									optional: false,
-									description: "Attributes of the new class.",
-								},
-								destAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute value already present in the destination.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Finalizes the extension of an attribute.",
-						}
+								returns: 'AttributeBox',
+								description: "Finalizes the extension of an attribute.",
+							}
 						//! END_REPLACE()
 						, types.SUPER(function postExtend(attr, destAttributes, destAttribute) {
 							destAttribute = this._super(attr, destAttributes, destAttribute) || destAttribute;
@@ -3477,19 +3477,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends a JS method.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends a JS method.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "JsMethod",
@@ -3537,29 +3537,29 @@ exports.add = function add(modules) {
 
 					jsCallerTemplate: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									fn: {
+										type: 'function',
+										optional: false,
+										description: "Method function.",
+									},
+									_super: {
+										type: 'function',
+										optional: true,
+										description: "Method function already present in the destination. Default is none.",
+									},
 								},
-								fn: {
-									type: 'function',
-									optional: false,
-									description: "Method function.",
-								},
-								_super: {
-									type: 'function',
-									optional: true,
-									description: "Method function already present in the destination. Default is none.",
-								},
-							},
-							returns: 'function',
-							description: "Template to create a caller for a JS method.",
-						}
+								returns: 'function',
+								description: "Template to create a caller for a JS method.",
+							}
 						//! END_REPLACE()
 						, function jsCallerTemplate(attr, fn, /*optional*/_super) {
 							let _caller;
@@ -3654,29 +3654,29 @@ exports.add = function add(modules) {
 
 					postExtend: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								attr: {
-									type: 'string,symbol',
-									optional: false,
-									description: "Attribute name.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									attr: {
+										type: 'string,symbol',
+										optional: false,
+										description: "Attribute name.",
+									},
+									destAttributes: {
+										type: 'objectof(AttributeBox)',
+										optional: false,
+										description: "Attributes of the new class.",
+									},
+									destAttribute: {
+										type: 'AttributeBox',
+										optional: false,
+										description: "Attribute value already present in the destination.",
+									},
 								},
-								destAttributes: {
-									type: 'objectof(AttributeBox)',
-									optional: false,
-									description: "Attributes of the new class.",
-								},
-								destAttribute: {
-									type: 'AttributeBox',
-									optional: false,
-									description: "Attribute value already present in the destination.",
-								},
-							},
-							returns: 'AttributeBox',
-							description: "Finalizes the extension of an attribute.",
-						}
+								returns: 'AttributeBox',
+								description: "Finalizes the extension of an attribute.",
+							}
 						//! END_REPLACE()
 						, function postExtend(attr, destAttributes, destAttribute) {
 							//destAttribute = extenders.ClonedAttribute.postExtend.call(this, attr, destAttributes, destAttribute) || destAttribute;
@@ -3714,19 +3714,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends a property.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends a property.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "Property",
@@ -3857,19 +3857,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PUBLIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a public attribute.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a public attribute.",
+					}
 				//! END_REPLACE()
 				, function PUBLIC(value) {
 					let extender = null;
@@ -3887,19 +3887,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PROTECTED', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a protected attribute.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a protected attribute.",
+					}
 				//! END_REPLACE()
 				, function PROTECTED(value) {
 					let extender = null;
@@ -3917,19 +3917,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PRIVATE', (__options__.publicOnDebug && root.getOptions().debug ? doodad.PUBLIC : root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a private attribute.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a private attribute.",
+					}
 				//! END_REPLACE()
 				, function PRIVATE(value) {
 					// <FUTURE> Will not have other choices than transpiling to JS classes to be able to use the incomming private fields and make Doodad's private fields more secure.
@@ -3966,19 +3966,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('BASE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Sets a class, interface or mix-in as base.",
-				}
+						returns: 'Class',
+						description: "Sets a class, interface or mix-in as base.",
+					}
 				//! END_REPLACE()
 				, function BASE(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -3992,19 +3992,19 @@ exports.add = function add(modules) {
 			// NOTE: A trait is in fact a mix-in. The only distinction is it has no attribute and its methods may be renamed at their implementation. For the moment, this dictinction is by convention.
 			doodad.ADD('TRAIT', doodad.ADD('MIX_IN', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Transforms a class to a mix-in.",
-				}
+						returns: 'Class',
+						description: "Transforms a class to a mix-in.",
+					}
 				//! END_REPLACE()
 				, function MIX_IN(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4023,19 +4023,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('INTERFACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Transforms a class to an interface.",
-				}
+						returns: 'Class',
+						description: "Transforms a class to an interface.",
+					}
 				//! END_REPLACE()
 				, function INTERFACE(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4054,19 +4054,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('SEALED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Sets a class, interface or mix-in to a sealed one.",
-				}
+						returns: 'Class',
+						description: "Sets a class, interface or mix-in to a sealed one.",
+					}
 				//! END_REPLACE()
 				, function SEALED(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4079,19 +4079,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('STATIC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Transforms a class to a static class.",
-				}
+						returns: 'Class',
+						description: "Transforms a class to a static class.",
+					}
 				//! END_REPLACE()
 				, function STATIC(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4104,19 +4104,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('ISOLATED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Transforms a mix-in or an interface to an isolated one.",
-				}
+						returns: 'Class',
+						description: "Transforms a mix-in or an interface to an isolated one.",
+					}
 				//! END_REPLACE()
 				, function ISOLATED(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4134,19 +4134,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('EXPANDABLE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'Class',
-					description: "Makes expandable objects.",
-				}
+						returns: 'Class',
+						description: "Makes expandable objects.",
+					}
 				//! END_REPLACE()
 				, function EXPANDABLE(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
@@ -4168,24 +4168,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('WHEN', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						type: {
-							type: 'Class,Interface,arrayof(Class,Interface)',
-							optional: false,
-							descripion: "Class or interface type.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							type: {
+								type: 'Class,Interface,arrayof(Class,Interface)',
+								optional: false,
+								descripion: "Class or interface type.",
+							},
+							value: {
+								type: 'AttributeBox,any',
+								optional: true,
+								description: "Value or attribute.",
+							},
 						},
-						value: {
-							type: 'AttributeBox,any',
-							optional: true,
-							description: "Value or attribute.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that the attribute is skipped until every specified types gets implemented.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that the attribute is skipped until every specified types gets implemented.",
+					}
 				//! END_REPLACE()
 				, function WHEN(type, /*optional*/value) {
 					value = types.AttributeBox(value);
@@ -4196,29 +4196,29 @@ exports.add = function add(modules) {
 
 			doodad.ADD('ATTRIBUTE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'any',
-							optional: false,
-							description: "Value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'any',
+								optional: false,
+								description: "Value.",
+							},
+							extender: {
+								type: 'Extender',
+								optional: true,
+								description: "Extender. Default is 'ClonedAttribute' extender.'",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Extender options.'",
+							},
 						},
-						extender: {
-							type: 'Extender',
-							optional: true,
-							description: "Extender. Default is 'ClonedAttribute' extender.'",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Extender options.'",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates an attribute from a value with the specified extender.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates an attribute from a value with the specified extender.",
+					}
 				//! END_REPLACE()
 				, function ATTRIBUTE(value, /*optional*/extender, /*optional*/options) {
 					value = types.AttributeBox(value);
@@ -4245,24 +4245,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('OPTIONS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						options: {
-							type: 'object',
-							optional: false,
-							description: "Extender options.'",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							options: {
+								type: 'object',
+								optional: false,
+								description: "Extender options.'",
+							},
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
-						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Sets the options of the extender of an attribute or sets the options of an extender.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Sets the options of the extender of an attribute or sets the options of an extender.",
+					}
 				//! END_REPLACE()
 				, function OPTIONS(options, value) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(options), "Invalid options.");
@@ -4302,19 +4302,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('NOT_INHERITED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute will always override.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute will always override.",
+					}
 				//! END_REPLACE()
 				, function NOT_INHERITED(value) {
 					return doodad.OPTIONS({
@@ -4324,19 +4324,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PRE_EXTEND', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute needs to be extended before others.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute needs to be extended before others.",
+					}
 				//! END_REPLACE()
 				, function PRE_EXTEND(value) {
 					return doodad.OPTIONS({
@@ -4346,19 +4346,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('TYPE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute is a type attribute.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute is a type attribute.",
+					}
 				//! END_REPLACE()
 				, function TYPE(value) {
 					return doodad.OPTIONS({
@@ -4368,19 +4368,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('INSTANCE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute is an instance attribute.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute is an instance attribute.",
+					}
 				//! END_REPLACE()
 				, function INSTANCE(value) {
 					return doodad.OPTIONS({
@@ -4390,19 +4390,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PERSISTENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute will not get deleted on object destruction.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute will not get deleted on object destruction.",
+					}
 				//! END_REPLACE()
 				, function PERSISTENT(value) {
 					return doodad.OPTIONS({
@@ -4412,19 +4412,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('BIND', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that a method will bind to the object.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that a method will bind to the object.",
+					}
 				//! END_REPLACE()
 				, function BIND(value) {
 					return doodad.OPTIONS({
@@ -4434,19 +4434,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('NON_REENTRANT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that a method is non-reentrant.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that a method is non-reentrant.",
+					}
 				//! END_REPLACE()
 				, function NON_REENTRANT(value) {
 					return doodad.OPTIONS({
@@ -4456,19 +4456,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('EXTERNAL', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that a method can only be called from outside the object.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that a method can only be called from outside the object.",
+					}
 				//! END_REPLACE()
 				, function EXTERNAL(value) {
 					return doodad.OPTIONS({
@@ -4478,19 +4478,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('READ_ONLY', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute is read-only (the opposite of 'doodad.WRITABLE').",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute is read-only (the opposite of 'doodad.WRITABLE').",
+					}
 				//! END_REPLACE()
 				, function READ_ONLY(value) {
 					return doodad.OPTIONS({
@@ -4500,19 +4500,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('WRITABLE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						value: {
-							type: 'AttributeBox,Extender,any',
-							optional: false,
-							description: "Attribute or extender or value.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							value: {
+								type: 'AttributeBox,Extender,any',
+								optional: false,
+								description: "Attribute or extender or value.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Specifies that an attribute is writable (the opposite of 'doodad.READ_ONLY'). That's the default behavior.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Specifies that an attribute is writable (the opposite of 'doodad.READ_ONLY'). That's the default behavior.",
+					}
 				//! END_REPLACE()
 				, function WRITABLE(value) {
 					return doodad.OPTIONS({
@@ -4522,19 +4522,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('METHOD', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Function.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a method.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a method.",
+					}
 				//! END_REPLACE()
 				, function METHOD(/*optional*/fn) {
 					if (types._instanceof(fn, types.AttributeBox)) {
@@ -4560,19 +4560,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('JS_METHOD', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Function.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a JS method.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a JS method.",
+					}
 				//! END_REPLACE()
 				, function JS_METHOD(fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(fn) && types.isBindable(fn), "Invalid function.");
@@ -4582,19 +4582,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('SUPER', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Function.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a JS method with '_super'.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a JS method with '_super'.",
+					}
 				//! END_REPLACE()
 				, function(fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(fn) && types.isBindable(fn), "Invalid function.");
@@ -4606,19 +4606,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('PROPERTY', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						descriptor: {
-							type: 'object',
-							optional: false,
-							description: "Property descriptor.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							descriptor: {
+								type: 'object',
+								optional: false,
+								description: "Property descriptor.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Creates a property.",
-				}
+						returns: 'AttributeBox',
+						description: "Creates a property.",
+					}
 				//! END_REPLACE()
 				, function PROPERTY(descriptor) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsObject(descriptor), "Invalid descriptor.");
@@ -4634,29 +4634,29 @@ exports.add = function add(modules) {
 
 			doodad.ADD('POSITION', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						position: {
-							type: 'integer',
-							optional: false,
-							description: "'-1': Before class. '1': After class. '0': Replace class.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							position: {
+								type: 'integer',
+								optional: false,
+								description: "'-1': Before class. '1': After class. '0': Replace class.",
+							},
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
-						},
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Positions an attribute relatively to the same attribute of another class.",
-				}
+						returns: 'AttributeBox',
+						description: "Positions an attribute relatively to the same attribute of another class.",
+					}
 				//! END_REPLACE()
 				, function POSITION(position, cls, value) {
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(doodad.Class, cls), "Invalid class.");
@@ -4670,24 +4670,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('AFTER', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Positions an attribute after to the same attribute of another class.",
-				}
+						returns: 'AttributeBox',
+						description: "Positions an attribute after to the same attribute of another class.",
+					}
 				//! END_REPLACE()
 				, function AFTER(cls, value) {
 					return doodad.POSITION(1, cls, value);
@@ -4695,24 +4695,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('BEFORE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
+							value: {
+								type: 'AttributeBox,any',
+								optional: false,
+								description: "Value.",
+							},
 						},
-						value: {
-							type: 'AttributeBox,any',
-							optional: false,
-							description: "Value.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Positions an attribute before to the same attribute of another class.",
-				}
+						returns: 'AttributeBox',
+						description: "Positions an attribute before to the same attribute of another class.",
+					}
 				//! END_REPLACE()
 				, function BEFORE(cls, value) {
 					return doodad.POSITION(-1, cls, value);
@@ -4739,25 +4739,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							_interface: {
+								type: 'Class',
+								optional: true,
+								description: "Interface class.",
+							},
 						},
-						_interface: {
-							type: 'Class',
-							optional: true,
-							description: "Interface class.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will replace the existing one.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will replace the existing one.",
+					}
 				//! END_REPLACE()
 				, function REPLACE(/*<<< optional[_interface]*/ /*optional fn*/...args) {
 					let _interface = null,
@@ -4779,25 +4779,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							_interface: {
+								type: 'Class',
+								optional: true,
+								description: "Interface class.",
+							},
 						},
-						_interface: {
-							type: 'Class',
-							optional: true,
-							description: "Interface class.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will override the existing one.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will override the existing one.",
+					}
 				//! END_REPLACE()
 				, function OVERRIDE(/*<<< optional[_interface]*/ /*optional fn*/ ...args) {
 					let _interface = null,
@@ -4819,25 +4819,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('CREATE_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							_interface: {
+								type: 'Class',
+								optional: true,
+								description: "Interface class.",
+							},
 						},
-						_interface: {
-							type: 'Class',
-							optional: true,
-							description: "Interface class.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will create or replace the existing one.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will create or replace the existing one.",
+					}
 				//! END_REPLACE()
 				, function CREATE_REPLACE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
 					const fn = doodad.REPLACE(...args);
@@ -4847,25 +4847,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('CREATE_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							_interface: {
+								type: 'Class',
+								optional: true,
+								description: "Interface class.",
+							},
 						},
-						_interface: {
-							type: 'Class',
-							optional: true,
-							description: "Interface class.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will create or override the existing one.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will create or override the existing one.",
+					}
 				//! END_REPLACE()
 				, function CREATE_OVERRIDE(/*<<< optional[_interface]*/ /*optional[fn]*/...args) {
 					const fn = doodad.OVERRIDE(...args);
@@ -4875,19 +4875,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('MUST_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method must be overridden (or replaced).",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method must be overridden (or replaced).",
+					}
 				//! END_REPLACE()
 				, function MUST_OVERRIDE(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
@@ -4897,25 +4897,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('OBSOLETE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							message: {
+								type: 'string',
+								optional: true,
+								description: "Explanation.",
+							},
 						},
-						message: {
-							type: 'string',
-							optional: true,
-							description: "Explanation.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method is obsolete.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method is obsolete.",
+					}
 				//! END_REPLACE()
 				, function OBSOLETE(/* <<< optional[message], optional[fn]*/...args) {
 					const argsLen = args.length;
@@ -4929,19 +4929,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('CALL_FIRST', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that this method function is called first.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that this method function is called first.",
+					}
 				//! END_REPLACE()
 				, function CALL_FIRST(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
@@ -4951,19 +4951,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('CAN_BE_DESTROYED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
 						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that the method can be called when the object is destroyed.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that the method can be called when the object is destroyed.",
+					}
 				//! END_REPLACE()
 				, function CAN_BE_DESTROYED(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
@@ -4973,13 +4973,13 @@ exports.add = function add(modules) {
 
 			doodad.ADD('ABSTRACT', doodad.ADD('NOT_IMPLEMENTED', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: 'AttributeBox',
-					description: "Specifies that this method is not implemented and can be overridden.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'AttributeBox',
+						description: "Specifies that this method is not implemented and can be overridden.",
+					}
 				//! END_REPLACE()
 				, function NOT_IMPLEMENTED(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
@@ -4989,24 +4989,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('RETURNS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						validator: {
-							type: 'function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							validator: {
+								type: 'function',
+								optional: true,
+								description: "Method function.",
+							},
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
 						},
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that this method should returns a value validated by the specified validator.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that this method should returns a value validated by the specified validator.",
+					}
 				//! END_REPLACE()
 				, function RETURNS(validator, /*optional*/fn) {
 					root.DD_ASSERT && root.DD_ASSERT(types.isJsFunction(validator), "Invalid validator.");
@@ -5017,13 +5017,13 @@ exports.add = function add(modules) {
 
 			doodad.ADD('ASYNC', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: 'AttributeBox',
-					description: "Specifies that this method is async and always returns a Promise.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'AttributeBox',
+						description: "Specifies that this method is async and always returns a Promise.",
+					}
 				//! END_REPLACE()
 				, function ASYNC(/*optional*/fn) {
 					fn = doodad.METHOD(fn);
@@ -5033,25 +5033,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('RENAME_OVERRIDE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							name: {
+								type: 'string',
+								optional: true,
+								description: "New name. If not specified, the name of the provided function will be taken.",
+							},
 						},
-						name: {
-							type: 'string',
-							optional: true,
-							description: "New name. If not specified, the name of the provided function will be taken.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will override the existing one with a new name.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will override the existing one with a new name.",
+					}
 				//! END_REPLACE()
 				, function RENAME_OVERRIDE(/*<<< optional[name], optional[fn]*/...args) {
 					let name = null;
@@ -5075,25 +5075,25 @@ exports.add = function add(modules) {
 
 			doodad.ADD('RENAME_REPLACE', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					paramsDirection: 'rightToLeft',
-					params: {
-						fn: {
-							type: 'AttributeBox,function',
-							optional: true,
-							description: "Method function.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						paramsDirection: 'rightToLeft',
+						params: {
+							fn: {
+								type: 'AttributeBox,function',
+								optional: true,
+								description: "Method function.",
+							},
+							name: {
+								type: 'string',
+								optional: true,
+								description: "New name. If not specified, the name of the provided function will be taken.",
+							},
 						},
-						name: {
-							type: 'string',
-							optional: true,
-							description: "New name. If not specified, the name of the provided function will be taken.",
-						},
-					},
-					returns: 'AttributeBox',
-					description: "Specifies that a method will be renamed and replace the previous one.",
-				}
+						returns: 'AttributeBox',
+						description: "Specifies that a method will be renamed and replace the previous one.",
+					}
 				//! END_REPLACE()
 				, function RENAME_REPLACE(/*<<< optional[name]*/ /*optional[fn]*/...args) {
 					let name = null;
@@ -5146,7 +5146,7 @@ exports.add = function add(modules) {
 			__Internal__.switchToExpandable = function switchToExpandable(attributes) {
 				tools.forEach(__Internal__.defaultAttributesExpandable, function(attribute, attr) {
 					const oldAttribute = attributes[attr];
-					root.DD_ASSERT && root.DD_ASSERT(oldAttribute, "Adding new attributes there is not supported­.");
+					root.DD_ASSERT && root.DD_ASSERT(oldAttribute, "Adding new attributes there is not supportedÂ­.");
 					const newAttribute = attribute.setValue(oldAttribute);
 					attributes[attr] = types.freezeObject(newAttribute);
 				});
@@ -6269,19 +6269,19 @@ exports.add = function add(modules) {
 
 			__Internal__._superFrom = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						cls: {
-							type: 'Class',
-							optional: false,
-							description: "Class.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							cls: {
+								type: 'Class',
+								optional: false,
+								description: "Class.",
+							},
 						},
-					},
-					returns: 'any',
-					description: "Call '_super' from the specified implemented class.",
-				}
+						returns: 'any',
+						description: "Call '_super' from the specified implemented class.",
+					}
 				//! END_REPLACE()
 				, doodad.PROTECTED(doodad.READ_ONLY(doodad.CAN_BE_DESTROYED(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 					function superFrom(cls) {
@@ -6341,13 +6341,13 @@ exports.add = function add(modules) {
 
 			__Internal__.overrideSuper = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'undefined',
-					description: "Prevents the need to call '_super'. Use when '_super' is conditionally called.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'undefined',
+						description: "Prevents the need to call '_super'. Use when '_super' is conditionally called.",
+					}
 				//! END_REPLACE()
 				, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.OPTIONS({dontSetSuper: true}, doodad.JS_METHOD(
 					function overrideSuper() {
@@ -6519,24 +6519,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('OutsideCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'Class,Object',
-							optional: false,
-							description: "Target.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'Class,Object',
+								optional: false,
+								description: "Target.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function.",
+							},
 						},
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Callback function.",
-						},
-					},
-					returns: 'function',
-					description: "Creates a callback running outside of a class or class instance.",
-				}
+						returns: 'function',
+						description: "Creates a callback running outside of a class or class instance.",
+					}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function OutsideCallback(obj, fn) {
 					if (types.isCallback(fn)) {
@@ -6683,13 +6683,13 @@ exports.add = function add(modules) {
 
 				toString: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'string',
-						description: "Converts object to a string.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'string',
+							description: "Converts object to a string.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.RETURNS(types.isString, doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function toString() {
@@ -6703,55 +6703,55 @@ exports.add = function add(modules) {
 
 				$extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							paramarray: {
-								type: 'arrayof(object,Class)',
-								optional: false,
-								description: "Prototypes and classes to extend with.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								paramarray: {
+									type: 'arrayof(object,Class)',
+									optional: false,
+									description: "Prototypes and classes to extend with.",
+								},
 							},
-						},
-						returns: 'Class',
-						description: "Returns a new extended class.",
-					}
+							returns: 'Class',
+							description: "Returns a new extended class.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
 
 				extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							paramarray: {
-								type: 'arrayof(object,Class)',
-								optional: false,
-								description: "Prototypes and classes to extend with.",
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								paramarray: {
+									type: 'arrayof(object,Class)',
+									optional: false,
+									description: "Prototypes and classes to extend with.",
+								},
 							},
-						},
-						returns: 'Object',
-						description: "Extends an object and returns that same object.",
-					}
+							returns: 'Object',
+							description: "Extends an object and returns that same object.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.INSTANCE(doodad.JS_METHOD( __Internal__.$extend ))))),
 
 				getInterface: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							type: {
-								type: 'Class',
-								optional: false,
-								description: "Isolated interface class.",
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								type: {
+									type: 'Class',
+									optional: false,
+									description: "Isolated interface class.",
+								},
 							},
-						},
-						returns: 'Interface',
-						description: "Returns the instance of the specified isolated interface.",
-					}
+							returns: 'Interface',
+							description: "Returns the instance of the specified isolated interface.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(
 						function getInterface(type) {
@@ -6846,19 +6846,19 @@ exports.add = function add(modules) {
 
 				getPreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							attr: {
-								type: 'string',
-								optional: false,
-								description: "Attribute name.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								attr: {
+									type: 'string',
+									optional: false,
+									description: "Attribute name.",
+								},
 							},
-						},
-						returns: 'any',
-						description: "Returns the preserved value of an attribute.",
-					}
+							returns: 'any',
+							description: "Returns the preserved value of an attribute.",
+						}
 					//! END_REPLACE()
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function getPreserved(attr) {
@@ -6876,19 +6876,19 @@ exports.add = function add(modules) {
 
 				restorePreserved: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							attr: {
-								type: 'string',
-								optional: false,
-								description: "Attribute name.",
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								attr: {
+									type: 'string',
+									optional: false,
+									description: "Attribute name.",
+								},
 							},
-						},
-						returns: 'bool',
-						description: "Reverts an attribute to its preserved value. Returns 'true' if attribute is reverted. Returns 'false' if it failed.",
-					}
+							returns: 'bool',
+							description: "Reverts an attribute to its preserved value. Returns 'true' if attribute is reverted. Returns 'false' if it failed.",
+						}
 					//! END_REPLACE()
 					, doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function restorePreserved(attr) {
@@ -6913,19 +6913,19 @@ exports.add = function add(modules) {
 
 				_implements: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 5,
-						params: {
-							type: {
-								type: 'arrayof(Class),Class,arrayof(Object),Object',
-								optional: false,
-								description: "Classes.",
+						{
+							author: "Claude Petit",
+							revision: 5,
+							params: {
+								type: {
+									type: 'arrayof(Class),Class,arrayof(Object),Object',
+									optional: false,
+									description: "Classes.",
+								},
 							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
-					}
+							returns: 'bool',
+							description: "Returns 'true' when object implements one of the specified classes. Returns 'false' otherwise.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function _implements(type) {
@@ -6974,19 +6974,19 @@ exports.add = function add(modules) {
 
 				isImplemented: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							name: {
-								type: 'string,symbol',
-								optional: false,
-								description: "Method name.",
+						{
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								name: {
+									type: 'string,symbol',
+									optional: false,
+									description: "Method name.",
+								},
 							},
-						},
-						returns: 'bool',
-						description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
-					}
+							returns: 'bool',
+							description: "Returns 'true' if method exists and is implemented. Returns 'false' otherwise.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function isImplemented(name) {
@@ -7014,50 +7014,50 @@ exports.add = function add(modules) {
 			}, /*thisObj*/undefined, /*start*/null, /*end*/null, /*sparsed*/false, /*includeSymbols*/true));
 
 			//! IF_SET("serverSide")
-			(function() {
-				//! BEGIN_REMOVE()
-				if (nodejs) {
-					//! END_REMOVE()
-					const customSymbol = nodejs.getCustomInspectSymbol();
-					if (customSymbol) {
-						__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
-							const isType = types.isType(this),
-								attrs = types.getAttribute(this, _shared.AttributesSymbol, null, _shared.SECRET) || {},
-								result = {};
-							const loopKeys = function _loopKeys(keys) {
-								for (let i = 0; i < keys.length; i++) {
-									const key = keys[i];
-									if (key !== customSymbol) {
-										const attr = attrs[key],
-											extender = attr[_shared.ExtenderSymbol];
-										if (extender) {
-											if ((attr[_shared.ScopeSymbol] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
-												result[key] = types.getAttribute(this, key, null, _shared.SECRET);
+				(function() {
+					//! BEGIN_REMOVE()
+						if (nodejs) {
+						//! END_REMOVE()
+						const customSymbol = nodejs.getCustomInspectSymbol();
+						if (customSymbol) {
+							__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
+								const isType = types.isType(this),
+									attrs = types.getAttribute(this, _shared.AttributesSymbol, null, _shared.SECRET) || {},
+									result = {};
+								const loopKeys = function _loopKeys(keys) {
+									for (let i = 0; i < keys.length; i++) {
+										const key = keys[i];
+										if (key !== customSymbol) {
+											const attr = attrs[key],
+												extender = attr[_shared.ExtenderSymbol];
+											if (extender) {
+												if ((attr[_shared.ScopeSymbol] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
+													result[key] = types.getAttribute(this, key, null, _shared.SECRET);
+												};
 											};
 										};
 									};
 								};
-							};
-							loopKeys.call(this, types.keys(attrs));
-							loopKeys.call(this, types.symbols(attrs));
-							return result;
-						})))));
-					};
-					//! BEGIN_REMOVE()
-				};
-				//! END_REMOVE()
-			})();
+								loopKeys.call(this, types.keys(attrs));
+								loopKeys.call(this, types.symbols(attrs));
+								return result;
+							})))));
+						};
+						//! BEGIN_REMOVE()
+						};
+					//! END_REMOVE()
+				})();
 			//! END_IF()
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'Class',
-					description: "Main class of every Doodad classes.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'Class',
+						description: "Main class of every Doodad classes.",
+					}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.classProto))));
 
@@ -7154,13 +7154,13 @@ exports.add = function add(modules) {
 
 				toString: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'string',
-						description: "Converts object to a string.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'string',
+							description: "Converts object to a string.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.RETURNS(types.isString, doodad.PRE_EXTEND(doodad.TYPE(doodad.INSTANCE(doodad.JS_METHOD(
 						function toString() {
@@ -7170,19 +7170,19 @@ exports.add = function add(modules) {
 
 				$extend: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							paramarray: {
-								type: 'arrayof(object,Class)',
-								optional: false,
-								description: "Prototypes and classes to extend with.",
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								paramarray: {
+									type: 'arrayof(object,Class)',
+									optional: false,
+									description: "Prototypes and classes to extend with.",
+								},
 							},
-						},
-						returns: 'Interface',
-						description: "Returns a new extended interface class.",
-					}
+							returns: 'Interface',
+							description: "Returns a new extended interface class.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.READ_ONLY(doodad.TYPE(doodad.JS_METHOD( __Internal__.$extend ))))),
 
@@ -7201,19 +7201,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						host: {
-							type: 'Object',
-							optional: false,
-							description: "Object host of the new isolated interface instance.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							host: {
+								type: 'Object',
+								optional: false,
+								description: "Object host of the new isolated interface instance.",
+							},
 						},
-					},
-					returns: 'Interface',
-					description: "Isolated interface instance.",
-				}
+						returns: 'Interface',
+						description: "Isolated interface instance.",
+					}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.BASE(__Internal__.$extend.call(types.Type, __Internal__.interfaceProto))));
 
@@ -7245,19 +7245,19 @@ exports.add = function add(modules) {
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						data: {
-							type: 'any',
-							optional: true,
-							description: "Custom event data.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							data: {
+								type: 'any',
+								optional: true,
+								description: "Custom event data.",
+							},
 						},
-					},
-					returns: 'Event',
-					description: "Event object.",
-				}
+						returns: 'Event',
+						description: "Event object.",
+					}
 				//! END_REPLACE()
 				, types.Type.$inherit(
 					/*typeProto*/
@@ -7288,13 +7288,13 @@ exports.add = function add(modules) {
 
 						preventDefault: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'undefined',
-								description: "Prevents default behavior.",
-							}
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: null,
+									returns: 'undefined',
+									description: "Prevents default behavior.",
+								}
 							//! END_REPLACE()
 							, function preventDefault() {
 								this.prevent = true;
@@ -7303,19 +7303,19 @@ exports.add = function add(modules) {
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						data: {
-							type: 'any',
-							optional: true,
-							description: "Custom event data.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							data: {
+								type: 'any',
+								optional: true,
+								description: "Custom event data.",
+							},
 						},
-					},
-					returns: 'CancelEvent',
-					description: "Canceled event object.",
-				}
+						returns: 'CancelEvent',
+						description: "Canceled event object.",
+					}
 				//! END_REPLACE()
 				, doodad.Event.$inherit(
 					/*typeProto*/
@@ -7326,24 +7326,24 @@ exports.add = function add(modules) {
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						error: {
-							type: 'error',
-							optional: true,
-							description: "Error object.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							error: {
+								type: 'error',
+								optional: true,
+								description: "Error object.",
+							},
+							data: {
+								type: 'any',
+								optional: true,
+								description: "Custom event data.",
+							},
 						},
-						data: {
-							type: 'any',
-							optional: true,
-							description: "Custom event data.",
-						},
-					},
-					returns: 'ErrorEvent',
-					description: "Error event object.",
-				}
+						returns: 'ErrorEvent',
+						description: "Error event object.",
+					}
 				//! END_REPLACE()
 				, doodad.Event.$inherit(
 					/*typeProto*/
@@ -7405,39 +7405,39 @@ exports.add = function add(modules) {
 
 				attach: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 4,
-						params: {
-							obj: {
-								type: 'object',
-								optional: true,
-								description: "Object to have in 'this' of the callback function.",
+						{
+							author: "Claude Petit",
+							revision: 4,
+							params: {
+								obj: {
+									type: 'object',
+									optional: true,
+									description: "Object to have in 'this' of the callback function.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Callback function.",
+								},
+								priority: {
+									type: 'integer',
+									optional: true,
+									description: "Priority. Default is '20'.",
+								},
+								datas: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Data to attach with the event.",
+								},
+								count: {
+									type: 'integer',
+									optional: true,
+									description: "Number of times the callback function will be called before been detached. Default is Infinity.",
+								},
 							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Callback function.",
-							},
-							priority: {
-								type: 'integer',
-								optional: true,
-								description: "Priority. Default is '20'.",
-							},
-							datas: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Data to attach with the event.",
-							},
-							count: {
-								type: 'integer',
-								optional: true,
-								description: "Number of times the callback function will be called before been detached. Default is Infinity.",
-							},
-						},
-						returns: 'undefined',
-						description: "Attach a callback function to an event.",
-					}
+							returns: 'undefined',
+							description: "Attach a callback function to an event.",
+						}
 					//! END_REPLACE()
 					, function attach(/*optional*/obj, fn, /*optional*/priority, /*optional*/datas, /*optional*/count) {
 						if (types.isNothing(priority)) {
@@ -7510,29 +7510,29 @@ exports.add = function add(modules) {
 
 				detach: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 3,
-						params: {
-							obj: {
-								type: 'object',
-								optional: true,
-								description: "Object linked with the callback function.",
+						{
+							author: "Claude Petit",
+							revision: 3,
+							params: {
+								obj: {
+									type: 'object',
+									optional: true,
+									description: "Object linked with the callback function.",
+								},
+								fn: {
+									type: 'function',
+									optional: true,
+									description: "Callback function.",
+								},
+								datas: {
+									type: 'array',
+									optional: true,
+									description: "Data attached with the event.",
+								},
 							},
-							fn: {
-								type: 'function',
-								optional: true,
-								description: "Callback function.",
-							},
-							datas: {
-								type: 'array',
-								optional: true,
-								description: "Data attached with the event.",
-							},
-						},
-						returns: 'undefined',
-						description: "Detach a callback function from an event.",
-					}
+							returns: 'undefined',
+							description: "Detach a callback function from an event.",
+						}
 					//! END_REPLACE()
 					, function detach(/*optional*/obj, /*optional*/fn, /*optional*/datas) {
 						if (root.DD_ASSERT) {
@@ -7576,13 +7576,13 @@ exports.add = function add(modules) {
 
 				clear: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'undefined',
-						description: "Detach every callback function from an event.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'undefined',
+							description: "Detach every callback function from an event.",
+						}
 					//! END_REPLACE()
 					, function clear() {
 						this.detach();
@@ -7590,34 +7590,34 @@ exports.add = function add(modules) {
 
 				attachOnce: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							obj: {
-								type: 'object',
-								optional: true,
-								description: "Object to have in 'this' of the callback function.",
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								obj: {
+									type: 'object',
+									optional: true,
+									description: "Object to have in 'this' of the callback function.",
+								},
+								fn: {
+									type: 'function',
+									optional: false,
+									description: "Callback function.",
+								},
+								priority: {
+									type: 'integer',
+									optional: true,
+									description: "Priority. Default is '20'.",
+								},
+								datas: {
+									type: 'array',
+									optional: true,
+									description: "Data to attach with the event.",
+								},
 							},
-							fn: {
-								type: 'function',
-								optional: false,
-								description: "Callback function.",
-							},
-							priority: {
-								type: 'integer',
-								optional: true,
-								description: "Priority. Default is '20'.",
-							},
-							datas: {
-								type: 'array',
-								optional: true,
-								description: "Data to attach with the event.",
-							},
-						},
-						returns: 'undefined',
-						description: "Attach a callback function to an event that will get called only once.",
-					}
+							returns: 'undefined',
+							description: "Attach a callback function to an event that will get called only once.",
+						}
 					//! END_REPLACE()
 					, function attachOnce(obj, fn, /*optional*/priority, /*optional*/datas) {
 						return this.attach(obj, fn, priority, datas, 1);
@@ -7625,13 +7625,13 @@ exports.add = function add(modules) {
 
 				promise: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'Promise',
-						description: "Creates a promise for an event.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: null,
+							returns: 'Promise',
+							description: "Creates a promise for an event.",
+						}
 					//! END_REPLACE()
 					, function promise(/*optional*/callback, /*optional*/thisObj, /*optional*/secret) {
 						// NOTE: Don't forget that a promise resolves only once, so ".promise" is like ".attachOnce".
@@ -7710,13 +7710,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: null,
-					returns: 'Class',
-					description: "Event handler prototype.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: null,
+						returns: 'Class',
+						description: "Event handler prototype.",
+					}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.Class.$extend(
 					__Internal__.eventHandlerProto
@@ -7725,19 +7725,19 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-					},
-					returns: 'Extender',
-					description: "Attribute extender which extends an event.",
-				}
+						returns: 'Extender',
+						description: "Attribute extender which extends an event.",
+					}
 				//! END_REPLACE()
 				, extenders.REGISTER([], extenders.Method.$inherit({
 					$TYPE_NAME: "Event",
@@ -8082,24 +8082,24 @@ exports.add = function add(modules) {
 
 			doodad.ADD('EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						cancellable: {
-							type: 'bool',
-							optional: true,
-							description: "Function. Default is 'true'.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							cancellable: {
+								type: 'bool',
+								optional: true,
+								description: "Function. Default is 'true'.",
+							},
+							fn: {
+								type: 'function',
+								optional: true,
+								description: "Event handler.",
+							},
 						},
-						fn: {
-							type: 'function',
-							optional: true,
-							description: "Event handler.",
-						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Creates an event.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Creates an event.",
+					}
 				//! END_REPLACE()
 				, function EVENT(/*optional*/cancellable, /*optional*/fn) {
 					const boxed = __Internal__.EVENT(cancellable, 'Doodad.Event', fn);
@@ -8108,19 +8108,19 @@ exports.add = function add(modules) {
 
 			doodad.ADD('ERROR_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						fn: {
-							type: 'function',
-							optional: true,
-							description: "Event handler.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							fn: {
+								type: 'function',
+								optional: true,
+								description: "Event handler.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Creates an error event ('onError').",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Creates an error event ('onError').",
+					}
 				//! END_REPLACE()
 				, function ERROR_EVENT(/*optional*/fn) {
 					const boxed = __Internal__.EVENT(false, 'Doodad.ErrorEvent', fn);
@@ -8129,13 +8129,13 @@ exports.add = function add(modules) {
 
 			doodad.ADD('RAW_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'AttributeBox,Extender',
-					description: "Creates a special event.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'AttributeBox,Extender',
+						description: "Creates a special event.",
+					}
 				//! END_REPLACE()
 				, function RAW_EVENT(/*optional*/fn) {
 					const boxed = __Internal__.RAW_EVENT(false, fn);
@@ -8144,13 +8144,13 @@ exports.add = function add(modules) {
 
 			doodad.ADD('RAW_ERROR_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'AttributeBox,Extender',
-					description: "Creates a special error event.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'AttributeBox,Extender',
+						description: "Creates a special error event.",
+					}
 				//! END_REPLACE()
 				, function RAW_ERROR_EVENT(/*optional*/fn) {
 					const boxed = __Internal__.RAW_EVENT(true, fn);
@@ -8159,19 +8159,19 @@ exports.add = function add(modules) {
 
 			__Internal__.CANCEL_EVENT = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						fn: {
-							type: 'function',
-							optional: true,
-							description: "Event handler.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							fn: {
+								type: 'function',
+								optional: true,
+								description: "Event handler.",
+							},
 						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "Creates an 'event cancelled' event.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "Creates an 'event cancelled' event.",
+					}
 				//! END_REPLACE()
 				, function CANCEL_EVENT(/*optional*/fn) {
 					const boxed = __Internal__.EVENT(false, 'Doodad.CancelEvent', fn);
@@ -8184,13 +8184,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Interface that represents a clonable object.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Interface that represents a clonable object.",
+					}
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 					$TYPE_NAME: 'Clonable',
@@ -8198,13 +8198,13 @@ exports.add = function add(modules) {
 
 					clone: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'Object',
-							description: "Returns a clone of the object.",
-						}
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'Object',
+								description: "Returns a clone of the object.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(function clone(val) {
 							return (val !== this) && types.is(val, this);
@@ -8213,13 +8213,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Interface that represents a serializable object.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Interface that represents a serializable object.",
+					}
 				//! END_REPLACE()
 				, interfaces.REGISTER(doodad.INTERFACE(doodad.Class.$extend({
 					$TYPE_NAME: 'Serializable',
@@ -8227,31 +8227,31 @@ exports.add = function add(modules) {
 
 					serialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: null,
-							returns: 'object',
-							description: "Serializes the object and returns the result.",
-						}
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: null,
+								returns: 'object',
+								description: "Serializes the object and returns the result.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(types.isJsObject))), // function()
 
 					$unserialize: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								data: {
-									type: 'object',
-									optional: false,
-									description: "Serialized object.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									data: {
+										type: 'object',
+										optional: false,
+										description: "Serialized object.",
+									},
 								},
-							},
-							returns: 'Object',
-							description: "Deserializes an object.",
-						}
+								returns: 'Object',
+								description: "Deserializes an object.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.RETURNS(function(val) {
 							return types._instanceof(val, this); /* Polymorphism allowed */
@@ -8264,13 +8264,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Mix-in that implements events in a class.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Mix-in that implements events in a class.",
+					}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: "Events",
@@ -8285,29 +8285,29 @@ exports.add = function add(modules) {
 
 					detachEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								obj: {
-									type: 'object',
-									optional: true,
-									description: "Object linked with the callback function.",
+							{
+								author: "Claude Petit",
+								revision: 1,
+								params: {
+									obj: {
+										type: 'object',
+										optional: true,
+										description: "Object linked with the callback function.",
+									},
+									fn: {
+										type: 'function',
+										optional: true,
+										description: "Callback function.",
+									},
+									datas: {
+										type: 'array',
+										optional: true,
+										description: "Data attached with the event.",
+									},
 								},
-								fn: {
-									type: 'function',
-									optional: true,
-									description: "Callback function.",
-								},
-								datas: {
-									type: 'array',
-									optional: true,
-									description: "Data attached with the event.",
-								},
-							},
-							returns: 'undefined',
-							description: "Detaches the callback function from every events.",
-						}
+								returns: 'undefined',
+								description: "Detaches the callback function from every events.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function detachEvents(obj, fn, /*optional*/datas) {
 							const events = this.__EVENTS,
@@ -8319,19 +8319,19 @@ exports.add = function add(modules) {
 
 					clearEvents: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 4,
-							params: {
-								objs: {
-									type: 'object,arrayof(object)',
-									optional: true,
-									description: "List of objects to detach from every events.",
+							{
+								author: "Claude Petit",
+								revision: 4,
+								params: {
+									objs: {
+										type: 'object,arrayof(object)',
+										optional: true,
+										description: "List of objects to detach from every events.",
+									},
 								},
-							},
-							returns: 'undefined',
-							description: "Detaches every callback functions from every events.",
-						}
+								returns: 'undefined',
+								description: "Detaches every callback functions from every events.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(function clearEvents(/*optional*/objs) {
 							const events = this.__EVENTS,
@@ -8360,13 +8360,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Mix-in that implements raw events (and normal events) in a class.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Mix-in that implements raw events (and normal events) in a class.",
+					}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "RawEvents",
@@ -8427,19 +8427,19 @@ exports.add = function add(modules) {
 
 				$create: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							paramarray: {
-								type: 'any',
-								optional: true,
-								description: "Arguments.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								paramarray: {
+									type: 'any',
+									optional: true,
+									description: "Arguments.",
+								},
 							},
-						},
-						returns: 'undefined',
-						description: "Creates the class.",
-					}
+							returns: 'undefined',
+							description: "Creates the class.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function $create(/*paramarray*/...args) {
 						if (this[_shared.DestroyedSymbol] !== null) {
@@ -8456,13 +8456,13 @@ exports.add = function add(modules) {
 
 				$destroy: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'undefined',
-						description: "Destroys the class.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'undefined',
+							description: "Destroys the class.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function $destroy() {
@@ -8482,19 +8482,19 @@ exports.add = function add(modules) {
 
 				$createInstance: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							paramarray: {
-								type: 'any',
-								optional: true,
-								description: "Arguments to the constructor.",
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								paramarray: {
+									type: 'any',
+									optional: true,
+									description: "Arguments to the constructor.",
+								},
 							},
-						},
-						returns: 'Object',
-						description: "Creates a new instance of the class.",
-					}
+							returns: 'Object',
+							description: "Creates a new instance of the class.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.CALL_FIRST(
 						function $createInstance(/*paramarray*/...args) {
@@ -8504,19 +8504,19 @@ exports.add = function add(modules) {
 
 				create: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							paramarray: {
-								type: 'any',
-								optional: true,
-								description: "Arguments.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								paramarray: {
+									type: 'any',
+									optional: true,
+									description: "Arguments.",
+								},
 							},
-						},
-						returns: 'undefined',
-						description: "Creates the class object instance.",
-					}
+							returns: 'undefined',
+							description: "Creates the class object instance.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.CAN_BE_DESTROYED(doodad.CALL_FIRST(function create(/*paramarray*/...args) {
 						if (this[_shared.DestroyedSymbol] !== null) {
@@ -8533,13 +8533,13 @@ exports.add = function add(modules) {
 
 				fastDestroy: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'undefined',
-						description: "Rapidly destroys the class object instance.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'undefined',
+							description: "Rapidly destroys the class object instance.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function fastDestroy() {
@@ -8554,13 +8554,13 @@ exports.add = function add(modules) {
 
 				destroy: root.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: null,
-						returns: 'undefined',
-						description: "Fully destroys the class object instance.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: null,
+							returns: 'undefined',
+							description: "Fully destroys the class object instance.",
+						}
 					//! END_REPLACE()
 					, doodad.PUBLIC(doodad.EXTERNAL(doodad.CALL_FIRST(
 						function destroy() {
@@ -8581,26 +8581,26 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Implements a creatable object.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Implements a creatable object.",
+					}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend(__Internal__.creatablePrototype))));
 
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Implements a translatable (localized) object.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Implements a translatable (localized) object.",
+					}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: 'Translatable',
@@ -8610,19 +8610,19 @@ exports.add = function add(modules) {
 
 					$getTranslation: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								name: {
-									type: 'string',
-									optional: true,
-									description: "Name of the localized string. Default will returns an object with all localized strings.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: true,
+										description: "Name of the localized string. Default will returns an object with all localized strings.",
+									},
 								},
-							},
-							returns: 'string,object',
-							description: "Returns a localized string.",
-						}
+								returns: 'string,object',
+								description: "Returns a localized string.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(
 							function $getTranslation(/*optional*/name) {
@@ -8648,24 +8648,24 @@ exports.add = function add(modules) {
 
 					$setTranslation: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value: {
-									type: 'string,object',
-									optional: false,
-									description: "Value of the localized string.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									value: {
+										type: 'string,object',
+										optional: false,
+										description: "Value of the localized string.",
+									},
+									name: {
+										type: 'string',
+										optional: true,
+										description: "Name of the localized string. Default will set all localized strings by the object value.",
+									},
 								},
-								name: {
-									type: 'string',
-									optional: true,
-									description: "Name of the localized string. Default will set all localized strings by the object value.",
-								},
-							},
-							returns: 'undefined',
-							description: "Sets a localized string.",
-						}
+								returns: 'undefined',
+								description: "Sets a localized string.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(
 							function $setTranslation(value, /*optional*/name) {
@@ -8698,13 +8698,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Class',
-					description: "Implements a configurable object.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Class',
+						description: "Implements a configurable object.",
+					}
 				//! END_REPLACE()
 				, mixIns.REGISTER(doodad.MIX_IN(doodad.Class.$extend({
 					$TYPE_NAME: 'Configurable',
@@ -8714,19 +8714,19 @@ exports.add = function add(modules) {
 
 					$getConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								name: {
-									type: 'string',
-									optional: true,
-									description: "Name of the configuration value. Default will returns an object with all configuration values.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									name: {
+										type: 'string',
+										optional: true,
+										description: "Name of the configuration value. Default will returns an object with all configuration values.",
+									},
 								},
-							},
-							returns: 'string,object',
-							description: "Returns a configuration value.",
-						}
+								returns: 'string,object',
+								description: "Returns a configuration value.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(
 							function $getConfig(/*optional*/name) {
@@ -8752,24 +8752,24 @@ exports.add = function add(modules) {
 
 					$setConfig: root.DD_DOC(
 						//! REPLACE_IF(IS_UNSET('debug'), "null")
-						{
-							author: "Claude Petit",
-							revision: 0,
-							params: {
-								value: {
-									type: 'string,object',
-									optional: false,
-									description: "Value of the configuration.",
+							{
+								author: "Claude Petit",
+								revision: 0,
+								params: {
+									value: {
+										type: 'string,object',
+										optional: false,
+										description: "Value of the configuration.",
+									},
+									name: {
+										type: 'string',
+										optional: true,
+										description: "Name of the configuration value. Default will set all configuration values by the object value.",
+									},
 								},
-								name: {
-									type: 'string',
-									optional: true,
-									description: "Name of the configuration value. Default will set all configuration values by the object value.",
-								},
-							},
-							returns: 'undefined',
-							description: "Sets a configuration value.",
-						}
+								returns: 'undefined',
+								description: "Sets a configuration value.",
+							}
 						//! END_REPLACE()
 						, doodad.PUBLIC(function $setConfig(value, /*optional*/name) {
 							if (types.isNothing(name)) {
@@ -8806,13 +8806,13 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Object',
-					description: "Main class of every Doodad objects.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Object',
+						description: "Main class of every Doodad objects.",
+					}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.EXPANDABLE(doodad.Class.$extend(
 					mixIns.Creatable,
@@ -8827,24 +8827,24 @@ exports.add = function add(modules) {
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						value: {
-							type: 'any',
-							optional: false,
-							description: "Serializable value.",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							value: {
+								type: 'any',
+								optional: false,
+								description: "Serializable value.",
+							},
+							type: {
+								type: 'string',
+								optional: true,
+								description: "Type of the value. Default is taken from a call to 'types._typeof'.",
+							},
 						},
-						type: {
-							type: 'string',
-							optional: true,
-							description: "Type of the value. Default is taken from a call to 'types._typeof'.",
-						},
-					},
-					returns: 'Object',
-					description: "Packed value.",
-				}
+						returns: 'Object',
+						description: "Packed value.",
+					}
 				//! END_REPLACE()
 				, doodad.REGISTER(doodad.Object.$extend(
 					interfaces.Serializable,
