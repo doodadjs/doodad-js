@@ -1,41 +1,41 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Modules.js - Doodad Modules management (server-side)
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Modules.js - Doodad Modules management (server-side)
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-//! INJECT("import {default as nodeModule} from 'module';");
-//! INJECT("import {default as nodeProcess} from 'process';");
-//! INJECT("import {default as nodeFs} from 'fs';");
-//! INJECT("import {default as amp} from 'app-module-path';")
+	//! INJECT("import {default as nodeModule} from 'module';");
+	//! INJECT("import {default as nodeProcess} from 'process';");
+	//! INJECT("import {default as nodeFs} from 'fs';");
+	//! INJECT("import {default as amp} from 'app-module-path';")
 //! ELSE()
-"use strict";
+	"use strict";
 
-const nodeModule = require('module'),
-	nodeProcess = require('process'),
-	nodeFs = require('fs'),
-	amp = require('app-module-path');
+	const nodeModule = require('module'),
+		nodeProcess = require('process'),
+		nodeFs = require('fs'),
+		amp = require('app-module-path');
 //! END_IF()
 
 const nodeModuleModule = nodeModule.Module,
@@ -93,39 +93,39 @@ exports.add = function add(mods) {
 
 
 			//! BEGIN_REMOVE()
-			if (typeof require !== 'function') {
+				if (typeof require !== 'function') {
 				//! END_REMOVE()
 
 				//! IF_SET("mjs")
 
-				// TODO: Find a way to get 'require.main'
+					// TODO: Find a way to get 'require.main'
 
-				(function() {
-					let mainPath = nodeProcessArgv[1];
-					if (mainPath) {
-						const stats = nodeFsStatSync(mainPath);
-						if (!stats.isDirectory()) {
-							mainPath = files.Path.parse(mainPath).set({file: ''}).toApiString();
+					(function() {
+						let mainPath = nodeProcessArgv[1];
+						if (mainPath) {
+							const stats = nodeFsStatSync(mainPath);
+							if (!stats.isDirectory()) {
+								mainPath = files.Path.parse(mainPath).set({file: ''}).toApiString();
+							};
+						} else {
+							mainPath = nodeProcessCwd();
 						};
-					} else {
-						mainPath = nodeProcessCwd();
-					};
-					__Internal__.locatorModule = new nodeModuleModule('<locator>', null);
-					__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
-				})();
+						__Internal__.locatorModule = new nodeModuleModule('<locator>', null);
+						__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
+					})();
 
-				//! BEGIN_REMOVE()
-			} else {
-				//! END_REMOVE()
+					//! BEGIN_REMOVE()
+					} else {
+					//! END_REMOVE()
 
 				//! ELSE()
 
-				__Internal__.locatorModule = require.main || module.parent;
+					__Internal__.locatorModule = require.main || module.parent;
 
 				//! END_IF()
 
 				//! BEGIN_REMOVE()
-			};
+				};
 			//! END_REMOVE()
 
 
@@ -160,29 +160,29 @@ exports.add = function add(mods) {
 
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						module: {
-							type: 'string',
-							optional: true,
-							description: "Module name",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							module: {
+								type: 'string',
+								optional: true,
+								description: "Module name",
+							},
+							file: {
+								type: 'string,Path,Url',
+								optional: true,
+								description: "Module file",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options",
+							},
 						},
-						file: {
-							type: 'string,Path,Url',
-							optional: true,
-							description: "Module file",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options",
-						},
-					},
-					returns: 'Promise(string)',
-					description: "Locates a module and returns its path.",
-				}
+						returns: 'Promise(string)',
+						description: "Locates a module and returns its path.",
+					}
 				//! END_REPLACE()
 				, function locate(/*optional*/_module, /*optional*/path, /*optional*/options) {
 					const Promise = types.getPromise();
@@ -264,24 +264,24 @@ exports.add = function add(mods) {
 
 			modules.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						files: {
-							type: 'arrayof(object)',
-							optional: false,
-							description: "Module files.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							files: {
+								type: 'arrayof(object)',
+								optional: false,
+								description: "Module files.",
+							},
+							options: {
+								type: 'arrayof(object),object',
+								optional: true,
+								description: "Options",
+							},
 						},
-						options: {
-							type: 'arrayof(object),object',
-							optional: true,
-							description: "Options",
-						},
-					},
-					returns: 'Promise(bool)',
-					description: "Loads a module.",
-				}
+						returns: 'Promise(bool)',
+						description: "Loads a module.",
+					}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
 					/* eslint consistent-return: "off" */

@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Client_Platform.js - Platform functions (client-side)
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Client_Platform.js - Platform functions (client-side)
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -84,13 +84,13 @@ exports.add = function add(modules) {
 
 			tools.ADD('getOS', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: 'object',
-					description: "Returns OS information.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'object',
+						description: "Returns OS information.",
+					}
 				//! END_REPLACE()
 				, function getOS() {
 					// TODO: Complete this function
@@ -120,19 +120,19 @@ exports.add = function add(modules) {
 
 			tools.ADD('getDefaultLanguage', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						alt: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will returns the alternate language. 'false' will returns the default language. Default is 'false'.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							alt: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will returns the alternate language. 'false' will returns the default language. Default is 'false'.",
+							},
 						},
-					},
-					returns: 'string',
-					description: "Returns default or alternate language.",
-				}
+						returns: 'string',
+						description: "Returns default or alternate language.",
+					}
 				//! END_REPLACE()
 				, function getDefaultLanguage(/*optional*/alt) {
 					// Source: http://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference

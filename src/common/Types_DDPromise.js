@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Types_DDPromise.js - DDPromise type (extension to ES6 Promise)
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Types_DDPromise.js - DDPromise type (extension to ES6 Promise)
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -75,19 +75,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						obj: {
-							type: 'object',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is a Promise, 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' if object is a Promise, 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isPromise(obj) {
 					return types.isObjectLike(obj) && !!obj[_shared.IsPromiseSymbol];
@@ -95,19 +95,19 @@ exports.add = function add(modules) {
 
 			types.ADD('isExtendedPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						obj: {
-							type: 'object',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'object',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isExtendedPromise(obj) {
 					return types.isObjectLike(obj) && !!obj[__Internal__.symbolIsExtendedPromise];
@@ -115,13 +115,13 @@ exports.add = function add(modules) {
 
 			types.ADD('getPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'Promise',
-					description: "Returns the ES6 Promise class or a polyfill.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'Promise',
+						description: "Returns the ES6 Promise class or a polyfill.",
+					}
 				//! END_REPLACE()
 				, function getPromise() {
 					return __Internal__.Promise;
@@ -550,19 +550,19 @@ exports.add = function add(modules) {
 
 			types.ADD('setPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 7,
-					params: {
-						Promise: {
-							type: 'Promise',
-							optional: false,
-							description: "A Promise polyfill.",
+					{
+						author: "Claude Petit",
+						revision: 7,
+						params: {
+							Promise: {
+								type: 'Promise',
+								optional: false,
+								description: "A Promise polyfill.",
+							},
 						},
-					},
-					returns: 'Promise',
-					description: "Sets a custom polyfill for ES6 Promises.",
-				}
+						returns: 'Promise',
+						description: "Sets a custom polyfill for ES6 Promises.",
+					}
 				//! END_REPLACE()
 				, function setPromise(Promise) {
 					if (!types.isFunction(Promise)) {
@@ -655,29 +655,29 @@ exports.add = function add(modules) {
 
 			_shared.PromiseCallback = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						obj: {
-							type: 'object,Object',
-							optional: true,
-							description: "Object to bind with the callback function.",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							obj: {
+								type: 'object,Object',
+								optional: true,
+								description: "Object to bind with the callback function.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
 						},
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Callback function.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Secret.",
-						},
-					},
-					returns: 'function',
-					description: "Creates a callback handler for DDPromise.",
-				}
+						returns: 'function',
+						description: "Creates a callback handler for DDPromise.",
+					}
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
 					// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".

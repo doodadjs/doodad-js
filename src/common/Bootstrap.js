@@ -1,47 +1,47 @@
 /* global process, DD_BOOTSTRAP */
 
 //! IF_SET("serverSide")
-//! IF_SET("mjs")
-//! INJECT("const exports = {};")
-//! END_IF()
+	//! IF_SET("mjs")
+		//! INJECT("const exports = {};")
+	//! END_IF()
 
 //! ELSE()
-//! INJECT("const global = window, exports = {};")
+	//! INJECT("const global = window, exports = {};")
 
 //! END_IF()
 
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Bootstrap.js - Bootstrap module
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Bootstrap.js - Bootstrap module
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 //! IF(IS_SET("serverSide") && IS_SET("mjs"))
-//! INJECT("import {default as nodeUUID} from 'uuid';");
+	//! INJECT("import {default as nodeUUID} from 'uuid';");
 //! END_IF()
 
 
@@ -101,33 +101,33 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	})();
 
 	//! IF_SET('debug')
-	// V8: Increment maximum number of stack frames
-	// Source: https://github.com/v8/v8/wiki/Stack-Trace-API
-	if (global.Error.stackTraceLimit < 50) {
-		global.Error.stackTraceLimit = 50;
-	};
+		// V8: Increment maximum number of stack frames
+		// Source: https://github.com/v8/v8/wiki/Stack-Trace-API
+		if (global.Error.stackTraceLimit < 50) {
+			global.Error.stackTraceLimit = 50;
+		};
 	//! END_IF()
 
 	//! IF(IS_UNSET("serverSide") || IS_UNSET("mjs"))
-	// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
-	//       Also it works with Node.js and bundlers.
-	const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
+		// NOTE: Client-side 'uuid' is browserified to "lib/uuid/uuid.js" and "lib/uuid/uuid.min.js", and made available in JS through "require".
+		//       Also it works with Node.js and bundlers.
+		const nodeUUID = ((typeof require === 'function') ? require('uuid') : undefined);
 	//! END_IF()
 
 
 	let __options__ = {
 		//! IF_SET('debug')
-		debug: true,                        // When 'true', will be in 'debug mode'.
-		fromSource: true,                   // When 'true', loads source code instead of built code.
-		enableDebugger: true,               // When 'true', enables 'types.DEBUGGER'.
-		enableProperties: true,             // When 'true', enables 'types.defineProperty'.
-		enableAsserts: true,                // When 'true', enables 'root.DD_ASSERT'.
+			debug: true,                        // When 'true', will be in 'debug mode'.
+			fromSource: true,                   // When 'true', loads source code instead of built code.
+			enableDebugger: true,               // When 'true', enables 'types.DEBUGGER'.
+			enableProperties: true,             // When 'true', enables 'types.defineProperty'.
+			enableAsserts: true,                // When 'true', enables 'root.DD_ASSERT'.
 		//! ELSE()
-		//!	INJECT("debug: false,                       // When 'true', will be in 'debug mode'.\n")
-		//!	INJECT("fromSource: false,                  // When 'true', loads source code instead of built code.\n")
-		//!	INJECT("enableDebugger: false,              // When 'true', enables 'types.DEBUGGER'.\n")
-		//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.\n")
-		//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.\n")
+			//!	INJECT("debug: false,                       // When 'true', will be in 'debug mode'.\n")
+			//!	INJECT("fromSource: false,                  // When 'true', loads source code instead of built code.\n")
+			//!	INJECT("enableDebugger: false,              // When 'true', enables 'types.DEBUGGER'.\n")
+			//!	INJECT("enableProperties: false,            // When 'true', enables 'types.defineProperty'.\n")
+			//!	INJECT("enableAsserts: false,               // When 'true', enables 'root.DD_ASSERT'.\n")
 		//! END_IF()
 
 		enableSymbols: true,					// (Read-Only) When 'true', symbols are enabled.
@@ -177,19 +177,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//===================================
 		__Internal__.ADD('toBoolean', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "A value to convert.",
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "A value to convert.",
+						},
 					},
-				},
-				returns: 'bool',
-				description: "Converts a value to a boolean.",
-			}
+					returns: 'bool',
+					description: "Converts a value to a boolean.",
+				}
 			//! END_REPLACE()
 			, function toBoolean(obj) {
 				return (obj === 'true') || !!(+obj);
@@ -197,19 +197,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('isNothing', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
 					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
-			}
+					returns: 'bool',
+					description: "Returns 'true' if object is 'null' or 'undefined'. Returns 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isNothing(obj) {
 				return (obj == null); // Yes, "==", not "==="
@@ -218,19 +218,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		// <PRB> JS has no function to test for strings
 		__Internal__.ADD('isString', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 4,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
+				{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
 					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
-			}
+					returns: 'bool',
+					description: "Returns 'true' if object is a string. Returns 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isString(obj) {
 				if (types.isNothing(obj)) {
@@ -256,19 +256,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('isFunction', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 0,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
+				{
+					author: "Claude Petit",
+					revision: 0,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
 					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is a function, 'false' otherwise.",
-			}
+					returns: 'bool',
+					description: "Returns 'true' if object is a function, 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isFunction(obj) {
 				return (typeof obj === 'function');
@@ -277,19 +277,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		// <PRB> JS has no function to test for objects ( new Object() )
 		__Internal__.ADD('isObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 4,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 4,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
 					},
-				},
-				returns: 'boolean',
-				description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
-			}
+					returns: 'boolean',
+					description: "Returns 'true' if the object is a Javascript user object. Returns 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isObject(obj) {
 				if (obj && (typeof obj === 'object')) {
@@ -310,19 +310,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('isObjectLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 3,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
 					},
-				},
-				returns: 'boolean',
-				description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
-			}
+					returns: 'boolean',
+					description: "Returns 'true' if the object is a direct instance of 'Object' or an instance of a type which inherits 'Object'. Returns 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isObjectLike(obj) {
 				const type = typeof obj;
@@ -333,19 +333,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('isArrayLike', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 3,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object to test for.",
+				{
+					author: "Claude Petit",
+					revision: 3,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object to test for.",
+						},
 					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
-			}
+					returns: 'bool',
+					description: "Returns 'true' if object is an array-like object. Returns 'false' otherwise.",
+				}
 			//! END_REPLACE()
 			, function isArrayLike(obj) {
 				// Unbelievable : There is not an official way to detect an array-like object !!!!
@@ -364,24 +364,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('has', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 2,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+						keys: {
+							type: 'arrayof(string,Symbol),string,Symbol',
+							optional: false,
+							description: "Key(s) to test for.",
+						},
 					},
-					keys: {
-						type: 'arrayof(string,Symbol),string,Symbol',
-						optional: false,
-						description: "Key(s) to test for.",
-					},
-				},
-				returns: 'bool',
-				description: "Returns 'true' if one of the specified keys is an owned property of the object.",
-			}
+					returns: 'bool',
+					description: "Returns 'true' if one of the specified keys is an owned property of the object.",
+				}
 			//! END_REPLACE()
 			, function has(obj, keys) {
 				if (!types.isNothing(obj)) {
@@ -407,19 +407,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('keys', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 2,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
 					},
-				},
-				returns: 'arrayof(string)',
-				description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
-			}
+					returns: 'arrayof(string)',
+					description: "Returns an array of enumerable owned property names of an object. For array-like objects, index properties are excluded.",
+				}
 			//! END_REPLACE()
 			, function keys(obj) {
 				/* eslint no-restricted-syntax: "off", guard-for-in: "off" */ // for...in
@@ -450,19 +450,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD('symbols', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 2,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
 					},
-				},
-				returns: 'arrayof(symbol)',
-				description: "Returns an array of enumerable own property symbols.",
-			}
+					returns: 'arrayof(symbol)',
+					description: "Returns an array of enumerable own property symbols.",
+				}
 			//! END_REPLACE()
 			, function symbols(obj) {
 				// FUTURE: "Object.symbols" ? (like "Object.keys")
@@ -487,24 +487,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD_TOOL('append', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 2,
-				params: {
-					obj: {
-						type: 'arraylike',
-						optional: false,
-						description: "Target array.",
+				{
+					author: "Claude Petit",
+					revision: 2,
+					params: {
+						obj: {
+							type: 'arraylike',
+							optional: false,
+							description: "Target array.",
+						},
+						paramarray: {
+							type: 'arrayof(arraylike)',
+							optional: true,
+							description: "Arrays to append.",
+						},
 					},
-					paramarray: {
-						type: 'arrayof(arraylike)',
-						optional: true,
-						description: "Arrays to append.",
-					},
-				},
-				returns: 'array',
-				description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
-			}
+					returns: 'array',
+					description: "Appends the items of each array to the first argument then returns that array. Skips undefined or null values. Better than 'concat' because it accepts array-likes. But for large array, it's probably better to use 'concat'.",
+				}
 			//! END_REPLACE()
 			, function append(obj, /*paramarray*/...args) {
 				if (!types.isArrayLike(obj)) {
@@ -522,19 +522,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD_TOOL('nullObject', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					paramarray: {
-						type: 'object',
-						optional: true,
-						description: "List of objects.",
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						paramarray: {
+							type: 'object',
+							optional: true,
+							description: "List of objects.",
+						},
 					},
-				},
-				returns: 'object',
-				description: "Returns a null object extended by the provided objects.",
-			}
+					returns: 'object',
+					description: "Returns a null object extended by the provided objects.",
+				}
 			//! END_REPLACE()
 			, function nullObject(/*paramarray*/...args) {
 				return tools.extend.apply(tools, tools.append([tools.createObject(null)], args));
@@ -542,29 +542,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 6,
-				params: {
-					depth: {
-						type: 'integer,function',
-						optional: false,
-						description: "Depth, or extender function.",
+				{
+					author: "Claude Petit",
+					revision: 6,
+					params: {
+						depth: {
+							type: 'integer,function',
+							optional: false,
+							description: "Depth, or extender function.",
+						},
+						obj: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
+						paramarray: {
+							type: 'object',
+							optional: false,
+							description: "An object.",
+						},
 					},
-					obj: {
-						type: 'object',
-						optional: false,
-						description: "An object.",
-					},
-					paramarray: {
-						type: 'object',
-						optional: false,
-						description: "An object.",
-					},
-				},
-				returns: 'object',
-				description: "Extends the first object with owned properties of the other objects using the specified depth.",
-			}
+					returns: 'object',
+					description: "Extends the first object with owned properties of the other objects using the specified depth.",
+				}
 			//! END_REPLACE()
 			, function depthExtend(depth, obj, /*paramarray*/...args) {
 				let result;
@@ -702,7 +702,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		/*_shared*/
 		{
 			// Secret value used to load modules, ...
-			SECRET: null,
+			SECRET: undefined,
 
 			// NOTE: Preload of immediatly needed natives.
 			Natives: {
@@ -923,24 +923,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('eval', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				expr: {
-					type: 'string',
-					optional: false,
-					description: "Expression",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					expr: {
+						type: 'string',
+						optional: false,
+						description: "Expression",
+					},
+					ctx: {
+						type: 'any',
+						optional: true,
+						description: "Context, accessible by the expression from the variable 'ctx'.",
+					},
 				},
-				ctx: {
-					type: 'any',
-					optional: true,
-					description: "Context, accessible by the expression from the variable 'ctx'.",
-				},
-			},
-			returns: 'string',
-			description: "Evaluates an expression accross JS engines in strict mode. NOT to be used with arbitrary expressions.",
-		}
+				returns: 'string',
+				description: "Evaluates an expression accross JS engines in strict mode. NOT to be used with arbitrary expressions.",
+			}
 		//! END_REPLACE()
 		, function _eval(expr, /*optional*/ctx) {
 			if (ctx) {
@@ -953,31 +953,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('generateCreateEval', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: null,
-			returns: 'string',
-			description: "Generates a 'createEval' function string to be evaluated so that it inherits desired scoped variables.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: null,
+				returns: 'string',
+				description: "Generates a 'createEval' function string to be evaluated so that it inherits desired scoped variables.",
+			}
 		//! END_REPLACE()
 		, exports.generateCreateEval));
 
 
 	__Internal__.ADD_TOOL('createEval', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				locals: {
-					type: 'object',
-					description: "Variables to be passed to the executed code.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					locals: {
+						type: 'object',
+						description: "Variables to be passed to the executed code.",
+					},
 				},
-			},
-			returns: 'function',
-			description: "Create a function to evaluate expressions with the given variables.",
-		}
+				returns: 'function',
+				description: "Create a function to evaluate expressions with the given variables.",
+			}
 		//! END_REPLACE()
 		, exports.createEval));
 
@@ -998,34 +998,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('trim', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				str: {
-					type: 'string,array',
-					optional: false,
-					description: "String or array to trim",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					str: {
+						type: 'string,array',
+						optional: false,
+						description: "String or array to trim",
+					},
+					chr: {
+						type: 'string',
+						optional: true,
+						description: "Value used to trim. Default is a space.",
+					},
+					direction: {
+						type: 'integer',
+						optional: true,
+						description: "'-1' to trim from the end. '1' to trim from the beginning. '0' for bidirectional. Default is '0'.",
+					},
+					count: {
+						type: 'integer',
+						optional: true,
+						description: "Number of occurrences of 'chr' to trim from both sides.",
+					},
 				},
-				chr: {
-					type: 'string',
-					optional: true,
-					description: "Value used to trim. Default is a space.",
-				},
-				direction: {
-					type: 'integer',
-					optional: true,
-					description: "'-1' to trim from the end. '1' to trim from the beginning. '0' for bidirectional. Default is '0'.",
-				},
-				count: {
-					type: 'integer',
-					optional: true,
-					description: "Number of occurrences of 'chr' to trim from both sides.",
-				},
-			},
-			returns: 'string',
-			description: "Returns the trimmed string or array.",
-		}
+				returns: 'string',
+				description: "Returns the trimmed string or array.",
+			}
 		//! END_REPLACE()
 		, function trim(str, /*optional*/chr, /*optional*/direction, /*optional*/count) {
 			const isArray = types.isArray(str);
@@ -1098,19 +1098,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('toInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "A value to convert.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "A value to convert.",
+					},
 				},
-			},
-			returns: 'number',
-			description: "Converts the value to an integer.",
-		}
+				returns: 'number',
+				description: "Converts the value to an integer.",
+			}
 		//! END_REPLACE()
 		, function toInteger(obj) {
 			obj = _shared.Natives.windowNumber(obj);
@@ -1125,24 +1125,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('toFloat', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "A value to convert.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "A value to convert.",
+					},
+					precision: {
+						type: 'integer',
+						optional: true,
+						description: "Float precision",
+					},
 				},
-				precision: {
-					type: 'integer',
-					optional: true,
-					description: "Float precision",
-				},
-			},
-			returns: 'number',
-			description: "Converts the value to a float.",
-		}
+				returns: 'number',
+				description: "Converts the value to a float.",
+			}
 		//! END_REPLACE()
 		, function toFloat(obj, /*optional*/precision) {
 			obj = _shared.Natives.windowNumber(obj);
@@ -1159,19 +1159,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('toString', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "A value to convert.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "A value to convert.",
+					},
 				},
-			},
-			returns: 'string',
-			description: "Converts the value to a string.",
-		}
+				returns: 'string',
+				description: "Converts the value to a string.",
+			}
 		//! END_REPLACE()
 		, function toString(obj) {
 			return _shared.Natives.windowString(obj);
@@ -1183,24 +1183,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('format', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: false,
-					description: "Error message",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: false,
-					description: "Parameters of the message",
+					message: {
+						type: 'string',
+						optional: false,
+						description: "Error message",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: false,
+						description: "Parameters of the message",
+					},
 				},
-			},
-			returns: 'string',
-			description: "Formats message with parameters.",
-		}
+				returns: 'string',
+				description: "Formats message with parameters.",
+			}
 		//! END_REPLACE()
 		, function format(message, params) {
 			// WARNING: Don't use "root.DD_ASSERT" inside this function !!!
@@ -1236,29 +1236,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ASSERT = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				expr: {
-					type: 'any',
-					optional: false,
-					description: "Expression",
-				},
-				message: {
-					type: 'string',
-					optional: true,
-					description: "Error message",
-				},
+			{
+				author: "Claude Petit",
+				revision: 0,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					expr: {
+						type: 'any',
+						optional: false,
+						description: "Expression",
+					},
+					message: {
+						type: 'string',
+						optional: true,
+						description: "Error message",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'undefined',
-			description: "Throws 'AssertionError' when expression resolves to 'false'. Does nothing otherwise.",
-		}
+				returns: 'undefined',
+				description: "Throws 'AssertionError' when expression resolves to 'false'. Does nothing otherwise.",
+			}
 		//! END_REPLACE()
 		, function ASSERT(expr, /*optional*/message, /*optional*/params) {
 			// IMPORTANT: You must use it like this :
@@ -1280,19 +1280,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isJsClass', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is an ES6 class, 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is an ES6 class, 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isJsClass(obj) {
 			if (types.isFunction(obj)) {
@@ -1303,19 +1303,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isNativeFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a native function, 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a native function, 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isNativeFunction(obj) {
 			if (types.isJsClass(obj)) {
@@ -1341,19 +1341,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isCustomFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a custom function (non-native), 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isCustomFunction(obj) {
 			if (types.isJsClass(obj)) {
@@ -1378,19 +1378,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// <PRB> JS has no function to test for primitives
 	__Internal__.ADD('isPrimitive', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a primitive value. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a primitive value. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isPrimitive(obj) {
 			if (types.isNothing(obj)) {
@@ -1403,19 +1403,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isNumber', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a number. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a number. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isNumber(obj) {
 			/* eslint no-self-compare: "off" */
@@ -1475,19 +1475,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 8,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 8,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is an integer. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is an integer. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isInteger(obj) {
 			if (types.isNothing(obj)) {
@@ -1536,19 +1536,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isSafeInteger', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is an integer that correctly fits into 'Number'. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is an integer that correctly fits into 'Number'. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isSafeInteger(obj) {
 			if (types.isNothing(obj)) {
@@ -1575,19 +1575,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isFinite', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a finite number. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a finite number. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isFinite(obj) {
 			if (types.isNothing(obj)) {
@@ -1614,19 +1614,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isInfinite', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is an infinite number. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is an infinite number. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isInfinite(obj) {
 			if (types.isNothing(obj)) {
@@ -1664,19 +1664,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isFloat', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a float. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a float. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isFloat(obj) {
 			if (types.isNothing(obj)) {
@@ -1704,19 +1704,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// <PRB> JS has no function to test for booleans
 	__Internal__.ADD('isBoolean', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a boolean. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a boolean. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isBoolean(obj) {
 			if (types.isNothing(obj)) {
@@ -1743,19 +1743,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// <PRB> JS has no function to test for dates
 	__Internal__.ADD('isDate', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a date. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a date. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isDate(obj) {
 			if (obj && (typeof obj === 'object')) {
@@ -1776,19 +1776,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// <PRB> JS has no function to test for errors
 	__Internal__.ADD('isError', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is an error. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is an error. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isError(obj) {
 			if (obj && (typeof obj === 'object')) {
@@ -1803,19 +1803,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isNaN', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is 'NaN'. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is 'NaN'. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isNaN(obj) {
 			/* eslint no-self-compare: "off" */
@@ -1847,19 +1847,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isCallable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is callable. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is callable. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isCallable(obj) {
 			if (types.isNothing(obj)) {
@@ -1890,19 +1890,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	__Internal__.emptyArray = []; // Avoids to create a new array each time we call 'tools.concat'.
 	__Internal__.ADD_TOOL('concat', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				paramarray: {
-					type: 'arrayof(any)',
-					optional: false,
-					description: "Values or arrays to concatenate.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					paramarray: {
+						type: 'arrayof(any)',
+						optional: false,
+						description: "Values or arrays to concatenate.",
+					},
 				},
-			},
-			returns: 'array',
-			description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
-		}
+				returns: 'array',
+				description: "Concatenates the arrays (non-arrays are pushed) to a new array then returns that array.",
+			}
 		//! END_REPLACE()
 		, function concat(/*paramarray*/...args) {
 			return _shared.Natives.arrayConcatApply(__Internal__.emptyArray, args);
@@ -1910,28 +1910,28 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('unique', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				comparer: {
-					type: 'function',
-					optional: true,
-					description:
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					comparer: {
+						type: 'function',
+						optional: true,
+						description:
 							"A comparer function. Arguments passed to the function are : \n" +
 							"  value1 (any): The value to compare from\n" +
 							"  value2 (any): The value to compare to\n" +
 							"Must return boolean 'true' or integer '0' when values are equals, integer '1' when 'value1' is greater than 'value2', or integer '-1' when 'value1' is lower than 'value2'.",
+					},
+					paramarray: {
+						type: 'arraylike',
+						optional: true,
+						description: "Arrays.",
+					},
 				},
-				paramarray: {
-					type: 'arraylike',
-					optional: true,
-					description: "Arrays.",
-				},
-			},
-			returns: 'arrayof(any)',
-			description: "Compare every items of every arrays, and returns a new array with unique items.",
-		}
+				returns: 'arrayof(any)',
+				description: "Compare every items of every arrays, and returns a new array with unique items.",
+			}
 		//! END_REPLACE()
 		, function unique(/*paramarray*/...args) {
 			let start = 1;
@@ -2040,19 +2040,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('parseStack', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				ex: {
-					type: 'error, string',
-					optional: false,
-					description: "An error object.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					ex: {
+						type: 'error, string',
+						optional: false,
+						description: "An error object.",
+					},
 				},
-			},
-			returns: 'object',
-			description: "Parses a stack trace and returns the result.",
-		}
+				returns: 'object',
+				description: "Parses a stack trace and returns the result.",
+			}
 		//! END_REPLACE()
 		, function parseStack(ex) {
 			if (!types.isError(ex) && !types.isString(ex)) {
@@ -2143,13 +2143,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('getStackTrace', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'object',
-			description: "Returns the current stack trace, already parsed.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Returns the current stack trace, already parsed.",
+			}
 		//! END_REPLACE()
 		, function getStackTrace() {
 			const ex = new _shared.Natives.windowError("");
@@ -2166,24 +2166,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('hasInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+					keys: {
+						type: 'arrayof(string,Symbol),string,Symbol',
+						optional: false,
+						description: "Array of keys to test for.",
+					},
 				},
-				keys: {
-					type: 'arrayof(string,Symbol),string,Symbol',
-					optional: false,
-					description: "Array of keys to test for.",
-				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' when the object has or inherits one of the provided keys as own property. Object's prototype is ignored. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' when the object has or inherits one of the provided keys as own property. Object's prototype is ignored. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function hasInherited(obj, keys) {
 			if (!types.isNothing(obj)) {
@@ -2204,34 +2204,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('get', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					key: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Attribute name.",
+					},
+					_default: {
+						type: 'any',
+						optional: true,
+						description: "Default value.",
+					},
+					inherited: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+					},
 				},
-				key: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Attribute name.",
-				},
-				_default: {
-					type: 'any',
-					optional: true,
-					description: "Default value.",
-				},
-				inherited: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-				},
-			},
-			returns: 'any',
-			description: "Returns the value of an own property. If the own property doesn't exist, returns the value of the '_default' parameter.",
-		}
+				returns: 'any',
+				description: "Returns the value of an own property. If the own property doesn't exist, returns the value of the '_default' parameter.",
+			}
 		//! END_REPLACE()
 		, function get(obj, key, /*optional*/_default, /*optional*/inherited) {
 			if (types.isNothing(obj)) {
@@ -2248,34 +2248,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getDefault', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					key: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Attribute name.",
+					},
+					_default: {
+						type: 'any',
+						optional: true,
+						description: "Default value.",
+					},
+					inherited: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', the function look at inherited own properties. Default is 'false'.",
+					},
 				},
-				key: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Attribute name.",
-				},
-				_default: {
-					type: 'any',
-					optional: true,
-					description: "Default value.",
-				},
-				inherited: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', the function look at inherited own properties. Default is 'false'.",
-				},
-			},
-			returns: 'any',
-			description: "Returns the value of an own property. If the own property doesn't exist, creates that own property with the value of the '_default' parameter and returns that value.",
-		}
+				returns: 'any',
+				description: "Returns the value of an own property. If the own property doesn't exist, creates that own property with the value of the '_default' parameter and returns that value.",
+			}
 		//! END_REPLACE()
 		, function getDefault(obj, key, /*optional*/_default, /*optional*/inherited) {
 			if (types.isNothing(obj)) {
@@ -2301,19 +2301,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('allSymbols', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
 				},
-			},
-			returns: 'arrayof(symbol)',
-			description: "Returns an array of enumerable and non-enumerable own property symbols.",
-		}
+				returns: 'arrayof(symbol)',
+				description: "Returns an array of enumerable and non-enumerable own property symbols.",
+			}
 		//! END_REPLACE()
 		, function allSymbols(obj) {
 			if (types.isNothing(obj)) {
@@ -2324,19 +2324,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('allKeysInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
 				},
-			},
-			returns: 'arrayof(string)',
-			description: "Returns an array of all inherited enumerable and not enumerable property names of an object.",
-		}
+				returns: 'arrayof(string)',
+				description: "Returns an array of all inherited enumerable and not enumerable property names of an object.",
+			}
 		//! END_REPLACE()
 		, function allKeysInherited(obj) {
 			if (types.isNothing(obj)) {
@@ -2348,19 +2348,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('allSymbolsInherited', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
 				},
-			},
-			returns: 'arrayof(symbol)',
-			description: "Returns an array of all inherited enumerable and not enumerable symbols of an object.",
-		}
+				returns: 'arrayof(symbol)',
+				description: "Returns an array of all inherited enumerable and not enumerable symbols of an object.",
+			}
 		//! END_REPLACE()
 		, function allSymbolsInherited(obj) {
 			if (types.isNothing(obj)) {
@@ -2389,13 +2389,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('hasDefinePropertyEnabled', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: null,
-			returns: 'boolean',
-			description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: null,
+				returns: 'boolean',
+				description: "Returns 'true' if 'defineProperty' is enabled. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, (__options__.enableProperties ? function hasDefinePropertyEnabled() {
 			return true;
@@ -2405,29 +2405,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('defineProperty', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 6,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 6,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+					name: {
+						type: 'string',
+						optional: false,
+						description: "The property name.",
+					},
+					descriptor: {
+						type: 'object',
+						optional: false,
+						description: "The property descriptor.",
+					},
 				},
-				name: {
-					type: 'string',
-					optional: false,
-					description: "The property name.",
-				},
-				descriptor: {
-					type: 'object',
-					optional: false,
-					description: "The property descriptor.",
-				},
-			},
-			returns: 'undefined',
-			description: "Defines a property of the object.",
-		}
+				returns: 'undefined',
+				description: "Defines a property of the object.",
+			}
 		//! END_REPLACE()
 		, function defineProperty(obj, name, descriptor) {
 			// <PRB> "Object.defineProperty" stupidly takes inherited properties instead of just own properties. So we fix that because of "Object.prototype".
@@ -2442,24 +2442,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	} else {
 		__Internal__.ADD('getOwnPropertyDescriptor', __Internal__.DD_DOC(
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
-			{
-				author: "Claude Petit",
-				revision: 1,
-				params: {
-					obj: {
-						type: 'any',
-						optional: false,
-						description: "An object.",
+				{
+					author: "Claude Petit",
+					revision: 1,
+					params: {
+						obj: {
+							type: 'any',
+							optional: false,
+							description: "An object.",
+						},
+						key: {
+							type: 'string',
+							optional: false,
+							description: "Property name.",
+						},
 					},
-					key: {
-						type: 'string',
-						optional: false,
-						description: "Property name.",
-					},
-				},
-				returns: 'object',
-				description: "Returns the descriptor of an own property of an object.",
-			}
+					returns: 'object',
+					description: "Returns the descriptor of an own property of an object.",
+				}
 			//! END_REPLACE()
 			, function getOwnPropertyDescriptor(obj, key) {
 				let desc;
@@ -2479,24 +2479,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getPropertyDescriptor', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+					key: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Property name.",
+					},
 				},
-				key: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Property name.",
-				},
-			},
-			returns: 'object',
-			description: "Returns the current descriptor of a property of an object.",
-		}
+				returns: 'object',
+				description: "Returns the current descriptor of a property of an object.",
+			}
 		//! END_REPLACE()
 		, function getPropertyDescriptor(obj, key) {
 			/* eslint no-cond-assign: "off" */
@@ -2513,24 +2513,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('newInstance', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				type: {
-					type: 'type',
-					optional: false,
-					description: "An object type.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					type: {
+						type: 'type',
+						optional: false,
+						description: "An object type.",
+					},
+					properties: {
+						type: 'arrayof(any)',
+						optional: true,
+						description: "Constructor arguments.",
+					},
 				},
-				properties: {
-					type: 'arrayof(any)',
-					optional: true,
-					description: "Constructor arguments.",
-				},
-			},
-			returns: 'object',
-			description: "Instantiates an object from the specified constructor with provided arguments.",
-		}
+				returns: 'object',
+				description: "Instantiates an object from the specified constructor with provided arguments.",
+			}
 		//! END_REPLACE()
 		, function newInstance(type, /*optional*/args) {
 			if (!types.isFunction(type)) {
@@ -2559,29 +2559,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('setPrototypeOf', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					proto: {
+						type: 'object',
+						optional: false,
+						description: "An object defining the new prototype.",
+					},
+					forceNative: {
+						type: 'boolean',
+						optional: true,
+						description: "Force use of the native function 'Object.setPrototypeOf'. Defaults to 'false'. Always 'true' if object is a function.",
+					},
 				},
-				proto: {
-					type: 'object',
-					optional: false,
-					description: "An object defining the new prototype.",
-				},
-				forceNative: {
-					type: 'boolean',
-					optional: true,
-					description: "Force use of the native function 'Object.setPrototypeOf'. Defaults to 'false'. Always 'true' if object is a function.",
-				},
-			},
-			returns: 'object',
-			description: "Returns a clone of the provided object attached to the specified prototype.",
-		}
+				returns: 'object',
+				description: "Returns a clone of the provided object attached to the specified prototype.",
+			}
 		//! END_REPLACE()
 		, function setPrototypeOf(obj, proto, /*optional*/forceNative) {
 			// NOTE: Functions can't be created using "createObject".
@@ -2621,29 +2621,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getIn', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				obj: {
-					type: 'nullobject',
-					optional: false,
-					description: "A null object.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'nullobject',
+						optional: false,
+						description: "A null object.",
+					},
+					key: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Attribute name.",
+					},
+					_default: {
+						type: 'any',
+						optional: true,
+						description: "Default value.",
+					},
 				},
-				key: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Attribute name.",
-				},
-				_default: {
-					type: 'any',
-					optional: true,
-					description: "Default value.",
-				},
-			},
-			returns: 'any',
-			description: "Returns the value of the attribute of an object. If the attribute doesn't exist, returns the value of the '_default' parameter.",
-		}
+				returns: 'any',
+				description: "Returns the value of the attribute of an object. If the attribute doesn't exist, returns the value of the '_default' parameter.",
+			}
 		//! END_REPLACE()
 		, function getIn(obj, key, /*optional*/_default) {
 			if (types.isNothing(obj)) {
@@ -2659,24 +2659,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('hasIn', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				obj: {
-					type: 'nullobject',
-					optional: false,
-					description: "A null object.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'nullobject',
+						optional: false,
+						description: "A null object.",
+					},
+					keys: {
+						type: 'arrayof(string,Symbol),string,Symbol',
+						optional: false,
+						description: "Key(s) to test for.",
+					},
 				},
-				keys: {
-					type: 'arrayof(string,Symbol),string,Symbol',
-					optional: false,
-					description: "Key(s) to test for.",
-				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if one of the specified keys is a property of an object.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if one of the specified keys is a property of an object.",
+			}
 		//! END_REPLACE()
 		, function hasIn(obj, keys) {
 			if (!types.isNothing(obj)) {
@@ -2702,24 +2702,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('extendProperties', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					paramarray: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
 				},
-				paramarray: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
-				},
-			},
-			returns: 'object',
-			description: "Extends the first object with owned properties of the other objects.",
-		}
+				returns: 'object',
+				description: "Extends the first object with owned properties of the other objects.",
+			}
 		//! END_REPLACE()
 		, function extendProperties(obj, /*paramarray*/...args) {
 			let result;
@@ -2750,24 +2750,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('complete', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					paramarray: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
 				},
-				paramarray: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
-				},
-			},
-			returns: 'object',
-			description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
-		}
+				returns: 'object',
+				description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
+			}
 		//! END_REPLACE()
 		, function complete(obj, /*paramarray*/...args) {
 			let result;
@@ -2800,24 +2800,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('completeProperties', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			obj: {
-				type: 'object',
-				optional: false,
-				description: "An object.",
-			},
-			params: {
-				paramarray: {
-					type: 'any',
+			{
+				author: "Claude Petit",
+				revision: 3,
+				obj: {
+					type: 'object',
 					optional: false,
 					description: "An object.",
 				},
-			},
-			returns: 'object',
-			description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
-		}
+				params: {
+					paramarray: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+				},
+				returns: 'object',
+				description: "Extends the first object with owned properties of the other objects. Existing owned properties are excluded.",
+			}
 		//! END_REPLACE()
 		, function completeProperties(obj, /*paramarray*/args) {
 			let result;
@@ -2852,24 +2852,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isEnumerable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object.",
+					},
+					key: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "A property name to test for.",
+					},
 				},
-				key: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "A property name to test for.",
-				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if the property of the object is enumerable. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isEnumerable(obj, key) {
 			return _shared.Natives.objectPropertyIsEnumerableCall(obj, key);
@@ -2877,24 +2877,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('preventExtensions', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'object,arraylike',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'object,arraylike',
+						optional: false,
+						description: "An object.",
+					},
+					depth: {
+						type: 'integer',
+						optional: true,
+						description: "Depth.",
+					},
 				},
-				depth: {
-					type: 'integer',
-					optional: true,
-					description: "Depth.",
-				},
-			},
-			returns: 'object',
-			description: "Prevent extensions of the object returns that same object. Note that it can't be reverted for the moment (ES5).",
-		}
+				returns: 'object',
+				description: "Prevent extensions of the object returns that same object. Note that it can't be reverted for the moment (ES5).",
+			}
 		//! END_REPLACE()
 		, function preventExtensions(obj, /*optional*/depth) {
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
@@ -2927,24 +2927,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('sealObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'object,arraylike',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'object,arraylike',
+						optional: false,
+						description: "An object.",
+					},
+					depth: {
+						type: 'integer',
+						optional: true,
+						description: "Depth.",
+					},
 				},
-				depth: {
-					type: 'integer',
-					optional: true,
-					description: "Depth.",
-				},
-			},
-			returns: 'object',
-			description: "Seals the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
-		}
+				returns: 'object',
+				description: "Seals the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
+			}
 		//! END_REPLACE()
 		, function sealObject(obj, /*optional*/depth) {
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
@@ -2980,24 +2980,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('freezeObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'object,arraylike',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'object,arraylike',
+						optional: false,
+						description: "An object.",
+					},
+					depth: {
+						type: 'integer',
+						optional: true,
+						description: "Depth.",
+					},
 				},
-				depth: {
-					type: 'integer',
-					optional: true,
-					description: "Depth.",
-				},
-			},
-			returns: 'object',
-			description: "Freezes the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
-		}
+				returns: 'object',
+				description: "Freezes the object and returns that same object. Note that it can't be reverted for the moment (ES5).",
+			}
 		//! END_REPLACE()
 		, function freezeObject(obj, /*optional*/depth) {
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
@@ -3035,13 +3035,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getSafeIntegerBounds', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'object',
-			description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Returns 'len' (in bits), 'min' and 'max' values of a safe integer.",
+			}
 		//! END_REPLACE()
 		, function getSafeIntegerBounds() {
 			if (!__Internal__.safeIntegerLen) {
@@ -3056,13 +3056,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getBitwiseIntegerBounds', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'object',
-			description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Returns 'len' (in bits), 'min' and 'max' values of a bitwise integer.",
+			}
 		//! END_REPLACE()
 		, function getBitwiseIntegerBounds() {
 			if (!__Internal__.bitwiseIntegerLen) {
@@ -3081,13 +3081,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD_TOOL('generateUUID', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'string',
-			description: "Generates and returns a UUID.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'string',
+				description: "Generates and returns a UUID.",
+			}
 		//! END_REPLACE()
 		, function generateUUID() {
 			if (nodeUUID) {
@@ -3104,13 +3104,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('hasSymbolsEnabled', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'bool',
-			description: "Returns 'true' if symbols are enabled. Returns 'false' otherwise.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'bool',
+				description: "Returns 'true' if symbols are enabled. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, (__options__.enableSymbols ? function hasSymbolsEnabled() {
 			return true;
@@ -3120,19 +3120,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isSymbol', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if object is a Symbol. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if object is a Symbol. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isSymbol(obj) {
 			if (types.isNothing(obj)) {
@@ -3161,24 +3161,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getSymbol', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 6,
-			params: {
-				key: {
-					type: 'string',
-					optional: false,
-					description: "Symbol key.",
+			{
+				author: "Claude Petit",
+				revision: 6,
+				params: {
+					key: {
+						type: 'string',
+						optional: false,
+						description: "Symbol key.",
+					},
+					isGlobal: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', gets or creates a global symbol. Otherwise, returns a new unique symbol.",
+					},
 				},
-				isGlobal: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', gets or creates a global symbol. Otherwise, returns a new unique symbol.",
-				},
-			},
-			returns: 'symbol',
-			description: "Gets or creates a Symbol.",
-		}
+				returns: 'symbol',
+				description: "Gets or creates a Symbol.",
+			}
 		//! END_REPLACE()
 		, (__options__.enableSymbols ? function getSymbol(key, /*optional*/isGlobal) {
 			key = _shared.Natives.windowString(key);
@@ -3203,19 +3203,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getSymbolKey', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				symbol: {
-					type: 'symbol',
-					optional: false,
-					description: "Symbol value.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					symbol: {
+						type: 'symbol',
+						optional: false,
+						description: "Symbol value.",
+					},
 				},
-			},
-			returns: 'string',
-			description: "Returns the key of the specified Symbol.",
-		}
+				returns: 'string',
+				description: "Returns the key of the specified Symbol.",
+			}
 		//! END_REPLACE()
 		, function getSymbolKey(symbol) {
 			if (typeof symbol === 'object') {
@@ -3237,19 +3237,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('symbolIsGlobal', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				symbol: {
-					type: 'symbol',
-					optional: false,
-					description: "Symbol value.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					symbol: {
+						type: 'symbol',
+						optional: false,
+						description: "Symbol value.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' if 'obj' is a global Symbol. Returns 'false' otherwise.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' if 'obj' is a global Symbol. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function symbolIsGlobal(symbol) {
 			if (typeof symbol === 'object') {
@@ -3273,19 +3273,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getFunctionName', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'function',
-					optional: false,
-					description: "A function.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'function',
+						optional: false,
+						description: "A function.",
+					},
 				},
-			},
-			returns: 'string',
-			description: "Returns function name.",
-		}
+				returns: 'string',
+				description: "Returns function name.",
+			}
 		//! END_REPLACE()
 		, function getFunctionName(obj) {
 			if (types.isFunction(obj)) {
@@ -3325,19 +3325,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('box', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				value: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					value: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'Doodad.Types.box',
-			description: "Box a value inside a box object.",
-		}
+				returns: 'Doodad.Types.box',
+				description: "Box a value inside a box object.",
+			}
 		//! END_REPLACE()
 		, function box(value) {
 			if (types._instanceof(this, types.box)) {
@@ -3383,19 +3383,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('unbox', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				value: {
-					type: 'Doodad.Types.box',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					value: {
+						type: 'Doodad.Types.box',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'object',
-			description: "Extract the value of a box object.",
-		}
+				returns: 'object',
+				description: "Extract the value of a box object.",
+			}
 		//! END_REPLACE()
 		, function unbox(value) {
 			return (types._instanceof(value, types.box) ? value.valueOf() : value);
@@ -3513,24 +3513,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isClonable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "Object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "Object to test for.",
+					},
+					cloneFunctions: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', the function will returns 'true' for custom functions. Default is 'false'.",
+					},
 				},
-				cloneFunctions: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', the function will returns 'true' for custom functions. Default is 'false'.",
-				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' when the value is clonable.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' when the value is clonable.",
+			}
 		//! END_REPLACE()
 		, function isClonable(obj, /*optional*/cloneFunctions) {
 			return _shared.isClonable(obj, cloneFunctions);
@@ -3538,39 +3538,39 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('clone', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 10,
-			params: {
-				obj: {
-					type: 'any',
-					optional: false,
-					description: "A clonable value.",
+			{
+				author: "Claude Petit",
+				revision: 10,
+				params: {
+					obj: {
+						type: 'any',
+						optional: false,
+						description: "A clonable value.",
+					},
+					depth: {
+						type: 'integer',
+						optional: true,
+						description: "Depth.",
+					},
+					cloneFunctions: {
+						type: 'bool,integer',
+						optional: true,
+						description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
+					},
+					keepUnlocked: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
+					},
+					keepNonClonables: {
+						type: 'bool',
+						optional: true,
+						description: "When 'true', will keep non-clonable values instead of throwing. When 'false', will throw an error on a non-clonable value. Default is 'false'.",
+					},
 				},
-				depth: {
-					type: 'integer',
-					optional: true,
-					description: "Depth.",
-				},
-				cloneFunctions: {
-					type: 'bool,integer',
-					optional: true,
-					description: "When 'true', the function will clone custom functions. When an integer, it will specify the depth where custom functions are cloned. Default is 'false'.",
-				},
-				keepUnlocked: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', the result will not get locked (frozen or not extensible) when the original object was. When 'false', the result will get locked as the original. Default is 'false'.",
-				},
-				keepNonClonables: {
-					type: 'bool',
-					optional: true,
-					description: "When 'true', will keep non-clonable values instead of throwing. When 'false', will throw an error on a non-clonable value. Default is 'false'.",
-				},
-			},
-			returns: 'any',
-			description: "Clones a value.",
-		}
+				returns: 'any',
+				description: "Clones a value.",
+			}
 		//! END_REPLACE()
 		, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
 			return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
@@ -3582,24 +3582,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('INIT', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				type: {
-					type: 'type',
-					optional: false,
-					description: "A Doodad type.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					type: {
+						type: 'type',
+						optional: false,
+						description: "A Doodad type.",
+					},
+					args: {
+						type: 'arrayof(any)',
+						optional: true,
+						description: "Arguments of the constructor.",
+					},
 				},
-				args: {
-					type: 'arrayof(any)',
-					optional: true,
-					description: "Arguments of the constructor.",
-				},
-			},
-			returns: 'type',
-			description: "Initialize a Doodad type. Returns that type.",
-		}
+				returns: 'type',
+				description: "Initialize a Doodad type. Returns that type.",
+			}
 		//! END_REPLACE()
 		, function INIT(type, /*optional*/args) {
 			if (types.isInitialized(type)) {
@@ -3622,19 +3622,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('DESTROY', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				obj: {
-					type: 'object,type',
-					optional: false,
-					description: "A Doodad object or type.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'object,type',
+						optional: false,
+						description: "A Doodad object or type.",
+					},
 				},
-			},
-			returns: 'undefined',
-			description: "Destroys a Doodad object or type.",
-		}
+				returns: 'undefined',
+				description: "Destroys a Doodad object or type.",
+			}
 		//! END_REPLACE()
 		, function DESTROY(obj) {
 			_shared.DESTROY(obj);
@@ -3648,19 +3648,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('DESTROYED', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				obj: {
-					type: 'object,type',
-					optional: false,
-					description: "A Doodad object or type.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					obj: {
+						type: 'object,type',
+						optional: false,
+						description: "A Doodad object or type.",
+					},
 				},
-			},
-			returns: 'bool',
-			description: "Returns 'true' is object is destroyed. Otherwise, returns 'false'.",
-		}
+				returns: 'bool',
+				description: "Returns 'true' is object is destroyed. Otherwise, returns 'false'.",
+			}
 		//! END_REPLACE()
 		, function DESTROYED(obj) {
 			return _shared.DESTROYED(obj);
@@ -3672,19 +3672,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' when object is a Doodad type (created using 'Types.createType'). Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' when object is a Doodad type (created using 'Types.createType'). Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isType(obj) {
 			return types.isFunction(obj) && types.has(obj, __Internal__.symbolIsType);
@@ -3696,19 +3696,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isJsFunction', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 5,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 5,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if object is a function, and not a JS class and not a Doodad type. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if object is a function, and not a JS class and not a Doodad type. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isJsFunction(obj) {
 			return types.isFunction(obj) && !types.isJsClass(obj) && !types.isType(obj) && !types.isErrorType(obj);
@@ -3716,19 +3716,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isJsObject', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object to test for.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object to test for.",
+					},
 				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if object is a normal Javascript object, so not created from a Doodad type. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if object is a normal Javascript object, so not created from a Doodad type. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isJsObject(obj) {
 			return types.isObject(obj) && !types.getType(obj);
@@ -3773,24 +3773,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('baseof', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 8,
-			params: {
-				base: {
-					type: 'type,arrayof(type)',
-					optional: false,
-					description: "A type.",
+			{
+				author: "Claude Petit",
+				revision: 8,
+				params: {
+					base: {
+						type: 'type,arrayof(type)',
+						optional: false,
+						description: "A type.",
+					},
+					type: {
+						type: 'type',
+						optional: false,
+						description: "A type.",
+					},
 				},
-				type: {
-					type: 'type',
-					optional: false,
-					description: "A type.",
-				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if a type derivates from base. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if a type derivates from base. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function baseof(base, type) {
 			if (!types.isFunction(type)) {
@@ -3888,24 +3888,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('is', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 7,
-			params: {
-				obj: {
-					type: 'object,type',
-					optional: false,
-					description: "An object to test for. A type can be provided.",
+			{
+				author: "Claude Petit",
+				revision: 7,
+				params: {
+					obj: {
+						type: 'object,type',
+						optional: false,
+						description: "An object to test for. A type can be provided.",
+					},
+					type: {
+						type: 'type,object,arrayof(type,object)',
+						optional: false,
+						description: "A type. If an object is provided, its type will be used.",
+					},
 				},
-				type: {
-					type: 'type,object,arrayof(type,object)',
-					optional: false,
-					description: "A type. If an object is provided, its type will be used.",
-				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if object is from the specified type. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if object is from the specified type. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function is(obj, type) {
 			if (types.isNothing(obj)) {
@@ -4008,24 +4008,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isLike', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 9,
-			params: {
-				obj: {
-					type: 'object,type',
-					optional: false,
-					description: "An object to test for. A type can be provided.",
+			{
+				author: "Claude Petit",
+				revision: 9,
+				params: {
+					obj: {
+						type: 'object,type',
+						optional: false,
+						description: "An object to test for. A type can be provided.",
+					},
+					type: {
+						type: 'type,object,arrayof(type,object)',
+						optional: false,
+						description: "A Doodad type. If an object is provided, its type will be used.",
+					},
 				},
-				type: {
-					type: 'type,object,arrayof(type,object)',
-					optional: false,
-					description: "A Doodad type. If an object is provided, its type will be used.",
-				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if object is from or inherits from the specified type. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if object is from or inherits from the specified type. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isLike(obj, type) {
 			if (types.isNothing(obj)) {
@@ -4145,24 +4145,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('_instanceof', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 10,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 10,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					type: {
+						type: 'type,arrayof(type)',
+						optional: false,
+						description: "A type.",
+					},
 				},
-				type: {
-					type: 'type,arrayof(type)',
-					optional: false,
-					description: "A type.",
-				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if an object inherits from type. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if an object inherits from type. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function _instanceof(obj, type) {
 			// Uses prototypes chain like the operator "instanceof", but doesn't raise an exception when 'type' is not a type.
@@ -4260,19 +4260,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isSingleton', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				obj: {
-					type: ['object', 'type'],
-					optional: false,
-					description: "A Doodad object, or its type.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					obj: {
+						type: ['object', 'type'],
+						optional: false,
+						description: "A Doodad object, or its type.",
+					},
 				},
-			},
-			returns: 'boolean',
-			description: "Returns 'true' if a object is a singleton. Returns 'false' otherwise.",
-		}
+				returns: 'boolean',
+				description: "Returns 'true' if a object is a singleton. Returns 'false' otherwise.",
+			}
 		//! END_REPLACE()
 		, function isSingleton(obj) {
 			if (types.isNothing(obj)) {
@@ -4288,19 +4288,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: ['object', 'type'],
-					optional: false,
-					description: "A Doodad object, or a Doodad type.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: ['object', 'type'],
+						optional: false,
+						description: "A Doodad object, or a Doodad type.",
+					},
 				},
-			},
-			returns: 'type',
-			description: "Returns the type of an object. Returns 'null' if not a Doodad object.",
-		}
+				returns: 'type',
+				description: "Returns the type of an object. Returns 'null' if not a Doodad object.",
+			}
 		//! END_REPLACE()
 		, function getType(obj) {
 			if (types.isNothing(obj)) {
@@ -4319,19 +4319,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getTypeName', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: ['object', 'type'],
-					optional: false,
-					description: "A Doodad object, or a Doodad type.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: ['object', 'type'],
+						optional: false,
+						description: "A Doodad object, or a Doodad type.",
+					},
 				},
-			},
-			returns: 'string',
-			description: "Returns the name of the type of an object. Returns 'null' if not a Doodad object.",
-		}
+				returns: 'string',
+				description: "Returns the name of the type of an object. Returns 'null' if not a Doodad object.",
+			}
 		//! END_REPLACE()
 		, function getTypeName(obj) {
 			obj = _shared.Natives.windowObject(obj);
@@ -4344,19 +4344,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getBase', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: ['object', 'type'],
-					optional: false,
-					description: "A Doodad object, or a Doodad type.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: ['object', 'type'],
+						optional: false,
+						description: "A Doodad object, or a Doodad type.",
+					},
 				},
-			},
-			returns: 'type',
-			description: "Returns the base type of an object. Returns 'null' if not a Doodad object.",
-		}
+				returns: 'type',
+				description: "Returns the base type of an object. Returns 'null' if not a Doodad object.",
+			}
 		//! END_REPLACE()
 		, function getBase(obj) {
 			obj = _shared.Natives.windowObject(obj);
@@ -4387,39 +4387,39 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('invoke', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 4,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "The object from where comes 'fn'.",
+			{
+				author: "Claude Petit",
+				revision: 4,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "The object from where comes 'fn'.",
+					},
+					fn: {
+						type: 'string,Symbol,function',
+						optional: false,
+						description: "Method name or function.",
+					},
+					args: {
+						type: 'arrayof(any)',
+						optional: true,
+						description: "Method or function arguments.",
+					},
+					secret: {
+						type: 'any',
+						optional: true,
+						description: "The secret.",
+					},
+					thisObj: {
+						type: 'any',
+						optional: true,
+						description: "The value to pass to 'this'. Default is the 'obj' argument.",
+					},
 				},
-				fn: {
-					type: 'string,Symbol,function',
-					optional: false,
-					description: "Method name or function.",
-				},
-				args: {
-					type: 'arrayof(any)',
-					optional: true,
-					description: "Method or function arguments.",
-				},
-				secret: {
-					type: 'any',
-					optional: true,
-					description: "The secret.",
-				},
-				thisObj: {
-					type: 'any',
-					optional: true,
-					description: "The value to pass to 'this'. Default is the 'obj' argument.",
-				},
-			},
-			returns: 'any',
-			description: "Invokes a method or a function as from inside the object.",
-		}
+				returns: 'any',
+				description: "Invokes a method or a function as from inside the object.",
+			}
 		//! END_REPLACE()
 		, function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
 			return _shared.invoke(obj, fn, args, secret, thisObj);
@@ -4431,34 +4431,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					attr: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Attribute name.",
+					},
+					options: {
+						type: 'object',
+						optional: true,
+						description: "Options",
+					},
+					secret: {
+						type: 'any',
+						optional: true,
+						description: "Secret.",
+					},
 				},
-				attr: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Attribute name.",
-				},
-				options: {
-					type: 'object',
-					optional: true,
-					description: "Options",
-				},
-				secret: {
-					type: 'any',
-					optional: true,
-					description: "Secret.",
-				},
-			},
-			returns: 'any',
-			description: "Gets the value of an attribute as from inside the object.",
-		}
+				returns: 'any',
+				description: "Gets the value of an attribute as from inside the object.",
+			}
 		//! END_REPLACE()
 		, function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
 			return _shared.getAttribute(obj, attr, options, secret);
@@ -4479,34 +4479,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('getAttributes', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					attrs: {
+						type: 'arrayof(string,Symbol)',
+						optional: false,
+						description: "Attribute names.",
+					},
+					options: {
+						type: 'object',
+						optional: true,
+						description: "Options",
+					},
+					secret: {
+						type: 'any',
+						optional: true,
+						description: "Secret.",
+					},
 				},
-				attrs: {
-					type: 'arrayof(string,Symbol)',
-					optional: false,
-					description: "Attribute names.",
-				},
-				options: {
-					type: 'object',
-					optional: true,
-					description: "Options",
-				},
-				secret: {
-					type: 'any',
-					optional: true,
-					description: "Secret.",
-				},
-			},
-			returns: 'object',
-			description: "Gets the value of multiple attributes as from inside the object.",
-		}
+				returns: 'object',
+				description: "Gets the value of multiple attributes as from inside the object.",
+			}
 		//! END_REPLACE()
 		, function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
 			return _shared.getAttributes(obj, attrs, options, secret);
@@ -4563,39 +4563,39 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('setAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 11,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 11,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					attr: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "Attribute name.",
+					},
+					value: {
+						type: 'any',
+						optional: false,
+						description: "New value.",
+					},
+					options: {
+						type: 'object',
+						optional: true,
+						description: "Options.",
+					},
+					secret: {
+						type: 'any',
+						optional: true,
+						description: "Secret.",
+					},
 				},
-				attr: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "Attribute name.",
-				},
-				value: {
-					type: 'any',
-					optional: false,
-					description: "New value.",
-				},
-				options: {
-					type: 'object',
-					optional: true,
-					description: "Options.",
-				},
-				secret: {
-					type: 'any',
-					optional: true,
-					description: "Secret.",
-				},
-			},
-			returns: 'object',
-			description: "Sets the value of an attribute as from inside the object.",
-		}
+				returns: 'object',
+				description: "Sets the value of an attribute as from inside the object.",
+			}
 		//! END_REPLACE()
 		, function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
 			return _shared.setAttribute(obj, attr, value, options, secret);
@@ -4617,34 +4617,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('setAttributes', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				obj: {
-					type: 'object',
-					optional: false,
-					description: "An object.",
+			{
+				author: "Claude Petit",
+				revision: 3,
+				params: {
+					obj: {
+						type: 'object',
+						optional: false,
+						description: "An object.",
+					},
+					values: {
+						type: 'object',
+						optional: false,
+						description: "name/value pairs.",
+					},
+					options: {
+						type: 'object',
+						optional: true,
+						description: "Options.",
+					},
+					secret: {
+						type: 'any',
+						optional: true,
+						description: "Secret.",
+					},
 				},
-				values: {
-					type: 'object',
-					optional: false,
-					description: "name/value pairs.",
-				},
-				options: {
-					type: 'object',
-					optional: true,
-					description: "Options.",
-				},
-				secret: {
-					type: 'any',
-					optional: true,
-					description: "Secret.",
-				},
-			},
-			returns: 'object',
-			description: "Sets the value of multiple attributes as from inside the object.",
-		}
+				returns: 'object',
+				description: "Sets the value of multiple attributes as from inside the object.",
+			}
 		//! END_REPLACE()
 		, function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
 			return _shared.setAttributes(obj, values, options, secret);
@@ -4686,24 +4686,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('INHERIT', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				base: {
-					type: 'type',
-					optional: false,
-					description: "A type used as a base type.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					base: {
+						type: 'type',
+						optional: false,
+						description: "A type used as a base type.",
+					},
+					type: {
+						type: 'type',
+						optional: false,
+						description: "A type to inherit.",
+					},
 				},
-				type: {
-					type: 'type',
-					optional: false,
-					description: "A type to inherit.",
-				},
-			},
-			returns: 'type',
-			description: "Makes type inherits the base type.",
-		}
+				returns: 'type',
+				description: "Makes type inherits the base type.",
+			}
 		//! END_REPLACE()
 		, function INHERIT(base, type) {
 			if (types.baseof(base, type)) {
@@ -4744,19 +4744,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('AttributeBox', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				value: {
-					type: 'any',
-					optional: false,
-					description: "A value to box.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					value: {
+						type: 'any',
+						optional: false,
+						description: "A value to box.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Creates an attribute box with the specified value.",
-		}
+				returns: 'AttributeBox',
+				description: "Creates an attribute box with the specified value.",
+			}
 		//! END_REPLACE()
 		, types.INHERIT(types.box, function AttributeBox(value) {
 			if (types._instanceof(this, types.AttributeBox)) {
@@ -4778,19 +4778,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('SUPER', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				fn: {
-					type: 'function',
-					optional: false,
-					description: "A method.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					fn: {
+						type: 'function',
+						optional: false,
+						description: "A method.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags a method so it will override instead of replace. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags a method so it will override instead of replace. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function SUPER(fn) {
 			fn = types.AttributeBox(fn);
@@ -4800,19 +4800,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('NOT_ENUMERABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as not enumerable. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as not enumerable. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function NOT_ENUMERABLE(val) {
 			val = types.AttributeBox(val);
@@ -4822,19 +4822,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('ENUMERABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as enumerable. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as enumerable. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function ENUMERABLE(val) {
 			val = types.AttributeBox(val);
@@ -4844,19 +4844,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('NOT_CONFIGURABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as not configurable. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as not configurable. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function NOT_CONFIGURABLE(val) {
 			val = types.AttributeBox(val);
@@ -4866,19 +4866,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('CONFIGURABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as configurable. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as configurable. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function CONFIGURABLE(val) {
 			val = types.AttributeBox(val);
@@ -4888,19 +4888,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('READ_ONLY', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as read-only. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as read-only. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function READ_ONLY(val) {
 			val = types.AttributeBox(val);
@@ -4913,19 +4913,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('WRITABLE', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				val: {
-					type: 'any',
-					optional: false,
-					description: "A value.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					val: {
+						type: 'any',
+						optional: false,
+						description: "A value.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Flags an attribute as writable. Returns an AttributeBox.",
-		}
+				returns: 'AttributeBox',
+				description: "Flags an attribute as writable. Returns an AttributeBox.",
+			}
 		//! END_REPLACE()
 		, function WRITABLE(val) {
 			val = types.AttributeBox(val);
@@ -4938,24 +4938,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('GET_SET', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				getter: {
-					type: 'function',
-					optional: true,
-					description: "The getter function.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					getter: {
+						type: 'function',
+						optional: true,
+						description: "The getter function.",
+					},
+					setter: {
+						type: 'function',
+						optional: true,
+						description: "The setter function.",
+					},
 				},
-				setter: {
-					type: 'function',
-					optional: true,
-					description: "The setter function.",
-				},
-			},
-			returns: 'AttributeBox',
-			description: "Creates a get/set attribute.",
-		}
+				returns: 'AttributeBox',
+				description: "Creates a get/set attribute.",
+			}
 		//! END_REPLACE()
 		, function GET_SET(getter, setter) {
 			const val = types.AttributeBox();
@@ -4966,19 +4966,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('GET', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				getter: {
-					type: 'function',
-					optional: true,
-					description: "The getter function.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					getter: {
+						type: 'function',
+						optional: true,
+						description: "The getter function.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Creates a get attribute.",
-		}
+				returns: 'AttributeBox',
+				description: "Creates a get attribute.",
+			}
 		//! END_REPLACE()
 		, function GET(getter) {
 			const val = types.AttributeBox();
@@ -4988,19 +4988,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('SET', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				setter: {
-					type: 'function',
-					optional: true,
-					description: "The setter function.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					setter: {
+						type: 'function',
+						optional: true,
+						description: "The setter function.",
+					},
 				},
-			},
-			returns: 'AttributeBox',
-			description: "Creates a set attribute.",
-		}
+				returns: 'AttributeBox',
+				description: "Creates a set attribute.",
+			}
 		//! END_REPLACE()
 		, function SET(setter) {
 			const val = types.AttributeBox();
@@ -5044,29 +5044,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.createCaller = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				attr: {
-					type: 'string,Symbol',
-					optional: false,
-					description: "The method name.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					attr: {
+						type: 'string,Symbol',
+						optional: false,
+						description: "The method name.",
+					},
+					fn: {
+						type: 'function',
+						optional: false,
+						description: "The new function.",
+					},
+					superFn: {
+						type: 'function',
+						optional: true,
+						description: "The old function from base.",
+					},
 				},
-				fn: {
-					type: 'function',
-					optional: false,
-					description: "The new function.",
-				},
-				superFn: {
-					type: 'function',
-					optional: true,
-					description: "The old function from base.",
-				},
-			},
-			returns: 'method',
-			description: "Returns a new method which is the result of the override.",
-		}
+				returns: 'method',
+				description: "Returns a new method which is the result of the override.",
+			}
 		//! END_REPLACE()
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
@@ -5453,49 +5453,49 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('createType', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 14,
-			params: {
-				name: {
-					type: 'string',
-					optional: true,
-					description: "Name of the new type.",
+			{
+				author: "Claude Petit",
+				revision: 14,
+				params: {
+					name: {
+						type: 'string',
+						optional: true,
+						description: "Name of the new type.",
+					},
+					base: {
+						type: 'type',
+						optional: true,
+						description: "A Doodad type to inherit.",
+					},
+					constructor: {
+						type: 'function',
+						optional: true,
+						description: "The constructor function.",
+					},
+					_new: {
+						type: 'function',
+						optional: true,
+						description: "The creator function.",
+					},
+					typeProto: {
+						type: 'object',
+						optional: true,
+						description: "An object to be used as the prototype of the new type.",
+					},
+					instanceProto: {
+						type: 'object',
+						optional: true,
+						description: "An object to be used as the prototype of the instances of the new type.",
+					},
+					uuid: {
+						type: 'string',
+						optional: true,
+						description: "UUID of the new type.",
+					},
 				},
-				base: {
-					type: 'type',
-					optional: true,
-					description: "A Doodad type to inherit.",
-				},
-				constructor: {
-					type: 'function',
-					optional: true,
-					description: "The constructor function.",
-				},
-				_new: {
-					type: 'function',
-					optional: true,
-					description: "The creator function.",
-				},
-				typeProto: {
-					type: 'object',
-					optional: true,
-					description: "An object to be used as the prototype of the new type.",
-				},
-				instanceProto: {
-					type: 'object',
-					optional: true,
-					description: "An object to be used as the prototype of the instances of the new type.",
-				},
-				uuid: {
-					type: 'string',
-					optional: true,
-					description: "UUID of the new type.",
-				},
-			},
-			returns: 'type',
-			description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
-		}
+				returns: 'type',
+				description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
+			}
 		//! END_REPLACE()
 		, function createType(/*optional*/name, /*optional*/base, /*optional*/constructor, /*optional*/_new, /*optional*/typeProto, /*optional*/instanceProto, /*optional*/uuid) {
 			if (types.isNothing(name)) {
@@ -5603,34 +5603,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.$inherit = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				typeProto: {
-					type: 'object',
-					optional: true,
-					description: "An object to be used as the prototype of the new type.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					typeProto: {
+						type: 'object',
+						optional: true,
+						description: "An object to be used as the prototype of the new type.",
+					},
+					instanceProto: {
+						type: 'object',
+						optional: true,
+						description: "An object to be used as the prototype of the instances of the new type.",
+					},
+					_super: {
+						type: 'function',
+						optional: true,
+						description: "The super function.",
+					},
+					constructor: {
+						type: 'function',
+						optional: true,
+						description: "The constructor constructor function. Defaults to a call to the method '_new'.",
+					},
 				},
-				instanceProto: {
-					type: 'object',
-					optional: true,
-					description: "An object to be used as the prototype of the instances of the new type.",
-				},
-				_super: {
-					type: 'function',
-					optional: true,
-					description: "The super function.",
-				},
-				constructor: {
-					type: 'function',
-					optional: true,
-					description: "The constructor constructor function. Defaults to a call to the method '_new'.",
-				},
-			},
-			returns: 'type',
-			description: "Creates and returns a new Doodad type that inherits from 'this'.",
-		}
+				returns: 'type',
+				description: "Creates and returns a new Doodad type that inherits from 'this'.",
+			}
 		//! END_REPLACE()
 		, function $inherit(/*optional*/typeProto, /*optional*/instanceProto) {
 			// <PRB> "fn.call(undefined, ...)" can automatically set "this" to "window" !
@@ -5692,31 +5692,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	global.Error.prototype.innerStack = '';
 
 	//! IF_SET('serverSide')
-	// For Node.Js
-	global.Error.prototype.code = '';
+		// For Node.Js
+		global.Error.prototype.code = '';
 	//! END_IF()
 
 
 	types.Error = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				message: {
-					type: 'string',
-					optional: false,
-					description: "Error message",
-				},
+			{
+				author: "Claude Petit",
+				revision: 3,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: false,
+						description: "Error message",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'undefined',
-			description: "Generic error with message formatting.",
-		}
+				returns: 'undefined',
+				description: "Generic error with message formatting.",
+			}
 		//! END_REPLACE()
 		, __Internal__.$inherit.call(_shared.Natives.windowError,
 			/*typeProto*/
@@ -5846,13 +5846,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: null,
-			returns: 'error',
-			description: "Raised on invalid value type.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: null,
+				returns: 'error',
+				description: "Raised on invalid value type.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit(
 			{
@@ -5862,24 +5862,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				message: {
-					type: 'string',
-					optional: false,
-					description: "A message explaining the assertion.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 2,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: false,
+						description: "A message explaining the assertion.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised when an assertion fail.",
-		}
+				returns: 'error',
+				description: "Raised when an assertion fail.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit(
 			{
@@ -5897,24 +5897,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that something has failed to parse.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that something has failed to parse.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on parse error.",
-		}
+				returns: 'error',
+				description: "Raised on parse error.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "ParseError",
@@ -5927,24 +5927,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining what is not supported.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining what is not supported.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised when something is not supported.",
-		}
+				returns: 'error',
+				description: "Raised when something is not supported.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "NotSupported",
@@ -5957,24 +5957,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining what is not available.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining what is not available.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised when something is not available.",
-		}
+				returns: 'error',
+				description: "Raised when something is not available.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "NotAvailable",
@@ -5987,29 +5987,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				code: {
-					type: 'integer',
-					optional: false,
-					description: "HTTP status code.",
-				},
-				message: {
-					type: 'string',
-					optional: false,
-					description: "A message explaining the error.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 3,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					code: {
+						type: 'integer',
+						optional: false,
+						description: "HTTP status code.",
+					},
+					message: {
+						type: 'string',
+						optional: false,
+						description: "A message explaining the error.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on HTTP error.",
-		}
+				returns: 'error',
+				description: "Raised on HTTP error.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "HttpError",
@@ -6023,24 +6023,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that something has overflowed.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that something has overflowed.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on buffer overflow.",
-		}
+				returns: 'error',
+				description: "Raised on buffer overflow.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "BufferOverflow",
@@ -6053,24 +6053,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that something has timed out.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that something has timed out.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on timeout.",
-		}
+				returns: 'error',
+				description: "Raised on timeout.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "TimeoutError",
@@ -6083,24 +6083,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that something has been canceled.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that something has been canceled.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on cancel.",
-		}
+				returns: 'error',
+				description: "Raised on cancel.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "CanceledError",
@@ -6113,24 +6113,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that something is denied or not allowed.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 0,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that something is denied or not allowed.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Raised on access denied or not allowed operation.",
-		}
+				returns: 'error',
+				description: "Raised on access denied or not allowed operation.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit({
 			$TYPE_NAME: "AccessDenied",
@@ -6143,24 +6143,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that the script execution has been interrupted.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 1,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that the script execution has been interrupted.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Signals that script execution has been interrupted, but not aborted.",
-		}
+				returns: 'error',
+				description: "Signals that script execution has been interrupted, but not aborted.",
+			}
 		//! END_REPLACE()
 		, types.Error.$inherit(
 			/*typeProto*/
@@ -6179,29 +6179,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 3,
-			params: {
-				exitCode: {
-					type: 'integer',
-					optional: true,
-					description: "Exit code.",
-				},
-				message: {
-					type: 'string',
-					optional: true,
-					description: "A message explaining that the script has been aborted.",
-				},
+			{
+				author: "Claude Petit",
+				revision: 3,
 				params: {
-					type: 'arrayof(any),objectof(any)',
-					optional: true,
-					description: "Parameters of the error message",
+					exitCode: {
+						type: 'integer',
+						optional: true,
+						description: "Exit code.",
+					},
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining that the script has been aborted.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
 				},
-			},
-			returns: 'error',
-			description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
-		}
+				returns: 'error',
+				description: "Signals that the script has been aborted. Every \"try...catch\" statements must unconditionally re-throw this error.",
+			}
 		//! END_REPLACE()
 		, types.ScriptInterruptedError.$inherit(
 			/*typeProto*/
@@ -6229,24 +6229,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.DD_DOC = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				doc: {
-					type: 'object',
-					optional: false,
-					description: "Document to apply.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					doc: {
+						type: 'object',
+						optional: false,
+						description: "Document to apply.",
+					},
+					value: {
+						type: 'any',
+						optional: false,
+						description: "Target value",
+					},
 				},
-				value: {
-					type: 'any',
-					optional: false,
-					description: "Target value",
-				},
-			},
-			returns: 'object',
-			description: "Applies a document to an object and returns that object.",
-		}
+				returns: 'object',
+				description: "Applies a document to an object and returns that object.",
+			}
 		//! END_REPLACE()
 		, function DD_DOC(doc, value) {
 			value = _shared.Natives.windowObject(value);
@@ -6262,13 +6262,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.GET_DD_DOC = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'object',
-			description: "Gets the document applied to an object.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Gets the document applied to an object.",
+			}
 		//! END_REPLACE()
 		, function GET_DD_DOC(value) {
 			return value[__Internal__.symbolDD_DOC];
@@ -6288,20 +6288,20 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('SINGLETON', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			paramsDirection: 'rightToLeft',
-			params: {
-				type: {
-					type: 'type',
-					optional: false,
-					description: "A Doodad type.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				paramsDirection: 'rightToLeft',
+				params: {
+					type: {
+						type: 'type',
+						optional: false,
+						description: "A Doodad type.",
+					},
 				},
-			},
-			returns: 'type',
-			description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
-		}
+				returns: 'type',
+				description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
+			}
 		//! END_REPLACE()
 		, function SINGLETON(type) {
 			if (!types.isType(type)) {
@@ -6317,13 +6317,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	types.Type = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: null,
-			returns: 'object',
-			description: "Base type of every Doodad types.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: null,
+				returns: 'object',
+				description: "Base type of every Doodad types.",
+			}
 		//! END_REPLACE()
 		, __Internal__.$inherit.call(undefined,
 			/*typeProto*/
@@ -6394,24 +6394,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// NOTE: 2015/04/16 We can't inherit from the actual implementations of Event and CustomEvent !
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 0,
-			params: {
-				type: {
-					type: 'string',
-					optional: false,
-					description: "Event name.",
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					type: {
+						type: 'string',
+						optional: false,
+						description: "Event name.",
+					},
+					init: {
+						type: 'object',
+						optional: true,
+						description: "Object to initialize event with.",
+					},
 				},
-				init: {
-					type: 'object',
-					optional: true,
-					description: "Object to initialize event with.",
-				},
-			},
-			returns: 'object',
-			description: "Custom event type for custom event targets.",
-		}
+				returns: 'object',
+				description: "Custom event type for custom event targets.",
+			}
 		//! END_REPLACE()
 		, types.Type.$inherit(
 			/*typeProto*/
@@ -6445,13 +6445,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				preventDefault: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'undefined',
-						description: "Prevents default behavior of the object that raises the event.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Prevents default behavior of the object that raises the event.",
+						}
 					//! END_REPLACE()
 					, function() {
 						// NOTE: "preventDefault" should be "cancel".
@@ -6462,13 +6462,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				stopPropagation: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'undefined',
-						description: "Stops propagation of the event.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Stops propagation of the event.",
+						}
 					//! END_REPLACE()
 					, function stopPropagation() {
 						// NOTE: "stopPropagation" should be "preventBubbling".
@@ -6477,13 +6477,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				stopImmediatePropagation: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'undefined',
-						description: "Stops propagation of the event and breaks the listeners chain.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: null,
+							returns: 'undefined',
+							description: "Stops propagation of the event and breaks the listeners chain.",
+						}
 					//! END_REPLACE()
 					, function stopImmediatePropagation() {
 						// NOTE: "stopImmediatePropagation" should be "stopPropagation".
@@ -6497,13 +6497,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: null,
-			returns: 'object',
-			description: "Custom event target.",
-		}
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: null,
+				returns: 'object',
+				description: "Custom event target.",
+			}
 		//! END_REPLACE()
 		, types.Type.$inherit(
 			/*typeProto*/
@@ -6525,29 +6525,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				addEventListener: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							type: {
-								type: 'string',
-								optional: false,
-								description: "Event name.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								type: {
+									type: 'string',
+									optional: false,
+									description: "Event name.",
+								},
+								handler: {
+									type: 'function',
+									optional: false,
+									description: "Callback function",
+								},
+								options: {
+									type: 'boolean,object',
+									optional: true,
+									description: "Options.",
+								},
 							},
-							handler: {
-								type: 'function',
-								optional: false,
-								description: "Callback function",
-							},
-							options: {
-								type: 'boolean,object',
-								optional: true,
-								description: "Options.",
-							},
-						},
-						returns: 'undefined',
-						description: "Adds an event listener for the specified event name.",
-					}
+							returns: 'undefined',
+							description: "Adds an event listener for the specified event name.",
+						}
 					//! END_REPLACE()
 					, function addEventListener(type, handler, /*optional*/options) {
 						type = type.toLowerCase();
@@ -6574,29 +6574,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				removeEventListener: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							type: {
-								type: 'string',
-								optional: false,
-								description: "Event name.",
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								type: {
+									type: 'string',
+									optional: false,
+									description: "Event name.",
+								},
+								handler: {
+									type: 'function',
+									optional: false,
+									description: "Original callback function",
+								},
+								options: {
+									type: 'boolean,object',
+									optional: true,
+									description: "Options.",
+								},
 							},
-							handler: {
-								type: 'function',
-								optional: false,
-								description: "Original callback function",
-							},
-							options: {
-								type: 'boolean,object',
-								optional: true,
-								description: "Options.",
-							},
-						},
-						returns: 'undefined',
-						description: "Removes an event listener for the specified event name.",
-					}
+							returns: 'undefined',
+							description: "Removes an event listener for the specified event name.",
+						}
 					//! END_REPLACE()
 					, function removeEventListener(type, /*optional*/handler, /*optional*/options) {
 						type = type.toLowerCase();
@@ -6627,19 +6627,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				dispatchEvent: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 2,
-						params: {
-							event: {
-								type: 'string',
-								optional: false,
-								description: "Event name.",
+						{
+							author: "Claude Petit",
+							revision: 2,
+							params: {
+								event: {
+									type: 'string',
+									optional: false,
+									description: "Event name.",
+								},
 							},
-						},
-						returns: 'any',
-						description: "Raises an event by its name.",
-					}
+							returns: 'any',
+							description: "Raises an event by its name.",
+						}
 					//! END_REPLACE()
 					, function dispatchEvent(event) {
 						// TODO: What should I do with "useCapture" ???
@@ -6724,13 +6724,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				clearListeners: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: null,
-						returns: 'undefined',
-						description: "Removes every event listeners.",
-					}
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: null,
+							returns: 'undefined',
+							description: "Removes every event listeners.",
+						}
 					//! END_REPLACE()
 					, function clearListeners() {
 						types.setAttribute(this, __Internal__.symbolEventListeners, tools.nullObject());
@@ -6821,29 +6821,29 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	types.Namespace = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 1,
-			params: {
-				parent: {
-					type: 'Doodad.Types.Namespace',
-					optional: false,
-					description: "Parent namespace.",
+			{
+				author: "Claude Petit",
+				revision: 1,
+				params: {
+					parent: {
+						type: 'Doodad.Types.Namespace',
+						optional: false,
+						description: "Parent namespace.",
+					},
+					name: {
+						type: 'string',
+						optional: false,
+						description: "Short name.",
+					},
+					fullName: {
+						type: 'string',
+						optional: false,
+						description: "Full name.",
+					},
 				},
-				name: {
-					type: 'string',
-					optional: false,
-					description: "Short name.",
-				},
-				fullName: {
-					type: 'string',
-					optional: false,
-					description: "Full name.",
-				},
-			},
-			returns: 'Namespace',
-			description: "Namespace object.",
-		}
+				returns: 'Namespace',
+				description: "Namespace object.",
+			}
 		//! END_REPLACE()
 		, types.CustomEventTarget.$inherit(
 			/*typeProto*/
@@ -6859,34 +6859,34 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				ADD: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 1,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the object.",
+						{
+							author: "Claude Petit",
+							revision: 1,
+							params: {
+								name: {
+									type: 'string',
+									optional: false,
+									description: "Name of the object.",
+								},
+								obj: {
+									type: 'object,Type',
+									optional: false,
+									description: "Object to add.",
+								},
+								protect: {
+									type: 'bool',
+									optional: true,
+									description: "'true' will protect the object. 'false' will not. Default is 'true'."
+								},
+								args: {
+									type: 'arrayof(any)',
+									optional: true,
+									description: "Arguments of the constructor.",
+								},
 							},
-							obj: {
-								type: 'object,Type',
-								optional: false,
-								description: "Object to add.",
-							},
-							protect: {
-								type: 'bool',
-								optional: true,
-								description: "'true' will protect the object. 'false' will not. Default is 'true'."
-							},
-							args: {
-								type: 'arrayof(any)',
-								optional: true,
-								description: "Arguments of the constructor.",
-							},
-						},
-						returns: 'object',
-						description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
-					}
+							returns: 'object',
+							description: "Adds the specified object to the current namespace object and returns that object. Also intialize if 'obj' is a Type.",
+						}
 					//! END_REPLACE()
 					, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
 						return _shared.ADD.call(this, name, obj, protect, args);
@@ -6894,19 +6894,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				REMOVE: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: {
-							name: {
-								type: 'string',
-								optional: false,
-								description: "Name of the object.",
+						{
+							author: "Claude Petit",
+							revision: 0,
+							params: {
+								name: {
+									type: 'string',
+									optional: false,
+									description: "Name of the object.",
+								},
 							},
-						},
-						returns: 'undefined',
-						description: "Removes the object from the current namespace object.",
-					}
+							returns: 'undefined',
+							description: "Removes the object from the current namespace object.",
+						}
 					//! END_REPLACE()
 					, function REMOVE(name) {
 						return _shared.REMOVE.call(this, name);
@@ -6947,7 +6947,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// SECRET
 	//==============
 
-	_shared.SECRET = types.get(__options__, 'secret') || null;
+	_shared.SECRET = types.get(__options__, 'secret');
 	delete __options__.secret;
 	//__options__.secret = null;
 
@@ -6961,24 +6961,24 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	const root = types.INIT(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
-		{
-			author: "Claude Petit",
-			revision: 2,
-			params: {
-				modules: {
-					type: 'object',
-					optional: true,
-					description: "Object of modules to load.",
+			{
+				author: "Claude Petit",
+				revision: 2,
+				params: {
+					modules: {
+						type: 'object',
+						optional: true,
+						description: "Object of modules to load.",
+					},
+					options: {
+						type: 'object',
+						optional: true,
+						description: "Module options.",
+					},
 				},
-				options: {
-					type: 'object',
-					optional: true,
-					description: "Module options.",
-				},
-			},
-			returns: 'object',
-			description: "Namespace root.",
-		}
+				returns: 'object',
+				description: "Namespace root.",
+			}
 		//! END_REPLACE()
 		, types.SINGLETON(types.Namespace.$inherit(
 			/*typeProto*/
@@ -7286,12 +7286,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				}),
 
 				//! BEGIN_REMOVE()
-				serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null))),
+					serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY((typeof process === 'object') && (process !== null) && !process.browser && (typeof module === 'object') && (module !== null))),
 				//! END_REMOVE()
 				//! IF(IS_SET("serverSide") && !IS_SET("browserify"))
-				//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),")
+					//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),")
 				//! ELSE()
-				//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),")
+					//!		INJECT("serverSide: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),")
 				//! END_IF()
 
 				getOptions: function() {
@@ -7307,7 +7307,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					const newOptions = __Internal__._setOptions(...args);
 
 					if (newOptions.secret !== _shared.SECRET) {
-						throw new types.Error("Invalid secret.");
+						throw new types.AccessDenied("Secrets mismatch.");
 					};
 
 					delete newOptions.secret;
@@ -7339,31 +7339,31 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 };
 
 //! BEGIN_REMOVE()
-if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
+	if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
 	//! END_REMOVE()
 
 	//! IF_SET("serverSide")
-	//! IF_SET('mjs')
-	//!		INJECT('export default exports;')
-	//! END_IF()
+		//! IF_SET('mjs')
+			//!		INJECT('export default exports;')
+		//! END_IF()
 	//! END_IF()
 
 	//! BEGIN_REMOVE()
-} else {
+	} else {
 	//! END_REMOVE()
 
 	//! IF_UNSET("serverSide")
-	//! IF_SET('mjs')
-	//!		INJECT('export default exports;')
-	//! ELSE()
-	if ((typeof DD_BOOTSTRAP === 'object') && (DD_BOOTSTRAP !== null)) {
-		DD_BOOTSTRAP.createRoot = exports.createRoot;
-	} else {
-		global.createRoot = exports.createRoot;
-	};
-	//! END_IF()
+		//! IF_SET('mjs')
+			//!		INJECT('export default exports;')
+		//! ELSE()
+			if ((typeof DD_BOOTSTRAP === 'object') && (DD_BOOTSTRAP !== null)) {
+				DD_BOOTSTRAP.createRoot = exports.createRoot;
+			} else {
+				global.createRoot = exports.createRoot;
+			};
+		//! END_IF()
 	//! END_IF()
 
 	//! BEGIN_REMOVE()
-};
+	};
 //! END_REMOVE()

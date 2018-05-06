@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Namespace.js - Namespaces management
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Namespace.js - Namespaces management
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -107,24 +107,24 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('iter', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						type: {
-							type: 'entries.Object',
-							optional: true,
-							description: "Entry type.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							type: {
+								type: 'entries.Object',
+								optional: true,
+								description: "Entry type.",
+							},
+							exact: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will match exactly the entry type. 'false' will include inherited ones. Default is 'false'.",
+							},
 						},
-						exact: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will match exactly the entry type. 'false' will include inherited ones. Default is 'false'.",
-						},
-					},
-					returns: 'RegistryIterator',
-					description: "Returns an iterator of the registry namespaces.",
-				}
+						returns: 'RegistryIterator',
+						description: "Returns an iterator of the registry namespaces.",
+					}
 				//! END_REPLACE()
 				, function iter(/*optional*/type, /*optional*/exact) {
 					return __Internal__.DD_REGISTRY.iter(type, exact);
@@ -132,24 +132,24 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('get', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						name: {
-							type: 'string',
-							optional: false,
-							description: "Full namespace.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Full namespace.",
+							},
+							type: {
+								type: 'entries.Object',
+								optional: true,
+								description: "Entry type.",
+							},
 						},
-						type: {
-							type: 'entries.Object',
-							optional: true,
-							description: "Entry type.",
-						},
-					},
-					returns: 'Namespace',
-					description: "Returns the namespace object of the specified namespace from the registry, according to the specified entry type if present.",
-				}
+						returns: 'Namespace',
+						description: "Returns the namespace object of the specified namespace from the registry, according to the specified entry type if present.",
+					}
 				//! END_REPLACE()
 				, function get(name, /*optional*/type) {
 					const entry = __Internal__.DD_REGISTRY.get(name, type);
@@ -161,29 +161,29 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('add', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						name: {
-							type: 'string',
-							optional: false,
-							description: "Full namespace.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Full namespace.",
+							},
+							entry: {
+								type: 'entries.Object',
+								optional: false,
+								description: "Entry type.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						entry: {
-							type: 'entries.Object',
-							optional: false,
-							description: "Entry type.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool',
-					description: "Adds a namespace entry to the registry. Returns 'true' on success, otherwise returns 'false'.",
-				}
+						returns: 'bool',
+						description: "Adds a namespace entry to the registry. Returns 'true' on success, otherwise returns 'false'.",
+					}
 				//! END_REPLACE()
 				, function add(name, entry, /*optinal*/options) {
 					return __Internal__.DD_REGISTRY.add(name, entry, options);
@@ -191,29 +191,29 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('remove', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						name: {
-							type: 'string',
-							optional: false,
-							description: "Full namespace.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							name: {
+								type: 'string',
+								optional: false,
+								description: "Full namespace.",
+							},
+							type: {
+								type: 'entries.Object',
+								optional: true,
+								description: "Entry type to be retrieved.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						type: {
-							type: 'entries.Object',
-							optional: true,
-							description: "Entry type to be retrieved.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool',
-					description: "Removes a namespace entry from the registry. Returns 'true' on success, otherwise returns 'false'.",
-				}
+						returns: 'bool',
+						description: "Removes a namespace entry from the registry. Returns 'true' on success, otherwise returns 'false'.",
+					}
 				//! END_REPLACE()
 				, function remove(name, /*optional*/type, /*optional*/options) {
 					return __Internal__.DD_REGISTRY.remove(name, type, options);
@@ -225,29 +225,29 @@ exports.add = function add(modules) {
 
 			__Internal__.createNamespace = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 8,
-					params: {
-						spec: {
-							type: 'object,string',
-							optional: false,
-							description: "Specifications of the namespace to create, or just its name.",
+					{
+						author: "Claude Petit",
+						revision: 8,
+						params: {
+							spec: {
+								type: 'object,string',
+								optional: false,
+								description: "Specifications of the namespace to create, or just its name.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
+							ignoreOptionals: {
+								type: 'boolean',
+								optional: true,
+								description: "When 'true', optional modules are ignored. Default is 'false'.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-						ignoreOptionals: {
-							type: 'boolean',
-							optional: true,
-							description: "When 'true', optional modules are ignored. Default is 'false'.",
-						},
-					},
-					returns: 'Promise(NamespaceEntry),Promise(arrayof(object))',
-					description: "Creates a new namespace object and returns its entry from the registry. When there are a missing dependencies, aborts and returns information on them instead.",
-				}
+						returns: 'Promise(NamespaceEntry),Promise(arrayof(object))',
+						description: "Creates a new namespace object and returns its entry from the registry. When there are a missing dependencies, aborts and returns information on them instead.",
+					}
 				//! END_REPLACE()
 				, function createNamespace(spec, /*optional*/options, /*optional*/ignoreOptionals) {
 					const Promise = types.getPromise();
@@ -629,24 +629,24 @@ exports.add = function add(modules) {
 
 			__Internal__.initNamespace = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						entry: {
-							type: 'NamespaceEntry',
-							optional: false,
-							description: "Namespace entry object.",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							entry: {
+								type: 'NamespaceEntry',
+								optional: false,
+								description: "Namespace entry object.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Promise(NamespaceEntry)',
-					description: "Initializes a namespace and its dependencies.",
-				}
+						returns: 'Promise(NamespaceEntry)',
+						description: "Initializes a namespace and its dependencies.",
+					}
 				//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
 					/* eslint no-loop-func: "off" */
@@ -744,29 +744,29 @@ exports.add = function add(modules) {
 
 			namespaces.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 13,
-					params: {
-						modules: {
-							type: 'object',
-							optional: false,
-							description: "Namespaces specifications.",
+					{
+						author: "Claude Petit",
+						revision: 13,
+						params: {
+							modules: {
+								type: 'object',
+								optional: false,
+								description: "Namespaces specifications.",
+							},
+							options: {
+								type: 'arrayof(object),object',
+								optional: true,
+								description: "Options.",
+							},
+							callback: {
+								type: 'function',
+								optional: true,
+								description: "Callback function.",
+							},
 						},
-						options: {
-							type: 'arrayof(object),object',
-							optional: true,
-							description: "Options.",
-						},
-						callback: {
-							type: 'function',
-							optional: true,
-							description: "Callback function.",
-						},
-					},
-					returns: 'Promise',
-					description: "Loads additional Doodad modules, then returns 'root'.",
-				}
+						returns: 'Promise',
+						description: "Loads additional Doodad modules, then returns 'root'.",
+					}
 				//! END_REPLACE()
 				, function load(modules, /*optional*/options, /*optional*/callback) {
 					const Promise = types.getPromise();
@@ -778,7 +778,7 @@ exports.add = function add(modules) {
 							options = tools.depthExtend.apply(null, tools.append([15, {}], options));
 						};
 
-						if ((types.get(types.get(options, 'startup'), 'secret') || null) !== _shared.SECRET) {
+						if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
 							throw new types.AccessDenied("Secrets mismatch.");
 						};
 
@@ -1134,13 +1134,13 @@ exports.add = function add(modules) {
 
 			__Internal__.Registry = root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: null,
-					returns: 'Registry',
-					description: "Namespaces registry.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: null,
+						returns: 'Registry',
+						description: "Namespaces registry.",
+					}
 				//! END_REPLACE()
 				, types.INIT(types.Type.$inherit(
 					/*typeProto*/
@@ -1160,24 +1160,24 @@ exports.add = function add(modules) {
 
 						get: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Full namespace.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										name: {
+											type: 'string',
+											optional: false,
+											description: "Full namespace.",
+										},
+										type: {
+											type: 'NamespaceEntry',
+											optional: true,
+											description: "Entry type to be retrieved.",
+										},
 									},
-									type: {
-										type: 'NamespaceEntry',
-										optional: true,
-										description: "Entry type to be retrieved.",
-									},
-								},
-								returns: 'NamespaceEntry',
-								description: "Returns an entry by its name.",
-							}
+									returns: 'NamespaceEntry',
+									description: "Returns an entry by its name.",
+								}
 							//! END_REPLACE()
 							, function get(name, /*optional*/type) {
 								if (!(name in this.registry)) {
@@ -1198,24 +1198,24 @@ exports.add = function add(modules) {
 							}),
 						has: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Full namespace.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										name: {
+											type: 'string',
+											optional: false,
+											description: "Full namespace.",
+										},
+										type: {
+											type: 'NamespaceEntry',
+											optional: true,
+											description: "Entry type to be retrieved.",
+										},
 									},
-									type: {
-										type: 'NamespaceEntry',
-										optional: true,
-										description: "Entry type to be retrieved.",
-									},
-								},
-								returns: 'bool',
-								description: "Returns 'true' if an entry exists. Returns 'false' otherwise.",
-							}
+									returns: 'bool',
+									description: "Returns 'true' if an entry exists. Returns 'false' otherwise.",
+								}
 							//! END_REPLACE()
 							, function has(name, /*optional*/type) {
 								if (!(name in this.registry)) {
@@ -1233,29 +1233,29 @@ exports.add = function add(modules) {
 							}),
 						remove: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Full namespace.",
+								{
+									author: "Claude Petit",
+									revision: 3,
+									params: {
+										name: {
+											type: 'string',
+											optional: false,
+											description: "Full namespace.",
+										},
+										type: {
+											type: 'NamespaceEntry',
+											optional: true,
+											description: "Entry type to be retrieved.",
+										},
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-									type: {
-										type: 'NamespaceEntry',
-										optional: true,
-										description: "Entry type to be retrieved.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
-									},
-								},
-								returns: 'bool',
-								description: "Removes an entry and return 'true' when successful. Returns 'false' otherwise.",
-							}
+									returns: 'bool',
+									description: "Removes an entry and return 'true' when successful. Returns 'false' otherwise.",
+								}
 							//! END_REPLACE()
 							, function remove(name, /*optional*/type, /*optional*/options) {
 								options = tools.nullObject(options);
@@ -1298,29 +1298,29 @@ exports.add = function add(modules) {
 							}),
 						add: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 3,
-								params: {
-									name: {
-										type: 'string',
-										optional: false,
-										description: "Full namespace.",
+								{
+									author: "Claude Petit",
+									revision: 3,
+									params: {
+										name: {
+											type: 'string',
+											optional: false,
+											description: "Full namespace.",
+										},
+										entry: {
+											type: 'NamespaceEntry',
+											optional: false,
+											description: "Namespace entry to add.",
+										},
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-									entry: {
-										type: 'NamespaceEntry',
-										optional: false,
-										description: "Namespace entry to add.",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
-									},
-								},
-								returns: 'bool',
-								description: "Adds a new entry and returns 'true' when successful. Returns 'false' otherwise.",
-							}
+									returns: 'bool',
+									description: "Adds a new entry and returns 'true' when successful. Returns 'false' otherwise.",
+								}
 							//! END_REPLACE()
 							, function add(name, entry, /*optional*/options) {
 								options = tools.nullObject(options);
@@ -1374,29 +1374,29 @@ exports.add = function add(modules) {
 
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 3,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Namespace registry entry.",
-				}
+						returns: 'Type',
+						description: "Namespace registry entry.",
+					}
 				//! END_REPLACE()
 				, types.Type.$inherit(
 					/*typeProto*/
@@ -1437,19 +1437,19 @@ exports.add = function add(modules) {
 
 						init: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-								},
-								returns: 'undefined',
-								description: "Initializes the namespace object.",
-							}
+									returns: 'undefined',
+									description: "Initializes the namespace object.",
+								}
 							//! END_REPLACE()
 							, function init(/*optional*/options) {
 								this.objectCreate = null;
@@ -1468,29 +1468,29 @@ exports.add = function add(modules) {
 
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Namespace object entry.",
-				}
+						returns: 'Type',
+						description: "Namespace object entry.",
+					}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
 					/*typeProto*/
@@ -1506,29 +1506,29 @@ exports.add = function add(modules) {
 
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Namespace registry entry.",
-				}
+						returns: 'Type',
+						description: "Namespace registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
 					/*typeProto*/
@@ -1543,29 +1543,29 @@ exports.add = function add(modules) {
 			//-----------------------------------
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Module registry entry.",
-				}
+						returns: 'Type',
+						description: "Module registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Namespace.$inherit(
 					/*typeProto*/
@@ -1580,29 +1580,29 @@ exports.add = function add(modules) {
 			//-----------------------------------
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Special registry entry.",
-				}
+						returns: 'Type',
+						description: "Special registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Entry.$inherit(
 					/*typeProto*/
@@ -1618,29 +1618,29 @@ exports.add = function add(modules) {
 			//-----------------------------------
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Package registry entry.",
-				}
+						returns: 'Type',
+						description: "Package registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Special.$inherit(
 					/*typeProto*/
@@ -1656,29 +1656,29 @@ exports.add = function add(modules) {
 			//-----------------------------------
 			entries.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						root: {
-							type: 'Root',
-							optional: false,
-							description: "Root namespace object",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							root: {
+								type: 'Root',
+								optional: false,
+								description: "Root namespace object",
+							},
+							spec: {
+								type: 'object',
+								optional: false,
+								description: "Namespace specifications",
+							},
+							namespace: {
+								type: 'Namespace',
+								optional: false,
+								description: "Namespace object",
+							},
 						},
-						spec: {
-							type: 'object',
-							optional: false,
-							description: "Namespace specifications",
-						},
-						namespace: {
-							type: 'Namespace',
-							optional: false,
-							description: "Namespace object",
-						},
-					},
-					returns: 'Type',
-					description: "Application registry entry.",
-				}
+						returns: 'Type',
+						description: "Application registry entry.",
+					}
 				//! END_REPLACE()
 				, entries.Special.$inherit(
 					/*typeProto*/

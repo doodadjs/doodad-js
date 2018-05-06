@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Tools_Scripts.js - Scripts tools
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Tools_Scripts.js - Scripts tools
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -81,23 +81,23 @@ exports.add = function add(modules) {
 
 			tools.ADD('getCurrentScript', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						currentScript: {
-							type: 'string,object,error',
-							optional: true,
-							description: "Some Javascript engines provide a way to get the information. You should give it here.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							currentScript: {
+								type: 'string,object,error',
+								optional: true,
+								description: "Some Javascript engines provide a way to get the information. You should give it here.",
+							},
 						},
-					},
-					returns: 'Url,Path',
-					description:
+						returns: 'Url,Path',
+						description:
 								"Returns location of the current running script. Multiple usages :\n" +
 								'- Client-side only: root.Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Client-side and server-side: root.Doodad.Tools.getCurrentScript((root.serverSide?module.filename:document.currentScript)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.Files.Path.parse(module.filename)\n',
-				}
+					}
 				//! END_REPLACE()
 				, function getCurrentScript(/*optional*/currentScript) {
 					let url,
@@ -155,19 +155,19 @@ exports.add = function add(modules) {
 
 			tools.ADD('abortScript', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						exitCode: {
-							type: 'integer',
-							optional: true,
-							description: "Exit code",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							exitCode: {
+								type: 'integer',
+								optional: true,
+								description: "Exit code",
+							},
 						},
-					},
-					returns: 'error',
-					description: "Emits \"script aborted\" signal.",
-				}
+						returns: 'error',
+						description: "Emits \"script aborted\" signal.",
+					}
 				//! END_REPLACE()
 				, function abortScript(/*optional*/exitCode) {
 					throw new types.ScriptAbortedError(exitCode);
@@ -179,13 +179,13 @@ exports.add = function add(modules) {
 
 			tools.ADD('trapUnhandledErrors', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'undefined',
-					description: "Trap unhandled errors and unhandled Promise rejections.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'undefined',
+						description: "Trap unhandled errors and unhandled Promise rejections.",
+					}
 				//! END_REPLACE()
 				, function trapUnhandledErrors() {
 					if (!__Internal__.unhandledRejections) {
@@ -239,19 +239,19 @@ exports.add = function add(modules) {
 
 							const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 							//! IF_SET("serverSide")
-							if (types.isObject(timer) && types.isFunction(timer.unref)) {
-								// Node.Js: Allows the process to exit
-								timer.unref();
-							};
+								if (types.isObject(timer) && types.isFunction(timer.unref)) {
+									// Node.Js: Allows the process to exit
+									timer.unref();
+								};
 							//! END_IF()
 						};
 
 						const timer = _shared.Natives.windowSetTimeout(dumpRejections, options.unhandledRejectionsTimeout);
 						//! IF_SET("serverSide")
-						if (types.isObject(timer) && types.isFunction(timer.unref)) {
-							// Node.Js: Allows the process to exit
-							timer.unref();
-						};
+							if (types.isObject(timer) && types.isFunction(timer.unref)) {
+								// Node.Js: Allows the process to exit
+								timer.unref();
+							};
 						//! END_IF()
 					};
 				}));

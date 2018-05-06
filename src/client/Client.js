@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Client.js - Client functions
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Client.js - Client functions
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -288,44 +288,44 @@ exports.add = function add(modules) {
 
 			tools.ADD('callAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Callback function",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function",
+							},
+							delay: {
+								type: 'integer',
+								optional: true,
+								description: "Time to wait in milliseconds. Values less than or equal to 0 are reserved. Default is the minimal possible value.",
+							},
+							thisObj: {
+								type: 'any',
+								optional: true,
+								description: "Value of 'this' when calling the function. Default is 'undefined'.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Function arguments.",
+							},
+							cancelable: {
+								type: 'bool',
+								optional: true,
+								description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
 						},
-						delay: {
-							type: 'integer',
-							optional: true,
-							description: "Time to wait in milliseconds. Values less than or equal to 0 are reserved. Default is the minimal possible value.",
-						},
-						thisObj: {
-							type: 'any',
-							optional: true,
-							description: "Value of 'this' when calling the function. Default is 'undefined'.",
-						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Function arguments.",
-						},
-						cancelable: {
-							type: 'bool',
-							optional: true,
-							description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Secret.",
-						},
-					},
-					returns: 'undefined,object',
-					description: "Asynchronously calls a function.",
-				}
+						returns: 'undefined,object',
+						description: "Asynchronously calls a function.",
+					}
 				//! END_REPLACE()
 				, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
 					if (types.isNothing(delay)) {
@@ -509,19 +509,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isEvent', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is a DOM 'event' object. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is a DOM 'event' object. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isEvent(obj) {
 					return types._instanceof(obj, _shared.Natives.windowEvent);
@@ -529,19 +529,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isWindow', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is a DOM 'window' object. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isWindow(obj) {
 					return types._instanceof(obj, _shared.Natives.windowWindow);
@@ -549,19 +549,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isDocument', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is a DOM 'document' object. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isDocument(obj) {
 					return types._instanceof(obj, _shared.Natives.windowHtmlDocument);
@@ -569,19 +569,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isNode', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is a DOM 'node' object. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isNode(obj) {
 					return types._instanceof(obj, _shared.Natives.windowNode);
@@ -589,19 +589,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isElement', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is a DOM 'element' object. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function isElement(obj) {
 					return types._instanceof(obj, _shared.Natives.windowHtmlElement);
@@ -610,19 +610,19 @@ exports.add = function add(modules) {
 
 			client.ADD('isEventTarget', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						obj: {
-							type: 'any',
-							optional: false,
-							description: "An object to test for.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "An object to test for.",
+							},
 						},
-					},
-					returns: 'bool',
-					description: "Returns 'true' when the object is an event target. Returns 'false' otherwise.",
-				}
+						returns: 'bool',
+						description: "Returns 'true' when the object is an event target. Returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, (_shared.Natives.windowEventTarget ? (function isElement(obj) {
 					return types._instanceof(obj, _shared.Natives.windowEventTarget);
@@ -632,19 +632,19 @@ exports.add = function add(modules) {
 
 			client.ADD('getFirstElement', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						parent: {
-							type: 'any',
-							optional: false,
-							description: "A node.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							parent: {
+								type: 'any',
+								optional: false,
+								description: "A node.",
+							},
 						},
-					},
-					returns: 'HtmlElement',
-					description: "Returns the first child element of a node. Returns 'null' if no element.",
-				}
+						returns: 'HtmlElement',
+						description: "Returns the first child element of a node. Returns 'null' if no element.",
+					}
 				//! END_REPLACE()
 				, function(parent) {
 					root.DD_ASSERT && root.DD_ASSERT(client.isNode(parent), "Invalid node.");
@@ -664,13 +664,13 @@ exports.add = function add(modules) {
 
 			mixIns.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: null,
-					description: "Class mix-in to implement for JS events.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: null,
+						description: "Class mix-in to implement for JS events.",
+					}
 				//! END_REPLACE()
 				, doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "JsEvents",
@@ -797,25 +797,25 @@ exports.add = function add(modules) {
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: null,
-					description: "JS event handler prototype.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: null,
+						description: "JS event handler prototype.",
+					}
 				//! END_REPLACE()
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: null,
-					description: "JS event extender.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: null,
+						description: "JS event extender.",
+					}
 				//! END_REPLACE()
 				, extenders.RawEvent.$inherit({
 					$TYPE_NAME: "JsEvent",
@@ -930,22 +930,22 @@ exports.add = function add(modules) {
 
 			doodad.ADD('JS_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 3,
-					eventType: {
-						type: 'string',
-						optional: true,
-						description: "Event name.",
-					},
-					fn: {
-						type: 'function',
-						optional: true,
-						description: "Event handler.",
-					},
-					returns: 'AttributeBox,Extender',
-					description: "JS event attribute modifier.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 3,
+						eventType: {
+							type: 'string',
+							optional: true,
+							description: "Event name.",
+						},
+						fn: {
+							type: 'function',
+							optional: true,
+							description: "Event handler.",
+						},
+						returns: 'AttributeBox,Extender',
+						description: "JS event attribute modifier.",
+					}
 				//! END_REPLACE()
 				, function JS_EVENT(eventType, /*optional*/fn) {
 					if (root.DD_ASSERT) {
@@ -1005,24 +1005,24 @@ exports.add = function add(modules) {
 
 			types.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						message: {
-							type: 'string',
-							optional: true,
-							description: "A message explaining that location has changed.",
-						},
+					{
+						author: "Claude Petit",
+						revision: 1,
 						params: {
-							type: 'arrayof(any),objectof(any)',
-							optional: true,
-							description: "Parameters of the error message",
+							message: {
+								type: 'string',
+								optional: true,
+								description: "A message explaining that location has changed.",
+							},
+							params: {
+								type: 'arrayof(any),objectof(any)',
+								optional: true,
+								description: "Parameters of the error message",
+							},
 						},
-					},
-					returns: 'error',
-					description: "Signals that the current location has been moved to another one.",
-				}
+						returns: 'error',
+						description: "Signals that the current location has been moved to another one.",
+					}
 				//! END_REPLACE()
 				, types.ScriptAbortedError.$inherit(
 					{
@@ -1036,19 +1036,19 @@ exports.add = function add(modules) {
 
 			tools.ADD('getCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						_window: {
-							type: 'Window',
-							optional: true,
-							description: "Reference to the window object. Default is global 'window' object.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							_window: {
+								type: 'Window',
+								optional: true,
+								description: "Reference to the window object. Default is global 'window' object.",
+							},
 						},
-					},
-					returns: 'Url',
-					description: "Returns current location.",
-				}
+						returns: 'Url',
+						description: "Returns current location.",
+					}
 				//! END_REPLACE()
 				, function getCurrentLocation(/*optional*/_window) {
 					let _location = _shared.Natives.windowLocation;
@@ -1063,34 +1063,34 @@ exports.add = function add(modules) {
 
 			tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "Url to new location",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "Url to new location",
+							},
+							dontAbort: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will not throws the PageMovedError signal. 'false' will throws the signal. Default is 'false'.",
+							},
+							noReload: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will not reload the page when moving to the same location. 'false' will reload the page. Default is 'false'.",
+							},
+							_window: {
+								type: 'Window',
+								optional: true,
+								description: "Reference to the window object. Default is global 'window' object.",
+							},
 						},
-						dontAbort: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will not throws the PageMovedError signal. 'false' will throws the signal. Default is 'false'.",
-						},
-						noReload: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will not reload the page when moving to the same location. 'false' will reload the page. Default is 'false'.",
-						},
-						_window: {
-							type: 'Window',
-							optional: true,
-							description: "Reference to the window object. Default is global 'window' object.",
-						},
-					},
-					returns: 'undefined',
-					description: "Set current location.",
-				}
+						returns: 'undefined',
+						description: "Set current location.",
+					}
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort, /*optional*/noReload, /*optional*/_window) {
 					if (root.DD_ASSERT) {
@@ -1327,39 +1327,39 @@ exports.add = function add(modules) {
 
 			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "Target file Url",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "Target file Url",
+							},
+							async: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+							},
+							timeout: {
+								type: 'integer',
+								optional: true,
+								description: "Timeout delay in milliseconds.",
+							},
+							reload: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+							},
+							_document: {
+								type: 'HtmlDocument',
+								optional: true,
+								description: "Reference to the window document object. Default is global 'document' object.",
+							},
 						},
-						async: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-						},
-						timeout: {
-							type: 'integer',
-							optional: true,
-							description: "Timeout delay in milliseconds.",
-						},
-						reload: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-						},
-						_document: {
-							type: 'HtmlDocument',
-							optional: true,
-							description: "Reference to the window document object. Default is global 'document' object.",
-						},
-					},
-					returns: 'ScriptLoader',
-					description: "Load specified JS script file.",
-				}
+						returns: 'ScriptLoader',
+						description: "Load specified JS script file.",
+					}
 				//! END_REPLACE()
 				, function getJsScriptFileLoader(url, /*optional*/async, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
 					if (root.DD_ASSERT) {
@@ -1410,34 +1410,34 @@ exports.add = function add(modules) {
 
 			tools.ADD('getJsScriptBlockLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						script: {
-							type: 'string',
-							optional: false,
-							description: "Target JS script",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							script: {
+								type: 'string',
+								optional: false,
+								description: "Target JS script",
+							},
+							async: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will load script in asynchronous mode. 'false' will load script synchronously. Default is 'false'.",
+							},
+							timeout: {
+								type: 'integer',
+								optional: true,
+								description: "Timeout delay in milliseconds.",
+							},
+							_document: {
+								type: 'HtmlDocument',
+								optional: true,
+								description: "Reference to the window document object. Default is global 'document' object.",
+							},
 						},
-						async: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will load script in asynchronous mode. 'false' will load script synchronously. Default is 'false'.",
-						},
-						timeout: {
-							type: 'integer',
-							optional: true,
-							description: "Timeout delay in milliseconds.",
-						},
-						_document: {
-							type: 'HtmlDocument',
-							optional: true,
-							description: "Reference to the window document object. Default is global 'document' object.",
-						},
-					},
-					returns: 'ScriptLoader',
-					description: "Load specified JS script block.",
-				}
+						returns: 'ScriptLoader',
+						description: "Load specified JS script block.",
+					}
 				//! END_REPLACE()
 				, function getJsScriptBlockLoader(script, /*optional*/async, /*optional*/timeout, /*optional*/_document) {
 					if (root.DD_ASSERT) {
@@ -1472,44 +1472,44 @@ exports.add = function add(modules) {
 
 			tools.ADD('getCssScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "Target file Url",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "Target file Url",
+							},
+							async: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+							},
+							media: {
+								type: 'string',
+								optional: true,
+								description: "Target media(s). Default is none.",
+							},
+							timeout: {
+								type: 'integer',
+								optional: true,
+								description: "Timeout delay in milliseconds.",
+							},
+							reload: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+							},
+							_document: {
+								type: 'HtmlDocument',
+								optional: true,
+								description: "Reference to the window document object. Default is global 'document' object.",
+							},
 						},
-						async: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-						},
-						media: {
-							type: 'string',
-							optional: true,
-							description: "Target media(s). Default is none.",
-						},
-						timeout: {
-							type: 'integer',
-							optional: true,
-							description: "Timeout delay in milliseconds.",
-						},
-						reload: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-						},
-						_document: {
-							type: 'HtmlDocument',
-							optional: true,
-							description: "Reference to the window document object. Default is global 'document' object.",
-						},
-					},
-					returns: 'ScriptLoader',
-					description: "Load specified CSS script file.",
-				}
+						returns: 'ScriptLoader',
+						description: "Load specified CSS script file.",
+					}
 				//! END_REPLACE()
 				, function getCssScriptFileLoader(url, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/reload, /*optional*/_document) {
 					if (root.DD_ASSERT) {
@@ -1562,39 +1562,39 @@ exports.add = function add(modules) {
 
 			tools.ADD('getCssScriptBlockLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						script: {
-							type: 'string',
-							optional: false,
-							description: "Target CSS script",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							script: {
+								type: 'string',
+								optional: false,
+								description: "Target CSS script",
+							},
+							async: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
+							},
+							media: {
+								type: 'string',
+								optional: true,
+								description: "Target media(s). Default is none.",
+							},
+							timeout: {
+								type: 'integer',
+								optional: true,
+								description: "Timeout delay in milliseconds.",
+							},
+							_document: {
+								type: 'HtmlDocument',
+								optional: true,
+								description: "Reference to the window document object. Default is global 'document' object.",
+							},
 						},
-						async: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will load file in asynchronous mode. 'false' will load file synchronously. Default is 'false'.",
-						},
-						media: {
-							type: 'string',
-							optional: true,
-							description: "Target media(s). Default is none.",
-						},
-						timeout: {
-							type: 'integer',
-							optional: true,
-							description: "Timeout delay in milliseconds.",
-						},
-						_document: {
-							type: 'HtmlDocument',
-							optional: true,
-							description: "Reference to the window document object. Default is global 'document' object.",
-						},
-					},
-					returns: 'ScriptLoader',
-					description: "Load specified CSS script block.",
-				}
+						returns: 'ScriptLoader',
+						description: "Load specified CSS script block.",
+					}
 				//! END_REPLACE()
 				, function getCssScriptBlockLoader(script, /*optional*/async, /*optional*/media, /*optional*/timeout, /*optional*/_document) {
 					if (root.DD_ASSERT) {
@@ -1669,24 +1669,24 @@ exports.add = function add(modules) {
 
 			files.ADD('exists', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "Target folder url.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "Target folder url.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool,Promise(bool)',
-					description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
-				}
+						returns: 'bool,Promise(bool)',
+						description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function exists(url, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -1705,26 +1705,26 @@ exports.add = function add(modules) {
 
 			files.ADD('readFileAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 8,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "File Url.",
+					{
+						author: "Claude Petit",
+						revision: 8,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "File Url.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Promise',
-					description:
+						returns: 'Promise',
+						description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
-				}
+					}
 				//! END_REPLACE()
 				, function readFileAsync(url, /*optional*/options) {
 					const Promise = types.getPromise();
@@ -1909,26 +1909,26 @@ exports.add = function add(modules) {
 
 			files.ADD('readFile', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "File Url.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "File Url.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Promise',
-					description:
+						returns: 'Promise',
+						description:
 							"Reads a remote or local(*) file and returns a Promise.\n" +
 							"(*) Local file access is [hopefully] restricted.",
-				}
+					}
 				//! END_REPLACE()
 				, function readFile(url, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -1942,29 +1942,29 @@ exports.add = function add(modules) {
 
 			files.ADD('watch', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						url: {
-							type: 'string,Url,Blob,File',
-							optional: false,
-							description: "File Url.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							url: {
+								type: 'string,Url,Blob,File',
+								optional: false,
+								description: "File Url.",
+							},
+							callbacks: {
+								type: 'arrayof(function),function',
+								optional: false,
+								description: "Callback functions.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Callback options.",
+							},
 						},
-						callbacks: {
-							type: 'arrayof(function),function',
-							optional: false,
-							description: "Callback functions.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Callback options.",
-						},
-					},
-					returns: 'undefined',
-					description: "Not implemented.",
-				}
+						returns: 'undefined',
+						description: "Not implemented.",
+					}
 				//! END_REPLACE()
 				, function watch(url, callbacks, /*optional*/options) {
 					// Do nothing
@@ -1972,29 +1972,29 @@ exports.add = function add(modules) {
 
 			files.ADD('unwatch', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url,Blob,File',
-							optional: false,
-							description: "File Url.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url,Blob,File',
+								optional: false,
+								description: "File Url.",
+							},
+							callbacks: {
+								type: 'arrayof(function),function',
+								optional: true,
+								description: "Callback functions.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Callback options.",
+							},
 						},
-						callbacks: {
-							type: 'arrayof(function),function',
-							optional: true,
-							description: "Callback functions.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Callback options.",
-						},
-					},
-					returns: 'undefined',
-					description: "Not implemented.",
-				}
+						returns: 'undefined',
+						description: "Not implemented.",
+					}
 				//! END_REPLACE()
 				, function unwatch(url, callbacks, /*optional*/options) {
 					// Do nothing

@@ -3,43 +3,43 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: NodeJs.js - Node.js Tools
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: NodeJs.js - Node.js Tools
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-//! INJECT("import {default as nodeOs} from 'os';");
-//! INJECT("import {default as nodeChildProcess} from 'child_process';");
-//! INJECT("import {default as nodeFs} from 'fs';");
-//! INJECT("import {default as nodeHttp} from 'http';");
-//! INJECT("import {default as nodeConsole} from 'console';");
+	//! INJECT("import {default as nodeOs} from 'os';");
+	//! INJECT("import {default as nodeChildProcess} from 'child_process';");
+	//! INJECT("import {default as nodeFs} from 'fs';");
+	//! INJECT("import {default as nodeHttp} from 'http';");
+	//! INJECT("import {default as nodeConsole} from 'console';");
 //! ELSE()
-"use strict";
+	"use strict";
 
-const nodeOs = require('os'),
-	nodeChildProcess = require('child_process'),
-	nodeFs = require('fs'),
-	nodeHttp = require('http'),
-	nodeConsole = require('console');
+	const nodeOs = require('os'),
+		nodeChildProcess = require('child_process'),
+		nodeFs = require('fs'),
+		nodeHttp = require('http'),
+		nodeConsole = require('console');
 //! END_IF()
 
 const nodeOsTmpdir = nodeOs.tmpdir,
@@ -439,44 +439,44 @@ exports.add = function add(mods) {
 
 			tools.ADD('callAsync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Callback function",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Callback function",
+							},
+							delay: {
+								type: 'integer',
+								optional: true,
+								description: "Time to wait in milliseconds. Value of zero calls the function immediately after processing events. Value less than zero calls the function before processing events. Default is zero.",
+							},
+							thisObj: {
+								type: 'any',
+								optional: true,
+								description: "Value of 'this' when calling the function. Default is 'undefined'.",
+							},
+							args: {
+								type: 'arrayof(any)',
+								optional: true,
+								description: "Function arguments.",
+							},
+							cancelable: {
+								type: 'bool',
+								optional: true,
+								description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Secret.",
+							},
 						},
-						delay: {
-							type: 'integer',
-							optional: true,
-							description: "Time to wait in milliseconds. Value of zero calls the function immediately after processing events. Value less than zero calls the function before processing events. Default is zero.",
-						},
-						thisObj: {
-							type: 'any',
-							optional: true,
-							description: "Value of 'this' when calling the function. Default is 'undefined'.",
-						},
-						args: {
-							type: 'arrayof(any)',
-							optional: true,
-							description: "Function arguments.",
-						},
-						cancelable: {
-							type: 'bool',
-							optional: true,
-							description: "'true': function will return an object with a 'cancel' method. Otherwise, will return 'undefined'.",
-						},
-						secret: {
-							type: 'any',
-							optional: true,
-							description: "Secret.",
-						},
-					},
-					returns: 'undefined,object',
-					description: "Asynchronously calls a function.",
-				}
+						returns: 'undefined,object',
+						description: "Asynchronously calls a function.",
+					}
 				//! END_REPLACE()
 				, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
 					/* eslint consistent-return: "off" */
@@ -590,13 +590,13 @@ exports.add = function add(mods) {
 
 			tools.ADD('getCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: 'Url',
-					description: "Returns startup script location and arguments.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: 'Url',
+						description: "Returns startup script location and arguments.",
+					}
 				//! END_REPLACE()
 				, function getCurrentLocation() {
 					const args = [],
@@ -612,24 +612,24 @@ exports.add = function add(mods) {
 
 			tools.ADD('setCurrentLocation', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url',
-							optional: false,
-							description: "Url to script file with arguments",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url',
+								optional: false,
+								description: "Url to script file with arguments",
+							},
+							dontAbort: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will not throws the ScriptAbortedError signal. 'false' will throws the signal. Default is 'false'.",
+							},
 						},
-						dontAbort: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will not throws the ScriptAbortedError signal. 'false' will throws the signal. Default is 'false'.",
-						},
-					},
-					returns: 'undefined',
-					description: "Forks current V8 engine with the specified script file and arguments, then aborts current script.",
-				}
+						returns: 'undefined',
+						description: "Forks current V8 engine with the specified script file and arguments, then aborts current script.",
+					}
 				//! END_REPLACE()
 				, function setCurrentLocation(url, /*optional*/dontAbort) {
 					// FIXME: Does "nothing"
@@ -774,34 +774,34 @@ exports.add = function add(mods) {
 
 			tools.ADD('getJsScriptFileLoader', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						url: {
-							type: 'string,Url,Path',
-							optional: false,
-							description: "Target file path",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							url: {
+								type: 'string,Url,Path',
+								optional: false,
+								description: "Target file path",
+							},
+							async: {
+								type: 'bool',
+								optional: true,
+								description: "Reserved.",
+							},
+							timeout: {
+								type: 'integer',
+								optional: true,
+								description: "Reserved.",
+							},
+							reload: {
+								type: 'bool',
+								optional: true,
+								description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
+							},
 						},
-						async: {
-							type: 'bool',
-							optional: true,
-							description: "Reserved.",
-						},
-						timeout: {
-							type: 'integer',
-							optional: true,
-							description: "Reserved.",
-						},
-						reload: {
-							type: 'bool',
-							optional: true,
-							description: "'true' will reload file when already loaded. 'false' will not reload file. Default is 'false'.",
-						},
-					},
-					returns: 'ScriptLoader',
-					description: "Load specified JS script file.",
-				}
+						returns: 'ScriptLoader',
+						description: "Load specified JS script file.",
+					}
 				//! END_REPLACE()
 				, function getJsScriptFileLoader(file, /*optional*/async, /*optional*/timeout, /*optional*/reload) {
 					if (types._instanceof(file, files.Url)) {
@@ -883,24 +883,24 @@ exports.add = function add(mods) {
 
 			files.ADD('exists', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Target folder path.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Target folder path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool,Promise(bool)',
-					description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
-				}
+						returns: 'bool,Promise(bool)',
+						description: "Returns 'true' if file or folder exists, returns 'false' otherwise.",
+					}
 				//! END_REPLACE()
 				, function exists(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -957,24 +957,24 @@ exports.add = function add(mods) {
 
 			files.ADD('rm', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Target folder path.",
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Target folder path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool,Promise(bool)',
-					description: "Removes specified system file.",
-				}
+						returns: 'bool,Promise(bool)',
+						description: "Removes specified system file.",
+					}
 				//! END_REPLACE()
 				, function rm(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -1238,24 +1238,24 @@ exports.add = function add(mods) {
 
 			files.ADD('rmdir', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Target folder path.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Target folder path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'bool,Promise(bool)',
-					description: "Removes specified system folder.",
-				}
+						returns: 'bool,Promise(bool)',
+						description: "Removes specified system folder.",
+					}
 				//! END_REPLACE()
 				, function rmdir(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -1369,24 +1369,24 @@ exports.add = function add(mods) {
 
 			files.ADD('mkdir', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Target folder path.",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Target folder path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'undefined,Promise(unedfined)',
-					description: "Creates specified system folder.",
-				}
+						returns: 'undefined,Promise(unedfined)',
+						description: "Creates specified system folder.",
+					}
 				//! END_REPLACE()
 				, function mkdir(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -1847,29 +1847,29 @@ exports.add = function add(mods) {
 
 			files.ADD('copy', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 7,
-					params: {
-						source: {
-							type: 'string,Path',
-							optional: false,
-							description: "Source folder or file path.",
+					{
+						author: "Claude Petit",
+						revision: 7,
+						params: {
+							source: {
+								type: 'string,Path',
+								optional: false,
+								description: "Source folder or file path.",
+							},
+							destination: {
+								type: 'string,Path',
+								optional: false,
+								description: "Destination folder or file path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						destination: {
-							type: 'string,Path',
-							optional: false,
-							description: "Destination folder or file path.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'undefined,Promise(undefined)',
-					description: "Copies source file or folder to destination.",
-				}
+						returns: 'undefined,Promise(undefined)',
+						description: "Copies source file or folder to destination.",
+					}
 				//! END_REPLACE()
 				, function copy(source, destination, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -2091,24 +2091,24 @@ exports.add = function add(mods) {
 
 			files.ADD('readdir', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Target folder path.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Target folder path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'arrayof(object),Promise(arrayof(object))',
-					description: "Returns files and folders list with stats.",
-				}
+						returns: 'arrayof(object),Promise(arrayof(object))',
+						description: "Returns files and folders list with stats.",
+					}
 				//! END_REPLACE()
 				, function readdir(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -2231,24 +2231,24 @@ exports.add = function add(mods) {
 
 			files.ADD('getCanonical', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 5,
-					params: {
-						path: {
-							type: 'string,Path',
-							optional: false,
-							description: "Path.",
+					{
+						author: "Claude Petit",
+						revision: 5,
+						params: {
+							path: {
+								type: 'string,Path',
+								optional: false,
+								description: "Path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Path',
-					description: "Returns the canonical path of the specified path (for case-insensitive file systems).",
-				}
+						returns: 'Path',
+						description: "Returns the canonical path of the specified path (for case-insensitive file systems).",
+					}
 				//! END_REPLACE()
 				, function getCanonical(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -2262,13 +2262,13 @@ exports.add = function add(mods) {
 
 			files.ADD('getTempFolder', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: 'string',
-					description: "Returns system temporary folder path.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: 'string',
+						description: "Returns system temporary folder path.",
+					}
 				//! END_REPLACE()
 				, function getTempFolder() {
 					if (__Internal__.tmpdir) {
@@ -2472,24 +2472,24 @@ exports.add = function add(mods) {
 
 			files.ADD('readFile', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 6,
-					params: {
-						path: {
-							type: 'string,Url,Path',
-							optional: false,
-							description: "File Url or Path.",
+					{
+						author: "Claude Petit",
+						revision: 6,
+						params: {
+							path: {
+								type: 'string,Url,Path',
+								optional: false,
+								description: "File Url or Path.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Promise',
-					description: "Reads a remote or local file.",
-				}
+						returns: 'Promise',
+						description: "Reads a remote or local file.",
+					}
 				//! END_REPLACE()
 				, function readFile(path, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -2575,29 +2575,29 @@ exports.add = function add(mods) {
 
 			files.ADD('writeFile', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: {
-						path: {
-							type: 'string,Url,Path',
-							optional: false,
-							description: "File Url or Path.",
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: {
+							path: {
+								type: 'string,Url,Path',
+								optional: false,
+								description: "File Url or Path.",
+							},
+							data: {
+								type: 'any',
+								optional: false,
+								description: "File content.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						data: {
-							type: 'any',
-							optional: false,
-							description: "File content.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'Promise',
-					description: "Writes to a remote or local file.",
-				}
+						returns: 'Promise',
+						description: "Writes to a remote or local file.",
+					}
 				//! END_REPLACE()
 				, function writeFile(path, data, /*optional*/options) {
 					const async = types.get(options, 'async', false);
@@ -2611,29 +2611,29 @@ exports.add = function add(mods) {
 
 			files.ADD('watch', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 5,
-					params: {
-						path: {
-							type: 'string,Url,Path',
-							optional: false,
-							description: "File Url or Path.",
+					{
+						author: "Claude Petit",
+						revision: 5,
+						params: {
+							path: {
+								type: 'string,Url,Path',
+								optional: false,
+								description: "File Url or Path.",
+							},
+							callbacks: {
+								type: 'arrayof(function),function',
+								optional: false,
+								description: "Callback functions.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						callbacks: {
-							type: 'arrayof(function),function',
-							optional: false,
-							description: "Callback functions.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'undefined',
-					description: "Creates a file watcher.",
-				}
+						returns: 'undefined',
+						description: "Creates a file watcher.",
+					}
 				//! END_REPLACE()
 				, function watch(path, callbacks, /*optional*/options) {
 					path = files.parseLocation(path);
@@ -2696,29 +2696,29 @@ exports.add = function add(mods) {
 
 			files.ADD('unwatch', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						path: {
-							type: 'string,Url,Path',
-							optional: false,
-							description: "File Url or Path.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							path: {
+								type: 'string,Url,Path',
+								optional: false,
+								description: "File Url or Path.",
+							},
+							callbacks: {
+								type: 'arrayof(function),function',
+								optional: true,
+								description: "Callback functions.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options.",
+							},
 						},
-						callbacks: {
-							type: 'arrayof(function),function',
-							optional: true,
-							description: "Callback functions.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options.",
-						},
-					},
-					returns: 'undefined',
-					description: "Removes a file watcher.",
-				}
+						returns: 'undefined',
+						description: "Removes a file watcher.",
+					}
 				//! END_REPLACE()
 				, function unwatch(path, /*optional*/callbacks, /*optional*/options) {
 					path = files.parseLocation(path);
@@ -2754,29 +2754,29 @@ exports.add = function add(mods) {
 
 			nodejs.ADD('forkSync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						modulePath: {
-							type: 'string',
-							optional: false,
-							description: "JS script file path.",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							modulePath: {
+								type: 'string',
+								optional: false,
+								description: "JS script file path.",
+							},
+							args: {
+								type: 'arrayof(string)',
+								optional: true,
+								description: "Script arguments.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Spawn options.",
+							},
 						},
-						args: {
-							type: 'arrayof(string)',
-							optional: true,
-							description: "Script arguments.",
-						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Spawn options.",
-						},
-					},
-					returns: 'undefined',
-					description: "Forks the current V8 engine and synchronously runs the specified JS file.",
-				}
+						returns: 'undefined',
+						description: "Forks the current V8 engine and synchronously runs the specified JS file.",
+					}
 				//! END_REPLACE()
 				, function forkSync(modulePath, /*optional*/args, /*optional*/options) {
 					args = tools.append([], process.execArgv, [modulePath], args);
@@ -2790,33 +2790,33 @@ exports.add = function add(mods) {
 
 			nodejs.ADD('Console', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						hook: {
-							type: 'function',
-							optional: false,
-							description:
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							hook: {
+								type: 'function',
+								optional: false,
+								description:
 									"Hook function. Arguments :\n" +
 									"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
 									"  (arrayof(any)) args : Arguments passed to function\n" +
 									"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
+							},
+							stdout: {
+								type: 'object',
+								optional: true,
+								description: "Writable NodeJs output stream. Default is 'process.stdout'.",
+							},
+							stderr: {
+								type: 'object',
+								optional: true,
+								description: "Writable NodeJs stream for errors. Default is 'stdout'.",
+							},
 						},
-						stdout: {
-							type: 'object',
-							optional: true,
-							description: "Writable NodeJs output stream. Default is 'process.stdout'.",
-						},
-						stderr: {
-							type: 'object',
-							optional: true,
-							description: "Writable NodeJs stream for errors. Default is 'stdout'.",
-						},
-					},
-					returns: 'Console',
-					description: "NodeJS Console with hooks.",
-				}
+						returns: 'Console',
+						description: "NodeJS Console with hooks.",
+					}
 				//! END_REPLACE()
 				, types.createType(
 					/*name*/
@@ -2848,33 +2848,33 @@ exports.add = function add(mods) {
 					{
 						capture: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									hook: {
-										type: 'function',
-										optional: false,
-										description:
-											"Hook function. Arguments :\n" +
-											"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
-											"  (arrayof(any)) args : Arguments passed to function\n" +
-											"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										hook: {
+											type: 'function',
+											optional: false,
+											description:
+												"Hook function. Arguments :\n" +
+												"  (string) name : Called function name ('log', 'info', 'warn' or 'error')\n" +
+												"  (arrayof(any)) args : Arguments passed to function\n" +
+												"Hook function should returns the desired message to send to NodeJS Console, or 'undefined'.",
+										},
+										stdout: {
+											type: 'object',
+											optional: true,
+											description: "Writable NodeJs output stream. Default is 'process.stdout'.",
+										},
+										stderr: {
+											type: 'object',
+											optional: true,
+											description: "Writable NodeJs stream for errors. Default is 'stdout'.",
+										},
 									},
-									stdout: {
-										type: 'object',
-										optional: true,
-										description: "Writable NodeJs output stream. Default is 'process.stdout'.",
-									},
-									stderr: {
-										type: 'object',
-										optional: true,
-										description: "Writable NodeJs stream for errors. Default is 'stdout'.",
-									},
-								},
-								returns: 'undefined',
-								description: "Captures the console.",
-							}
+									returns: 'undefined',
+									description: "Captures the console.",
+								}
 							//! END_REPLACE()
 							, function capture(hook, /*optional*/stdout, /*optional*/stderr) {
 								if (__Internal__.oldConsole) {
@@ -2893,13 +2893,13 @@ exports.add = function add(mods) {
 
 						release: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: null,
-								returns: 'undefined',
-								description: "Releases the console previously captured.",
-							}
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: null,
+									returns: 'undefined',
+									description: "Releases the console previously captured.",
+								}
 							//! END_REPLACE()
 							, function release() {
 								if (__Internal__.oldConsole) {
@@ -3004,13 +3004,13 @@ exports.add = function add(mods) {
 
 			mixIns.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: null,
-					description: "Class mix-in to implement for NodeJs events.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: null,
+						description: "Class mix-in to implement for NodeJs events.",
+					}
 				//! END_REPLACE()
 				, doodad.MIX_IN(mixIns.Events.$extend({
 					$TYPE_NAME: "NodeEvents",
@@ -3138,25 +3138,25 @@ exports.add = function add(mods) {
 
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 1,
-					params: null,
-					returns: null,
-					description: "NodeJs event handler prototype.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 1,
+						params: null,
+						returns: null,
+						description: "NodeJs event handler prototype.",
+					}
 				//! END_REPLACE()
 				, doodad.EventHandler.$extend(__Internal__.eventHandlerProto)));
 
 			extenders.REGISTER([], root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 2,
-					params: null,
-					returns: null,
-					description: "Node.Js event extender.",
-				}
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: null,
+						returns: null,
+						description: "Node.Js event extender.",
+					}
 				//! END_REPLACE()
 				, extenders.RawEvent.$inherit({
 					$TYPE_NAME: "NodeEvent",
@@ -3262,24 +3262,24 @@ exports.add = function add(mods) {
 
 			doodad.ADD('NODE_EVENT', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 4,
-					params: {
-						eventType: {
-							type: 'string',
-							optional: false,
-							description: "Event name.",
+					{
+						author: "Claude Petit",
+						revision: 4,
+						params: {
+							eventType: {
+								type: 'string',
+								optional: false,
+								description: "Event name.",
+							},
+							fn: {
+								type: 'function',
+								optional: false,
+								description: "Event handler.",
+							},
 						},
-						fn: {
-							type: 'function',
-							optional: false,
-							description: "Event handler.",
-						},
-					},
-					returns: 'AttributeBox,Extender',
-					description: "NodeJs event attribute modifier.",
-				}
+						returns: 'AttributeBox,Extender',
+						description: "NodeJs event attribute modifier.",
+					}
 				//! END_REPLACE()
 				, function NODE_EVENT(eventType, /*optional*/fn) {
 					if (root.DD_ASSERT) {

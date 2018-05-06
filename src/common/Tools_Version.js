@@ -1,32 +1,32 @@
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
-// doodad-js - Object-oriented programming framework
-// File: Tools_Version.js - Software versions tool
-// Project home: https://github.com/doodadjs/
-// Author: Claude Petit, Quebec city
-// Contact: doodadjs [at] gmail.com
-// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: Apache V2
-//
-//	Copyright 2015-2018 Claude Petit
-//
-//	Licensed under the Apache License, Version 2.0 (the "License");
-//	you may not use this file except in compliance with the License.
-//	You may obtain a copy of the License at
-//
-//		http://www.apache.org/licenses/LICENSE-2.0
-//
-//	Unless required by applicable law or agreed to in writing, software
-//	distributed under the License is distributed on an "AS IS" BASIS,
-//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//	See the License for the specific language governing permissions and
-//	limitations under the License.
+	// doodad-js - Object-oriented programming framework
+	// File: Tools_Version.js - Software versions tool
+	// Project home: https://github.com/doodadjs/
+	// Author: Claude Petit, Quebec city
+	// Contact: doodadjs [at] gmail.com
+	// Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	// License: Apache V2
+	//
+	//	Copyright 2015-2018 Claude Petit
+	//
+	//	Licensed under the Apache License, Version 2.0 (the "License");
+	//	you may not use this file except in compliance with the License.
+	//	You may obtain a copy of the License at
+	//
+	//		http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//	Unless required by applicable law or agreed to in writing, software
+	//	distributed under the License is distributed on an "AS IS" BASIS,
+	//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//	See the License for the specific language governing permissions and
+	//	limitations under the License.
 //! END_REPLACE()
 
 //! IF_SET("mjs")
 //! ELSE()
-"use strict";
+	"use strict";
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -48,24 +48,24 @@ exports.add = function add(modules) {
 
 			tools.ADD('Version', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
-				{
-					author: "Claude Petit",
-					revision: 0,
-					params: {
-						data: {
-							type: 'array',
-							optional: false,
-							description: "Version data",
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							data: {
+								type: 'array',
+								optional: false,
+								description: "Version data",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Options",
+							},
 						},
-						options: {
-							type: 'object',
-							optional: true,
-							description: "Options",
-						},
-					},
-					returns: 'error',
-					description: "Represents a software version.",
-				}
+						returns: 'error',
+						description: "Represents a software version.",
+					}
 				//! END_REPLACE()
 				, types.Type.$inherit(
 					/*typeProto*/
@@ -112,24 +112,24 @@ exports.add = function add(modules) {
 
 						parse: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									str: {
-										type: 'string',
-										optional: false,
-										description: "A string",
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										str: {
+											type: 'string',
+											optional: false,
+											description: "A string",
+										},
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
-									},
-								},
-								returns: 'Version',
-								description: "Parses a string to a 'Version' object with the specified options.",
-							}
+									returns: 'Version',
+									description: "Parses a string to a 'Version' object with the specified options.",
+								}
 							//! END_REPLACE()
 							, function parse(str, /*optional*/options) {
 								if (types._instanceof(str, tools.Version)) {
@@ -159,29 +159,29 @@ exports.add = function add(modules) {
 
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 0,
-								params: {
-									version1: {
-										type: 'string,Version',
-										optional: false,
-										description: "A version to compare from",
+								{
+									author: "Claude Petit",
+									revision: 0,
+									params: {
+										version1: {
+											type: 'string,Version',
+											optional: false,
+											description: "A version to compare from",
+										},
+										version2: {
+											type: 'string,Version',
+											optional: false,
+											description: "A version to compare to",
+										},
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-									version2: {
-										type: 'string,Version',
-										optional: false,
-										description: "A version to compare to",
-									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
-									},
-								},
-								returns: 'integer',
-								description: "Compares two software versions together. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
-							}
+									returns: 'integer',
+									description: "Compares two software versions together. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
+								}
 							//! END_REPLACE()
 							, function compare(version1, version2, /*optional*/options) {
 								if (!types._instanceof(version1, tools.Version)) {
@@ -205,24 +205,24 @@ exports.add = function add(modules) {
 
 						compare: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 1,
-								params: {
-									version: {
-										type: 'string,Version',
-										optional: false,
-										description: "A version to compare to",
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										version: {
+											type: 'string,Version',
+											optional: false,
+											description: "A version to compare to",
+										},
+										options: {
+											type: 'object',
+											optional: true,
+											description: "Options",
+										},
 									},
-									options: {
-										type: 'object',
-										optional: true,
-										description: "Options",
-									},
-								},
-								returns: 'integer',
-								description: "Compares software version with another software version. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
-							}
+									returns: 'integer',
+									description: "Compares software version with another software version. Returns '1' if 'version1' is greater than 'version2'. Returns '-1' if 'version1' is lower than 'version2'. Returns '0' if versions are equal.",
+								}
 							//! END_REPLACE()
 							, function compare(version, /*optional*/options) {
 								options = tools.nullObject(this.options, options);
@@ -264,13 +264,13 @@ exports.add = function add(modules) {
 
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
-							{
-								author: "Claude Petit",
-								revision: 1,
-								params: null,
-								returns: 'string',
-								description: "Converts to string.",
-							}
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: null,
+									returns: 'string',
+									description: "Converts to string.",
+								}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
 								//options = tools.nullObject(options);
