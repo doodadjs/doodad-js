@@ -37,6 +37,7 @@ exports.add = function add(modules) {
 			'Doodad.Types',
 			'Doodad.Tools',
 			'Doodad.Tools.Files',
+			'Doodad.Tools.JSON5',
 		],
 		bootstrap: true,
 
@@ -49,6 +50,7 @@ exports.add = function add(modules) {
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
+				JSON5 = tools.JSON5,
 				config = tools.Config;
 
 			//===================================
@@ -81,9 +83,8 @@ exports.add = function add(modules) {
 			// Native functions
 			//===================================
 
-			tools.complete(_shared.Natives, {
-				windowJSON: global.JSON,
-			});
+			//tools.complete(_shared.Natives, {
+			//});
 
 			//===================================
 			// Config
@@ -93,7 +94,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							url: {
 								type: 'Url,Path',
@@ -107,7 +108,7 @@ exports.add = function add(modules) {
 							},
 						},
 						returns: 'Promise',
-						description: "Loads a configuration file written in JSON and returns the parsed result."
+						description: "Loads a configuration file written in JSON/JSON5 and returns the parsed result."
 					}
 				//! END_REPLACE()
 				, function load(location, /*optional*/options) {
@@ -129,11 +130,19 @@ exports.add = function add(modules) {
 
 						return files.readFileAsync(path, {encoding, headers})
 							.then(function proceedFile(json) {
-								if (encoding.slice(0, 3).toLowerCase() === 'utf') {
-									// <PRB> "JSON.parse" doesn't like the BOM
-									json = tools.trim(tools.trim(json, '\uFEFF', 1), '\uFFFE', 1);
-								};
-								return _shared.Natives.windowJSON.parse(json);
+								/*
+									if (json) {
+										// <PRB> "JSON.parse" doesn't like the BOM
+										if (tools.indexOf(['\uFEFF', '\uFFFE'], json[0]) >= 0) {
+											let pos = 1;
+											if (tools.indexOf(['\uFEFF', '\uFFFE'], json[1]) >= 0) {
+												pos = 2;
+											};
+											json = json.slice(pos);
+										};
+									};
+								*/
+								return JSON5.parse(json);
 							});
 					});
 				}));

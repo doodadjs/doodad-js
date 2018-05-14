@@ -37,6 +37,7 @@ exports.add = function add(modules) {
 			'Doodad.Tools',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
+			'Doodad.Tools.JSON5',
 			'Doodad.Types',
 			'Doodad.Namespaces',
 			'Doodad.Client',
@@ -52,6 +53,7 @@ exports.add = function add(modules) {
 				tools = doodad.Tools,
 				files = tools.Files,
 				config = tools.Config,
+				JSON5 = tools.JSON5,
 				types = doodad.Types,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
@@ -162,13 +164,18 @@ exports.add = function add(modules) {
 
 					return modules.locate(file.module, file.path, options)
 						.then(function(location) {
-							let promise = null;
 							if (file.isConfig) {
-								promise = config.load(location);
-
+								return config.load(location);
+							} else if ((location.extension === 'json') || (location.extension === 'json5')) {
+								return files.readFileAsync(location, {encoding: 'utf-8', headers: {'Accept': 'application/json'}})
+									.then(function(json) {
+										return {
+											default: JSON5.parse(json),
+										};
+									});
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
-								promise = Promise.create(function startScriptLoader(resolve, reject) {
+								return Promise.create(function startScriptLoader(resolve, reject) {
 									const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 									scriptLoader.addEventListener('load', function() {
 										//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
@@ -180,7 +187,7 @@ exports.add = function add(modules) {
 									scriptLoader.start();
 								});
 							} else {
-								promise = files.readFileAsync(location, {encoding: 'utf-8', headers: {Accept: 'application/javascript'}, enableCache: true})
+								return files.readFileAsync(location, {encoding: 'utf-8', headers: {'Accept': 'application/javascript'}, enableCache: true})
 									.then(function(code) {
 										const DD_EXPORTS = {};
 										const locals = {DD_EXPORTS: DD_EXPORTS, DD_MODULES: undefined};
@@ -189,20 +196,17 @@ exports.add = function add(modules) {
 										return DD_EXPORTS;
 									});
 							};
-
-							return promise
-								.nodeify(function(err, exports) {
-									if (err) {
-										if (!file.optional) {
-											throw err;
-										} else {
-											return null;
-										}
-									} else {
-										file.exports = exports;
-										return file;
-									}
-								});
+						})
+						.catch(function(err) {
+							if (file.optional) {
+								return null;
+							} else {
+								throw err;
+							}
+						})
+						.then(function(exports) {
+							file.exports = exports;
+							return file;
 						})
 						.catch(function(err) {
 							if (file.module) {

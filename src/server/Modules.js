@@ -56,6 +56,7 @@ exports.add = function add(mods) {
 			'Doodad.Tools',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
+			'Doodad.Tools.JSON5',
 			'Doodad.Types',
 			'Doodad.Namespaces',
 			'Doodad.NodeJs/root',
@@ -70,7 +71,9 @@ exports.add = function add(mods) {
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
+				config = tools.Config,
 				files = tools.Files,
+				JSON5 = tools.JSON5,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
 
@@ -229,10 +232,10 @@ exports.add = function add(mods) {
 					});
 				}));
 
-			modules.ADD('loadFiles', function loadFiles(files, /*optional*/options) {
+			modules.ADD('loadFiles', function loadFiles(filesToLoad, /*optional*/options) {
 				const Promise = types.getPromise();
 
-				return Promise.map(files, function(file) {
+				return Promise.map(filesToLoad, function(file) {
 					types.getDefault(file, 'module', null);
 					types.getDefault(file, 'path', null);
 					types.getDefault(file, 'optional', false);
@@ -242,8 +245,19 @@ exports.add = function add(mods) {
 
 					return modules.locate(file.module, file.path, options)
 						.then(function(location) {
-							// TODO: Use native "import()" when implemented.
-							return modules.import(location.toApiString());
+							if (file.isConfig) {
+								return config.load(location);
+							} else if ((location.extension === 'json') || (location.extension === 'json5')) {
+								return files.readFileAsync(location, {encoding: 'utf-8'})
+									.then(function(json) {
+										return {
+											default: JSON5.parse(json),
+										};
+									});
+							} else {
+								// TODO: Use native "import()" when implemented.
+								return modules.import(location.toApiString());
+							};
 						})
 						.catch(function(err) {
 							if (file.optional) {
@@ -355,9 +369,9 @@ exports.add = function add(mods) {
 									};
 								});
 								tools.forEach(files, function(file) {
-									if (file && !file.isConfig && file.exports) {
+									if (file && !file.isConfig && (file.extension !== 'json') && (file.extension !== 'json5') && file.exports) {
 										if (!types.isFunction(file.exports.default.add)) {
-											__Internal__.throwFileError(file, new types.Error("Missing 'add' export function."));
+											__Internal__.throwFileError(file, new types.Error("Missing the 'add' function in the exported values of the module."));
 										};
 										file.exports.default.add(pkgModules);
 									};
