@@ -1,0 +1,48 @@
+# Test against the latest version of this Node.js version
+environment:
+  matrix:
+    - nodejs_version: "10"
+      NODE_ENV: "production"
+    - nodejs_version: "10"
+      NODE_ENV: "development"
+    - nodejs_version: "9"
+      NODE_ENV: "production"
+    - nodejs_version: "9"
+      NODE_ENV: "development"
+    - nodejs_version: "8"
+      NODE_ENV: "production"
+    - nodejs_version: "8"
+      NODE_ENV: "development"
+    - nodejs_version: "7"
+      NODE_ENV: "production"
+    - nodejs_version: "7"
+      NODE_ENV: "development"
+    - nodejs_version: "6"
+      NODE_ENV: "production"
+    - nodejs_version: "6"
+      NODE_ENV: "development"
+
+# Install scripts. (runs after repo cloning)
+install:
+  - setlocal enableextensions
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
+  # install modules
+  - git clone --depth=1 https://github.com/doodadjs/travis_scripts.git "%USERPROFILE%\\travis_scripts"
+  - set DD_TARGET="%USERPROFILE%\\build\\clean"
+  - set DD_REPOS="%cd%\\..\\"
+  - mkdir -p "%DD_TARGET%"
+  - cd "%DD_TARGET%"
+  - call "%USERPROFILE%\\travis_scripts\\install.cmd" make -o
+  - cd node_modules\\@doodad-js\\test
+
+# Post-install test scripts.
+test_script:
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  # run tests
+  - npm test
+
+# Don't actually build.
+build: off
