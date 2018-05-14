@@ -12,5 +12,17 @@ cache:
 env:
   - NODE_ENV=development
   - NODE_ENV=production
-before_install: git clone --depth=1 https://github.com/doodadjs/travis_scripts.git ~/travis_scripts && chmod +x ~/travis_scripts/install.sh
-install: TARGET=$HOME/build/clean; export DD_REPOS=`cd $TRAVIS_BUILD_DIR/.. && pwd`; mkdir -p $TARGET && cd $TARGET && ~/travis_scripts/install.sh && cd node_modules/@doodad-js/test
+before_install:
+  - set -e
+  - set -o pipefail
+  - git clone --depth=1 https://github.com/doodadjs/travis_scripts.git ~/travis_scripts
+  - chmod +x ~/travis_scripts/install.sh
+install:
+  - set -e
+  - set -o pipefail
+  - export DD_TARGET=$HOME/build/clean
+  - export DD_REPOS=`cd $TRAVIS_BUILD_DIR/.. && pwd`
+  - mkdir -p $DD_TARGET
+  - cd $DD_TARGET
+  - ~/travis_scripts/install.sh make -o
+  - cd node_modules/@doodad-js/test
