@@ -1,29 +1,29 @@
 {
-  "//": "Encoding: utf8",
-  "//": "",
-  "//": "    doodad-js  -  Object-oriented programming framework",
-  "//": "    File: make.json - Make data file",
-  "//": "    Project home: https://github.com/doodadjs/",
-  "//": "    Author: Claude Petit, Quebec city",
-  "//": "    Contact: doodadjs [at] gmail.com",
-  "//": "    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !",
-  "//": "    Licence: Apache V2",
-  "//": "",
-  "//": "    Copyright 2015-2018 Claude Petit",
-  "//": "",
-  "//": "    Licensed under the Apache License, Version 2.0 (the \"License\");",
-  "//": "    you may not use this file except in compliance with the License.",
-  "//": "    You may obtain a copy of the License at",
-  "//": "",
-  "//": "     http://www.apache.org/licenses/LICENSE-2.0",
-  "//": "",
-  "//": "    Unless required by applicable law or agreed to in writing, software",
-  "//": "    distributed under the License is distributed on an \"AS IS\" BASIS,",
-  "//": "    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
-  "//": "    See the License for the specific language governing permissions and",
-  "//": "    limitations under the License.",
-  "//": "",
-  "version": "9.0.0",
+	// Encoding: utf8
+	//
+	//    doodad-js  -  Object-oriented programming framework
+	//    File: make.json - Make data file
+	//    Project home: https://github.com/doodadjs/
+	//    Author: Claude Petit, Quebec city
+	//    Contact: doodadjs [at] gmail.com
+	//    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+	//    Licence: Apache V2
+	//
+	//    Copyright 2015-2018 Claude Petit
+	//
+	//    Licensed under the Apache License, Version 2.0 (the \"License\");
+	//    you may not use this file except in compliance with the License.
+	//    You may obtain a copy of the License at
+	//
+	//     http://www.apache.org/licenses/LICENSE-2.0
+	//
+	//    Unless required by applicable law or agreed to in writing, software
+	//    distributed under the License is distributed on an \"AS IS\" BASIS,
+	//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	//    See the License for the specific language governing permissions and
+	//    limitations under the License.
+	//
+  "version": "9.1.0",
   "stage": "r",
   "mjs": true,
   "modules": [
@@ -72,6 +72,12 @@
     },
     {
       "src": "common/Tools_Html.js",
+      "client": true,
+      "server": true,
+      "browserify": true
+    },
+    {
+      "src": "common/Tools_JSON5.js",
       "client": true,
       "server": true,
       "browserify": true
@@ -345,6 +351,7 @@
           "indexTemplateMjs": "%SOURCEDIR%/make/res/package.templ.mjs"
         },
         {
+
           "class": "Make.Folder.Create",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/tools"
         },
@@ -354,10 +361,12 @@
           "destination": "%INSTALLDIR%/%PACKAGENAME%/tools/generateNatives.js",
           "runDirectives": true
         },
+
         {
           "class": "Make.Folder.Create",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/lib"
         },
+
         {
           "class": "Make.Folder.Create",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid"
@@ -384,6 +393,34 @@
           "class": "Make.File.Copy",
           "source": "~uuid/README.md",
           "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/README.md"
+        },
+
+        {
+          "class": "Make.Folder.Create",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5"
+        },
+        {
+          "class": "Make.Browserify.Bundle",
+          "source": "json5",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.js",
+          "fromOutside": true
+        },
+        {
+          "class": "Make.Browserify.Bundle",
+          "source": "json5",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.min.js",
+          "fromOutside": true,
+          "minify": true
+        },
+        {
+          "class": "Make.File.Copy",
+          "source": "~json5/LICENSE.md",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/LICENSE.md"
+        },
+        {
+          "class": "Make.File.Copy",
+          "source": "~json5/README.md",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/README.md"
         }
       ]
     },

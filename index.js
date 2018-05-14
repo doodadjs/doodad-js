@@ -46,6 +46,7 @@ module.exports = {
 		require(sourceDir + "common/Tools_Files.js").add(pkgModules);
 		require(sourceDir + "common/Tools_Config.js").add(pkgModules);
 		require(sourceDir + "common/Tools_Html.js").add(pkgModules);
+		require(sourceDir + "common/Tools_JSON5.js").add(pkgModules);
 		require(sourceDir + "common/Tools_Scripts.js").add(pkgModules);
 		require(sourceDir + "common/Tools_Version.js").add(pkgModules);
 		require(sourceDir + "common/Tools_ToSource.js").add(pkgModules);
