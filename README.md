@@ -471,6 +471,8 @@ With all the incoming changes to the Javascript language, "@doodad-js/core" coul
 ## License
 
   [Apache-2.0][license-url]
+  
+  This package also includes packages "uuid" and "json5", which are licensed under MIT.
 
 [npm-image]: https://img.shields.io/npm/v/@doodad-js/core.svg
 [npm-url]: https://npmjs.org/package/@doodad-js/core
