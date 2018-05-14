@@ -3093,7 +3093,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (nodeUUID) {
 				return nodeUUID();
 			} else {
-				throw new global.Error("Package 'uuid' is missing.");
+				throw new types.NotAvailable("Package 'uuid' is missing.");
 			}
 		}
 	));
