@@ -1,443 +1,439 @@
+// JSON5
+// Encoding: utf8
+//
+// doodad-js  -  Object-oriented programming framework
+//    File: make.json - Make data file
+//    Project home: https://github.com/doodadjs/
+//    Author: Claude Petit, Quebec city
+//    Contact: doodadjs [at] gmail.com
+//    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
+//    Licence: Apache V2
+//
+//    Copyright 2015-2018 Claude Petit
+//
+//    Licensed under the Apache License, Version 2.0 (the \"License\");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an \"AS IS\" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+//
 {
-	// Encoding: utf8
-	//
-	//    doodad-js  -  Object-oriented programming framework
-	//    File: make.json - Make data file
-	//    Project home: https://github.com/doodadjs/
-	//    Author: Claude Petit, Quebec city
-	//    Contact: doodadjs [at] gmail.com
-	//    Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-	//    Licence: Apache V2
-	//
-	//    Copyright 2015-2018 Claude Petit
-	//
-	//    Licensed under the Apache License, Version 2.0 (the \"License\");
-	//    you may not use this file except in compliance with the License.
-	//    You may obtain a copy of the License at
-	//
-	//     http://www.apache.org/licenses/LICENSE-2.0
-	//
-	//    Unless required by applicable law or agreed to in writing, software
-	//    distributed under the License is distributed on an \"AS IS\" BASIS,
-	//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	//    See the License for the specific language governing permissions and
-	//    limitations under the License.
-	//
-  "version": "9.1.0",
-  "stage": "r",
-  "mjs": true,
-  "modules": [
-    {
-      "src": "common/Bootstrap.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "manual": true
-    },
-    {
-      "src": "common/Doodad.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Namespaces.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Resources.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_Files.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_Config.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_Html.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_JSON5.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_Scripts.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_ToSource.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Tools_Version.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_Bind.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_Iterators.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_Generators.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_HttpStatus.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_Buffers.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_DDPromise.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_DDCancelable.js",
-      "client": true,
-      "server": true,
-      "browserify": true
-    },
-    {
-      "src": "common/Types_UUIDS.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "exclude": true
-    },
-    {
-      "src": "client/Browserify.js",
-      "client": false,
-      "server": false,
-      "browserify": true
-    },
-    {
-      "src": "client/Client.js",
-      "client": true,
-      "server": false,
-      "browserify": true
-    },
-    {
-      "src": "client/Client_Platform.js",
-      "client": true,
-      "server": false,
-      "browserify": true
-    },
-    {
-      "src": "client/Modules.js",
-      "client": true,
-      "server": false,
-      "browserify": true
-    },
-    {
-      "src": "server/Modules.js",
-      "client": false,
-      "server": true,
-      "browserify": false
-    },
-    {
-      "src": "server/NodeJs_Base.js",
-      "client": false,
-      "server": true,
-      "browserify": false
-    },
-    {
-      "src": "server/NodeJs.js",
-      "client": false,
-      "server": true,
-      "browserify": false
-    },
-    {
-      "src": "server/NodeJs_Platform.js",
-      "client": false,
-      "server": true,
-      "browserify": false
-    },
-    {
-      "src": "test/Unit_Tools.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Array.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Dictionary.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Files.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Files_Path.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Files_Urls.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_Misc.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_String.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Tools_ToSource.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_Array.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_Conversion.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_Dictionary.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_Is.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    },
-    {
-      "src": "test/Unit_Types_Type.js",
-      "client": true,
-      "server": true,
-      "browserify": true,
-      "test": true
-    }
-  ],
-  "resources": [
-    {
-      "name": "Doodad.Resources/Common",
-      "namespace": "Doodad.Resources",
-      "sourceBase": "%SOURCEDIR%/",
-      "source": "common/res",
-      "client": true,
-      "server": true,
-      "browserify": true
-    }
-  ],
-  "tasks": {
-    "make": {
-      "operations": [
-        {
-          "class": "Make.Generate.Package",
-          "indexTemplate": "%SOURCEDIR%/make/res/index.templ.js",
-          "indexTemplateMjs": "%SOURCEDIR%/make/res/index.templ.mjs"
-        },
-
-        {
-          "class": "Make.Task",
-          "name": "install"
-        },
-        {
-          "class": "Make.Task",
-          "name": "browserify"
-        },
-        {
-          "class": "Make.Task",
-          "name": "webpack"
-        }
-      ]
-    },
-    "install": {
-      "operations": [
-        {
-          "class": "Make.Generate.Package",
-          "indexTemplate": "%SOURCEDIR%/make/res/package.templ.js",
-          "indexTemplateMjs": "%SOURCEDIR%/make/res/package.templ.mjs"
-        },
-        {
-
-          "class": "Make.Folder.Create",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/tools"
-        },
-        {
-          "class": "Make.File.Javascript",
-          "source": "%SOURCEDIR%/make/res/generateNatives.templ.js",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/tools/generateNatives.js",
-          "runDirectives": true
-        },
-
-        {
-          "class": "Make.Folder.Create",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib"
-        },
-
-        {
-          "class": "Make.Folder.Create",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid"
-        },
-        {
-          "class": "Make.Browserify.Bundle",
-          "source": "uuid",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.js",
-          "fromOutside": true
-        },
-        {
-          "class": "Make.Browserify.Bundle",
-          "source": "uuid",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.min.js",
-          "fromOutside": true,
-          "minify": true
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~uuid/LICENSE.md",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/LICENSE.md"
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~uuid/README.md",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/README.md"
-        },
-
-        {
-          "class": "Make.Folder.Create",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5"
-        },
-        {
-          "class": "Make.Browserify.Bundle",
-          "source": "json5",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.js",
-          "fromOutside": true
-        },
-        {
-          "class": "Make.Browserify.Bundle",
-          "source": "json5",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.min.js",
-          "fromOutside": true,
-          "minify": true
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~json5/LICENSE.md",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/LICENSE.md"
-        },
-        {
-          "class": "Make.File.Copy",
-          "source": "~json5/README.md",
-          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/json5/README.md"
-        }
-      ]
-    },
-    "browserify": {
-      "operations": [
-        {
-          "class": "Make.Generate.Package",
-          "indexTemplate": "%SOURCEDIR%/make/res/browserify.templ.js"
-        }
-      ]
-    },
-    "webpack": {
-      "operations": [
-        {
-          "class": "Make.Generate.Package"
-        }
-      ]
-    }
-  }
+	version: "9.1.0",
+	stage: "r",
+	mjs: true,
+	modules: [
+		{
+			src: "common/Bootstrap.js",
+			client: true,
+			server: true,
+			browserify: true,
+			manual: true
+		},
+		{
+			src: "common/Doodad.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Namespaces.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Resources.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_Files.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_Config.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_Html.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_JSON5.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_Scripts.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_ToSource.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Tools_Version.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_Bind.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_Iterators.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_Generators.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_HttpStatus.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_Buffers.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_DDPromise.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_DDCancelable.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
+			src: "common/Types_UUIDS.js",
+			client: true,
+			server: true,
+			browserify: true,
+			exclude: true
+		},
+		{
+			src: "client/Browserify.js",
+			client: false,
+			server: false,
+			browserify: true
+		},
+		{
+			src: "client/Client.js",
+			client: true,
+			server: false,
+			browserify: true
+		},
+		{
+			src: "client/Client_Platform.js",
+			client: true,
+			server: false,
+			browserify: true
+		},
+		{
+			src: "client/Modules.js",
+			client: true,
+			server: false,
+			browserify: true
+		},
+		{
+			src: "server/Modules.js",
+			client: false,
+			server: true,
+			browserify: false
+		},
+		{
+			src: "server/NodeJs_Base.js",
+			client: false,
+			server: true,
+			browserify: false
+		},
+		{
+			src: "server/NodeJs.js",
+			client: false,
+			server: true,
+			browserify: false
+		},
+		{
+			src: "server/NodeJs_Platform.js",
+			client: false,
+			server: true,
+			browserify: false
+		},
+		{
+			src: "test/Unit_Tools.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Array.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Dictionary.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Files.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Files_Path.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Files_Urls.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_Misc.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_String.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Tools_ToSource.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types_Array.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types_Conversion.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types_Dictionary.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types_Is.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		},
+		{
+			src: "test/Unit_Types_Type.js",
+			client: true,
+			server: true,
+			browserify: true,
+			test: true
+		}
+	],
+	resources: [
+		{
+			name: "Doodad.Resources/Common",
+			namespace: "Doodad.Resources",
+			sourceBase: "%SOURCEDIR%/",
+			source: "common/res",
+			client: true,
+			server: true,
+			browserify: true
+		}
+	],
+	tasks: {
+		make: {
+			operations: [
+				{
+					class: "Make.Generate.Package",
+					indexTemplate: "%SOURCEDIR%/make/res/index.templ.js",
+					indexTemplateMjs: "%SOURCEDIR%/make/res/index.templ.mjs"
+				},
+				{
+					class: "Make.Task",
+					name: "install"
+				},
+				{
+					class: "Make.Task",
+					name: "browserify"
+				},
+				{
+					class: "Make.Task",
+					name: "webpack"
+				}
+			]
+		},
+		install: {
+			operations: [
+				{
+					class: "Make.Generate.Package",
+					indexTemplate: "%SOURCEDIR%/make/res/package.templ.js",
+					indexTemplateMjs: "%SOURCEDIR%/make/res/package.templ.mjs"
+				},
+				{
+					class: "Make.Folder.Create",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/tools"
+				},
+				{
+					class: "Make.File.Javascript",
+					source: "%SOURCEDIR%/make/res/generateNatives.templ.js",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/tools/generateNatives.js",
+					runDirectives: true
+				},
+				{
+					class: "Make.Folder.Create",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib"
+				},
+				{
+					class: "Make.Folder.Create",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/uuid"
+				},
+				{
+					class: "Make.Browserify.Bundle",
+					source: "uuid",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.js",
+					fromOutside: true
+				},
+				{
+					class: "Make.Browserify.Bundle",
+					source: "uuid",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/uuid.min.js",
+					fromOutside: true,
+					minify: true
+				},
+				{
+					class: "Make.File.Copy",
+					source: "~uuid/LICENSE.md",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/LICENSE.md"
+				},
+				{
+					class: "Make.File.Copy",
+					source: "~uuid/README.md",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/uuid/README.md"
+				},
+				{
+					class: "Make.Folder.Create",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/json5"
+				},
+				{
+					class: "Make.Browserify.Bundle",
+					source: "json5",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.js",
+					fromOutside: true
+				},
+				{
+					class: "Make.Browserify.Bundle",
+					source: "json5",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/json5/json5.min.js",
+					fromOutside: true,
+					minify: true
+				},
+				{
+					class: "Make.File.Copy",
+					source: "~json5/LICENSE.md",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/json5/LICENSE.md"
+				},
+				{
+					class: "Make.File.Copy",
+					source: "~json5/README.md",
+					destination: "%INSTALLDIR%/%PACKAGENAME%/lib/json5/README.md"
+				}
+			]
+		},
+		browserify: {
+			operations: [
+				{
+					class: "Make.Generate.Package",
+					indexTemplate: "%SOURCEDIR%/make/res/browserify.templ.js"
+				}
+			]
+		},
+		webpack: {
+			operations: [
+				{
+					class: "Make.Generate.Package"
+				}
+			]
+		}
+	}
 }
