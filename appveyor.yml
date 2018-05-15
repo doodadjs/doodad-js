@@ -1,4 +1,4 @@
-# Test against the latest version of this Node.js version
+# Test against these Node.js versions.
 environment:
   matrix:
     - nodejs_version: "10"
