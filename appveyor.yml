@@ -1,3 +1,7 @@
+# Enable build cache
+cache:
+  - '%USERPROFILE%\build\clean -> appveyor.yml'
+
 # Test against these Node.js versions.
 environment:
   matrix:
