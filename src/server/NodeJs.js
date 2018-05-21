@@ -173,6 +173,10 @@ exports.add = function add(mods) {
 
 				// NodeEvent
 				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+
+				globalBufferAlloc: (types.isFunction(global.Buffer.alloc) ? global.Buffer.alloc : function(size) {
+					return new _shared.Native.globalBuffer(size);
+				}),
 			});
 
 			//===================================
@@ -1449,7 +1453,7 @@ exports.add = function add(mods) {
 						const destStr = destination.toApiString();
 
 						if (!COPY_FILE_BUFFER) {
-							COPY_FILE_BUFFER = new _shared.Natives.globalBuffer(bufferLength);
+							COPY_FILE_BUFFER = _shared.Natives.globalBufferAlloc(bufferLength);
 						};
 
 						let sourceFd = null,
@@ -1707,7 +1711,7 @@ exports.add = function add(mods) {
 									};
 									const destStr = destination.toApiString();
 									if (!COPY_FILE_BUFFER) {
-										COPY_FILE_BUFFER = new _shared.Natives.globalBuffer(bufferLength);
+										COPY_FILE_BUFFER = _shared.Natives.globalBufferAlloc(bufferLength);
 									};
 									let sourceFd = null;
 									let destFd = null;
