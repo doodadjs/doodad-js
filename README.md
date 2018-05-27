@@ -24,7 +24,7 @@ Latest version is : [![NPM Version][npm-image]][npm-url]
   -  Namespaces and a registry
   -  Compatible with most recent browsers (excepted Microsoft Internet Explorer) and Node.Js (6, 7, 8 and 9).
   -  Compatible with Windows, Linux and MacOS X (and Android).
-  -  Supports browserify ~~and webpack~~.
+  -  Supports browserify and webpack.
 
 ## Quick Start
 
