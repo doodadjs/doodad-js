@@ -38,14 +38,16 @@ NOTE: The entry point should automatically be set to "browserify/browserify.min.
 
 Download and extract the .zip file from the [latest release][latest-url].
 
-In your HTML file, load UUID and the Doodad package :
+In your HTML file, load JSON5, UUID and the Doodad package :
 ```html
+    <script src="dist/@doodad-js/core/lib/json5/json5.min.js"></script>
     <script src="dist/@doodad-js/core/lib/uuid/uuid.min.js"></script>
     <script src="dist/@doodad-js/core/core.min.js"></script>
 ```
 
 or their debug version :
 ```html
+    <script src="dist/@doodad-js/core/lib/json5/json5.js"></script>
     <script src="dist/@doodad-js/core/lib/uuid/uuid.js"></script>
     <script src="dist/@doodad-js/core/core.js"></script>
 ```
