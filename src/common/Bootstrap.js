@@ -7344,7 +7344,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	//! IF_SET("serverSide")
 		//! IF_SET('mjs')
-			//!		INJECT('export default exports;')
+			//!	INJECT('export default exports;')
 		//! END_IF()
 	//! END_IF()
 
@@ -7354,7 +7354,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	//! IF_UNSET("serverSide")
 		//! IF_SET('mjs')
-			//!		INJECT('export default exports;')
+			//!	INJECT('export default exports;')
 		//! ELSE()
 			if ((typeof DD_BOOTSTRAP === 'object') && (DD_BOOTSTRAP !== null)) {
 				DD_BOOTSTRAP.createRoot = exports.createRoot;
