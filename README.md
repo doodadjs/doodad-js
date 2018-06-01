@@ -1,7 +1,7 @@
 Object-oriented programming framework for Javascript.
 
 Latest version is : [![NPM Version][npm-image]][npm-url]
- 
+
 <<<< PLEASE UPGRADE TO THE LATEST VERSION AS OFTEN AS POSSIBLE >>>>
 
 ## Features
@@ -469,11 +469,11 @@ With all the incoming changes to the Javascript language, "@doodad-js/core" coul
   - **@doodad-js/unicode**: Unicode Tools (beta)
   - **@doodad-js/widgets**: Widgets base module (alpha)
   - **@doodad-js/xml**: XML Parser (beta)
-  
+
 ## License
 
   [Apache-2.0][license-url]
-  
+
   This package also includes packages "uuid" and "json5", which are licensed under MIT.
 
 [npm-image]: https://img.shields.io/npm/v/@doodad-js/core.svg
