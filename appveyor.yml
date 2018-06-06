@@ -35,7 +35,7 @@ install:
   - git clone --depth=1 https://github.com/doodadjs/travis_scripts.git "%USERPROFILE%\travis_scripts"
   - set DD_TARGET="%USERPROFILE%\build\clean"
   - set DD_REPOS="%cd%\..\"
-  - mkdir -p "%DD_TARGET%"
+  - if not exist "%DD_TARGET%" mkdir "%DD_TARGET%"
   - cd "%DD_TARGET%"
   - call "%USERPROFILE%\travis_scripts\install.cmd" make -o
   - cd node_modules\@doodad-js\test
