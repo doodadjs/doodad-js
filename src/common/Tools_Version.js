@@ -42,8 +42,6 @@ exports.add = function add(modules) {
 
 			tools.complete(_shared.Natives, {
 				windowParseInt: global.parseInt,
-				/* eslint no-restricted-properties: "off" */ // Thanks, but I want isNaN
-				windowIsNaN: global.isNaN,
 			});
 
 			tools.ADD('Version', root.DD_DOC(
@@ -207,7 +205,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										version: {
 											type: 'string,Version',
@@ -233,22 +231,21 @@ exports.add = function add(modules) {
 									data1Len = data1.length,
 									data2 = version.data,
 									data2Len = data2.length,
-									count = types.getIn(options, 'count', (Math.max(data1Len, data2Len) / 2));
+									count = types.getIn(options, 'count', Infinity);
+								let j = 0,
+									k = 0;
 								for (let i = 0; i < count; i++) {
+									if ((j >= data1Len) || (k >= data2Len)) {
+										break;
+									};
 									let number1 = NaN,
-										j = 0;
-									while (_shared.Natives.windowIsNaN(number1) && (j < data1Len)) {
-										if (types.has(data1, j) && types.has(data1, j + 1)) {
-											number1 = data1[j];
-										};
+										number2 = NaN;
+									while ((j < data1Len) && types.isNaN(number1)) {
+										number1 = data1[j];
 										j += 2;
 									};
-									let number2 = NaN,
-										k = 0;
-									while (_shared.Natives.windowIsNaN(number2) && (k < data2Len)) {
-										if (types.has(data2, k) && types.has(data2, k + 1)) {
-											number2 = data2[k];
-										};
+									while ((k < data2Len) && types.isNaN(number2)) {
+										number2 = data2[k];
 										k += 2;
 									};
 									number1 = (+number1 || 0);

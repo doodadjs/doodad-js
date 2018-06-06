@@ -24,7 +24,7 @@
 //    limitations under the License.
 //
 {
-	version: "9.1.0",
+	version: "9.1.1",
 	stage: "r",
 	mjs: true,
 	modules: [
