@@ -259,6 +259,48 @@ exports.add = function add(modules) {
 								return 0;
 							}),
 
+						slice: function(/*optional*/start, /*optional*/end) {
+							if (types.isNothing(start)) {
+								start = 0;
+							};
+							if (types.isNothing(end)) {
+								end = Infinity;
+							};
+							const result = [],
+								data = this.data,
+								dataLen = data.length;
+							let j = 0,
+								pos = 0;
+							while ((j < dataLen) && (pos < start)) {
+								let number = NaN;
+								while ((j < dataLen) && types.isNaN(number)) {
+									number = data[j];
+									j += 2;
+								};
+								if (!types.isNaN(number)) {
+									pos++;
+								};
+							};
+							if (pos >= start) {
+								while ((j < dataLen) && (pos < end)) {
+									let number = NaN;
+									while ((j < dataLen) && types.isNaN(number)) {
+										number = data[j];
+										j += 2;
+									};
+									if (!types.isNaN(number)) {
+										result.push(+number || 0);
+										pos++;
+									};
+								};
+								while (pos < end) {
+									result.push(0);
+									pos++;
+								};
+							};
+							return result;
+						},
+
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
