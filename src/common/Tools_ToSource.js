@@ -48,11 +48,8 @@ exports.add = function add(modules) {
 			// Internal
 			//===================================
 
-			const __Internal__ = {
-				// "toSource"
-				supportsVerticalTabEscape: ('\v' !== 'v'),
-				supportsNullCharEscape: ('\0' !== '0'),
-			};
+			//const __Internal__ = {
+			//};
 
 			//===================================
 			// Native functions
@@ -62,6 +59,7 @@ exports.add = function add(modules) {
 				windowObject: global.Object,
 				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
 				stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
+				stringCodePointAtCall: global.String.prototype.codePointAt.call.bind(global.String.prototype.codePointAt),
 			});
 
 			//===================================
@@ -122,16 +120,18 @@ exports.add = function add(modules) {
 							if (types.isString(obj)) {
 								let str = '';
 								const len = val.length,
-									allowNullChar = types.get(options, 'allowNullChar', __Internal__.supportsNullCharEscape),
-									allowVerticalTab = types.get(options, 'allowVerticalTab', __Internal__.supportsVerticalTabEscape);
-								//const allowCodePoint = types.get(options, 'allowCodePoint', __Internal__.supportsCodePoint);
-								//for (let i = 0; i < len; ) {
-								for (let i = 0; i < len; i++) {
-									//let code = (allowCodePoint ? unicode.codePointAt(val, i, true) : [_shared.Natives.stringCharCodeAtCall(val, i), 1]);
-									//const size = code[1];
-									//code = code[0];
-									const code = _shared.Natives.stringCharCodeAtCall(val, i);
-									if (allowNullChar && (code === 0x0000)) { // Null
+									allowNullChar = types.get(options, 'allowNullChar', true),
+									allowVerticalTab = types.get(options, 'allowVerticalTab', true),
+									allowCodePoint = types.get(options, 'allowCodePoint', false),
+									stringDelimiter = types.get(options, 'stringDelimiter', "'"),
+									stringDelimiterCode = stringDelimiter.charCodeAt(0);
+								for (let i = 0; i < len; ) {
+									const code = (allowCodePoint ? _shared.Natives.stringCodePointAtCall(val, i) : _shared.Natives.stringCharCodeAtCall(val, i)),
+										isHigh = (code >= 0x10000),
+										size = (isHigh ? 2 : 1);
+									if (code === stringDelimiterCode) { // String delimiter
+										str += "\\" + stringDelimiter;
+									} else if (allowNullChar && (code === 0x0000)) { // Null
 										str += '\\0';
 									} else if (code === 0x0008) { // Backspace
 										str += '\\b';
@@ -145,8 +145,6 @@ exports.add = function add(modules) {
 										str += '\\f';
 									} else if (code === 0x000D) { // Carriage return
 										str += '\\r';
-									} else if (code === 0x0027) { // Single Quote
-										str += "\\'";
 									} else if (code === 0x005C) { // Backslash
 										str += '\\\\';
 									} else if (code === 0x00A0) { // Non-breaking space
@@ -157,20 +155,19 @@ exports.add = function add(modules) {
 										str += '\\u2029';
 									} else if (code === 0xFEFF) { // Byte order mark
 										str += '\\uFEFF';
-										//} else if (allowCodePoint && (code >= 0x10000)) {
-										//	str += '\\u{' + ('0000000' + code.toString(16)).slice(-8) + '}';
+									} else if (allowCodePoint && isHigh) {
+										str += '\\u{' + ('0000000' + code.toString(16)).slice(-8) + '}';
 									} else if (((code >= 0x0000) && (code <= 0x001F)) || ((code >= 0x007F) && (code <= 0x009F)) || ((code >= 0xD800) && (code <= 0xDFFF))) { // Other control chars
 										str += '\\u' + ('000' + code.toString(16)).slice(-4);
 									} else {
-										//str += val.slice(i, i + size);
-										str += val.slice(i, i + 1);
+										str += val.slice(i, i + size);
 									};
-									//i += size;
+									i += size;
 								};
 								if (primitive) {
-									return "'" + str + "'";
+									return stringDelimiter + str + stringDelimiter;
 								} else {
-									return "(new String('" + str + "'))";
+									return "(new String(" + stringDelimiter + str + stringDelimiter + "))";
 								}
 							} else if (types.isBoolean(obj)) {
 								if (primitive) {
