@@ -2879,7 +2879,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 2,
+				revision: 3,
 				params: {
 					obj: {
 						type: 'object,arraylike',
@@ -2899,8 +2899,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function preventExtensions(obj, /*optional*/depth) {
 			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 			const isArray = types.isArrayLike(obj);
-			const isObject = types.isJsObject || types.isObject;
-			if (isArray || isObject(obj)) {
+			if (isArray || types.isJsObject(obj)) {
 				if (depth >= 0) {
 					if (isArray) {
 						const len = obj.length;
