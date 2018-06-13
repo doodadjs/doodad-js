@@ -259,47 +259,71 @@ exports.add = function add(modules) {
 								return 0;
 							}),
 
-						slice: function(/*optional*/start, /*optional*/end) {
-							if (types.isNothing(start)) {
-								start = 0;
-							};
-							if (types.isNothing(end)) {
-								end = Infinity;
-							};
-							const result = [],
-								data = this.data,
-								dataLen = data.length;
-							let j = 0,
-								pos = 0;
-							while ((j < dataLen) && (pos < start)) {
-								let number = NaN;
-								while ((j < dataLen) && types.isNaN(number)) {
-									number = data[j];
-									j += 2;
+						slice: root.DD_DOC(
+							//! REPLACE_IF(IS_UNSET('debug'), "null")
+								{
+									author: "Claude Petit",
+									revision: 1,
+									params: {
+										start: {
+											type: 'integer',
+											optional: true,
+											description: "Start",
+										},
+										options: {
+											type: 'integer',
+											optional: true,
+											description: "End",
+										},
+									},
+									returns: 'arrayof(integer)',
+									description: "Returns an array of the version object.",
+								}
+							//! END_REPLACE()
+							, function(/*optional*/start, /*optional*/end) {
+								// TODO: Negative indexes (similar to Array.prototype.slice).
+								if (types.isNothing(start)) {
+									start = 0;
 								};
-								if (!types.isNaN(number)) {
-									pos++;
+								if (types.isNothing(end)) {
+									end = Infinity;
 								};
-							};
-							if (pos >= start) {
-								while ((j < dataLen) && (pos < end)) {
-									let number = NaN;
-									while ((j < dataLen) && types.isNaN(number)) {
-										number = data[j];
-										j += 2;
+								const result = [];
+								if ((start >= 0) && (end > start)) {
+									const data = this.data,
+										dataLen = data.length;
+									let j = 0,
+										pos = 0;
+									while ((j < dataLen) && (pos < start)) {
+										let number = NaN;
+										while ((j < dataLen) && types.isNaN(number)) {
+											number = data[j];
+											j += 2;
+										};
+										if (!types.isNaN(number)) {
+											pos++;
+										};
 									};
-									if (!types.isNaN(number)) {
-										result.push(+number || 0);
-										pos++;
+									if (pos >= start) {
+										while ((j < dataLen) && (pos < end)) {
+											let number = NaN;
+											while ((j < dataLen) && types.isNaN(number)) {
+												number = data[j];
+												j += 2;
+											};
+											result.push(+number || 0);
+											pos++;
+										};
+										if (types.isFinite(end)) {
+											while (pos < end) {
+												result.push(0);
+												pos++;
+											}
+										};
 									};
 								};
-								while (pos < end) {
-									result.push(0);
-									pos++;
-								};
-							};
-							return result;
-						},
+								return result;
+							}),
 
 						toString: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -313,14 +337,11 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
 								//options = tools.nullObject(options);
-								//const identifiers = types.getIn(options, 'identifiers', this.options.identifiers);
 								let result = '';
 								const data = this.data,
 									dataLen = data.length;
 								for (let i = 1; i < dataLen; i += 2) {
-									if (types.has(data, i - 1) && types.has(data, i)) {
-										result += data[i];
-									};
+									result += data[i];
 								};
 								return result;
 							}),
