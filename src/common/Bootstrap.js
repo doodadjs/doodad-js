@@ -2594,19 +2594,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					return obj;
 				};
 
-				let tmp;
-				if (types.isFunction(obj)) {
-					throw new global.Error("Browser not supported.");
-				} else {
-					tmp = tools.createObject(proto, {
-						constructor: {
-							configurable: true,
-							value: obj.constructor,
-							writable: true,
-						},
-					});
-					tools.extend(tmp, obj);
-				};
+				const tmp = tools.createObject(proto, {
+					constructor: {
+						configurable: true,
+						value: obj.constructor,
+						writable: true,
+					},
+				});
+
+				tools.extend(tmp, obj);
 
 				return tmp;
 			}
