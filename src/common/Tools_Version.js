@@ -270,7 +270,7 @@ exports.add = function add(modules) {
 											optional: true,
 											description: "Start",
 										},
-										options: {
+										end: {
 											type: 'integer',
 											optional: true,
 											description: "End",
