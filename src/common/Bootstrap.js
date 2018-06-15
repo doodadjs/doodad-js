@@ -2561,7 +2561,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 1,
+				revision: 2,
 				params: {
 					obj: {
 						type: 'object',
@@ -2585,15 +2585,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! END_REPLACE()
 		, function setPrototypeOf(obj, proto, /*optional*/forceNative) {
 			// NOTE: Functions can't be created using "createObject".
-			// TODO: How to prevent the use of "setPrototypeOf" (which MDN doesn't like) for "functions" ?
-			const enabled = (forceNative || types.isFunction(obj));
-			if (enabled) {
+			// TODO: How to prevent the use of "setPrototypeOf" (which MDN doesn't like) for functions ?
+			if ((obj === undefined) || (obj === null)) {
+				return obj;
+			};
+			if (forceNative || types.isFunction(obj)) {
 				return _shared.Natives.objectSetPrototypeOf(obj, proto);
 			} else {
-				if ((obj === undefined) || (obj === null)) {
-					return obj;
-				};
-
 				const tmp = tools.createObject(proto, {
 					constructor: {
 						configurable: true,
