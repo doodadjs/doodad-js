@@ -644,8 +644,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return newOptions;
 		};
 
-		if (global.Array.isArray(_options)) {
-			_options = tools.depthExtend.apply(null, Array.prototype.concat.apply([__Internal__.OPTIONS_DEPTH, {}], _options));
+		if (types.isArray(_options)) {
+			_options = tools.depthExtend(__Internal__.OPTIONS_DEPTH, {}, ..._options);
 		};
 
 		__options__ = __Internal__._setOptions(_options.startup);
