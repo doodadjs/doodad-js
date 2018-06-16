@@ -7158,7 +7158,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 													args
 												];
 											};
-											nsType = types.INIT(nsType.$inherit.apply(nsType, args));
+											nsType = types.INIT(nsType.$inherit(...args));
 										};
 										nsObj = new nsType(parent, shortName, fn);
 									} else if (!prevNsObj) {
