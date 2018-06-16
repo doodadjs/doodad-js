@@ -524,7 +524,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
-					revision: 1,
+					revision: 2,
 					params: {
 						paramarray: {
 							type: 'object',
@@ -537,7 +537,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				}
 			//! END_REPLACE()
 			, function nullObject(/*paramarray*/...args) {
-				return tools.extend.apply(tools, tools.append([tools.createObject(null)], args));
+				return tools.extend(tools.createObject(null), ...args);
 			}));
 
 		__Internal__.ADD_TOOL('depthExtend', __Internal__.DD_DOC(
