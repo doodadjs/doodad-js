@@ -1127,7 +1127,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 1,
+				revision: 2,
 				params: {
 					obj: {
 						type: 'any',
@@ -1148,13 +1148,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			obj = _shared.Natives.windowNumber(obj);
 			if ((obj === 0.0) || types.isNaN(obj) || !types.isFinite(obj)) {
 				return 0.0;
-			} else {
-				if (!types.isNothing(precision)) {
-					precision = _shared.Natives.mathPow(10, precision);
-					obj = ((obj < 0.0 ? -1.0 : 1.0) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj) * precision)) / precision;
-				};
-				return obj;
+			} else if (!types.isNothing(precision)) {
+				precision = _shared.Natives.mathPow(10, precision);
+				return ((obj < 0.0 ? -1.0 : 1.0) * _shared.Natives.mathFloor(_shared.Natives.mathAbs(obj) * precision)) / precision;
 			}
+			return obj;
 		}));
 
 	__Internal__.ADD('toString', __Internal__.DD_DOC(
