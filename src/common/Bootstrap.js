@@ -6269,7 +6269,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	(function() {
 		for (let i = 0; i < __Internal__.tempDocs.length; i++) {
-			__Internal__.DD_DOC.apply(null, __Internal__.tempDocs[i]);
+			const doc = __Internal__.tempDocs[i];
+			__Internal__.DD_DOC(...doc);
 		};
 		//delete __Internal__.tempDocs;
 		__Internal__.tempDocs = null;
