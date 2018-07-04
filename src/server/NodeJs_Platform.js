@@ -118,11 +118,8 @@ exports.add = function add(mods) {
 							architecture: nodeOsArch(),
 							dirChar: nodePathSep,
 							newLine: nodeOsEOL,
-							caseSensitive: !!__Internal__.caseSensitive,
 						}));
-						if (__Internal__.caseSensitive !== null) {
-							__Internal__.os = os;
-						};
+						__Internal__.os = os;
 					};
 					return os;
 				}));

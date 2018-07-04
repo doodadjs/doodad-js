@@ -102,8 +102,7 @@ exports.add = function add(modules) {
 					if (!os) {
 						const platform = _shared.Natives.windowNavigator.platform.toLowerCase().slice(0, 3),
 							name = ((platform === 'win') ? 'win32' : ((platform === 'lin') ? 'linux' : ((platform === 'iph') || (platform === 'ipo') || (platform === 'ipa') || (platform === 'mac') || (platform === 'pik') ? 'darwin' : (platform === 'fre' ? 'freebsd' : (platform === 'ope' ? 'openbsd' : (platform === 'sun' ? 'sunos' : 'other')))))),
-							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix')),
-							caseSensitive = tools.getOptions().caseSensitive;
+							type = ((name === 'win32') ? 'windows' : ((name === 'linux') ? 'linux' : 'unix'));
 						os = types.freezeObject(tools.nullObject({
 							name: name, // 'win32', 'linux', 'darwin', 'freebsd', 'openbsd', 'sunos', 'other' (like Node.js, excepted 'other')
 							type: type,  // 'windows', 'linux', 'unix' (Note: Defaults to 'unix' for Macs and mobiles)
@@ -111,7 +110,6 @@ exports.add = function add(modules) {
 							//architecture: ...,
 							dirChar: ((name === 'win32') ? '\\' : '/'),
 							newLine: ((name === 'win32') ? '\r\n' : '\n'),
-							caseSensitive: (types.isNothing(caseSensitive) ? ((name === 'win32') || (name === 'darwin') ? false : true) : caseSensitive), // NOTE: Because it is impossible to detect, we give what is the most popular per os
 						}));
 						__Internal__.os = os;
 					};
