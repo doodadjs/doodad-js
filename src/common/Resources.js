@@ -49,8 +49,11 @@ exports.add = function add(modules) {
 				tools = doodad.Tools,
 				config = tools.Config,
 				files = tools.Files,
-				modules = doodad.Modules,
 				resources = doodad.Resources;
+
+			//! IF_UNSET('serverSide')
+				//! INJECT("const modules = doodad.Modules;");
+			//! END_IF()
 
 			//===================================
 			// Internal
@@ -122,7 +125,12 @@ exports.add = function add(modules) {
 
 			return function init(options) {
 				const Promise = types.getPromise();
-				return Promise.resolve(root.serverSide ? files.Path.parse(module.filename) : modules.locate(/*! INJECT(TO_SOURCE(MANIFEST('name'))) */))
+				//! IF_SET('serverSide')
+					const promise = Promise.resolve(files.Path.parse(module.filename));
+				//! ELSE()
+					//! INJECT("const promise = modules.locate(" + TO_SOURCE(MANIFEST('name')) + ");")
+				//! END_IF()
+				return promise
 					.then(function(location) {
 						location = location.set({file: ''});
 						resources.createResourcesLoader(resources, (root.serverSide ? location.moveUp(1) : location));
