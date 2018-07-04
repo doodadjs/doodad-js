@@ -657,7 +657,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 		// NOTE: Proxies are too slow. Please enable "safeObject" just when needed then disable it.
 		_shared.safeObject = function _safeObject(obj) {
-			if (__options__.enableSafeObjects && natives.windowProxy) {
+			if (__options__.enableSafeObjects) {
 				return new natives.windowProxy(obj || {}, {
 					get: function(target, property, receiver) {
 						if (property === _shared.TargetSymbol) {
