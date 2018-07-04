@@ -36,6 +36,7 @@ exports.add = function add(modules) {
 		dependencies: [
 			'Doodad.Types',
 			'Doodad.Tools',
+			'Doodad.Tools/platform',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
 			'Doodad',
@@ -2107,6 +2108,13 @@ exports.add = function add(modules) {
 				};
 
 				tools.setAlert(_shared.Natives.windowAlert);
+
+				const caseSensitive = tools.getOptions().caseSensitive;
+				if (types.isNothing(caseSensitive)) {
+					// NOTE: That's impossible to detect, so we use the default per OS.
+					const os = tools.getOS();
+					tools.setOptions({caseSensitive: ((os.name !== 'win32') && (os.name !== 'darwin')), secret: _shared.SECRET});
+				};
 			};
 		},
 	};

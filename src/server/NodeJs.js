@@ -92,6 +92,7 @@ exports.add = function add(mods) {
 			'Doodad.Types',
 			'Doodad.Types/DDCancelable',
 			'Doodad.Tools',
+			'Doodad.Tools/platform',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
 			'Doodad'
@@ -3610,8 +3611,8 @@ exports.add = function add(mods) {
 
 
 			return function init(/*optional*/options) {
-				__Internal__.caseSensitive = tools.getOptions().caseSensitive;
-				if (types.isNothing(__Internal__.caseSensitive)) {
+				const caseSensitive = tools.getOptions().caseSensitive;
+				if (types.isNothing(caseSensitive)) {
 					// Detect case-sensitive
 					// NOTE: On some systems, the temp folder may have a different file system.
 					const temp = files.getTempFolder(),
@@ -3621,9 +3622,9 @@ exports.add = function add(mods) {
 					files.mkdir(name1, {ignoreExists: false});
 					try {
 						files.mkdir(name2, {ignoreExists: false});
-						__Internal__.caseSensitive = true;
+						tools.setOptions({caseSensitive: true, secret: _shared.SECRET});
 					} catch(ex) {
-						__Internal__.caseSensitive = false;
+						tools.setOptions({caseSensitive: false, secret: _shared.SECRET});
 					} finally {
 						try {
 							files.rmdir(name1);
