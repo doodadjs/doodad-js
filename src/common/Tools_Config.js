@@ -125,7 +125,7 @@ exports.add = function add(modules) {
 							if (!headers) {
 								headers = {};
 							};
-							headers['Accept'] = 'application/json';
+							headers['Accept'] = 'application/json, application/json5';
 						};
 
 						return files.readFileAsync(path, {encoding, headers})

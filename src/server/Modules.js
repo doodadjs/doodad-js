@@ -73,7 +73,6 @@ exports.add = function add(mods) {
 				tools = doodad.Tools,
 				config = tools.Config,
 				files = tools.Files,
-				JSON5 = tools.JSON5,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
 
@@ -245,13 +244,11 @@ exports.add = function add(mods) {
 
 					return modules.locate(file.module, file.path, options)
 						.then(function(location) {
-							if (file.isConfig) {
-								return config.load(location);
-							} else if ((location.extension === 'json') || (location.extension === 'json5')) {
-								return files.readFileAsync(location, {encoding: 'utf-8'})
-									.then(function(json) {
+							if (file.isConfig || ((location.extension === 'json') || (location.extension === 'json5'))) {
+								return config.load(location)
+									.then(function(config) {
 										return {
-											default: JSON5.parse(json),
+											default: config,
 										};
 									});
 							} else {

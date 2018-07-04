@@ -84,13 +84,17 @@ exports.add = function add(modules) {
 							.then(function(path) {
 								const watchCb = types.get(options, 'watchCb', null);
 								let promise = null;
-								if (path.extension === 'json') {
+								if ((path.extension === 'json') || (path.extension === 'json5')) {
 									promise = config.load(path);
 								} else {
-									const headers = {
-										Accept: '*/*',
+									// For readFile through HTTP/HTTPS
+									let headers = null;
+									if (types._instanceof(path, files.Url)) {
+										headers = {
+											Accept: '*/*',
+										};
 									};
-									promise = files.readFile(path, {async: true, encoding: 'utf-8', enableCache: true, headers: headers});
+									promise = files.readFileAsync(path, {encoding: 'utf-8', enableCache: true, headers});
 								};
 								if (watchCb) {
 									files.watch(path, watchCb, {once: true});

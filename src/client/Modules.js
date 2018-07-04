@@ -53,7 +53,6 @@ exports.add = function add(modules) {
 				tools = doodad.Tools,
 				files = tools.Files,
 				config = tools.Config,
-				JSON5 = tools.JSON5,
 				types = doodad.Types,
 				namespaces = doodad.Namespaces,
 				modules = doodad.Modules;
@@ -164,13 +163,11 @@ exports.add = function add(modules) {
 
 					return modules.locate(file.module, file.path, options)
 						.then(function(location) {
-							if (file.isConfig) {
-								return config.load(location);
-							} else if ((location.extension === 'json') || (location.extension === 'json5')) {
-								return files.readFileAsync(location, {encoding: 'utf-8', headers: {'Accept': 'application/json'}})
-									.then(function(json) {
+							if (file.isConfig || ((location.extension === 'json') || (location.extension === 'json5'))) {
+								return config.load(location)
+									.then(function(config) {
 										return {
-											default: JSON5.parse(json),
+											default: config,
 										};
 									});
 							} else if (root.getOptions().debug) {
