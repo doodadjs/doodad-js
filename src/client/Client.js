@@ -94,12 +94,16 @@ exports.add = function add(modules) {
 			tools.complete(_shared.Natives, {
 				//windowObject: global.Object,
 				windowDocument: global.document,
+				documentOpen: global.document.open.call.bind(global.document.open, global.document),
+				documentWrite: global.document.write.call.bind(global.document.write, global.document),
+				documentClose: global.document.close.call.bind(global.document.close, global.document),
 
 				// DOM
 				windowWindow: global.Window,
 				windowNode: global.Node,
 				windowHtmlDocument: global.HTMLDocument,
 				windowHtmlElement: global.HTMLElement,
+				documentCreateElement: global.document.createElement.call.bind(global.document.createElement, global.document),
 
 				// Script loader
 				windowURL: (types.isFunction(global.URL) ? global.URL : null),
@@ -267,7 +271,7 @@ exports.add = function add(modules) {
 				__Internal__.nextTickQueue = [];
 				__Internal__.nextTickDone = true;
 				__Internal__.nextTickValue = false;
-				__Internal__.nextTickDiv = _shared.Natives.windowDocument.createElement("div");
+				__Internal__.nextTickDiv = _shared.Natives.documentCreateElement("div");
 				__Internal__.nextTickObserver = new _shared.Natives.windowMutationObserver(function () {
 					try {
 						const queueLen = __Internal__.nextTickQueue.length;
@@ -420,9 +424,9 @@ exports.add = function add(modules) {
 						};
 
 						try {
-							_shared.Natives.windowDocument.open('text/plain', 'replace');
-							_shared.Natives.windowDocument.write("");
-							_shared.Natives.windowDocument.close();
+							_shared.Natives.documentOpen('text/plain', 'replace');
+							_shared.Natives.documentWrite("");
+							_shared.Natives.documentClose();
 						} catch(o) {
 							// Do nothing
 						};
@@ -454,16 +458,16 @@ exports.add = function add(modules) {
 								let url = files.Url.parse(_shared.Natives.windowLocation.href);
 
 								// TODO: Better user message, with translation
-								_shared.Natives.windowDocument.open('text/plain', 'replace');
+								_shared.Natives.documentOpen('text/plain', 'replace');
 								if (exitCode !== 0) {
 									if (types.toBoolean(url.args.get('crashReport', true))) {
-										_shared.Natives.windowDocument.write("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
+										_shared.Natives.documentWrite("An unexpected error has occured again. We are very sorry. Please contact support. Thank you.");
 									} else {
 										reload = true;
-										_shared.Natives.windowDocument.write("We are sorry. An unexpected error has occured. Page will now reload...");
+										_shared.Natives.documentWrite("We are sorry. An unexpected error has occured. Page will now reload...");
 									};
 								};
-								_shared.Natives.windowDocument.close();
+								_shared.Natives.documentClose();
 
 								if (reload) {
 									url = url.setArgs({crashReport: true});
@@ -490,9 +494,9 @@ exports.add = function add(modules) {
 
 								try {
 									// Try to blank the page.
-									_shared.Natives.windowDocument.open('text/plain', 'replace');
-									_shared.Natives.windowDocument.write("");
-									_shared.Natives.windowDocument.close();
+									_shared.Natives.documentOpen('text/plain', 'replace');
+									_shared.Natives.documentWrite("");
+									_shared.Natives.documentClose();
 								} catch(o) {
 									// Do nothing
 								};
@@ -1129,8 +1133,8 @@ exports.add = function add(modules) {
 						//	client.addListener(_window, 'unload', function(ev) {
 						//	});
 						//} else {
-						//	_shared.Natives.windowDocument.open('text/plain', false);
-						//	_shared.Natives.windowDocument.close();
+						//	_shared.Natives.documentOpen('text/plain', false);
+						//	_shared.Natives.documentClose();
 						//};
 
 						_location.href = url.toString();
