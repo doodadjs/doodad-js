@@ -121,11 +121,16 @@ exports.add = function add(modules) {
 						// For readFile through HTTP/HTTPS
 						let headers = null;
 						if (types._instanceof(path, files.Url)) {
-							headers = types.get(options, 'headers', null);
-							if (!headers) {
-								headers = {};
+							headers = tools.reduce(types.get(options, 'headers', null), function(result, value, name) {
+								const fixed = tools.title(tools.trim(name), '-');
+								value = (types.isNothing(value) ? '' : tools.trim(types.toString(value)));
+								if (value) {
+									result[fixed] = value;
+								};
+							}, tools.nullObject());
+							if (!types.has(headers, 'Accept')) {
+								headers['Accept'] = 'application/json, application/json5';
 							};
-							headers['Accept'] = 'application/json, application/json5';
 						};
 
 						return files.readFileAsync(path, {encoding, headers})

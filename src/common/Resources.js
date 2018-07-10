@@ -86,23 +86,39 @@ exports.add = function add(modules) {
 						}, this)
 							.then(function(path) {
 								const watchCb = types.get(options, 'watchCb', null);
+
 								let promise = null;
+
 								if ((path.extension === 'json') || (path.extension === 'json5')) {
-									promise = config.load(path);
+									promise = config.load(path, options);
+
 								} else {
+									const encoding = types.get(options, 'encoding', null);
+
 									// For readFile through HTTP/HTTPS
 									let headers = null;
 									if (types._instanceof(path, files.Url)) {
-										headers = {
-											Accept: '*/*',
+										headers = tools.reduce(types.get(options, 'headers', null), function(result, value, name) {
+											const fixed = tools.title(tools.trim(name), '-');
+											value = (types.isNothing(value) ? '' : tools.trim(types.toString(value)));
+											if (value) {
+												result[fixed] = value;
+											};
+										}, tools.nullObject());
+										if (!types.has(headers, 'Accept')) {
+											headers['Accept'] = 'application/octet-stream, */*';
 										};
 									};
-									promise = files.readFileAsync(path, {encoding: 'utf-8', enableCache: true, headers});
+
+									promise = files.readFileAsync(path, {encoding, headers, enableCache: true});
 								};
+
 								if (watchCb) {
 									files.watch(path, watchCb, {once: true});
+
 									promise = promise.nodeify(watchCb);
 								};
+
 								return promise;
 							}, null, this);
 					},
