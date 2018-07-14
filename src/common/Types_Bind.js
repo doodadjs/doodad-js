@@ -51,8 +51,21 @@ exports.add = function add(modules) {
 			// Internal
 			//===================================
 
-			//const __Internal__ = {
-			//};
+			const __Internal__ = {
+				copyAttributes(target, source, update) {
+					const keys = tools.append(types.keys(source), types.symbols(source)),
+						keysLen = keys.length;
+					for (let i = 0; i < keysLen; i++) {
+						const key = keys[i];
+						if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
+							if (!update || types.has(target, key)) {
+								target[key] = source[key];
+							};
+						};
+					};
+					return target;
+				},
+			};
 
 			//===================================
 			// Native functions
@@ -72,7 +85,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 4,
+						revision: 5,
 						params: {
 							obj: {
 								type: 'object',
@@ -91,7 +104,7 @@ exports.add = function add(modules) {
 							},
 						},
 						returns: 'object',
-						description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also preserved. Ruturns 'null' when function can't be bound.",
+						description: "Binds a function to an object (so that 'this' will always be that object) and returns the resulting function. Owned properties are also copied. Ruturns 'null' when function can't be bound.",
 					}
 				//! END_REPLACE()
 				, function bind(obj, fn, /*optional*/args) {
@@ -101,11 +114,11 @@ exports.add = function add(modules) {
 					};
 					let newFn;
 					if (args) {
-						newFn = _shared.Natives.functionBindApply(fn, tools.append([obj], args));
+						newFn = _shared.Natives.functionBindCall(fn, obj, ...args);
 					} else {
 						newFn = _shared.Natives.functionBindCall(fn, obj);
 					};
-					tools.extend(newFn, fn);
+					__Internal__.copyAttributes(newFn, fn, false);
 					newFn[_shared.BoundObjectSymbol] = obj;
 					newFn[_shared.OriginalValueSymbol] = fn;
 					return newFn;
@@ -115,7 +128,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 6,
+						revision: 7,
 						params: {
 							fn: {
 								type: 'function',
@@ -131,25 +144,15 @@ exports.add = function add(modules) {
 					if (!types.isFunction(fn)) {
 						return null;
 					};
-					if (types.has(fn, _shared.BoundObjectSymbol)) {
-						const oldFn = types.get(fn, _shared.OriginalValueSymbol);
-						if (!types.isBindable(oldFn)) {
-							return null;
-						};
-						const keys = tools.append(types.keys(fn), types.symbols(fn)),
-							keysLen = keys.length;
-						for (let i = 0; i < keysLen; i++) {
-							const key = keys[i];
-							if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
-								if (types.has(oldFn, key)) {
-									oldFn[key] = fn[key];
-								};
-							};
-						};
-						return oldFn;
-					} else {
+					if (!types.has(fn, _shared.BoundObjectSymbol)) {
 						return null;
-					}
+					};
+					const oldFn = types.get(fn, _shared.OriginalValueSymbol);
+					if (!types.isBindable(oldFn)) {
+						return null;
+					};
+					__Internal__.copyAttributes(oldFn, fn, true);
+					return oldFn;
 				}));
 
 
