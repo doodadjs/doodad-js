@@ -184,28 +184,6 @@ exports.add = function add(modules) {
 			// ES6 Arrow functions support
 			//===================================
 
-			__Internal__.hasArrows = false;
-			try {
-				tools.eval("a => a");
-				__Internal__.hasArrows = true;
-			} catch(ex) {
-				// Do nothing
-			};
-
-			types.ADD('hasArrows', root.DD_DOC(
-				//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-						author: "Claude Petit",
-						revision: 0,
-						params: null,
-						returns: 'bool',
-						description: "Returns 'true' if the Javascript engine has ES6 arrow functions, 'false' otherwise.",
-					}
-				//! END_REPLACE()
-				, function hasArrows() {
-					return __Internal__.hasArrows;
-				}));
-
 			types.ADD('isArrowFunction', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -222,13 +200,11 @@ exports.add = function add(modules) {
 						description: "Returns 'true' if object is an arrow function, 'false' otherwise.",
 					}
 				//! END_REPLACE()
-				, __Internal__.hasArrows ? function isArrowFunction(obj) {
+				, function isArrowFunction(obj) {
 					if (types.isFunction(obj)) {
 						const str = _shared.Natives.functionToStringCall(obj);
 						return /^(async[ ]*)?[(]?[^)]*[)]?[ ]*[=][>]/.test(str);
 					};
-					return false;
-				} : function isArrowFunction(obj) {
 					return false;
 				}));
 
@@ -338,7 +314,8 @@ exports.add = function add(modules) {
 			// Test for my dream to realize !
 			__Internal__.arrowIsBindable = false;
 			try {
-				__Internal__.arrowIsBindable = (tools.eval("() => this.doodad").bind({doodad: 1})() === 1);
+				/* eslint no-extra-bind: "off" */
+				__Internal__.arrowIsBindable = ((() => this.doodad).bind({doodad: 1})() === 1);
 			} catch(ex) {
 				// Do nothing
 			};
