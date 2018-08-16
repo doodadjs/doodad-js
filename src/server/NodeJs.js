@@ -129,11 +129,14 @@ exports.add = function add(mods) {
 
 				symbolDestroyed: types.getSymbol('__NODE_OBJ_DESTROYED__'),
 
+				EVENT_NAME_PREFIX: 'on',
+
 				newListener: 'newListener',
 				removeListener: 'removeListener',
 			};
 
-			__Internal__.removeListenerPrefixed = _shared.EVENT_NAME_PREFIX + __Internal__.removeListener;
+			__Internal__.EVENT_NAME_PREFIX_LEN = __Internal__.EVENT_NAME_PREFIX.length;
+			__Internal__.removeListenerPrefixed = __Internal__.EVENT_NAME_PREFIX + __Internal__.removeListener;
 
 			//===================================
 			// Natives
@@ -155,25 +158,25 @@ exports.add = function add(mods) {
 
 				// "catchAndExit"
 				process: global.process,
-				processExit: global.process.exit.bind(global.process),
-				consoleError: global.console.error.bind(global.console),
+				processExit: _shared.Natives.functionBindCall(global.process.exit, global.process),
+				consoleError: _shared.Natives.functionBindCall(global.console.error, global.console),
 
 				// "addAppListener", "removeAppListener"
-				processOn: global.process.on.bind(global.process),
-				processRemoveListener: global.process.removeListener.bind(global.process),
+				processOn: _shared.Natives.functionBindCall(global.process.on, global.process),
+				processRemoveListener: _shared.Natives.functionBindCall(global.process.removeListener, global.process),
 
 				// "stringToBytes", "bytesToString"
-				globalBufferFrom: global.Buffer.from.bind(global.Buffer),
+				globalBufferFrom: _shared.Natives.functionBindCall(global.Buffer.from, global.Buffer),
 				windowArrayBuffer: global.ArrayBuffer,
 				windowUint16Array: global.Uint16Array,
 				windowUint8Array: global.Uint8Array,
-				stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
-				stringFromCharCode: global.String.fromCharCode.bind(global.String),
-				stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
+				stringFromCharCodeApply: _shared.Natives.functionBindApply(global.String.fromCharCode, global.String),
+				stringFromCharCodeCall: _shared.Natives.functionBindCall(global.String.fromCharCode, global.String),
+				stringCharCodeAtCall: _shared.Natives.functionBindCall(global.String.prototype.charCodeAt),
 				mathMin: global.Math.min,
 
 				// NodeEvent
-				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+				arraySliceCall: _shared.Natives.functionBindCall(global.Array.prototype.slice),
 
 				globalBufferAlloc: (types.isFunction(global.Buffer.alloc) ? global.Buffer.alloc : function(size) {
 					return new _shared.Native.globalBuffer(size);
@@ -1233,8 +1236,8 @@ exports.add = function add(mods) {
 
 						return (cancelable ? state.cancelable : state.cancelable.start());
 					} else {
-						state.resolveCb = Promise.resolve.bind(Promise);
-						state.rejectCb = Promise.reject.bind(Promise);
+						state.resolveCb = _shared.Natives.functionBindCall(Promise.resolve, Promise);
+						state.rejectCb = _shared.Natives.functionBindCall(Promise.reject, Promise);
 
 						return startCb();
 					}
@@ -1842,8 +1845,8 @@ exports.add = function add(mods) {
 
 						return (cancelable ? state.cancelable : state.cancelable.start());
 					} else {
-						state.resolveCb = Promise.resolve.bind(Promise);
-						state.rejectCb = Promise.reject.bind(Promise);
+						state.resolveCb = _shared.Natives.functionBindCall(Promise.resolve, Promise);
+						state.rejectCb = _shared.Natives.functionBindCall(Promise.reject, Promise);
 
 						return startCb();
 					}
@@ -2086,8 +2089,8 @@ exports.add = function add(mods) {
 
 						return (cancelable ? state.cancelable : state.cancelable.start());
 					} else {
-						state.resolveCb = Promise.resolve.bind(Promise);
-						state.rejectCb = Promise.reject.bind(Promise);
+						state.resolveCb = _shared.Natives.functionBindCall(Promise.resolve, Promise);
+						state.rejectCb = _shared.Natives.functionBindCall(Promise.reject, Promise);
 
 						return startCb();
 					}
@@ -3021,7 +3024,7 @@ exports.add = function add(mods) {
 					$TYPE_NAME: "NodeEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEvents')), true) */,
 
-					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
+					__NODE_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {isProto: false, cloneOnInit: true}))))))),
 
 					detachNodeEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachNodeEvents(/*optional*/emitters) {
 						const events = this.__NODE_EVENTS,
@@ -3043,6 +3046,8 @@ exports.add = function add(mods) {
 			__Internal__.eventHandlerProto = {
 				$TYPE_NAME: 'NodeEventHandler',
 				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventHandler')), true) */,
+
+				[__Internal__.symbolHandler]: doodad.PROTECTED(doodad.METHOD(null)),
 
 				attach: doodad.OVERRIDE(function attach(emitters, /*optional*/context, /*optional*/once, /*optional*/prepend) {
 					if (!types.isArray(emitters)) {
@@ -3067,7 +3072,7 @@ exports.add = function add(mods) {
 									type: eventType,
 									data: context,
 								};
-								return handler.apply(this, tools.append([ctx], args));
+								return _shared.Natives.functionApplyCall(handler, this, tools.append([ctx], args));
 							};
 						}, null, null, _shared.SECRET);
 					};
@@ -3139,8 +3144,6 @@ exports.add = function add(mods) {
 				}),
 			};
 
-			__Internal__.eventHandlerProto[__Internal__.symbolHandler] = doodad.PROTECTED(doodad.METHOD(null));
-
 			doodad.REGISTER(root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -3167,7 +3170,7 @@ exports.add = function add(mods) {
 					$TYPE_NAME: "NodeEvent",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('NodeEventExtender')), true) */,
 
-					eventsPrefixed: types.READ_ONLY(false),
+					prefix: types.READ_ONLY(''),
 					eventsAttr: types.READ_ONLY('__NODE_EVENTS'),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.NodeEvents'),
 					eventProto: types.READ_ONLY(doodad.NodeEventHandler),
@@ -3188,8 +3191,8 @@ exports.add = function add(mods) {
 
 					getCacheName: types.SUPER(function getCacheName(/*optional*/options) {
 						return this._super(options) +
-						',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
-						',' + types.get(options, 'eventType', this.eventType);
+							',' + (types.get(options, 'canReject', this.canReject) ? '1' : '0') +
+							',' + types.get(options, 'eventType', this.eventType);
 					}),
 
 					overrideOptions: types.SUPER(function overrideOptions(options, newOptions, /*optional*/replace) {
@@ -3248,19 +3251,22 @@ exports.add = function add(mods) {
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 
-						const handler = attribute[__Internal__.symbolHandlerExtended];
-						if (handler) {
-							const extender = handler[_shared.ExtenderSymbol];
-							if (extender.init) {
-								const oldObjId = generator.objId;
-								generator.objId = generator.vars.fromKey(attr);
-								const oldKeyVars = generator.__kvars;
-								generator.__kvars = tools.nullObject();
-								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
-								generator.objId = oldObjId;
-								generator.__kvars = oldKeyVars;
+						const handlerAttr = attribute[__Internal__.symbolHandlerExtended];
+						if (handlerAttr) {
+							const handlerExtender = handlerAttr[_shared.ExtenderSymbol];
+							const handlerAttrs = attributes;
+							const handlerValue = types.unbox(handlerAttr);
+							const handlerGen = _shared.createGenerator();
+							//if (!handlerExtender.preInit || !handlerExtender.preInit(__Internal__.symbolHandler, handlerAttrs, forType, handlerAttr, handlerValue, handlerGen, isProto, null)) {
+							if (handlerExtender.init) {
+								handlerExtender.init(__Internal__.symbolHandler, handlerAttrs, forType, handlerAttr, handlerValue, handlerGen, isProto, null);
 							};
-						};
+							//};
+							const handlerFn = handlerGen.compile();
+							const handlerFnId = generator.vars.add(handlerFn);
+							const handlerId = generator.vars.fromKey(attr);
+							generator.code.add(handlerFnId + "(" + handlerId + ", " + generator.storageId + ");");
+						}
 					}),
 				})));
 
@@ -3329,7 +3335,7 @@ exports.add = function add(mods) {
 							if (!ctx || (emitter === ctx.emitter)) {
 								const handler = evDatas[2];
 
-								handler.apply(obj, args);
+								_shared.Natives.functionApplyCall(handler, obj, args);
 							};
 						};
 
@@ -3357,7 +3363,7 @@ exports.add = function add(mods) {
 
 					prependListener: doodad.PUBLIC(function prependListener(event, listener) {
 						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener, 10);
 							this.emit(__Internal__.newListener, event, listener);
@@ -3366,7 +3372,7 @@ exports.add = function add(mods) {
 					}),
 
 					prependOnceListener: doodad.PUBLIC(function prependOnceListener(event, listener) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener, 10, null, 1);
 							this.emit(__Internal__.newListener, event, listener);
@@ -3375,7 +3381,7 @@ exports.add = function add(mods) {
 					}),
 
 					addListener: doodad.PUBLIC(function addListener(event, listener) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener);
 							this.emit(__Internal__.newListener, event, listener);
@@ -3385,7 +3391,7 @@ exports.add = function add(mods) {
 
 					emit: doodad.PUBLIC(function emit(event, ...args) {
 						// <PRB> Readable stream re-emits "onerror" with the same error !!! https://github.com/nodejs/node/blob/v7.6.0/lib/_stream_readable.js#L578-L579
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							const oldCurrentlyEmitted = this.__currentlyEmitted;
 							const isOnError = (event === 'error');
@@ -3417,7 +3423,7 @@ exports.add = function add(mods) {
 					}),
 
 					listenerCount: doodad.PUBLIC(function listenerCount(event) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
 							return (stack ? tools.reduce(stack, function(result, data) {
@@ -3431,7 +3437,7 @@ exports.add = function add(mods) {
 					}),
 
 					listeners: doodad.PUBLIC(function listeners(event) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							const stack = types.getAttribute(this[name], _shared.StackSymbol, null, _shared.SECRET);
 							return (stack ? tools.reduce(stack, function(result, data) {
@@ -3450,7 +3456,7 @@ exports.add = function add(mods) {
 
 					on: doodad.PUBLIC(function on(event, listener) {
 						// TODO: Allow multiple times the same listener (as the behavior of Node.Js)
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attach(null, listener);
 							this.emit(__Internal__.newListener, event, listener);
@@ -3459,7 +3465,7 @@ exports.add = function add(mods) {
 					}),
 
 					once: doodad.PUBLIC(function once(event, listener) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].attachOnce(null, listener);
 							this.emit(__Internal__.newListener, event, listener);
@@ -3477,27 +3483,27 @@ exports.add = function add(mods) {
 									const listener = data[1];
 									eventFn.detach(null, listener);
 									if (name !== __Internal__.removeListenerPrefixed) {
-										const event = name.slice(_shared.EVENT_NAME_PREFIX_LEN);
+										const event = name.slice(__Internal__.EVENT_NAME_PREFIX_LEN);
 										this.emit(__Internal__.removeListener, event, listener);
 									};
 								};
 							};
 						};
-						const events = (event ? [_shared.EVENT_NAME_PREFIX + event] : this.__RAW_EVENTS);
+						const events = (event ? [__Internal__.EVENT_NAME_PREFIX + event] : this.__RAW_EVENTS);
 						for (let i = 0; i < events.length; i++) {
 							const name = events[i];
 							if (name !== __Internal__.removeListenerPrefixed) {
-								removeListeners.call(this, name);
+								_shared.Natives.functionCallCall(removeListeners, this, name);
 							};
 						};
 						if (!event || (event === __Internal__.removeListener)) {
-							removeListeners.call(this, __Internal__.removeListenerPrefixed);
+							_shared.Natives.functionCallCall(removeListeners, this, __Internal__.removeListenerPrefixed);
 						};
 						return this;
 					}),
 
 					removeListener: doodad.PUBLIC(function removeListener(event, listener) {
-						const name = _shared.EVENT_NAME_PREFIX + event;
+						const name = __Internal__.EVENT_NAME_PREFIX + event;
 						if (tools.indexOf(this.__RAW_EVENTS, name) >= 0) {
 							this[name].detach(null, listener);
 							if (event !== __Internal__.removeListener) {
@@ -3525,7 +3531,7 @@ exports.add = function add(mods) {
 							if (stack && tools.some(stack, function(data) {
 								return (data[4] > 0);
 							})) {
-								names.push(name.slice(_shared.EVENT_NAME_PREFIX_LEN));
+								names.push(name.slice(__Internal__.EVENT_NAME_PREFIX_LEN));
 							};
 						};
 						return names;
@@ -3552,7 +3558,7 @@ exports.add = function add(mods) {
 					// <PRB> Uint16Array can't be created on an odd sized array buffer.
 					// NOTE : Assuming little endian.
 					const ar = new _shared.Natives.windowUint8Array(buf);
-					lastChr = _shared.Natives.stringFromCharCode(ar[buf.byteLength - 1]);
+					lastChr = _shared.Natives.stringFromCharCodeCall(ar[buf.byteLength - 1]);
 					buf = buf.slice(0, buf.byteLength - 1);
 				};
 
