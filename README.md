@@ -58,7 +58,7 @@ From Javascript, when the scripts are loaded, create the root namespace :
         .then((root) => {
             // Your code there...
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
         });
 ```
@@ -99,7 +99,7 @@ Now, in your Node.js script, create the root namespace :
         .then((root) => {
             // Your code there...
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
         });
 ```
@@ -134,7 +134,7 @@ Also, Doodad allows reflection on every fields and methods to all loaded Doodad 
 
 Last, the efficiency of these scopes depends on an internal flag that remembers in which class instance we are while executing a method. Unfortunatly, __because Javascript's strict mode refuses access to the caller's object, Doodad can't know with precision when we leave the framework's context__. To rectify this issue, I've recently (since the version 9.0.0) added a new method accessible by "this.callOutside" with a new callback type accessible by "doodad.OutsideCallback". You have to use one of them when you are inside a method and calling something, or getting called by something, that should be external to the object, like a callback function, or an external library if it can hold a reference to your object. I'm sorry for the inconveniences.
 
-If you absolutely want private and protected scopes on production, and don't care about performances, you can pass these options to "createRoot" :
+If you absolutely want private and protected scopes on production, and don't care about these issues, you can pass the following options to "createRoot" :
 ```js
 {
     startup: {
@@ -192,6 +192,7 @@ If you absolutely want private and protected scopes on production, and don't car
   - **doodad.BIND**: Binds a method to its object.
   - **doodad.NON_REENTRANT**: The method must exits before being able to call it again.
   - **doodad.EXTERNAL**: The method can't be called from inside the object.
+  - **doodad.OUTSIDE**: The method will not execute inside the object.
   - **doodad.AFTER**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack after the function of the specified class.
   - **doodad.BEFORE**: When combined with "doodad.OVERRIDE", the function will get inserted in the stack before the function of the specified class. 
   - **doodad.RENAME_OVERRIDE**: Like "doodad.OVERRIDE", but also renames the method. To be used when implementing a Trait.
