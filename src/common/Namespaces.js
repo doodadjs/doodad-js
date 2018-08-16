@@ -1335,7 +1335,7 @@ exports.add = function add(modules) {
 								};
 								if (types.get(entry.spec, 'name') !== name) {
 									entry.spec = tools.extend({}, entry.spec, {
-										name: name,
+										name,
 									});
 								};
 								types.freezeObject(entry.spec);
