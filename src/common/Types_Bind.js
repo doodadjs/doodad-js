@@ -59,7 +59,8 @@ exports.add = function add(modules) {
 						const key = keys[i];
 						if ((key !== _shared.BoundObjectSymbol) && (key !== _shared.OriginalValueSymbol)) {
 							if (!update || types.has(target, key)) {
-								target[key] = source[key];
+								const desc = types.getOwnPropertyDescriptor(source, key);
+								types.defineProperty(target, key, desc);
 							};
 						};
 					};
@@ -71,11 +72,8 @@ exports.add = function add(modules) {
 			// Native functions
 			//===================================
 
-			tools.complete(_shared.Natives, {
-				// "bind"
-				functionBindCall: Function.prototype.bind.call.bind(Function.prototype.bind),
-				functionBindApply: Function.prototype.bind.apply.bind(Function.prototype.bind),
-			});
+			//tools.complete(_shared.Natives, {
+			//});
 
 			//===================================
 			// Bind/Unbind
@@ -85,7 +83,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 5,
+						revision: 6,
 						params: {
 							obj: {
 								type: 'object',
