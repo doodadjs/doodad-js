@@ -74,18 +74,18 @@ exports.add = function add(modules) {
 				// No polyfills
 
 				// "toArray"
-				windowArrayApply: global.Array.apply.bind(global.Array),
+				windowArrayApply: _shared.Natives.functionBindApply(global.Array, global),
 
 				// "clone", "toArray"
-				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+				arraySliceCall: _shared.Natives.functionBindCall(global.Array.prototype.slice),
 
 				// "popAt", "popItem", "popItems"
-				arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+				arraySpliceCall: _shared.Natives.functionBindCall(global.Array.prototype.splice),
 
 				// "prepend"
-				arrayUnshiftApply: global.Array.prototype.unshift.apply.bind(global.Array.prototype.unshift),
+				arrayUnshiftApply: _shared.Natives.functionBindApply(global.Array.prototype.unshift),
 
-				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
+				objectToStringCall: _shared.Natives.functionBindCall(global.Object.prototype.toString),
 
 				windowObject: global.Object,
 
@@ -99,7 +99,7 @@ exports.add = function add(modules) {
 				objectPrototype: global.Object.prototype,
 
 				// "isArrowFunction", "isAsyncFunction"
-				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
+				functionToStringCall: _shared.Natives.functionBindCall(global.Function.prototype.toString),
 
 				//// "hasProxies", "hasProxyEnabled", "createProxy"
 				//windowProxy: global.Proxy,
@@ -315,7 +315,7 @@ exports.add = function add(modules) {
 			__Internal__.arrowIsBindable = false;
 			try {
 				/* eslint no-extra-bind: "off" */
-				__Internal__.arrowIsBindable = ((() => this.doodad).bind({doodad: 1})() === 1);
+				__Internal__.arrowIsBindable = (_shared.Natives.functionBindCall(() => this.doodad, {doodad: 1})() === 1);
 			} catch(ex) {
 				// Do nothing
 			};
@@ -1115,18 +1115,6 @@ exports.add = function add(modules) {
 					};
 					return keys;
 				}));
-
-			//===================================
-			// Make inside
-			//===================================
-
-			// NOTE: Will be replaced by "Doodad.js"
-			_shared.makeInside = function makeInside(/*optional*/obj, fn) {
-				fn = types.unbind(fn) || fn;
-				root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
-				return (types.isNothing(obj) ? fn : types.bind(obj, fn));
-			};
-
 
 			//===================================
 			// Init
