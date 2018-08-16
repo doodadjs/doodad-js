@@ -704,178 +704,189 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			SECRET: undefined,
 
 			// NOTE: Preload of immediatly needed natives.
-			Natives: {
-				// General
-				windowObject: global.Object,
-				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
-				numberToStringCall: global.Number.prototype.toString.call.bind(global.Number.prototype.toString),
-				windowFunction: global.Function,
-				windowMap: global.Map,
-				windowWeakMap: global.WeakMap,
-				windowSet: global.Set,
-				windowWeakSet: global.WeakSet,
+			Natives: (function() {
+				const functionBindCall = Function.prototype.bind.bind(Function.prototype.bind)(Function.prototype.call);
+				const functionBindApply = Function.prototype.bind.bind(Function.prototype.bind)(Function.prototype.apply);
 
-				// "eval"
-				windowEval: global.eval,
+				return {
+					// General
+					functionBindCall,
+					functionBindApply,
+					windowFunction: global.Function,
+					functionApplyCall: functionBindCall(global.Function.prototype.apply),
+					functionCallCall: functionBindCall(global.Function.prototype.call),
+					//functionBindCall: functionBindCall(global.Function.prototype.bind),
 
-				// "hasInherited"
-				objectPrototype: global.Object.prototype,
+					windowObject: global.Object,
 
-				// "createObject"
-				objectCreate: global.Object.create,
+					stringReplaceCall: functionBindCall(global.String.prototype.replace),
 
-				// "hasDefinePropertyEnabled" and "defineProperty"
-				objectDefineProperty: global.Object.defineProperty,
+					numberToStringCall: functionBindCall(global.Number.prototype.toString),
 
-				// "defineProperties"
-				objectDefineProperties: global.Object.defineProperties,
+					windowMap: global.Map,
+					windowWeakMap: global.WeakMap,
+					windowSet: global.Set,
+					windowWeakSet: global.WeakSet,
 
-				// "allKeys"
-				objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
+					// "eval"
+					windowEval: global.eval,
 
-				// "getOwnPropertyDescriptor"
-				objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
+					// "hasInherited"
+					objectPrototype: global.Object.prototype,
 
-				// "getPrototypeOf"
-				objectGetPrototypeOf: global.Object.getPrototypeOf,
+					// "createObject"
+					objectCreate: global.Object.create,
 
-				// "isProtoOf"
-				objectIsPrototypeOfCall: global.Object.prototype.isPrototypeOf.call.bind(global.Object.prototype.isPrototypeOf),
+					// "hasDefinePropertyEnabled" and "defineProperty"
+					objectDefineProperty: global.Object.defineProperty,
 
-				// "setPrototypeOf"
-				objectSetPrototypeOf: global.Object.setPrototypeOf,
+					// "defineProperties"
+					objectDefineProperties: global.Object.defineProperties,
 
-				// "isArray"
-				arrayIsArray: global.Array.isArray,
-				arraySpliceCall: global.Array.prototype.splice.call.bind(global.Array.prototype.splice),
+					// "allKeys"
+					objectGetOwnPropertyNames: global.Object.getOwnPropertyNames,
 
-				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+					// "getOwnPropertyDescriptor"
+					objectGetOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
 
-				// "createArray"
-				windowArray: global.Array,
-				//arrayFrom: global.Array.from,
-				arrayFillCall: global.Array.prototype.fill.call.bind(global.Array.prototype.fill),
+					// "getPrototypeOf"
+					objectGetPrototypeOf: global.Object.getPrototypeOf,
 
-				// "isError"
-				windowError: global.Error,
+					// "isProtoOf"
+					objectIsPrototypeOfCall: functionBindCall(global.Object.prototype.isPrototypeOf),
 
-				// "isNumber", "toInteger"
-				windowNumber: global.Number,
+					// "setPrototypeOf"
+					objectSetPrototypeOf: global.Object.setPrototypeOf,
 
-				// "hasSymbols", "isSymbol", "getSymbol"
-				windowSymbol: global.Symbol,
+					// "isArray"
+					arrayIsArray: global.Array.isArray,
+					arraySpliceCall: functionBindCall(global.Array.prototype.splice),
 
-				// "getSymbolFor"
-				symbolFor: global.Symbol.for,
+					arraySliceCall: functionBindCall(global.Array.prototype.slice),
 
-				// "getSymbolKey", "symbolIsGlobal"
-				symbolToStringCall: global.Symbol.prototype.toString.call.bind(global.Symbol.prototype.toString),
-				symbolValueOfCall: global.Symbol.prototype.valueOf.call.bind(global.Symbol.prototype.valueOf),
-				symbolKeyFor: global.Symbol.keyFor,
+					// "createArray"
+					windowArray: global.Array,
+					//arrayFrom: global.Array.from,
+					arrayFillCall: functionBindCall(global.Array.prototype.fill),
 
-				// "createType", "_instanceof"
-				symbolHasInstance: global.Symbol.hasInstance,
-				functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
+					// "isError"
+					windowError: global.Error,
 
-				// "is*"
-				numberValueOfCall: global.Number.prototype.valueOf.call.bind(global.Number.prototype.valueOf),
-				booleanValueOfCall: global.Boolean.prototype.valueOf.call.bind(global.Boolean.prototype.valueOf),
-				dateValueOfCall: global.Date.prototype.valueOf.call.bind(global.Date.prototype.valueOf),
+					// "isNumber", "toInteger"
+					windowNumber: global.Number,
 
-				// "isNaN"
-				numberIsNaN: global.Number.isNaN,
+					// "hasSymbols", "isSymbol", "getSymbol"
+					windowSymbol: global.Symbol,
 
-				// "isFinite"
-				numberIsFinite: global.Number.isFinite,
+					// "getSymbolFor"
+					symbolFor: global.Symbol.for,
 
-				// "concat"
-				arrayConcatApply: global.Array.prototype.concat.apply.bind(global.Array.prototype.concat),
+					// "getSymbolKey", "symbolIsGlobal"
+					symbolToStringCall: functionBindCall(global.Symbol.prototype.toString),
+					symbolValueOfCall: functionBindCall(global.Symbol.prototype.valueOf),
+					symbolKeyFor: global.Symbol.keyFor,
 
-				// "concat"
-				arrayPushCall: global.Array.prototype.push.call.bind(global.Array.prototype.push),
+					// "createType", "_instanceof"
+					symbolHasInstance: global.Symbol.hasInstance,
+					functionHasInstance: global.Function.prototype[global.Symbol.hasInstance],
 
-				// "trim"
-				stringTrimCall: global.String.prototype.trim.call.bind(global.String.prototype.trim),
+					// "is*"
+					numberValueOfCall: functionBindCall(global.Number.prototype.valueOf),
+					booleanValueOfCall: functionBindCall(global.Boolean.prototype.valueOf),
+					dateValueOfCall: functionBindCall(global.Date.prototype.valueOf),
 
-				// "depthExtend"
-				functionBindCall: global.Function.prototype.bind.call.bind(global.Function.prototype.bind),
+					// "isNaN"
+					numberIsNaN: global.Number.isNaN,
 
-				// "isInteger", "isSafeInteger", "toInteger", "toFloat"
-				mathFloor: global.Math.floor,
-				mathAbs: global.Math.abs,
+					// "isFinite"
+					numberIsFinite: global.Number.isFinite,
 
-				// "isInteger"
-				numberIsInteger: global.Number.isInteger,
+					// "concat"
+					arrayConcatApply: functionBindApply(global.Array.prototype.concat),
 
-				// "isSafeInteger"
-				numberIsSafeInteger: global.Number.isSafeInteger,
+					// "concat"
+					arrayPushCall: functionBindCall(global.Array.prototype.push),
 
-				// "toFloat"
-				mathPow: global.Math.pow,
+					// "trim"
+					stringTrimCall: functionBindCall(global.String.prototype.trim),
 
-				// "sealObject"
-				objectSeal: global.Object.seal,
+					// "isInteger", "isSafeInteger", "toInteger", "toFloat"
+					mathFloor: global.Math.floor,
+					mathAbs: global.Math.abs,
 
-				// "isFrozen"
-				objectIsFrozen: global.Object.isFrozen,
+					// "isInteger"
+					numberIsInteger: global.Number.isInteger,
 
-				// "freezeObject"
-				objectFreeze: global.Object.freeze,
+					// "isSafeInteger"
+					numberIsSafeInteger: global.Number.isSafeInteger,
 
-				// "isExtensible"
-				objectIsExtensible: global.Object.isExtensible,
+					// "toFloat"
+					mathPow: global.Math.pow,
 
-				// "preventExtensions"
-				objectPreventExtensions: global.Object.preventExtensions,
+					// "sealObject"
+					objectSeal: global.Object.seal,
 
-				// "isSafeInteger", "getSafeIntegerBounds"
-				numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER,
-				numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER,
+					// "isFrozen"
+					objectIsFrozen: global.Object.isFrozen,
 
-				// generateUUID
-				mathRandom: global.Math.random,
+					// "freezeObject"
+					objectFreeze: global.Object.freeze,
 
-				// AssertionError
-				//consoleAssert: (global.console.assert ? global.console.assert.bind(global.console) : undefined),
+					// "isExtensible"
+					objectIsExtensible: global.Object.isExtensible,
 
-				// "createEval"
-				arrayJoinCall: global.Array.prototype.join.call.bind(global.Array.prototype.join),
+					// "preventExtensions"
+					objectPreventExtensions: global.Object.preventExtensions,
 
-				// "safeObject"
-				windowProxy: global.Proxy,
-				windowTypeError: global.TypeError,
+					// "isSafeInteger", "getSafeIntegerBounds"
+					numberMaxSafeInteger: global.Number.MAX_SAFE_INTEGER,
+					numberMinSafeInteger: global.Number.MIN_SAFE_INTEGER,
 
-				// "toString"
-				windowString: global.String,
+					// generateUUID
+					mathRandom: global.Math.random,
 
-				// "has", "isCustomFunction", "isNativeFunction"
-				objectHasOwnPropertyCall: global.Object.prototype.hasOwnProperty.call.bind(global.Object.prototype.hasOwnProperty),
+					// AssertionError
+					//consoleAssert: (global.console.assert ? global.console.assert.bind(global.console) : undefined),
 
-				// "is*"
-				symbolToStringTag: global.Symbol.toStringTag,
-				stringValueOfCall: global.String.prototype.valueOf.call.bind(global.String.prototype.valueOf),
+					// "createEval"
+					arrayJoinCall: functionBindCall(global.Array.prototype.join),
 
-				// "isArray", "isObject", "isJsObject", "isCallable"
-				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
+					// "safeObject"
+					windowProxy: global.Proxy,
+					windowTypeError: global.TypeError,
 
-				// "isEnumerable", "symbols"
-				objectPropertyIsEnumerableCall: global.Object.prototype.propertyIsEnumerable.call.bind(global.Object.prototype.propertyIsEnumerable),
+					// "toString"
+					windowString: global.String,
 
-				// "allSymbols", "symbols"
-				objectGetOwnPropertySymbols: global.Object.getOwnPropertySymbols,
+					// "has", "isCustomFunction", "isNativeFunction"
+					objectHasOwnPropertyCall: functionBindCall(global.Object.prototype.hasOwnProperty),
 
-				// "keys"
-				objectKeys: global.Object.keys,
+					// "is*"
+					symbolToStringTag: global.Symbol.toStringTag,
+					stringValueOfCall: functionBindCall(global.String.prototype.valueOf),
 
-				// "append", "concat"
-				arrayPushApply: global.Array.prototype.push.apply.bind(global.Array.prototype.push),
+					// "isArray", "isObject", "isJsObject", "isCallable"
+					objectToStringCall: functionBindCall(global.Object.prototype.toString),
 
-				// "extend"
-				objectAssign: global.Object.assign,
+					// "isEnumerable", "symbols"
+					objectPropertyIsEnumerableCall: functionBindCall(global.Object.prototype.propertyIsEnumerable),
 
-				// "isCustomFunction", "isNativeFunction", getFunctionName"
-				functionToStringCall: global.Function.prototype.toString.call.bind(global.Function.prototype.toString),
-			},
+					// "allSymbols", "symbols"
+					objectGetOwnPropertySymbols: global.Object.getOwnPropertySymbols,
+
+					// "keys"
+					objectKeys: global.Object.keys,
+
+					// "append", "concat"
+					arrayPushApply: functionBindApply(global.Array.prototype.push),
+
+					// "extend"
+					objectAssign: global.Object.assign,
+
+					// "isCustomFunction", "isNativeFunction", getFunctionName"
+					functionToStringCall: functionBindCall(global.Function.prototype.toString),
+				};
+			})(),
 		},
 
 		/*__Internal__*/
@@ -903,7 +914,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Debugger
 	//===================================
 
-	__Internal__.ADD('DEBUGGER', function() {
+	__Internal__.ADD('DEBUGGER', function DEBUGGER() {
 		/* eslint no-debugger: "off" */
 
 		// Something weird just happened. Please see the call stack.
@@ -2592,6 +2603,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__.ADD('isProtoOf', function isProtoOf(protoObj, obj) {
 		// NOTE: Why does this function is part of Object prototype ?
+		if (types.isNothing(obj)) {
+			return false;
+		};
 		return _shared.Natives.objectIsPrototypeOfCall(protoObj, obj);
 	});
 
@@ -3384,10 +3398,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	// TODO: Find another way
 	_shared.reservedAttributes = tools.nullObject({
-		//name: null,
-		//apply: null,
-		//call: null,
-		//bind: null,
 		arguments: null,
 		caller: null,
 		length: null,
@@ -3406,93 +3416,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Clone
 	//===================================
 
-	_shared.isClonable = function isClonable(obj, /*optional*/cloneFunctions) {
-		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		// NOTE: Don't forget to also change '_shared.clone' !!!
-		return types.isArray(obj) || types.isObject(obj) || types._instanceof(obj, [types.Map, types.Set]) || (!!cloneFunctions && types.isCustomFunction(obj));
-	};
-
-	_shared.clone = function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*options*/keepNonClonables) {
-		// NOTE: This function will get overriden when "Doodad.js" is loaded.
-		// NOTE: Don't forget to also change '_shared.isClonable' !!!
-
-		let result;
-
-		if (types.isNothing(obj)) {
-			result = obj;
-		} else {
-			const isArray = types.isArray(obj);
-			depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-			cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
-
-			if (isArray) {
-				if (depth >= 0) {
-					result = tools.createArray(obj.length);
-					const len = obj.length;
-					for (let key = 0; key < len; key++) {
-						if (types.has(obj, key)) {
-							result[key] = _shared.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
-						};
-					};
-				} else {
-					result = _shared.Natives.arraySliceCall(obj, 0);
-				};
-			} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
-				result = tools.eval(_shared.Natives.functionToStringCall(obj));
-			} else if (types.isObject(obj)) {
-				result = tools.createObject(types.getPrototypeOf(obj));
-			} else if (types._instanceof(obj, [types.Map, types.Set])) {
-				result = new obj.constructor(obj);
-			} else if (keepNonClonables) {
-				return obj;
-			} else {
-				throw new types.Error("Object is not clonable.");
-			};
-
-			// Copy properties
-			const keys = tools.append(types.allKeys(obj), types.allSymbols(obj)),
-				arrayLen = isArray && obj.length,
-				props = {};
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
-				if (isArray) {
-					if (key === 'length') {
-						continue;
-					};
-					const tmp = _shared.Natives.windowNumber(key);
-					if ((tmp >= 0) && (tmp < arrayLen)) {
-						// Skip array items
-						continue;
-					};
-				};
-				let prop = types.getOwnPropertyDescriptor(result, key);
-				if (!prop || prop.configurable) {
-					prop = types.getOwnPropertyDescriptor(obj, key);
-					if (types.has(prop, 'value') && (depth >= 0)) {
-						prop.value = _shared.clone(prop.value, depth, cloneFunctions, keepUnlocked, keepNonClonables);
-					};
-					props[key] = prop;
-				};
-			};
-			types.defineProperties(result, props);
-
-			if (!keepUnlocked) {
-				if (types.isFrozen(obj)) {
-					types.freezeObject(result);
-				} else if (!types.isExtensible(obj)) {
-					types.preventExtensions(result);
-				};
-			};
-		};
-
-		return result;
-	};
+	__Internal__.ADD('ClonableSymbol', types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CLONABLE')), true) */ '__DD_CLONABLE' /*! END_REPLACE() */, true));
 
 	__Internal__.ADD('isClonable', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 1,
+				revision: 2,
 				params: {
 					obj: {
 						type: 'any',
@@ -3510,14 +3440,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		//! END_REPLACE()
 		, function isClonable(obj, /*optional*/cloneFunctions) {
-			return _shared.isClonable(obj, cloneFunctions);
+			// NOTE: Don't forget to also change '_shared.clone' !!!
+			return !!types.get(obj, types.CloneSymbol, false) || types.isArray(obj) || types.isObject(obj) || types._instanceof(obj, [types.Map, types.Set]) || (!!cloneFunctions && types.isCustomFunction(obj));
 		}));
 
 	__Internal__.ADD('clone', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 10,
+				revision: 11,
 				params: {
 					obj: {
 						type: 'any',
@@ -3550,7 +3481,95 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		//! END_REPLACE()
 		, function clone(obj, /*optional*/depth, /*optional*/cloneFunctions, /*optional*/keepUnlocked, /*optional*/keepNonClonables) {
-			return _shared.clone(obj, depth, cloneFunctions, keepUnlocked, keepNonClonables);
+			// NOTE: Don't forget to also change 'types.isClonable' !!!
+
+			let result;
+
+			if (types.isNothing(obj)) {
+				result = obj;
+
+			} else if (types.get(obj, types.ClonableSymbol, false)) {
+				result = obj.clone();
+
+			} else {
+				// Clones object
+
+				const isArray = types.isArray(obj);
+
+				depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+				cloneFunctions = (+cloneFunctions || 0) - 1;  // null|undefined|true|false|NaN|Infinity
+
+				if (isArray) {
+					if (depth >= 0) {
+						result = tools.createArray(obj.length);
+						const len = obj.length;
+						for (let key = 0; key < len; key++) {
+							if (types.has(obj, key)) {
+								result[key] = types.clone(obj[key], depth, cloneFunctions, keepUnlocked, keepNonClonables);
+							};
+						};
+					} else {
+						result = _shared.Natives.arraySliceCall(obj, 0);
+					};
+				} else if ((cloneFunctions >= 0) && types.isCustomFunction(obj)) {
+					result = tools.eval(_shared.Natives.functionToStringCall(obj));
+				} else if (types.isObject(obj)) {
+					result = tools.createObject(types.getPrototypeOf(obj));
+				} else if (types._instanceof(obj, [types.Map, types.Set])) {
+					result = new obj.constructor(obj);
+				} else if (keepNonClonables) {
+					return obj;
+				} else {
+					throw new types.Error("Object is not clonable.");
+				};
+
+				// Copy properties
+
+				const loopKeys = function _loopKeys(obj, keys, props, isArray, arrayLen) {
+					const keysLen = keys.length;
+					for (let i = 0; i < keysLen; i++) {
+						const key = keys[i];
+						if (isArray) {
+							if (key === 'length') {
+								continue;
+							};
+							const tmp = _shared.Natives.windowNumber(key);
+							if ((tmp >= 0) && (tmp < arrayLen)) {
+								// Skip array items
+								continue;
+							};
+						};
+						let prop = types.getOwnPropertyDescriptor(result, key);
+						if (!prop || prop.configurable) {
+							prop = types.getOwnPropertyDescriptor(obj, key);
+							if (types.has(prop, 'value') && (depth >= 0)) {
+								prop.value = types.clone(prop.value, depth, cloneFunctions, keepUnlocked, keepNonClonables);
+							};
+							props[key] = prop;
+						};
+					};
+				};
+
+				const props = {},
+					arrayLen = isArray && obj.length;
+
+				loopKeys(obj, types.allKeys(obj), props, isArray, arrayLen);
+				loopKeys(obj, types.allSymbols(obj), props, isArray, arrayLen);
+
+				types.defineProperties(result, props);
+
+				// Re-apply protections
+
+				if (!keepUnlocked) {
+					if (types.isFrozen(obj)) {
+						types.freezeObject(result);
+					} else if (!types.isExtensible(obj)) {
+						types.preventExtensions(result);
+					};
+				};
+			};
+
+			return result;
 		}));
 
 	//===================================
@@ -4348,17 +4367,14 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return obj.constructor;
 		}));
 
-	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
+	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
 		if (types.isString(fn) || types.isSymbol(fn)) {
 			fn = types.getAttribute(obj, fn, {direct: true}, secret);
 		};
-		if (types.isNothing(thisObj)) {
-			thisObj = obj;
-		};
 		if (args) {
-			return fn.apply(thisObj, args);
+			return _shared.Natives.functionApplyCall(fn, obj, args);
 		} else {
-			return fn.call(thisObj);
+			return _shared.Natives.functionCallCall(fn, obj);
 		}
 	};
 
@@ -4501,11 +4517,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			descGet = types.get(descriptor, 'get'),
 			descSet = types.get(descriptor, 'set');
 		if (descSet && !newDescriptor) {
-			if (!options || !options.ignoreWhenSame || !descGet || (descGet.call(obj) !== value)) {
-				descSet.call(obj, value);
+			if (!options || !options.ignoreWhenSame || !descGet || (_shared.Natives.functionCallCall(descGet, obj) !== value)) {
+				_shared.Natives.functionCallCall(descSet, obj, value);
 			};
 		} else if (descGet && !newDescriptor) {
-			if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (descGet.call(obj) !== value)))) {
+			if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (_shared.Natives.functionCallCall(descGet, obj) !== value)))) {
 				// NOTE: Use native error because something might be wrong
 				throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
 			};
@@ -4714,7 +4730,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				call: type.call,
 				bind: type.bind,
 			};
-			types.setAttributes(type, values, {});
+			types.setAttributes(type, values, {all: false, ignoreWhenReadOnly: true, direct: true});
 
 			return type;
 		}));
@@ -5051,9 +5067,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				const oldSuper = types.getAttribute(this, '_super', {direct: true});
 				types.setAttribute(this, '_super', superFn);
 				try {
-					return fn.apply(this, args);
-				} catch (ex) {
-					throw ex;
+					return _shared.Natives.functionApplyCall(fn, this, args);
 				} finally {
 					types.setAttribute(this, '_super', oldSuper);
 				}
@@ -5062,78 +5076,22 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			return _caller;
 		});
 
-	__Internal__.applyProto = function applyProto(target, base, proto, preApply, skipExisting, skipConfigurables, functionName) {
-		//const forType = types.isType(target);
-
-		let code = '';
-
-		const loopKeys = function _loopKeys(keys, isSymbol) {
+	__Internal__.applyProto = function applyProto(target, base, proto, skipExisting) {
+		const loopKeys = function _loopKeys(keys) {
 			for (let i = 0; i < keys.length; i++) {
 				const key = keys[i];
 
 				if ((key !== '__proto__') && !(key in _shared.reservedAttributes)) {
-					let keyStr;
-					if (functionName) {
-						if (isSymbol) {
-							code += "key = protoSymbols[" + types.toString(i) + "];";
-						} else {
-							keyStr = "'" + key.replace(/[']/g, "\\'") + "'";
-							code += "key = " + keyStr + ";";
-						};
-					};
-
-					let hasKey = false;
-
-					if (functionName) {
-						code += "hasKey = types.has(target, key);";
-					} else {
-						hasKey = types.has(target, key);
-					};
-
-					if (functionName) {
-						if (skipExisting) {
-							code += "ok = !hasKey;";
-						} else {
-							code += "ok = true;";
-						};
-					} else {
-						if (hasKey && skipExisting) {
-							continue;
-						};
-					};
-
-					code += "if (ok) {";
-
-					const attr = types.AttributeBox(proto[key]),
+					const hasKey = types.has(target, key),
+						attr = types.AttributeBox(proto[key]),
 						g = types.get(attr, _shared.GetterSymbol),
 						s = types.get(attr, _shared.SetterSymbol);
 
-					if (functionName) {
-						code += "attr = types.AttributeBox(proto[key]);";
-					};
+					let value = types.unbox(attr);
 
-					let value = attr,
-						isFunction = false;
-
-					if (functionName) {
-						code += "value = attr;" +
-								"isFunction = false;";
-					};
-
+					let isFunction = false;
 					if (!g && !s) {
-						if (functionName) {
-							code += "if (hasKey) {" +
-										"value = target[key];" +
-									"};" +
-									"value = types.unbox(value);" +
-									"isFunction = types.isJsFunction(value);";
-						} else {
-							if (hasKey) {
-								value = target[key];
-							};
-							value = types.unbox(value);
-							isFunction = types.isJsFunction(value);
-						};
+						isFunction = types.isJsFunction(value);
 					};
 
 					let cf = types.get(attr, _shared.ConfigurableSymbol);
@@ -5141,176 +5099,65 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						cf = !isFunction;
 					};
 
-					if (functionName) {
-						if (cf && skipConfigurables) {
-							code += "ok = types.hasIn(target, key);";
-						} else {
-							code += "ok = true;";
-						};
-					} else {
-						if (cf && skipConfigurables && !types.hasIn(target, key)) {
-							continue;
-						};
+					let ok = true;
+					if (skipExisting) {
+						ok = (!hasKey && !types.hasIn(target, key)) || (!cf && (value === target[key]));
 					};
 
-					if (functionName) {
-						code += "if (ok) {";
-					};
-
-					if (functionName) {
-						if (types.get(attr, _shared.SuperEnabledSymbol)) {
-							code += "const createSuper = !hasKey && isFunction;" +
-									"if (createSuper) {" +
-										"const _super = base && types.getAttribute(base, key, {direct: true});" +
-										"value = __Internal__.createCaller(key, value, _super);" +
-									"};";
-						};
-					} else {
-						const createSuper = !hasKey && isFunction && types.get(attr, _shared.SuperEnabledSymbol);
-						if (createSuper) {
+					if (ok) {
+						const createSuper = !hasKey && isFunction;
+						if (createSuper && types.get(attr, _shared.SuperEnabledSymbol)) {
 							const _super = base && types.getAttribute(base, key, {direct: true});
 							value = __Internal__.createCaller(key, value, _super);
 						};
-					};
 
-					if (functionName) {
-						code += "if (isFunction) {" +
-									"types.setAttributes(value, {" +
-										"apply: value.apply," +
-										"call: value.call," +
-										"bind: value.bind," +
-									"}, {ignoreWhenReadOnly: true});" +
-								"};";
-					} else {
 						if (isFunction) {
 							types.setAttributes(value, {
 								apply: value.apply,
 								call: value.call,
 								bind: value.bind,
-							}, {ignoreWhenReadOnly: true});
+							}, {all: false, ignoreWhenReadOnly: true, direct: true});
 						};
-					}
 
-					if (preApply) {
-						if (functionName) {
-							code += "types.setAttribute(target, key, value, {all: true, direct: true});";
-						} else {
-							types.setAttribute(target, key, value, {all: true, direct: true});
-						};
-					} else {
 						let enu = types.get(attr, _shared.EnumerableSymbol);
 						if (types.isNothing(enu)) {
 							enu = true;
 						};
 
 						if (g || s) {
-							// TODO: SUPER
-							if (functionName) {
-								code += "types.defineProperty(target, key, {" +
-											"configurable: " + (cf ? 'true' : 'false') + "," +
-											"enumerable: " + (enu ? 'true' : 'false') + "," +
-											"get: types.get(attr, _shared.GetterSymbol) || undefined," +
-											"set: types.get(attr, _shared.SetterSymbol) || undefined," +
-										"});";
-							} else {
-								types.defineProperty(target, key, {
-									configurable: !!cf,
-									enumerable: !!enu,
-									get: g || undefined,
-									set: s || undefined,
-								});
-							};
+							// TODO: To complete (getter/setter)
+							types.DEBUGGER();
+							// TODO: SUPER for getter/setter
+							types.defineProperty(target, key, {
+								configurable: cf,
+								enumerable: enu,
+								get: types.get(attr, _shared.GetterSymbol) || undefined,
+								set: types.get(attr, _shared.SetterSymbol) || undefined,
+							});
+
 						} else {
 							let ro = types.get(attr, _shared.ReadOnlySymbol);
-
-							if (functionName) {
-								if (types.isNothing(ro)) {
-									code += "ro = isFunction;";
-								} else {
-									code += "ro = " + (ro ? 'true' : 'false') + ";";
-								};
-
-								if (cf && enu) {
-									code += "if (!ro && " + (isSymbol ? "!(key in target)" : "!(" + keyStr + " in target)") + ") {" +
-												(isSymbol ?
-													"target[key] = value;"
-													:
-													"target[" + keyStr + "] = value;"
-												) +
-											"} else {" +
-												"types.setAttribute(target, key, value, {" +
-													"configurable: true," +
-													"enumerable: true," +
-													"writable: !ro," +
-													"ignoreWhenReadOnly: true," +
-													"direct: true," +
-												"});" +
-											"};";
-								} else {
-									code += "types.setAttribute(target, key, value, {" +
-												"configurable: " + (cf ? 'true' : 'false') + "," +
-												"enumerable: " + (enu ? 'true' : 'false') + "," +
-												"writable: !ro," +
-												"ignoreWhenReadOnly: true," +
-												"direct: true," +
-											"});";
-								};
-							} else {
-								if (types.isNothing(ro)) {
-									ro = isFunction;
-								};
-
-								if (cf && enu && !ro && !(key in target)) {
-									target[key] = value;
-								} else {
-									types.setAttribute(target, key, value, {
-										configurable: !!cf,
-										enumerable: !!enu,
-										writable: !ro,
-										ignoreWhenReadOnly: true,
-										direct: true,
-									});
-								};
+							if (types.isNothing(ro)) {
+								ro = isFunction;
 							};
-						};
-					};
 
-					if (functionName) {
-						code +=		"};" +
-								"};";
+							types.setAttribute(target, key, value, {
+								configurable: cf,
+								enumerable: enu,
+								writable: !ro,
+								ignoreWhenReadOnly: true,
+								direct: true,
+							});
+						};
 					};
 				};
 			};
 		};
 
-		if (functionName) {
-			code +=	"(function " + functionName + "(target, base, proto) {" +
-						"let key, hasKey, attr, value, isFunction, ok, ro;";
-		};
+		loopKeys(types.keys(proto));
+		loopKeys(types.symbols(proto));
 
-		const protoSymbols = types.symbols(proto);
-
-		loopKeys(types.keys(proto), false);
-		loopKeys(protoSymbols, true);
-
-		if (functionName) {
-			code += "types.defineProperty(target, '_super', {value: null, writable: true});";
-		} else {
-			types.defineProperty(target, '_super', {value: null, writable: true});
-		};
-
-		if (functionName) {
-			code += "})";
-		};
-
-		let fn = null;
-
-		if (functionName) {
-			const evalFn = tools.createEval(['types', 'tools', '_shared', '__Internal__', 'protoSymbols'], true)(types, tools, _shared, __Internal__, protoSymbols);
-			fn = evalFn(code);
-		};
-
-		return fn;
+		types.defineProperty(target, '_super', {value: null, writable: true});
 	};
 
 	__Internal__._createType = function(ctx) {
@@ -5320,11 +5167,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					// <PRB> grrrr, "this" is not available before we call "super" !!!
 					constructor(/*paramarray*/...args) {
 						const constructorThis = {};
-						const constructorArgs = ctx.constructor.apply(constructorThis, args) || args;
+						const constructorArgs = _shared.Natives.functionApplyCall(ctx.constructor, constructorThis, args) || args;
 						let obj = super(...constructorArgs) || this;
 						ctx.tools.extend(obj, constructorThis);
 						if (ctx.types.getType(this) === ctx.type) {
-							obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
+							obj = _shared.Natives.functionCallCall(ctx.type[ctx.types.NewSymbol], obj, args) || obj;
 						};
 						return obj;
 					}
@@ -5336,7 +5183,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					constructor(/*paramarray*/...args) {
 						let obj = this;
 						if (ctx.types.getType(this) === ctx.type) {
-							obj = ctx.type[ctx.types.NewSymbol].call(obj, args) || obj;
+							obj = _shared.Natives.functionCallCall(ctx.type[ctx.types.NewSymbol], obj, args) || obj;
 						};
 						return obj;
 					}
@@ -5386,36 +5233,32 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				};
 
 				// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-				types.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {direct: true});
+				types.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {all: false, direct: true});
 
 				types.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
-				obj = ctx._new.apply(this, args) || this; // _new
+				obj = _shared.Natives.functionApplyCall(ctx._new, this, args) || this; // _new
 
 				const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
-				types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {direct: true});
+				types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {all: false, direct: true});
 				if (isSingleton) {
 					if (!forType) {
-						types.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {direct: true});
+						types.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {all: false, direct: true});
 					};
 				} else {
-					types.setAttribute(obj, __Internal__.symbolSingleton, null, {direct: true});
+					types.setAttribute(obj, __Internal__.symbolSingleton, null, {all: false, direct: true});
 				};
 			};
 
-			if (ctx.typeProto && types.hasDefinePropertyEnabled()) {
-				if (forType) {
-					ctx.applyProtoToType(obj, ctx.base, ctx.typeProto);
-				};
+			if (forType && ctx.typeProto && types.hasDefinePropertyEnabled()) {
+				__Internal__.applyProto(obj, ctx.base, ctx.typeProto, true);
 			};
 
-			if (ctx.instanceProto && types.hasDefinePropertyEnabled()) {
-				if (!forType) {
-					ctx.applyProtoToInstance(obj, ctx.instanceBase, ctx.instanceProto);
-				};
+			if (!forType && ctx.instanceProto && types.hasDefinePropertyEnabled()) {
+				__Internal__.applyProto(obj, ctx.instanceBase, ctx.instanceProto, true);
 			};
 
 			if (ctx.baseIsType) {
-				ctx.base[types.NewSymbol].call(obj, args);
+				_shared.Natives.functionCallCall(ctx.base[types.NewSymbol], obj, args);
 			};
 
 			if (ctx.baseIsType) {
@@ -5494,17 +5337,15 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const instanceBase = (base ? base.prototype : null);
 
 			const ctx = tools.nullObject({
-				_shared: _shared,
-				types: types,
-				tools: tools,
+				_shared,
+				types,
+				tools,
 
-				base: base,
-				baseIsType: baseIsType,
-				typeProto: typeProto,
-				instanceProto: instanceProto,
-				instanceBase: instanceBase,
-				applyProtoToType: typeProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, base, typeProto, false, true, false, 'applyProtoToType'),
-				applyProtoToInstance: instanceProto && types.hasDefinePropertyEnabled() && __Internal__.applyProto(null, instanceBase, instanceProto, false, true, true, 'applyProtoToInstance'),
+				base,
+				baseIsType,
+				typeProto,
+				instanceProto,
+				instanceBase,
 
 				constructor: null, // Will be set after creation
 				_new: null, // Will be set after creation
@@ -5532,7 +5373,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				[types.NewSymbol]: __Internal__._createTypeNew(ctx),
 			};
-			types.setAttributes(type, typeValues, {direct: true});
+			types.setAttributes(type, typeValues, {all: false, ignoreWhenReadOnly: true, direct: true});
 
 			// <FUTURE> "Public instance fields"
 			//tools.extend(proto, {
@@ -5543,7 +5384,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 			};
-			types.setAttributes(proto, protoValues, {direct: true});
+			types.setAttributes(proto, protoValues, {all: false, direct: true});
 
 			ctx.type = type;
 			ctx.proto = proto;
@@ -5567,14 +5408,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			ctx._new = _new;
 
 			if (typeProto) {
-				__Internal__.applyProto(type, base, typeProto, true, false, false, '');
+				__Internal__.applyProto(type, base, typeProto, false);
 			};
 
 			if (instanceProto) {
-				__Internal__.applyProto(proto, ctx.instanceBase, instanceProto, false, false, false, '');
+				__Internal__.applyProto(proto, instanceBase, instanceProto, false);
 			};
 
-			// Return type
 			return type;
 		}));
 
@@ -5665,7 +5505,6 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	global.Error.prototype.bubble = false;
 	global.Error.prototype.critical = false;
 	global.Error.prototype.trapped = false;
-	global.Error.prototype.promiseName = '';
 	global.Error.prototype.innerStack = '';
 
 	//! IF_SET('serverSide')
@@ -5695,7 +5534,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Generic error with message formatting.",
 			}
 		//! END_REPLACE()
-		, __Internal__.$inherit.call(_shared.Natives.windowError,
+		, _shared.Natives.functionCallCall(__Internal__.$inherit, _shared.Natives.windowError,
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Error',
@@ -6303,7 +6142,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				description: "Base type of every Doodad types.",
 			}
 		//! END_REPLACE()
-		, __Internal__.$inherit.call(undefined,
+		, _shared.Natives.functionCallCall(__Internal__.$inherit, undefined,
 			/*typeProto*/
 			{
 				$TYPE_NAME: 'Type',
@@ -6654,7 +6493,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 											arLen--;
 											changed = true;
 										};
-										const retval = handler.call(this, event);
+										const retval = _shared.Natives.functionCallCall(handler, this, event);
 										if (event.canceled) {
 											res = false;
 										};
@@ -6685,7 +6524,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								if (!event.stopped && types.has(this, name)) {
 									const fn = this[name];
 									if (types.isFunction(fn)) {
-										const retval = fn.call(this, event);
+										const retval = _shared.Natives.functionCallCall(fn, this, event);
 										if (event.canceled) {
 											res = false;
 										};
@@ -6732,20 +6571,26 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				DD_PARENT: this,
 				DD_NAME: name,
 				DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
-			}, {direct: true});
+			}, {all: false, direct: true});
 		};
 
-		if (types.isType(obj) && !types.isInitialized(obj)) {
+		const isType = types.isType(obj);
+
+		if (isType && !types.isInitialized(obj)) {
 			obj = types.INIT(obj, args);
 		};
 
-		if (protect && types.isFunction(obj)) {
+		if (protect && !isType && types.isFunction(obj)) {
 			const values = {
 				apply: obj.apply,
 				call: obj.call,
 				bind: obj.bind,
 			};
-			types.setAttributes(obj, values, {ignoreWhenReadOnly: true, direct: true});
+			types.setAttributes(obj, values, {
+				ignoreWhenReadOnly: true,
+				direct: true,
+				all: false
+			});
 		};
 
 		types.setAttribute(this, name, obj, {
@@ -6774,7 +6619,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				DD_PARENT: this,
 				DD_NAME: name,
 				DD_FULL_NAME: fullName,
-			}, {direct: true});
+			}, {all: false, direct: true});
 		};
 
 		if (!types.isErrorType(type) && !types.isInitialized(type)) {
@@ -6831,9 +6676,9 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			},
 			/*instanceProto*/
 			{
-				DD_PARENT: types.READ_ONLY(null),
-				DD_NAME: types.READ_ONLY(null),
-				DD_FULL_NAME: types.READ_ONLY(null),
+				DD_PARENT: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
+				DD_NAME: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
+				DD_FULL_NAME: types.NOT_CONFIGURABLE(types.READ_ONLY(null)),
 
 				ADD: __Internal__.DD_DOC(
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6867,7 +6712,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						}
 					//! END_REPLACE()
 					, function ADD(name, obj, /*optional*/protect, /*optional*/args) {
-						return _shared.ADD.call(this, name, obj, protect, args);
+						return _shared.Natives.functionCallCall(_shared.ADD, this, name, obj, protect, args);
 					}),
 
 				REMOVE: __Internal__.DD_DOC(
@@ -6887,7 +6732,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						}
 					//! END_REPLACE()
 					, function REMOVE(name) {
-						return _shared.REMOVE.call(this, name);
+						return _shared.Natives.functionCallCall(_shared.REMOVE, this, name);
 					}),
 
 				REGISTER: function REGISTER(/*<<< optional*/protect, /*optional*/args, type) {
@@ -6899,11 +6744,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						args = protect;
 						protect = true;
 					};
-					return _shared.REGISTER.call(this, type, args, protect);
+					return _shared.Natives.functionCallCall(_shared.REGISTER, this, type, args, protect);
 				},
 
 				UNREGISTER: function UNREGISTER(type) {
-					return _shared.UNREGISTER.call(this, type);
+					return _shared.Natives.functionCallCall(_shared.UNREGISTER, this, type);
 				},
 
 				_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
@@ -7237,11 +7082,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 					//delete types.Namespace[__Internal__.symbolInitialized];
 					types.setAttribute(types.Namespace, __Internal__.symbolInitialized, null, {configurable: true});
-					_shared.REGISTER.call(root.Doodad.Types, types.Namespace, null, true);
+					_shared.Natives.functionCallCall(_shared.REGISTER, root.Doodad.Types, types.Namespace, null, true);
 
 					for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {
 						const type = __Internal__.tempTypesRegistered[i];
-						_shared.REGISTER.call(root.Doodad.Types, type, null, true);
+						_shared.Natives.functionCallCall(_shared.REGISTER, root.Doodad.Types, type, null, true);
 					};
 					//delete __Internal__.tempTypesRegistered;
 					__Internal__.tempTypesRegistered = null;
@@ -7251,7 +7096,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 							const type = __Internal__.tempRegisteredOthers[i],
 								namespace = type[0],
 								args = type[1];
-							_shared.REGISTER.apply(namespace, args);
+							_shared.Natives.functionApplyCall(_shared.REGISTER, namespace, args);
 						};
 					} else {
 						// "_shared.REGISTER" should have been replaced by "Doodad.js" !!!
@@ -7310,7 +7155,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			}
 		))), [modules, _options]);
 
-	_shared.REGISTER.call(root.Doodad.Types, types.getType(root), null, true);
+	_shared.Natives.functionCallCall(_shared.REGISTER, root.Doodad.Types, types.getType(root), null, true);
 
 	return root.Doodad.Namespaces.load(modules, _options, startup)
 		.catch(root.Doodad.Tools.catchAndExit);
