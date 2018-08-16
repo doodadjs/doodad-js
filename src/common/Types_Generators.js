@@ -60,7 +60,7 @@ exports.add = function add(modules) {
 
 			tools.complete(_shared.Natives, {
 				// "isGeneratorFunction" Firefox (why "isGenerator" is in the prototype ???)
-				functionIsGeneratorCall: (types.isFunction(global.Function.prototype.isGenerator) ? global.Function.prototype.isGenerator.call.bind(global.Function.prototype.isGenerator) : null),
+				functionIsGeneratorCall: (types.isFunction(global.Function.prototype.isGenerator) ? _shared.Natives.functionBindCall(global.Function.prototype.isGenerator) : null),
 
 				GeneratorFunction: types.getPrototypeOf(
 					function* () {
