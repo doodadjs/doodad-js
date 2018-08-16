@@ -94,16 +94,16 @@ exports.add = function add(modules) {
 			tools.complete(_shared.Natives, {
 				//windowObject: global.Object,
 				windowDocument: global.document,
-				documentOpen: global.document.open.call.bind(global.document.open, global.document),
-				documentWrite: global.document.write.call.bind(global.document.write, global.document),
-				documentClose: global.document.close.call.bind(global.document.close, global.document),
+				documentOpen: _shared.Natives.functionBindCall(global.document.open, global.document),
+				documentWrite: _shared.Natives.functionBindCall(global.document.write, global.document),
+				documentClose: _shared.Natives.functionBindCall(global.document.close, global.document),
 
 				// DOM
 				windowWindow: global.Window,
 				windowNode: global.Node,
 				windowHtmlDocument: global.HTMLDocument,
 				windowHtmlElement: global.HTMLElement,
-				documentCreateElement: global.document.createElement.call.bind(global.document.createElement, global.document),
+				documentCreateElement: _shared.Natives.functionBindCall(global.document.createElement, global.document),
 
 				// Script loader
 				windowURL: (types.isFunction(global.URL) ? global.URL : null),
@@ -113,7 +113,7 @@ exports.add = function add(modules) {
 
 				// readFile
 				windowFileReader: (types.isFunction(global.FileReader) ? global.FileReader : null),
-				windowFetch: (types.isFunction(global.fetch) ? global.fetch : null),
+				windowFetchCall: (types.isFunction(global.fetch) ? _shared.Natives.functionBindCall(global.fetch, global) : null),
 				windowHeaders: (types.isFunction(global.Headers) ? global.Headers : null),
 				windowXMLHttpRequest: global.XMLHttpRequest,
 
@@ -125,35 +125,35 @@ exports.add = function add(modules) {
 
 				// callAsync
 				mathMax: global.Math.max,
-				windowSetTimeout: global.setTimeout.bind(global),
-				windowClearTimeout: global.clearTimeout.bind(global),
-				windowRequestAnimationFrame: (types.isFunction(global.requestAnimationFrame) && global.requestAnimationFrame.bind(global)) ||
-                                            (types.isFunction(global.mozRequestAnimationFrame) && global.mozRequestAnimationFrame.bind(global)) ||
-                                            (types.isFunction(global.webkitRequestAnimationFrame) && global.webkitRequestAnimationFrame.bind(global)) ||
-                                            (types.isFunction(global.msRequestAnimationFrame) && global.msRequestAnimationFrame.bind(global)) ||
+				windowSetTimeout: _shared.Natives.functionBindCall(global.setTimeout, global),
+				windowClearTimeout: _shared.Natives.functionBindCall(global.clearTimeout, global),
+				windowRequestAnimationFrame: (types.isFunction(global.requestAnimationFrame) && _shared.Natives.functionBindCall(global.requestAnimationFrame, global)) ||
+                                            (types.isFunction(global.mozRequestAnimationFrame) && _shared.Natives.functionBindCall(global.mozRequestAnimationFrame, global)) ||
+                                            (types.isFunction(global.webkitRequestAnimationFrame) && _shared.Natives.functionBindCall(global.webkitRequestAnimationFrame, global)) ||
+                                            (types.isFunction(global.msRequestAnimationFrame) && _shared.Natives.functionBindCall(global.msRequestAnimationFrame, global)) ||
 											null,
-				windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && global.cancelAnimationFrame.bind(global)) ||
-                                            (types.isFunction(global.mozCancelAnimationFrame) && global.mozCancelAnimationFrame.bind(global)) ||
+				windowCancelAnimationFrame: (types.isFunction(global.cancelAnimationFrame) && _shared.Natives.functionBindCall(global.cancelAnimationFrame, global)) ||
+                                            (types.isFunction(global.mozCancelAnimationFrame) && _shared.Natives.functionBindCall(global.mozCancelAnimationFrame, global)) ||
 											null,
 				windowMutationObserver: (types.isFunction(global.MutationObserver) ? global.MutationObserver : null),
 
 				windowLocation: global.location,
 
 				// catchAndExit
-				consoleError: (types.isFunction(global.console.error) ? global.console.error.bind(global.console) : global.console.log.bind(global.console)),
+				consoleError: (types.isFunction(global.console.error) ? _shared.Natives.functionBindCall(global.console.error, global.console) : _shared.Natives.functionBindCall(global.console.log, global.console)),
 
 				// stringToBytes, bytesToString
-				globalBufferFrom: (types.isFunction(global.Buffer) && types.isFunction(global.Buffer.from) ? global.Buffer.from.bind(global.Buffer) : null), // For Node.Js polyfills
+				globalBufferFrom: (types.isFunction(global.Buffer) && types.isFunction(global.Buffer.from) ? _shared.Natives.functionBindCall(global.Buffer.from, global.Buffer) : null), // For Node.Js polyfills
 				windowArrayBuffer: global.ArrayBuffer,
 				windowUint16Array: global.Uint16Array,
 				windowUint8Array: global.Uint8Array,
-				stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
-				stringFromCharCodeApply: global.String.fromCharCode.apply.bind(global.String.fromCharCode),
-				stringFromCharCode: global.String.fromCharCode.bind(global.String),
+				stringCharCodeAtCall: _shared.Natives.functionBindCall(global.String.prototype.charCodeAt),
+				stringFromCharCodeCall: _shared.Natives.functionBindCall(global.String.fromCharCode, global.String),
+				stringFromCharCodeApply: _shared.Natives.functionBindApply(global.String.fromCharCode, global.String),
 				mathMin: global.Math.min,
 
 				// alert
-				windowAlert: global.alert.bind(global) || global.console.log.bind(global.console),
+				windowAlert: (global.alert ? _shared.Natives.functionBindCall(global.alert, global) : _shared.Natives.functionBindCall(global.console.log, global.console)),
 			});
 
 
@@ -681,7 +681,7 @@ exports.add = function add(modules) {
 					$TYPE_NAME: "JsEvents",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEvents')), true) */,
 
-					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {cloneOnInit: true}))))))),
+					__JS_EVENTS: doodad.PROTECTED(doodad.READ_ONLY(/*doodad.NOT_INHERITED(*/doodad.PRE_EXTEND(doodad.PERSISTENT(doodad.TYPE(doodad.INSTANCE(doodad.ATTRIBUTE([], extenders.UniqueArray, {isProto: false, cloneOnInit: true}))))))),
 
 					detachJsEvents: doodad.PROTECTED(doodad.TYPE(doodad.INSTANCE(doodad.METHOD(function detachJsEvents(/*optional*/elements, /*optional*/useCapture) {
 						const events = this.__JS_EVENTS,
@@ -735,7 +735,7 @@ exports.add = function add(modules) {
 									type: eventType,
 									data: context,
 								};
-								return handler.call(this, ctx);
+								return _shared.Natives.functionCallCall(handler, this, ctx);
 							};
 						}, null, null, _shared.SECRET);
 					};
@@ -826,7 +826,7 @@ exports.add = function add(modules) {
 					$TYPE_NAME: "JsEvent",
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('JsEventExtender')), true) */,
 
-					eventsPrefixed: types.READ_ONLY(false),
+					prefix: types.READ_ONLY(''),
 					eventsAttr: types.READ_ONLY('__JS_EVENTS'),
 					errorEventAttr: types.READ_ONLY(null),
 					eventsImplementation: types.READ_ONLY('Doodad.MixIns.JsEvents'),
@@ -916,19 +916,22 @@ exports.add = function add(modules) {
 					init: types.SUPER(function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
 						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
 
-						const handler = attribute[__Internal__.symbolHandlerExtended];
-						if (handler) {
-							const extender = handler[_shared.ExtenderSymbol];
-							if (extender.init) {
-								const oldObjId = generator.objId;
-								generator.objId = generator.vars.fromKey(attr);
-								const oldKeyVars = generator.__kvars;
-								generator.__kvars = tools.nullObject();
-								extender.init(__Internal__.symbolHandler, attributes, forType, handler, types.unbox(handler), generator, isProto, null);
-								generator.objId = oldObjId;
-								generator.__kvars = oldKeyVars;
+						const handlerAttr = attribute[__Internal__.symbolHandlerExtended];
+						if (handlerAttr) {
+							const handlerExtender = handlerAttr[_shared.ExtenderSymbol];
+							const handlerAttrs = attributes;
+							const handlerValue = types.unbox(handlerAttr);
+							const handlerGen = _shared.createGenerator();
+							//if (!handlerExtender.preInit || !handlerExtender.preInit(__Internal__.symbolHandler, handlerAttrs, forType, handlerAttr, handlerValue, handlerGen, isProto, null)) {
+							if (handlerExtender.init) {
+								handlerExtender.init(__Internal__.symbolHandler, handlerAttrs, forType, handlerAttr, handlerValue, handlerGen, isProto, null);
 							};
-						};
+							//};
+							const handlerFn = handlerGen.compile();
+							const handlerFnId = generator.vars.add(handlerFn);
+							const handlerId = generator.vars.fromKey(attr);
+							generator.code.add(handlerFnId + "(" + handlerId + ", " + generator.storageId + ");");
+						}
 					}),
 				})));
 
@@ -994,7 +997,7 @@ exports.add = function add(modules) {
 							if (!ctx || (element === ctx.element)) {
 								const handler = evDatas[2];
 
-								handler.call(obj, ctx);
+								_shared.Natives.functionCallCall(handler, obj, ctx);
 							};
 						};
 					}, extenders.JsEvent, {enableScopes: true, eventType: eventType}))));
@@ -1752,7 +1755,7 @@ exports.add = function add(modules) {
 						const timeout = options.timeout;
 
 						// <PRB> A supposedly better API (fetch), but coming with no way to abort or specify a timeout !!!!!!
-						if (types.isNothing(timeout) && _shared.Natives.windowFetch && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
+						if (types.isNothing(timeout) && _shared.Natives.windowFetchCall && _shared.Natives.windowHeaders && _shared.Natives.windowFileReader) {
 							url = url.toString({
 								noEscapes: true,
 							});
@@ -1784,7 +1787,7 @@ exports.add = function add(modules) {
 								init.credentials = 'include';
 							};
 
-							return _shared.Natives.windowFetch.call(global, url, init).then(function(response) {
+							return _shared.Natives.windowFetchCall(url, init).then(function(response) {
 								if (response.ok && types.HttpStatus.isSuccessful(response.status)) {
 									return response.blob().then(function(blob) {
 										const reader = new _shared.Natives.windowFileReader();
@@ -2025,13 +2028,13 @@ exports.add = function add(modules) {
 					// <PRB> Uint16Array can't be created on an odd sized array buffer.
 					// NOTE : Assuming little endian.
 					const ar = new _shared.Natives.windowUint8Array(buf);
-					lastChr = _shared.Natives.stringFromCharCode(ar[buf.byteLength - 1]);
+					lastChr = _shared.Natives.stringFromCharCodeCall(ar[buf.byteLength - 1]);
 					buf = buf.slice(0, buf.byteLength - 1);
 				};
 
 				// Source: https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
 				// NOTE: May crash with huge strings
-				const str = _shared.Natives.stringFromCharCodeApply(null, new _shared.Natives.windowUint16Array(buf));
+				const str = _shared.Natives.stringFromCharCodeApply(new _shared.Natives.windowUint16Array(buf));
 				return (lastChr ? str + lastChr : str);
 			});
 
