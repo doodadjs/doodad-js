@@ -43,9 +43,13 @@ export function createRoot(/*optional*/modules, /*optional*/options, /*optional*
 		return (val === "true") || !!(+val);
 	};
 
+	if (!options) {
+		options = {};
+	};
+
 	const pkgModules = {};
 
-	const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+	const dev_values = get(options.startup, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 		env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 		
 	let dev = false;

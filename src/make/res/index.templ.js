@@ -36,6 +36,10 @@ module.exports = {
 			return (val === "true") || !!(+val);
 		};
 
+		if (!options) {
+			options = {};
+		};
+
 		let config = null;
 		try {
 			// Generated from 'doodad-js-make'
@@ -48,7 +52,7 @@ module.exports = {
 
 		const pkgModules = {};
 
-		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+		const dev_values = get(options.startup, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 		
 		let dev = false;
@@ -62,7 +66,7 @@ module.exports = {
 			
 		let bootstrap;
 
-		const fromSource = bool(get(options, 'fromSource', get(config.startup, 'fromSource')));
+		const fromSource = bool(get(options.startup, 'fromSource', get(config.startup, 'fromSource')));
 		if (dev || fromSource) {
 			if (dev) {
 				if (!has(config, 'startup')) {
