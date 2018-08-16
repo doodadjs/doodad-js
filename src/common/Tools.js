@@ -163,11 +163,11 @@ exports.add = function add(modules) {
 
 			tools.complete(_shared.Natives, {
 				// Prototype functions
-				stringIndexOfCall: global.String.prototype.indexOf.call.bind(global.String.prototype.indexOf),
-				stringLastIndexOfCall: global.String.prototype.lastIndexOf.call.bind(global.String.prototype.lastIndexOf),
-				stringReplaceCall: global.String.prototype.replace.call.bind(global.String.prototype.replace),
-				//stringSearchCall: global.String.prototype.search.call.bind(global.String.prototype.search),
-				stringSplitCall: global.String.prototype.split.call.bind(global.String.prototype.split),
+				stringIndexOfCall: _shared.Natives.functionBindCall(global.String.prototype.indexOf),
+				stringLastIndexOfCall: _shared.Natives.functionBindCall(global.String.prototype.lastIndexOf),
+				stringReplaceCall: _shared.Natives.functionBindCall(global.String.prototype.replace),
+				//stringSearchCall: _shared.Natives.functionBindCall(global.String.prototype.search),
+				stringSplitCall: _shared.Natives.functionBindCall(global.String.prototype.split),
 
 				windowRegExp: global.RegExp,
 				windowObject: global.Object,
@@ -187,16 +187,16 @@ exports.add = function add(modules) {
 				mathFloor: global.Math.floor,
 
 				// ES5
-				stringRepeatCall: global.String.prototype.repeat.call.bind(global.String.prototype.repeat),
-				arrayIndexOfCall: global.Array.prototype.indexOf.call.bind(global.Array.prototype.indexOf),
-				arrayLastIndexOfCall: global.Array.prototype.lastIndexOf.call.bind(global.Array.prototype.lastIndexOf),
-				arrayForEachCall: global.Array.prototype.forEach.call.bind(global.Array.prototype.forEach),
-				arrayMapCall: global.Array.prototype.map.call.bind(global.Array.prototype.map),
-				arrayFilterCall: global.Array.prototype.filter.call.bind(global.Array.prototype.filter),
-				arrayEveryCall: global.Array.prototype.every.call.bind(global.Array.prototype.every),
-				arraySomeCall: global.Array.prototype.some.call.bind(global.Array.prototype.some),
-				arrayReduceCall: global.Array.prototype.reduce.call.bind(global.Array.prototype.reduce),
-				arrayReduceRightCall: global.Array.prototype.reduceRight.call.bind(global.Array.prototype.reduceRight),
+				stringRepeatCall: _shared.Natives.functionBindCall(global.String.prototype.repeat),
+				arrayIndexOfCall: _shared.Natives.functionBindCall(global.Array.prototype.indexOf),
+				arrayLastIndexOfCall: _shared.Natives.functionBindCall(global.Array.prototype.lastIndexOf),
+				arrayForEachCall: _shared.Natives.functionBindCall(global.Array.prototype.forEach),
+				arrayMapCall: _shared.Natives.functionBindCall(global.Array.prototype.map),
+				arrayFilterCall: _shared.Natives.functionBindCall(global.Array.prototype.filter),
+				arrayEveryCall: _shared.Natives.functionBindCall(global.Array.prototype.every),
+				arraySomeCall: _shared.Natives.functionBindCall(global.Array.prototype.some),
+				arrayReduceCall: _shared.Natives.functionBindCall(global.Array.prototype.reduce),
+				arrayReduceRightCall: _shared.Natives.functionBindCall(global.Array.prototype.reduceRight),
 
 				// ES7
 				regExpEscape: global.RegExp.escape || null,
@@ -555,7 +555,7 @@ exports.add = function add(modules) {
 								for (let key = 0; key < len; key++) {
 									if (types.has(obj, key)) {
 										const val = obj[key];
-										if (item.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 											_shared.Natives.arraySpliceCall(obj, key, 1);
 											return val;
 										};
@@ -568,7 +568,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
 										const val = obj[key];
-										if (item.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 											delete obj[key];
 											result = val;
 											return true;
@@ -663,7 +663,7 @@ exports.add = function add(modules) {
 								for (let key = obj.length - 1; key >= 0; key--) {
 									if (types.has(obj, key)) {
 										const val = obj[key];
-										if (items.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											_shared.Natives.arraySpliceCall(obj, key, 1);
 											result.push(val);
 										};
@@ -675,7 +675,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
 										const val = obj[key];
-										if (items.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											delete obj[key];
 											result.push(val);
 										};
@@ -847,7 +847,7 @@ exports.add = function add(modules) {
 								const len = obj.length;
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
-										if (item.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, obj[key], key, obj)) {
 											return key;
 										};
 									};
@@ -855,7 +855,7 @@ exports.add = function add(modules) {
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (item.call(thisObj, val, key, obj)) {
+									if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 										return key;
 									};
 									key++;
@@ -866,7 +866,7 @@ exports.add = function add(modules) {
 									const len = keys.length; // performance
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
-										if (item.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, obj[key], key, obj)) {
 											result = key;
 											return true;
 										};
@@ -974,7 +974,7 @@ exports.add = function add(modules) {
 							if (types.isArrayLike(obj)) {
 								for (let key = obj.length - 1; key >= 0; key--) {
 									if (!sparsed || types.has(obj, key)) {
-										if (item.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, obj[key], key, obj)) {
 											return key;
 										};
 									};
@@ -984,7 +984,7 @@ exports.add = function add(modules) {
 								const loopKeys = function _loopKeys(keys) {
 									for (let i = keys.length - 1; i >= 0; i--) {
 										const key = keys[i];
-										if (item.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, obj[key], key, obj)) {
 											result = key;
 											return true;
 										};
@@ -1084,7 +1084,7 @@ exports.add = function add(modules) {
 								const len = obj.length;
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
-										if (items.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, obj[key], key, obj)) {
 											result.push(key);
 										};
 									};
@@ -1092,7 +1092,7 @@ exports.add = function add(modules) {
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (items.call(thisObj, val, key, obj)) {
+									if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										result.push(key);
 									};
 									key++;
@@ -1102,7 +1102,7 @@ exports.add = function add(modules) {
 									const len = keys.length;
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
-										if (items.call(thisObj, obj[key], key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, obj[key], key, obj)) {
 											result.push(key);
 										};
 									};
@@ -1206,7 +1206,7 @@ exports.add = function add(modules) {
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
 										const val = obj[key];
-										if (item.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 											return val;
 										};
 									};
@@ -1214,7 +1214,7 @@ exports.add = function add(modules) {
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (item.call(thisObj, val, key, obj)) {
+									if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 										return val;
 									};
 									key++;
@@ -1226,7 +1226,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i],
 											val = obj[key];
-										if (item.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(item, thisObj, val, key, obj)) {
 											result = val;
 											return true;
 										};
@@ -1336,7 +1336,7 @@ exports.add = function add(modules) {
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
 										const val = obj[key];
-										if (items.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result.push(val);
 										};
 									};
@@ -1344,7 +1344,7 @@ exports.add = function add(modules) {
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (items.call(thisObj, val, key, obj)) {
+									if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										result.push(val);
 									};
 									key++;
@@ -1355,7 +1355,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i],
 											val = obj[key];
-										if (items.call(thisObj, val, key, obj)) {
+										if (_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result.push(val);
 										};
 									};
@@ -2040,13 +2040,13 @@ exports.add = function add(modules) {
 						if (types._instanceof(obj, types.Set)) {
 							const result = new types.Set();
 							obj.forEach(function(value, key, obj) {
-								result.add(fn.call(thisObj, value, key, obj));
+								result.add(_shared.Natives.functionCallCall(fn, thisObj, value, key, obj));
 							});
 							return result;
 						} else if (types._instanceof(obj, types.Map)) {
 							const result = new types.Map();
 							obj.forEach(function(value, key, obj) {
-								result.set(key, fn.call(thisObj, value, key, obj));
+								result.set(key, _shared.Natives.functionCallCall(fn, thisObj, value, key, obj));
 							});
 							return result;
 						} else if (types.isArrayLike(obj)) {
@@ -2064,7 +2064,7 @@ exports.add = function add(modules) {
 								let pos = 0;
 								for (let key = start; key < end; key++) {
 									if (!sparsed || types.has(obj, key)) {
-										result[pos] = fn.call(thisObj, obj[key], key, obj);
+										result[pos] = _shared.Natives.functionCallCall(fn, thisObj, obj[key], key, obj);
 										pos++;
 									};
 								};
@@ -2074,7 +2074,7 @@ exports.add = function add(modules) {
 							const result = [];
 							let key = 0;
 							for (const val of obj) {
-								result[key] = fn.call(thisObj, val, key, obj);
+								result[key] = _shared.Natives.functionCallCall(fn, thisObj, val, key, obj);
 								key++;
 							};
 							return result;
@@ -2084,7 +2084,7 @@ exports.add = function add(modules) {
 								const len = keys.length; // performance
 								for (let i = 0; i < len; i++) {
 									const key = keys[i];
-									result[key] = fn.call(thisObj, obj[key], key, obj);
+									result[key] = _shared.Natives.functionCallCall(fn, thisObj, obj[key], key, obj);
 								};
 							};
 							loopKeys(types.keys(obj));
@@ -2155,14 +2155,14 @@ exports.add = function add(modules) {
 								const len = obj.length;
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
-										fn.call(thisObj, obj[key], key, obj);
+										_shared.Natives.functionCallCall(fn, thisObj, obj[key], key, obj);
 									};
 								};
 							};
 						} else if (types.isIterable(obj)) {
 							let key = 0;
 							for (const val of obj) {
-								fn.call(thisObj, val, key++, obj);
+								_shared.Natives.functionCallCall(fn, thisObj, val, key++, obj);
 							};
 						} else {
 							obj = _shared.Natives.windowObject(obj);
@@ -2170,7 +2170,7 @@ exports.add = function add(modules) {
 								const len = keys.length; // performance
 								for (let i = 0; i < len; i++) {
 									const key = keys[i];
-									fn.call(thisObj, obj[key], key, obj);
+									_shared.Natives.functionCallCall(fn, thisObj, obj[key], key, obj);
 								};
 							};
 							loopKeys(types.keys(obj));
@@ -2243,14 +2243,14 @@ exports.add = function add(modules) {
 							if (types._instanceof(obj, types.Map)) {
 								result = new types.Map();
 								obj.forEach(function(val, key) {
-									if (invert === !items.call(thisObj, val, key, obj)) {
+									if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										result.set(key, val);
 									};
 								});
 							} else if (types._instanceof(obj, types.Set)) {
 								result = new types.Set();
 								obj.forEach(function(val, key) {
-									if (invert === !items.call(thisObj, val, key, obj)) {
+									if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										result.add(val);
 									};
 								});
@@ -2264,7 +2264,7 @@ exports.add = function add(modules) {
 									for (let key = 0; key < len; key++) {
 										if (!sparsed || types.has(obj, key)) {
 											const val = obj[key];
-											if (invert === !items.call(thisObj, val, key, obj)) {
+											if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 												result.push(val);
 											};
 										};
@@ -2273,7 +2273,7 @@ exports.add = function add(modules) {
 							} else if (types.isIterable(obj)) {
 								result = [];
 								for (const val of obj) {
-									if (invert === !items.call(thisObj, val, undefined, obj)) {
+									if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, undefined, obj)) {
 										result.push(val);
 									};
 								};
@@ -2284,7 +2284,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
 										const val = obj[key];
-										if (invert === !items.call(thisObj, val, key, obj)) {
+										if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result[key] = val;
 										};
 									};
@@ -2414,7 +2414,7 @@ exports.add = function add(modules) {
 								for (let key = 0; key < len; key++) {
 									if (!sparsed || types.has(obj, key)) {
 										const val = obj[key];
-										if (invert === !items.call(thisObj, val, key, obj)) {
+										if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result.push(val);
 										};
 									};
@@ -2426,7 +2426,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
 										const val = obj[key];
-										if (invert === !items.call(thisObj, val, key, obj)) {
+										if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result[key] = val;
 										};
 									};
@@ -2537,7 +2537,7 @@ exports.add = function add(modules) {
 									for (let key = 0; key < len; key++) {
 										if (!sparsed || types.has(obj, key)) {
 											const value = obj[key];
-											if (invert === !!items.call(thisObj, value, key, obj)) {
+											if (invert === !!_shared.Natives.functionCallCall(items, thisObj, value, key, obj)) {
 												return false;
 											};
 										};
@@ -2545,14 +2545,14 @@ exports.add = function add(modules) {
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 								for (const item of obj.entries()) {
-									if (invert === !!items.call(thisObj, item[1], item[0], obj)) {
+									if (invert === !!_shared.Natives.functionCallCall(items, thisObj, item[1], item[0], obj)) {
 										return false;
 									};
 								};
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (invert === !!items.call(thisObj, val, key, obj)) {
+									if (invert === !!_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										return false;
 									};
 									key++;
@@ -2563,7 +2563,7 @@ exports.add = function add(modules) {
 									const len = keys.length; // performance
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
-										if (invert === !!items.call(thisObj, obj[key], key, obj)) {
+										if (invert === !!_shared.Natives.functionCallCall(items, thisObj, obj[key], key, obj)) {
 											result = false;
 											return true;
 										};
@@ -2693,7 +2693,7 @@ exports.add = function add(modules) {
 									for (let key = 0; key < len; key++) {
 										if (!sparsed || types.has(obj, key)) {
 											const val = obj[key];
-											if (invert === !items.call(thisObj, val, key, obj)) {
+											if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 												return true;
 											};
 										};
@@ -2701,14 +2701,14 @@ exports.add = function add(modules) {
 								};
 							} else if (types._instanceof(obj, types.Set) || types._instanceof(obj, types.Map)) {
 								for (const item of obj.entries()) {
-									if (invert === !items.call(thisObj, item[1], item[0], obj)) {
+									if (invert === !_shared.Natives.functionCallCall(items, thisObj, item[1], item[0], obj)) {
 										return true;
 									};
 								};
 							} else if (types.isIterable(obj)) {
 								let key = 0;
 								for (const val of obj) {
-									if (invert === !items.call(thisObj, val, key, obj)) {
+									if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 										return true;
 									};
 									key++;
@@ -2720,7 +2720,7 @@ exports.add = function add(modules) {
 									for (let i = 0; i < len; i++) {
 										const key = keys[i];
 										const val = obj[key];
-										if (invert === !items.call(thisObj, val, key, obj)) {
+										if (invert === !_shared.Natives.functionCallCall(items, thisObj, val, key, obj)) {
 											result = true;
 											return true;
 										};
@@ -2858,7 +2858,7 @@ exports.add = function add(modules) {
 									result = val;
 									hasInitial = true;
 								};
-								result = fn.call(thisObj, result, val, key, obj);
+								result = _shared.Natives.functionCallCall(fn, thisObj, result, val, key, obj);
 							}, null, sparsed);
 							if (!hasInitial) {
 								throw new types.ValueError("Reduce of empty object with no initial value.");
@@ -2936,7 +2936,7 @@ exports.add = function add(modules) {
 									if (arguments.length < 3) {
 										value = 0;
 									};
-									value = fn.call(thisObj, value, obj[key], key, obj);
+									value = _shared.Natives.functionCallCall(fn, thisObj, value, obj[key], key, obj);
 									key--;
 									break;
 								};
