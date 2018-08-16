@@ -57,9 +57,9 @@ exports.add = function add(modules) {
 
 			tools.complete(_shared.Natives, {
 				windowObject: global.Object,
-				objectToStringCall: global.Object.prototype.toString.call.bind(global.Object.prototype.toString),
-				stringCharCodeAtCall: global.String.prototype.charCodeAt.call.bind(global.String.prototype.charCodeAt),
-				stringCodePointAtCall: global.String.prototype.codePointAt.call.bind(global.String.prototype.codePointAt),
+				objectToStringCall: _shared.Natives.functionBindCall(global.Object.prototype.toString),
+				stringCharCodeAtCall: _shared.Natives.functionBindCall(global.String.prototype.charCodeAt),
+				stringCodePointAtCall: _shared.Natives.functionBindCall(global.String.prototype.codePointAt),
 			});
 
 			//===================================
