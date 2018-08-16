@@ -182,7 +182,11 @@ exports.add = function add(modules) {
 					Promise.try = function _try(callback) {
 						const P = this;
 						return new P(function _try(resolve, reject) {
-							resolve(callback());
+							try {
+								resolve(callback());
+							} catch(err) {
+								reject(err);
+							};
 						});
 					};
 				};
