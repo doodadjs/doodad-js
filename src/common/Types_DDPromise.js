@@ -50,7 +50,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			const __Internal__ = {
-				Promise: null,
+				DDPromise: null, // <FUTURE> Global to threads ?
 				symbolIsExtendedPromise: types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_IS_PROMISE_EXTENDED')), true) */ '__DD_IS_PROMISE_EXTENDED__' /*! END_REPLACE() */, true),
 			};
 
@@ -63,7 +63,7 @@ exports.add = function add(modules) {
 
 			tools.complete(_shared.Natives, {
 				windowPromise: global.Promise,
-				arraySliceCall: global.Array.prototype.slice.call.bind(global.Array.prototype.slice),
+				arraySliceCall: _shared.Natives.functionBindCall(global.Array.prototype.slice),
 			});
 
 			//=================================
@@ -93,7 +93,7 @@ exports.add = function add(modules) {
 					return types.isObjectLike(obj) && !!obj[_shared.IsPromiseSymbol];
 				}));
 
-			types.ADD('isExtendedPromise', root.DD_DOC(
+			types.ADD('isDDPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
@@ -106,10 +106,10 @@ exports.add = function add(modules) {
 							},
 						},
 						returns: 'bool',
-						description: "Returns 'true' if object is an extended Promise, 'false' otherwise.",
+						description: "Returns 'true' if object is a DDPromise object, 'false' otherwise.",
 					}
 				//! END_REPLACE()
-				, function isExtendedPromise(obj) {
+				, function isDDPromise(obj) {
 					return types.isObjectLike(obj) && !!obj[__Internal__.symbolIsExtendedPromise];
 				}));
 
@@ -117,14 +117,14 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: null,
 						returns: 'Promise',
-						description: "Returns the ES6 Promise class or a polyfill.",
+						description: "Returns DDPromise.",
 					}
 				//! END_REPLACE()
 				, function getPromise() {
-					return __Internal__.Promise;
+					return __Internal__.DDPromise;
 				}));
 
 			__Internal__.getPromiseName = function getPromiseName(callback) {
@@ -142,14 +142,13 @@ exports.add = function add(modules) {
 				if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
 					const asCallback = function asCallback(callback) {
 						const promise = this.then(function _then(result) {
-							let retval = callback(null, result);
+							const retval = callback(undefined, result);
 							if (retval === undefined) {
-								retval = result;
+								return result;
 							};
 							return retval;
 						}, function(err) {
-							const retval = callback(err, undefined);
-							return retval;
+							return callback(err, undefined);
 						});
 						return promise;
 					};
@@ -161,11 +160,10 @@ exports.add = function add(modules) {
 					Promise.prototype.nodeify = Promise.prototype.asCallback;
 				};
 
-
 				// Bluebird "finally" polyfill
 				if (!types.isFunction(Promise.prototype.finally)) {
 					Promise.prototype.finally = function _finally(callback) {
-						const P = this.constructor || Promise;
+						const P = this.constructor;
 						const promise = this.then(function(result) {
 							return P.resolve(callback()).then(function() {
 								return result;
@@ -179,17 +177,12 @@ exports.add = function add(modules) {
 					};
 				};
 
-
 				// Bluebird "try" polyfill
 				if (!types.isFunction(Promise.try)) {
 					Promise.try = function _try(callback) {
-						const P = this || Promise;
-						return P.create(function _try(resolve, reject, promise) {
-							try {
-								resolve(callback());
-							} catch(ex) {
-								reject(ex);
-							};
+						const P = this;
+						return new P(function _try(resolve, reject) {
+							resolve(callback());
 						});
 					};
 				};
@@ -197,8 +190,7 @@ exports.add = function add(modules) {
 				// Bluebird "map" polyfill
 				if (!types.isFunction(Promise.map)) {
 					Promise.map = function _map(ar, fn, /*optional*/options) {
-						const P = this || Promise;
-
+						const P = this;
 						return P.try(function tryMap() {
 							const len = ar.length | 0;
 
@@ -212,14 +204,14 @@ exports.add = function add(modules) {
 
 							if (options.concurrency >= len) {
 								return P.all(tools.map(ar, function _mapFn(val, key, obj) {
-									return P.resolve(fn.call(undefined, val, key, obj));
+									return P.resolve(fn(val, key, obj));
 								}));
 							} else {
 								const result = tools.createArray(len);
 								const state = {start: 0};
 								const mapFn = function _mapFn(val, key, obj) {
 									state.start++;
-									return P.resolve(fn.call(undefined, val, key, obj))
+									return P.resolve(fn(val, key, obj))
 										.then(function(res) {
 											/* eslint consistent-return: "off" */
 											result[key] = res;
@@ -250,16 +242,16 @@ exports.add = function add(modules) {
 				// Add "thisObj" argument
 				// Add promise name
 				Promise.create = function create(callback, /*optional*/thisObj) {
-					const P = this || Promise;
-					if (thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
-					};
-					return new P(callback, thisObj);
+					const P = this;
+					const name = __Internal__.getPromiseName(callback);
+					const promise = new P(callback, thisObj);
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					return promise;
 				};
 
 				// NOTE: Experimental
 				Promise.createRacer = function createRacer() {
-					const P = this || Promise,
+					const P = this,
 						state = {res: null, rej: null};
 					const racer = P.create(function Racer(res, rej) {
 						state.res = res;
@@ -285,15 +277,14 @@ exports.add = function add(modules) {
 						rej(err);
 						return this;
 					};
-					racer.race = function race(promise) {
-						if (types.isNothing(promise)) {
+					racer.race = function race(promises) {
+						if (types.isNothing(promises)) {
 							return this;
 						};
-						let promises;
-						if (types.isArrayLike(promise)) {
-							promises = tools.append([this], promise);
+						if (types.isArrayLike(promises)) {
+							promises = tools.append([this], promises);
 						} else {
-							promises = [this, promise];
+							promises = [this, promises];
 						}
 						return P.race(promises);
 					};
@@ -306,37 +297,67 @@ exports.add = function add(modules) {
 
 				// Add "thisObj" argument
 				// Add promise name
-				const oldTryCall = Promise.try.call.bind(Promise.try);
+				const oldTryCall = _shared.Natives.functionBindCall(Promise.try);
 				Promise.try = function _try(callback, /*optional*/thisObj) {
-					const P = this || Promise;
+					const P = this;
+					const name = __Internal__.getPromiseName(callback);
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
 					};
 					const promise = oldTryCall(P, callback);
-					callback.promise = promise;
-					promise[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
 				// Add "thisObj" argument
 				// Add promise name
-				const oldMapCall = Promise.map.call.bind(Promise.map);
+				const oldMapCall = _shared.Natives.functionBindCall(Promise.map);
 				Promise.map = function _map(ar, callback, /*optional*/options) {
-					const P = this || Promise,
-						thisObj = types.get(options, 'thisObj');
+					const P = this;
+					const thisObj = types.get(options, 'thisObj');
+					const name = __Internal__.getPromiseName(callback);
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
 					};
 					const promise = oldMapCall(P, ar, callback, options);
-					callback.promise = promise;
-					promise[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
 				// NOTE: Experimental
 				// NOTE: Makes use of sparse arrays, but they are not considered by the new features of ES6+
 				Promise.any = function _any(promises, /*optional*/options) {
-					const P = this || Promise;
+					const P = this;
 					const promise = P.create(function(resolve, reject) {
 						const includeErrors = types.get(options, 'includeErrors', false);
 						const count = types.indexes(promises).length;
@@ -382,33 +403,62 @@ exports.add = function add(modules) {
 
 				// Add "thisObj" argument
 				// Add promise name
-				const oldThenCall = Promise.prototype.then.call.bind(Promise.prototype.then);
+				const oldThenCall = _shared.Natives.functionBindCall(Promise.prototype.then);
 				Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
-					if (!thisObj && !types.isFunction(rejectedCb)) {
+					// NOTE: Promises use '.then' internally.
+					if (!thisObj && rejectedCb && (!types.isFunction(rejectedCb) || types.isType(rejectedCb))) {
 						thisObj = rejectedCb;
 						rejectedCb = null;
 					};
-					if (resolvedCb && thisObj) {
-						resolvedCb = _shared.PromiseCallback(thisObj, resolvedCb);
-					};
-					if (rejectedCb && thisObj) {
-						rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
+					let isCallback = types.isCallback(resolvedCb) || types.isCallback(rejectedCb);
+					const isNative = !isCallback && (types.isNativeFunction(resolvedCb) || types.isNativeFunction(rejectedCb));
+					if (thisObj) {
+						if (resolvedCb) {
+							if (isNative) {
+								//const oldResolvedCbCall = _shared.Natives.functionBindCall(resolvedCb, thisObj);
+								//resolvedCb = _shared.makeInside(thisObj, function(...args) {
+								//	return oldResolvedCbCall(...args);
+								//});
+								resolvedCb = _shared.Natives.functionBindCall(resolvedCb, thisObj);
+								types.setAttribute(resolvedCb, _shared.BoundObjectSymbol, thisObj, {});
+								isCallback = true;
+							} else {
+								resolvedCb = _shared.PromiseCallback(thisObj, resolvedCb);
+								if (types.isCallback(resolvedCb)) {
+									isCallback = true;
+								};
+							};
+						};
+						if (rejectedCb) {
+							if (isNative) {
+								//const oldRejectedCbCall = _shared.Natives.functionBindCall(rejectedCb, thisObj);
+								//rejectedCb = _shared.makeInside(thisObj, function(...args) {
+								//	return oldRejectedCbCall(...args);
+								//});
+								rejectedCb = _shared.Natives.functionBindCall(rejectedCb, thisObj);
+								types.setAttribute(rejectedCb, _shared.BoundObjectSymbol, thisObj, {});
+								isCallback = true;
+							} else {
+								rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
+								if (types.isCallback(rejectedCb)) {
+									isCallback = true;
+								};
+							};
+						};
 					};
 					const promise = oldThenCall(this, resolvedCb, rejectedCb);
 					let name = this[_shared.NameSymbol];
 					if (resolvedCb) {
-						resolvedCb.promise = promise;
 						if (!name) {
 							name = __Internal__.getPromiseName(resolvedCb);
 						};
 					};
 					if (rejectedCb) {
-						rejectedCb.promise = promise;
 						if (!name) {
 							name = __Internal__.getPromiseName(rejectedCb);
 						};
 					};
-					promise[_shared.NameSymbol] = name;
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -417,7 +467,7 @@ exports.add = function add(modules) {
 				// Add Bluebird polyfill for catch (must be done there).
 				// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 				// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
-				const oldCatchCall = Promise.prototype.catch.call.bind(Promise.prototype.catch);
+				const oldCatchCall = _shared.Natives.functionBindCall(Promise.prototype.catch);
 				Promise.prototype.catch = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/...args) {
 					let filters = null;
 					let i = 0;
@@ -432,8 +482,27 @@ exports.add = function add(modules) {
 					};
 					let callback = args[i++];
 					const thisObj = args[i++];
+					let name = this[_shared.NameSymbol];
+					if (!name && callback) {
+						name = __Internal__.getPromiseName(callback);
+					};
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
 					};
 					let promise;
 					if (filters) {
@@ -471,25 +540,38 @@ exports.add = function add(modules) {
 					} else {
 						promise = oldCatchCall(this, callback);
 					};
-					if (callback) {
-						callback.promise = promise;
-						promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
-					} else {
-						promise[_shared.NameSymbol] = this[_shared.NameSymbol];
-					};
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
 				// Add "thisObj" argument
 				// Add promise name
-				const oldAsCallbackCall = Promise.prototype.asCallback.call.bind(Promise.prototype.asCallback);
+				const oldAsCallbackCall = _shared.Natives.functionBindCall(Promise.prototype.asCallback);
 				const asCallback = function asCallback(callback, /*optional*/thisObj) {
+					let name = this[_shared.NameSymbol];
+					if (!name && callback) {
+						name = __Internal__.getPromiseName(callback);
+					};
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
 					};
 					const promise = oldAsCallbackCall(this, callback);
-					callback.promise = promise;
-					promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 				Promise.prototype.asCallback = asCallback;
@@ -497,36 +579,91 @@ exports.add = function add(modules) {
 
 				// Add "thisObj" argument
 				// Add promise name
-				const oldFinallyCall = Promise.prototype.finally.call.bind(Promise.prototype.finally);
+				const oldFinallyCall = _shared.Natives.functionBindCall(Promise.prototype.finally);
 				Promise.prototype.finally = function _finally(/*optional*/callback, /*optional*/thisObj) {
+					let name = this[_shared.NameSymbol];
+					if (!name && callback) {
+						name = __Internal__.getPromiseName(callback);
+					};
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
-						callback = _shared.PromiseCallback(thisObj, callback);
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
 					};
 					const promise = oldFinallyCall(this, callback);
-					if (callback) {
-						callback.promise = promise;
-						promise[_shared.NameSymbol] = this[_shared.NameSymbol] || __Internal__.getPromiseName(callback);
-					} else {
-						promise[_shared.NameSymbol] = this[_shared.NameSymbol];
-					};
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
 				// Combines "then" and "create"
 				Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
-					const P = this.constructor || Promise;
-					const promise = this.then(function(result) {
-						return P.create(function(resolve, reject) {
-							return callback.call(thisObj, result, resolve, reject);
-						}, thisObj);
-					}, null, thisObj);
+					const P = this.constructor;
+					let name = this[_shared.NameSymbol];
+					if (!name && callback) {
+						name = __Internal__.getPromiseName(callback);
+					};
+					let isCallback = types.isCallback(callback);
+					const isNative = !isCallback && types.isNativeFunction(callback);
+					if (thisObj) {
+						if (isNative) {
+							//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+							//callback = _shared.makeInside(thisObj, function(...args) {
+							//	return oldCbCall(...args);
+							//});
+							callback = _shared.Natives.functionBindCall(callback, thisObj);
+							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							isCallback = true;
+						} else {
+							callback = _shared.PromiseCallback(thisObj, callback);
+							if (types.isCallback(callback)) {
+								isCallback = true;
+							};
+						};
+					};
+					const promise = this.then(function thenCb(result) {
+						return P.create(function createCb(resolve, reject) {
+							return _shared.Natives.functionCallCall(callback, this, result, resolve, reject);
+						}, this);
+					});
+					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 			};
 
-			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject) {
+			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject, /*optional*/thisObj) {
+				let isCallback = types.isCallback(callback);
+				const isNative = !isCallback && types.isNativeFunction(callback);
+				if (thisObj) {
+					if (isNative) {
+						//const oldCbCall = _shared.Natives.functionBindCall(callback, thisObj);
+						//callback = _shared.makeInside(thisObj, function(...args) {
+						//	return oldCbCall(...args);
+						//});
+						callback = _shared.Natives.functionBindCall(callback, thisObj);
+						types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+						isCallback = true;
+					} else {
+						callback = _shared.PromiseCallback(thisObj, callback);
+						if (types.isCallback(callback)) {
+							isCallback = true;
+						};
+					};
+				};
+				types.setAttribute(this, _shared.NameSymbol, null, {configurable: true, enumerable: true});  // will be set later
 				let solved = false;
-				//const self = this;
 				const res = function(value) {
 					if (!solved) {
 						solved = true;
@@ -539,14 +676,9 @@ exports.add = function add(modules) {
 						reject(value);
 					};
 				};
-				try {
-					callback(res, rej);
-				} catch(ex) {
-					rej(ex);
-				};
-				callback.promise = this;
-				this[_shared.NameSymbol] = __Internal__.getPromiseName(callback);
+				callback(res, rej);
 			};
+			__Internal__.DDPromiseConstructorCall = _shared.Natives.functionBindCall(__Internal__.DDPromiseConstructor);
 
 			types.ADD('setPromise', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -569,15 +701,9 @@ exports.add = function add(modules) {
 						throw new types.ValueError("Invalid 'Promise' constructor.");
 					};
 
-					if (Promise === __Internal__.Promise) {
+					if (Promise === __Internal__.DDPromise) {
 						// Already set
-						return Promise;
-					};
-
-					if (Promise.prototype[__Internal__.symbolIsExtendedPromise]) {
-						// Already extended.
-						__Internal__.Promise = Promise;
-						return Promise;
+						return __Internal__.DDPromise;
 					};
 
 					// Make some tests...
@@ -594,61 +720,60 @@ exports.add = function add(modules) {
 					};
 
 					let DDPromise;
-					if (types.isNativeFunction(Promise)) {
-						// ES6 Promise
-						// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
-						DDPromise = (function(ctx) {
-							return (
-								class DDPromise extends ctx.Promise {
-									constructor(callback) {
-										let res,
-											rej;
-										super(function(resolve, reject) {
-											res = resolve;
-											rej = reject;
-										});
-										ctx.DDPromiseConstructor.call(this, callback, res, rej);
-									}
-								}
-							);
-						})({
-							Promise: Promise,
-							DDPromiseConstructor: __Internal__.DDPromiseConstructor,
-						});
+					if (Promise.prototype[__Internal__.symbolIsExtendedPromise]) {
+						DDPromise = Promise;
+
 					} else {
-						// Librairies
-						const promiseCall = Promise.call.bind(Promise);
-						DDPromise = types.INHERIT(Promise, function DDPromise(callback) {
-							let res,
-								rej;
-							promiseCall(this, function(resolve, reject) {
-								res = resolve;
-								rej = reject;
+						if (types.isNativeFunction(Promise)) {
+							// ES6 Promise
+							// NOTE: That's the only way to inherit ES6 Promise... Using the prototypes way will throw "... is not a promise" !!!
+							DDPromise = (class DDPromise extends Promise {
+								constructor(callback, /*optional*/thisObj) {
+									let res,
+										rej;
+									super(function(resolve, reject) {
+										res = resolve;
+										rej = reject;
+									});
+									__Internal__.DDPromiseConstructorCall(this, callback, res, rej, thisObj);
+								}
 							});
-							__Internal__.DDPromiseConstructor.call(this, callback, res, rej);
-						});
+						} else {
+							// Librairies
+							const promiseCall = _shared.Natives.functionBindCall(Promise);
+							DDPromise = types.INHERIT(Promise, function DDPromise(callback, /*optional*/thisObj) {
+								let res,
+									rej;
+								promiseCall(this, function(resolve, reject) {
+									res = resolve;
+									rej = reject;
+								});
+								__Internal__.DDPromiseConstructorCall(this, callback, res, rej, thisObj);
+							});
+						};
+
+						let isStillDDPromise = false;
+						try {
+							isStillDDPromise = (DDPromise.resolve(0).then(function() {}).catch(function() {}) instanceof DDPromise);
+						} catch(ex) {
+							// Do nothing
+						};
+
+						if (!isStillDDPromise) {
+							throw new types.ValueError("Unsupported 'Promise' implementation.");
+						};
+
+						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
+						__Internal__.addPromiseDoodadExtensions(DDPromise);
+
+						types.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
+
+						types.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {});
+						types.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
+						//types.setAttribute(DDPromise.prototype, _shared.BoundObjectSymbol, null, {});
 					};
 
-					let isStillDDPromise = false;
-					try {
-						isStillDDPromise = (DDPromise.resolve(0).then(function() {}).catch(function() {}) instanceof DDPromise);
-					} catch(ex) {
-						// Do nothing
-					};
-
-					if (!isStillDDPromise) {
-						throw new types.ValueError("Unsupported 'Promise' implementation.");
-					};
-
-					__Internal__.addPromiseBluebirdPolyfills(DDPromise);
-					__Internal__.addPromiseDoodadExtensions(DDPromise);
-
-					types.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
-
-					types.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {ignoreWhenReadOnly: true});
-					types.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
-
-					__Internal__.Promise = DDPromise;
+					__Internal__.DDPromise = DDPromise;
 
 					return DDPromise;
 				}));
@@ -681,35 +806,23 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, types.INHERIT(types.Callback, function PromiseCallback(/*optional*/obj, fn, /*optional*/secret) {
 					// IMPORTANT: No error should popup from a callback, excepted "ScriptAbortedError".
-					let attr = null;
-					if (types.isString(fn) || types.isSymbol(fn)) {
-						attr = fn;
-						fn = obj[attr]; // must throw on invalid scope
-					};
 					if (types.isCallback(fn)) {
 						throw new types.ValueError("The function is already a Callback.");
 					};
 					fn = types.unbind(fn) || fn;
-					root.DD_ASSERT && root.DD_ASSERT(types.isBindable(fn), "Invalid function.");
+					root.DD_ASSERT && root.DD_ASSERT((!types.isNothing(obj) && types.isBindable(fn)) || (types.isNothing(obj) && types.isFunction(fn)), "Invalid function.");
 					const checkDestroyed = types.getType(obj) && !types.isProtoOf(doodad.DispatchFunction, fn);
 					const insideFn = _shared.makeInside(obj, fn, secret);
+					const insideFnCall = _shared.Natives.functionBindCall(insideFn, obj);
 					const callback = types.INHERIT(_shared.PromiseCallback, function callbackHandler(/*paramarray*/...args) {
 						if (checkDestroyed && _shared.DESTROYED(obj)) {
 							// NOTE: We absolutly must reject the Promise.
 							throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
 						};
-						try {
-							return insideFn.apply(obj, args);
-						} catch(ex) {
-							if (!ex.promiseName) {
-								ex.promiseName = (types.get(callback.promise, _shared.NameSymbol) || '<anonymous>');
-							};
-							throw ex;
-						}
+						return insideFnCall(...args);
 					});
 					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
-					callback.promise = null; // will be provided later
 					_shared.registerCallback(callback);
 					return callback;
 				}));
