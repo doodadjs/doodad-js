@@ -68,7 +68,7 @@ exports.add = function add(modules) {
 			tools.complete(_shared.Natives, {
 				// "trapUnhandledErrors"
 				mathAbs: global.Math.abs,
-				windowSetTimeout: global.setTimeout.bind(global),
+				windowSetTimeout: _shared.Natives.functionBindCall(global.setTimeout, global),
 
 				// "getCurrentScript"
 				windoError: global.Error,
