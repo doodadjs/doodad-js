@@ -5064,12 +5064,13 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
 			const _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
-				const oldSuper = types.getAttribute(this, '_super', {direct: true});
-				types.setAttribute(this, '_super', superFn);
+				const superOpts = {direct: true};
+				const oldSuper = types.getAttribute(this, '_super', superOpts);
+				types.setAttribute(this, '_super', superFn, superOpts);
 				try {
 					return _shared.Natives.functionApplyCall(fn, this, args);
 				} finally {
-					types.setAttribute(this, '_super', oldSuper);
+					types.setAttribute(this, '_super', oldSuper, superOpts);
 				}
 			});
 			types.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
@@ -5194,10 +5195,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	__Internal__._createTypeNew  = function(ctx) {
 		return (function(args) {
-			const forType = types.isFunction(this);
+			const forType = types.isType(this);
 
 			if (forType) {
-				if ((this !== ctx.type) && (!types.baseof(ctx.type, this))) {
+				if ((this !== ctx.type) && !types.baseof(ctx.type, this)) {
 					throw new types.Error('Wrong constructor.');
 				};
 			} else {
@@ -5237,6 +5238,22 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				types.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
 				obj = _shared.Natives.functionApplyCall(ctx._new, this, args) || this; // _new
+				if (obj !== this) {
+					if (forType) {
+						if ((obj !== ctx.type) && !types.baseof(ctx.type, obj)) {
+							throw new types.ValueError('Incompatible type.');
+						};
+					} else {
+						if (!types._instanceof(obj, ctx.type)) {
+							throw new types.ValueError("Incompatible object.");
+						};
+					};
+
+					// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
+					types.setAttribute(obj, _shared.Natives.symbolHasInstance, undefined, {all: false, direct: true});
+
+					types.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+				};
 
 				const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
 				types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {all: false, direct: true});
