@@ -87,8 +87,6 @@ exports.add = function add(modules) {
 				notReentrantMap: new types.WeakMap(),
 
 				CLASS_OR_INTERFACE: [], // Will get filled later
-
-				lazyBindings: new types.WeakMap(), // <FUTURE> Global to threads
 			});
 
 
@@ -2232,13 +2230,13 @@ exports.add = function add(modules) {
 									const descId = generator.vars.add(desc);
 									generator.define(attrId, descId);
 
-									get.release();
+									generator.RELEASE(get);
 
 									if (set) {
-										set.release();
+										generator.RELEASE(set);
 									};
 
-									desc.release();
+									generator.RELEASE(desc);
 								};
 
 							} else {
@@ -2482,23 +2480,6 @@ exports.add = function add(modules) {
 						return destAttribute;
 					}),
 				})));
-
-			__Internal__.initLazyBindings = function initLazyBindings(obj) {
-				let bindings = __Internal__.lazyBindings.get(obj);
-				if (!bindings) {
-					bindings = new Map();
-					__Internal__.lazyBindings.set(obj, bindings);
-				};
-				return bindings;
-			};
-
-			__Internal__.getLazyBoundMethod = function getLazyBoundMethod(attr, obj) {
-				return __Internal__.initLazyBindings(obj).get(attr);
-			};
-
-			__Internal__.setLazyBoundMethod = function setLazyBoundMethod(attr, obj, boundMethod) {
-				return __Internal__.initLazyBindings(obj).set(attr, boundMethod);
-			};
 
 			root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -3127,63 +3108,8 @@ exports.add = function add(modules) {
 								types.defineProperty(dest, key, desc);
 							};
 						});
+						return dest;
 					},
-
-					lazyMethodBinderTemplate: function lazyMethodBinderTemplate(attr, attribute, dispatch) {
-						const extender = this;
-						const fromStorage = this.__isFromStorage(attribute);
-
-						const binder = function lazyMethodBinder() {
-							const value = __Internal__.getLazyBoundMethod(attr, this);
-							if (value) {
-								return value;
-							};
-
-							const boundMethod = types.setPrototypeOf(types.bind(this, dispatch), types.getPrototypeOf(dispatch));
-
-							__Internal__.setLazyBoundMethod(attr, this, boundMethod);
-
-							extender.applyMethodProperties(boundMethod, dispatch);
-
-							return boundMethod;
-						};
-
-						if (!fromStorage) {
-							const tmpBoundMethod = function tmpBoundMethod(...args) {
-								const boundMethod = _shared.Natives.functionCallCall(binder, this);
-
-								extender.applyMethodProperties(boundMethod, tmpBoundMethod);
-								types.setAttribute(this, attr, boundMethod, null, _shared.SECRET);
-
-								return _shared.Natives.functionApplyCall(boundMethod, this, args);
-							};
-
-							extender.applyMethodProperties(tmpBoundMethod, dispatch);
-
-							return tmpBoundMethod;
-						};
-
-						return binder;
-					},
-
-					getterTemplate: types.SUPER(function getterTemplate(attr, attribute, forType, storage) {
-						const extender = this;
-						const getter = this._super(attr, attribute, forType, storage);
-						if (this.bindMethod && this.__isFromStorage(attribute)) {
-							let bound = false;
-							return types.INHERIT(doodad.AttributeGetter, function lazyBoundMethodGetter() {
-								if (!bound) {
-									const dispatch = _shared.Natives.functionCallCall(getter, this);
-									const storage = types.getAttribute(this, _shared.AttributesStorageSymbol, null, _shared.SECRET);
-									const newDispatch = _shared.Natives.functionCallCall(extender.lazyMethodBinderTemplate(attr, attribute, dispatch), this);
-									storage[attr] = newDispatch;
-									bound = true;
-								};
-								return _shared.Natives.functionCallCall(getter, this);
-							});
-						};
-						return getter;
-					}),
 
 					extend: types.SUPER(function extend(attr, source, sourceProto, destAttributes, forType, sourceAttribute, destAttribute, sourceIsProto, proto, protoName) {
 						root.DD_ASSERT && root.DD_ASSERT(!this.bindMethod || (this.isProto === false), "Bound methods must be 'isProto === false'.");
@@ -3494,13 +3420,14 @@ exports.add = function add(modules) {
 						const attributeId = generator.vars.add(attribute);
 						//const valueId = ((attr === _shared.AttributesStorageSymbol) ? generator.storageId : generator.vars.add(value));
 						const valueId = generator.vars.add(value);
+						generator.RELEASE(value);
 						value = new generator.DynamicValue(extenderId + ".createDispatch(" + attrId + ", " + generator.objId + ", " + attributeId + ", " + valueId + ")");
 
-						if (this.bindMethod && !this.__isFromStorage(attribute)) {
+						if (this.bindMethod) {
 							const dispatchId = generator.vars.add(value);
-							const lazy = new generator.DynamicValue(extenderId + ".lazyMethodBinderTemplate(" + attrId + ", " + attributeId + ", " + dispatchId + ")");
-							value.release();
-							value = lazy;
+							generator.RELEASE(value);
+
+							value = new generator.DynamicValue(extenderId + ".applyMethodProperties(types.setPrototypeOf(types.bind(" + generator.objId + ", " + dispatchId + "), types.getPrototypeOf(" + dispatchId + ")), " + dispatchId + ")");
 						};
 
 						this._super(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes);
@@ -3856,7 +3783,7 @@ exports.add = function add(modules) {
 							let dispatchId = generator.vars.add(dispatch);
 							if (this.bindMethod) {
 								const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
-								dispatch.release();
+								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
 							};
 							generator.code.add(descriptorId + ".get = " + dispatchId);
@@ -3869,7 +3796,7 @@ exports.add = function add(modules) {
 							let dispatchId = generator.vars.add(dispatch);
 							if (this.bindMethod) {
 								const newDispatch = new generator.DynamicValue("types.INHERIT(" + dispatchId + ", types.bind(" + generator.objId + ", " + dispatchId + "))");
-								dispatch.release();
+								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
 							};
 							generator.code.add(descriptorId + ".set = " + dispatchId);
@@ -3886,7 +3813,7 @@ exports.add = function add(modules) {
 
 						generator.define(attrId, descriptorId);
 
-						descriptor.release();
+						generator.RELEASE(descriptor);
 					},
 
 					remove: types.SUPER(function remove(attr, obj, storage, forType, attribute) {
@@ -5889,6 +5816,15 @@ exports.add = function add(modules) {
 						this.__code = code;
 						this.__index = null;
 					},
+					ValueId: function ValueId(id, /*optional*/key) {
+						this.__id = id;
+						this.__key = key;
+					},
+					RELEASE: function RELEASE(value) {
+						if (types._instanceof(value, generator.DynamicValue)) {
+							value.release();
+						};
+					},
 
 					__code: '',
 					__vars: [],
@@ -5902,11 +5838,27 @@ exports.add = function add(modules) {
 					propsId: 'props',
 					vars: {
 						add: function add(val, /*optional*/key) {
-							if (key && (key in generator.__kvars)) {
-								throw new types.Error("Key '~0~' already added.", [key]);
+							if (types.isNothing(key)) {
+								key = '';
+							} else {
+								if (!types.isSymbol(key)) {
+									key = types.toString(key);
+								};
+								if (key === '__proto__') {
+									throw new types.ValueError("Key '~0~' is invalid.", [key]);
+								};
+								if (key in generator.__kvars) {
+									throw new types.ValueError("Key '~0~' already added.", [key]);
+								};
+							};
+							if (types._instanceof(val, generator.ValueId)) {
+								if (val.__key !== key) {
+									throw new types.ValueError("Key mismatch. Expected: '~0~'. Got: '~1~'.", [val.__key, key]);
+								};
+								return val;
 							};
 							let varId;
-							if (val instanceof generator.DynamicValue) {
+							if (types._instanceof(val, generator.DynamicValue)) {
 								const released = generator.__dvarsReleased;
 								let index = 0;
 								if (released.length) {
@@ -5927,10 +5879,11 @@ exports.add = function add(modules) {
 									ar.push(val);
 								};
 							};
+							const valueId = new generator.ValueId(varId, key);
 							if (key) {
-								generator.__kvars[key] = varId;
+								generator.__kvars[key] = valueId;
 							};
-							return varId;
+							return valueId;
 						},
 						fromKey: function fromKey(key) {
 							return generator.__kvars[key];
@@ -5970,7 +5923,7 @@ exports.add = function add(modules) {
 					},
 				};
 
-				generator.DynamicValue.prototype.release = function() {
+				generator.DynamicValue.prototype.release = function release() {
 					if ((this.__index == null) || (generator.__dvarsReleased.indexOf(this.__index) >= 0)) {
 						throw new types.Error("Invalid 'release' call for the dynamic value.");
 					} else {
@@ -5979,11 +5932,18 @@ exports.add = function add(modules) {
 					};
 				};
 
+				generator.ValueId.prototype.valueOf = function valueOf() {
+					return this.__id;
+				};
+				generator.ValueId.prototype.toString = function toString() {
+					return this.__id;
+				};
+
 				return generator;
 			};
 
 			__Internal__.initializeAttributes = function initializeAttributes(attributes, forType, values, isProto, existingAttributes, toInitialize) {
-				// TODO: Continue to generate code, or abort the idea of compiling classes to files ?
+				// TODO: Continue to generate code, or abort the idea of building classes to files ?
 
 				const generator = _shared.createGenerator();
 
@@ -7444,14 +7404,21 @@ exports.add = function add(modules) {
 
 					stackSize: doodad.PUBLIC(10),
 
-					_new: types.SUPER(function _new(/*optional*/obj, /*optional*/extender) {
-						this._super();
+					_new: types.SUPER(function _new(/*optional*/obj, /*optional*/extender, /*optional*/dispatch) {
+						const forType = types.isType(this);
+						const that = (forType ? this : types.setPrototypeOf(dispatch, this));
 
-						if (!types.isType(this)) {
-							this[_shared.ObjectSymbol] = obj;
-							this[_shared.ExtenderSymbol] = extender;
-							this[_shared.StackSymbol] = [];
+						_shared.Natives.functionCallCall(this._super, that);
+
+						if (!forType) {
+							types.setAttributes(that, {
+								[_shared.ObjectSymbol]: obj,
+								[_shared.ExtenderSymbol]: extender,
+								[_shared.StackSymbol]: [],
+							}, null, _shared.SECRET);
 						};
+
+						return that;
 					}),
 
 					getCount: function getCount() {
@@ -7851,8 +7818,7 @@ exports.add = function add(modules) {
 
 					createDispatch: types.SUPER(function createDispatch(attr, obj, attribute, callers) {
 						const dispatch = this._super(attr, obj, attribute, callers);
-						const proto = new this.eventProto(obj, this);
-						return types.setPrototypeOf(dispatch, proto);
+						return new this.eventProto(obj, this, dispatch);
 					}),
 
 					remove: function remove(attr, obj, storage, forType, attribute) {
