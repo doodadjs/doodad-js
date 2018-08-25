@@ -6384,6 +6384,10 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						}
 					//! END_REPLACE()
 					, function addEventListener(type, handler, /*optional*/options) {
+						//if (root.DD_ASSERT) {
+						//	root.DD_ASSERT(types.isString(type), "Invalid event type.");
+						//	root.DD_ASSERT(types.isFunction(handler), "Invalid handler.");
+						//};
 						type = type.toLowerCase();
 						const opts = options && (typeof options === 'object'),
 							useCapture = !!(opts ? types.get(opts, 'capture', false) : options),
@@ -6419,7 +6423,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 								},
 								handler: {
 									type: 'function',
-									optional: false,
+									optional: true,
 									description: "Original callback function",
 								},
 								options: {
