@@ -559,7 +559,7 @@ exports.add = function add(mods) {
 
 				let ev = null;
 				try {
-					ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode: exitCode}});
+					ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode}});
 					tools.dispatchEvent(ev); // sync
 				} catch(o) {
 					ev = null;
