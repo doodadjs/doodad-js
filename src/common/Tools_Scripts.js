@@ -193,30 +193,36 @@ exports.add = function add(modules) {
 
 						const options = tools.getOptions();
 
-						types.addAppEventListener('unhandlederror', function(ev) {
-							try {
-								tools.catchAndExit(ev.detail.error);
-							} catch(o) {
-								// Do nothing
-							};
-						});
+						//const cleanup = function _cleanup() {
+						//	types.removeAppEventListener('unhandlederror', onUnhandled);
+						//	types.removeAppEventListener('unhandledrejection', onRejection);
+						//	types.removeAppEventListener('rejectionhandled', onHandled);
+						//};
 
-						types.addAppEventListener('unhandledrejection', function(ev) {
-							if (!types._instanceof(ev.detail.reason, types.ScriptInterruptedError)) {
-								if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
-									__Internal__.unhandledRejections.set(ev.detail.promise, {
-										reason: ev.detail.reason,
-										time: (new Date()).valueOf(),
-									});
-								};
-							};
-						});
+						const onUnhandled = function(ev) {
+							tools.catchAndExit(ev.detail.error);
+						};
 
-						types.addAppEventListener('rejectionhandled', function(ev) {
+						const onRejection = function(ev) {
+							if (ev.detail.reason && ev.detail.reason.critical) {
+								tools.catchAndExit(ev.detail.reason);
+							} else if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
+								__Internal__.unhandledRejections.set(ev.detail.promise, {
+									reason: ev.detail.reason,
+									time: (new Date()).valueOf(),
+								});
+							};
+						};
+
+						const onHandled = function(ev) {
 							if (__Internal__.unhandledRejections.has(ev.detail.promise)) {
 								__Internal__.unhandledRejections.delete(ev.detail.promise);
 							};
-						});
+						};
+
+						types.addAppEventListener('unhandlederror', onUnhandled);
+						types.addAppEventListener('unhandledrejection', onRejection);
+						types.addAppEventListener('rejectionhandled', onHandled);
 
 						const dumpRejections = function dumpRejections() {
 							try {
@@ -226,13 +232,11 @@ exports.add = function add(modules) {
 									const promise = item[0],
 										val = item[1];
 									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
-										tools.log(tools.LogLevels.Error, "Unhandled rejected promise : " + (types.get(promise, _shared.NameSymbol) || "<anonymous>") + ". You can enable Node.js's '--trace-warnings' flag to get more details.");
-										if (val.reason) {
-											tools.log(tools.LogLevels.Error, val.reason.stack || val.reason.message || val.reason.description);
-										};
+										tools.catchAndExit(val.reason);
 										__Internal__.unhandledRejections.delete(promise);
 									};
 								};
+
 							} catch(o) {
 								__Internal__.unhandledRejections.clear();
 							};
