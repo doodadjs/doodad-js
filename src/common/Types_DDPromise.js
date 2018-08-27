@@ -680,7 +680,11 @@ exports.add = function add(modules) {
 						reject(value);
 					};
 				};
-				callback(res, rej);
+				try {
+					callback(res, rej);
+				} catch(err) {
+					rej(err);
+				};
 			};
 			__Internal__.DDPromiseConstructorCall = _shared.Natives.functionBindCall(__Internal__.DDPromiseConstructor);
 

@@ -747,7 +747,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 8,
+						revision: 9,
 						params: {
 							obj: {
 								type: 'object,Object',
@@ -794,7 +794,7 @@ exports.add = function add(modules) {
 						insideFnApply = _shared.Natives.functionBindApply(insideFn),
 						callBubble = types.isFunction(bubbleError);
 					if (callBubble && types.isBindable(bubbleError)) {
-						bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						bubbleError = _shared.Natives.functionBindCall(_shared.makeInside(obj, bubbleError, secret));
 					};
 					const callback = types.INHERIT(doodad.Callback, function callbackHandler(/*paramarray*/...params) {
 						callback.lastError = null;
@@ -809,7 +809,7 @@ exports.add = function add(modules) {
 						} catch(ex) {
 							callback.lastError = ex;
 							if (callBubble && !ex.bubble) {
-								return bubbleError(ex); // call error handler
+								bubbleError(obj, ex); // call error handler
 							} else if (bubbleError || ex.critical) {
 								throw ex;
 							} else {
@@ -833,7 +833,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 9,
+						revision: 10,
 						params: {
 							obj: {
 								type: 'object,Object',
@@ -880,7 +880,7 @@ exports.add = function add(modules) {
 					const fnApply = _shared.Natives.functionBindApply(fn),
 						callBubble = types.isFunction(bubbleError);
 					if (callBubble && types.isBindable(bubbleError)) {
-						bubbleError = _shared.makeInside(obj, bubbleError, secret);
+						bubbleError = _shared.Natives.functionBindCall(_shared.makeInside(obj, bubbleError, secret));
 					};
 					const callback = types.INHERIT(doodad.AsyncCallback, function callbackHandler(/*paramarray*/...params) {
 						if (!args) {
@@ -899,7 +899,7 @@ exports.add = function add(modules) {
 							} catch(ex) {
 								callback.lastError = ex;
 								if (callBubble && !ex.bubble) {
-									bubbleError(ex); // call error handler
+									bubbleError(obj, ex); // call error handler
 								} else if (bubbleError || ex.critical) {
 									throw ex;
 								} else {
@@ -2672,7 +2672,7 @@ exports.add = function add(modules) {
 						const attributes = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
 						const notReentrantMap = __Internal__.notReentrantMap.get(obj);
 						let emitted = false;
-						if (!ex.bubble /*&& !ex.trapped*/) {
+						if (!ex.bubble) {
 							if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
 								let destroyed = false;
 								if (obj._implements(mixIns.Creatable)) {
@@ -2704,9 +2704,8 @@ exports.add = function add(modules) {
 											if (ev.prevent) {
 												ex.trapped = true;
 											};
-											//if (ex.trapped) {
-											//	emitted = true;
-											//};
+											// NOTE: Error MUST propagate.
+											emitted = false;
 										};
 									};
 								};
@@ -7874,6 +7873,12 @@ exports.add = function add(modules) {
 							};
 						};
 
+						if (errorEvent && ev && ev.error.critical) {
+							// Don't propagate critical errors and crash the application instead.
+							tools.catchAndExit(ev.error);
+							return false;
+						};
+
 						const evObj = ev && ev.obj,
 							evName = ev && ev.name,
 							dispatch = this[_shared.CurrentDispatchSymbol];
@@ -7958,19 +7963,6 @@ exports.add = function add(modules) {
 								if (evObj) {
 									types.setAttributes(ev, {obj: evObj, name: evName}, null, _shared.SECRET);
 								};
-
-								if (ev && errorEvent) {
-									if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
-										tools.catchAndExit(ev.error);
-									};
-								};
-							};
-
-						} else {
-							if (ev && errorEvent) {
-								if (!evObj && (ev.error.critical || (!cancelled && !ev.error.trapped))) {
-									tools.catchAndExit(ev.error);
-								};
 							};
 						};
 
@@ -8001,6 +7993,16 @@ exports.add = function add(modules) {
 
 				} else {
 					eventFn = function handleEvent(/*paramarray*/...params) {
+						if (errorEvent) {
+							const ex = params[0];
+
+							if (ex && ex.critical) {
+								// Don't propagate critical errors and crash the application instead.
+								tools.catchAndExit(ex);
+								throw ex;
+							};
+						};
+
 						let emitted = !!this._super(...params);
 
 						const dispatch = types.getAttribute(this, _shared.CurrentDispatchSymbol, null, _shared.SECRET);
@@ -8054,18 +8056,6 @@ exports.add = function add(modules) {
 									[_shared.ClonedStackSymbol]: null,
 								};
 								types.setAttributes(dispatch, values, null, _shared.SECRET);
-							};
-
-							if (errorEvent) {
-								const ex = params[0];
-
-								if (emitted) {
-									ex.trapped = true;
-								};
-
-								if (!ex.trapped) {
-									tools.catchAndExit(ex);
-								};
 							};
 						};
 

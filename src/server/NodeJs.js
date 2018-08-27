@@ -534,8 +534,9 @@ exports.add = function add(mods) {
 			//=====================================
 
 			tools.ADD('catchAndExit', function catchAndExit(err) {
-				if (!err || err.trapped || (!err.critical && err.bubble)) {
-					// Ignore trapped errors or errors like "ScriptInterruptedError".
+				if (!err.critical && (err.trapped || err.bubble)) {
+					// Ignore non critical errors like "ScriptInterruptedError".
+					err.trapped = false; // we don't want to ignore it again
 					return;
 				};
 

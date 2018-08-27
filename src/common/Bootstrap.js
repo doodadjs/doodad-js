@@ -5520,7 +5520,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	// Change the prototype of Error so that these properties do not fall back to Object.prototype (yes, I do that !)
 
 	global.Error.prototype.bubble = false;
-	global.Error.prototype.critical = false;
+	global.Error.prototype.critical = true;  // JS errors (and libraries) are critical by default.
 	global.Error.prototype.trapped = false;
 	global.Error.prototype.innerStack = '';
 
@@ -5588,7 +5588,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 				name: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
 				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
-				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),    // managed errors (Doodad errors) are not critical by default
 
 				parsed: false,
 				parsedStack: null,
