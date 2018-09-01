@@ -226,7 +226,6 @@ exports.add = function add(modules) {
 			};
 
 			__Internal__.getModuleOptions = function(options, moduleName) {
-				//const compiledOpts = {},
 				const keys = tools.split(moduleName, '.'),
 					keysLen = keys.length,
 					MAX_DEPTH = __Internal__.OPTIONS_MAX_DEPTH;
@@ -234,7 +233,6 @@ exports.add = function add(modules) {
 				let moduleOpts = undefined,
 					currentModule = '',
 					currentOptions = options,
-					//currentCompiled = compiledOpts,
 					currentCompiled = undefined;
 
 				for (let i = 0; (i < MAX_DEPTH) && (i < keysLen); i++) {
@@ -246,7 +244,6 @@ exports.add = function add(modules) {
 						moduleOpts = val;
 						break;
 					};
-					//currentCompiled[key] = val;
 					currentCompiled = val;
 				};
 
