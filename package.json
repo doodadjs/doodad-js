@@ -15,7 +15,7 @@
       "enableSymbols": true,
       "enableSafeObjects": false
     },
-    "Doodad__Tools": {
+    "Doodad.Tools": {
       "logLevel": 3,
       "unhandledRejectionsTimeout": 1000,
       "unhandledRejectionsMaxSize": 20,
@@ -23,10 +23,10 @@
       "noWatch": false,
       "toSourceItemsCount": 255
     },
-    "Doodad__Tools__Config": {
+    "Doodad.Tools.Config": {
       "configPath": ""
     },
-    "Doodad__Modules": {
+    "Doodad.Modules": {
       "modulesUri": "./"
     },
     "Doodad": {
@@ -34,7 +34,7 @@
       "enforcePolicies": false,
       "publicOnDebug": false
     },
-	"Doodad__Client": {
+	"Doodad.Client": {
 	  "defaultScriptTimeout": 10000
 	}
   },
