@@ -60,6 +60,8 @@ exports.add = function add(modules) {
 				waitCounter: 0,
 				waiting: false,
 				pendingProtection: new types.Set(),
+
+				OPTIONS_MAX_DEPTH: 15,
 			};
 
 			//===================================
@@ -221,6 +223,32 @@ exports.add = function add(modules) {
 
 			__Internal__.getBaseName = function getBaseName(name) {
 				return (name[0] === '@' ? name.split('/', 3).slice(0, 2).join('/') : name.split('/', 2)[0]);
+			};
+
+			__Internal__.getModuleOptions = function(options, moduleName) {
+				const compiledOpts = {},
+					keys = tools.split(moduleName, '.'),
+					keysLen = keys.length,
+					MAX_DEPTH = __Internal__.OPTIONS_MAX_DEPTH;
+
+				let currentModule = '',
+					currentOptions = options,
+					currentCompiled = compiledOpts;
+
+				for (let i = 0; (i < MAX_DEPTH) && (i < keysLen); i++) {
+					const key = keys[i];
+					currentModule += (currentModule ? '.' + key : key);
+					currentOptions = types.get(currentOptions, key, undefined);
+					const val = tools.depthExtend(MAX_DEPTH - i, types.get(currentCompiled, key, {}), currentOptions, types.get(options, currentModule));
+					currentCompiled[key] = val;
+					currentCompiled = val;
+				};
+
+				const retval = tools.reduce(keys, function(result, key) {
+					return types.get(result, key);
+				}, compiledOpts);
+
+				return retval;
 			};
 
 			__Internal__.createNamespace = root.DD_DOC(
@@ -506,8 +534,7 @@ exports.add = function add(modules) {
 						};
 
 						const createObject = function _createObject(entry) {
-							const baseName = __Internal__.getBaseName(entry.spec.name);
-							let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : types.get(options, baseName));
+							let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : __Internal__.getModuleOptions(options, __Internal__.getBaseName(entry.spec.name)));
 							if (globalOptions) {
 								opts = tools.extend({}, globalOptions, opts);
 							};
@@ -684,14 +711,8 @@ exports.add = function add(modules) {
 								};
 							};
 
-							const globalOptions = types.get(options, 'global');
-
-							const baseName = __Internal__.getBaseName(entry.spec.name);
-							options = types.get(options, baseName);
-
-							if (globalOptions) {
-								options = tools.extend({}, globalOptions, options);
-							};
+							//const baseName = __Internal__.getBaseName(entry.spec.name);
+							//options = __Internal__.getModuleOptions(options, baseName);
 
 							if (entry.objectInit) {
 								if (types.isFunction(entry.objectInit)) {
@@ -775,7 +796,8 @@ exports.add = function add(modules) {
 						const dontThrow = types.get(options, 'dontThrow');
 
 						if (types.isArray(options)) {
-							options = tools.depthExtend.apply(null, tools.append([15, {}], options));
+							const args = tools.append([__Internal__.OPTIONS_MAX_DEPTH, {}], options);
+							options = tools.depthExtend(...args);
 						};
 
 						if (types.get(types.get(options, 'startup'), 'secret') !== _shared.SECRET) {
