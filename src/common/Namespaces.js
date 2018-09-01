@@ -226,29 +226,33 @@ exports.add = function add(modules) {
 			};
 
 			__Internal__.getModuleOptions = function(options, moduleName) {
-				const compiledOpts = {},
-					keys = tools.split(moduleName, '.'),
+				//const compiledOpts = {},
+				const keys = tools.split(moduleName, '.'),
 					keysLen = keys.length,
 					MAX_DEPTH = __Internal__.OPTIONS_MAX_DEPTH;
 
-				let currentModule = '',
+				let moduleOpts = undefined,
+					currentModule = '',
 					currentOptions = options,
-					currentCompiled = compiledOpts;
+					//currentCompiled = compiledOpts,
+					currentCompiled = undefined;
 
 				for (let i = 0; (i < MAX_DEPTH) && (i < keysLen); i++) {
 					const key = keys[i];
 					currentModule += (currentModule ? '.' + key : key);
 					currentOptions = types.get(currentOptions, key, undefined);
 					const val = tools.depthExtend(MAX_DEPTH - i, types.get(currentCompiled, key, {}), currentOptions, types.get(options, currentModule));
-					currentCompiled[key] = val;
+					if (i === keysLen - 1) {
+						moduleOpts = val;
+						break;
+					};
+					//currentCompiled[key] = val;
 					currentCompiled = val;
 				};
 
-				const retval = tools.reduce(keys, function(result, key) {
-					return types.get(result, key);
-				}, compiledOpts);
+				//console.log(moduleName, moduleOpts);
 
-				return retval;
+				return moduleOpts;
 			};
 
 			__Internal__.createNamespace = root.DD_DOC(
