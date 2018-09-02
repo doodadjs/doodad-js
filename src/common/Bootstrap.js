@@ -5165,15 +5165,19 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		if (ctx.base) {
 			return (
 				class extends ctx.base {
-					// <PRB> grrrr, "this" is not available before we call "super" !!!
 					constructor(/*paramarray*/...args) {
+						// <PRB> grrrr, "this" is not available before we call "super" !!!
 						const constructorThis = {};
 						const constructorArgs = _shared.Natives.functionApplyCall(ctx.constructor, constructorThis, args) || args;
+
 						let obj = super(...constructorArgs) || this;
-						ctx.tools.extend(obj, constructorThis);
-						if (ctx.types.getType(this) === ctx.type) {
-							obj = _shared.Natives.functionCallCall(ctx.type[ctx.types.NewSymbol], obj, args) || obj;
+
+						tools.extend(obj, constructorThis);
+
+						if (types.getType(this) === ctx.type) {
+							obj = _shared.Natives.functionCallCall(ctx.type[types.NewSymbol], obj, args) || obj;
 						};
+
 						return obj;
 					}
 				}
@@ -5183,8 +5187,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				class {
 					constructor(/*paramarray*/...args) {
 						let obj = this;
-						if (ctx.types.getType(this) === ctx.type) {
-							obj = _shared.Natives.functionCallCall(ctx.type[ctx.types.NewSymbol], obj, args) || obj;
+						if (types.getType(this) === ctx.type) {
+							obj = _shared.Natives.functionCallCall(ctx.type[types.NewSymbol], obj, args) || obj;
 						};
 						return obj;
 					}
@@ -5292,7 +5296,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 14,
+				revision: 15,
 				params: {
 					name: {
 						type: 'string',
@@ -5329,6 +5333,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						optional: true,
 						description: "UUID of the new type.",
 					},
+					//options: {
+					//	type: 'object',
+					//	optional: true,
+					//	description: "Other options.",
+					//},
 				},
 				returns: 'type',
 				description: "Creates and returns a new Doodad type. N.B.: You should always use methods '$inherit' and '$extend' instead of this function.",
@@ -5340,6 +5349,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			};
 
 			name = _shared.Natives.stringReplaceCall(name, /[^a-zA-Z0-9$_]/g, "_");
+
+			//const takesCtx = types.get(options, 'takesCtx', false);
 
 			const baseIsType = types.isType(base);
 			if (baseIsType) {
@@ -5354,20 +5365,17 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			const instanceBase = (base ? base.prototype : null);
 
 			const ctx = tools.nullObject({
-				_shared,
-				types,
-				tools,
-
 				base,
 				baseIsType,
 				typeProto,
 				instanceProto,
 				instanceBase,
 
-				constructor: null, // Will be set after creation
-				_new: null, // Will be set after creation
-				type: null, // will be set after type creation
-				proto: null, // will be set after type creation
+				// Will be set later
+				constructor: null,
+				_new: null,
+				type: null,
+				proto: null,
 			});
 
 			const type = __Internal__._createType(ctx);
@@ -5410,18 +5418,20 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 				constructor = (function(/*paramarray*/...args) {
 					return args;
 				});
-			} else if (types.isString(constructor)) {
-				constructor = tools.eval("function(/*paramarray*/...args) {" + constructor + "}", ctx);
 			};
+			//} else if (takesCtx) {
+			//	constructor = constructor(ctx);
+			//};
 			ctx.constructor = constructor;
 
 			if (types.isNothing(_new)) {
 				_new = (function(/*paramarray*/...args) {
 					return this._new && this._new(...args) || this;
 				});
-			} else if (types.isString(_new)) {
-				_new = tools.eval("function(/*paramarray*/...args) {" + _new + "}", ctx);
 			};
+			//} else if (takesCtx) {
+			//	_new = _new(ctx);
+			//};
 			ctx._new = _new;
 
 			if (typeProto) {
@@ -5431,6 +5441,8 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 			if (instanceProto) {
 				__Internal__.applyProto(proto, instanceBase, instanceProto, false);
 			};
+
+			types.freezeObject(ctx);
 
 			return type;
 		}));
