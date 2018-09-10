@@ -6373,7 +6373,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 							author: "Claude Petit",
-							revision: 1,
+							revision: 2,
 							params: {
 								type: {
 									type: 'string',
@@ -6404,10 +6404,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 						const opts = options && (typeof options === 'object'),
 							useCapture = !!(opts ? types.get(opts, 'capture', false) : options),
 							once = types.get(opts, 'once', false);
-						let listeners = this[__Internal__.symbolEventListeners][type];
+						const events = this[__Internal__.symbolEventListeners];
+						let listeners = types.get(events, type);
 						if (!types.isArray(listeners)) {
 							listeners = [];
-							this[__Internal__.symbolEventListeners][type] = listeners;
+							events[type] = listeners;
 						};
 						let found = false;
 						for (let i = 0; i < listeners.length; i++) {
@@ -6426,7 +6427,7 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					//! REPLACE_IF(IS_UNSET('debug'), "null")
 						{
 							author: "Claude Petit",
-							revision: 2,
+							revision: 3,
 							params: {
 								type: {
 									type: 'string',
@@ -6450,10 +6451,11 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 					//! END_REPLACE()
 					, function removeEventListener(type, /*optional*/handler, /*optional*/options) {
 						type = type.toLowerCase();
-						if (type in this[__Internal__.symbolEventListeners]) {
+						const events = this[__Internal__.symbolEventListeners];
+						const listeners = types.get(events, type);
+						if (listeners) {
 							const opts = options && (typeof options === 'object'),
 								useCapture = (opts ? types.get(opts, 'capture') : options);
-							const listeners = this[__Internal__.symbolEventListeners][type];
 							if (types.isArray(listeners)) {
 								if (types.isNothing(useCapture)) {
 									for (let i = listeners.length - 1; i >= 0; i--) {
