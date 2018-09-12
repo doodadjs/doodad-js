@@ -225,22 +225,51 @@ exports.add = function add(modules) {
 				return (name[0] === '@' ? name.split('/', 3).slice(0, 2).join('/') : name.split('/', 2)[0]);
 			};
 
-			__Internal__.getModuleOptions = function(options, moduleName) {
-				const keys = tools.split(moduleName, '.'),
-					keysLen = keys.length,
+			__Internal__.parseOptions = function parseOptions(options) {
+				const parsedOptions = {},
+					keys = types.keys(options),
+					keysLen = keys.length;
+
+				for (let i = 0; i < keysLen; i++) {
+					const key = keys[i],
+						val = options[key];
+					if (types.isJsObject(val)) {
+						parsedOptions[key] = val;
+					} else {
+						const pos = tools.lastIndexOf(key, '.');
+						if (pos < 0) {
+							parsedOptions[key] = val;
+						} else {
+							const newKey = key.slice(0, pos),
+								valKey = key.slice(pos + 1);
+							if (types.has(parsedOptions, newKey)) {
+								parsedOptions[newKey][valKey] = val;
+							} else {
+								parsedOptions[newKey] = {[valKey]: val};
+							};
+						};
+					};
+				};
+
+				return parsedOptions;
+			};
+
+			__Internal__.getModuleOptions = function getModuleOptions(parsedOptions, moduleName) {
+				const names = tools.split(moduleName, '.'),
+					namesLen = names.length,
 					MAX_DEPTH = __Internal__.OPTIONS_MAX_DEPTH;
 
 				let moduleOpts = undefined,
 					currentModule = '',
-					currentOptions = options,
+					currentOptions = parsedOptions,
 					currentCompiled = undefined;
 
-				for (let i = 0; (i < MAX_DEPTH) && (i < keysLen); i++) {
-					const key = keys[i];
-					currentModule += (currentModule ? '.' + key : key);
-					currentOptions = types.get(currentOptions, key, undefined);
-					const val = tools.depthExtend(MAX_DEPTH - i, types.get(currentCompiled, key, {}), currentOptions, types.get(options, currentModule));
-					if (i === keysLen - 1) {
+				for (let i = 0; (i < MAX_DEPTH) && (i < namesLen); i++) {
+					const name = names[i];
+					currentModule += (currentModule ? '.' + name : name);
+					currentOptions = types.get(currentOptions, name, undefined);
+					const val = tools.depthExtend(MAX_DEPTH - i, types.get(currentCompiled, name, {}), currentOptions, types.get(parsedOptions, currentModule));
+					if (i === namesLen - 1) {
 						moduleOpts = val;
 						break;
 					};
@@ -282,7 +311,7 @@ exports.add = function add(modules) {
 					const Promise = types.getPromise();
 
 					return Promise.try(function() {
-						const globalOptions = types.get(options, 'global');
+						const parsedOptions = __Internal__.parseOptions(options);
 
 						const getEntryType = function _getEntryType(spec, /*optional*/_default) {
 							const entryType = types.get(spec, 'type');
@@ -535,10 +564,7 @@ exports.add = function add(modules) {
 						};
 
 						const createObject = function _createObject(entry) {
-							let opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? options : __Internal__.getModuleOptions(options, __Internal__.getBaseName(entry.spec.name)));
-							if (globalOptions) {
-								opts = tools.extend({}, globalOptions, opts);
-							};
+							const opts = (types._instanceof(entry, entries.Package) || types._instanceof(entry, entries.Application) ? parsedOptions : __Internal__.getModuleOptions(parsedOptions, __Internal__.getBaseName(entry.spec.name)));
 							if (!types.get(entry.spec, 'bootstrap', false) && !entry.objectCreated && !entry.objectCreating) {
 								let retval = null;
 								entry.objectCreating = true;
