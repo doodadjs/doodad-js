@@ -2,7 +2,7 @@
 
 //! IF_SET("serverSide")
 	// WORKAROUND: For "global"
-	//! INJECT("(function(GLOBAL){const global = GLOBAL;")
+	//! INJECT("(function() {const global = arguments[0];")
 
 	//! IF_SET("mjs")
 		//! INJECT("const exports = {};")
@@ -11,7 +11,7 @@
 //! ELSE()
 	//! IF_SET("mjs")
 		// WORKAROUND: For "global"
-		//! INJECT("(function(GLOBAL){const global = GLOBAL;")
+		//! INJECT("(function() {const global = arguments[0];")
 	//! END_IF()
 
 //! END_IF()
