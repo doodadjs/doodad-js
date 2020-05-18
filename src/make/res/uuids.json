@@ -134,5 +134,6 @@
     "PageMovedError": "641130dc-a03b-48a5-9bb5-e8751babeb87",
     "SYMBOL_NEW": "071dfbec-0a48-42e6-9dae-c65b53ce727b",
     "SYMBOL_IS_TYPE": "9855f81d-b016-4e7a-b9c5-d8e1e784762d",
-    "SYMBOL_IS_ERROR_TYPE": "ff39b60c-a79c-4115-9e77-dac3d29799fb"
+    "SYMBOL_IS_ERROR_TYPE": "ff39b60c-a79c-4115-9e77-dac3d29799fb",
+    "SYMBOL_CLONABLE": "4f43b115-7c80-417b-bea2-96518e7834f8"
 }
