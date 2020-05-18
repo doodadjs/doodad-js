@@ -1,15 +1,20 @@
 /* global process, DD_BOOTSTRAP */
 
 //! IF_SET("serverSide")
+	// WORKAROUND: For "global"
+	//! INJECT("(function(GLOBAL){const global = GLOBAL;")
+
 	//! IF_SET("mjs")
 		//! INJECT("const exports = {};")
 	//! END_IF()
 
 //! ELSE()
-	//! INJECT("const global = window, exports = {};")
+	//! IF_SET("mjs")
+		// WORKAROUND: For "global"
+		//! INJECT("(function(GLOBAL){const global = GLOBAL;")
+	//! END_IF()
 
 //! END_IF()
-
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
 	// doodad-js - Object-oriented programming framework
@@ -7224,4 +7229,18 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 	//! BEGIN_REMOVE()
 	};
+
 //! END_REMOVE()
+
+//! IF_SET('serverSide')
+	// WORKAROUND: For "global"
+	//! INJECT("})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global);")
+
+//! ELSE()
+	//! IF_SET("mjs")
+		// WORKAROUND: For "global"
+		//! INJECT("})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window)")
+	//! END_IF()
+
+//! END_IF()
+
