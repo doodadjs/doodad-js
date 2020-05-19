@@ -82,4 +82,4 @@
 				return root.Doodad.Namespaces.load(modules, options, startup);
 			});
 	};
-}).call(undefined, ((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : ((typeof global === 'object') && (global !== null) ? global : window)));
+})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window);
