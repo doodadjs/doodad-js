@@ -1025,7 +1025,7 @@ exports.add = function add(mods) {
 							} catch(ex) {
 								if (ex.code === 'ENOENT') {
 									// Do nothing
-								} else if (ex.code === 'EPERM') {
+								} else if ((ex.code === 'EISDIR') || (ex.code === 'EPERM')) {
 									try {
 										const stats = nodeFsStat(newPath.toApiString());
 										if (stats.isDirectory()) {
@@ -1142,7 +1142,7 @@ exports.add = function add(mods) {
 									if (err) {
 										if (err.code === 'ENOENT') {
 											return loopDeleteContent(parent, names, index + 1);
-										} else if (err.code === 'EPERM') {
+										} else if ((err.code === 'EISDIR') || (err.code === 'EPERM')) {
 											return isFolder(pathStr)
 												.nodeify(function(err2, isFolder) {
 													if (err2) {
@@ -1939,7 +1939,7 @@ exports.add = function add(mods) {
 							stats = nodeFsLstatSync(path.toApiString());
 						};
 					} catch(ex) {
-						if (!skipDenied || (ex.code !== 'EPERM')) {
+						if (!skipDenied || ((ex.code !== 'EISDIR') && (ex.code !== 'EPERM'))) {
 							throw ex;
 						};
 					};
@@ -2025,7 +2025,7 @@ exports.add = function add(mods) {
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function thenAddAndProceed(err, stats) {
 									if (err) {
-										if (!skipDenied || (err.code !== 'EPERM')) {
+										if (!skipDenied || ((err.code !== 'EISDIR') && (err.code !== 'EPERM'))) {
 											throw err;
 										};
 									} else {
