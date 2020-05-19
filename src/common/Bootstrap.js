@@ -1,20 +1,6 @@
 /* global process, DD_BOOTSTRAP */
 
-//! IF_SET("serverSide")
-	// WORKAROUND: For "global"
-	//! INJECT("(function() {const global = arguments[0];")
-
-	//! IF_SET("mjs")
-		//! INJECT("const exports = {};")
-	//! END_IF()
-
-//! ELSE()
-	//! IF_SET("mjs")
-		// WORKAROUND: For "global"
-		//! INJECT("(function() {const global = arguments[0];")
-	//! END_IF()
-
-//! END_IF()
+//! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
 	// doodad-js - Object-oriented programming framework
@@ -40,8 +26,7 @@
 	//	limitations under the License.
 //! END_REPLACE()
 
-//! IF_SET("mjs")
-//! ELSE()
+//! IF_UNSET("mjs")
 	"use strict";
 //! END_IF()
 
@@ -49,6 +34,8 @@
 	//! INJECT("import {default as nodeUUID} from 'uuid';");
 //! END_IF()
 
+exports.add = function add(modules) {
+};
 
 // WARNING: It is NOT to be used with arbitrary expressions.
 // WARNING: Do not declare any variable and parameter inside these functions.
@@ -7205,20 +7192,12 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 	if ((typeof process === 'object') && (process !== null) && (typeof module === 'object') && (module !== null)) {
 	//! END_REMOVE()
 
-	//! IF_SET("serverSide")
-		//! IF_SET('mjs')
-			//!	INJECT('export default exports;')
-		//! END_IF()
-	//! END_IF()
-
 	//! BEGIN_REMOVE()
 	} else {
 	//! END_REMOVE()
 
 	//! IF_UNSET("serverSide")
-		//! IF_SET('mjs')
-			//!	INJECT('export default exports;')
-		//! ELSE()
+		//! IF_UNSET('mjs')
 			if ((typeof DD_BOOTSTRAP === 'object') && (DD_BOOTSTRAP !== null)) {
 				DD_BOOTSTRAP.createRoot = exports.createRoot;
 			} else {
@@ -7232,15 +7211,4 @@ exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_optio
 
 //! END_REMOVE()
 
-//! IF_SET('serverSide')
-	// WORKAROUND: For "global"
-	//! INJECT("})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global);")
-
-//! ELSE()
-	//! IF_SET("mjs")
-		// WORKAROUND: For "global"
-		//! INJECT("})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window)")
-	//! END_IF()
-
-//! END_IF()
-
+//! END_MODULE()
