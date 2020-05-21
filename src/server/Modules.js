@@ -156,8 +156,25 @@ exports.add = function add(mods) {
 
 			// TODO: Replace by native ??? when implemented.
 			modules.ADD('resolve', function _resolve(location) {
-				location = types.toString(location);
-				return nodeModuleModule._resolveFilename(location, __Internal__.locatorModule, false);
+				if (!types._instanceof(location, files.Path)) {
+					location = files.Path.parse(location);
+				};
+				if (location.isRelative) {
+					const newLocation = location.toArray();
+					if (newLocation.length > 0) {
+						const pkg = [newLocation.shift()];
+						if (pkg[0] && pkg[0][0] === '@') {
+							pkg.push(newLocation.shift());
+						};
+						const pkgPath = nodeModuleModule._resolveFilename(pkg.join('/') + '/package.json', __Internal__.locatorModule, false);
+						if (newLocation.length > 0) {
+							const path = files.Path.parse(pkgPath).set({file: ''}).combine(newLocation.join('/')).toApiString();
+							return path;
+						};
+						return pkgPath;
+					};
+				};
+				return nodeModuleModule._resolveFilename(location.toApiString(), __Internal__.locatorModule, false);
 			});
 
 			modules.ADD('locate', root.DD_DOC(
