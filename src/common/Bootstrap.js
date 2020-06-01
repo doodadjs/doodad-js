@@ -707,7 +707,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					windowFunction: global.Function,
 					functionApplyCall: functionBindCall(global.Function.prototype.apply),
 					functionCallCall: functionBindCall(global.Function.prototype.call),
-					//functionBindCall: functionBindCall(global.Function.prototype.bind),
 
 					windowObject: global.Object,
 
@@ -4266,11 +4265,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			if (types.isNothing(obj)) {
 				return false;
 			};
-			obj = types.getType(obj);
-			if (!obj) {
+			const t = types.getType(obj);
+			if (!t) {
 				return false;
 			};
-			return !!obj[__Internal__.symbol$IsSingleton];
+			return !!t[__Internal__.symbol$IsSingleton];
 		}));
 
 
@@ -4348,15 +4347,15 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! END_REPLACE()
 		, function getBase(obj) {
 			obj = _shared.Natives.windowObject(obj);
-			obj = types.getType(obj);
-			if (!obj) {
+			const t = types.getType(obj);
+			if (!t) {
 				return null;
 			};
-			obj = (obj.prototype ? types.getPrototypeOf(obj.prototype) : null);
-			if (!obj) {
+			const proto = (t.prototype ? types.getPrototypeOf(t.prototype) : null);
+			if (!proto) {
 				return null;
 			};
-			return obj.constructor;
+			return proto.constructor;
 		}));
 
 	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
