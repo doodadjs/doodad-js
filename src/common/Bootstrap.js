@@ -2525,13 +2525,14 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			if (args && !types.isArrayLike(args)) {
 				return null;
 			};
-			if (!__Internal__.prototypeIsConfigurable && types.isType(type)) {
-				// <PRB> If "prototype" is not configurable, we can't set it to read-only
-				// Prototype will get fixed by the constructor if it has been changed. Just make sure it is an object...
-				if (!types.isObject(type.prototype)) {
-					type.prototype = {};
-				};
-			};
+			// No longer needed because we use "class" and "prototype" is not writable, not configurable.
+			//if (!__Internal__.prototypeIsConfigurable && types.isType(type)) {
+			//	// <PRB> If "prototype" is not configurable, we can't set it to read-only
+			//	// Prototype will get fixed by the constructor if it has been changed. Just make sure it is an object...
+			//	if (!types.isObject(type.prototype)) {
+			//		type.prototype = {};
+			//	};
+			//};
 			let obj;
 			if (args && (args.length > 0)) {
 				obj = new type(...args);
@@ -4395,18 +4396,13 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						optional: true,
 						description: "The secret.",
 					},
-					thisObj: {
-						type: 'any',
-						optional: true,
-						description: "The value to pass to 'this'. Default is the 'obj' argument.",
-					},
 				},
 				returns: 'any',
 				description: "Invokes a method or a function as from inside the object.",
 			}
 		//! END_REPLACE()
-		, function invoke(obj, fn, /*optional*/args, /*optional*/secret, /*optional*/thisObj) {
-			return _shared.invoke(obj, fn, args, secret, thisObj);
+		, function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
+			return _shared.invoke(obj, fn, args, secret);
 		}));
 
 	_shared.getAttribute = function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
@@ -4586,9 +4582,9 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		}));
 
 	_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
+		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
 		const loopKeys = function _loopKeys(keys) {
 			const keysLen = keys.length;
-			const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
 			for (let i = 0; i < keysLen; i++) {
 				const key = keys[i];
 				_shared.setAttribute(obj, key, values[key], optsDirect, secret);
@@ -4992,13 +4988,14 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			return val;
 		}));
 
-	// <PRB> If "prototype" is not configurable, we can't set it to read-only
-	__Internal__.prototypeIsConfigurable = false;
-	(function() {
-		const f = function() {};
-		const desc = types.getOwnPropertyDescriptor(f, 'prototype');
-		__Internal__.prototypeIsConfigurable = desc.configurable;
-	})();
+	// No longer needed because we use "class" and "prototype" is not writable, not configurable
+	//// <PRB> Because "prototype" is writable but not configurable, we can't set it to read-only
+	//__Internal__.prototypeIsConfigurable = false;
+	//(function() {
+	//	const f = function() {};
+	//	const desc = types.getOwnPropertyDescriptor(f, 'prototype');
+	//	__Internal__.prototypeIsConfigurable = desc.configurable;
+	//})();
 
 	// <PRB> Proxy checks existence of the property in the target AFTER the handler instead of BEFORE. That prevents us to force non-configurable and non-writable on a NEW NON-EXISTING property with a different value.
 	//       Error given is "TypeError: 'set' on proxy: trap returned truish for property 'doodad' which exists in the proxy target as a non-configurable and non-writable data property with a different value"
@@ -5205,16 +5202,17 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				};
 			};
 
-			if (!__Internal__.prototypeIsConfigurable) {
-				// <PRB> "prototype" is not configurable, so we can't set it to read-only
-				if (!forType) {
-					if (ctx.type.prototype !== ctx.proto) {
-						// Something has changed the prototype. Set it back to original and recreate the object.
-						ctx.type.prototype = ctx.proto;
-						return types.newInstance(ctx.type, args);
-					};
-				};
-			};
+			// No longer needed because we use "class" and "prototype" is not writable, not configurable
+			//if (!__Internal__.prototypeIsConfigurable) {
+			//	// <PRB> "prototype" is not configurable, so we can't set it to read-only
+			//	if (!forType) {
+			//		if (ctx.type.prototype !== ctx.proto) {
+			//			// Something has changed the prototype. Set it back to original and recreate the object.
+			//			ctx.type.prototype = ctx.proto;
+			//			return types.newInstance(ctx.type, args);
+			//		};
+			//	};
+			//};
 
 			let obj;
 			if (types.get(this, __Internal__.symbolInitialized)) {
