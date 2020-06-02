@@ -4513,7 +4513,7 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function METHOD(/*optional*/fn) {
-					if (types._instanceof(fn, types.AttributeBox)) {
+					if (types._instanceof(fn, types.BoxedAttribute)) {
 						if (types.is(fn[_shared.ExtenderSymbol], extenders.Method)) {
 							return fn;
 						};

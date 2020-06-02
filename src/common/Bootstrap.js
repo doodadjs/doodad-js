@@ -3306,11 +3306,56 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 	_shared.OriginalValueSymbol =  types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ORIGINAL_VALUE')), true) */ '__DD_ORIGINAL_VALUE' /*! END_REPLACE() */, true);
 
+	__Internal__.ADD('BoxedValue', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 0,
+				returns: 'object',
+				description: "Boxed value.",
+			}
+		//! END_REPLACE()
+		, class BoxedValue {
+			setAttributes(dest, /*optional*/override) {
+				const loopKeys = function _loopKeys(self, keys) {
+					const keysLen = keys.length;
+					for (let i = 0; i < keysLen; i++) {
+						const key = keys[i];
+						if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
+							dest[key] = self[key];
+						};
+					};
+				};
+				loopKeys(this, types.keys(this));
+				loopKeys(this, types.symbols(this));
+				return dest;
+			}
+			valueOf() {
+				return this[_shared.OriginalValueSymbol];
+			}
+			setValue(value, /*optional*/override) {
+				// NOTE: "OriginalValueSymbol" is immutable
+				const type = this.constructor;
+				const boxed = new type();
+				if (types._instanceof(value, types.BoxedValue)) {
+					value.setAttributes(boxed);
+					value = value[_shared.OriginalValueSymbol];
+				};
+				this.setAttributes(boxed, override);
+				boxed[_shared.OriginalValueSymbol] = value;
+				return boxed;
+			}
+			clone() {
+				return this.setValue(this[_shared.OriginalValueSymbol]);
+			}
+		}
+	));
+
 	__Internal__.ADD('box', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 1,
+				revision: 2,
 				params: {
 					value: {
 						type: 'any',
@@ -3318,70 +3363,38 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						description: "A value.",
 					},
 				},
-				returns: 'Doodad.Types.box',
-				description: "Box a value inside a box object.",
+				returns: 'BoxedValue',
+				description: "Box a value inside a BoxedValue object.",
 			}
 		//! END_REPLACE()
 		, function box(value) {
-			if (types._instanceof(this, types.box)) {
-				if (types._instanceof(value, types.box)) {
-					value.setAttributes(this);
-					value = value[_shared.OriginalValueSymbol];
-				};
-				this[_shared.OriginalValueSymbol] = value;
-				return this;
-			} else {
-				return new types.box(value);
-			}
-		}));
-
-	tools.extend(types.box.prototype, {
-		setAttributes: function setAttributes(dest, /*optional*/override) {
-			const loopKeys = function _loopKeys(self, keys) {
-				const keysLen = keys.length;
-				for (let i = 0; i < keysLen; i++) {
-					const key = keys[i];
-					if ((key !== _shared.OriginalValueSymbol) && (override || !types.has(dest, key))) {
-						dest[key] = self[key];
-					};
-				};
+			const boxed = new types.BoxedValue();
+			if (types._instanceof(value, types.BoxedValue)) {
+				value.setAttributes(boxed);
+				value = value[_shared.OriginalValueSymbol];
 			};
-			loopKeys(this, types.keys(this));
-			loopKeys(this, types.symbols(this));
-			return dest;
-		},
-		valueOf: function valueOf() {
-			return this[_shared.OriginalValueSymbol];
-		},
-		setValue: function setValue(value, /*optional*/override) {
-			// NOTE: "OriginalValueSymbol" is immutable
-			const type = this.constructor;
-			const newBox = new type(value);
-			return this.setAttributes(newBox, override);
-		},
-		clone: function clone() {
-			return this.setValue(this[_shared.OriginalValueSymbol]);
-		},
-	});
+			boxed[_shared.OriginalValueSymbol] = value;
+			return boxed;
+		}));
 
 	__Internal__.ADD('unbox', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 0,
+				revision: 1,
 				params: {
 					value: {
-						type: 'Doodad.Types.box',
+						type: 'BoxedValue',
 						optional: false,
-						description: "A value.",
+						description: "A boxed value.",
 					},
 				},
-				returns: 'object',
+				returns: 'any',
 				description: "Extract the value of a box object.",
 			}
 		//! END_REPLACE()
 		, function unbox(value) {
-			return (types._instanceof(value, types.box) ? value.valueOf() : value);
+			return (types._instanceof(value, types.BoxedValue) ? value.valueOf() : value);
 		}));
 
 	//===================================
@@ -4686,6 +4699,13 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			}
 		//! END_REPLACE()
 		, function INHERIT(base, type) {
+			if (!types.isFunction(base) || types.isJsClass(base)) {
+				throw new __Natives__.windowError("'base' is not a function.");
+			};
+			if (!types.isFunction(type) || types.isJsClass(type)) {
+				throw new __Natives__.windowError("'type' is not a function.");
+			};
+
 			if (types.baseof(base, type)) {
 				// Already inherits base
 				return type;
@@ -4722,11 +4742,24 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			return type;
 		}));
 
+	__Internal__.ADD('BoxedAttribute', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 0,
+				returns: 'BoxedAttribute',
+				description: "Boxed attribute.",
+			}
+		//! END_REPLACE()
+		, class BoxedAttribute extends types.BoxedValue {
+		}
+	));
+
 	__Internal__.ADD('AttributeBox', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 1,
+				revision: 2,
 				params: {
 					value: {
 						type: 'any',
@@ -4734,25 +4767,19 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						description: "A value to box.",
 					},
 				},
-				returns: 'AttributeBox',
-				description: "Creates an attribute box with the specified value.",
+				returns: 'BoxedAttribute',
+				description: "Creates a BoxedAttribute object with the specified value.",
 			}
 		//! END_REPLACE()
-		, types.INHERIT(types.box, function AttributeBox(value) {
-			if (types._instanceof(this, types.AttributeBox)) {
-				if (types._instanceof(value, types.box)) {
-					value.setAttributes(this);
-					value = value[_shared.OriginalValueSymbol];
-				};
-				this[_shared.OriginalValueSymbol] = value;
-				return this;
-			} else {
-				return new types.AttributeBox(value);
-			}
-		})));
-
-	//tools.extend(types.AttributeBox.prototype, {
-	//});
+		, function AttributeBox(value) {
+			const boxed = new types.BoxedAttribute();
+			if (types._instanceof(value, types.BoxedAttribute)) {
+				value.setAttributes(boxed);
+				value = value[_shared.OriginalValueSymbol];
+			};
+			boxed[_shared.OriginalValueSymbol] = value;
+			return boxed;
+		}));
 
 	__Internal__.emptyFunction = function empty() {};
 
