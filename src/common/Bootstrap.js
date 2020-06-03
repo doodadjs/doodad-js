@@ -3776,7 +3776,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 8,
+				revision: 9,
 				params: {
 					base: {
 						type: 'type,arrayof(type)',
@@ -3808,7 +3808,15 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 							if (types.isFunction(b)) {
 								b = _shared.Natives.windowObject(b);
 								if (b instanceof _shared.Natives.windowFunction) {
-									if (types.isProtoOf(b, type)) {
+									if (types.has(type, _shared.BaseSymbol)) {
+										let b2 = type;
+										do {
+											b2 = b2[_shared.BaseSymbol];
+											if (b === b2) {
+												return true;
+											};
+										} while (types.has(b2, _shared.BaseSymbol));
+									} else if (types.isProtoOf(b, type)) {
 										return true;
 									};
 								} else {
@@ -3821,9 +3829,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					};
 				};
 				if (crossRealm) {
-					//type = types.getPrototypeOf(type);
-					type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
-					type = (type && (type.constructor !== type) ? type.constructor : null);
+					type = types.getBase(type);
 					const start = i;
 					while (!types.isNothing(type)) {
 						const tuuid = _shared.getUUID(type);
@@ -3832,7 +3838,8 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 								const b = base[i];
 								if (types.isFunction(b)) {
 									if (tuuid) {
-										if (tuuid === _shared.getUUID(b)) {
+										const uuid = _shared.getUUID(b);
+										if (tuuid === uuid) {
 											return true;
 										};
 									} else {
@@ -3843,9 +3850,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 								};
 							};
 						};
-						//type = types.getPrototypeOf(type);
-						type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
-						type = (type && (type.constructor !== type) ? type.constructor : null);
+						type = types.getBase(type);
 						i = start;
 					};
 				};
@@ -3853,7 +3858,15 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				base = _shared.Natives.windowObject(base);
 				if (!crossRealm) {
 					if (base instanceof _shared.Natives.windowFunction) {
-						if (types.isProtoOf(base, type)) {
+						if (types.has(type, _shared.BaseSymbol)) {
+							let b2 = type;
+							do {
+								b2 = b2[_shared.BaseSymbol];
+								if (base === b2) {
+									return true;
+								};
+							} while (types.has(b2, _shared.BaseSymbol));
+						} else if (types.isProtoOf(base, type)) {
 							return true;
 						};
 					} else {
@@ -3863,9 +3876,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				};
 				if (crossRealm) {
 					const uuid = _shared.getUUID(base);
-					//type = types.getPrototypeOf(type);
-					type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
-					type = (type && (type.constructor !== type) ? type.constructor : null);
+					type = types.getBase(type);
 					while (!types.isNothing(type)) {
 						const tuuid = _shared.getUUID(type);
 						if (tuuid) {
@@ -3877,9 +3888,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 								return true;
 							};
 						};
-						//type = types.getPrototypeOf(type);
-						type = (type.prototype ? types.getPrototypeOf(type.prototype) : null);
-						type = (type && (type.constructor !== type) ? type.constructor : null);
+						type = types.getBase(type);
 					};
 				};
 			};
@@ -4361,15 +4370,19 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! END_REPLACE()
 		, function getBase(obj) {
 			obj = _shared.Natives.windowObject(obj);
-			const t = types.getType(obj);
-			if (!t) {
-				return null;
+			if (types.has(obj, _shared.BaseSymbol)) {
+				return obj[_shared.BaseSymbol];
+			} else {
+				const t = types.getType(obj);
+				if (!t) {
+					return null;
+				};
+				const proto = (t.prototype ? types.getPrototypeOf(t.prototype) : null);
+				if (!proto) {
+					return null;
+				};
+				return types.getType(proto);
 			};
-			const proto = (t.prototype ? types.getPrototypeOf(t.prototype) : null);
-			if (!proto) {
-				return null;
-			};
-			return proto.constructor;
 		}));
 
 	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
@@ -4653,6 +4666,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
 	__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
 
+	_shared.BaseSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true);
 	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID' /*! END_REPLACE() */, true);
 	_shared.SuperEnabledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SUPER_ENABLED')), true) */ '__DD_SUPER_ENABLED' /*! END_REPLACE() */, true);
 	_shared.EnumerableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ENUMERABLE')), true) */ '__DD_ENUMERABLE' /*! END_REPLACE() */, true);
@@ -4695,15 +4709,15 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					},
 				},
 				returns: 'type',
-				description: "Makes type inherits the base type.",
+				description: "Makes constructor function inherit a base constructor.",
 			}
 		//! END_REPLACE()
 		, function INHERIT(base, type) {
 			if (!types.isFunction(base) || types.isJsClass(base)) {
-				throw new __Natives__.windowError("'base' is not a function.");
+				throw new _shared.Natives.windowError("'base' is not a function.");
 			};
 			if (!types.isFunction(type) || types.isJsClass(type)) {
-				throw new __Natives__.windowError("'type' is not a function.");
+				throw new _shared.Natives.windowError("'type' is not a function.");
 			};
 
 			if (types.baseof(base, type)) {
@@ -5078,7 +5092,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! END_REPLACE()
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
-			const _caller = types.INHERIT(types.SUPER, function caller(/*paramarray*/...args) {
+			const _caller = function caller(/*paramarray*/...args) {
 				const superOpts = {direct: true};
 				const oldSuper = types.getAttribute(this, '_super', superOpts);
 				types.setAttribute(this, '_super', superFn, superOpts);
@@ -5087,8 +5101,9 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				} finally {
 					types.setAttribute(this, '_super', oldSuper, superOpts);
 				}
-			});
+			};
 			types.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
+			types.setAttribute(_caller, _shared.BaseSymbol, types.SUPER, {});
 			return _caller;
 		});
 
