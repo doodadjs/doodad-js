@@ -4300,7 +4300,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 2,
+				revision: 3,
 				params: {
 					obj: {
 						type: ['object', 'type'],
@@ -4317,7 +4317,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				return null;
 			};
 			obj = _shared.Natives.windowObject(obj);
-			if (types.isType(obj)) {
+			if (types.isType(obj) || types.isErrorType(obj)) {
 				return obj;
 			};
 			const ctr = obj.constructor;
