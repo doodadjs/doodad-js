@@ -124,7 +124,7 @@ exports.add = function add(modules) {
 
 						// <PRB> "Symbol.iterator" must be there for "[...iter]" and "for...of" even when we return the iterator itself.
 						const self = this;
-						types.setAttribute(this, _shared.Natives.symbolIterator, function() {
+						types.setJsAttribute(this, _shared.Natives.symbolIterator, function() {
 							return self;
 						}, {});
 					}),

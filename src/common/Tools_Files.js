@@ -1096,7 +1096,7 @@ exports.add = function add(modules) {
 							this._super();
 							const attrs = tools.fill(__Internal__.pathAllKeys, {}, options);
 							if (types.hasDefinePropertyEnabled()) {
-								types.setAttributes(this, attrs);
+								types.setJsAttributes(this, attrs);
 							} else {
 								tools.extend(this, attrs);
 							};
@@ -1798,14 +1798,14 @@ exports.add = function add(modules) {
 						options: types.READ_ONLY( null ),
 						__args: types.READ_ONLY( null ),
 
-						_new: types.SUPER(function(args, /*optional*/options) {
+						_new: types.SUPER(function _new(args, /*optional*/options) {
 							this._super();
 							if (root.DD_ASSERT) {
 								root.DD_ASSERT(types.isNothing(args) || types.isArray(args), "Invalid arguments array.");
 							};
 
-							types.setAttribute(this, 'options', options, {});
-							types.setAttribute(this, '__args', types.freezeObject(args), {});
+							types.setJsAttribute(this, 'options', options, {});
+							types.setJsAttribute(this, '__args', types.freezeObject(args), {});
 						}),
 
 						toDataObject: root.DD_DOC(
@@ -2825,7 +2825,7 @@ exports.add = function add(modules) {
 							this._super();
 							const attrs = tools.fill(__Internal__.urlAllKeys, {}, options);
 							if (types.hasDefinePropertyEnabled()) {
-								types.setAttributes(this, attrs);
+								types.setJsAttributes(this, attrs);
 							} else {
 								tools.extend(this, attrs);
 							};

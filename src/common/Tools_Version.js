@@ -195,7 +195,7 @@ exports.add = function add(modules) {
 
 						_new: types.SUPER(function _new(data, /*optional*/options) {
 							this._super();
-							types.setAttributes(this, {
+							types.setJsAttributes(this, {
 								data: data,
 								options: tools.nullObject(options),
 							});

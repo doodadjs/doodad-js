@@ -3183,7 +3183,7 @@ exports.add = function add(mods) {
 					_new: types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
 						if (!types.isType(this)) {
-							types.setAttributes(this, {
+							types.setJsAttributes(this, {
 								canReject: types.get(options, 'canReject', this.canReject),
 								eventType: types.get(options, 'eventType', this.eventType),
 							});

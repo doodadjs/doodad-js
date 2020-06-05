@@ -249,7 +249,7 @@ exports.add = function add(modules) {
 					const P = this;
 					const name = __Internal__.getPromiseName(callback);
 					const promise = new P(callback, thisObj);
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -324,7 +324,7 @@ exports.add = function add(modules) {
 						};
 					};
 					const promise = oldTryCall(P, callback);
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -354,7 +354,7 @@ exports.add = function add(modules) {
 						};
 					};
 					const promise = oldMapCall(P, ar, callback, options);
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -462,7 +462,7 @@ exports.add = function add(modules) {
 							name = __Internal__.getPromiseName(rejectedCb);
 						};
 					};
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -499,7 +499,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -544,7 +544,7 @@ exports.add = function add(modules) {
 					} else {
 						promise = oldCatchCall(this, callback);
 					};
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -575,7 +575,7 @@ exports.add = function add(modules) {
 						};
 					};
 					const promise = oldAsCallbackCall(this, callback);
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 				Promise.prototype.asCallback = asCallback;
@@ -608,7 +608,7 @@ exports.add = function add(modules) {
 						};
 					};
 					const promise = oldFinallyCall(this, callback);
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 
@@ -642,7 +642,7 @@ exports.add = function add(modules) {
 							return _shared.Natives.functionCallCall(callback, this, result, resolve, reject);
 						}, this);
 					});
-					types.setAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
+					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
 			};
@@ -666,7 +666,7 @@ exports.add = function add(modules) {
 						};
 					};
 				};
-				types.setAttribute(this, _shared.NameSymbol, null, {configurable: true, enumerable: true});  // will be set later
+				types.setJsAttribute(this, _shared.NameSymbol, null, {configurable: true, enumerable: true});  // will be set later
 				let solved = false;
 				const res = function(value) {
 					if (!solved) {
@@ -774,11 +774,11 @@ exports.add = function add(modules) {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 
-						types.setAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
+						types.setJsAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
 
-						types.setAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {});
-						types.setAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
-						//types.setAttribute(DDPromise.prototype, _shared.BoundObjectSymbol, null, {});
+						types.setJsAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {});
+						types.setJsAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
+						//types.setJsAttribute(DDPromise.prototype, _shared.BoundObjectSymbol, null, {});
 					};
 
 					__Internal__.DDPromise = DDPromise;
@@ -829,13 +829,13 @@ exports.add = function add(modules) {
 						};
 						return insideFnCall(...args);
 					};
-					types.setAttribute(callback, _shared.CallbackSymbol, _shared.PromiseCallback, {});
-					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
-					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+					types.setJsAttribute(callback, _shared.CallbackSymbol, _shared.PromiseCallback, {});
+					types.setJsAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+					types.setJsAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					return callback;
 				});
 
-			types.setAttribute(_shared.PromiseCallback, _shared.BaseSymbol, types.Callback, {});
+			types.setJsAttribute(_shared.PromiseCallback, _shared.BaseSymbol, types.Callback, {});
 
 			//===================================
 			// Init
