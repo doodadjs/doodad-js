@@ -78,8 +78,6 @@ exports.add = function add(modules) {
 				currentType: null,	// <FUTURE> thread level
 				inTrapException: false, // <FUTURE> thread level
 
-				callbacks: new types.WeakSet(), // <FUTURE> global to threads
-
 				extendersCache: new types.WeakMap(), // <FUTURE> global to threads
 
 				ANONYMOUS: '<anonymous>',
@@ -718,6 +716,7 @@ exports.add = function add(modules) {
 			// Callbacks
 			//==================================
 
+			_shared.BaseSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true);
 			_shared.CallbackSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLBACK')), true) */ '__DD_CALLBACK' /*! END_REPLACE() */, true);
 
 			types.ADD('Callback', root.DD_DOC(
@@ -733,12 +732,6 @@ exports.add = function add(modules) {
 				, function(/*optional*/obj, fn) {
 					throw new types.NotSupported("Type is a base type.");
 				}));
-
-			_shared.registerCallback = function registerCallback(cb) {
-				root.DD_ASSERT && root.DD_ASSERT(types.has(cb, _shared.CallbackSymbol), "Invalid callback.");
-
-				__Internal__.callbacks.add(cb);
-			};
 
 			types.ADD('isCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -762,17 +755,19 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function isCallback(obj, /*optional*/type) {
-					const is = __Internal__.callbacks.has(obj);
+					const is = types.has(obj, _shared.CallbackSymbol);
 
 					if (is && type) {
-						let base = obj;
-
-						do {
-							base = base[_shared.CallbackSymbol];
+						let base = obj[_shared.CallbackSymbol];
+						if (base === type) {
+							return true;
+						};
+						while (types.has(base, _shared.BaseSymbol)) {
+							base = base[_shared.BaseSymbol];
 							if (base === type) {
 								return true;
 							};
-						} while (types.has(base, _shared.CallbackSymbol));
+						};
 
 						return false;
 					};
@@ -863,11 +858,10 @@ exports.add = function add(modules) {
 					types.setAttribute(callback, _shared.BoundObjectSymbol, orgObj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
-					_shared.registerCallback(callback);
 					return callback;
 				}));
 
-			types.setAttribute(doodad.Callback, _shared.CallbackSymbol, types.Callback, {});
+			types.setAttribute(doodad.Callback, _shared.BaseSymbol, types.Callback, {});
 
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -956,11 +950,10 @@ exports.add = function add(modules) {
 					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
-					_shared.registerCallback(callback);
 					return callback;
 				}));
 
-			types.setAttribute(doodad.AsyncCallback, _shared.CallbackSymbol, doodad.Callback, {});
+			types.setAttribute(doodad.AsyncCallback, _shared.BaseSymbol, doodad.Callback, {});
 
 			//==================================
 			// Inside
@@ -6621,11 +6614,10 @@ exports.add = function add(modules) {
 					types.setAttribute(cb, _shared.CallbackSymbol, doodad.OutsideCallback, {});
 					types.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
-					_shared.registerCallback(cb);
 					return cb;
 				}));
 
-			types.setAttribute(doodad.OutsideCallback, _shared.CallbackSymbol, doodad.Callback, {});
+			types.setAttribute(doodad.OutsideCallback, _shared.BaseSymbol, doodad.Callback, {});
 
 			__Internal__.makeOutsideFn = function makeOutside(fn) {
 				if (types.isCallback(fn)) {

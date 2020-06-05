@@ -832,11 +832,10 @@ exports.add = function add(modules) {
 					types.setAttribute(callback, _shared.CallbackSymbol, _shared.PromiseCallback, {});
 					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
-					_shared.registerCallback(callback);
 					return callback;
 				});
 
-			types.setAttribute(_shared.PromiseCallback, _shared.CallbackSymbol, types.Callback, {});
+			types.setAttribute(_shared.PromiseCallback, _shared.BaseSymbol, types.Callback, {});
 
 			//===================================
 			// Init
