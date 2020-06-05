@@ -757,7 +757,7 @@ exports.add = function add(modules) {
 				, function isCallback(obj, /*optional*/type) {
 					const is = types.has(obj, _shared.CallbackSymbol);
 
-					if (is && type) {
+					if (is && !types.isNothing(type)) {
 						let base = obj[_shared.CallbackSymbol];
 						if (base === type) {
 							return true;
