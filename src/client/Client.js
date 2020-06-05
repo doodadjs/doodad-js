@@ -963,7 +963,7 @@ exports.add = function add(modules) {
 					const eventFn = doodad.PROTECTED(doodad.CALL_FIRST(doodad.NON_REENTRANT(doodad.ATTRIBUTE(function eventHandler(/*optional*/ctx) {
 						const dispatch = this[_shared.CurrentDispatchSymbol];
 
-						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol]);
+						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], _shared.SECRET);
 
 						const stack = values[_shared.StackSymbol];
 
@@ -982,7 +982,7 @@ exports.add = function add(modules) {
 							const values = {};
 							values[_shared.SortedSymbol] = true;
 							values[_shared.ClonedStackSymbol] = clonedStack;
-							types.setAttributes(dispatch, values);
+							types.setAttributes(dispatch, values, _shared.SECRET);
 						};
 
 						const stackLen = clonedStack.length;

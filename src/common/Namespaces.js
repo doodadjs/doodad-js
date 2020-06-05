@@ -103,7 +103,7 @@ exports.add = function add(modules) {
 				established: 2, e: 2,
 			})));
 
-			types.setAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
+			types.setJsAttribute(namespaces, _shared.Natives.symbolIterator, function symbolIterator() {
 				return __Internal__.DD_REGISTRY.iter();
 			}, {});
 
@@ -1141,7 +1141,7 @@ exports.add = function add(modules) {
 					_new: types.SUPER(function _new(registry, type, exact) {
 						this._super();
 
-						types.setAttributes(this, {
+						types.setJsAttributes(this, {
 							__type: type,
 							__exact: !!exact,
 							__values: tools.map(types.values(registry.registry), function(entry) {

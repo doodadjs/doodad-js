@@ -4367,7 +4367,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
 		if (types.isString(fn) || types.isSymbol(fn)) {
-			fn = types.getAttribute(obj, fn, {direct: true}, secret);
+			fn = types.getJsAttribute(obj, fn);
 		};
 		if (args) {
 			return _shared.Natives.functionApplyCall(fn, obj, args);
@@ -4411,15 +4411,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			return _shared.invoke(obj, fn, args, secret);
 		}));
 
-	_shared.getAttribute = function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
-		return obj[attr];
-	};
-
-	__Internal__.ADD('getAttribute', __Internal__.DD_DOC(
+	__Internal__.ADD('getJsAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 2,
+				revision: 3,
 				params: {
 					obj: {
 						type: 'object',
@@ -4431,43 +4427,20 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						optional: false,
 						description: "Attribute name.",
 					},
-					options: {
-						type: 'object',
-						optional: true,
-						description: "Options",
-					},
-					secret: {
-						type: 'any',
-						optional: true,
-						description: "Secret.",
-					},
 				},
 				returns: 'any',
-				description: "Gets the value of an attribute as from inside the object.",
+				description: "Gets the value of an attribute.",
 			}
 		//! END_REPLACE()
-		, function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
-			return _shared.getAttribute(obj, attr, options, secret);
+		, function getJsAttribute(obj, attr) {
+			return obj[attr];
 		}));
 
-	_shared.getAttributes = function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
-		const attrsLen = attrs.length,
-			result = {};
-		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
-		for (let i = 0; i < attrsLen; i++) {
-			if (types.has(attrs, i)) {
-				const attr = attrs[i];
-				result[attr] = _shared.getAttribute(obj, attr, optsDirect, secret);
-			};
-		};
-		return result;
-	};
-
-	__Internal__.ADD('getAttributes', __Internal__.DD_DOC(
+	__Internal__.ADD('getJsAttributes', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 3,
+				revision: 4,
 				params: {
 					obj: {
 						type: 'object',
@@ -4479,79 +4452,28 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						optional: false,
 						description: "Attribute names.",
 					},
-					options: {
-						type: 'object',
-						optional: true,
-						description: "Options",
-					},
-					secret: {
-						type: 'any',
-						optional: true,
-						description: "Secret.",
-					},
 				},
 				returns: 'object',
 				description: "Gets the value of multiple attributes as from inside the object.",
 			}
 		//! END_REPLACE()
-		, function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
-			return _shared.getAttributes(obj, attrs, options, secret);
+		, function getJsAttributes(obj, attrs) {
+			const attrsLen = attrs.length,
+				result = {};
+			for (let i = 0; i < attrsLen; i++) {
+				if (types.has(attrs, i)) {
+					const attr = attrs[i];
+					result[attr] = types.getJsAttribute(obj, attr);
+				};
+			};
+			return result;
 		}));
 
-	_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
-		options = options && tools.nullObject(options);
-		const hasOwn = types.has(obj, attr),
-			hasAll = options && ('all' in options),
-			newDescriptor = !!options && (('configurable' in options) || ('enumerable' in options) || ('writable' in options) || hasAll);
-		let descriptor = types.getPropertyDescriptor(obj, attr);
-		const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
-			descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
-			descWritable = !descriptor || types.get(descriptor, 'writable', false),
-			descGet = types.get(descriptor, 'get'),
-			descSet = types.get(descriptor, 'set');
-		if (descSet && !newDescriptor) {
-			if (!options || !options.ignoreWhenSame || !descGet || (_shared.Natives.functionCallCall(descGet, obj) !== value)) {
-				_shared.Natives.functionCallCall(descSet, obj, value);
-			};
-		} else if (descGet && !newDescriptor) {
-			if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (_shared.Natives.functionCallCall(descGet, obj) !== value)))) {
-				// NOTE: Use native error because something might be wrong
-				throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-			};
-		} else if (hasOwn && descWritable && (!newDescriptor || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
-			if (!options || !options.ignoreWhenSame || (obj[attr] !== value)) {
-				obj[attr] = value;
-			};
-		} else if (descConfigurable) {
-			if (newDescriptor && types.hasDefinePropertyEnabled()) {
-				if (hasAll) {
-					descriptor = {
-						configurable: ('configurable' in options ? options.configurable : options.all),
-						enumerable: ('enumerable' in options ? options.enumerable : options.all),
-						writable: ('writable' in options ? options.writable : options.all),
-					};
-				} else {
-					descriptor = options;
-				};
-			} else if (!descriptor) {
-				descriptor = {configurable: true, enumerable: true, writable: true};
-			};
-			descriptor.value = value;
-			types.defineProperty(obj, attr, descriptor);
-		} else {
-			if (!newDescriptor || !options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
-				// NOTE: Use native error because something might be wrong
-				throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
-			};
-		};
-		return value;
-	};
-
-	__Internal__.ADD('setAttribute', __Internal__.DD_DOC(
+	__Internal__.ADD('setJsAttribute', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 11,
+				revision: 12,
 				params: {
 					obj: {
 						type: 'object',
@@ -4573,39 +4495,65 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						optional: true,
 						description: "Options.",
 					},
-					secret: {
-						type: 'any',
-						optional: true,
-						description: "Secret.",
-					},
 				},
 				returns: 'object',
 				description: "Sets the value of an attribute as from inside the object.",
 			}
 		//! END_REPLACE()
-		, function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
-			return _shared.setAttribute(obj, attr, value, options, secret);
+		, function setJsAttribute(obj, attr, value, /*optional*/options) {
+			options = options && tools.nullObject(options);
+			const hasOwn = types.has(obj, attr),
+				hasAll = options && ('all' in options),
+				newDescriptor = !!options && (('configurable' in options) || ('enumerable' in options) || ('writable' in options) || hasAll);
+			let descriptor = types.getPropertyDescriptor(obj, attr);
+			const descConfigurable = !hasOwn || !descriptor || types.get(descriptor, 'configurable', false),
+				descEnumerable = !descriptor || types.get(descriptor, 'enumerable', false),
+				descWritable = !descriptor || types.get(descriptor, 'writable', false),
+				descGet = types.get(descriptor, 'get'),
+				descSet = types.get(descriptor, 'set');
+			if (descSet && !newDescriptor) {
+				if (!options || !options.ignoreWhenSame || !descGet || (_shared.Natives.functionCallCall(descGet, obj) !== value)) {
+					_shared.Natives.functionCallCall(descSet, obj, value);
+				};
+			} else if (descGet && !newDescriptor) {
+				if (!options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (_shared.Natives.functionCallCall(descGet, obj) !== value)))) {
+					// NOTE: Use native error because something might be wrong
+					throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
+				};
+			} else if (hasOwn && descWritable && (!newDescriptor || ((!!options.configurable === descConfigurable) && (!!options.enumerable === descEnumerable) && (!!options.writable === descWritable)))) {
+				if (!options || !options.ignoreWhenSame || (obj[attr] !== value)) {
+					obj[attr] = value;
+				};
+			} else if (descConfigurable) {
+				if (newDescriptor && types.hasDefinePropertyEnabled()) {
+					if (hasAll) {
+						descriptor = {
+							configurable: ('configurable' in options ? options.configurable : options.all),
+							enumerable: ('enumerable' in options ? options.enumerable : options.all),
+							writable: ('writable' in options ? options.writable : options.all),
+						};
+					} else {
+						descriptor = options;
+					};
+				} else if (!descriptor) {
+					descriptor = {configurable: true, enumerable: true, writable: true};
+				};
+				descriptor.value = value;
+				types.defineProperty(obj, attr, descriptor);
+			} else {
+				if (!newDescriptor || !options || (!options.ignoreWhenReadOnly && (!options.ignoreWhenSame || (obj[attr] !== value)))) {
+					// NOTE: Use native error because something might be wrong
+					throw new _shared.Natives.windowError(tools.format("Attribute '~0~' is read-only.", [attr]));
+				};
+			};
+			return value;
 		}));
 
-	_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
-		const optsDirect = (types.get(options, 'direct', false) ? options : tools.extend({}, options, {direct: true}));
-		const loopKeys = function _loopKeys(keys) {
-			const keysLen = keys.length;
-			for (let i = 0; i < keysLen; i++) {
-				const key = keys[i];
-				_shared.setAttribute(obj, key, values[key], optsDirect, secret);
-			};
-		};
-		loopKeys(types.keys(values));
-		loopKeys(types.symbols(values));
-		return values;
-	};
-
-	__Internal__.ADD('setAttributes', __Internal__.DD_DOC(
+	__Internal__.ADD('setJsAttributes', __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 3,
+				revision: 4,
 				params: {
 					obj: {
 						type: 'object',
@@ -4622,18 +4570,22 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						optional: true,
 						description: "Options.",
 					},
-					secret: {
-						type: 'any',
-						optional: true,
-						description: "Secret.",
-					},
 				},
 				returns: 'object',
 				description: "Sets the value of multiple attributes as from inside the object.",
 			}
 		//! END_REPLACE()
-		, function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
-			return _shared.setAttributes(obj, values, options, secret);
+		, function setJsAttributes(obj, values, /*optional*/options) {
+			const loopKeys = function _loopKeys(keys) {
+				const keysLen = keys.length;
+				for (let i = 0; i < keysLen; i++) {
+					const key = keys[i];
+					types.setJsAttribute(obj, key, values[key], options);
+				};
+			};
+			loopKeys(types.keys(values));
+			loopKeys(types.symbols(values));
+			return values;
 		}));
 
 	//===================================
@@ -4731,7 +4683,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				call: type.call,
 				bind: type.bind,
 			};
-			types.setAttributes(type, values, {all: false, ignoreWhenReadOnly: true, direct: true});
+			types.setJsAttributes(type, values, {all: false, ignoreWhenReadOnly: true});
 
 			return type;
 		}));
@@ -5073,17 +5025,16 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		, function createCaller(attr, fn, /*optional*/superFn) {
 			superFn = superFn || __Internal__.emptyFunction;
 			const _caller = function caller(/*paramarray*/...args) {
-				const superOpts = {direct: true};
-				const oldSuper = types.getAttribute(this, '_super', superOpts);
-				types.setAttribute(this, '_super', superFn, superOpts);
+				const oldSuper = types.getJsAttribute(this, '_super');
+				types.setJsAttribute(this, '_super', superFn);
 				try {
 					return _shared.Natives.functionApplyCall(fn, this, args);
 				} finally {
-					types.setAttribute(this, '_super', oldSuper, superOpts);
+					types.setJsAttribute(this, '_super', oldSuper);
 				}
 			};
-			types.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
-			types.setAttribute(_caller, _shared.CallerSymbol, types.SUPER, {});
+			types.setJsAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
+			types.setJsAttribute(_caller, _shared.CallerSymbol, types.SUPER, {});
 			return _caller;
 		});
 
@@ -5118,16 +5069,16 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					if (ok) {
 						const createSuper = !hasKey && isFunction;
 						if (createSuper && types.get(attr, _shared.SuperEnabledSymbol)) {
-							const _super = base && types.getAttribute(base, key, {direct: true});
+							const _super = base && types.getJsAttribute(base, key);
 							value = __Internal__.createCaller(key, value, _super);
 						};
 
 						if (isFunction) {
-							types.setAttributes(value, {
+							types.setJsAttributes(value, {
 								apply: value.apply,
 								call: value.call,
 								bind: value.bind,
-							}, {all: false, ignoreWhenReadOnly: true, direct: true});
+							}, {all: false, ignoreWhenReadOnly: true});
 						};
 
 						let enu = types.get(attr, _shared.EnumerableSymbol);
@@ -5152,12 +5103,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 								ro = isFunction;
 							};
 
-							types.setAttribute(target, key, value, {
+							types.setJsAttribute(target, key, value, {
 								configurable: cf,
 								enumerable: enu,
 								writable: !ro,
 								ignoreWhenReadOnly: true,
-								direct: true,
 							});
 						};
 					};
@@ -5245,13 +5195,13 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						throw new types.Error('Singleton object has already been created.');
 					};
 
-					types.setAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true, direct: true});
+					types.setJsAttribute(this, 'constructor', ctx.type, {ignoreWhenSame: true});
 				};
 
 				// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-				types.setAttribute(this, _shared.Natives.symbolHasInstance, undefined, {all: false, direct: true});
+				types.setJsAttribute(this, _shared.Natives.symbolHasInstance, undefined, {all: false});
 
-				types.setAttribute(this, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+				types.setJsAttribute(this, __Internal__.symbolInitialized, true, {configurable: true});
 				obj = _shared.Natives.functionApplyCall(ctx._new, this, args) || this; // _new
 				if (obj !== this) {
 					if (forType) {
@@ -5265,19 +5215,19 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					};
 
 					// <PRB> Symbol.hasInstance: We force default behavior of "instanceof" by setting Symbol.hasInstance to 'undefined'.
-					types.setAttribute(obj, _shared.Natives.symbolHasInstance, undefined, {all: false, direct: true});
+					types.setJsAttribute(obj, _shared.Natives.symbolHasInstance, undefined, {all: false});
 
-					types.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+					types.setJsAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true});
 				};
 
 				const isSingleton = !!ctx.type[__Internal__.symbol$IsSingleton];
-				types.setAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {all: false, direct: true});
+				types.setJsAttribute(obj, __Internal__.symbol$IsSingleton, isSingleton, {all: false});
 				if (isSingleton) {
 					if (!forType) {
-						types.setAttribute(ctx.type, __Internal__.symbolSingleton, obj, {all: false, direct: true});
+						types.setJsAttribute(ctx.type, __Internal__.symbolSingleton, obj, {all: false});
 					};
 				} else {
-					types.setAttribute(obj, __Internal__.symbolSingleton, null, {all: false, direct: true});
+					types.setJsAttribute(obj, __Internal__.symbolSingleton, null, {all: false});
 				};
 			};
 
@@ -5295,7 +5245,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 			if (ctx.baseIsType) {
 				if ((obj !== this) && !types.get(obj, __Internal__.symbolInitialized)) {
-					types.setAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true, direct: true});
+					types.setJsAttribute(obj, __Internal__.symbolInitialized, true, {configurable: true});
 				};
 			};
 
@@ -5409,7 +5359,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 				[types.NewSymbol]: __Internal__._createTypeNew(ctx),
 			};
-			types.setAttributes(type, typeValues, {all: false, ignoreWhenReadOnly: true, direct: true});
+			types.setJsAttributes(type, typeValues, {all: false, ignoreWhenReadOnly: true});
 
 			// <FUTURE> "Public instance fields"
 			//tools.extend(proto, {
@@ -5420,7 +5370,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				[__Internal__.symbolIsType]: true,
 				[__Internal__.symbolTypeUUID]: uuid,
 			};
-			types.setAttributes(proto, protoValues, {all: false, direct: true});
+			types.setJsAttributes(proto, protoValues, {all: false});
 
 			ctx.type = type;
 			ctx.proto = proto;
@@ -5593,7 +5543,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
+						types.setJsAttribute(this, __Internal__.symbolInitialized, false, {});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -5618,12 +5568,12 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				trapped: false,
 
 				_new(/*paramarray*/...args) {
-					types.setAttribute(this, 'name', types.getTypeName(this), {direct: true});
+					types.setJsAttribute(this, 'name', types.getTypeName(this), {});
 				},
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
+						types.setJsAttribute(this, __Internal__.symbolInitialized, false, {});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6166,7 +6116,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			};
 
 			if (!types.isSingleton(type)) {
-				types.setAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true, direct: true});
+				types.setJsAttribute(type, __Internal__.symbol$IsSingleton, true, {configurable: true});
 			};
 
 			return type;
@@ -6199,7 +6149,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
+						types.setJsAttribute(this, __Internal__.symbolInitialized, false, {});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6225,7 +6175,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 				_delete() {
 					if (this[__Internal__.symbolInitialized]) {
-						types.setAttribute(this, __Internal__.symbolInitialized, false, {direct: true});
+						types.setJsAttribute(this, __Internal__.symbolInitialized, false, {});
 					} else {
 						// Object already deleted, should not happens.
 						types.DEBUGGER();
@@ -6290,7 +6240,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				_new: types.SUPER(function _new(type, /*optional*/init) {
 					this._super();
 					init = tools.nullObject(init);
-					types.setAttributes(this, {
+					types.setJsAttributes(this, {
 						type: type,
 						// NOTE: Event targets are responsible to bubble events to their parent when "bubbling" is true.
 						bubbles: !!init.bubbles,
@@ -6372,7 +6322,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			{
 				_new: types.SUPER(function _new() {
 					this._super();
-					types.setAttribute(this, __Internal__.symbolEventListeners, tools.nullObject(), {configurable: true});
+					types.setJsAttribute(this, __Internal__.symbolEventListeners, tools.nullObject(), {configurable: true});
 				}),
 
 				_delete: types.SUPER(function _delete() {
@@ -6596,7 +6546,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						}
 					//! END_REPLACE()
 					, function clearListeners() {
-						types.setAttribute(this, __Internal__.symbolEventListeners, tools.nullObject());
+						types.setJsAttribute(this, __Internal__.symbolEventListeners, tools.nullObject());
 					}),
 			}
 		)));
@@ -6613,11 +6563,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		};
 
 		if (types.isObjectLike(obj) && types.isString(name) && !types.has(obj, 'DD_FULL_NAME') && types.isExtensible(obj)) {
-			types.setAttributes(obj, {
+			types.setJsAttributes(obj, {
 				DD_PARENT: this,
 				DD_NAME: name,
 				DD_FULL_NAME: (this.DD_FULL_NAME + '.' + name),
-			}, {all: false, direct: true});
+			}, {all: false});
 		};
 
 		const isType = types.isType(obj);
@@ -6632,14 +6582,13 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				call: obj.call,
 				bind: obj.bind,
 			};
-			types.setAttributes(obj, values, {
+			types.setJsAttributes(obj, values, {
 				ignoreWhenReadOnly: true,
-				direct: true,
 				all: false
 			});
 		};
 
-		types.setAttribute(this, name, obj, {
+		types.setJsAttribute(this, name, obj, {
 			configurable: !protect,
 			enumerable: true,
 			writable: !protect,
@@ -6661,11 +6610,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			fullName = (name ? this.DD_FULL_NAME + '.' + name : null);
 
 		if (!types.has(type, 'DD_FULL_NAME') && types.isExtensible(type)) {
-			types.setAttributes(type, {
+			types.setJsAttributes(type, {
 				DD_PARENT: this,
 				DD_NAME: name,
 				DD_FULL_NAME: fullName,
-			}, {all: false, direct: true});
+			}, {all: false});
 		};
 
 		if (!types.isErrorType(type) && !types.isInitialized(type)) {
@@ -6673,10 +6622,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		};
 
 		// NOTE: Will get protected when the real REGISTER will get called.
-		types.setAttribute(this, name, type, {
-			configurable: true,
-			direct: true,
-		});
+		types.setJsAttribute(this, name, type, {configurable: true});
 
 		__Internal__.tempRegisteredOthers.push([this, [type, args, protect]]);
 	};
@@ -6800,7 +6746,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				_new: types.SUPER(function _new(/*optional*/parent, /*optional*/name, /*optional*/fullName) {
 					this._super();
 
-					types.setAttributes(this, {
+					types.setJsAttributes(this, {
 						DD_PARENT: parent,
 						DD_NAME: name,
 						DD_FULL_NAME: fullName,
@@ -6809,7 +6755,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			}
 		));
 
-	types.setAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
+	types.setJsAttribute(types.Namespace, __Internal__.symbolInitialized, true, {all: true});
 	__Internal__.ADD('Namespace', types.Namespace);
 
 	//==============
@@ -7127,7 +7073,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					};
 
 					//delete types.Namespace[__Internal__.symbolInitialized];
-					types.setAttribute(types.Namespace, __Internal__.symbolInitialized, null, {configurable: true});
+					types.setJsAttribute(types.Namespace, __Internal__.symbolInitialized, null, {configurable: true});
 					_shared.Natives.functionCallCall(_shared.REGISTER, root.Doodad.Types, types.Namespace, null, true);
 
 					for (let i = 0; i < __Internal__.tempTypesRegistered.length; i++) {

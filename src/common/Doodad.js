@@ -502,7 +502,7 @@ exports.add = function add(modules) {
 					};
 					const isType = types.isType(obj),
 						cls = (isType ? obj : types.getType(obj));
-					const impls = types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, null, _shared.SECRET);
+					const impls = types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, _shared.SECRET);
 					if (types.isArray(type)) {
 						const typeLen = type.length;
 						for (let i = 0; i < typeLen; i++) {
@@ -565,7 +565,7 @@ exports.add = function add(modules) {
 					};
 					const isType = types.isType(obj),
 						cls = (isType ? obj : types.getType(obj));
-					return types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, null, _shared.SECRET);
+					return types.getAttribute((!isType && ((cls[_shared.ModifiersSymbol] || 0) & doodad.ClassModifiers.Expandable) ? obj : cls), _shared.ImplementsSymbol, _shared.SECRET);
 				}));
 
 			types.ADD('getMethodScope', root.DD_DOC(
@@ -599,7 +599,7 @@ exports.add = function add(modules) {
 						return null;
 					};
 					const isType = types.isType(obj);
-					const values = types.getAttributes(obj, [name, _shared.AttributesSymbol], null, _shared.SECRET);
+					const values = types.getAttributes(obj, [name, _shared.AttributesSymbol], _shared.SECRET);
 					const attributes = values[_shared.AttributesSymbol];
 					if (!attributes || !(name in attributes)) {
 						return null;
@@ -669,7 +669,7 @@ exports.add = function add(modules) {
 					if (!types.isLike(obj, __Internal__.CLASS_OR_INTERFACE)) {
 						return false;
 					};
-					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
+					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, _shared.SECRET);
 					if (!attrs || !(name in attrs)) {
 						return false;
 					};
@@ -682,7 +682,7 @@ exports.add = function add(modules) {
 					if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
 						return false;
 					};
-					const method = types.getAttribute(obj, name, null, _shared.SECRET);
+					const method = types.getAttribute(obj, name, _shared.SECRET);
 					return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
 				}));
 
@@ -854,14 +854,14 @@ exports.add = function add(modules) {
 						};
 						return undefined; // "consistent-return"
 					};
-					types.setAttribute(callback, _shared.CallbackSymbol, doodad.Callback, {});
-					types.setAttribute(callback, _shared.BoundObjectSymbol, orgObj, {});
-					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+					types.setJsAttribute(callback, _shared.CallbackSymbol, doodad.Callback, {});
+					types.setJsAttribute(callback, _shared.BoundObjectSymbol, orgObj, {});
+					types.setJsAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
 					return callback;
 				}));
 
-			types.setAttribute(doodad.Callback, _shared.BaseSymbol, types.Callback, {});
+			types.setJsAttribute(doodad.Callback, _shared.BaseSymbol, types.Callback, {});
 
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -946,14 +946,14 @@ exports.add = function add(modules) {
 							};
 						}, 0, null, args);
 					};
-					types.setAttribute(callback, _shared.CallbackSymbol, doodad.AsyncCallback, {});
-					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
-					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
+					types.setJsAttribute(callback, _shared.CallbackSymbol, doodad.AsyncCallback, {});
+					types.setJsAttribute(callback, _shared.BoundObjectSymbol, obj, {});
+					types.setJsAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
 					return callback;
 				}));
 
-			types.setAttribute(doodad.AsyncCallback, _shared.BaseSymbol, doodad.Callback, {});
+			types.setJsAttribute(doodad.AsyncCallback, _shared.BaseSymbol, doodad.Callback, {});
 
 			//==================================
 			// Inside
@@ -1049,8 +1049,8 @@ exports.add = function add(modules) {
 					};
 				};
 				_insider = types.setPrototypeOf(_insider, doodad.InsiderFunction);
-				types.setAttribute(_insider, _shared.BoundObjectSymbol, obj, {});
-				types.setAttribute(_insider, _shared.OriginalValueSymbol, fn, {});
+				types.setJsAttribute(_insider, _shared.BoundObjectSymbol, obj, {});
+				types.setJsAttribute(_insider, _shared.OriginalValueSymbol, fn, {});
 				return _insider;
 			};
 
@@ -1155,143 +1155,220 @@ exports.add = function add(modules) {
 				}
 			};
 
-			__Internal__.oldGetAttribute = _shared.getAttribute;
-			_shared.getAttribute = function getAttribute(obj, attr, /*optional*/options, /*optional*/secret) {
-				const type = types.getType(obj);
-				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
-				if (needsInside && !direct) {
-					const oldInside = __Internal__.setInside(obj, secret, true);
-					let optsDirect = null;
-					try {
-						const storage = obj[_shared.AttributesStorageSymbol];
-						if (types.hasIn(storage, attr)) {
-							return storage[attr];
-						} else {
-							if (!optsDirect) {
-								optsDirect = tools.extend({}, options, {direct: true});
-							};
-							return __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
-						}
-					} finally {
-						if (oldInside) {
-							__Internal__.restoreInside(oldInside);
-						};
+			types.ADD('getAttribute', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'Object',
+								optional: false,
+								description: "A Doodad object.",
+							},
+							attr: {
+								type: 'string,symbol',
+								optional: false,
+								description: "Attribute name or symbol.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Confirms the secret.",
+							},
+						},
+						returns: 'any',
+						description: "Get an attribute value from a Doodad object like being inside that object.",
 					}
-				} else {
-					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
-					return __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
-				}
-			};
+				//! END_REPLACE()
+				, function getAttribute(obj, attr, /*optional*/secret) {
+					const type = types.getType(obj);
+					const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
+					if (needsInside) {
+						const oldInside = __Internal__.setInside(obj, secret, true);
+						try {
+							const storage = obj[_shared.AttributesStorageSymbol];
+							if (types.hasIn(storage, attr)) {
+								return storage[attr];
+							} else {
+								return types.getJsAttribute(obj, attr);
+							}
+						} finally {
+							if (oldInside) {
+								__Internal__.restoreInside(oldInside);
+							};
+						}
+					} else {
+						return types.getJsAttribute(obj, attr);
+					}
+				}));
 
-			__Internal__.oldGetAttributes = _shared.getAttributes;
-			_shared.getAttributes = function getAttributes(obj, attrs, /*optional*/options, /*optional*/secret) {
-				const type = types.getType(obj);
-				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
-				if (needsInside && !direct) {
-					const oldInside = __Internal__.setInside(obj, secret, true);
-					try {
-						const storage = (direct ? undefined : obj[_shared.AttributesStorageSymbol]);
-						const attrsLen = attrs.length,
-							result = {};
-						let optsDirect = null;
-						for (let i = 0; i < attrsLen; i++) {
-							if (types.has(attrs, i)) {
-								const attr = attrs[i];
-								if (types.hasIn(storage, attr)) {
-									result[attr] = storage[attr];
-								} else {
-									if (!optsDirect) {
-										optsDirect = tools.extend({}, options, {direct: true});
+			types.ADD('getAttributes', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'Object',
+								optional: false,
+								description: "A Doodad object.",
+							},
+							attrs: {
+								type: 'arrayof(string,symbol)',
+								optional: false,
+								description: "Attribute names or symbols.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Confirms the secret.",
+							},
+						},
+						returns: 'object',
+						description: "Get attributes from a Doodad object like being inside that object.",
+					}
+				//! END_REPLACE()
+				, function getAttributes(obj, attrs, /*optional*/secret) {
+					const type = types.getType(obj);
+					const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
+					if (needsInside) {
+						const oldInside = __Internal__.setInside(obj, secret, true);
+						try {
+							const storage = obj[_shared.AttributesStorageSymbol];
+							const attrsLen = attrs.length,
+								result = {};
+							for (let i = 0; i < attrsLen; i++) {
+								if (types.has(attrs, i)) {
+									const attr = attrs[i];
+									if (types.hasIn(storage, attr)) {
+										result[attr] = storage[attr];
+									} else {
+										result[attr] = types.getJsAttribute(obj, attr);
 									};
-									result[attr] = __Internal__.oldGetAttribute(obj, attr, optsDirect, secret);
 								};
 							};
-						};
-						return result;
-					} finally {
-						if (oldInside) {
-							__Internal__.restoreInside(oldInside);
-						};
-					}
-				} else {
-					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
-					return __Internal__.oldGetAttributes(obj, attrs, optsDirect, secret);
-				}
-			};
-
-			__Internal__.oldSetAttribute = _shared.setAttribute;
-			_shared.setAttribute = function setAttribute(obj, attr, value, /*optional*/options, /*optional*/secret) {
-				const type = types.getType(obj);
-				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
-				if (needsInside && !direct) {
-					const oldInside = __Internal__.setInside(obj, secret, true);
-					let optsDirect = null;
-					try {
-						const storage = obj[_shared.AttributesStorageSymbol];
-						if (types.hasIn(storage, attr)) {
-							storage[attr] = value;
-							return value;
-						} else {
-							if (!optsDirect) {
-								optsDirect = tools.extend({}, options, {direct: true});
+							return result;
+						} finally {
+							if (oldInside) {
+								__Internal__.restoreInside(oldInside);
 							};
-							return __Internal__.oldSetAttribute(obj, attr, value, optsDirect, secret);
 						}
-					} finally {
-						if (oldInside) {
-							__Internal__.restoreInside(oldInside);
-						};
+					} else {
+						return types.getJsAttributes(obj, attrs);
 					}
-				} else {
-					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
-					return __Internal__.oldSetAttribute(obj, attr, value, optsDirect, secret);
-				}
-			};
+				}));
 
-			__Internal__.oldSetAttributes = _shared.setAttributes;
-			_shared.setAttributes = function setAttributes(obj, values, /*optional*/options, /*optional*/secret) {
-				const type = types.getType(obj);
-				const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
-				const defDirect = types.get(options, 'direct', null);
-				const direct = ((defDirect === null) ? !needsInside : !!defDirect);
-				if (needsInside && !direct) {
-					const oldInside = __Internal__.setInside(obj, secret, true);
-					let optsDirect = null;
-					try {
-						const storage = obj[_shared.AttributesStorageSymbol];
-						const loopKeys = function _loopKeys(keys) {
-							const keysLen = keys.length;
-							for (let i = 0; i < keysLen; i++) {
-								const key = keys[i];
-								if (types.hasIn(storage, key)) {
-									storage[key] = values[key];
-								} else {
-									if (!optsDirect) {
-										optsDirect = tools.extend({}, options, {direct: true});
+			types.ADD('setAttribute', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'Object',
+								optional: false,
+								description: "A Doodad object.",
+							},
+							attr: {
+								type: 'string,symbol',
+								optional: false,
+								description: "Attribute name or symbol.",
+							},
+							value: {
+								type: 'any',
+								optional: false,
+								description: "Value.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Confirms the secret.",
+							},
+						},
+						returns: 'object',
+						description: "Sets the attribute value of a Doodad object like being inside that object.",
+					}
+				//! END_REPLACE()
+				, function setAttribute(obj, attr, value, /*optional*/secret) {
+					const type = types.getType(obj);
+					const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
+					if (needsInside) {
+						const oldInside = __Internal__.setInside(obj, secret, true);
+						try {
+							const storage = obj[_shared.AttributesStorageSymbol];
+							if (types.hasIn(storage, attr)) {
+								storage[attr] = value;
+								return value;
+							} else {
+								return types.setJsAttribute(obj, attr, value);
+							}
+						} finally {
+							if (oldInside) {
+								__Internal__.restoreInside(oldInside);
+							};
+						}
+					} else {
+						return types.setJsAttribute(obj, attr, value);
+					}
+				}));
+
+			types.ADD('setAttributes', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj: {
+								type: 'Object',
+								optional: false,
+								description: "A Doodad object.",
+							},
+							values: {
+								type: 'object',
+								optional: false,
+								description: "Attribute values.",
+							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "Confirms the secret.",
+							},
+						},
+						returns: 'object',
+						description: "Sets the attribute values of a Doodad object like being inside that object.",
+					}
+				//! END_REPLACE()
+				, function setAttributes(obj, values, /*optional*/secret) {
+					const type = types.getType(obj);
+					const needsInside = type && (types.isClass(type) || types.isInterfaceClass(type));
+					if (needsInside) {
+						const oldInside = __Internal__.setInside(obj, secret, true);
+						try {
+							const storage = obj[_shared.AttributesStorageSymbol];
+							const loopKeys = function _loopKeys(keys) {
+								const keysLen = keys.length;
+								for (let i = 0; i < keysLen; i++) {
+									const key = keys[i];
+									if (types.hasIn(storage, key)) {
+										storage[key] = values[key];
+									} else {
+										types.setJsAttribute(obj, key, values[key]);
 									};
-									__Internal__.oldSetAttribute(obj, key, values[key], optsDirect, secret);
 								};
 							};
-						};
-						loopKeys(types.keys(values));
-						loopKeys(types.symbols(values));
-						return values;
-					} finally {
-						if (oldInside) {
-							__Internal__.restoreInside(oldInside);
-						};
+							loopKeys(types.keys(values));
+							loopKeys(types.symbols(values));
+							return values;
+						} finally {
+							if (oldInside) {
+								__Internal__.restoreInside(oldInside);
+							};
+						}
+					} else {
+						return types.setJsAttributes(obj, values);
 					}
-				} else {
-					const optsDirect = (defDirect ? options : tools.extend({}, options, {direct: true}));
-					return __Internal__.oldSetAttributes(obj, values, optsDirect, secret);
-				}
-			};
+				}));
 
 			//==================================
 			// Utilities
@@ -1323,7 +1400,7 @@ exports.add = function add(modules) {
 					if (!types.isClass(type) && !types.isInterfaceClass(type)) {
 						return undefined;
 					};
-					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
+					const attrs = types.getAttribute(obj, _shared.AttributesSymbol, _shared.SECRET);
 					if (!attrs || !(name in attrs)) {
 						return null;
 					};
@@ -1333,7 +1410,7 @@ exports.add = function add(modules) {
 			__Internal__.oldDESTROY = _shared.DESTROY;
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types._implements(obj, mixIns.Creatable)) {
-					const destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, null, _shared.SECRET);
+					const destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, _shared.SECRET);
 					if (destroyed === false) { // NOTE: Can be "null" for "not created".
 						if (types.isType(obj)) {
 							obj.$destroy();
@@ -1349,7 +1426,7 @@ exports.add = function add(modules) {
 			__Internal__.oldDESTROYED = _shared.DESTROYED;
 			_shared.DESTROYED = function DESTROYED(obj) {
 				if (types._implements(obj, mixIns.Creatable)) {
-					const destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, null, _shared.SECRET);
+					const destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, _shared.SECRET);
 					return (types.isType(obj) ? !!destroyed : (destroyed !== false)); // NOTE: Can be "null" for "not created".
 				} else {
 					return __Internal__.oldDESTROYED(obj);
@@ -1423,7 +1500,7 @@ exports.add = function add(modules) {
 						//	call: type.call,
 						//	bind: type.bind,
 						//};
-						//types.setAttributes(type, values, {all: false, ignoreWhenReadOnly: true, direct: true}, _shared.SECRET);
+						//types.setJsAttributes(type, values, {all: false, ignoreWhenReadOnly: true}, _shared.SECRET);
 
 						if (args) {
 							newType = types.newInstance(newType, args);
@@ -1433,11 +1510,11 @@ exports.add = function add(modules) {
 					};
 
 					if (!types.get(newType, 'DD_FULL_NAME')) {
-						types.setAttributes(newType, {
+						types.setJsAttributes(newType, {
 							DD_PARENT: this,
 							DD_NAME: name,
 							DD_FULL_NAME: fullName,
-						}, {all: false, direct: true}, _shared.SECRET);
+						}, {all: false}, _shared.SECRET);
 					};
 
 					if (!isPrivate) {
@@ -1937,7 +2014,7 @@ exports.add = function add(modules) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], {direct: false}, _shared.SECRET);
+											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], _shared.SECRET);
 											const dispatch = result[_shared.CurrentDispatchSymbol],
 												caller = result[_shared.CurrentCallerIndexSymbol];
 											if (attribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
@@ -1970,7 +2047,7 @@ exports.add = function add(modules) {
 									return cache.storage[attr];
 								}
 							};
-							types.setAttribute(getter, _shared.CallerSymbol, doodad.AttributeGetter, {});
+							types.setJsAttribute(getter, _shared.CallerSymbol, doodad.AttributeGetter, {});
 							return getter;
 						}),
 
@@ -2015,7 +2092,7 @@ exports.add = function add(modules) {
 								if (__Internal__.hasScopes) {
 									if (extender.enableScopes) {
 										if (!__Internal__.isInside(this)) {
-											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], {direct: false}, _shared.SECRET);
+											const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], _shared.SECRET);
 											const dispatch = result[_shared.CurrentDispatchSymbol],
 												caller = result[_shared.CurrentCallerIndexSymbol];
 											if (attribute[_shared.ScopeSymbol] === doodad.Scopes.Private) {
@@ -2056,7 +2133,7 @@ exports.add = function add(modules) {
 								};
 								return value;
 							};
-							types.setAttribute(setter, _shared.CallerSymbol, doodad.AttributeSetter, {});
+							types.setJsAttribute(setter, _shared.CallerSymbol, doodad.AttributeSetter, {});
 							return setter;
 						}),
 
@@ -2293,14 +2370,13 @@ exports.add = function add(modules) {
 										configurable: cf,
 										enumerable: enu,
 										writable: !ro,
-										direct: true,
 									});
 									__Internal__.attributeDescriptors[key] = desc;
 								};
 								const descId = generator.vars.add(desc);
 
 								generator.code.add(
-									"types.setAttribute(" + generator.objId + ", " + attrId + ", " + valueId + ", " + descId /*+ ", _shared.SECRET"*/ + ")"
+									"types.setJsAttribute(" + generator.objId + ", " + attrId + ", " + valueId + ", " + descId + ")"
 								);
 							};
 						}),
@@ -2590,12 +2666,12 @@ exports.add = function add(modules) {
 								call: fn.call,
 								bind: fn.bind,
 							};
-							types.setAttributes(fn, values, {all: false, ignoreWhenReadOnly: true, direct: true}, _shared.SECRET);
+							types.setJsAttributes(fn, values, {all: false, ignoreWhenReadOnly: true});
 
 							const _caller = function caller(/*paramarray*/...params) {
 								//const type = types.getType(this);
 
-								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], null, _shared.SECRET),
+								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], _shared.SECRET),
 									currentDispatch = result[_shared.CurrentDispatchSymbol],
 									currentCaller = result[_shared.CurrentCallerIndexSymbol] + 1,
 									oldSuper = result._super,
@@ -2620,8 +2696,8 @@ exports.add = function add(modules) {
 										_super = function() {};
 										_super[_shared.CalledSymbol] = true;
 									};
-									types.setAttribute(this, '_super', _super, null, _shared.SECRET);
-									types.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller, null, _shared.SECRET);
+									types.setAttribute(this, '_super', _super, _shared.SECRET);
+									types.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller, _shared.SECRET);
 
 									const callFn = (extender.byReference ? fn : types.unbox(_caller[_shared.PrototypeSymbol][attr]));
 
@@ -2660,9 +2736,9 @@ exports.add = function add(modules) {
 									}
 
 								} finally {
-									types.setAttribute(this, '_super', oldSuper, null, _shared.SECRET);
+									types.setAttribute(this, '_super', oldSuper, _shared.SECRET);
 									if (!types.isNothing(currentCaller)) {
-										types.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller - 1, null, _shared.SECRET);
+										types.setAttribute(this, _shared.CurrentCallerIndexSymbol, currentCaller - 1, _shared.SECRET);
 									};
 									if (!types.isNothing(_super)) {
 										_super[_shared.CalledSymbol] = oldCalled;
@@ -2670,7 +2746,7 @@ exports.add = function add(modules) {
 								}
 							};
 
-							types.setAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
+							types.setJsAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 							return _caller;
 						}),
@@ -2710,20 +2786,20 @@ exports.add = function add(modules) {
 					handleDispatchError: function handleDispatchError(ex, attr, obj) {
 						const isType = types.isType(obj),
 							type = (isType ? obj : types.getType(obj));
-						const attributes = types.getAttribute(obj, _shared.AttributesSymbol, null, _shared.SECRET);
+						const attributes = types.getAttribute(obj, _shared.AttributesSymbol, _shared.SECRET);
 						const notReentrantMap = __Internal__.notReentrantMap.get(obj);
 						let emitted = false;
 						if (!ex.bubble) {
 							if ((types.isClass(type) || types.isInterfaceClass(type)) && obj._implements(mixIns.Events)) {
 								let destroyed = false;
 								if (obj._implements(mixIns.Creatable)) {
-									destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, null, _shared.SECRET);
+									destroyed = types.getAttribute(obj, _shared.DestroyedSymbol, _shared.SECRET);
 								};
 								if (destroyed === false) { // NOTE: Can be 'null' for "not created".
 									const errorEvent = obj.__ERROR_EVENT;
 									if (errorEvent && (attr !== errorEvent) && (!notReentrantMap || !notReentrantMap.get(errorEvent))) {
 										const errorAttr = attributes[errorEvent];
-										const onError = types.getAttribute(obj, errorEvent, null, _shared.SECRET);
+										const onError = types.getAttribute(obj, errorEvent, _shared.SECRET);
 										if (types.isLike(errorAttr[_shared.ExtenderSymbol], extenders.RawEvent)) {
 											if (onError.getCount() > 0) {
 												// <PRB> Node.Js re-emits 'error'.
@@ -2807,7 +2883,7 @@ exports.add = function add(modules) {
 									//	throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has been destroyed.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 									//};
 									if (types._implements(this, mixIns.Creatable)) {
-										const destroyed = types.getAttribute(this, _shared.DestroyedSymbol, null, _shared.SECRET);
+										const destroyed = types.getAttribute(this, _shared.DestroyedSymbol, _shared.SECRET);
 										if ((destroyed === null) && !forType) {
 											throw new types.NotAvailable("Method '~0~' of '~1~' is unavailable because object has not been created.", [_dispatch[_shared.NameSymbol], types.getTypeName(type) || __Internal__.ANONYMOUS]);
 										};
@@ -2821,7 +2897,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], null, _shared.SECRET),
+								const result = types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol/*, _shared.AttributesSymbol*/], _shared.SECRET),
 									oldDispatch = result[_shared.CurrentDispatchSymbol],
 									oldCaller = result[_shared.CurrentCallerIndexSymbol];
 								//attributes = result[_shared.AttributesSymbol];
@@ -2895,7 +2971,7 @@ exports.add = function add(modules) {
 								//	oldHostCaller;
 
 								//if (host) {
-								//	const result = types.getAttributes(host, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], null, _shared.SECRET);
+								//	const result = types.getAttributes(host, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], _shared.SECRET);
 								//	oldHostDispatch = result[_shared.CurrentDispatchSymbol];
 								//	oldHostCaller = result[_shared.CurrentCallerIndexSymbol];
 								//};
@@ -2909,10 +2985,10 @@ exports.add = function add(modules) {
 										[_shared.CurrentDispatchSymbol]: _dispatch,
 										[_shared.CurrentCallerIndexSymbol]: 0,
 									};
-									types.setAttributes(this, values, null, _shared.SECRET);
+									types.setAttributes(this, values, _shared.SECRET);
 
 									//if (host) {
-									//	types.setAttributes(host, values, null, _shared.SECRET);
+									//	types.setAttributes(host, values, _shared.SECRET);
 									//};
 
 									//_dispatch[_shared.SuperAsyncSymbol] = false;
@@ -2981,21 +3057,21 @@ exports.add = function add(modules) {
 										[_shared.CurrentDispatchSymbol]: oldDispatch,
 										[_shared.CurrentCallerIndexSymbol]: oldCaller,
 									};
-									types.setAttributes(this, values, null, _shared.SECRET);
+									types.setAttributes(this, values, _shared.SECRET);
 
 									//if (host) {
 									//	const values = {
 									//		[_shared.CurrentDispatchSymbol]: oldHostDispatch,
 									//		[_shared.CurrentCallerIndexSymbol]: oldHostCaller,
 									//	};
-									//	types.setAttributes(host, values, null, _shared.SECRET);
+									//	types.setAttributes(host, values, _shared.SECRET);
 									//};
 								};
 
 								return retVal;
 							};
 
-							types.setAttribute(_dispatch, _shared.CallerSymbol, doodad.DispatchFunction, {});
+							types.setJsAttribute(_dispatch, _shared.CallerSymbol, doodad.DispatchFunction, {});
 
 							return _dispatch;
 						}),
@@ -3087,8 +3163,8 @@ exports.add = function add(modules) {
 							// Create dispatch function
 							const dispatch = this.dispatchTemplate(attr, attribute, callers);
 
-							types.setAttribute(dispatch, _shared.NameSymbol, attr, {});
-							types.setAttribute(dispatch, _shared.CallersSymbol, callers, {});
+							types.setJsAttribute(dispatch, _shared.NameSymbol, attr, {});
+							types.setJsAttribute(dispatch, _shared.CallersSymbol, callers, {});
 
 							let modifiers = attribute[_shared.ModifiersSymbol] || 0;
 
@@ -3101,7 +3177,7 @@ exports.add = function add(modules) {
 								};
 							};
 
-							types.setAttribute(dispatch, _shared.ModifiersSymbol, modifiers, {});
+							types.setJsAttribute(dispatch, _shared.ModifiersSymbol, modifiers, {});
 
 							return dispatch;
 						}),
@@ -3543,11 +3619,11 @@ exports.add = function add(modules) {
 							root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 						};
 
-						types.setAttribute(fn, _shared.CallerSymbol, doodad.CallerFunction, {});
+						types.setJsAttribute(fn, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 						const _caller = tools.nullObject();
 
-						types.setAttribute(_caller, _shared.FunctionSymbol, fn, {});
+						types.setJsAttribute(_caller, _shared.FunctionSymbol, fn, {});
 
 						return _caller;
 					},
@@ -3585,11 +3661,11 @@ exports.add = function add(modules) {
 
 							if (this.dontSetSuper) {
 								_caller = function caller(/*paramarray*/...params) {
-									const oldSuper = types.getAttribute(this, '_super', null, _shared.SECRET);
+									const oldSuper = types.getAttribute(this, '_super', _shared.SECRET);
 									try {
 										return fnApply(this, params);
 									} finally {
-										types.setAttribute(this, '_super', oldSuper, null, _shared.SECRET);
+										types.setAttribute(this, '_super', oldSuper, _shared.SECRET);
 									}
 								};
 							} else {
@@ -3597,17 +3673,17 @@ exports.add = function add(modules) {
 									// Do nothing
 								});
 								_caller = function caller(/*paramarray*/...params) {
-									const oldSuper = types.getAttribute(this, '_super', null, _shared.SECRET);
-									types.setAttribute(this, '_super', _super, null, _shared.SECRET);
+									const oldSuper = types.getAttribute(this, '_super', _shared.SECRET);
+									types.setAttribute(this, '_super', _super, _shared.SECRET);
 									try {
 										return fnApply(this, params);
 									} finally {
-										types.setAttribute(this, '_super', oldSuper, null, _shared.SECRET);
+										types.setAttribute(this, '_super', oldSuper, _shared.SECRET);
 									}
 								};
 							};
 
-							types.setAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
+							types.setJsAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 							return _caller;
 						}),
@@ -3621,14 +3697,14 @@ exports.add = function add(modules) {
 
 							_super = this.jsCallerTemplate(attr, caller[_shared.FunctionSymbol], _super);
 
-							types.setAttribute(_super, _shared.PrototypeSymbol, caller[_shared.PrototypeSymbol], {});
+							types.setJsAttribute(_super, _shared.PrototypeSymbol, caller[_shared.PrototypeSymbol], {});
 						};
 
 						if (!this.isOutside) {
 							_super = __Internal__.makeInside(null, _super, _shared.SECRET);
 						};
 
-						types.setAttribute(_super, _shared.CallerSymbol, doodad.DispatchFunction, {});
+						types.setJsAttribute(_super, _shared.CallerSymbol, doodad.DispatchFunction, {});
 
 						return _super;
 					},
@@ -3829,7 +3905,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
 							};
 							generator.code.add(descriptorId + ".get = " + dispatchId);
 						};
@@ -3843,7 +3919,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
 							};
 							generator.code.add(descriptorId + ".set = " + dispatchId);
 						};
@@ -4007,7 +4083,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Base, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Base, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4039,7 +4115,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, _shared.SECRET);
 					return cls;
 				})));
 
@@ -4070,7 +4146,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4095,7 +4171,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Sealed, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Sealed, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4120,7 +4196,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Static, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Static, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4150,7 +4226,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Isolated, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Isolated, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4180,7 +4256,7 @@ exports.add = function add(modules) {
 					if (types.isInitialized(cls)) {
 						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
-					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Expandable, {configurable: true}, _shared.SECRET);
+					types.setAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Expandable, _shared.SECRET);
 					return cls;
 				}));
 
@@ -4197,7 +4273,7 @@ exports.add = function add(modules) {
 							type: {
 								type: 'Class,Interface,arrayof(Class,Interface)',
 								optional: false,
-								descripion: "Class or interface type.",
+								description: "Class or interface type.",
 							},
 							value: {
 								type: 'AttributeBox,any',
@@ -5480,7 +5556,7 @@ exports.add = function add(modules) {
 
 				if (sourceIsClass) {
 					// doodad-js Class
-					sourceTypeProto = types.getAttribute(source, _shared.PrototypeSymbol, null, _shared.SECRET);
+					sourceTypeProto = types.getAttribute(source, _shared.PrototypeSymbol, _shared.SECRET);
 					sourceInstanceProto = sourceTypeProto;
 					sourceTypeToExtend1 = types.keys(sourceTypeAttributes);
 					sourceTypeToExtend2 = types.symbols(sourceTypeAttributes);
@@ -5686,7 +5762,7 @@ exports.add = function add(modules) {
 									_isolated.set(uuid, data);
 								};
 
-								const impls = types.getAttribute(_interface, _shared.ImplementsSymbol, null, _shared.SECRET).values();
+								const impls = types.getAttribute(_interface, _shared.ImplementsSymbol, _shared.SECRET).values();
 
 								for (const impl of impls) {
 									if (!types.isString(impl)) {
@@ -5793,7 +5869,7 @@ exports.add = function add(modules) {
 							// eslint-disable-next-line array-bracket-spacing
 							const data = [/*0*/ protoName, /*1*/ typeExtendedAttributes, /*2*/ destTypeAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater, /*17*/ destInstanceAttributes, /*18*/ instanceExtendedAttributes];
 
-							const sourceData = types.getAttributes(source, [_shared.ImplementsSymbol], null, _shared.SECRET);
+							const sourceData = types.getAttributes(source, [_shared.ImplementsSymbol], _shared.SECRET);
 
 							if (!destImplements.has(sourceType) && (!sourceHasUUID || !destImplements.has(sourceUUID))) {
 								destImplements.add(sourceType);
@@ -5829,8 +5905,8 @@ exports.add = function add(modules) {
 								};
 							};
 
-							const baseTypeData = types.getAttributes(baseType, [_shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
-							const baseInstanceData = types.getAttributes(baseType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
+							const baseTypeData = types.getAttributes(baseType, [_shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
+							const baseInstanceData = types.getAttributes(baseType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
 
 							baseTypeAttributes = baseTypeData[_shared.AttributesSymbol];
 							baseInstanceAttributes = baseInstanceData[_shared.AttributesSymbol];
@@ -5843,8 +5919,8 @@ exports.add = function add(modules) {
 						let sourceInstanceAttributes = null;
 
 						if (sourceIsClass) {
-							const sourceTypeData = types.getAttributes(sourceType, [_shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
-							const sourceInstanceData = types.getAttributes(sourceType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
+							const sourceTypeData = types.getAttributes(sourceType, [_shared.ImplementsSymbol, _shared.AttributesSymbol, _shared.IsolatedSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
+							const sourceInstanceData = types.getAttributes(sourceType.prototype, [_shared.AttributesSymbol, _shared.ToInitializeSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
 
 							sourceTypeAttributes = sourceTypeData[_shared.AttributesSymbol];
 							sourceInstanceAttributes = sourceInstanceData[_shared.AttributesSymbol];
@@ -6101,7 +6177,7 @@ exports.add = function add(modules) {
 
 					root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Type, newType));
 
-					types.setAttribute(proto, _shared.TypeSymbol, newType, {}, _shared.SECRET);
+					types.setJsAttribute(proto, _shared.TypeSymbol, newType, {});
 
 					const newProto = newType.prototype;
 
@@ -6115,7 +6191,7 @@ exports.add = function add(modules) {
 						[_shared.ToInitializeSymbol]: typeToInitialize,
 						[_shared.ToExtendLaterSymbol]: typeToExtendLater,
 					};
-					types.setAttributes(newType, newTypeValues, {configurable: true, direct: true}, _shared.SECRET);
+					types.setJsAttributes(newType, newTypeValues, {configurable: true});
 
 					const newProtoValues = {
 						[_shared.AttributesStorageSymbol]: instanceStorage,
@@ -6124,7 +6200,7 @@ exports.add = function add(modules) {
 						[_shared.ToInitializeSymbol]: instanceToInitialize,
 						[_shared.ToExtendLaterSymbol]: instanceToExtendLater,
 					};
-					types.setAttributes(newProto, newProtoValues, {configurable: true, direct: true}, _shared.SECRET);
+					types.setJsAttributes(newProto, newProtoValues, {configurable: true});
 
 					return newType;
 
@@ -6139,7 +6215,7 @@ exports.add = function add(modules) {
 					};
 
 					if (base._implements(mixIns.Creatable)) {
-						types.setAttribute(base, _shared.DestroyedSymbol, null, null, _shared.SECRET);
+						types.setAttribute(base, _shared.DestroyedSymbol, null, _shared.SECRET);
 					};
 
 					return base;
@@ -6205,12 +6281,12 @@ exports.add = function add(modules) {
 					if (baseIsClass) {
 						// Doodad Class
 
-						const baseTypeData = types.getAttributes(baseType, [_shared.AttributesSymbol, _shared.ModifiersSymbol], null, _shared.SECRET);
+						const baseTypeData = types.getAttributes(baseType, [_shared.AttributesSymbol, _shared.ModifiersSymbol], _shared.SECRET);
 						baseTypeAttributes = baseTypeData[_shared.AttributesSymbol];
 						//??? modifiers = (proto && types.unbox(proto[_shared.ModifiersSymbol]) || 0) | ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
 						modifiers = ((baseTypeData[_shared.ModifiersSymbol] || 0) & _shared.preservedClassModifiers);
 
-						const baseInstanceData = types.getAttributes(baseType.prototype, [_shared.AttributesSymbol], null, _shared.SECRET);
+						const baseInstanceData = types.getAttributes(baseType.prototype, [_shared.AttributesSymbol], _shared.SECRET);
 						baseInstanceAttributes = baseInstanceData[_shared.AttributesSymbol];
 					} else {
 						baseTypeAttributes = baseType;
@@ -6220,7 +6296,7 @@ exports.add = function add(modules) {
 				} else if (baseIsClass) {
 					// Doodad Expandable Object
 
-					const baseTypeData = types.getAttributes(baseType, [_shared.ModifiersSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
+					const baseTypeData = types.getAttributes(baseType, [_shared.ModifiersSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
 
 					modifiers = baseTypeData[_shared.ModifiersSymbol] || 0;
 
@@ -6231,7 +6307,7 @@ exports.add = function add(modules) {
 					typeStorage = baseTypeData[_shared.AttributesStorageSymbol];
 					typeToExtendLater = baseTypeData[_shared.ToExtendLaterSymbol];
 
-					const baseData = types.getAttributes(base, [_shared.AttributesSymbol, _shared.ImplementsSymbol, _shared.IsolatedSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol], null, _shared.SECRET);
+					const baseData = types.getAttributes(base, [_shared.AttributesSymbol, _shared.ImplementsSymbol, _shared.IsolatedSymbol, _shared.AttributesStorageSymbol, _shared.ToExtendLaterSymbol], _shared.SECRET);
 
 					destInstanceAttributes = baseData[_shared.AttributesSymbol];
 					_implements = baseData[_shared.ImplementsSymbol];
@@ -6393,7 +6469,7 @@ exports.add = function add(modules) {
 							throw new types.ValueError("Method '~0~' doesn't exist or is not implemented in type '~1~'.", [name, types.getTypeName(cls) || __Internal__.ANONYMOUS]);
 						};
 
-						const newDispatch = types.getAttribute(proto, name, null, _shared.SECRET),
+						const newDispatch = types.getAttribute(proto, name, _shared.SECRET),
 							notReentrantMap = __Internal__.notReentrantMap.get(this),
 							self = this; // NOTE: That prevents to do "return _shared.Natives.functionBindCall(_superFrom, this)"
 
@@ -6480,7 +6556,7 @@ exports.add = function add(modules) {
 								return extender.validateDispatchResult(undefined, attr, async, attribute, this, _shared.SECRET);
 							};
 
-							const oldValues = types.getAttributes(this, ['_super', _shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], null, _shared.SECRET);
+							const oldValues = types.getAttributes(this, ['_super', _shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol], _shared.SECRET);
 							const oldCallerCalled = _super[_shared.CalledSymbol];
 
 							const oldInside = __Internal__.setInside(this, _shared.SECRET, true);
@@ -6493,7 +6569,7 @@ exports.add = function add(modules) {
 									[_shared.CurrentDispatchSymbol]: dispatch,
 									[_shared.CurrentCallerIndexSymbol]: index,
 								};
-								types.setAttributes(this, attrs, null, _shared.SECRET);
+								types.setAttributes(this, attrs, _shared.SECRET);
 
 								_super[_shared.CalledSymbol] = false;
 
@@ -6545,7 +6621,7 @@ exports.add = function add(modules) {
 
 								_super[_shared.CalledSymbol] = oldCallerCalled;
 
-								types.setAttributes(this, oldValues, null, _shared.SECRET);
+								types.setAttributes(this, oldValues, _shared.SECRET);
 							};
 
 							return retVal;
@@ -6556,7 +6632,7 @@ exports.add = function add(modules) {
 
 			__Internal__.callOutsideFn = function callOutside(fn, /*optional*/args) {
 				const isInside = __Internal__.isInside(this);
-				const oldValues = isInside && types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], null, _shared.SECRET);
+				const oldValues = isInside && types.getAttributes(this, [_shared.CurrentDispatchSymbol, _shared.CurrentCallerIndexSymbol, '_super'], _shared.SECRET);
 				const dispatch = isInside && oldValues[_shared.CurrentDispatchSymbol];
 				const callers = dispatch && dispatch[_shared.CallersSymbol];
 				const caller = callers && callers[oldValues[_shared.CurrentCallerIndexSymbol] - 1];
@@ -6576,7 +6652,7 @@ exports.add = function add(modules) {
 						caller[_shared.CalledSymbol] = oldCallerCalled;
 					};
 					if (dispatch) {
-						types.setAttributes(this, oldValues, null, _shared.SECRET);
+						types.setAttributes(this, oldValues, _shared.SECRET);
 					};
 				}
 			};
@@ -6611,13 +6687,13 @@ exports.add = function add(modules) {
 					const cb = function outside(/*paramarray*/...params) {
 						return _shared.Natives.functionCallCall(__Internal__.callOutsideFn, obj, fn, params);
 					};
-					types.setAttribute(cb, _shared.CallbackSymbol, doodad.OutsideCallback, {});
-					types.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
-					types.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
+					types.setJsAttribute(cb, _shared.CallbackSymbol, doodad.OutsideCallback, {});
+					types.setJsAttribute(cb, _shared.BoundObjectSymbol, obj, {});
+					types.setJsAttribute(cb, _shared.OriginalValueSymbol, fn, {});
 					return cb;
 				}));
 
-			types.setAttribute(doodad.OutsideCallback, _shared.BaseSymbol, doodad.Callback, {});
+			types.setJsAttribute(doodad.OutsideCallback, _shared.BaseSymbol, doodad.Callback, {});
 
 			__Internal__.makeOutsideFn = function makeOutside(fn) {
 				if (types.isCallback(fn)) {
@@ -6716,11 +6792,11 @@ exports.add = function add(modules) {
 
 							if (!isBase && !isStatic) {
 								const initInstance = __Internal__.initializeAttributes(instanceAttributes, false, values, false, null, instanceToInitialize);
-								types.setAttribute(this, _shared.InitInstanceSymbol, initInstance, null, _shared.SECRET);
+								types.setAttribute(this, _shared.InitInstanceSymbol, initInstance, _shared.SECRET);
 							};
 
 						} else {
-							const instanceStorage = types.clone(types.getAttribute(cls.prototype, _shared.AttributesStorageSymbol, null, _shared.SECRET));
+							const instanceStorage = types.clone(types.getAttribute(cls.prototype, _shared.AttributesStorageSymbol, _shared.SECRET));
 							//instanceStorage[_shared.AttributesStorageSymbol] = instanceStorage; // <<< Will be make by "_shared.InitInstanceSymbol"
 
 							cls[_shared.InitInstanceSymbol](this, instanceStorage);
@@ -6827,7 +6903,7 @@ exports.add = function add(modules) {
 
 							let cache = this[_shared.IsolatedCacheSymbol];
 							if (!cache) {
-								cache = types.setAttribute(this, _shared.IsolatedCacheSymbol, new types.Map(), null, _shared.SECRET);
+								cache = types.setAttribute(this, _shared.IsolatedCacheSymbol, new types.Map(), _shared.SECRET);
 							};
 
 							if (cache.has(type)) {
@@ -6887,7 +6963,7 @@ exports.add = function add(modules) {
 
 							const obj = new _interface(this);
 
-							const _implements = types.getAttribute(_interface, _shared.ImplementsSymbol, null, _shared.SECRET);
+							const _implements = types.getAttribute(_interface, _shared.ImplementsSymbol, _shared.SECRET);
 
 							_implements.forEach(function(impl) {
 								if (!types.isString(impl)) {
@@ -6960,7 +7036,7 @@ exports.add = function add(modules) {
 									extender = attribute[_shared.ExtenderSymbol];
 								if (extender && extender.isPreserved) {
 									const preservedAttr = '__' + attr + '_preserved__';
-									types.setAttribute(this, attr, this[preservedAttr], null, _shared.SECRET);
+									types.setAttribute(this, attr, this[preservedAttr], _shared.SECRET);
 									return true;
 								};
 							};
@@ -7065,7 +7141,7 @@ exports.add = function add(modules) {
 							if ((isType && !extender.isType) || (!isType && !extender.isInstance)) {
 								return false;
 							};
-							const method = types.getAttribute(this, name, null, _shared.SECRET);
+							const method = types.getAttribute(this, name, _shared.SECRET);
 							return !((method[_shared.ModifiersSymbol] || 0) & doodad.MethodModifiers.NotImplemented);
 						}))))),
 			};
@@ -7083,7 +7159,7 @@ exports.add = function add(modules) {
 						if (customSymbol) {
 							__Internal__.classProto[customSymbol] = doodad.PUBLIC(doodad.TYPE(doodad.INSTANCE(doodad.BIND(doodad.JS_METHOD(function inspect(depth, ctx) {
 								const isType = types.isType(this),
-									attrs = types.getAttribute(this, _shared.AttributesSymbol, null, _shared.SECRET) || {},
+									attrs = types.getAttribute(this, _shared.AttributesSymbol, _shared.SECRET) || {},
 									result = {};
 								const loopKeys = function _loopKeys(keys) {
 									for (let i = 0; i < keys.length; i++) {
@@ -7093,7 +7169,7 @@ exports.add = function add(modules) {
 												extender = attr[_shared.ExtenderSymbol];
 											if (extender) {
 												if ((attr[_shared.ScopeSymbol] === doodad.Scopes.Public) && ((isType && extender.isType) || (!isType && extender.isInstance))) {
-													result[key] = types.getAttribute(this, key, null, _shared.SECRET);
+													result[key] = types.getAttribute(this, key, _shared.SECRET);
 												};
 											};
 										};
@@ -7198,15 +7274,15 @@ exports.add = function add(modules) {
 
 							if (!isBase) {
 								const initInstance = __Internal__.initializeAttributes(instanceAttributes, false, values, false, null, instanceToInitialize);
-								types.setAttribute(this, _shared.InitInstanceSymbol, initInstance, null, _shared.SECRET);
+								types.setAttribute(this, _shared.InitInstanceSymbol, initInstance, _shared.SECRET);
 							};
 
 						} else {
-							const instanceStorage = types.clone(types.getAttribute(cls.prototype, _shared.AttributesStorageSymbol, null, _shared.SECRET));
+							const instanceStorage = types.clone(types.getAttribute(cls.prototype, _shared.AttributesStorageSymbol, _shared.SECRET));
 
 							cls[_shared.InitInstanceSymbol](this, instanceStorage);
 
-							types.setAttribute(this, _shared.HostSymbol, host, null, _shared.SECRET);
+							types.setAttribute(this, _shared.HostSymbol, host, _shared.SECRET);
 						};
 
 						return this;
@@ -7461,7 +7537,7 @@ exports.add = function add(modules) {
 								[_shared.ObjectSymbol]: obj,
 								[_shared.ExtenderSymbol]: extender,
 								[_shared.StackSymbol]: [],
-							}, null, _shared.SECRET);
+							}, _shared.SECRET);
 						};
 
 						return that;
@@ -7930,12 +8006,12 @@ exports.add = function add(modules) {
 							evName = ev && ev.name,
 							dispatch = this[_shared.CurrentDispatchSymbol];
 
-						ev && types.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]}, null, _shared.SECRET);
+						ev && types.setAttributes(ev, {obj: this, name: dispatch[_shared.NameSymbol]}, _shared.SECRET);
 
 						let cancelled = !!this._super(ev) && cancellable;
 
 						if (!cancelled) {
-							const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
+							const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], _shared.SECRET);
 							const stack = values[_shared.StackSymbol];
 
 							let clonedStack;
@@ -7954,7 +8030,7 @@ exports.add = function add(modules) {
 									[_shared.SortedSymbol]: true,
 									[_shared.ClonedStackSymbol]: clonedStack,
 								};
-								types.setAttributes(dispatch, values, null, _shared.SECRET);
+								types.setAttributes(dispatch, values, _shared.SECRET);
 							};
 
 							const stackLen = clonedStack.length;
@@ -7975,7 +8051,7 @@ exports.add = function add(modules) {
 
 										data[4]--;
 
-										ev && types.setAttribute(ev, 'handlerData', data[3], null, _shared.SECRET);
+										ev && types.setAttribute(ev, 'handlerData', data[3], _shared.SECRET);
 
 										retval = _shared.Natives.functionCallCall(data[5], obj, ev);
 									};
@@ -7985,7 +8061,7 @@ exports.add = function add(modules) {
 											event: ev,
 										});
 
-										types.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]}, null, _shared.SECRET);
+										types.setAttributes(ev, {obj: this, name: this.onEventCancelled[_shared.NameSymbol]}, _shared.SECRET);
 
 										this.onEventCancelled(ev);
 
@@ -8004,11 +8080,11 @@ exports.add = function add(modules) {
 										[_shared.SortedSymbol]: false,
 										[_shared.ClonedStackSymbol]: null,
 									};
-									types.setAttributes(dispatch, values, null, _shared.SECRET);
+									types.setAttributes(dispatch, values, _shared.SECRET);
 								};
 
 								if (evObj) {
-									types.setAttributes(ev, {obj: evObj, name: evName}, null, _shared.SECRET);
+									types.setAttributes(ev, {obj: evObj, name: evName}, _shared.SECRET);
 								};
 							};
 						};
@@ -8052,9 +8128,9 @@ exports.add = function add(modules) {
 
 						let emitted = !!this._super(...params);
 
-						const dispatch = types.getAttribute(this, _shared.CurrentDispatchSymbol, null, _shared.SECRET);
+						const dispatch = types.getAttribute(this, _shared.CurrentDispatchSymbol, _shared.SECRET);
 
-						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], null, _shared.SECRET);
+						const values = types.getAttributes(dispatch, [_shared.StackSymbol, _shared.SortedSymbol, _shared.ClonedStackSymbol], _shared.SECRET);
 						const stack = values[_shared.StackSymbol];
 
 						let clonedStack;
@@ -8073,7 +8149,7 @@ exports.add = function add(modules) {
 								[_shared.SortedSymbol]: true,
 								[_shared.ClonedStackSymbol]: clonedStack,
 							};
-							types.setAttributes(dispatch, values, null, _shared.SECRET);
+							types.setAttributes(dispatch, values, _shared.SECRET);
 						};
 
 						const stackLen = clonedStack.length;
@@ -8102,7 +8178,7 @@ exports.add = function add(modules) {
 									[_shared.SortedSymbol]: false,
 									[_shared.ClonedStackSymbol]: null,
 								};
-								types.setAttributes(dispatch, values, null, _shared.SECRET);
+								types.setAttributes(dispatch, values, _shared.SECRET);
 							};
 						};
 
@@ -9011,7 +9087,7 @@ exports.add = function add(modules) {
 									const tmp = new cls();
 									tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 										if (types.has(value, key)) {
-											types.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true}, _shared.SECRET);
+											types.setJsAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true});
 										};
 									}, this);
 									value = tmp;
@@ -9030,7 +9106,7 @@ exports.add = function add(modules) {
 										const tmp = new cls();
 										tools.forEach(this.$ERROR_ATTRIBUTES, function(key) {
 											if (types.has(value, key)) {
-												types.setAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true}, _shared.SECRET);
+												types.setJsAttribute(tmp, key, this.$unpack(value[key]), {ignoreWhenReadOnly: true, configurable: true});
 											};
 										}, this);
 										value = tmp;
