@@ -762,16 +762,14 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function isCallback(obj, /*optional*/type) {
-					obj = _shared.Natives.windowObject(obj);
-
 					const is = __Internal__.callbacks.has(obj);
 
 					if (is && type) {
-						let base = type;
+						let base = obj;
 
 						do {
 							base = base[_shared.CallbackSymbol];
-							if (obj === base) {
+							if (base === type) {
 								return true;
 							};
 						} while (types.has(base, _shared.CallbackSymbol));
