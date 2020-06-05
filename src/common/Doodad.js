@@ -78,6 +78,8 @@ exports.add = function add(modules) {
 				currentType: null,	// <FUTURE> thread level
 				inTrapException: false, // <FUTURE> thread level
 
+				callbacks: new types.WeakSet(), // <FUTURE> global to threads
+
 				extendersCache: new types.WeakMap(), // <FUTURE> global to threads
 
 				ANONYMOUS: '<anonymous>',
@@ -732,6 +734,12 @@ exports.add = function add(modules) {
 					throw new types.NotSupported("Type is a base type.");
 				}));
 
+			_shared.registerCallback = function registerCallback(cb) {
+				root.DD_ASSERT && root.DD_ASSERT(types.has(cb, _shared.CallbackSymbol), "Invalid callback.");
+
+				__Internal__.callbacks.add(cb);
+			};
+
 			types.ADD('isCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -756,7 +764,7 @@ exports.add = function add(modules) {
 				, function isCallback(obj, /*optional*/type) {
 					obj = _shared.Natives.windowObject(obj);
 
-					const is = types.has(obj, _shared.CallbackSymbol);
+					const is = __Internal__.callbacks.has(obj);
 
 					if (is && type) {
 						let base = type;
@@ -857,6 +865,7 @@ exports.add = function add(modules) {
 					types.setAttribute(callback, _shared.BoundObjectSymbol, orgObj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
+					_shared.registerCallback(callback);
 					return callback;
 				}));
 
@@ -949,6 +958,7 @@ exports.add = function add(modules) {
 					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
+					_shared.registerCallback(callback);
 					return callback;
 				}));
 
@@ -6613,6 +6623,7 @@ exports.add = function add(modules) {
 					types.setAttribute(cb, _shared.CallbackSymbol, doodad.OutsideCallback, {});
 					types.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
+					_shared.registerCallback(cb);
 					return cb;
 				}));
 
