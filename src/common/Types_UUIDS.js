@@ -152,8 +152,8 @@ exports.add = function add(modules) {
 						uuids[uuid] = true;
 
 						//try {
-						types.setAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
-						types.setAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
+						types.setJsAttribute(native, _shared.UUIDSymbol, nativeUUID, {});
+						types.setJsAttribute(native.prototype, _shared.UUIDSymbol, nativeUUID, {});
 						//} catch(ex) {
 						//	console.log(name);
 						//};

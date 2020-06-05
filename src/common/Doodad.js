@@ -3889,7 +3889,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {});");
 							};
 							generator.code.add(descriptorId + ".get = " + dispatchId);
 						};
@@ -3903,7 +3903,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setJsAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {});");
 							};
 							generator.code.add(descriptorId + ".set = " + dispatchId);
 						};
@@ -7482,7 +7482,7 @@ exports.add = function add(modules) {
 							if (!types.isType(this)) {
 								root.DD_ASSERT && root.DD_ASSERT(types.isNothing(error) || types.isError(error), "Invalid error.");
 
-								types.setAttribute(this, 'error', error);
+								types.setJsAttribute(this, 'error', error);
 							};
 						}),
 

@@ -850,9 +850,7 @@ exports.add = function add(modules) {
 					_new: types.READ_ONLY(types.SUPER(function _new(/*optional*/options) {
 						this._super(options);
 						if (!types.isType(this)) {
-							types.setAttributes(this, {
-								eventType: types.get(options, 'eventType', this.eventType),
-							});
+							types.setJsAttribute(this, 'eventType', types.get(options, 'eventType', this.eventType));
 						};
 					})),
 
