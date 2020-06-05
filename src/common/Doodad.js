@@ -766,7 +766,7 @@ exports.add = function add(modules) {
 							if (obj === base) {
 								return true;
 							};
-						} while (types.has(base, _shared.CallbackSymbol))
+						} while (types.has(base, _shared.CallbackSymbol));
 
 						return false;
 					};
