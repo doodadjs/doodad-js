@@ -3808,15 +3808,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 							if (types.isFunction(b)) {
 								b = _shared.Natives.windowObject(b);
 								if (b instanceof _shared.Natives.windowFunction) {
-									if (types.has(type, _shared.BaseSymbol)) {
-										let b2 = type;
-										do {
-											b2 = b2[_shared.BaseSymbol];
-											if (b === b2) {
-												return true;
-											};
-										} while (types.has(b2, _shared.BaseSymbol));
-									} else if (types.isProtoOf(b, type)) {
+									if (types.isProtoOf(b, type)) {
 										return true;
 									};
 								} else {
@@ -3858,15 +3850,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				base = _shared.Natives.windowObject(base);
 				if (!crossRealm) {
 					if (base instanceof _shared.Natives.windowFunction) {
-						if (types.has(type, _shared.BaseSymbol)) {
-							let b2 = type;
-							do {
-								b2 = b2[_shared.BaseSymbol];
-								if (base === b2) {
-									return true;
-								};
-							} while (types.has(b2, _shared.BaseSymbol));
-						} else if (types.isProtoOf(base, type)) {
+						if (types.isProtoOf(base, type)) {
 							return true;
 						};
 					} else {
@@ -4370,19 +4354,15 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! END_REPLACE()
 		, function getBase(obj) {
 			obj = _shared.Natives.windowObject(obj);
-			if (types.has(obj, _shared.BaseSymbol)) {
-				return obj[_shared.BaseSymbol];
-			} else {
-				const t = types.getType(obj);
-				if (!t) {
-					return null;
-				};
-				const proto = (t.prototype ? types.getPrototypeOf(t.prototype) : null);
-				if (!proto) {
-					return null;
-				};
-				return types.getType(proto);
+			const t = types.getType(obj);
+			if (!t) {
+				return null;
 			};
+			const proto = (t.prototype ? types.getPrototypeOf(t.prototype) : null);
+			if (!proto) {
+				return null;
+			};
+			return types.getType(proto);
 		}));
 
 	_shared.invoke = function invoke(obj, fn, /*optional*/args, /*optional*/secret) {
@@ -4666,7 +4646,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	__Internal__.symbol$IsSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_$IS_SINGLETON')), true) */ '__DD_$IS_SINGLETON' /*! END_REPLACE() */, true);
 	__Internal__.symbolSingleton = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SINGLETON')), true) */ '__DD_SINGLETON' /*! END_REPLACE() */, true);
 
-	_shared.BaseSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_BASE')), true) */ '__DD_BASE' /*! END_REPLACE() */, true);
+	_shared.CallerSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLER')), true) */ '__DD_CALLER' /*! END_REPLACE() */, true);
 	_shared.UUIDSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_JS_TYPE_UUID')), true) */ '__DD_JS_TYPE_UUID' /*! END_REPLACE() */, true);
 	_shared.SuperEnabledSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_SUPER_ENABLED')), true) */ '__DD_SUPER_ENABLED' /*! END_REPLACE() */, true);
 	_shared.EnumerableSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_ENUMERABLE')), true) */ '__DD_ENUMERABLE' /*! END_REPLACE() */, true);
@@ -5103,7 +5083,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				}
 			};
 			types.setAttribute(_caller, _shared.OriginalValueSymbol, fn, {});
-			types.setAttribute(_caller, _shared.BaseSymbol, types.SUPER, {});
+			types.setAttribute(_caller, _shared.CallerSymbol, types.SUPER, {});
 			return _caller;
 		});
 

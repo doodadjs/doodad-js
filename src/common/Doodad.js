@@ -78,8 +78,6 @@ exports.add = function add(modules) {
 				currentType: null,	// <FUTURE> thread level
 				inTrapException: false, // <FUTURE> thread level
 
-				callbacks: new types.WeakSet(), // <FUTURE> global to threads
-
 				extendersCache: new types.WeakMap(), // <FUTURE> global to threads
 
 				ANONYMOUS: '<anonymous>',
@@ -718,6 +716,8 @@ exports.add = function add(modules) {
 			// Callbacks
 			//==================================
 
+			_shared.CallbackSymbol = types.getSymbol(/*! REPLACE_BY(TO_SOURCE(UUID('SYMBOL_CALLBACK')), true) */ '__DD_CALLBACK' /*! END_REPLACE() */, true);
+
 			types.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -732,15 +732,47 @@ exports.add = function add(modules) {
 					throw new types.NotSupported("Type is a base type.");
 				}));
 
-			_shared.registerCallback = function registerCallback(cb) {
-				root.DD_ASSERT && root.DD_ASSERT(types.baseof(types.Callback, cb), "Invalid callback.");
+			types.ADD('isCallback', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							obj: {
+								type: 'any',
+								optional: false,
+								description: "A value to test for.",
+							},
+							type: {
+								type: 'function',
+								optional: true,
+								description: "A callback type.",
+							},
+						},
+						returns: 'bool',
+						description: "Returns 'true' if 'obj' is a callback of type 'type' or just a callback.",
+					}
+				//! END_REPLACE()
+				, function isCallback(obj, /*optional*/type) {
+					obj = _shared.Natives.windowObject(obj);
 
-				__Internal__.callbacks.add(cb);
-			};
+					const is = types.has(obj, _shared.CallbackSymbol);
 
-			types.ADD('isCallback', function isCallback(obj) {
-				return __Internal__.callbacks.has(obj);
-			});
+					if (is && type) {
+						let base = type;
+
+						do {
+							base = base[_shared.CallbackSymbol];
+							if (obj === base) {
+								return true;
+							};
+						} while (types.has(base, _shared.CallbackSymbol))
+
+						return false;
+					};
+
+					return is;
+				}));
 
 			doodad.ADD('Callback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -821,15 +853,14 @@ exports.add = function add(modules) {
 						};
 						return undefined; // "consistent-return"
 					};
-					types.setAttribute(callback, _shared.BaseSymbol, doodad.Callback, {});
+					types.setAttribute(callback, _shared.CallbackSymbol, doodad.Callback, {});
 					types.setAttribute(callback, _shared.BoundObjectSymbol, orgObj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
-					_shared.registerCallback(callback);
 					return callback;
 				}));
 
-			types.setAttribute(doodad.Callback, _shared.BaseSymbol, types.Callback, {});
+			types.setAttribute(doodad.Callback, _shared.CallbackSymbol, types.Callback, {});
 
 			doodad.ADD('AsyncCallback', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -914,15 +945,14 @@ exports.add = function add(modules) {
 							};
 						}, 0, null, args);
 					};
-					types.setAttribute(callback, _shared.BaseSymbol, doodad.AsyncCallback, {});
+					types.setAttribute(callback, _shared.CallbackSymbol, doodad.AsyncCallback, {});
 					types.setAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(callback, _shared.OriginalValueSymbol, fn, {});
 					callback.lastError = null;
-					_shared.registerCallback(callback);
 					return callback;
 				}));
 
-			types.setAttribute(doodad.AsyncCallback, _shared.BaseSymbol, doodad.Callback, {});
+			types.setAttribute(doodad.AsyncCallback, _shared.CallbackSymbol, doodad.Callback, {});
 
 			//==================================
 			// Inside
@@ -981,7 +1011,7 @@ exports.add = function add(modules) {
 			doodad.ADD('InsiderFunction', types.freezeObject(function InsiderFunction() {}));
 
 			__Internal__.makeInside = function makeInside(/*optional*/obj, fn, /*optional*/secret) {
-				root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn) && !types.isProtoOf(doodad.InsiderFunction, fn), "Invalid function.");
+				root.DD_ASSERT && root.DD_ASSERT(!types.isCallback(fn, doodad.InsiderFunction), "Invalid function.");
 				fn = types.unbind(fn) || fn;
 				root.DD_ASSERT && root.DD_ASSERT((!types.isNothing(obj) && types.isBindable(fn)) || (types.isNothing(obj) && types.isFunction(fn)), "Invalid function.");
 				const scope = types.getMethodScope(obj, fn);
@@ -1086,7 +1116,7 @@ exports.add = function add(modules) {
 
 			__Internal__.oldInvoke = _shared.invoke;
 			_shared.invoke = function invoke(/*optional*/obj, fn, /*optional*/args, /*optional*/secret) {
-				if (types.isCallback(fn) || types.isProtoOf(doodad.InsiderFunction, fn)) {
+				if (types.isCallback(fn, doodad.InsiderFunction)) {
 					throw new types.ValueError("'fn' is invalid.");
 				};
 				const scope = types.getMethodScope(obj, fn);
@@ -1939,7 +1969,7 @@ exports.add = function add(modules) {
 									return cache.storage[attr];
 								}
 							};
-							types.setAttribute(getter, _shared.BaseSymbol, doodad.AttributeGetter, {});
+							types.setAttribute(getter, _shared.CallerSymbol, doodad.AttributeGetter, {});
 							return getter;
 						}),
 
@@ -2025,7 +2055,7 @@ exports.add = function add(modules) {
 								};
 								return value;
 							};
-							types.setAttribute(setter, _shared.BaseSymbol, doodad.AttributeSetter, {});
+							types.setAttribute(setter, _shared.CallerSymbol, doodad.AttributeSetter, {});
 							return setter;
 						}),
 
@@ -2639,7 +2669,7 @@ exports.add = function add(modules) {
 								}
 							};
 
-							types.setAttribute(_caller, _shared.BaseSymbol, doodad.CallerFunction, {});
+							types.setAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 							return _caller;
 						}),
@@ -2964,7 +2994,7 @@ exports.add = function add(modules) {
 								return retVal;
 							};
 
-							types.setAttribute(_dispatch, _shared.BaseSymbol, doodad.DispatchFunction, {});
+							types.setAttribute(_dispatch, _shared.CallerSymbol, doodad.DispatchFunction, {});
 
 							return _dispatch;
 						}),
@@ -3512,7 +3542,7 @@ exports.add = function add(modules) {
 							root.DD_ASSERT(types.isJsFunction(fn), "Invalid function.");
 						};
 
-						types.setAttribute(fn, _shared.BaseSymbol, doodad.CallerFunction, {});
+						types.setAttribute(fn, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 						const _caller = tools.nullObject();
 
@@ -3576,7 +3606,7 @@ exports.add = function add(modules) {
 								};
 							};
 
-							types.setAttribute(_caller, _shared.BaseSymbol, doodad.CallerFunction, {});
+							types.setAttribute(_caller, _shared.CallerSymbol, doodad.CallerFunction, {});
 
 							return _caller;
 						}),
@@ -3597,7 +3627,7 @@ exports.add = function add(modules) {
 							_super = __Internal__.makeInside(null, _super, _shared.SECRET);
 						};
 
-						types.setAttribute(_super, _shared.BaseSymbol, doodad.DispatchFunction, {});
+						types.setAttribute(_super, _shared.CallerSymbol, doodad.DispatchFunction, {});
 
 						return _super;
 					},
@@ -3798,7 +3828,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.BaseSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
 							};
 							generator.code.add(descriptorId + ".get = " + dispatchId);
 						};
@@ -3812,7 +3842,7 @@ exports.add = function add(modules) {
 								const newDispatch = new generator.DynamicValue("types.bind(" + generator.objId + ", " + dispatchId + ")");
 								generator.RELEASE(dispatch);
 								dispatchId = generator.vars.add(newDispatch);
-								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.BaseSymbol, doodad.DispatchFunction, {}");
+								generator.code.add("types.setAttribute(" + dispatchId + ", _shared.CallerSymbol, doodad.DispatchFunction, {}");
 							};
 							generator.code.add(descriptorId + ".set = " + dispatchId);
 						};
@@ -6580,14 +6610,13 @@ exports.add = function add(modules) {
 					const cb = function outside(/*paramarray*/...params) {
 						return _shared.Natives.functionCallCall(__Internal__.callOutsideFn, obj, fn, params);
 					};
-					types.setAttribute(cb, _shared.BaseSymbol, doodad.OutsideCallback, {});
+					types.setAttribute(cb, _shared.CallbackSymbol, doodad.OutsideCallback, {});
 					types.setAttribute(cb, _shared.BoundObjectSymbol, obj, {});
 					types.setAttribute(cb, _shared.OriginalValueSymbol, fn, {});
-					_shared.registerCallback(cb);
 					return cb;
 				}));
 
-			types.setAttribute(doodad.OutsideCallback, _shared.BaseSymbol, doodad.Callback, {});
+			types.setAttribute(doodad.OutsideCallback, _shared.CallbackSymbol, doodad.Callback, {});
 
 			__Internal__.makeOutsideFn = function makeOutside(fn) {
 				if (types.isCallback(fn)) {
@@ -8536,12 +8565,12 @@ exports.add = function add(modules) {
 							throw new types.Error("Object already created.");
 						};
 						types.setAttribute(this, _shared.DestroyedSymbol, false);
-						try {
-							this._super(...args);
-						} catch(ex) {
-							types.invoke(this, this.destroy, null, _shared.SECRET);
-							throw ex;
-						};
+						//try {
+						this._super(...args);
+						//} catch(ex) {
+						//	types.invoke(this, this.destroy, null, _shared.SECRET);
+						//	throw ex;
+						//};
 					})))),
 
 				fastDestroy: root.DD_DOC(
