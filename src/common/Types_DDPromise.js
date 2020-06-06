@@ -314,7 +314,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -344,7 +344,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -424,7 +424,7 @@ exports.add = function add(modules) {
 								//	return oldResolvedCbCall(...args);
 								//});
 								resolvedCb = _shared.Natives.functionBindCall(resolvedCb, thisObj);
-								types.setAttribute(resolvedCb, _shared.BoundObjectSymbol, thisObj, {});
+								types.setJsAttribute(resolvedCb, _shared.BoundObjectSymbol, thisObj, {});
 								isCallback = true;
 							} else {
 								resolvedCb = _shared.PromiseCallback(thisObj, resolvedCb);
@@ -440,7 +440,7 @@ exports.add = function add(modules) {
 								//	return oldRejectedCbCall(...args);
 								//});
 								rejectedCb = _shared.Natives.functionBindCall(rejectedCb, thisObj);
-								types.setAttribute(rejectedCb, _shared.BoundObjectSymbol, thisObj, {});
+								types.setJsAttribute(rejectedCb, _shared.BoundObjectSymbol, thisObj, {});
 								isCallback = true;
 							} else {
 								rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
@@ -565,7 +565,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -598,7 +598,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -628,7 +628,7 @@ exports.add = function add(modules) {
 							//	return oldCbCall(...args);
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
-							types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 							isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
@@ -657,7 +657,7 @@ exports.add = function add(modules) {
 						//	return oldCbCall(...args);
 						//});
 						callback = _shared.Natives.functionBindCall(callback, thisObj);
-						types.setAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
+						types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
 						isCallback = true;
 					} else {
 						callback = _shared.PromiseCallback(thisObj, callback);
