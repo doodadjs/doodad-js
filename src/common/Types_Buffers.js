@@ -109,7 +109,7 @@ exports.add = function add(modules) {
 						__Internal__.TypedArrays = [
 							global.Int8Array, global.Uint8Array, global.Uint8ClampedArray, global.Int16Array,
 							global.Uint16Array, global.Int32Array, global.Uint32Array, global.Float32Array,
-							global.Float64Array
+							global.Float64Array, global.BigInt64Array, global.BigUint64Array
 						];
 					} else {
 						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
