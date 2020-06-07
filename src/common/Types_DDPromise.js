@@ -305,7 +305,7 @@ exports.add = function add(modules) {
 				Promise.try = function _try(callback, /*optional*/thisObj) {
 					const P = this;
 					const name = __Internal__.getPromiseName(callback);
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (thisObj) {
 						if (isNative) {
@@ -315,12 +315,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					const promise = oldTryCall(P, callback);
@@ -335,7 +335,7 @@ exports.add = function add(modules) {
 					const P = this;
 					const thisObj = types.get(options, 'thisObj');
 					const name = __Internal__.getPromiseName(callback);
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (thisObj) {
 						if (isNative) {
@@ -345,12 +345,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					const promise = oldMapCall(P, ar, callback, options);
@@ -414,7 +414,7 @@ exports.add = function add(modules) {
 						thisObj = rejectedCb;
 						rejectedCb = null;
 					};
-					let isCallback = types.isCallback(resolvedCb) || types.isCallback(rejectedCb);
+					const isCallback = types.isCallback(resolvedCb) || types.isCallback(rejectedCb);
 					const isNative = !isCallback && (types.isNativeFunction(resolvedCb) || types.isNativeFunction(rejectedCb));
 					if (thisObj) {
 						if (resolvedCb) {
@@ -425,12 +425,12 @@ exports.add = function add(modules) {
 								//});
 								resolvedCb = _shared.Natives.functionBindCall(resolvedCb, thisObj);
 								types.setJsAttribute(resolvedCb, _shared.BoundObjectSymbol, thisObj, {});
-								isCallback = true;
+								//isCallback = true;
 							} else {
 								resolvedCb = _shared.PromiseCallback(thisObj, resolvedCb);
-								if (types.isCallback(resolvedCb)) {
-									isCallback = true;
-								};
+								//if (types.isCallback(resolvedCb)) {
+								//	isCallback = true;
+								//};
 							};
 						};
 						if (rejectedCb) {
@@ -441,12 +441,12 @@ exports.add = function add(modules) {
 								//});
 								rejectedCb = _shared.Natives.functionBindCall(rejectedCb, thisObj);
 								types.setJsAttribute(rejectedCb, _shared.BoundObjectSymbol, thisObj, {});
-								isCallback = true;
+								//isCallback = true;
 							} else {
 								rejectedCb = _shared.PromiseCallback(thisObj, rejectedCb);
-								if (types.isCallback(rejectedCb)) {
-									isCallback = true;
-								};
+								//if (types.isCallback(rejectedCb)) {
+								//	isCallback = true;
+								//};
 							};
 						};
 					};
@@ -490,7 +490,7 @@ exports.add = function add(modules) {
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
 					};
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
 						if (isNative) {
@@ -500,12 +500,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					let promise;
@@ -556,7 +556,7 @@ exports.add = function add(modules) {
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
 					};
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
 						if (isNative) {
@@ -566,12 +566,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					const promise = oldAsCallbackCall(this, callback);
@@ -589,7 +589,7 @@ exports.add = function add(modules) {
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
 					};
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (callback && thisObj) {
 						if (isNative) {
@@ -599,12 +599,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					const promise = oldFinallyCall(this, callback);
@@ -619,7 +619,7 @@ exports.add = function add(modules) {
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
 					};
-					let isCallback = types.isCallback(callback);
+					const isCallback = types.isCallback(callback);
 					const isNative = !isCallback && types.isNativeFunction(callback);
 					if (thisObj) {
 						if (isNative) {
@@ -629,12 +629,12 @@ exports.add = function add(modules) {
 							//});
 							callback = _shared.Natives.functionBindCall(callback, thisObj);
 							types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-							isCallback = true;
+							//isCallback = true;
 						} else {
 							callback = _shared.PromiseCallback(thisObj, callback);
-							if (types.isCallback(callback)) {
-								isCallback = true;
-							};
+							//if (types.isCallback(callback)) {
+							//	isCallback = true;
+							//};
 						};
 					};
 					const promise = this.then(function thenCb(result) {
@@ -648,7 +648,7 @@ exports.add = function add(modules) {
 			};
 
 			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject, /*optional*/thisObj) {
-				let isCallback = types.isCallback(callback);
+				const isCallback = types.isCallback(callback);
 				const isNative = !isCallback && types.isNativeFunction(callback);
 				if (thisObj) {
 					if (isNative) {
@@ -658,12 +658,12 @@ exports.add = function add(modules) {
 						//});
 						callback = _shared.Natives.functionBindCall(callback, thisObj);
 						types.setJsAttribute(callback, _shared.BoundObjectSymbol, thisObj, {});
-						isCallback = true;
+						//isCallback = true;
 					} else {
 						callback = _shared.PromiseCallback(thisObj, callback);
-						if (types.isCallback(callback)) {
-							isCallback = true;
-						};
+						//if (types.isCallback(callback)) {
+						//	isCallback = true;
+						//};
 					};
 				};
 				types.setJsAttribute(this, _shared.NameSymbol, null, {configurable: true, enumerable: true});  // will be set later
