@@ -135,7 +135,7 @@ exports.add = function add(modules) {
 						state.startCb = startCb;
 						state.cancelCb = cancelCb;
 
-						types.setAttribute(this, 'name', types.isNothing(name) ? types.getFunctionName(state.startCb) : types.toString(name));
+						types.setJsAttribute(this, 'name', types.isNothing(name) ? types.getFunctionName(callback) : types.toString(name));
 
 						__Internal__.cancelableStates.set( this, state );
 					}),
