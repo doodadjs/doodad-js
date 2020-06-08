@@ -125,7 +125,10 @@ exports.add = function add(modules) {
 							cancelCb: null,
 						};
 
-						const { startCb, cancelCb, name = null } = callback(_shared.Natives.functionBindCall(__Internal__.resolveCb, state), _shared.Natives.functionBindCall(__Internal__.rejectCb, state));
+						const resolveCb = _shared.Natives.functionBindCall(__Internal__.resolveCb, state);
+						const rejectCb = _shared.Natives.functionBindCall(__Internal__.rejectCb, state);
+
+						const { startCb, cancelCb, name = null } = callback(resolveCb, rejectCb);
 
 						if (root.DD_ASSERT) {
 							root.DD_ASSERT(types.isJsFunction(startCb), "Invalid 'start' callback.");
