@@ -150,6 +150,13 @@
 			browserify: true
 		},
 		{
+			src: "common/Templates_Html.js",
+			client: true,
+			server: true,
+			browserify: true,
+			exclude: true
+		},
+		{
 			src: "common/Types_UUIDS.js",
 			client: true,
 			server: true,
