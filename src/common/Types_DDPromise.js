@@ -778,15 +778,17 @@ exports.add = function add(modules) {
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
 
-						types.setJsAttribute(Promise.prototype, 'toDDPromise', function toDDPromise() {
-							const Promise = types.getPromise();
-							const self = this;
-							return new Promise(function(resolve, reject) {
-								self.then(resolve, reject);
-							});
-						}, {});
+						if (!Promise.prototype[_shared.IsPromiseSymbol]) {
+							types.setJsAttribute(Promise.prototype, 'toDDPromise', function toDDPromise() {
+								const Promise = types.getPromise();
+								const self = this;
+								return new Promise(function(resolve, reject) {
+									self.then(resolve, reject);
+								});
+							}, {});
 
-						types.setJsAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
+							types.setJsAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
+						};
 
 						types.setJsAttribute(DDPromise.prototype, _shared.IsPromiseSymbol, true, {});
 						types.setJsAttribute(DDPromise.prototype, __Internal__.symbolIsExtendedPromise, true, {});
