@@ -72,7 +72,7 @@ exports.createEval = function createEval(/*locals*/) {
 };
 
 
-exports.createRoot = function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
+exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
 	/* eslint global-require: "off" */
 
 	(function checkRuntime() {

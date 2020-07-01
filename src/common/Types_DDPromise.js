@@ -645,6 +645,10 @@ exports.add = function add(modules) {
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
+
+				Promise.prototype.toDDPromise = function() {
+					return this;
+				};
 			};
 
 			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject, /*optional*/thisObj) {
@@ -773,6 +777,14 @@ exports.add = function add(modules) {
 
 						__Internal__.addPromiseBluebirdPolyfills(DDPromise);
 						__Internal__.addPromiseDoodadExtensions(DDPromise);
+
+						types.setJsAttribute(Promise.prototype, 'toDDPromise', function toDDPromise() {
+							const Promise = types.getPromise();
+							const self = this;
+							return new Promise(function(resolve, reject) {
+								self.then(resolve, reject);
+							});
+						}, {});
 
 						types.setJsAttribute(Promise.prototype, _shared.IsPromiseSymbol, true, {});
 
