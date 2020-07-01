@@ -646,8 +646,12 @@ exports.add = function add(modules) {
 					return promise;
 				};
 
-				Promise.prototype.toDDPromise = function() {
-					return this;
+				Promise.prototype.toDDPromise = function toDDPromise() {
+					const Promise = types.getPromise();
+					const self = this;
+					return new Promise(function(resolve, reject) {
+						self.then(resolve, reject);
+					});
 				};
 			};
 
