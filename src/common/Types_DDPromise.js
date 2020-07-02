@@ -853,13 +853,13 @@ exports.add = function add(modules) {
 					const checkDestroyed = types.getType(obj) && !types.isCaller(fn, doodad.DispatchFunction);
 					const insideFn = _shared.makeInside(obj, fn, secret);
 					const insideFnCall = _shared.Natives.functionBindCall(insideFn, obj);
-					const callback = function callbackHandler(/*paramarray*/...args) {
-						if (checkDestroyed && _shared.DESTROYED(obj)) {
+					const callback = (checkDestroyed ? (function callbackHandler(/*paramarray*/...args) {
+						if (_shared.DESTROYED(obj)) {
 							// NOTE: We absolutly must reject the Promise.
 							throw new types.ScriptInterruptedError("Target object is no longer available because it has been destroyed.");
 						};
 						return insideFnCall(...args);
-					};
+					}) : insideFnCall);
 					types.setJsAttribute(callback, _shared.CallbackSymbol, _shared.PromiseCallback, {});
 					types.setJsAttribute(callback, _shared.BoundObjectSymbol, obj, {});
 					types.setJsAttribute(callback, _shared.OriginalValueSymbol, fn, {});
