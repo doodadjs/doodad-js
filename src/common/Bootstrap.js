@@ -5009,22 +5009,38 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					},
 					type: {
 						type: 'function',
-						optional: false,
+						optional: true,
 						description: "A caller function type.",
 					},
 				},
 				returns: 'boolean',
-				description: "Returns true if function is a caller of the specified type. Return false otherwise.",
+				description: "Returns true if function is a caller of the specified type, or just a caller if no type specified. Return false otherwise.",
 			}
 		//! END_REPLACE()
-		, function isCaller(fn, type) {
+		, function isCaller(fn, /*optional*/type) {
 			if (!types.isFunction(fn)) {
 				return false;
+			};
+			if (!types.has(fn, _shared.CallerSymbol)) {
+				return false;
+			};
+			if (types.isNothing(type)) {
+				return true;
 			};
 			if (!types.isFunction(type)) {
 				return false;
 			};
-			return (fn[_shared.CallerSymbol] === type);
+			let base = fn[_shared.CallerSymbol];
+			if (base === type) {
+				return true;
+			};
+			while (types.has(base, _shared.BaseSymbol)) {
+				base = base[_shared.BaseSymbol];
+				if (base === type) {
+					return true;
+				};
+			};
+			return false;
 		}));
 
 	__Internal__.createCaller = __Internal__.DD_DOC(
