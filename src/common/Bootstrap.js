@@ -5017,7 +5017,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				description: "Returns true if function is a caller of the specified type. Return false otherwise.",
 			}
 		//! END_REPLACE()
-		, function isCallerOf(fn, type) {
+		, function isCaller(fn, type) {
 			if (!types.isFunction(fn)) {
 				return false;
 			};
