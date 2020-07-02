@@ -4996,6 +4996,37 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	})();
 	*/
 
+	__Internal__.ADD('isCaller', __Internal__.DD_DOC(
+		//! REPLACE_IF(IS_UNSET('debug'), "null")
+			{
+				author: "Claude Petit",
+				revision: 0,
+				params: {
+					fn: {
+						type: 'function',
+						optional: false,
+						description: "A caller function.",
+					},
+					type: {
+						type: 'function',
+						optional: false,
+						description: "A caller function type.",
+					},
+				},
+				returns: 'boolean',
+				description: "Returns true if function is a caller of the specified type. Return false otherwise.",
+			}
+		//! END_REPLACE()
+		, function isCallerOf(fn, type) {
+			if (!types.isFunction(fn)) {
+				return false;
+			};
+			if (!types.isFunction(type)) {
+				return false;
+			};
+			return (fn[_shared.CallerSymbol] === type);
+		}));
+
 	__Internal__.createCaller = __Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
