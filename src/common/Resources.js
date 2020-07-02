@@ -114,7 +114,11 @@ exports.add = function add(modules) {
 								};
 
 								if (watchCb) {
-									files.watch(path, watchCb, {once: true});
+									try {
+										files.watch(path, watchCb, {once: true});
+									} catch(err) {
+										// Do nothing
+									};
 
 									promise = promise.nodeify(watchCb);
 								};
