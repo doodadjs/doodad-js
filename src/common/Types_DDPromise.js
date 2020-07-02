@@ -139,7 +139,7 @@ exports.add = function add(modules) {
 			__Internal__.addPromiseBluebirdPolyfills = function addPromiseBluebirdPolyfills(Promise) {
 				// <PRB> Doing ".then(samefn).catch(samefn)" or ".then(samefn, samefn)" is very annoying.
 				// Bluebird "asCallback" polyfill. NOTE: "spread" option has not been implemented.
-				if (!types.isFunction(Promise.prototype.asCallback) && !types.isFunction(Promise.prototype.nodeify)) {
+				if (!types.isFunction(Promise.prototype.asCallback) || !types.isFunction(Promise.prototype.nodeify)) {
 					const asCallback = function asCallback(callback) {
 						const promise = this.then(function _then(result) {
 							const retval = callback(undefined, result);
@@ -152,8 +152,8 @@ exports.add = function add(modules) {
 						});
 						return promise;
 					};
-					Promise.prototype.nodeify = asCallback;
-					Promise.prototype.asCallback = asCallback;
+					types.setJsAttribute(Promise.prototype, 'nodeify', asCallback, {configurable: true});
+					types.setJsAttribute(Promise.prototype, 'asCallback', asCallback, {configurable: true});
 				} else if (!types.isFunction(Promise.prototype.asCallback)) {
 					Promise.prototype.asCallback = Promise.prototype.nodeify;
 				} else if (!types.isFunction(Promise.prototype.nodeify)) {
@@ -162,7 +162,7 @@ exports.add = function add(modules) {
 
 				// Bluebird "finally" polyfill
 				if (!types.isFunction(Promise.prototype.finally)) {
-					Promise.prototype.finally = function _finally(callback) {
+					types.setJsAttribute(Promise.prototype, 'finally', function _finally(callback) {
 						const P = this.constructor;
 						const promise = this.then(function(result) {
 							return P.resolve(callback()).then(function() {
@@ -174,12 +174,12 @@ exports.add = function add(modules) {
 							});
 						});
 						return promise;
-					};
+					}, {configurable: true});
 				};
 
 				// Bluebird "try" polyfill
 				if (!types.isFunction(Promise.try)) {
-					Promise.try = function _try(callback) {
+					types.setJsAttribute(Promise, 'try', function _try(callback) {
 						const P = this;
 						return new P(function _try(resolve, reject) {
 							try {
@@ -188,12 +188,12 @@ exports.add = function add(modules) {
 								reject(err);
 							};
 						});
-					};
+					}, {configurable: true});
 				};
 
 				// Bluebird "map" polyfill
 				if (!types.isFunction(Promise.map)) {
-					Promise.map = function _map(ar, fn, /*optional*/options) {
+					types.setJsAttribute(Promise, 'map', function map(ar, fn, /*optional*/options) {
 						const P = this;
 						return P.try(function tryMap() {
 							const len = ar.length | 0;
@@ -238,23 +238,23 @@ exports.add = function add(modules) {
 								}
 							}
 						});
-					};
+					}, {configurable: true});
 				};
 			};
 
 			__Internal__.addPromiseDoodadExtensions = function addPromiseDoodadExtensions(Promise) {
 				// Add "thisObj" argument
 				// Add promise name
-				Promise.create = function create(callback, /*optional*/thisObj) {
+				types.setJsAttribute(Promise, 'create', function create(callback, /*optional*/thisObj) {
 					const P = this;
 					const name = __Internal__.getPromiseName(callback);
 					const promise = new P(callback, thisObj);
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// NOTE: Experimental
-				Promise.createRacer = function createRacer() {
+				types.setJsAttribute(Promise, 'createRacer', function createRacer() {
 					const P = this,
 						state = {res: null, rej: null};
 					const racer = P.create(function Racer(res, rej) {
@@ -297,12 +297,12 @@ exports.add = function add(modules) {
 						return !state.res || !state.rej;
 					};
 					return racer;
-				};
+				}, {});
 
 				// Add "thisObj" argument
 				// Add promise name
 				const oldTryCall = _shared.Natives.functionBindCall(Promise.try);
-				Promise.try = function _try(callback, /*optional*/thisObj) {
+				types.setJsAttribute(Promise, 'try', function _try(callback, /*optional*/thisObj) {
 					const P = this;
 					const name = __Internal__.getPromiseName(callback);
 					const isCallback = types.isCallback(callback);
@@ -326,12 +326,12 @@ exports.add = function add(modules) {
 					const promise = oldTryCall(P, callback);
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// Add "thisObj" argument
 				// Add promise name
 				const oldMapCall = _shared.Natives.functionBindCall(Promise.map);
-				Promise.map = function _map(ar, callback, /*optional*/options) {
+				types.setJsAttribute(Promise, 'map', function _map(ar, callback, /*optional*/options) {
 					const P = this;
 					const thisObj = types.get(options, 'thisObj');
 					const name = __Internal__.getPromiseName(callback);
@@ -356,11 +356,11 @@ exports.add = function add(modules) {
 					const promise = oldMapCall(P, ar, callback, options);
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// NOTE: Experimental
 				// NOTE: Makes use of sparse arrays, but they are not considered by the new features of ES6+
-				Promise.any = function _any(promises, /*optional*/options) {
+				types.setJsAttribute(Promise, 'any', function _any(promises, /*optional*/options) {
 					const P = this;
 					const promise = P.create(function(resolve, reject) {
 						const includeErrors = types.get(options, 'includeErrors', false);
@@ -403,12 +403,16 @@ exports.add = function add(modules) {
 						};
 					});
 					return promise;
-				};
+				}, {});
+
+				types.setJsAttribute(Promise, 'resolve', Promise.resolve, {});
+
+				types.setJsAttribute(Promise, 'reject', Promise.reject, {});
 
 				// Add "thisObj" argument
 				// Add promise name
 				const oldThenCall = _shared.Natives.functionBindCall(Promise.prototype.then);
-				Promise.prototype.then = function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
+				types.setJsAttribute(Promise.prototype, 'then', function then(/*optional*/resolvedCb, /*optional*/rejectedCb, /*optional*/thisObj) {
 					// NOTE: Promises use '.then' internally.
 					if (!thisObj && rejectedCb && (!types.isFunction(rejectedCb) || types.isType(rejectedCb))) {
 						thisObj = rejectedCb;
@@ -464,7 +468,7 @@ exports.add = function add(modules) {
 					};
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// Add "thisObj" argument
 				// Add promise name
@@ -472,7 +476,7 @@ exports.add = function add(modules) {
 				// NOTE: Bluebird's "catch" has additional arguments (filters) compared to ES6
 				// NOTE: Bluebird's filters will get replaced by Doodad's ones (no way to add Doodad's extensions otherwise)
 				const oldCatchCall = _shared.Natives.functionBindCall(Promise.prototype.catch);
-				Promise.prototype.catch = function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/...args) {
+				types.setJsAttribute(Promise.prototype, 'catch', function _catch(/*[optional paramarray]filters, [optional]callback, [optional]thisObj*/...args) {
 					let filters = null;
 					let i = 0;
 					forEachArgument: for (; i < args.length; i++) {
@@ -546,7 +550,7 @@ exports.add = function add(modules) {
 					};
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// Add "thisObj" argument
 				// Add promise name
@@ -578,13 +582,13 @@ exports.add = function add(modules) {
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
 				};
-				Promise.prototype.asCallback = asCallback;
-				Promise.prototype.nodeify = asCallback;
+				types.setJsAttribute(Promise.prototype, 'asCallback', asCallback, {});
+				types.setJsAttribute(Promise.prototype, 'nodeify', asCallback, {});
 
 				// Add "thisObj" argument
 				// Add promise name
 				const oldFinallyCall = _shared.Natives.functionBindCall(Promise.prototype.finally);
-				Promise.prototype.finally = function _finally(/*optional*/callback, /*optional*/thisObj) {
+				types.setJsAttribute(Promise.prototype, 'finally', function _finally(/*optional*/callback, /*optional*/thisObj) {
 					let name = this[_shared.NameSymbol];
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
@@ -610,10 +614,10 @@ exports.add = function add(modules) {
 					const promise = oldFinallyCall(this, callback);
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
 				// Combines "then" and "create"
-				Promise.prototype.thenCreate = function _thenCreate(callback, /*optional*/thisObj) {
+				types.setJsAttribute(Promise.prototype, 'thenCreate', function thenCreate(callback, /*optional*/thisObj) {
 					const P = this.constructor;
 					let name = this[_shared.NameSymbol];
 					if (!name && callback) {
@@ -644,15 +648,15 @@ exports.add = function add(modules) {
 					});
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
-				};
+				}, {});
 
-				Promise.prototype.toDDPromise = function toDDPromise() {
-					const Promise = types.getPromise();
+				types.setJsAttribute(Promise.prototype, 'toDDPromise', function toDDPromise() {
+					const P = types.getPromise();
 					const self = this;
-					return new Promise(function(resolve, reject) {
+					return new P(function(resolve, reject) {
 						self.then(resolve, reject);
 					});
-				};
+				}, {});
 			};
 
 			__Internal__.DDPromiseConstructor = function DDPromiseConstructor(callback, resolve, reject, /*optional*/thisObj) {
@@ -707,12 +711,17 @@ exports.add = function add(modules) {
 								optional: false,
 								description: "A Promise polyfill.",
 							},
+							secret: {
+								type: 'any',
+								optional: true,
+								description: "The secret.",
+							},
 						},
 						returns: 'Promise',
 						description: "Sets a custom polyfill for ES6 Promises.",
 					}
 				//! END_REPLACE()
-				, function setPromise(Promise) {
+				, function setPromise(Promise, /*optional*/secret) {
 					if (!types.isFunction(Promise)) {
 						throw new types.ValueError("Invalid 'Promise' constructor.");
 					};
@@ -720,6 +729,10 @@ exports.add = function add(modules) {
 					if (Promise === __Internal__.DDPromise) {
 						// Already set
 						return __Internal__.DDPromise;
+					};
+
+					if (secret !== _shared.SECRET) {
+						throw new types.AccessDenied("Secrets mismatch.");
 					};
 
 					// Make some tests...
@@ -784,9 +797,9 @@ exports.add = function add(modules) {
 
 						if (!Promise.prototype[_shared.IsPromiseSymbol]) {
 							types.setJsAttribute(Promise.prototype, 'toDDPromise', function toDDPromise() {
-								const Promise = types.getPromise();
+								const P = types.getPromise();
 								const self = this;
-								return new Promise(function(resolve, reject) {
+								return new P(function(resolve, reject) {
 									self.then(resolve, reject);
 								});
 							}, {});
@@ -837,7 +850,7 @@ exports.add = function add(modules) {
 					};
 					fn = types.unbind(fn) || fn;
 					root.DD_ASSERT && root.DD_ASSERT((!types.isNothing(obj) && types.isBindable(fn)) || (types.isNothing(obj) && types.isFunction(fn)), "Invalid function.");
-					const checkDestroyed = types.getType(obj) && !types.isProtoOf(doodad.DispatchFunction, fn);
+					const checkDestroyed = types.getType(obj) && !types.isCaller(fn, doodad.DispatchFunction);
 					const insideFn = _shared.makeInside(obj, fn, secret);
 					const insideFnCall = _shared.Natives.functionBindCall(insideFn, obj);
 					const callback = function callbackHandler(/*paramarray*/...args) {
@@ -859,7 +872,7 @@ exports.add = function add(modules) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
-				types.setPromise(_shared.Natives.windowPromise);
+				types.setPromise(_shared.Natives.windowPromise, _shared.SECRET);
 			};
 		},
 	};
