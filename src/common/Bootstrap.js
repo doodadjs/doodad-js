@@ -7208,7 +7208,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	} else {
 	//! END_REMOVE()
 
-	//! IF_UNSET("serverSide")
+	//! IF(IS_UNSET("serverSide") && IS_UNSET('browserify'))
 		//! IF_UNSET('mjs')
 			if ((typeof DD_BOOTSTRAP === 'object') && (DD_BOOTSTRAP !== null)) {
 				DD_BOOTSTRAP.createRoot = exports.createRoot;

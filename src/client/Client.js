@@ -1757,7 +1757,7 @@ exports.add = function add(modules) {
 								noEscapes: true,
 							});
 
-							const headers = new _shared.Natives.windowHeaders(options.headers);
+							const headers = new _shared.Natives.windowHeaders(options.headers || undefined);
 							if (!headers.has('Accept')) {
 								if (encoding) {
 									headers.set('Accept', 'text/plain');

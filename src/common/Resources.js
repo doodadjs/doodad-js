@@ -47,115 +47,102 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
+				modules = doodad.Modules,
 				config = tools.Config,
 				files = tools.Files,
 				resources = doodad.Resources;
-
-			//! IF_UNSET('serverSide')
-				//! INJECT("const modules = doodad.Modules;");
-			//! END_IF()
 
 			//===================================
 			// Internal
 			//===================================
 
-			// <FUTURE> Thread context
-			const __Internal__ = {
-				resourcesLoader: new types.WeakMap(),
-			};
+			//const __Internal__ = {
+			//};
 
 
-			__Internal__.createResourcesLoader = function(resNs, basePath) {
-				return {
-					locate: function locate(fileName, /*optional*/options) {
-						const Promise = types.getPromise();
-						return Promise.try(function tryLocate() {
-							const path = basePath
-								.combine(files.parsePath(fileName));
-							return path;
-						}, this);
-					},
-					load: function load(fileName, /*optional*/options) {
-						const Promise = types.getPromise();
-						return Promise.try(function tryLoad() {
-							const path = files.parsePath(fileName);
-							if (path.isRelative) {
-								return this.locate(path, options);
-							};
-							return path;
-						}, this)
-							.then(function(path) {
-								const watchCb = types.get(options, 'watchCb', null);
-
-								let promise = null;
-
-								if ((path.extension === 'json') || (path.extension === 'json5')) {
-									promise = config.load(path, options);
-
-								} else {
-									const encoding = types.get(options, 'encoding', null);
-
-									// For readFile through HTTP/HTTPS
-									let headers = null;
-									if (types._instanceof(path, files.Url)) {
-										headers = tools.reduce(types.get(options, 'headers', null), function(result, value, name) {
-											const fixed = tools.title(tools.trim(name), '-');
-											value = (types.isNothing(value) ? '' : tools.trim(types.toString(value)));
-											if (value) {
-												result[fixed] = value;
-											};
-										}, tools.nullObject());
-										if (!types.has(headers, 'Accept')) {
-											headers['Accept'] = 'application/octet-stream, */*';
-										};
-									};
-
-									promise = files.readFileAsync(path, {encoding, headers, enableCache: true});
+			resources.ADD('locate', function locate(fileName, /*optional*/options) {
+				const Promise = types.getPromise();
+				return Promise.try(function tryLocate() {
+					const module = types.get(options, 'module', null);
+					let promise;
+					if (module) {
+						promise = modules.locate(module)
+							.then(function(base) {
+								base = base.set({file: ''});
+								if (root.serverSide) {
+									const rootOptions = root.getOptions();
+									base = base.combine(rootOptions.fromSource ? 'src' : 'build');
 								};
-
-								if (watchCb) {
-									try {
-										files.watch(path, watchCb, {once: true});
-									} catch(err) {
-										// Do nothing
-									};
-
-									promise = promise.nodeify(watchCb);
-								};
-
-								return promise;
-							}, null, this);
-					},
-				};
-			};
-
-
-			resources.ADD('createResourcesLoader', function(resNs, basePath) {
-				resNs.ADD('getResourcesLoader', function getResourcesLoader() {
-					return __Internal__.resourcesLoader.get(resNs);
-				});
-
-				resNs.ADD('setResourcesLoader', function setResourcesLoader(loader) {
-					__Internal__.resourcesLoader.set(resNs, tools.extend({}, resNs.getResourcesLoader(), loader));
-				});
-
-				resNs.setResourcesLoader(__Internal__.createResourcesLoader(resNs, basePath));
+								return base;
+							});
+					} else {
+						promise = Promise.resolve(null);
+					};
+					return promise.then(function(base) {
+						const path = files.parsePath(fileName);
+						if (base) {
+							return base.combine(path);
+						} else {
+							return path;
+						};
+					});
+				}, this);
 			});
 
-
-			return function init(options) {
+			resources.ADD('load', function load(fileName, /*optional*/options) {
 				const Promise = types.getPromise();
-				//! IF_SET('serverSide')
-					const promise = Promise.resolve(files.Path.parse(module.filename));
-				//! ELSE()
-					//! INJECT("const promise = modules.locate(" + TO_SOURCE(MANIFEST('name')) + ");")
-				//! END_IF()
-				return promise
-					.then(function(location) {
-						location = location.set({file: ''});
-						resources.createResourcesLoader(resources, (root.serverSide ? location.moveUp(1) : location));
-					});
-			};
+				return Promise.try(function tryLoad() {
+					const path = files.parsePath(fileName);
+					if (path.isRelative) {
+						return resources.locate(path, options);
+					};
+					return path;
+				}, this)
+					.then(function(path) {
+						const watchCb = types.get(options, 'watchCb', null);
+
+						let promise = null;
+
+						if ((path.extension === 'json') || (path.extension === 'json5')) {
+							promise = config.load(path, options);
+
+						} else {
+							const encoding = types.get(options, 'encoding', null);
+
+							// For readFile through HTTP/HTTPS
+							let headers = null;
+							if (types._instanceof(path, files.Url)) {
+								headers = tools.reduce(types.get(options, 'headers', null), function(result, value, name) {
+									const fixed = tools.title(tools.trim(name), '-');
+									value = (types.isNothing(value) ? '' : tools.trim(types.toString(value)));
+									if (value) {
+										result[fixed] = value;
+									};
+								}, tools.nullObject());
+								if (!types.has(headers, 'Accept')) {
+									headers['Accept'] = 'application/octet-stream, */*';
+								};
+							};
+
+							promise = files.readFileAsync(path, {encoding, headers, enableCache: true});
+						};
+
+						if (watchCb) {
+							try {
+								files.watch(path, watchCb, {once: true});
+							} catch(err) {
+								// Do nothing
+							};
+
+							promise = promise.nodeify(watchCb);
+						};
+
+						return promise;
+					}, null, this);
+			});
+
+			//return function init(options) {
+			//};
 		},
 	};
 	return modules;

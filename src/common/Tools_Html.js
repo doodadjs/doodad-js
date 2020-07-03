@@ -156,8 +156,7 @@ exports.add = function add(modules) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
-				const resLoader = resources.getResourcesLoader();
-				return resLoader.load('./common/res/html5_entities.json')
+				return resources.load('./common/res/html5_entities.json', {module: '@doodad-js/core'})
 					.then(__Internal__.parseEntities);
 			};
 		},

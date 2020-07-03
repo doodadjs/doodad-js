@@ -150,20 +150,6 @@
 			browserify: true
 		},
 		{
-			src: "common/Templates_Html.js",
-			client: true,
-			server: true,
-			browserify: true,
-			exclude: true
-		},
-		{
-			src: "common/Types_UUIDS.js",
-			client: true,
-			server: true,
-			browserify: true,
-			exclude: true
-		},
-		{
 			src: "client/Browserify.js",
 			client: false,
 			server: false,
@@ -315,13 +301,25 @@
 			server: true,
 			browserify: true,
 			test: true
+		},
+		
+		{
+			src: "common/res/Templates_Html.js",
+			client: true,
+			server: true,
+			browserify: true,
+			exclude: true
+		},
+		{
+			src: "common/res/Types_UUIDS.js",
+			client: true,
+			server: true,
+			browserify: true,
+			exclude: true
 		}
 	],
 	resources: [
 		{
-			name: "Doodad.Resources/Common",
-			namespace: "Doodad.Resources",
-			sourceBase: "%SOURCEDIR%/",
 			source: "common/res",
 			client: true,
 			server: true,
