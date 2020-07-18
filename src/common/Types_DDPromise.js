@@ -364,7 +364,7 @@ exports.add = function add(modules) {
 					const P = this;
 					const promise = P.create(function(resolve, reject) {
 						const includeErrors = types.get(options, 'includeErrors', false);
-						const count = types.indexes(promises).length;
+						const count = promises.length;
 						if (count <= 0) {
 							resolve([]);
 						} else {
@@ -379,27 +379,37 @@ exports.add = function add(modules) {
 									resolve(result);
 								};
 							};
-							tools.forEach(promises, function(val, i) {
-								P.resolve(val)
-									.then(function(value) {
-										successes++;
-										result[i] = value;
-										check();
-									})
-									.catch(function(err) {
-										if (errors <= 0) {
-											firstError = err;
-										};
-										errors++;
-										if (includeErrors) {
-											result[i] = err;
-										};
-										check();
-									})
-									.catch(function(err) {
-										reject(err);
-									});
-							});
+							const onSuccessFn = function _onSuccessFn(i) {
+								return function onSuccess(value) {
+									successes++;
+									result[i] = value;
+									check();
+								};
+							};
+							const onFailFn = function _onFailFn(i) {
+								return function onFail(err) {
+									if (errors <= 0) {
+										firstError = err;
+									};
+									errors++;
+									if (includeErrors) {
+										result[i] = err;
+									};
+									check();
+								};
+							};
+							const onError = function _onError(err) {
+								reject(err);
+							};
+							for (let i = 0; i < count; i++) {
+								if (types.has(promises, i)) {
+									P.resolve(promises[i])
+										.then(onSuccessFn(i), onFailFn(i))
+										.catch(onError);
+								} else {
+									successes++;
+								};
+							};
 						};
 					});
 					return promise;
