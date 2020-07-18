@@ -379,33 +379,29 @@ exports.add = function add(modules) {
 									resolve(result);
 								};
 							};
-							const onSuccessFn = function _onSuccessFn(i) {
-								return function onSuccess(value) {
-									successes++;
-									result[i] = value;
-									check();
-								};
-							};
-							const onFailFn = function _onFailFn(i) {
-								return function onFail(err) {
-									if (errors <= 0) {
-										firstError = err;
-									};
-									errors++;
-									if (includeErrors) {
-										result[i] = err;
-									};
-									check();
-								};
-							};
-							const onError = function _onError(err) {
-								reject(err);
+							const proceed = function(i) {
+								P.resolve(promises[i])
+									.then(function(value) {
+										successes++;
+										result[i] = value;
+										check();
+									}, function(err) {
+										if (errors <= 0) {
+											firstError = err;
+										};
+										errors++;
+										if (includeErrors) {
+											result[i] = err;
+										};
+										check();
+									})
+									.catch(function(err) {
+										reject(err);
+									});
 							};
 							for (let i = 0; i < count; i++) {
 								if (types.has(promises, i)) {
-									P.resolve(promises[i])
-										.then(onSuccessFn(i), onFailFn(i))
-										.catch(onError);
+									proceed(i);
 								} else {
 									successes++;
 								};
