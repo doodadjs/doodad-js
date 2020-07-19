@@ -415,6 +415,8 @@ exports.add = function add(modules) {
 
 				types.setJsAttribute(Promise, 'reject', Promise.reject, {});
 
+				types.setJsAttribute(Promise, 'race', Promise.race, {});
+
 				// Add "thisObj" argument
 				// Add promise name
 				const oldThenCall = _shared.Natives.functionBindCall(Promise.prototype.then);
