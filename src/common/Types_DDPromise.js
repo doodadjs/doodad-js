@@ -411,10 +411,13 @@ exports.add = function add(modules) {
 					return promise;
 				}, {});
 
+				// Just Protect
 				types.setJsAttribute(Promise, 'resolve', Promise.resolve, {});
 
+				// Just Protect
 				types.setJsAttribute(Promise, 'reject', Promise.reject, {});
 
+				// Just Protect
 				types.setJsAttribute(Promise, 'race', Promise.race, {});
 
 				// Add "thisObj" argument
