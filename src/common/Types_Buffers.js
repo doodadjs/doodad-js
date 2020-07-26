@@ -113,8 +113,7 @@ exports.add = function add(modules) {
 						];
 					} else {
 						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
-						// eslint-disable-next-line semi-spacing
-						_shared.Natives.windowTypedArray[_shared.UUIDSymbol] = '' /*! INJECT('+' + TO_SOURCE(UUID('Native_TypedArray')), true) */;
+						types.setJsAttribute(_shared.Natives.windowTypedArray, _shared.UUIDSymbol, /*! REPLACE_BY(TO_SOURCE(UUID('Native_TypedArray')), true) */ '' /*! END_REPLACE() */, {});
 					};
 				} catch(ex) {
 					// Do nothing
