@@ -224,7 +224,7 @@ exports.add = function add(modules) {
 						types.addAppEventListener('unhandledrejection', onRejection);
 						types.addAppEventListener('rejectionhandled', onHandled);
 
-						const dumpRejections = function dumpRejections() {
+						const dumpRejections = function _dumpRejections() {
 							try {
 								const curTime = (new Date()).valueOf();
 
