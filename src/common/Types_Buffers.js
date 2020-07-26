@@ -62,7 +62,7 @@ exports.add = function add(modules) {
 				// "isArrayBuffer"
 				windowArrayBuffer: (global.ArrayBuffer ? global.ArrayBuffer : null),
 
-				// "isTypesArray"
+				// "isTypedArray"
 				windowTypedArray: null,
 			});
 
