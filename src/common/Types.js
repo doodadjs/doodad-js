@@ -948,7 +948,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 3,
+						revision: 4,
 						params: {
 							obj: {
 								type: 'object,arraylike',
@@ -963,15 +963,7 @@ exports.add = function add(modules) {
 				, function values(obj) {
 					if (!types.isNothing(obj)) {
 						obj = _shared.Natives.windowObject(obj);
-						if (types.isArrayLike(obj)) {
-							const result = [];
-							const keys = types.keys(obj),
-								len = keys.length; // performance
-							for (let i = 0; i < len; i++) {
-								result.push(obj[keys[i]]);
-							};
-							return result;
-						} else if (_shared.Natives.objectValues) {
+						if (!types.isArrayLike(obj) && _shared.Natives.objectValues) {
 							return _shared.Natives.objectValues(obj);
 						} else {
 							const result = [];
