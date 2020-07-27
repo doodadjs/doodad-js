@@ -1452,7 +1452,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: null,
 									returns: 'Path',
 									description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
@@ -1463,7 +1463,18 @@ exports.add = function add(modules) {
 									return this;
 								} else if (this.path && this.path.length) {
 									const newPath = tools.append([], this.path);
-									const newFile = newPath.pop();
+									let newFile = newPath.pop();
+									if (!newFile) {
+										// Trailing space
+										if (this.path.length) {
+											newFile = newPath.pop();
+											if (!newFile) {
+												return null;
+											};
+										} else {
+											return null;
+										};
+									};
 									return this.set({file: newFile, path: newPath});
 								} else {
 									return null;
