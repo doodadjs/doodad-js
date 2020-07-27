@@ -373,6 +373,7 @@ exports.add = function add(modules) {
 
 			__Internal__.pathOptions = {
 				os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
+				caseSensitive: types.READ_ONLY( true ),
 				dirChar: types.READ_ONLY( '/' ),
 				extension: types.READ_ONLY( null ), // when set, changes 'file'
 				quote: types.READ_ONLY( null ),  // null = auto-detect
@@ -491,6 +492,7 @@ exports.add = function add(modules) {
 
 								// Options
 								let os = types.get(options, 'os', null),  // Default is Auto-set
+									caseSensitive = types.get(options, 'caseSensitive', null), // Default is Auto-set
 									dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
 									isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
 									shell = types.get(options, 'shell', null), // Default is Auto-set
@@ -523,6 +525,16 @@ exports.add = function add(modules) {
 									// Auto-set
 									const osInfo = tools.getOS();
 									os = osInfo.type;
+									if (types.isNothing(caseSensitive)) {
+										caseSensitive = osInfo.caseSensitive;
+									};
+									if (types.isNothing(dirChar)) {
+										dirChar = osInfo.dirChar;
+									}
+								};
+
+								if (types.isNothing(caseSensitive)) {
+									caseSensitive = ((os === 'windows') ? false : true);
 								};
 
 								// Detect quotes character
@@ -1068,19 +1080,20 @@ exports.add = function add(modules) {
 
 
 								return new this({
-									os: os,
-									dirChar: dirChar,
+									os,
+									caseSensitive,
+									dirChar,
 									host: host || null,
 									drive: drive || null,
 									root: dirRoot && types.freezeObject(dirRoot) || null,
 									path: types.freezeObject(path || []),
-									file: file,
-									extension: extension,
+									file,
+									extension,
 									quote: quote || null,
-									isRelative: isRelative,
-									noEscapes: noEscapes,
-									shell: shell,
-									forceDrive: forceDrive,
+									isRelative,
+									noEscapes,
+									shell,
+									forceDrive,
 									isNull: !host && !drive && (!root || !root.length) && (!path || !path.length) && !file,
 								});
 							}),
@@ -1585,8 +1598,7 @@ exports.add = function add(modules) {
 								throw new types.ParseError("Paths must be from the same network share or the same drive.");
 							};
 
-							const os = tools.getOS(),
-								caseSensitive = types.get(options, 'caseSensitive', os.caseSensitive);
+							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
 
 							const thisAr = this.toArray({trim: true}),
 								toAr = to.toArray({trim: true, pushFile: true});
@@ -3489,7 +3501,7 @@ exports.add = function add(modules) {
 								throw new types.ParseError("Urls must be from the same credentials.");
 							};
 
-							const caseSensitive = types.get(options, 'caseSensitive', false);
+							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
 
 							const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
 								toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
