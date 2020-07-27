@@ -3501,7 +3501,7 @@ exports.add = function add(modules) {
 								throw new types.ParseError("Urls must be from the same credentials.");
 							};
 
-							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
+							const caseSensitive = types.get(options, 'caseSensitive', false);
 
 							const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
 								toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
