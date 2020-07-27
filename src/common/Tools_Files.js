@@ -1464,13 +1464,10 @@ exports.add = function add(modules) {
 								} else if (this.path && this.path.length) {
 									const newPath = tools.append([], this.path);
 									let newFile = newPath.pop();
-									if (!newFile) {
+									while (!newFile) {
 										// Trailing space
-										if (this.path.length) {
+										if (newPath.length) {
 											newFile = newPath.pop();
-											if (!newFile) {
-												return null;
-											};
 										} else {
 											return null;
 										};
