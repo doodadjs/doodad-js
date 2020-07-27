@@ -110,6 +110,7 @@ exports.add = function add(modules) {
 							//architecture: ...,
 							dirChar: ((name === 'win32') ? '\\' : '/'),
 							newLine: ((name === 'win32') ? '\r\n' : '\n'),
+							caseSensitive: ((name === 'win32') || (name === 'darwin') ? false : true),
 						}));
 						__Internal__.os = os;
 					};

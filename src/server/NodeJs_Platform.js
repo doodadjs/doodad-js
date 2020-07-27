@@ -118,6 +118,7 @@ exports.add = function add(mods) {
 							architecture: nodeOsArch(),
 							dirChar: nodePathSep,
 							newLine: nodeOsEOL,
+							caseSensitive: ((platform === 'win32') || (platform === 'darwin') ? false : true),
 						}));
 						__Internal__.os = os;
 					};
