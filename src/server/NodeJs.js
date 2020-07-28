@@ -2371,8 +2371,7 @@ exports.add = function add(mods) {
 							const user = types.get(options, 'user', undefined),
 								password = types.get(options, 'password', undefined);
 
-							let auth = null;
-
+							let auth = undefined;
 							if (user || password) {
 								auth = (user || '') + (password ? (':' + password) : '');
 							};
@@ -2405,16 +2404,16 @@ exports.add = function add(mods) {
 							};
 
 							try {
+								const agent = types.get(options, 'connectionPool', false); // defaults to "no pool"
+
 								state.request = nodeHttpRequest({
 									hostname: path.domain || 'localhost',
 									port: path.port || 80,
 									path: (tools.trim(path.path, '/', -1) || '') + '/' + (path.file || ''),
 									method: types.get(options, 'method', 'GET').toUpperCase(),
 									headers: types.get(options, 'headers', undefined), // defaults to "no header"
-									auth: auth,
-									agent: types.get(options, 'connectionPool', false), // defaults to "no pool"
-									keepAlive: types.get(options, 'keepAlive', false), // defaults to "don't keep alive"
-									keepAliveMsecs: types.get(options, 'keepAliveInterval', undefined),  // defaults to nodejs's default value
+									auth,
+									agent,
 								}, function(response) {
 									if (encoding) {
 										response.setEncoding(encoding);
@@ -2430,7 +2429,12 @@ exports.add = function add(mods) {
 												state.data = chunk;
 											};
 										} else {
-											state.request.abort();
+											if (types.isFunction(state.request.abort)) {
+												// Deprecated since Node.js 14.1.0
+												state.request.abort();
+											} else {
+												state.request.destroy();
+											};
 										};
 									});
 
@@ -2447,6 +2451,10 @@ exports.add = function add(mods) {
 									});
 								});
 
+								if (agent && (types.has(options, 'keepAlive') || types.has(options, 'keepAliveInterval'))) {
+									state.request.setSocketKeepAlive(types.get(options, 'keepAlive', true), types.get(options, 'keepAliveInterval', 1000));
+								};
+
 								state.request.on('error', onEnd);
 
 								const body = types.get(options, 'body', null);
@@ -2458,7 +2466,12 @@ exports.add = function add(mods) {
 									state.timeoutId = null;
 									if (!state.ready) {
 										if (state.request) {
-											state.request.abort();
+											if (types.isFunction(state.request.abort)) {
+												// Deprecated since Node.js 14.1.0
+												state.request.abort();
+											} else {
+												state.request.destroy();
+											};
 											state.request = null;
 										};
 										onEnd(new types.TimeoutError("Request has timed out."));
