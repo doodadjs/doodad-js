@@ -2404,7 +2404,8 @@ exports.add = function add(mods) {
 							};
 
 							try {
-								const agent = types.get(options, 'connectionPool', false); // defaults to "no pool"
+								const keepAlive = types.get(options, 'keepAlive', false);
+								const agent = types.get(options, 'connectionPool', (keepAlive ? undefined : false)); // defaults to global pool when keep alive, else defaults to "no pool".
 
 								state.request = nodeHttpRequest({
 									hostname: path.domain || 'localhost',
@@ -2451,8 +2452,8 @@ exports.add = function add(mods) {
 									});
 								});
 
-								if (agent && (types.has(options, 'keepAlive') || types.has(options, 'keepAliveInterval'))) {
-									state.request.setSocketKeepAlive(types.get(options, 'keepAlive', true), types.get(options, 'keepAliveInterval', 1000));
+								if (types.has(options, 'keepAlive') || types.has(options, 'keepAliveInterval')) {
+									state.request.setSocketKeepAlive(keepAlive, types.get(options, 'keepAliveInterval', 1000));
 								};
 
 								state.request.on('error', onEnd);
