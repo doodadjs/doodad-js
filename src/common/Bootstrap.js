@@ -5701,16 +5701,31 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
 			{
 				author: "Claude Petit",
-				revision: 2,
-				params: null,
+				revision: 3,
+				params: {
+					message: {
+						type: 'string',
+						optional: true,
+						description: "A message explaining the error.",
+					},
+					params: {
+						type: 'arrayof(any),objectof(any)',
+						optional: true,
+						description: "Parameters of the error message",
+					},
+				},
 				returns: 'error',
-				description: "Raised on invalid value type.",
+				description: "Raised on invalid value.",
 			}
 		//! END_REPLACE()
 		, types.Error.$inherit(
 			{
 				$TYPE_NAME: "ValueError",
 				$TYPE_UUID: /*! REPLACE_BY(TO_SOURCE(UUID('TypeError')), true) */ null /*! END_REPLACE() */,
+
+				[types.ConstructorSymbol](/*optional*/message, /*optional*/params) {
+					return [message || "Value error.", params];
+				},
 			})));
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
