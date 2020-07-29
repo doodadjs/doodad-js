@@ -413,7 +413,7 @@ exports.add = function add(mods) {
 						__Internal__.handledRejectionEvent.set(listener, handler);
 					};
 				} else {
-					throw new types.Error("Unknow application event '~0~'.", [event]);
+					throw new types.ValueError("Unknow application event '~0~'.", [event]);
 				};
 			});
 
@@ -437,7 +437,7 @@ exports.add = function add(mods) {
 						__Internal__.handledRejectionEvent.delete(listener);
 					};
 				} else {
-					throw new types.Error("Unknow application event '~0~'.", [event]);
+					throw new types.ValueError("Unknow application event '~0~'.", [event]);
 				};
 			});
 
@@ -2549,7 +2549,7 @@ exports.add = function add(mods) {
 							break;
 
 						default:
-							throw new types.Error("Invalid write mode : '~0~'.", [mode]);
+							throw new types.ValueError("Invalid write mode : '~0~'.", [mode]);
 						};
 
 						if (types._instanceof(path, files.Url)) {

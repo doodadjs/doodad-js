@@ -1093,7 +1093,7 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function makeInside(/*optional*/obj, fn, /*optional*/secret) {
 					if (types.isCallback(fn)) {
-						throw new types.Error("Invalid function.");
+						throw new types.ValueError("Invalid function.");
 					};
 					const type = types.getType(obj);
 					if (types.isClass(type) || types.isInterfaceClass(type)) {
@@ -4093,11 +4093,11 @@ exports.add = function add(modules) {
 					if (__Internal__.hasPolicies) {
 						const base = types.getBase(cls);
 						if (!types.is(base, doodad.Class) && !types.isMixIn(base)) {
-							throw new types.Error("Mix-ins must be based on 'doodad.Class' or another mix-in.");
+							throw new types.ValueError("Mix-ins must be based on 'doodad.Class' or another mix-in.");
 						};
 					};
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.Interface) | doodad.ClassModifiers.MixIn, {configurable: true});
 					return cls;
@@ -4124,11 +4124,11 @@ exports.add = function add(modules) {
 					if (__Internal__.hasPolicies) {
 						const base = types.getBase(cls);
 						if (!types.is(base, doodad.Class) && !types.isInterface(base)) {
-							throw new types.Error("Interfaces must be based on 'doodad.Class' or another mix-in.");
+							throw new types.ValueError("Interfaces must be based on 'doodad.Class' or another mix-in.");
 						};
 					};
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, ((cls[_shared.ModifiersSymbol] || 0) & ~doodad.ClassModifiers.MixIn) | doodad.ClassModifiers.Interface, {configurable: true});
 					return cls;
@@ -4153,7 +4153,7 @@ exports.add = function add(modules) {
 				, function SEALED(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Sealed, {configurable: true});
 					return cls;
@@ -4178,7 +4178,7 @@ exports.add = function add(modules) {
 				, function STATIC(cls) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Static, {configurable: true});
 					return cls;
@@ -4204,11 +4204,11 @@ exports.add = function add(modules) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 					if (__Internal__.hasPolicies) {
 						if (!types.isInterface(cls) && !types.isMixIn(cls)) {
-							throw new types.Error("Isolation can only be applied on interfaces and mix-ins.");
+							throw new types.ValueError("Isolation can only be applied on interfaces and mix-ins.");
 						};
 					};
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Isolated, {configurable: true});
 					return cls;
@@ -4234,11 +4234,11 @@ exports.add = function add(modules) {
 					root.DD_ASSERT && root.DD_ASSERT((cls === types.Type) || types.baseof(types.Type, cls), "Invalid class.");
 					if (__Internal__.hasPolicies) {
 						if (types.isInterface(cls) || types.isMixIn(cls)) {
-							throw new types.Error("Expandable can't be applied on interfaces and mix-ins.");
+							throw new types.ValueError("Expandable can't be applied on interfaces and mix-ins.");
 						};
 					};
 					if (types.isInitialized(cls)) {
-						throw new types.Error("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
+						throw new types.ValueError("Class '" + (types.getTypeName(cls) || __Internal__.ANONYMOUS) + "' is initialized.");
 					};
 					types.setJsAttribute(cls, _shared.ModifiersSymbol, (cls[_shared.ModifiersSymbol] || 0) | doodad.ClassModifiers.Expandable, {configurable: true});
 					return cls;

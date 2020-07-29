@@ -6169,12 +6169,12 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					},
 				},
 				returns: 'type',
-				description: "Transforms a Doodad type to a singleton object. Returns that singleton object.",
+				description: "Transforms a Doodad type to a singleton object. Returns that singleton object type.",
 			}
 		//! END_REPLACE()
 		, function SINGLETON(type) {
 			if (!types.isType(type)) {
-				throw new types.Error("Invalid type.");
+				throw new types.ValueError("Invalid type.");
 			};
 
 			if (!types.isSingleton(type)) {
