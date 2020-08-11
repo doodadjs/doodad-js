@@ -535,7 +535,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			//! REPLACE_IF(IS_UNSET('debug'), "null")
 				{
 					author: "Claude Petit",
-					revision: 6,
+					revision: 7,
 					params: {
 						depth: {
 							type: 'integer,function',
@@ -567,7 +567,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					} else {
 						depth = (+depth || 0) - 1;  // null|undefined|true|false|NaN|Infinity
 						extender = function(result, val, key, extend) {
-							if ((extender.depth >= 0) && types.isObject(val)) {
+							if ((extender.depth >= 0) && (types.isJsObject || types.isObject)(val)) {
 								const resultVal = result[key];
 								if (types.isNothing(resultVal)) {
 									extender.depth--;
