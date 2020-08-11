@@ -31,7 +31,7 @@
 
 exports.add = function add(modules) {
 	modules = (modules || {});
-	modules['Doodad/Doodad.Templates.Html'] = {
+	modules['Doodad.Templates.Html/Doodad'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 
 		dependencies: [
@@ -43,10 +43,10 @@ exports.add = function add(modules) {
 			// Get namespaces
 			//===================================
 
-			const doodad = root.Doodad,
-				//tools = doodad.Tools,
-				//types = doodad.Types,
-				templatesHtml = doodad.Templates.Html;
+			//const doodad = root.Doodad,
+			//	tools = doodad.Tools,
+			//	types = doodad.Types,
+			//	templatesHtml = doodad.Templates.Html;
 
 			//===================================
 			// Internal
@@ -62,13 +62,16 @@ exports.add = function add(modules) {
 			//tools.complete(_shared.Natives, {
 			//});
 
-
 			//===================================
 			// Init
 			//===================================
-			return function init(/*optional*/options) {
-				templatesHtml.registerClientScripts('root.getOptions().fromSource ? [ "@doodad-js/core/lib/uuid/uuid.js", "@doodad-js/core/lib/json5/json5.js" ] : [ "@doodad-js/core/lib/uuid/uuid.min.js", "@doodad-js/core/lib/json5/json5.min.js" ]', {async: true, eval: true});
-			};
+
+			_options.buildFile.onApply.attach(null, function(ev) {
+				ev.data.scripts.register(root.getOptions().fromSource ? ["@doodad-js/core/lib/uuid/uuid.js", "@doodad-js/core/lib/json5/json5.js"] : ["@doodad-js/core/lib/uuid/uuid.min.js", "@doodad-js/core/lib/json5/json5.min.js"], {async: true});
+			});
+
+			//return function init(/*optional*/options) {
+			//};
 		},
 	};
 	return modules;
