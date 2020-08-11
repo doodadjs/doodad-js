@@ -67,8 +67,7 @@ exports.add = function add(modules) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
-				templatesHtml.registerClientScript(root.getOptions().fromSource ? "@doodad-js/core/lib/uuid/uuid.js" : "@doodad-js/core/lib/uuid/uuid.min.js", true);
-				templatesHtml.registerClientScript(root.getOptions().fromSource ? "@doodad-js/core/lib/json5/json5.js" : "@doodad-js/core/lib/json5/json5.min.js", true);
+				templatesHtml.registerClientScripts('root.getOptions().fromSource ? [ "@doodad-js/core/lib/uuid/uuid.js", "@doodad-js/core/lib/json5/json5.js" ] : [ "@doodad-js/core/lib/uuid/uuid.min.js", "@doodad-js/core/lib/json5/json5.min.js" ]', {async: true, eval: true});
 			};
 		},
 	};
