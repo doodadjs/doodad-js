@@ -34,9 +34,9 @@
       "enforcePolicies": false,
       "publicOnDebug": false
     },
-	"Doodad.Client": {
-	  "defaultScriptTimeout": 10000
-	}
+    "Doodad.Client": {
+      "defaultScriptTimeout": 10000
+    }
   },
   "keywords": [
     "oop",
