@@ -28,11 +28,11 @@
 	//! END_IF()
 //! END_FOR()
 
+import { createRequire } from 'module';
 import {default as bootstrap} from /*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.mjs")) */;
 
-// TODO: Find a way to import JSON files.
-//import {default as config} from './config.json';
-const config = {};
+const require = createRequire(import.meta.url);
+const config = require('./config.json');
 
 export function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
 	const has = function(obj, key) {
