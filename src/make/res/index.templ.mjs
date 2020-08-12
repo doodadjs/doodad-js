@@ -30,7 +30,9 @@
 
 import {default as bootstrap} from /*! INJECT(TO_SOURCE(MAKE_MANIFEST("buildDir") + "/common/Bootstrap.min.mjs")) */;
 
-import {default as config} from './config.json';
+// TODO: Find a way to import JSON files.
+//import {default as config} from './config.json';
+const config = {};
 
 export function createRoot(/*optional*/modules, /*optional*/options, /*optional*/startup) {
 	const has = function(obj, key) {
