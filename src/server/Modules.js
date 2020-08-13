@@ -25,28 +25,19 @@
 //! END_REPLACE()
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeModule} from 'module';");
-	//! INJECT("import {default as nodeProcess} from 'process';");
-	//! INJECT("import {default as nodeFs} from 'fs';");
+	//! INJECT("import {createRequire as nodeModuleCreateRequire} from 'module';");
 	//! INJECT("import {default as amp} from 'app-module-path';")
+
 //! ELSE()
+
 	"use strict";
 
-	const nodeModule = require('module'),
-		nodeProcess = require('process'),
-		nodeFs = require('fs'),
-		amp = require('app-module-path');
+	const amp = require('app-module-path');
+
 //! END_IF()
 
-const nodeModuleModule = nodeModule.Module,
 
-	nodeProcessCwd = nodeProcess.cwd,
-	nodeProcessArgv = nodeProcess.argv,
-
-	nodeFsStatSync = nodeFs.statSync,
-
-	ampAddPath = amp.addPath;
-
+const ampAddPath = amp.addPath;
 
 exports.add = function add(mods) {
 	mods = (mods || {});
@@ -94,64 +85,30 @@ exports.add = function add(mods) {
 			};
 
 
-			//! BEGIN_REMOVE()
-				if (typeof require !== 'function') {
-				//! END_REMOVE()
-
-				//! IF_SET("mjs")
-
-					// TODO: Find a way to get 'require.main'
-
-					(function() {
-						let mainPath = nodeProcessArgv[1];
-						if (mainPath) {
-							const stats = nodeFsStatSync(mainPath);
-							if (!stats.isDirectory()) {
-								mainPath = files.Path.parse(mainPath).set({file: ''}).toApiString();
-							};
-						} else {
-							mainPath = nodeProcessCwd();
-						};
-						__Internal__.locatorModule = new nodeModuleModule('<locator>', null);
-						__Internal__.locatorModule.paths = nodeModuleModule._nodeModulePaths(mainPath);
-					})();
-
-					//! BEGIN_REMOVE()
-					} else {
-					//! END_REMOVE()
-
-				//! ELSE()
-
-					__Internal__.locatorModule = require.main || module.parent;
-
-				//! END_IF()
-
-				//! BEGIN_REMOVE()
-				};
-			//! END_REMOVE()
-
-
-			// TODO: Find a better way.
-			modules.ADD('getLocator', function getLocator() {
-				return __Internal__.locatorModule;
-			});
+			//modules.ADD('getLocator', function getLocator() {
+			//	return __Internal__.locatorModule;
+			//});
 
 			// TODO: Replace by native ??? when implemented.
 			modules.ADD('addSearchPath', function addSearchPath(path) {
 				path = types.toString(path);
 
-				ampAddPath(path, __Internal__.locatorModule);
+				ampAddPath(path);
+				//ampAddPath(path, __Internal__.locatorModule);
 			});
 
-			// TODO: Replace by native "import()" when implemented.
 			modules.ADD('import', function _import(location) {
-				const Promise = types.getPromise();
-				return Promise.try(function tryImport() {
-					location = types.toString(location);
-					return {
-						default: nodeModuleModule._load(location, __Internal__.locatorModule, false)
-					};
-				});
+				//! IF_SET("mjs")
+					//! INJECT("return import(location);")
+				//! ELSE()
+					const Promise = types.getPromise();
+					return Promise.try(function tryImport() {
+						location = types.toString(location);
+						return {
+							default: __Internal__.require(location)
+						};
+					});
+				//! END_IF()
 			});
 
 			// TODO: Replace by native ??? when implemented.
@@ -166,7 +123,7 @@ exports.add = function add(mods) {
 						if (pkg[0] && pkg[0][0] === '@') {
 							pkg.push(newLocation.shift());
 						};
-						const pkgPath = nodeModuleModule._resolveFilename(pkg.join('/') + '/package.json', __Internal__.locatorModule, false);
+						const pkgPath =  __Internal__.require.resolve(pkg.join('/') + '/package.json');
 						if (newLocation.length > 0) {
 							const path = files.Path.parse(pkgPath).set({file: ''}).combine(newLocation.join('/')).toApiString();
 							return path;
@@ -174,7 +131,7 @@ exports.add = function add(mods) {
 						return pkgPath;
 					};
 				};
-				return nodeModuleModule._resolveFilename(location.toApiString(), __Internal__.locatorModule, false);
+				return __Internal__.require.resolve(location.toApiString());
 			});
 
 			modules.ADD('locate', root.DD_DOC(
@@ -474,8 +431,13 @@ exports.add = function add(mods) {
 			//===================================
 			// Init
 			//===================================
-			//return function init(/*optional*/options) {
-			//};
+			return function init(/*optional*/options) {
+				//! IF_SET("mjs")
+					//! INJECT("__Internal__.require = nodeModuleCreateRequire(import.meta.url);")
+				//! ELSE()
+					__Internal__.require = require;
+				//! END_IF();
+			};
 		},
 	};
 	return mods;
