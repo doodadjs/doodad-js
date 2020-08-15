@@ -75,7 +75,6 @@ exports.add = function add(modules) {
 				},
 			};
 
-
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -105,6 +104,10 @@ exports.add = function add(modules) {
 				, function locate(/*optional*/module, /*optional*/path, /*optional*/options) {
 					const Promise = types.getPromise();
 
+					const ddOptions = root.getOptions();
+					const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
+					const mjs = types.get(options, 'mjs', false);
+
 					return Promise.try(function() {
 						if (path) {
 							path = files.parseUrl(path);
@@ -129,22 +132,15 @@ exports.add = function add(modules) {
 							};
 						};
 						if (location.file) {
-							const ddOptions = root.getOptions();
-							if (!ddOptions.debug && !ddOptions.fromSource) {
+							const ext = '.' + location.extension + '.';
+							if (!dontForceMin && (ext.endsWith('.js.') || ext.endsWith('.mjs.'))) {
 								// Force minified files.
-								const parts = location.file.split('.'),
-									len = parts.length;
-								if ((parts[len - 1] === 'js') && (parts[len - 2] !== 'min')) {
-									location = location
-										.set({extension: 'min.js'});
+								if (ext.indexOf('.min.') < 0) {
+									location = location.set({extension: 'min.' + location.extension});
 								};
 							};
 						} else if (module) {
-							location = location
-								.set({file: (root.getOptions().debug ? __Internal__.getPackageName(module) + '.js' : __Internal__.getPackageName(module) + '.min.js')});
-						} else {
-							location = location
-								.set({file: (root.getOptions().debug ? 'index.js' : 'index.min.js')});
+							location = location.set({file: __Internal__.getPackageName(module) + (dontForceMin ? '' : '.min') + (mjs ? '.mjs' : '.js')});
 						};
 						return location;
 					});
@@ -158,24 +154,34 @@ exports.add = function add(modules) {
 					types.getDefault(file, 'path', null);
 					types.getDefault(file, 'optional', false);
 					types.getDefault(file, 'isConfig', false);
+					types.getDefault(file, 'mjs', false);
+					types.getDefault(file, 'dontForceMin', false);
 
 					file.exports = null;
 
-					return modules.locate(file.module, file.path, options)
+					return modules.locate(file.module, file.path, file)
 						.then(function(location) {
-							if (file.isConfig || ((location.extension === 'json') || (location.extension === 'json5'))) {
+							const ext = '.' + location.extension;
+							const mjs = file.mjs || ext.endsWith('.mjs');
+
+							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
 								return config.load(location)
 									.then(function(config) {
 										return {
 											default: config,
 										};
 									});
+							} else if (mjs) {
+								return import(location.toApiString());
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
 								return Promise.create(function startScriptLoader(resolve, reject) {
+									//global.DD_EXPORTS = {};
 									const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
 									scriptLoader.addEventListener('load', function() {
-										//file.exports = ??? // <PRB> unable to get a reference to the loaded script and its exports
+										// <PRB> Unable to get a reference to the loaded script and just its own exports.
+										//resolve(global.DD_EXPORTS);
+										//global.DD_EXPORTS = null;
 										resolve(null);
 									});
 									scriptLoader.addEventListener('error', function(ev) {
@@ -190,7 +196,7 @@ exports.add = function add(modules) {
 										const locals = {DD_EXPORTS: DD_EXPORTS, DD_MODULES: undefined};
 										const evalFn = tools.createEval(types.keys(locals), false).apply(null, types.values(locals));
 										evalFn(code);
-										return DD_EXPORTS;
+										return {default: DD_EXPORTS};
 									});
 							};
 						})
@@ -280,20 +286,23 @@ exports.add = function add(modules) {
 							});
 
 							// Get Doodad modules from JS script files.
-							let pkgModules = null;
-
-							if (root.getOptions().debug) {
-								pkgModules = global.DD_MODULES;
-								//delete global.DD_MODULES;
-								global.DD_MODULES = null;
-							} else {
+							let pkgModules;
+							//! IF_UNSET("mjs")
+								if (root.getOptions().debug) {
+									pkgModules = global.DD_MODULES;
+									//delete global.DD_MODULES;
+									global.DD_MODULES = null;
+								} else {
+								//! END_IF()
 								pkgModules = {};
 								tools.forEach(files, function(file) {
 									if (file && !file.isConfig) {
-										file.exports.add(pkgModules);
+										file.exports.default.add(pkgModules);
 									};
 								});
-							};
+								//! IF_UNSET("mjs")
+								};
+							//! END_IF()
 
 							// Load modules.
 							return namespaces.load(pkgModules, options)

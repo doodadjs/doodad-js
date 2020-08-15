@@ -97,20 +97,6 @@ exports.add = function add(mods) {
 				//ampAddPath(path, __Internal__.locatorModule);
 			});
 
-			modules.ADD('import', function _import(location) {
-				//! IF_SET("mjs")
-					//! INJECT("return import(location);")
-				//! ELSE()
-					const Promise = types.getPromise();
-					return Promise.try(function tryImport() {
-						location = types.toString(location);
-						return {
-							default: __Internal__.require(location)
-						};
-					});
-				//! END_IF()
-			});
-
 			// TODO: Replace by native ??? when implemented.
 			modules.ADD('resolve', function _resolve(location) {
 				if (!types._instanceof(location, files.Path)) {
@@ -161,6 +147,10 @@ exports.add = function add(mods) {
 					}
 				//! END_REPLACE()
 				, function locate(/*optional*/_module, /*optional*/path, /*optional*/options) {
+					const ddOptions = root.getOptions();
+					const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
+					const mjs = types.get(options, 'mjs', false);
+
 					const Promise = types.getPromise();
 					return Promise.try(function() {
 						let location;
@@ -186,19 +176,13 @@ exports.add = function add(mods) {
 						};
 
 						if (location.file) {
-							const ddOptions = root.getOptions();
-							if (!ddOptions.debug && !ddOptions.fromSource) {
+							const ext = '.' + location.extension + '.';
+							if (!dontForceMin && (ext.endsWith('.js.') || ext.endsWith('.mjs.'))) {
 								// Force minified files.
-								const parts = location.file.split('.'),
-									len = parts.length;
-								if ((parts[len - 1] === 'js') && (parts[len - 2] !== 'min')) {
-									location = location
-										.set({extension: 'min.js'});
+								if (ext.indexOf('.min.') < 0) {
+									location = location.set({extension: 'min.' + location.extension});
 								};
 							};
-						} else {
-							location = location
-								.set({file: 'index.js'});
 						};
 
 						return location;
@@ -213,21 +197,31 @@ exports.add = function add(mods) {
 					types.getDefault(file, 'path', null);
 					types.getDefault(file, 'optional', false);
 					types.getDefault(file, 'isConfig', false);
+					types.getDefault(file, 'mjs', false);
+					types.getDefault(file, 'dontForceMin', false);
 
 					file.exports = null;
 
-					return modules.locate(file.module, file.path, options)
+					return modules.locate(file.module, file.path, file)
 						.then(function(location) {
-							if (file.isConfig || ((location.extension === 'json') || (location.extension === 'json5'))) {
+							const ext = '.' + location.extension;
+							const mjs = file.mjs || ext.endsWith('.mjs');
+
+							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
 								return config.load(location)
 									.then(function(config) {
 										return {
 											default: config,
 										};
 									});
+							} else if (mjs) {
+								return import(location.toApiString());
 							} else {
-								// TODO: Use native "import()" when implemented.
-								return modules.import(location.toApiString());
+								return Promise.try(function tryImport() {
+									return {
+										default: __Internal__.require(location.toApiString())
+									};
+								});
 							};
 						})
 						.catch(function(err) {
