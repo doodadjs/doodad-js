@@ -1,4 +1,4 @@
-/* global process, DD_BOOTSTRAP */
+/* global DD_BOOTSTRAP */
 
 //! BEGIN_MODULE()
 
@@ -3330,9 +3330,11 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				loopKeys(this, types.symbols(this));
 				return dest;
 			}
+
 			valueOf() {
 				return this[_shared.OriginalValueSymbol];
 			}
+
 			setValue(value, /*optional*/override) {
 				// NOTE: "OriginalValueSymbol" is immutable
 				const type = this.constructor;
@@ -3345,6 +3347,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				boxed[_shared.OriginalValueSymbol] = value;
 				return boxed;
 			}
+
 			clone() {
 				return this.setValue(this[_shared.OriginalValueSymbol]);
 			}
@@ -6565,8 +6568,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 											i++;
 										};
 									};
-								} catch(ex) {
-									throw ex;
 								} finally {
 									listeners.__locked = false;
 									if (changed) {
@@ -7189,7 +7190,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 					delete newOptions.secret;
 
-					if (tools.some(args, arg => types.has(arg, 'enableAsserts'))) {
+					if (tools.some(args, (arg) => types.has(arg, 'enableAsserts'))) {
 						if (newOptions.enableAsserts) {
 							__Internal__.enableAsserts();
 						} else {

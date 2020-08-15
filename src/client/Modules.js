@@ -172,7 +172,11 @@ exports.add = function add(modules) {
 										};
 									});
 							} else if (mjs) {
-								return import(location.toApiString());
+								// <PRB> ESLint doesn't allow "import" and there is no other way to disable that.
+								//! INJECT("return import(location.toApiString());")
+								//! BEGIN_REMOVE()
+									throw types.NotSupported("'mjs' is not supported when running from source code.");
+								//! END_REMOVE()
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
 								return Promise.create(function startScriptLoader(resolve, reject) {

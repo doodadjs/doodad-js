@@ -1,5 +1,3 @@
-/* global process */
-
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)

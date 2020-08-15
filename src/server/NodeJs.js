@@ -1,5 +1,3 @@
-/* global process */
-
 //! BEGIN_MODULE()
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
@@ -1475,16 +1473,11 @@ exports.add = function add(mods) {
 								};
 							} while (bytesRead);
 
-						} catch(ex) {
-							throw ex;
-
 						} finally {
 							try {
 								if (!types.isNothing(sourceFd)) {
 									nodeFsCloseSync(sourceFd);
 								};
-							} catch(ex) {
-								throw ex;
 							} finally {
 								if (!types.isNothing(destFd)) {
 									nodeFsCloseSync(destFd);
@@ -3414,8 +3407,6 @@ exports.add = function add(mods) {
 								this.__currentlyEmitted = event;
 								try {
 									return this[name](...args);
-								} catch(ex) {
-									throw ex;
 								} finally {
 									this.__currentlyEmitted = oldCurrentlyEmitted;
 								}

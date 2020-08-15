@@ -149,7 +149,6 @@ exports.add = function add(mods) {
 				, function locate(/*optional*/_module, /*optional*/path, /*optional*/options) {
 					const ddOptions = root.getOptions();
 					const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
-					const mjs = types.get(options, 'mjs', false);
 
 					const Promise = types.getPromise();
 					return Promise.try(function() {
@@ -215,7 +214,11 @@ exports.add = function add(mods) {
 										};
 									});
 							} else if (mjs) {
-								return import(location.toApiString());
+								// <PRB> ESLint doesn't allow "import" and there is no other way to disable that.
+								//! INJECT("return import(location.toApiString());")
+								//! BEGIN_REMOVE()
+									throw types.NotSupported("'mjs' is not supported when running from source code.");
+								//! END_REMOVE()
 							} else {
 								return Promise.try(function tryImport() {
 									return {
@@ -388,8 +391,7 @@ exports.add = function add(mods) {
 											return {
 												module: manifest.name,
 												path: (fromSource ?
-													(makeManifest.sourceDir || './src') + '/' + file.src
-													:
+													(makeManifest.sourceDir || './src') + '/' + file.src :
 													(makeManifest.buildDir || './build') + '/' + file.src.replace(/([.]js)$/, ".min.js")
 												),
 												optional: types.get(file, 'optional', false),

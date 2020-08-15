@@ -2227,18 +2227,14 @@ exports.add = function add(modules) {
 
 					__isFromStorage: function __isFromStorage(attribute) {
 						return (
-							this.enableStorage
-									&&
+							this.enableStorage &&
 									(
 										(
-											__Internal__.hasScopes
-											&&
+											__Internal__.hasScopes &&
 											(this.enableScopes && (attribute[_shared.ScopeSymbol] !== doodad.Scopes.Public))
-										)
-										||
+										) ||
 										(
-											__Internal__.hasPolicies
-											&&
+											__Internal__.hasPolicies &&
 											this.isReadOnly
 										)
 									)
@@ -2316,12 +2312,7 @@ exports.add = function add(modules) {
 									const attributeId = generator.vars.add(attribute);
 
 									const get = new generator.DynamicValue(extenderId + ".getterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")");
-									const set = (
-										this.isReadOnly ?
-											undefined
-											:
-											new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")")
-									);
+									const set = (this.isReadOnly ? undefined : new generator.DynamicValue(extenderId + ".setterTemplate(" + attrId + ", " + attributeId + ", " + tools.toSource(forType) + ", " + generator.storageId + ")"));
 
 									const getId = generator.vars.add(get);
 									const setId = generator.vars.add(set);
@@ -2791,8 +2782,6 @@ exports.add = function add(modules) {
 												try {
 													onError.attachOnce(null, noop);
 													emitted = types.invoke(obj, onError, [ex], _shared.SECRET);
-												} catch(o) {
-													throw o;
 												} finally {
 													onError.detach(null, noop);
 												};
