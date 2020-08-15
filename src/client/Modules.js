@@ -162,7 +162,6 @@ exports.add = function add(modules) {
 					return modules.locate(file.module, file.path, file)
 						.then(function(location) {
 							const ext = '.' + location.extension;
-							const mjs = file.mjs || ext.endsWith('.mjs');
 
 							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
 								return config.load(location)
@@ -171,12 +170,10 @@ exports.add = function add(modules) {
 											default: config,
 										};
 									});
-							} else if (mjs) {
-								// <PRB> ESLint doesn't allow "import" and there is no other way to disable that.
-								//! INJECT("return import(location.toApiString());")
-								//! BEGIN_REMOVE()
-									throw types.NotSupported("'mjs' is not supported when running from source code.");
-								//! END_REMOVE()
+							//! IF_SET("mjs")
+								//! INJECT("} else if (file.mjs || ext.endsWith('.mjs')) {")
+								//! INJECT("	return import(location.toApiString());")
+							//! END_IF()
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
 								return Promise.create(function startScriptLoader(resolve, reject) {
