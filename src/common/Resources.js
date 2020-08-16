@@ -63,29 +63,22 @@ exports.add = function add(modules) {
 			resources.ADD('locate', function locate(fileName, /*optional*/options) {
 				const Promise = types.getPromise();
 				return Promise.try(function tryLocate() {
+					const file = files.parsePath(fileName);
+					let location;
+
 					const module = types.get(options, 'module', null);
-					let promise;
 					if (module) {
-						promise = modules.locate(module)
-							.then(function(base) {
-								base = base.set({file: ''});
-								if (root.serverSide) {
-									const rootOptions = root.getOptions();
-									base = base.combine(rootOptions.fromSource ? 'src' : 'build');
-								};
-								return base;
-							});
-					} else {
-						promise = Promise.resolve(null);
-					};
-					return promise.then(function(base) {
-						const path = files.parsePath(fileName);
-						if (base) {
-							return base.combine(path);
-						} else {
-							return path;
+						location = files.parsePath(module);
+						if (root.serverSide) {
+							const rootOptions = root.getOptions();
+							location = location.combine(rootOptions.fromSource ? 'src/' : 'build/');
 						};
-					});
+						location = location.combine(file);
+					} else {
+						location = file;
+					};
+
+					return modules.resolve(location);
 				}, this);
 			});
 

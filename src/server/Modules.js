@@ -97,10 +97,10 @@ exports.add = function add(mods) {
 				//ampAddPath(path, __Internal__.locatorModule);
 			});
 
-			// TODO: Replace by native ??? when implemented.
+			// TODO: Replace by native ??? when implemented for MJS.
 			modules.ADD('resolve', function _resolve(location) {
 				if (!types._instanceof(location, files.Path)) {
-					location = files.Path.parse(location);
+					location = files.parsePath(location);
 				};
 				if (location.isRelative) {
 					const newLocation = location.toArray();
@@ -111,13 +111,13 @@ exports.add = function add(mods) {
 						};
 						const pkgPath =  __Internal__.require.resolve(pkg.join('/') + '/package.json');
 						if (newLocation.length > 0) {
-							const path = files.Path.parse(pkgPath).set({file: ''}).combine(newLocation.join('/')).toApiString();
+							const path = files.Path.parse(pkgPath).set({file: ''}).combine(newLocation.join('/'));
 							return path;
 						};
-						return pkgPath;
+						return files.Path.parse(pkgPath).set({file: ''});
 					};
 				};
-				return __Internal__.require.resolve(location.toApiString());
+				return  files.Path.parse(__Internal__.require.resolve(location.toApiString()));
 			});
 
 			modules.ADD('locate', root.DD_DOC(
@@ -159,22 +159,15 @@ exports.add = function add(mods) {
 						};
 
 						if (_module && (!path || path.isRelative)) {
-							location = files.parsePath(_module, {isRelative: true})
-								.combine('package.json')
-								.toApiString();
-							// TODO: Replace "modules.resolve" by ??? when implemented.
-							location = modules.resolve(location);
-							location = files.Path.parse(location)
-								.set({file: ''});
+							location = files.parsePath(_module, {isRelative: true}).pushFile();
 							if (path) {
-								location = location
-									.combine(path);
+								location = location.combine(path);
 							};
 						} else {
 							location = path;
 						};
 
-						if (location.file) {
+						if (location && location.file) {
 							const ext = '.' + location.extension + '.';
 							if (!dontForceMin && (ext.endsWith('.js.') || ext.endsWith('.mjs.'))) {
 								// Force minified files.
@@ -205,24 +198,31 @@ exports.add = function add(mods) {
 						.then(function(location) {
 							const ext = '.' + location.extension;
 
+							const path = (file.module ? modules.resolve(location) : location).toApiString();
+
 							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
-								return config.load(location)
+								return config.load(path)
 									.then(function(config) {
 										return {
 											default: config,
 										};
 									});
-							//! IF_SET("mjs")
-								//! INJECT("} else if (file.mjs || ext.endsWith('.mjs')) {")
-								//! INJECT("	return import(location.toApiString());")
+
+								//! IF_SET("mjs")
+									//! INJECT("} else {")
+									//! INJECT("	return import(path);")
+									//! INJECT("};")
+								//! END_IF()
+
+								//! IF_UNSET("mjs")
+								} else {
+									return Promise.try(function tryImport() {
+										return {
+											default: __Internal__.require(path)
+										};
+									});
+								};
 							//! END_IF()
-							} else {
-								return Promise.try(function tryImport() {
-									return {
-										default: __Internal__.require(location.toApiString())
-									};
-								});
-							};
 						})
 						.catch(function(err) {
 							if (file.optional) {

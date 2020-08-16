@@ -75,6 +75,24 @@ exports.add = function add(modules) {
 				},
 			};
 
+			// TODO: Replace by native ??? when implemented.
+			modules.ADD('resolve', function _resolve(location) {
+				if (!types._instanceof(location, files.Url)) {
+					location = files.Url.parse(location);
+				};
+
+				if (location.isRelative) {
+					location = tools.getCurrentLocation()
+						.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
+						.set({file: ''})
+						.combine(__options__.modulesUri)
+						.pushFile()
+						.combine(location);
+				};
+
+				return location;
+			});
+
 			modules.ADD('locate', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
@@ -103,35 +121,36 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function locate(/*optional*/module, /*optional*/path, /*optional*/options) {
 					const Promise = types.getPromise();
-
-					const ddOptions = root.getOptions();
-					const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
-					const mjs = types.get(options, 'mjs', false);
-
 					return Promise.try(function() {
+						const ddOptions = root.getOptions();
+						const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
+						const mjs = types.get(options, 'mjs', false);
+
 						if (path) {
-							path = files.parseUrl(path);
+							path = files.parseUrl(path).removeArgs(['redirects', 'crashReport', 'crashRecovery']); // TODO: Put these hard coded names in a common constant
 						};
+
 						let location;
-						if (module && (!path || path.isRelative)) {
-							location = tools.getCurrentLocation()
-								.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
-								.set({file: ''})
-								.combine(types.get(options, 'modulesUri', __options__.modulesUri))
-								.combine(module)
-								.pushFile();
+						if (module) {
 							if (path) {
-								location = location
-									.combine(path);
-							};
+								if (path.isRelative) {
+									location = files.parseUrl(module, {isRelative: true}).pushFile().combine(path);
+								} else {
+									module = null;
+									location = path;
+								};
+							} else {
+								location = files.parseUrl(module, {isRelative: true}).pushFile();
+							}
 						} else {
-							location = path;
-							if (location) {
-								location = location
-									.removeArgs(['redirects', 'crashReport', 'crashRecovery']); // TODO: Put these hard coded names in a common constant
+							if (path && path.isRelative) {
+								location = tools.getCurrentLocation().set({file: '', args: ''}).combine(path);
+							} else {
+								location = path;
 							};
 						};
-						if (location.file) {
+
+						if (location && location.file) {
 							const ext = '.' + location.extension + '.';
 							if (!dontForceMin && (ext.endsWith('.js.') || ext.endsWith('.mjs.'))) {
 								// Force minified files.
@@ -139,9 +158,10 @@ exports.add = function add(modules) {
 									location = location.set({extension: 'min.' + location.extension});
 								};
 							};
-						} else if (module) {
+						} else if (module && !path) {
 							location = location.set({file: __Internal__.getPackageName(module) + (dontForceMin ? '' : '.min') + (mjs ? '.mjs' : '.js')});
 						};
+
 						return location;
 					});
 				}));
@@ -163,8 +183,10 @@ exports.add = function add(modules) {
 						.then(function(location) {
 							const ext = '.' + location.extension;
 
+							const url = (file.module ? modules.resolve(location) : location).toApiString();
+
 							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
-								return config.load(location)
+								return config.load(url)
 									.then(function(config) {
 										return {
 											default: config,
@@ -172,13 +194,13 @@ exports.add = function add(modules) {
 									});
 							//! IF_SET("mjs")
 								//! INJECT("} else if (file.mjs || ext.endsWith('.mjs')) {")
-								//! INJECT("	return import(location.toApiString());")
+								//! INJECT("	return import(url);")
 							//! END_IF()
 							} else if (root.getOptions().debug) {
 								// In debug mode, we want to be able to open a JS file with the debugger.
 								return Promise.create(function startScriptLoader(resolve, reject) {
 									//global.DD_EXPORTS = {};
-									const scriptLoader = tools.getJsScriptFileLoader(/*url*/location, /*async*/true);
+									const scriptLoader = tools.getJsScriptFileLoader(/*url*/url, /*async*/true);
 									scriptLoader.addEventListener('load', function() {
 										// <PRB> Unable to get a reference to the loaded script and just its own exports.
 										//resolve(global.DD_EXPORTS);
@@ -191,7 +213,7 @@ exports.add = function add(modules) {
 									scriptLoader.start();
 								});
 							} else {
-								return files.readFileAsync(location, {encoding: 'utf-8', headers: {'Accept': 'application/javascript'}, enableCache: true})
+								return files.readFileAsync(url, {encoding: 'utf-8', headers: {'Accept': 'application/javascript'}, enableCache: true})
 									.then(function(code) {
 										const DD_EXPORTS = {};
 										const locals = {DD_EXPORTS: DD_EXPORTS, DD_MODULES: undefined};
