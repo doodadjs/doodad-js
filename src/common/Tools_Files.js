@@ -385,7 +385,7 @@ exports.add = function add(modules) {
 			};
 			__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 
-			__Internal__.pathNonStoredKeys = ['dontThrow'];
+			__Internal__.pathNonStoredKeys = ['dontThrow', 'pushFile'];
 
 			__Internal__.pathAllKeys = tools.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
 			__Internal__.pathAllKeysAndNonStoredKeys = tools.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
@@ -422,7 +422,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 8,
+									revision: 9,
 									params: {
 										path: {
 											type: 'string,array',
@@ -505,7 +505,8 @@ exports.add = function add(modules) {
 
 								const noEscapes = types.get(options, 'noEscapes', false), // Default is False
 									forceDrive = types.get(options, 'forceDrive', false),  // Default is False
-									allowTraverse = types.get(options, 'allowTraverse', false);  // Default is False
+									allowTraverse = types.get(options, 'allowTraverse', false),  // Default is False
+									pushFile = types.get(options, 'pushFile', null); // Default is Null
 
 								path = types.get(options, 'path', path);
 
@@ -860,24 +861,25 @@ exports.add = function add(modules) {
 
 								let trailingSlash = false;
 
-								if (types.isNothing(file) && path && path.length) {
+								if (pathIsString && path && path.length) {
 									// Auto-detect
 									const tmp = path[path.length - 1];
 									if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
-										file = [];
+										if (types.isNothing(file)) {
+											file = [];
+										};
 										trailingSlash = true;
 									} else {
 										path.pop();
-										file = [tmp];
+										if (types.isNothing(file)) {
+											file = [tmp];
+										};
 									};
 								} else if (file && file.length) {
 									const tmp = file[file.length - 1];
 									if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
 										trailingSlash = true;
 									};
-								} else if (path && path.length) {
-									file = [];
-									trailingSlash = true;
 								};
 
 								if (types.isNothing(isRelative)) {
@@ -1034,7 +1036,7 @@ exports.add = function add(modules) {
 											if (dontThrow) {
 												return null;
 											} else {
-												throw new types.ParseError("Invalid path or file name: '~0~.", [state.invalid]);
+												throw new types.ParseError("Invalid path or file name: '~0~'.", [state.invalid]);
 											}
 										};
 									};
@@ -1056,6 +1058,14 @@ exports.add = function add(modules) {
 									file = null;
 								};
 
+								if (!types.isNothing(pushFile)) {
+									if (!pushFile && !file) {
+										if (path) {
+											file = path.pop();
+										};
+									};
+								};
+
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
@@ -1070,7 +1080,7 @@ exports.add = function add(modules) {
 										if (pos >= 0) {
 											file = file.slice(0, pos + 1) + extension;
 										} else {
-											file = file + '.' + extension;
+											file += '.' + extension;
 										};
 									} else if (pos >= 0) {
 										// Remove trailing '.'
@@ -1078,6 +1088,15 @@ exports.add = function add(modules) {
 									};
 								};
 
+								if (pushFile && file) {
+									if (path) {
+										path.push(file);
+									} else {
+										path = [file];
+									};
+									file = '';
+									extension = '';
+								};
 
 								return new this({
 									os,
@@ -1600,14 +1619,12 @@ exports.add = function add(modules) {
 
 							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
 
-							const thisAr = this.toArray({trim: true}),
-								toAr = to.toArray({trim: true, pushFile: true});
-
-							const pathAr = [];
+							const thisAr = this.toArray(),
+								toAr = to.toArray({pushFile: true});
 
 							let i = 0;
 
-							for (; (i < thisAr.length) && (i < toAr.length); i++) {
+							for (; (i < thisAr.length - 1) && (i < toAr.length - 1); i++) {
 								if (caseSensitive) {
 									if (thisAr[i] !== toAr[i]) {
 										break;
@@ -1619,9 +1636,11 @@ exports.add = function add(modules) {
 								};
 							};
 
+							const pathAr = [];
+
 							let j = i;
 
-							for (; i < toAr.length; i++) {
+							for (; i < toAr.length - 1; i++) {
 								pathAr.push('..');
 							};
 
@@ -1629,11 +1648,13 @@ exports.add = function add(modules) {
 								pathAr.push('.');
 							};
 
-							for (; j < thisAr.length; j++) {
+							for (; j < thisAr.length - 1; j++) {
 								pathAr.push(thisAr[j]);
 							};
 
-							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file: null, extension: null, isRelative: true}));
+							const file = (j < thisAr.length ? thisAr[j] : '');
+
+							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file, extension: null, isRelative: true}));
 						},
 
 						toDataObject: root.DD_DOC(
@@ -2321,7 +2342,7 @@ exports.add = function add(modules) {
 			};
 			__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
-			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash'];
+			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash', 'pushFile'];
 
 			__Internal__.urlAllKeys = tools.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 			__Internal__.urlAllKeysAndNonStoredKeys = tools.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
@@ -2367,7 +2388,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 9,
+									revision: 10,
 									params: {
 										url: {
 											type: 'string,Url,Path',
@@ -2475,7 +2496,8 @@ exports.add = function add(modules) {
 									isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
 
-								const noEscapes = types.get(options, 'noEscapes', false);
+								const noEscapes = types.get(options, 'noEscapes', false),
+									pushFile = types.get(options, 'pushFile', null);
 
 								if (types.isNothing(args)) {
 									args = types.get(options, 'search', null);
@@ -2772,7 +2794,7 @@ exports.add = function add(modules) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Invalid path or file name: ~0~.", [state.invalid]);
+											throw new types.ParseError("Invalid path or file name: '~0~'.", [state.invalid]);
 										}
 									};
 								};
@@ -2791,6 +2813,14 @@ exports.add = function add(modules) {
 									};
 								} else {
 									file = null;
+								};
+
+								if (!types.isNothing(pushFile)) {
+									if (!pushFile && !file) {
+										if (path) {
+											file = path.pop();
+										};
+									};
 								};
 
 								if (types.isNothing(file)) {
@@ -2813,6 +2843,16 @@ exports.add = function add(modules) {
 										// Remove trailing '.'
 										file = file.slice(0, pos);
 									};
+								};
+
+								if (pushFile && file) {
+									if (path) {
+										path.push(file);
+									} else {
+										path = [file];
+									};
+									file = '';
+									extension = '';
 								};
 
 								return new this({
@@ -3060,12 +3100,12 @@ exports.add = function add(modules) {
 
 								if (options.path && options.path.length) {
 									let path = '';
-									if (!types.isNothing(options.domain) || !options.isRelative || options.isWindows) {
+									path += tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
+									if (path.length > 0) {
 										path += '/';
 									};
-									path += tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
-									if (path.length > 1) {
-										path += '/';
+									if (!types.isNothing(options.domain) || !options.isRelative || options.isWindows) {
+										path = '/' + path;
 									};
 									if (!noEscapes && options.isWindows) {
 										// Workaround for Windows and IE (must be "/C:/", not "/C%3A/")
@@ -3503,14 +3543,14 @@ exports.add = function add(modules) {
 
 							const caseSensitive = types.get(options, 'caseSensitive', false);
 
-							const thisAr = this.toArray({trim: true, domain: null, args: null, anchor: null}),
-								toAr = to.toArray({trim: true, pushFile: true, domain: null, args: null, anchor: null});
+							const thisAr = this.toArray({domain: null, args: null, anchor: null}),
+								toAr = to.toArray({pushFile: true, domain: null, args: null, anchor: null});
 
 							const pathAr = [];
 
 							let i = 0;
 
-							for (; (i < thisAr.length) && (i < toAr.length); i++) {
+							for (; (i < thisAr.length - 1) && (i < toAr.length - 1); i++) {
 								if (caseSensitive) {
 									if (thisAr[i] !== toAr[i]) {
 										break;
@@ -3524,7 +3564,7 @@ exports.add = function add(modules) {
 
 							let j = i;
 
-							for (; i < toAr.length; i++) {
+							for (; i < toAr.length - 1; i++) {
 								pathAr.push('..');
 							};
 
@@ -3532,11 +3572,13 @@ exports.add = function add(modules) {
 								pathAr.push('.');
 							};
 
-							for (; j < thisAr.length; j++) {
+							for (; j < thisAr.length - 1; j++) {
 								pathAr.push(thisAr[j]);
 							};
 
-							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file: null, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
+							const file = (j < thisAr.length ? thisAr[j] : '');
+
+							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
 						},
 
 						toDataObject: root.DD_DOC(
