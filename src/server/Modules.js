@@ -159,7 +159,7 @@ exports.add = function add(mods) {
 						};
 
 						if (_module && (!path || path.isRelative)) {
-							location = files.parsePath(_module, {isRelative: true}).pushFile();
+							location = files.parsePath(_module, {isRelative: true, pushFile: true});
 							if (path) {
 								location = location.combine(path);
 							};

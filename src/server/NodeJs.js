@@ -2289,19 +2289,19 @@ exports.add = function add(mods) {
 
 					if (!stats || !stats.isDirectory()) {
 						// Android or other
-						folder = files.Path.parse(process.cwd()).combine('tmp/', {os: 'linux'});
+						folder = files.Path.parse(process.cwd(), {pushFile: true}).combine('tmp/', {os: 'linux'});
 						try {
 							files.mkdir(folder);
 						} catch(ex) {
 							// Do nothing
 						};
 					} else {
-						folder = files.Path.parse(folder);
+						folder = files.Path.parse(folder, {pushFile: true});
 					};
 
 					__Internal__.tmpdir = folder;
 
-					return folder;
+					return __Internal__.tmpdir;
 				}));
 
 			files.ADD('readFileSync', function readFileSync(path, /*optional*/options) {

@@ -68,7 +68,7 @@ exports.add = function add(modules) {
 
 					const module = types.get(options, 'module', null);
 					if (module) {
-						location = files.parsePath(module);
+						location = files.parsePath(module, {pushFile: true});
 						if (root.serverSide) {
 							const rootOptions = root.getOptions();
 							location = location.combine(rootOptions.fromSource ? 'src/' : 'build/');
