@@ -1466,7 +1466,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 5,
+									revision: 6,
 									params: null,
 									returns: 'Path',
 									description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
@@ -1474,7 +1474,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toFolder() {
 								if (this.file) {
-									return this.set({file: '', path: tools.append([], this.path, [this.file])});
+									return this.set({isFolder: true});
 								} else {
 									return this;
 								}
@@ -1484,7 +1484,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: null,
 									returns: 'Path',
 									description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
@@ -1494,20 +1494,10 @@ exports.add = function add(modules) {
 								if (this.file) {
 									return this;
 								} else if (this.path && this.path.length) {
-									const newPath = tools.append([], this.path);
-									let newFile = newPath.pop();
-									while (!newFile) {
-										// Trailing space
-										if (newPath.length) {
-											newFile = newPath.pop();
-										} else {
-											return null;
-										};
-									};
-									return this.set({file: newFile, extension: null, path: newPath});
+									return this.set({isFolder: false});
 								} else {
 									return null;
-								}
+								};
 							}),
 
 						toArray: root.DD_DOC(
@@ -3361,7 +3351,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: null,
 									returns: 'Url',
 									description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
@@ -3369,7 +3359,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toFolder() {
 								if (this.file) {
-									return this.set({file: '', path: tools.append([], this.path, [this.file])});
+									return this.set({isFolder: true});
 								} else {
 									return this;
 								}
@@ -3389,17 +3379,7 @@ exports.add = function add(modules) {
 								if (this.file) {
 									return this;
 								} else if (this.path && this.path.length) {
-									const newPath = tools.append([], this.path);
-									let newFile = newPath.pop();
-									while (!newFile) {
-										// Trailing space
-										if (newPath.length) {
-											newFile = newPath.pop();
-										} else {
-											return null;
-										};
-									};
-									return this.set({file: newFile, extension: null, path: newPath});
+									return this.set({isFolder: false});
 								} else {
 									return null;
 								}
