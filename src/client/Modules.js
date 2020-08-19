@@ -86,7 +86,7 @@ exports.add = function add(modules) {
 						.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
 						.set({file: ''})
 						.combine(__options__.modulesUri)
-						.pushFile()
+						.toFolder()
 						.combine(location);
 				};
 
@@ -134,13 +134,13 @@ exports.add = function add(modules) {
 						if (module) {
 							if (path) {
 								if (path.isRelative) {
-									location = files.parseUrl(module, {isRelative: true}).pushFile().combine(path);
+									location = files.parseUrl(module, {isRelative: true}).toFolder().combine(path);
 								} else {
 									module = null;
 									location = path;
 								};
 							} else {
-								location = files.parseUrl(module, {isRelative: true}).pushFile();
+								location = files.parseUrl(module, {isRelative: true}).toFolder();
 							}
 						} else {
 							if (path && path.isRelative) {

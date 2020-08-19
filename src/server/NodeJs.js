@@ -1276,7 +1276,7 @@ exports.add = function add(mods) {
 
 			files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
 				path = files.parsePath(path);
-				path = path.pushFile();
+				path = path.toFolder();
 
 				const ignoreExists = types.get(options, 'ignoreExists', true),
 					makeParents = types.get(options, 'makeParents', false);
@@ -1318,7 +1318,7 @@ exports.add = function add(mods) {
 
 				return Promise.try(function mkdirPromise() {
 					path = files.parsePath(path);
-					path = path.pushFile();
+					path = path.toFolder();
 
 					const ignoreExists = types.get(options, 'ignoreExists', true),
 						makeParents = types.get(options, 'makeParents', false);
@@ -2289,14 +2289,14 @@ exports.add = function add(mods) {
 
 					if (!stats || !stats.isDirectory()) {
 						// Android or other
-						folder = files.Path.parse(process.cwd(), {pushFile: true}).combine('tmp/', {os: 'linux'});
+						folder = files.Path.parse(process.cwd(), {isFolder: true}).combine('tmp/', {os: 'linux'});
 						try {
 							files.mkdir(folder);
 						} catch(ex) {
 							// Do nothing
 						};
 					} else {
-						folder = files.Path.parse(folder, {pushFile: true});
+						folder = files.Path.parse(folder, {isFolder: true});
 					};
 
 					__Internal__.tmpdir = folder;
