@@ -86,13 +86,13 @@ exports.add = function add(mods) {
 					command.runStep("[1, 2]",                                          {}, /**/  [1, 2]);
 					command.runStep("[, 2]",                                           {}, /**/  [, 2]); // empty slot
 					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}});
-					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 0);
-					command.runStep("{'a': 1, 'b': {'c': {}}}",                        {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 1);
-					command.runStep("{'a': 1, 'b': {'c': {'d': 4}}}",                  {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, 2);
+					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, {depth: 0});
+					command.runStep("{'a': 1, 'b': {'c': {}}}",                        {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, {depth: 1});
+					command.runStep("{'a': 1, 'b': {'c': {'d': 4}}}",                  {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, {depth: 2});
 					command.runStep("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]]);
-					command.runStep("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]], 0);
-					command.runStep("[1, [2, (new Array(1))]]",                        {depth: 2}, /**/  [1, [2, [3]]], 1);
-					command.runStep("[1, [2, [3]]]",                                   {depth: 2}, /**/  [1, [2, [3]]], 2);
+					command.runStep("[1, (new Array(2))]",                             {depth: 2}, /**/  [1, [2, [3]]], {depth: 0});
+					command.runStep("[1, [2, (new Array(1))]]",                        {depth: 2}, /**/  [1, [2, [3]]], {depth: 1});
+					command.runStep("[1, [2, [3]]]",                                   {depth: 2}, /**/  [1, [2, [3]]], {depth: 2});
 					command.runStep("(new Date(2015, 8, 15, 9, 32, 52, 140))",         {}, /**/  new Date(2015, 8, 15, 9, 32, 52, 140));
 					command.runStep("(new Error('error'))",                            {}, /**/  (new Error("error")));
 					command.runStep("(new Function())",                                {}, /**/  Object.prototype.toString);

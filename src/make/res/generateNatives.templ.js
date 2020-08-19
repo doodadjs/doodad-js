@@ -39,7 +39,7 @@
 		len = natives.length;
 
 	for (let s = 0, e = QTY; s < len; s += QTY, e += QTY) {
-		str += tools.toSource(natives.slice(s, e), 2).slice(1, -1) + (e < len ? ', ' : '') + '\n';
+		str += tools.toSource(natives.slice(s, e), {depth: 2}).slice(1, -1) + (e < len ? ', ' : '') + '\n';
 	};
 
 	document.write(str);
