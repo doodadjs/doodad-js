@@ -1504,7 +1504,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: {
 										options: {
 											type: 'object',
@@ -1562,10 +1562,10 @@ exports.add = function add(modules) {
 									file = '';
 								};
 
-								if (!trim && (file === '')) {
-									newPath.push('');
-								} else if (file) {
+								if (file) {
 									newPath.push(file);
+								} else if (!trim) {
+									newPath.push('');
 								};
 
 								if (!isRelative) {
@@ -3389,7 +3389,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: {
 										options: {
 											type: 'object',
@@ -3452,10 +3452,10 @@ exports.add = function add(modules) {
 									file = '';
 								};
 
-								if (!trim && (file === '')) {
-									path.push('');
-								} else if (file) {
+								if (file) {
 									path.push(file);
+								} else if (!trim) {
+									path.push('');
 								};
 
 								if (!isRelative) {
