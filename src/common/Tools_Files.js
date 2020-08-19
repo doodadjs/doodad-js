@@ -385,7 +385,7 @@ exports.add = function add(modules) {
 			};
 			__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 
-			__Internal__.pathNonStoredKeys = ['dontThrow', 'pushFile'];
+			__Internal__.pathNonStoredKeys = ['dontThrow', 'isFolder'];
 
 			__Internal__.pathAllKeys = tools.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
 			__Internal__.pathAllKeysAndNonStoredKeys = tools.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
@@ -506,7 +506,7 @@ exports.add = function add(modules) {
 								const noEscapes = types.get(options, 'noEscapes', false), // Default is False
 									forceDrive = types.get(options, 'forceDrive', false),  // Default is False
 									allowTraverse = types.get(options, 'allowTraverse', false),  // Default is False
-									pushFile = types.get(options, 'pushFile', null); // Default is Null
+									isFolder = types.get(options, 'isFolder', null); // Default is Auto-detect
 
 								path = types.get(options, 'path', path);
 
@@ -1058,8 +1058,8 @@ exports.add = function add(modules) {
 									file = null;
 								};
 
-								if (!types.isNothing(pushFile)) {
-									if (!pushFile && !file) {
+								if (!types.isNothing(isFolder)) {
+									if (!isFolder && !file) {
 										if (path) {
 											file = path.pop();
 										};
@@ -1088,7 +1088,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-								if (pushFile && file) {
+								if (isFolder && file) {
 									if (path) {
 										path.push(file);
 									} else {
@@ -1462,17 +1462,17 @@ exports.add = function add(modules) {
 								return type.parse(null, tools.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
 							}),
 
-						pushFile: root.DD_DOC(
+						toFolder: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 4,
+									revision: 5,
 									params: null,
 									returns: 'Path',
 									description: "Includes file in the path and returns a new Path object. Useful after parsing path strings not including the trailing directory separator (like environment variables).",
 								}
 							//! END_REPLACE()
-							, function pushFile() {
+							, function toFolder() {
 								if (this.file) {
 									return this.set({file: '', path: tools.append([], this.path, [this.file])});
 								} else {
@@ -1480,17 +1480,17 @@ exports.add = function add(modules) {
 								}
 							}),
 
-						popFile: root.DD_DOC(
+						toFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: null,
 									returns: 'Path',
 									description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
 								}
 							//! END_REPLACE()
-							, function popFile() {
+							, function toFile() {
 								if (this.file) {
 									return this;
 								} else if (this.path && this.path.length) {
@@ -1504,7 +1504,7 @@ exports.add = function add(modules) {
 											return null;
 										};
 									};
-									return this.set({file: newFile, path: newPath});
+									return this.set({file: newFile, extension: null, path: newPath});
 								} else {
 									return null;
 								}
@@ -1531,7 +1531,7 @@ exports.add = function add(modules) {
 									dirChar = types.get(options, 'dirChar', this.dirChar),
 									pathOnly = types.get(options, 'pathOnly', false),
 									trim = types.get(options, 'trim', false),
-									pushFile = types.get(options, 'pushFile', false);
+									isFolder = types.get(options, 'isFolder', false);
 
 								let file = types.get(options, 'file', this.file),
 									host = types.get(options, 'host', this.host),
@@ -1567,7 +1567,7 @@ exports.add = function add(modules) {
 
 								const newPath = tools.append([], root, path);
 
-								if (pushFile && file) {
+								if (isFolder && file) {
 									newPath.push(file);
 									file = '';
 								};
@@ -1620,7 +1620,7 @@ exports.add = function add(modules) {
 							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
 
 							const thisAr = this.toArray(),
-								toAr = to.toArray({pushFile: true});
+								toAr = to.toArray({isFolder: true});
 
 							let i = 0;
 
@@ -2342,7 +2342,7 @@ exports.add = function add(modules) {
 			};
 			__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
-			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash', 'pushFile'];
+			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash', 'isFolder'];
 
 			__Internal__.urlAllKeys = tools.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 			__Internal__.urlAllKeysAndNonStoredKeys = tools.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
@@ -2497,7 +2497,7 @@ exports.add = function add(modules) {
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
 
 								const noEscapes = types.get(options, 'noEscapes', false),
-									pushFile = types.get(options, 'pushFile', null);
+									isFolder = types.get(options, 'isFolder', null); // Default is Auto-detect
 
 								if (types.isNothing(args)) {
 									args = types.get(options, 'search', null);
@@ -2815,8 +2815,8 @@ exports.add = function add(modules) {
 									file = null;
 								};
 
-								if (!types.isNothing(pushFile)) {
-									if (!pushFile && !file) {
+								if (!types.isNothing(isFolder)) {
+									if (!isFolder && !file) {
 										if (path) {
 											file = path.pop();
 										};
@@ -2845,7 +2845,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-								if (pushFile && file) {
+								if (isFolder && file) {
 									if (path) {
 										path.push(file);
 									} else {
@@ -3357,17 +3357,17 @@ exports.add = function add(modules) {
 								return type.parse(null, tools.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
 							}),
 
-						pushFile: root.DD_DOC(
+						toFolder: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: null,
 									returns: 'Url',
 									description: "Includes file in the path and returns a new Url object. Useful after parsing path strings not including file names which are known to miss the trailing directory separator (like environment variables). It might be a parse option in the future.",
 								}
 							//! END_REPLACE()
-							, function pushFile() {
+							, function toFolder() {
 								if (this.file) {
 									return this.set({file: '', path: tools.append([], this.path, [this.file])});
 								} else {
@@ -3375,23 +3375,31 @@ exports.add = function add(modules) {
 								}
 							}),
 
-						popFile: root.DD_DOC(
+						toFile: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 0,
+									revision: 1,
 									params: null,
 									returns: 'Path',
 									description: "Excludes file from the path and returns a new Url object. Will returns 'null' when there is no file that can be extracted from the url.",
 								}
 							//! END_REPLACE()
-							, function popFile() {
+							, function toFile() {
 								if (this.file) {
 									return this;
 								} else if (this.path && this.path.length) {
 									const newPath = tools.append([], this.path);
-									const newFile = newPath.pop();
-									return this.set({file: newFile, path: newPath});
+									let newFile = newPath.pop();
+									while (!newFile) {
+										// Trailing space
+										if (newPath.length) {
+											newFile = newPath.pop();
+										} else {
+											return null;
+										};
+									};
+									return this.set({file: newFile, extension: null, path: newPath});
 								} else {
 									return null;
 								}
@@ -3415,7 +3423,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toArray(/*optional*/options) {
 								const isRelative = types.get(options, 'isRelative', this.isRelative),
-									pushFile = types.get(options, 'pushFile', false),
+									isFolder = types.get(options, 'isFolder', false),
 									trim = types.get(options, 'trim', false),
 									pathOnly = types.get(options, 'pathOnly', false);
 
@@ -3459,7 +3467,7 @@ exports.add = function add(modules) {
 
 								file = (file || '') + (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
 
-								if (pushFile && file) {
+								if (isFolder && file) {
 									path.push(file);
 									file = '';
 								};
@@ -3544,7 +3552,7 @@ exports.add = function add(modules) {
 							const caseSensitive = types.get(options, 'caseSensitive', false);
 
 							const thisAr = this.toArray({domain: null, args: null, anchor: null}),
-								toAr = to.toArray({pushFile: true, domain: null, args: null, anchor: null});
+								toAr = to.toArray({isFolder: true, domain: null, args: null, anchor: null});
 
 							const pathAr = [];
 
