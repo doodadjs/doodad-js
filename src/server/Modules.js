@@ -159,9 +159,9 @@ exports.add = function add(mods) {
 						};
 
 						if (_module && (!path || path.isRelative)) {
-							location = files.parsePath(_module, {isRelative: true, pushFile: true});
+							location = files.parsePath(_module, {isRelative: true, pushFile: false});
 							if (path) {
-								location = location.combine(path);
+								location = location.pushFile().combine(path);
 							};
 						} else {
 							location = path;
@@ -198,7 +198,7 @@ exports.add = function add(mods) {
 						.then(function(location) {
 							const ext = '.' + location.extension;
 
-							const path = (file.module ? modules.resolve(location) : location).toApiString();
+							const path = (file.module && file.path ? modules.resolve(location) : location).toApiString();
 
 							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
 								return config.load(path)
@@ -335,10 +335,12 @@ exports.add = function add(mods) {
 								});
 								tools.forEach(files, function(file) {
 									if (file && !file.isConfig && (file.extension !== 'json') && (file.extension !== 'json5') && file.exports) {
-										if (!types.isFunction(file.exports.default.add)) {
+										const def = types.get(file.exports, 'default', null);
+										const add = types.get(file.exports, 'add', types.get(def, 'add', null));
+										if (!types.isFunction(add)) {
 											__Internal__.throwFileError(file, new types.Error("Missing the 'add' function in the exported values of the module."));
 										};
-										file.exports.default.add(pkgModules);
+										add(pkgModules);
 									};
 								});
 							};
