@@ -77,11 +77,6 @@ exports.add = function add(modules) {
 								optional: false,
 								description: "A value.",
 							},
-							depth: {
-								type: 'integer',
-								optional: true,
-								description: "Depth.",
-							},
 							options: {
 								type: 'object',
 								optional: true,
@@ -92,7 +87,8 @@ exports.add = function add(modules) {
 						description: "Converts a value to its source code equivalent.",
 					}
 				//! END_REPLACE()
-				, function toSource(obj, /*optional*/depth, /*optional*/options) {
+				, function toSource(obj, /*optional*/options) {
+					let depth = types.get(options, 'depth', null);
 					/* eslint no-cond-assign: "off" */
 					// TODO: "chain" option to generate the prototypes chain with "Object.setPrototypeOf"
 					if (obj === undefined) {
@@ -112,7 +108,12 @@ exports.add = function add(modules) {
 								// Do nothing
 							};
 						};
-						const toSourceItemsCount = tools.getOptions().toSourceItemsCount;
+						let itemsCount = types.get(options, 'itemsCount', tools.getOptions().toSourceItemsCount);
+						if (types.isNothing(itemsCount)) {
+							itemsCount = Infinity;
+						} else {
+							itemsCount = (+itemsCount || 0);  // null|undefined|true|false|NaN|Infinity
+						};
 						if (!primitive && types.isNothing(depth) && types.isFunction(obj.toSource) && types.get(options, 'allowToSource', false)) {
 							return obj.toSource();
 						} else {
@@ -185,9 +186,9 @@ exports.add = function add(modules) {
 								return '(new Date(' + obj.getFullYear() + ', ' + obj.getMonth() + ', ' + obj.getDate() + ', ' + obj.getHours() + ', ' + obj.getMinutes() + ', ' + obj.getSeconds() + ', ' + obj.getMilliseconds() + '))';
 							} else if (types.isSymbol(obj)) {
 								const key = types.getSymbolKey(obj);
-								return (types.symbolIsGlobal(obj) && !types.isNothing(key) ? "Symbol.for(" + tools.toSource(key, null, options) + ")" : (types.isNothing(key) ? "Symbol()" : "Symbol(" + tools.toSource(key, null, options) + ")"));
+								return (types.symbolIsGlobal(obj) && !types.isNothing(key) ? "Symbol.for(" + tools.toSource(key, options) + ")" : (types.isNothing(key) ? "Symbol()" : "Symbol(" + tools.toSource(key, options) + ")"));
 							} else if (types.isError(obj)) {
-								return '(new Error(' + tools.toSource(obj.message || obj.description, null, options) + '))';
+								return '(new Error(' + tools.toSource(obj.message || obj.description, options) + '))';
 							} else if (types.isFunction(obj)) {
 								if ((depth >= 0) && types.isCustomFunction(obj)) {
 									return obj.toString();
@@ -203,15 +204,15 @@ exports.add = function add(modules) {
 									str = '',
 									continued = '';
 								depth--;
-								if (len > toSourceItemsCount) {
-									len = toSourceItemsCount;
+								if (len > itemsCount) {
+									len = itemsCount;
 									continued = ', ...';
 								};
 								for (let key = 0; key < len; key++) {
 									if (types.has(val, key)) {
 										const item = val[key];
 										if (includeFunctions || !types.isFunction(item)) {
-											str += tools.toSource(item, depth, options) + ', ';
+											str += tools.toSource(item, tools.extend({}, options, {depth})) + ', ';
 										};
 									} else {
 										str += ', ';
@@ -230,21 +231,21 @@ exports.add = function add(modules) {
 								do {
 									const keys = tools.append(types.keys(obj), types.symbols(obj));
 									for (let i = 0; i < keys.length; i++) {
-										if (len >= toSourceItemsCount) {
+										if (len >= itemsCount) {
 											str += '..., ';
 											break;
 										};
 										const key = keys[i];
 										const item = obj[key];
 										if (includeFunctions || !types.isFunction(item)) {
-											str += tools.toSource(key) + ': ' + tools.toSource(item, depth, options) + ', ';
+											str += tools.toSource(key) + ': ' + tools.toSource(item, tools.extend({}, options, {depth})) + ', ';
 										};
 										len++;
 									};
 								} while (inherited && (obj = types.getPrototypeOf(obj)));
 								return '{' + str.slice(0, -2) + '}';
 							} else if (types.isObjectLike(obj)) {
-								return tools.toSource(_shared.Natives.objectToStringCall(obj));
+								return tools.toSource(_shared.Natives.objectToStringCall(obj), options);
 							} else {
 								return obj.toString();
 							}
