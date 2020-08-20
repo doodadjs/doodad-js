@@ -1504,7 +1504,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 5,
+									revision: 6,
 									params: {
 										options: {
 											type: 'object',
@@ -1521,7 +1521,7 @@ exports.add = function add(modules) {
 									dirChar = types.get(options, 'dirChar', this.dirChar),
 									pathOnly = types.get(options, 'pathOnly', false),
 									trim = types.get(options, 'trim', false),
-									isFolder = types.get(options, 'isFolder', false);
+									isFolder = types.get(options, 'isFolder', null);
 
 								let file = types.get(options, 'file', this.file),
 									host = types.get(options, 'host', this.host),
@@ -1557,9 +1557,17 @@ exports.add = function add(modules) {
 
 								const newPath = tools.append([], root, path);
 
-								if (isFolder && file) {
-									newPath.push(file);
-									file = '';
+								if (!types.isNothing(isFolder)) {
+									if (isFolder) {
+										if (file) {
+											newPath.push(file);
+											file = '';
+										};
+									} else {
+										if (!file) {
+											file = newPath.pop();
+										};
+									};
 								};
 
 								if (file) {
@@ -3389,7 +3397,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 5,
+									revision: 6,
 									params: {
 										options: {
 											type: 'object',
@@ -3403,7 +3411,7 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toArray(/*optional*/options) {
 								const isRelative = types.get(options, 'isRelative', this.isRelative),
-									isFolder = types.get(options, 'isFolder', false),
+									isFolder = types.get(options, 'isFolder', null),
 									trim = types.get(options, 'trim', false),
 									pathOnly = types.get(options, 'pathOnly', false);
 
@@ -3445,11 +3453,19 @@ exports.add = function add(modules) {
 									args = _shared.urlArgumentsParser(args);
 								};
 
-								file = (file || '') + (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
-
-								if (isFolder && file) {
-									path.push(file);
-									file = '';
+								if (isFolder) {
+									if (file) {
+										path.push(file);
+										file = '';
+									};
+									if (!trim) {
+										file = (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
+									};
+								} else {
+									if (!types.isNothing(isFolder) && !file) {
+										file = path.pop();
+									};
+									file = (file || '') + (!args || types.isNothing(args.__args) ? '' : '?' + args.toString()) + (types.isNothing(anchor) ? '' : '#' + anchor);
 								};
 
 								if (file) {
