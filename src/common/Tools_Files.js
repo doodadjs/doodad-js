@@ -1162,7 +1162,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										options: {
 											type: 'object',
@@ -1171,7 +1171,7 @@ exports.add = function add(modules) {
 										},
 									},
 									returns: 'string',
-									description: "Converts to a string.",
+									description: "Converts Path to a string.",
 								}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
@@ -1180,34 +1180,29 @@ exports.add = function add(modules) {
 								};
 
 								// Flags
+								const hasNewOptions = !types.isNothing(options);
 								const dontValidate = types.get(options, 'dontValidate', false);
 
-								if (options) {
-									options = tools.nullObject(options);
-									if (types.has(options, 'os')) {
-										if (!types.has(options, 'dirChar')) {
-											options.dirChar = null;
-										};
+								if (types.has(options, 'os')) {
+									if (!types.has(options, 'dirChar')) {
+										options.dirChar = null;
 									};
+								};
 
-									if (dontValidate) {
-										options = tools.extend({}, this, options);
-									} else {
-										// Validate
-										// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-										if (!types.has(options, 'dontThrow')) {
-											options.dontThrow = true;  // "parse" will returns null when invalid
-										};
-										const type = types.getType(this);
-										options = type.parse(this, options);
-										if (!options) {
-											// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
-											//throw new files.PathError("Invalid path.");
-											return '';
-										};
+								options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {}, this, options);
+
+								// Validate against the new options.
+								if (hasNewOptions && !dontValidate) {
+									// Validate
+									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+									options.dontThrow = true;  // "parse" will returns null when invalid
+									const type = types.getType(this);
+									options = type.parse(null, options);
+									if (!options) {
+										// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
+										//throw new files.PathError("Invalid path.");
+										return '';
 									};
-								} else {
-									options = this;
 								};
 
 
@@ -1217,7 +1212,8 @@ exports.add = function add(modules) {
 								const host = options.host,
 									drive = options.drive,
 									file = options.file,
-									hasRoot = path.length && !path[0].length;
+									hasRoot = path.length && !path[0].length,
+									dirChar = options.dirChar || tools.getOS().dirChar;
 
 								if (dirRoot) {
 									dirRoot = tools.trim(dirRoot, '');
@@ -1243,14 +1239,14 @@ exports.add = function add(modules) {
 									};
 								};
 
-								let result = path.join(options.dirChar);
+								let result = path.join(dirChar);
 
 								if (!options.isRelative || host || drive || hasRoot) {
-									result = (options.dirChar + result);
+									result = (dirChar + result);
 								};
 
 								if (host && drive) {
-									result = (options.dirChar + options.dirChar + host + options.dirChar + drive) + result;
+									result = (dirChar + dirChar + host + dirChar + drive) + result;
 								} else if (drive) {
 									result = (drive + ':') + result;
 								};
@@ -3027,7 +3023,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										options: {
 											type: 'object',
@@ -3036,7 +3032,7 @@ exports.add = function add(modules) {
 										},
 									},
 									returns: 'string',
-									description: "Converts to a string.",
+									description: "Converts Url to a string.",
 								}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
@@ -3045,28 +3041,23 @@ exports.add = function add(modules) {
 								};
 
 								// Flags
+								const hasNewOptions = !types.isNothing(options);
 								const dontValidate = types.get(options, 'dontValidate', false);
 
-								if (options) {
-									if (dontValidate) {
-										options = tools.extend({}, this, options);
-									} else {
-										// Validate
-										// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-										options = types.clone(options) || {};
-										if (!types.has(options, 'dontThrow')) {
-											options.dontThrow = true;  // "parse" will returns null when invalid
-										};
-										const type = types.getType(this);
-										options = type.parse(this, options);
-										if (!options) {
-											// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
-											//throw new types.ParseError("Invalid url.");
-											return '';
-										};
+								options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {}, this, options);
+
+								// Validate against the new options.
+								if (hasNewOptions && !dontValidate) {
+									// Validate
+									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+									const type = types.getType(this);
+									options.dontThrow = true;  // "parse" will returns null when invalid
+									options = type.parse(null, options);
+									if (!options) {
+										// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
+										//throw new types.ParseError("Invalid url.");
+										return '';
 									};
-								} else {
-									options = this;
 								};
 
 
@@ -3121,10 +3112,11 @@ exports.add = function add(modules) {
 									result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
 								};
 
-								if (options.args) {
-									if (!types.isNothing(options.args.__args)) {
-										result += '?' + options.args.toString(options);
-									};
+								if (!types._instanceof(options.args, files.UrlArguments)) {
+									options.args = files.UrlArguments.parse(options.args);
+								};
+								if (!types.isNothing(options.args.__args)) {
+									result += '?' + options.args.toString(options);
 								};
 
 								if (!types.isNothing(options.anchor)) {
