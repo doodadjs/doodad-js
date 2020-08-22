@@ -179,7 +179,7 @@ exports.add = function add(mods) {
 						port: 8080,
 						path: ['v0', 'tests', 'units'],
 						file: '',
-						extension: '',
+						extension: null,
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -195,7 +195,7 @@ exports.add = function add(mods) {
 						port: 8080,
 						path: ['v0', 'tests'],
 						file: '',
-						extension: '',
+						extension: null,
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -211,7 +211,7 @@ exports.add = function add(mods) {
 						port: 8080,
 						path: [],
 						file: '',
-						extension: '',
+						extension: null,
 						args: {__args: null},
 						anchor: null,
 						isRelative: false,
@@ -226,7 +226,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: 8080,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -242,7 +242,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -258,7 +258,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -274,7 +274,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -290,7 +290,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -306,7 +306,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -322,7 +322,7 @@ exports.add = function add(mods) {
 						domain: null,
 						port: null,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -338,7 +338,7 @@ exports.add = function add(mods) {
 						domain: 'www.doodad-js.local',
 						port: 8080,
 						path: [],
-						file: null,
+						file: '',
 						extension: null,
 						args: {__args: null},
 						anchor: null,
@@ -419,8 +419,8 @@ exports.add = function add(mods) {
 					runStep("http://user:password@www.mydomain.com:8080/Doodad/");
 					runStep("http://user:password@www.mydomain.com:8080/Doodad");
 					runStep("http://user:password@www.mydomain.com:8080/");
-					runStep("http://user:password@www.mydomain.com:8080");
-					runStep("http://user:password@www.mydomain.com");
+					runStep("http://user:password@www.mydomain.com:8080", "http://user:password@www.mydomain.com:8080/");
+					runStep("http://user:password@www.mydomain.com", "http://user:password@www.mydomain.com/");
 					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
 					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
 					runStep("http://user:password@www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
@@ -433,7 +433,7 @@ exports.add = function add(mods) {
 					runStep("http://user:password@www.mydomain.com/Doodad/");
 					runStep("http://user:password@www.mydomain.com/Doodad");
 					runStep("http://user:password@www.mydomain.com/");
-					runStep("http://user:password@www.mydomain.com");
+					runStep("http://user:password@www.mydomain.com", "http://user:password@www.mydomain.com/");
 					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
 					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b&");
 					runStep("http://www.mydomain.com:8080/Doodad/v1/doodad.js?v=1&a=&b");
@@ -446,7 +446,7 @@ exports.add = function add(mods) {
 					runStep("http://www.mydomain.com:8080/Doodad/");
 					runStep("http://www.mydomain.com:8080/Doodad");
 					runStep("http://www.mydomain.com:8080/");
-					runStep("http://www.mydomain.com:8080");
+					runStep("http://www.mydomain.com:8080", "http://www.mydomain.com:8080/");
 					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
 					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b&");
 					runStep("http://www.mydomain.com/Doodad/v1/doodad.js?v=1&a=&b");
@@ -459,7 +459,7 @@ exports.add = function add(mods) {
 					runStep("http://www.mydomain.com/Doodad/");
 					runStep("http://www.mydomain.com/Doodad");
 					runStep("http://www.mydomain.com/");
-					runStep("http://www.mydomain.com");
+					runStep("http://www.mydomain.com", "http://www.mydomain.com/");
 					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&#anchor");
 					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b&");
 					runStep("http://user:password@www.mydomain.com:8080/Doodad/doodad.js?v=1&a=&b");
@@ -541,12 +541,12 @@ exports.add = function add(mods) {
 					runStep("http://user:password@www.mydomain.com:8080/?v=1&a=");
 					runStep("http://user:password@www.mydomain.com:8080/?v=1");
 					runStep("http://user:password@www.mydomain.com:8080/?");
-					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&#anchor");
-					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&");
-					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b");
-					runStep("http://user:password@www.mydomain.com:8080?v=1&a=");
-					runStep("http://user:password@www.mydomain.com:8080?v=1");
-					runStep("http://user:password@www.mydomain.com:8080?");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&#anchor", "http://user:password@www.mydomain.com:8080/?v=1&a=&b&#anchor");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b&", "http://user:password@www.mydomain.com:8080/?v=1&a=&b&");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=&b", "http://user:password@www.mydomain.com:8080/?v=1&a=&b");
+					runStep("http://user:password@www.mydomain.com:8080?v=1&a=", "http://user:password@www.mydomain.com:8080/?v=1&a=");
+					runStep("http://user:password@www.mydomain.com:8080?v=1", "http://user:password@www.mydomain.com:8080/?v=1");
+					runStep("http://user:password@www.mydomain.com:8080?", "http://user:password@www.mydomain.com:8080/?");
 					runStep("http://user@www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
 					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&#anchor");
 					runStep("http://www.mydomain.com:8080/Doodad/v1/?v=1&a=&b&");
@@ -573,12 +573,12 @@ exports.add = function add(mods) {
 					runStep("http://www.mydomain.com/?v=1&a=");
 					runStep("http://www.mydomain.com/?v=1");
 					runStep("http://www.mydomain.com/?");
-					runStep("http://www.mydomain.com?v=1&a=&b&#anchor");
-					runStep("http://www.mydomain.com?v=1&a=&b&");
-					runStep("http://www.mydomain.com?v=1&a=&b");
-					runStep("http://www.mydomain.com?v=1&a=");
-					runStep("http://www.mydomain.com?v=1");
-					runStep("http://www.mydomain.com?");
+					runStep("http://www.mydomain.com?v=1&a=&b&#anchor", "http://www.mydomain.com/?v=1&a=&b&#anchor");
+					runStep("http://www.mydomain.com?v=1&a=&b&", "http://www.mydomain.com/?v=1&a=&b&");
+					runStep("http://www.mydomain.com?v=1&a=&b", "http://www.mydomain.com/?v=1&a=&b");
+					runStep("http://www.mydomain.com?v=1&a=", "http://www.mydomain.com/?v=1&a=");
+					runStep("http://www.mydomain.com?v=1", "http://www.mydomain.com/?v=1");
+					runStep("http://www.mydomain.com?", "http://www.mydomain.com/?");
 					runStep("/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
 					runStep("/Doodad/v1/doodad.js?v=1&a=&b&");
 					runStep("/Doodad/v1/doodad.js?v=1&a=&b");

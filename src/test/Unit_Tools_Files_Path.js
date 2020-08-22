@@ -65,12 +65,12 @@ exports.add = function add(mods) {
 						const options = {os};
 
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: null,
 							path: [],
-							file: null,
+							file: '',
 							extension: null,
 							quote: null,
 							isRelative: true,
@@ -79,13 +79,13 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "", options);
 
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
 							path: [],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -93,13 +93,13 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "C:\\", options);
 
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
 							path: ['Temp'],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -107,13 +107,13 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "C:\\Temp\\", options);
 							
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
 							path: ['Temp', 'SubFolder'],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -121,7 +121,7 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "C:\\Temp\\SubFolder\\", options);
 							
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -135,7 +135,7 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "C:\\Temp\\SubFolder\\File.txt", options);
 							
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '\\',
 							root: null,
 							drive: 'C',
@@ -154,13 +154,13 @@ exports.add = function add(mods) {
 						const options = {os};
 
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,
 							path: [],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -168,13 +168,13 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "/", options);
 
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,
 							path: ['tmp'],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -182,13 +182,13 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "/tmp/", options);
 						
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,
 							path: ['tmp', 'subfolder'],
 							file: '',
-							extension: '',
+							extension: null,
 							quote: null,
 							isRelative: false,
 							noEscapes: false,
@@ -196,7 +196,7 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "/tmp/subfolder/", options);
 						
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -210,7 +210,7 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ "/tmp/subfolder/file.txt", options);
 							
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,
@@ -224,7 +224,7 @@ exports.add = function add(mods) {
 						}, {depth: 1}, /**/ '"/tmp/subfolder/file.txt"', options);
 							
 						group.runStep({
-							os: os,
+							os,
 							dirChar: '/',
 							root: null,
 							drive: null,

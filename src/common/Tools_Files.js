@@ -88,12 +88,14 @@ exports.add = function add(modules) {
 					if (!types._instanceof(url, files.Url)) {
 						//options = tools.extend({
 						//}, options);
+
 						url = files.Url.parse(url, options);
-					};
-					if (types.get(options, 'noEscapes', false)) {
-						return url.set({
-							noEscapes: false,
-						});
+
+						if (!types.isNothing(url) && url.noEscapes) {
+							url = url.set({
+								noEscapes: false, // switch to default
+							});
+						};
 					};
 				};
 				return url;
@@ -102,21 +104,20 @@ exports.add = function add(modules) {
 			_shared.pathParser = function pathParser(path, /*optional*/options) {
 				if (!types.isNothing(path)) {
 					if (!types._instanceof(path, files.Path)) {
-						if (types.get(options, 'isRelative', false)) {
-							options = tools.extend({
-								os: 'linux',
-								dirChar: '/',
-							}, options);
-						};
+						options = tools.extend({
+							os: 'linux',
+							dirChar: '/',
+						}, options);
 
 						path = files.Path.parse(path, options);
-					};
-					if (types.get(options, 'os', null) || types.get(options, 'dirChar', null) || types.get(options, 'noEscapes', false)) {
-						return path.set({
-							os: null, // switch to default
-							dirChar: null, // switch to default
-							noEscapes: false, // switch to default
-						});
+
+						if (!types.isNothing(path)) {
+							path = path.set({
+								os: null, // switch to default
+								dirChar: null, // switch to default
+								noEscapes: false, // switch to default
+							});
+						};
 					};
 				};
 				return path;
@@ -422,7 +423,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 9,
+									revision: 10,
 									params: {
 										path: {
 											type: 'string,array',
@@ -1052,16 +1053,26 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid file name.");
-										}
+										};
 									};
 								} else {
 									file = null;
 								};
 
 								if (!types.isNothing(isFolder)) {
-									if (!isFolder && !file) {
-										if (path) {
+									if (!isFolder) {
+										if (!file && path) {
 											file = path.pop();
+										};
+										if (!file && allowTraverse && dirRoot) {
+											file = dirRoot.pop();
+										};
+										if (!file) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("Missing file name.");
+											};
 										};
 									};
 								};
@@ -1095,7 +1106,7 @@ exports.add = function add(modules) {
 										path = [file];
 									};
 									file = '';
-									extension = '';
+									extension = null;
 								};
 
 								return new this({
@@ -1106,8 +1117,8 @@ exports.add = function add(modules) {
 									drive: drive || null,
 									root: dirRoot && types.freezeObject(dirRoot) || null,
 									path: types.freezeObject(path || []),
-									file,
-									extension,
+									file: file || '',
+									extension: (file ? extension || '' : null),
 									quote: quote || null,
 									isRelative,
 									noEscapes,
@@ -1162,7 +1173,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 2,
+									revision: 3,
 									params: {
 										options: {
 											type: 'object',
@@ -1175,13 +1186,10 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
-								if (!types._instanceof(this, files.Path)) {
-									return '';
-								};
-
 								// Flags
 								const hasNewOptions = !types.isNothing(options);
 								const dontValidate = types.get(options, 'dontValidate', false);
+								let isFolder = types.get(options, 'isFolder', null);
 
 								if (types.has(options, 'os')) {
 									if (!types.has(options, 'dirChar')) {
@@ -1195,7 +1203,7 @@ exports.add = function add(modules) {
 								if (hasNewOptions && !dontValidate) {
 									// Validate
 									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-									options.dontThrow = true;  // "parse" will returns null when invalid
+									options.dontThrow = true;  // "parse" will return null when invalid
 									const type = types.getType(this);
 									options = type.parse(null, options);
 									if (!options) {
@@ -1203,17 +1211,20 @@ exports.add = function add(modules) {
 										//throw new files.PathError("Invalid path.");
 										return '';
 									};
+									// No need to execute that.
+									isFolder = null;
 								};
 
 
 								let dirRoot = options.root,
-									path = options.path;
+									path = options.path,
+									file = options.file;
 
 								const host = options.host,
 									drive = options.drive,
-									file = options.file,
-									hasRoot = path.length && !path[0].length,
-									dirChar = options.dirChar || tools.getOS().dirChar;
+									hasPath = path.length && !path[0].length,
+									dirChar = options.dirChar || tools.getOS().dirChar,
+									allowTraverse = options.allowTraverse;
 
 								if (dirRoot) {
 									dirRoot = tools.trim(dirRoot, '');
@@ -1223,7 +1234,31 @@ exports.add = function add(modules) {
 									path = tools.trim(path, '');
 								};
 
-								path = tools.append([], dirRoot, path, [file]);
+								if (!types.isNothing(isFolder)) {
+									// NOTE: If we are there that's because validation has been disabled.
+									if (isFolder) {
+										if (file) {
+											if (path) {
+												path.push(file);
+											} else {
+												path = [file];
+											};
+											file = '';
+										};
+									} else {
+										if (!file && path) {
+											file = path.pop();
+										};
+										if (!file && allowTraverse && dirRoot) {
+											file = dirRoot.pop();
+										};
+										//if (!file) {
+										//	// ???
+										//};
+									};
+								};
+
+								path = tools.append([], dirRoot, path, [file || '']);
 
 								if (!options.noEscapes && !options.quote) {
 									if (options.shell === 'bash') {
@@ -1241,7 +1276,7 @@ exports.add = function add(modules) {
 
 								let result = path.join(dirChar);
 
-								if (!options.isRelative || host || drive || hasRoot) {
+								if (!options.isRelative || host || drive || hasPath) {
 									result = (dirChar + result);
 								};
 
@@ -1282,7 +1317,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 12,
+									revision: 13,
 									params: {
 										location: {
 											type: 'string,Path,Url',
@@ -1300,17 +1335,19 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function combine(/*optional*/location, /*optional*/options) {
-								//options = tools.extend({isRelative: true}, options);
+								const dontThrow = types.get(options, 'dontThrow', false);
 
-								location = files.parseLocation(location, options);
+								location = files.parseLocation(location, {dontThrow});
 
 								if (types.isNothing(location)) {
-									return this;
+									if (dontThrow) {
+										return null;
+									} else {
+										throw new types.ParseError("Missing location.");
+									};
 								};
 
-								const type = types.getType(this);
-								const dontThrow = types.get(options, 'dontThrow', false),
-									allowTraverse = types.get(options, 'allowTraverse', false);
+								const allowTraverse = types.get(options, 'allowTraverse', false);
 
 								let includePathInRoot = types.get(options, 'includePathInRoot', null);
 
@@ -1405,6 +1442,7 @@ exports.add = function add(modules) {
 
 								data.extension = types.get(options, 'extension', null);
 
+								const type = types.getType(this);
 								location = type.parse(null, data);
 
 								return location;
@@ -1590,25 +1628,48 @@ exports.add = function add(modules) {
 							}),
 
 						relative: function relative(to, /*optional*/options) {
+							const dontThrow = types.get(options, 'dontThrow', false);
+
 							if (this.isRelative) {
-								throw new types.ParseError("Path is not absolute.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Path is not absolute.");
+								};
 							};
 
-							const type = types.getType(this);
+							to = files.parsePath(to, {dontThrow});
 
-							if (!types._instanceof(to, files.Path)) {
-								to = type.parse(to, options);
+							if (types.isNothing(to)) {
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Missing target path.");
+								};
 							};
+
 							if (to.isRelative) {
-								throw new types.ParseError("Target must be an absolute path.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Target must be an absolute path.");
+								};
 							};
 
 							if ((this.os === 'windows') && (to.os !== 'windows')) {
-								throw new types.ParseError("Incompatible OSes.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Incompatible OSes.");
+								};
 							};
 
 							if ((this.os === 'windows') && ((this.host !== to.host) || (this.drive !== to.drive))) {
-								throw new types.ParseError("Paths must be from the same network share or the same drive.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Paths must be from the same network share or the same drive.");
+								};
 							};
 
 							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
@@ -1648,7 +1709,8 @@ exports.add = function add(modules) {
 
 							const file = (j < thisAr.length ? thisAr[j] : '');
 
-							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file, extension: null, isRelative: true}));
+							const type = types.getType(this);
+							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file, extension: null, isRelative: true, dontThrow}));
 						},
 
 						toDataObject: root.DD_DOC(
@@ -2382,7 +2444,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 10,
+									revision: 11,
 									params: {
 										url: {
 											type: 'string,Url,Path',
@@ -2803,7 +2865,7 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid file name.");
-										}
+										};
 									};
 								} else {
 									file = null;
@@ -2813,6 +2875,13 @@ exports.add = function add(modules) {
 									if (!isFolder && !file) {
 										if (path) {
 											file = path.pop();
+										};
+										if (!file) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("Missing file name.");
+											};
 										};
 									};
 								};
@@ -2856,8 +2925,8 @@ exports.add = function add(modules) {
 									password: password,
 									port: port,
 									path: types.freezeObject(path || []),
-									file: file,
-									extension: extension,
+									file: file || '',
+									extension: (file ? extension || '' : null),
 									args: args,
 									anchor: anchor,
 									noEscapes: !!noEscapes,
@@ -3036,13 +3105,10 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
-								if (!types._instanceof(this, files.Url)) {
-									return '';
-								};
-
 								// Flags
 								const hasNewOptions = !types.isNothing(options);
 								const dontValidate = types.get(options, 'dontValidate', false);
+								let isFolder = types.get(options, 'isFolder', null);
 
 								options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {}, this, options);
 
@@ -3051,18 +3117,20 @@ exports.add = function add(modules) {
 									// Validate
 									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
 									const type = types.getType(this);
-									options.dontThrow = true;  // "parse" will returns null when invalid
+									options.dontThrow = true;  // "parse" will return null when invalid
 									options = type.parse(null, options);
 									if (!options) {
 										// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
 										//throw new types.ParseError("Invalid url.");
 										return '';
 									};
+									// Don't execute that.
+									isFolder = null;
 								};
 
 
 								// Options
-								const noEscapes = types.get(options, 'noEscapes', false);
+								const noEscapes = options.noEscapes;
 
 
 								let result = '';
@@ -3071,7 +3139,7 @@ exports.add = function add(modules) {
 									result += options.protocol + '://';
 								};
 
-								if (!types.isNothing(options.domain)) {
+								if (options.domain) {
 									if (!types.isNothing(options.user) || !types.isNothing(options.password)) {
 										if (!types.isNothing(options.user)) {
 											result += (noEscapes ? options.user : _shared.Natives.windowEncodeURIComponent(options.user));
@@ -3087,29 +3155,53 @@ exports.add = function add(modules) {
 									};
 								};
 
-								if (options.path && options.path.length) {
-									let path = '';
-									path += tools.trim((noEscapes ? (options.path || []) : tools.map((options.path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
-									if (path.length > 0) {
-										path += '/';
+								let path = options.path,
+									file = options.file;
+
+								if (!types.isNothing(isFolder)) {
+									// NOTE: If we are there that's because validation has been disabled.
+									if (isFolder) {
+										if (file) {
+											if (path) {
+												path.push(file);
+											} else {
+												path = [file];
+											};
+											file = '';
+										};
+									} else {
+										if (!file && path) {
+											file = path.pop() || '';
+										};
+										//if (!file) {
+										//	// ???
+										//};
 									};
-									if (!types.isNothing(options.domain) || !options.isRelative || options.isWindows) {
-										path = '/' + path;
+								};
+
+								if (path && path.length) {
+									let strPath = '';
+									strPath += tools.trim((noEscapes ? (path || []) : tools.map((path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
+									if (strPath.length > 0) {
+										strPath += '/';
+									};
+									if (options.domain || !options.isRelative || options.isWindows) {
+										strPath = '/' + strPath;
 									};
 									if (!noEscapes && options.isWindows) {
 										// Workaround for Windows and IE (must be "/C:/", not "/C%3A/")
-										path = tools.replace(path, /^\/?([A-Za-z])%3[Aa]/, function(result, g1) {
+										strPath = tools.replace(strPath, /^\/?([A-Za-z])%3[Aa]/, function(result, g1) {
 											return '/' + g1.toUpperCase() + ':';
 										});
 									};
-									result += path;
+									result += strPath;
 								};
 
-								if (!types.isNothing(options.file)) {
-									if ((!options.path || !options.path.length) && (!types.isNothing(options.domain) || !options.isRelative)) {
-										result += '/';
-									};
-									result += (noEscapes ? options.file : _shared.Natives.windowEncodeURIComponent(options.file));
+								if ((!path || !path.length) && (options.domain || !options.isRelative)) {
+									result += '/';
+								};
+								if (file) {
+									result += (noEscapes ? file : _shared.Natives.windowEncodeURIComponent(file));
 								};
 
 								if (!types._instanceof(options.args, files.UrlArguments)) {
@@ -3177,7 +3269,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 9,
+									revision: 10,
 									params: {
 										location: {
 											type: 'string,Url,Path',
@@ -3195,26 +3287,23 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function combine(location, /*optional*/options) {
-								//options = tools.extend({isRelative: true}, options);
+								const dontThrow = types.get(options, 'dontThrow', false);
 
-								location = files.parseLocation(location, options);
+								location = files.parseLocation(location, {dontThrow});
 
 								if (types.isNothing(location)) {
-									return this;
+									if (dontThrow) {
+										return null;
+									} else {
+										throw new types.ParseError("Missing location.");
+									};
 								};
-
-								const type = types.getType(this);
-
-								const dontThrow = types.get(options, 'dontThrow', false);
 
 								const data = tools.fill(__Internal__.urlAllKeys, {}, this);
 
 								const thisPath = tools.trim(this.path || [], '');
 								const thisFile = this.file;
 
-								if (thisFile) {
-									thisPath.push(thisFile);
-								};
 
 								let pathRoot = null;
 
@@ -3227,7 +3316,7 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("Drive mismatch.");
-										}
+										};
 									};
 									if (domain) {
 										data.protocol = types.get(options, 'protocol', location.protocol);
@@ -3256,11 +3345,12 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("Drive mismatch.");
-										}
+										};
 									};
 								};
 
 								data.dontThrow = dontThrow;
+								data.isFolder = types.get(options, 'isFolder', null);
 
 								let path = types.get(options, 'path', location.path);
 								if (types.isString(path)) {
@@ -3271,14 +3361,22 @@ exports.add = function add(modules) {
 								};
 
 								let file = types.get(options, 'file', location.file);
-								if (types.isString(file)) {
+								if (file && types.isString(file)) {
 									file = file.split('/');
 								};
 								if (file && file.length) {
 									const tmp = file.pop();
 									file = tools.trim(file, '');
-									path = tools.append(path, file);
+									tools.append(path, file);
 									file = tmp;
+								};
+
+								if (thisFile) {
+									if ((path && path.length) || file) {
+										thisPath.push(thisFile);
+									} else {
+										file = thisFile;
+									};
 								};
 
 								if (isRelative) {
@@ -3287,15 +3385,13 @@ exports.add = function add(modules) {
 									data.path = tools.append([], pathRoot, path);
 								} else {
 									data.path = [];
-									if (!file) {
-										file = '';
-									};
 								};
 
 								data.file = file;
 
 								data.extension = types.get(options, 'extension', null);
 
+								const type = types.getType(this);
 								return type.parse(null, data);
 							}),
 
@@ -3507,34 +3603,64 @@ exports.add = function add(modules) {
 							}),
 
 						relative: function relative(to, /*optional*/options) {
+							const dontThrow = types.get(options, 'dontThrow', false);
+
 							if (this.isRelative) {
-								throw new types.ParseError("Url is not absolute.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Url is not absolute.");
+								};
 							};
 
-							const type = types.getType(this);
+							to = files.parseUrl(to, {dontThrow});
 
-							if (!types._instanceof(to, files.Url)) {
-								to = type.parse(to, options);
+							if (types.isNothing(to)) {
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Missing target url.");
+								};
 							};
 
 							if (to.isRelative) {
-								throw new types.ParseError("Target must be an absolute url.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Target must be an absolute url.");
+								};
 							};
 
 							if (this.isWindows && !to.isWindows) {
-								throw new types.ParseError("Incompatible OSes.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Incompatible OSes.");
+								};
 							};
 
 							if (this.isWindows && (this.path[0] !== to.path[0])) {
-								throw new types.ParseError("Urls must be from the same network share or the same drive.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Urls must be from the same network share or the same drive.");
+								};
 							};
 
 							if ((this.domain !== to.domain) && (this.port !== to.port)) {
-								throw new types.ParseError("Urls must be from the same domain and have the same port number.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Urls must be from the same domain and have the same port number.");
+								};
 							};
 
 							if ((this.user !== to.user) || (this.password !== to.password)) {
-								throw new types.ParseError("Urls must be from the same credentials.");
+								if (dontThrow) {
+									return null;
+								} else {
+									throw new types.ParseError("Urls must be from the same credentials.");
+								};
 							};
 
 							const caseSensitive = types.get(options, 'caseSensitive', false);
@@ -3574,7 +3700,8 @@ exports.add = function add(modules) {
 
 							const file = (j < thisAr.length ? thisAr[j] : '');
 
-							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false}));
+							const type = types.getType(this);
+							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false, dontThrow}));
 						},
 
 						toDataObject: root.DD_DOC(
