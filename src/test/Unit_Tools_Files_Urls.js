@@ -72,7 +72,6 @@ exports.add = function add(mods) {
 						anchor: 'failedBookmark',
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#failedBookmark", options);
 
 					command.runStep({
@@ -85,10 +84,9 @@ exports.add = function add(mods) {
 						file: 'test.html',
 						extension: 'html',
 						args: {__args: [{name: 'unit', value: 'Doodad.Test.Tools.Files.Url'}]},
-						anchor: '',
+						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url#", options);
 
 					command.runStep({
@@ -104,7 +102,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=Doodad.Test.Tools.Files.Url", options);
 
 					command.runStep({
@@ -120,7 +117,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit=", options);
 
 					command.runStep({
@@ -136,7 +132,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?unit", options);
 
 					command.runStep({
@@ -152,7 +147,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html?", options);
 
 					command.runStep({
@@ -168,7 +162,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/test.html", options);
 
 					command.runStep({
@@ -184,7 +177,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/units/", options);
 
 					command.runStep({
@@ -200,7 +192,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/v0/tests/", options);
 
 					command.runStep({
@@ -216,7 +207,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080/", options);
 
 					command.runStep({
@@ -232,7 +222,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local:8080", options);
 
 					command.runStep({
@@ -240,7 +229,7 @@ exports.add = function add(mods) {
 						user: 'user',
 						password: 'password',
 						domain: 'www.doodad-js.local',
-						port: null,
+						port: 80,
 						path: [],
 						file: '',
 						extension: null,
@@ -248,7 +237,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:password@www.doodad-js.local", options);
 
 					command.runStep({
@@ -256,7 +244,7 @@ exports.add = function add(mods) {
 						user: null,
 						password: 'password',
 						domain: 'www.doodad-js.local',
-						port: null,
+						port: 80,
 						path: [],
 						file: '',
 						extension: null,
@@ -264,15 +252,14 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://:password@www.doodad-js.local", options);
 
 					command.runStep({
 						protocol: 'http',
 						user: 'user',
-						password: '',
+						password: null,
 						domain: 'www.doodad-js.local',
-						port: null,
+						port: 80,
 						path: [],
 						file: '',
 						extension: null,
@@ -280,7 +267,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user:@www.doodad-js.local", options);
 
 					command.runStep({
@@ -288,7 +274,7 @@ exports.add = function add(mods) {
 						user: 'user',
 						password: null,
 						domain: 'www.doodad-js.local',
-						port: null,
+						port: 80,
 						path: [],
 						file: '',
 						extension: null,
@@ -296,7 +282,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://user@www.doodad-js.local", options);
 
 					command.runStep({
@@ -304,7 +289,7 @@ exports.add = function add(mods) {
 						user: null,
 						password: null,
 						domain: 'www.doodad-js.local',
-						port: null,
+						port: 80,
 						path: [],
 						file: '',
 						extension: null,
@@ -312,7 +297,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://www.doodad-js.local", options);
 
 					command.runStep({
@@ -328,7 +312,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: true,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "", options);
 
 					command.runStep({
@@ -344,7 +327,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "http://www.doodad-js.local:8080", options);
 
 					command.runStep({
@@ -360,7 +342,6 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: true,
 					}, {depth: 3}, /**/ "file:///C:/Doodad/v0/tests/units/test.html", options);
 
 					command.runStep({
@@ -376,23 +357,21 @@ exports.add = function add(mods) {
 						anchor: null,
 						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "file:///Doodad/v0/tests/units/test.html", options);
 
 					command.runStep({
 						protocol: 'file',
 						user: null,
 						password: null,
-						domain: null,
+						domain: 'doodad',
 						port: null,
-						path: ['Doodad', 'v0', 'tests', 'units'],
+						path: ['v0', 'tests', 'units'],
 						file: 'test.html',
 						extension: 'html',
 						args: {__args: null},
 						anchor: null,
-						isRelative: true,
+						isRelative: false,
 						noEscapes: false,
-						isWindows: false,
 					}, {depth: 3}, /**/ "file://Doodad/v0/tests/units/test.html", options);
 				});
 					
@@ -593,37 +572,13 @@ exports.add = function add(mods) {
 					runStep("/");
 					runStep("");
 
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&#");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b&");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&b");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=&");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a=");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&a");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1&");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=1");
-					runStep("file:///C:/Doodad/v1/doodad.js?v=");
-					runStep("file:///C:/Doodad/v1/doodad.js?v");
-					runStep("file:///C:/Doodad/v1/doodad.js?");
+					runStep("file://server/Doodad/v1/doodad.js");
+					runStep("file://SERVER/Doodad/v1/doodad.js", "file://server/Doodad/v1/doodad.js");
 					runStep("file:///C:/Doodad/v1/doodad.js");
 					runStep("file:///C:/Doodad/v1/");
 					runStep("file:///C:/Doodad/");
 					runStep("file:///C:/");
-					runStep("file:///c:/", "file:///C:/");
-					runStep("file://C:/", "file:///C:/");
 
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&#anchor");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&#");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b&");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=&b");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=&");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a=");
-					runStep("file:///Doodad/v1/doodad.js?v=1&a");
-					runStep("file:///Doodad/v1/doodad.js?v=1&");
-					runStep("file:///Doodad/v1/doodad.js?v=1");
-					runStep("file:///Doodad/v1/doodad.js?v=");
-					runStep("file:///Doodad/v1/doodad.js?v");
-					runStep("file:///Doodad/v1/doodad.js?");
 					runStep("file:///Doodad/v1/doodad.js");
 					runStep("file:///Doodad/v1/");
 					runStep("file:///Doodad/");
@@ -676,8 +631,20 @@ exports.add = function add(mods) {
 					};
 					return url;
 				}, "Doodad.Tools.Files.Url.combine.Path", function(command, options) {
+					command.runStep("Doodad/v1/Doodad.js",                                                                   {repetitions: 100}, /**/ "Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+					command.runStep("Doodad.js",                                                                             {repetitions: 100}, /**/ "Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
+					command.runStep("/Doodad/v1/Doodad.js",                                                                  {repetitions: 100}, /**/ "/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+					command.runStep("/Doodad.js",                                                                            {repetitions: 100}, /**/ "/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
+					command.runStep("file://server/SHARE/Doodad.js",                                                         {repetitions: 100}, /**/ "/Doodad/v1/", "\\\\server\\share\\Doodad.js", null, {os: 'windows'});
+					command.runStep("file:///C:/v1/Doodad.js",                                                               {repetitions: 100}, /**/ "/Doodad/v1/", "C:\\v1\\Doodad.js", null, {os: 'windows'});
 					command.runStep("http://user:password@www.mydomain.com:8080/Doodad.js",                                  {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
 					command.runStep("http://user:password@www.mydomain.com:8080/Doodad/v1/Doodad.js",                        {repetitions: 100}, /**/ "http://user:password@www.mydomain.com:8080/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+					command.runStep("file://server/Doodad/v1/Doodad.js",                                                     {repetitions: 100}, /**/ "file://SERVER/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+					command.runStep("file://server/Doodad.js",                                                               {repetitions: 100}, /**/ "file://SERVER/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
+					command.runStep("file:///C:/Doodad/v1/Doodad.js",                                                        {repetitions: 100}, /**/ "file:///C:/Doodad/v1/", "Doodad.js", null, {os: 'linux'});
+					command.runStep("file:///Doodad.js",                                                                     {repetitions: 100}, /**/ "file:///C:/Doodad/v1/", "/Doodad.js", null, {os: 'linux'});
+					command.runStep("file://server/SHARE/Doodad.js",                                                         {repetitions: 100}, /**/ "file:///Doodad/v1/", "\\\\server\\share\\Doodad.js", null, {os: 'windows'});
+					command.runStep("file:///C:/v1/Doodad.js",                                                               {repetitions: 100}, /**/ "file:///Doodad/v1/", "C:\\v1\\Doodad.js", null, {os: 'windows'});
 				});
 						
 			},
