@@ -27,6 +27,7 @@
 //! IF_SET("mjs")
 //! ELSE()
 	"use strict";
+
 //! END_IF()
 
 exports.add = function add(modules) {
@@ -368,7 +369,6 @@ exports.add = function add(modules) {
 				root: types.READ_ONLY( null ),   // null = auto-detect
 				path: types.READ_ONLY( null ),
 				file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
-				isNull: types.READ_ONLY( false ), // Read-only
 			};
 			__Internal__.pathDataKeys = types.keys(__Internal__.pathData);
 
@@ -461,12 +461,21 @@ exports.add = function add(modules) {
 										}
 									};
 
-									const pathTmp = tools.trim(types.clone(path.path) || [], '', 1, 1);
-
-									if (path.isWindows) {
+									if (path.drive) {
+										// TODO: Test network paths
+										let host = null;
+										let drive = path.drive;
+										if (drive.startsWith('//')) {
+											const tmp = drive.split('/');
+											host = tmp[2];
+											drive = tmp[3];
+										} else {
+											drive = drive[0];
+										};
 										options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
 											os: 'windows',
-											drive: pathTmp.shift()[0],
+											host,
+											drive,
 											file: path.file,
 											extension: null,
 										}, options);
@@ -520,7 +529,7 @@ exports.add = function add(modules) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid root.");
-									}
+									};
 								};
 
 								if (types.isNothing(os)) {
@@ -532,7 +541,7 @@ exports.add = function add(modules) {
 									};
 									if (types.isNothing(dirChar)) {
 										dirChar = osInfo.dirChar;
-									}
+									};
 								};
 
 								if (types.isNothing(caseSensitive)) {
@@ -582,14 +591,14 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("'root' option must be quoted.");
-										}
+										};
 									};
 									if (path && pathIsString && ((path.length < 2) || (path[0] !== quote) || (path[path.length - 1] !== quote))) {
 										if (dontThrow) {
 											return null;
 										} else {
 											throw new types.ParseError("'path' option must be quoted.");
-										}
+										};
 									};
 								};
 
@@ -619,7 +628,7 @@ exports.add = function add(modules) {
 														return '^' + g1;
 													} else {
 														return g1;
-													}
+													};
 												} else if (g2) {
 													// Invalid characters
 													if (!quote || (g2 === quote)) {
@@ -642,7 +651,7 @@ exports.add = function add(modules) {
 														return '\\' + g1;
 													} else {
 														return g1;
-													}
+													};
 												} else if (g2) {
 													// Invalid characters
 													if (!quote || (g2 === quote)) {
@@ -650,7 +659,7 @@ exports.add = function add(modules) {
 													} else {
 														// Allow when quoted
 														return g2;
-													}
+													};
 												};
 												return undefined; // "consistent-return"
 											});
@@ -688,7 +697,7 @@ exports.add = function add(modules) {
 												return null;
 											} else {
 												throw new types.ParseError("Invalid char: '~0~'.", [state.invalid]);
-											}
+											};
 										};
 									};
 								};
@@ -734,7 +743,7 @@ exports.add = function add(modules) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid 'dirChar' option.");
-									}
+									};
 								};
 
 								// Split paths
@@ -773,7 +782,7 @@ exports.add = function add(modules) {
 														return null;
 													} else {
 														throw new types.ParseError("'path' can't have a network path or a drive letter while 'root' is set.");
-													}
+													};
 												};
 												if (hasHost) {
 													host = path.splice(0, 3)[2];
@@ -802,7 +811,7 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("'host' and 'drive' options are invalid for non-Windows systems.");
-										}
+										};
 									};
 								};
 
@@ -820,43 +829,36 @@ exports.add = function add(modules) {
 													return null;
 												} else {
 													throw new types.ParseError("A network path must have a shared folder.");
-												}
+												};
 											};
 
 											// Validate host
 											// TODO: Complete validation
-											host = host.toUpperCase();
+											host = host.trim().toUpperCase();
 											if (tools.indexOf(host, ':') >= 0) {
 												if (dontThrow) {
 													return null;
 												} else {
 													throw new types.ParseError("Invalid host name.");
-												}
+												};
 											};
 										};
 
 										// Validate drive letter
-										drive = drive.toUpperCase();
+										drive = drive.trim().toUpperCase();
 										if (host) {
 											// TODO: Validate shared folder
 										} else {
 											//const chr = unicode.codePointAt(drive, 0) || 0;
-											const chr = drive.charCodeAt(0) || 0;
+											const chr = drive.charCodeAt(0);
 											if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
 												if (dontThrow) {
 													return null;
 												} else {
 													throw new types.ParseError("Invalid drive.");
-												}
+												};
 											};
 										};
-
-									} else if (!isRelative && forceDrive) {
-										if (dontThrow) {
-											return null;
-										} else {
-											throw new types.ParseError("A network path or drive letter is mandatory for the absolute path.");
-										}
 									};
 								};
 
@@ -885,15 +887,15 @@ exports.add = function add(modules) {
 
 								if (types.isNothing(isRelative)) {
 									// Auto-detect
-									isRelative = ((!dirRoot || !dirRoot.length || !!dirRoot[0].length) && (!path || !path.length || !!path[0].length));
+									isRelative = !host && !drive && ((!dirRoot || !dirRoot.length || !!dirRoot[0]) && (!path || !path.length || !!path[0]));
 								};
 
-								if (path) {
-									path = tools.trim(path, '');
-								};
-
-								if (file) {
-									file = tools.trim(file, '');
+								if ((os === 'windows') && !host && !drive && !isRelative && forceDrive) {
+									if (dontThrow) {
+										return null;
+									} else {
+										throw new types.ParseError("A network path or drive letter is mandatory for the absolute path.");
+									};
 								};
 
 								if (!isRelative) {
@@ -1038,7 +1040,7 @@ exports.add = function add(modules) {
 												return null;
 											} else {
 												throw new types.ParseError("Invalid path or file name: '~0~'.", [state.invalid]);
-											}
+											};
 										};
 									};
 								};
@@ -1115,7 +1117,7 @@ exports.add = function add(modules) {
 									dirChar,
 									host: host || null,
 									drive: drive || null,
-									root: dirRoot && types.freezeObject(dirRoot) || null,
+									root: types.freezeObject(dirRoot || []),
 									path: types.freezeObject(path || []),
 									file: file || '',
 									extension: (file ? extension || '' : null),
@@ -1124,7 +1126,6 @@ exports.add = function add(modules) {
 									noEscapes,
 									shell,
 									forceDrive,
-									isNull: !host && !drive && (!root || !root.length) && (!path || !path.length) && !file,
 								});
 							}),
 
@@ -1223,15 +1224,34 @@ exports.add = function add(modules) {
 								const host = options.host,
 									drive = options.drive,
 									hasPath = path.length && !path[0].length,
-									dirChar = options.dirChar || tools.getOS().dirChar,
+									dirChar = options.dirChar || this.dirChar,
 									allowTraverse = options.allowTraverse;
 
+								if (dirRoot && types.isString(dirRoot)) {
+									dirRoot = tools.split(dirRoot, dirChar);
+								};
 								if (dirRoot) {
-									dirRoot = tools.trim(dirRoot, '');
+									dirRoot = tools.filter(dirRoot, (name) => !!name);
 								};
 
+								if (path && types.isString(path)) {
+									path = tools.split(path, dirChar);
+								};
 								if (path) {
-									path = tools.trim(path, '');
+									path = tools.filter(path, (name) => !!name);
+								};
+
+								if (file && types.isString(file)) {
+									file = tools.split(file, dirChar);
+								};
+								if (file) {
+									file = tools.filter(file, (name) => !!name);
+									if (path) {
+										tools.append(path, file);
+									} else {
+										path = tools.append([], file);
+									}
+									file = path.pop();
 								};
 
 								if (!types.isNothing(isFolder)) {
@@ -1347,37 +1367,22 @@ exports.add = function add(modules) {
 									};
 								};
 
-								const allowTraverse = types.get(options, 'allowTraverse', false);
+								const includePathInRoot = types.get(options, 'includePathInRoot', false);
 
-								let includePathInRoot = types.get(options, 'includePathInRoot', null);
+								const data = tools.fill(__Internal__.pathAllKeys, {}, this, options);
 
-								const data = tools.fill(__Internal__.pathAllKeys, {}, this);
+								const thisRoot = this.root;
+								let thisPath = this.path;
 
-								const thisRoot = tools.trim(this.root || [], '');
+								let locRoot;
+								let locPath;
 
-								const thisPath = tools.trim(this.path || [], '');
-
-								let dirRoot = types.get(options, 'root');
-								if (types.isString(dirRoot)) {
-									dirRoot = dirRoot.split(data.dirChar);
-								};
-								if (dirRoot) {
-									dirRoot = tools.trim(dirRoot, '');
-								};
-
-								let dir = types.get(options, 'path', location.path);
-								if (types.isString(dir)) {
-									dir = dir.split(data.dirChar);
-								};
-								if (dir) {
-									dir = tools.trim(dir, '');
-								};
+								const locFile = types.get(options, 'file', location.file);
 
 								let isRelative = false;
 								if (types._instanceof(location, files.Path)) {
 									const host = types.get(options, 'host', location.host);
 									const drive = types.get(options, 'drive', location.drive);
-									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
 									if ((location.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
 										if (dontThrow) {
 											return null;
@@ -1385,62 +1390,114 @@ exports.add = function add(modules) {
 											throw new types.ParseError("Drive mismatch.");
 										}
 									};
-									if (!dirRoot) {
-										dirRoot = location.root;
+									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
+									locRoot = types.get(options, 'root', location.root);
+									if (types.isString(locRoot)) {
+										locRoot = locRoot.split(data.dirChar);
+									};
+									locPath = types.get(options, 'path', location.path);
+									if (types.isString(locPath)) {
+										locPath = locPath.split(data.dirChar);
 									};
 								} else { //if (types._instanceof(location, files.Url))
-									isRelative = !types.get(options, 'domain', location.domain) && types.get(options, 'isRelative', location.isRelative);
 									if (location.protocol && (location.protocol !== 'file')) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Bad url protocol.");
+											throw new types.ParseError("Bad URL protocol.");
 										}
 									};
-									if (location.isWindows) {
-										if (dir.length && ((this.os !== 'windows') || this.host || (dir[0][0] !== this.drive))) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Drive mismatch.");
-											}
+									locRoot = types.get(options, 'root', null);
+									if (types.isString(locRoot)) {
+										locRoot = locRoot.split(data.dirChar);
+									};
+									locPath = types.get(options, 'path', location.path);
+									if (types.isString(locPath)) {
+										locPath = locPath.split(data.dirChar);
+									};
+									let host;
+									if (types.has(options, 'host')) {
+										host = options.host;
+										data.host = host;
+									} else if (location.protocol === 'file') {
+										host = location.domain;
+										if (host) {
+											data.host = host;
 										};
-										dir.shift();
 									};
-									if (!dirRoot) {
-										dirRoot = dir;
-										dir = null;
+									let drive = null;
+									if (location.protocol === 'file') {
+										if (location.domain || (location.path[0] && (location.path[0].length === 2) && (location.path[0][1] === ':'))) {
+											drive = (location.domain ? location.path[0] : location.path[0][0]);
+											if (!types.has(options, 'path')) {
+												// "locPath" is "location.path", so we must remove the drive from it.
+												locPath = tools.append([], locPath); // clone
+												locPath.shift();
+											};
+										};
 									};
+									if (types.has(options, 'drive')) {
+										drive = options.drive;
+										data.drive = drive;
+									} else if (drive) {
+										data.drive = drive;
+									};
+									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
 								};
 
-								data.dontThrow = dontThrow;
-								data.allowTraverse = allowTraverse;
+								locRoot = tools.filter(locRoot || [], (name) => !!name);
+								locPath = tools.filter(locPath || [], (name) => !!name);
 
 								let thisFile = this.file;
-								if (thisFile && ((dirRoot && dirRoot.length) || (dir && dir.length) || location.file)) {
+								if (thisFile && ((locRoot && locRoot.length) || (locPath && locPath.length) || locFile)) {
+									// Like a call to "toFolder".
+									thisPath = tools.append([], thisPath);
 									thisPath.push(thisFile);
 									thisFile = null;
 								};
 
-								if (types.isNothing(includePathInRoot)) {
-									// Auto-detect
-									includePathInRoot = !isRelative && (!thisRoot || !thisRoot.length);
-								};
-
 								if (includePathInRoot) {
-									data.root = tools.append([], thisRoot, thisPath);
-									data.path = tools.append([], dirRoot, dir);
+									if (isRelative) {
+										data.root = tools.append([], thisRoot, thisPath, locRoot);
+										data.path = tools.append([], locPath);
+									} else {
+										if (!data.allowTraverse && (thisRoot.length || thisPath.length)) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("Path overflow.");
+											};
+										};
+										data.root = locRoot;
+										data.path = locPath;
+									};
 								} else if (isRelative) {
 									data.root = thisRoot;
-									data.path = tools.append([], thisPath, dirRoot, dir);
+									data.path = tools.append([], thisPath, locRoot, locPath);
 								} else {
-									data.root = thisRoot;
-									data.path = tools.append([], dirRoot, dir);
+									if (!data.allowTraverse && thisRoot.length) {
+										if (dontThrow) {
+											return null;
+										} else {
+											throw new types.ParseError("Path overflow.");
+										};
+									};
+									data.root = [];
+									data.path = tools.append([], locRoot, locPath);
 								};
 
-								data.file = types.get(options, 'file', location.file || thisFile);
+								data.file = locFile;
 
-								data.extension = types.get(options, 'extension', null);
+								if (!types.has(options, 'extension')) {
+									// Force auto-detect
+									data.extension = null;
+								};
+								if (!types.has(options, 'isFolder')) {
+									// Force auto-detect
+									data.isFolder = null;
+								};
+
+								data.dontThrow = dontThrow;
 
 								const type = types.getType(this);
 								location = type.parse(null, data);
@@ -1493,7 +1550,7 @@ exports.add = function add(modules) {
 									path = this.path.slice(0, i + 1);
 								};
 								const type = types.getType(this);
-								return type.parse(null, tools.fill(__Internal__.pathAllKeys, {}, this, {path: path}));
+								return type.parse(null, tools.fill(__Internal__.pathAllKeys, {}, this, {path}));
 							}),
 
 						toFolder: root.DD_DOC(
@@ -1572,9 +1629,8 @@ exports.add = function add(modules) {
 								if (types.isString(root)) {
 									root = root.split(dirChar);
 								};
-
 								if (types.isArray(root)) {
-									root = tools.trim(root, '');
+									root = tools.filter(root, (name) => !!name);
 								} else {
 									root = null;
 								};
@@ -1584,7 +1640,7 @@ exports.add = function add(modules) {
 								};
 
 								if (types.isArray(path)) {
-									path = tools.trim(path, '');
+									path = tools.filter(path, (name) => !!name);
 								} else {
 									path = null;
 								};
@@ -1761,6 +1817,10 @@ exports.add = function add(modules) {
 						// NOTE: 'toJSON' is a documented function for "JSON.stringify".
 						toJSON: function toJSON(key) {
 							return this.toDataObject(null);
+						},
+
+						isNull: function isNull() {
+							return !this.host && !this.drive && (!this.root || !this.root.length) && (!this.path || !this.path.length) && !this.file;
 						},
 					}, __Internal__.pathOptions)
 				)));
@@ -2385,26 +2445,23 @@ exports.add = function add(modules) {
 				file: types.READ_ONLY( null ),   // when set, changes 'extension'.
 				args: types.READ_ONLY( null ),
 				anchor: types.READ_ONLY( null ),
-				isNull: types.READ_ONLY( false ), // Read-only
 			};
 			__Internal__.urlDataKeys = types.keys(__Internal__.urlData);
 
 			__Internal__.urlOptions = {
-				host: types.READ_ONLY( null ), // when set, changes 'domain' and 'port'
 				extension: types.READ_ONLY( null ), // when set, changes 'file'
 				isRelative: types.READ_ONLY( false ),
 				noEscapes: types.READ_ONLY( false ),
-				isWindows: types.READ_ONLY( false ),
 			};
 			__Internal__.urlOptionsKeys = types.keys(__Internal__.urlOptions);
 
-			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'origin', 'username', 'pathname', 'search', 'query', 'hash', 'isFolder'];
+			__Internal__.urlNonStoredKeys = ['dontThrow', 'url', 'href', 'host', 'username', 'pathname', 'search', 'query', 'hash', 'isFolder'];
 
 			__Internal__.urlAllKeys = tools.append([], __Internal__.urlDataKeys, __Internal__.urlOptionsKeys);
 			__Internal__.urlAllKeysAndNonStoredKeys = tools.append([], __Internal__.urlAllKeys, __Internal__.urlNonStoredKeys);
 
 			// NOTE: To prevent using "delete"
-			__Internal__.urlSetExcludedKeys = ['host', 'path', 'file', 'extension'];
+			__Internal__.urlSetExcludedKeys = ['path', 'file', 'extension'];
 			__Internal__.urlAllKeysForSet = tools.filter(__Internal__.urlAllKeys, function(key) {
 				return (tools.indexOf(__Internal__.urlSetExcludedKeys, key) < 0);
 			});
@@ -2444,7 +2501,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 11,
+									revision: 12,
 									params: {
 										url: {
 											type: 'string,Url,Path',
@@ -2492,20 +2549,20 @@ exports.add = function add(modules) {
 									url = null;
 
 								} else if (types._instanceof(url, files.Path)) {
-									const isWindows = (url.os === 'windows');
+									const pathTmp = tools.append([], url.root, url.path);
 
-									let pathTmp = url.path;
-									if (isWindows) {
-										pathTmp = tools.append([], [url.drive + ':'], pathTmp);
+									if (url.drive) {
+										pathTmp.unshift(url.host ? url.drive : url.drive + ':');
 									};
 
 									options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
-										protocol: 'file',
+										protocol: null,
 										host: null,
+										domain: url.host,
 										path: pathTmp,
 										file: url.file,
 										extension: null,
-										isWindows: isWindows,
+										isRelative: url.isRelative,
 									}, options);
 
 									url = null;
@@ -2518,7 +2575,7 @@ exports.add = function add(modules) {
 										return null;
 									} else {
 										throw new types.ParseError("Invalid url.");
-									}
+									};
 								};
 
 								let tmpPath = types.get(options, 'path', null);
@@ -2533,11 +2590,11 @@ exports.add = function add(modules) {
 									port = types.get(options, 'port', null); // Default is Auto-detect
 
 								if (types.isNothing(domain)) {
-									const host = types.get(options, 'host', null); // Default is Auto-set
+									const host = types.get(options, 'host', null);
 									if (host) {
 										const tmp = tools.split(host, ':', 2);
 										domain = tmp[0] || null;
-										port = tmp[1] || null;
+										port = (tmp.length > 1) && tmp[1] || null;
 									};
 								};
 
@@ -2549,7 +2606,6 @@ exports.add = function add(modules) {
 									extension = types.get(options, 'extension', null), // Default is "file" 's extension
 									args = types.get(options, 'args', types.get(options, 'query', null)), // Default is Auto-detect
 									anchor = types.get(options, 'anchor', null), // Default is Auto-detect
-									isWindows = types.get(options, 'isWindows', null), // Default is Auto-detect
 									isRelative = types.get(options, 'isRelative', null); // Default is Auto-detect
 
 								const noEscapes = types.get(options, 'noEscapes', false),
@@ -2580,19 +2636,48 @@ exports.add = function add(modules) {
 											if (types.isNothing(protocol)) {
 												protocol = url.slice(0, pos).toLowerCase() || null;
 											};
-											url = url.slice(pos + 3);
+											url = url.slice(pos + 1);
+											if (url.startsWith('//')) {
+												url = url.slice(2);
+											};
 										};
 									};
 
-									if (!protocol || (protocol === 'file')) {
-										// Auto-detect "isWindows"
-										if (types.isNothing(isWindows)) {
-											// Workaround for Windows and IE
-											isWindows = (tools.search(url, /^[/]?[A-Za-z][:]/) >= 0);
+									if (protocol === 'file') {
+										// Auto-detect "domain", "path"
+										isRelative = false; // it is always absolute and it can't be relative
+										if ((url[0] === '/') && (url[1] !== '/')) {
+											// Local path
+											if (types.isNothing(path)) {
+												path = url;
+											};
+										} else {
+											// Network path
+											const isLegacy = url.startsWith('//');
+											const pos = url.indexOf('/', isLegacy ? 2 : 0);
+											if (pos >= 0) {
+												if (types.isNothing(domain)) {
+													domain = url.slice(isLegacy ? 2 : 0, pos);
+												};
+												if (types.isNothing(path)) {
+													path = url.slice(pos);
+												};
+											} else {
+												if (types.isNothing(domain)) {
+													if (isLegacy) {
+														domain = url.slice(2);
+													} else {
+														domain = url;
+													};
+												};
+												if (types.isNothing(path)) {
+													path = [];
+												};
+											};
 										};
-									} else {
-										// Auto-detect "isWindows", "domain", "user", "password", "port", "path"
-										isWindows = false;
+
+									} else if (protocol) {
+										// Auto-detect "domain", "user", "password", "port"
 										const posUrl = tools.search(url, /[/?#]/);
 										if (posUrl >= 0) {
 											if (types.isNothing(domain)) {
@@ -2636,135 +2721,104 @@ exports.add = function add(modules) {
 										};
 									};
 
-									// Auto-detect "path" and "file"
-									// TODO: Create "tools.searchLast" instead of slicing.
-									const posArgs = url.indexOf('?');
-									const posFile = url.slice(0, posArgs < 0 ? undefined : posArgs).lastIndexOf('/');
-									if (posFile >= 0) {
-										if (types.isNothing(file)) {
-											file = url.slice(posFile + 1) || null;
-										};
-										if (types.isNothing(path)) {
-											path = url.slice(0, posFile + 1);
-										};
-									} else {
-										if (types.isNothing(file)) {
-											file = url || null;
-										};
-										if (types.isNothing(path)) {
-											path = [];
+									if (protocol !== 'file') {
+										// Auto-detect "path" and "file"
+										const posArgs = url.indexOf('?');
+										const posFile = url.lastIndexOf('/', (posArgs < 0 ? url.length - 1 : posArgs - 1));
+										if (posFile >= 0) {
+											if (types.isNothing(file)) {
+												file = url.slice(posFile + 1) || null;
+											};
+											if (types.isNothing(path)) {
+												path = url.slice(0, posFile + 1);
+											};
+										} else {
+											if (types.isNothing(file)) {
+												file = url || null;
+											};
+											if (types.isNothing(path)) {
+												path = [];
+											};
 										};
 									};
 								};
 
-								if (!noEscapes) {
-									if (domain) {
-										domain = __Internal__.decodeURIComponent(domain);
-									};
-									if (user) {
-										user =  __Internal__.decodeURIComponent(user);
-									};
-									if (password) {
-										password = __Internal__.decodeURIComponent(password);
-									};
-									if (types.isString(port)) {
-										port = __Internal__.decodeURIComponent(port) || null;
+								if (!protocol || (protocol === 'http') || (protocol === 'https')) {
+									if (!types.isNothing(file)) {
+										// Auto-detect "args", "anchor" and "file"
+										let posArgs = tools.search(file, '?', 0, null, '#');
+										const posAnchor = tools.search(file, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
+										if ((posArgs >= 0) && types.isNothing(args)) {
+											args = file.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor : undefined));
+										};
+										if ((posAnchor >= 0) && types.isNothing(anchor)) {
+											anchor = file.slice(posAnchor + 1);
+										};
+										if (posArgs < 0) {
+											posArgs = posAnchor;
+										};
+										if (posArgs >= 0) {
+											file = file.slice(0, posArgs) || null;
+										};
 									};
 								};
 
 								if (domain) {
-									domain = domain.toLowerCase();
+									domain = __Internal__.decodeURIComponent(domain).toLowerCase();
 									isRelative = false;
-								} else {
-									if ((protocol !== 'file') || (!path && !file)) {
-										protocol = null;
-									};
-									user = null;
-									password = null;
-									port = null;
 								};
 
-								if (!types.isNothing(port)) {
-									port = types.toInteger(port);
+								if (!domain || (protocol === 'file')) {
+									user = null;
+								};
+								if (user) {
+									user =  __Internal__.decodeURIComponent(user);
+								};
+
+								if (!domain || (protocol === 'file')) {
+									password = null;
+								};
+								if (password) {
+									password = __Internal__.decodeURIComponent(password);
+								};
+
+								if (!domain || (protocol === 'file')) {
+									port = null;
+								};
+								if (types.isNothing(port)) {
+									if (protocol && (protocol in __Internal__.defaultPorts)) {
+										port = __Internal__.defaultPorts[protocol];
+									};
+								} else if (types.isString(port)) {
+									port = types.toInteger(__Internal__.decodeURIComponent(port));
 									if ((port <= 0) || (port > 65535)) {
 										if (dontThrow) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid port number.");
-										}
+										};
 									};
-								};
-
-								if (!types.isNothing(file)) {
-									// Auto-detect "args" and "anchor"
-									let posArgs = tools.search(file, '?', 0, null, '#');
-									const posAnchor = tools.search(file, '#', ((posArgs >= 0) ? posArgs + 1 : 0));
-									if ((posArgs >= 0) && types.isNothing(args)) {
-										args = file.slice(posArgs + 1, (posAnchor >= 0 ? posAnchor : undefined));
-									};
-									if ((posAnchor >= 0) && types.isNothing(anchor)) {
-										anchor = file.slice(posAnchor + 1);
-									};
-									if (posArgs < 0) {
-										posArgs = posAnchor;
-									};
-									if (posArgs >= 0) {
-										file = file.slice(0, posArgs) || null;
-									};
-								};
-
-								if (types._instanceof(args, files.UrlArguments)) {
-									args = (args.toString({noEscapes: noEscapes}) || null);
-								};
-								if (types.isNothing(args) || types.isString(args) || types.isJsObject(args)) {
-									args = _shared.urlArgumentsParser(args, {
-										noEscapes: noEscapes,
-									});
-								};
-								if (!types._instanceof(args, files.UrlArguments)) {
-									if (dontThrow) {
-										return null;
-									} else {
-										throw new types.ParseError("Invalid url arguments.");
-									}
-								};
-
-								if (!noEscapes && anchor) {
-									anchor = __Internal__.decodeURIComponent(anchor);
 								};
 
 								if (types.isNothing(path)) {
 									path = [];
 								} else if (types.isString(path)) {
-									if (!noEscapes) {
-										path = __Internal__.decodeURIComponent(path);
-									};
-									if (path) {
-										path = path.split('/');
-									} else {
-										path = [];
-									};
-								} else { // isArray
-									if (noEscapes) {
-										//path = tools.append([], path);
-									} else {
-										path = tools.map(path, __Internal__.decodeURIComponent);
-									};
+									path = path.split('/');
+								};
+								if (!noEscapes) {
+									path = path.map(__Internal__.decodeURIComponent);
 								};
 
 								if (types.isNothing(file)) {
-									file = null;
 									extension = null;
 								} else if (types.isString(file)) {
-									if (!noEscapes) {
-										file = __Internal__.decodeURIComponent(file);
-									};
 									file = file.split('/');
-								} else { // isArray
+								};
+								if (file) {
 									if (noEscapes) {
 										file = tools.append([], file);
 									} else {
-										file = tools.map(file, __Internal__.decodeURIComponent);
+										file = file.map(__Internal__.decodeURIComponent);
 									};
 								};
 
@@ -2796,11 +2850,11 @@ exports.add = function add(modules) {
 								};
 
 								if (path) {
-									path = tools.trim(path, '');
+									path = tools.filter(path, (name) => !!name);
 								};
 
 								if (file) {
-									file = tools.trim(file, '');
+									file = tools.filter(file, (name) => !!name);
 								};
 
 								if (!isRelative) {
@@ -2851,7 +2905,7 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new types.ParseError("Invalid path or file name: '~0~'.", [state.invalid]);
-										}
+										};
 									};
 								};
 
@@ -2918,22 +2972,37 @@ exports.add = function add(modules) {
 									extension = '';
 								};
 
+								if (protocol && (protocol !== 'http') && (protocol !== 'https')) {
+									args = null;
+								};
+								if (types._instanceof(args, files.UrlArguments)) {
+									// Will clone "args".
+									args = (args.toString() || null);
+								};
+								if (!types._instanceof(args, files.UrlArguments)) {
+									args = _shared.urlArgumentsParser(args);
+								};
+
+								if (protocol && (protocol !== 'http') && (protocol !== 'https')) {
+									anchor = null;
+								};
+								if (anchor) {
+									anchor = __Internal__.decodeURIComponent(anchor);
+								};
+
 								return new this({
-									protocol: protocol,
-									domain: domain,
-									user: user,
-									password: password,
-									port: port,
+									protocol: protocol || null,
+									domain: domain || null,
+									user: user || null,
+									password: password || null,
+									port,
 									path: types.freezeObject(path || []),
 									file: file || '',
 									extension: (file ? extension || '' : null),
-									args: args,
-									anchor: anchor,
+									args,
+									anchor: anchor || null,
 									noEscapes: !!noEscapes,
 									isRelative: !!isRelative,
-									isWindows: !!isWindows,
-									host: (domain ? domain + (port ? ':' + port : (protocol && (protocol in __Internal__.defaultPorts) ? ':' + __Internal__.defaultPorts[protocol] : '')) : null),
-									isNull: !protocol && !domain && (!path || !path.length) && !file && (!args || !args.__args || !args.__args.length) && !anchor,
 								});
 							}),
 
@@ -3092,7 +3161,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										options: {
 											type: 'object',
@@ -3137,26 +3206,51 @@ exports.add = function add(modules) {
 
 								if (options.protocol) {
 									result += options.protocol + '://';
-								};
-
-								if (options.domain) {
-									if (!types.isNothing(options.user) || !types.isNothing(options.password)) {
-										if (!types.isNothing(options.user)) {
-											result += (noEscapes ? options.user : _shared.Natives.windowEncodeURIComponent(options.user));
+									if (options.domain) {
+										if ((options.protocol !== 'file') && (!types.isNothing(options.user) || !types.isNothing(options.password))) {
+											if (!types.isNothing(options.user)) {
+												result += _shared.Natives.windowEncodeURIComponent(options.user);
+											};
+											if (!types.isNothing(options.password)) {
+												result += ':' + _shared.Natives.windowEncodeURIComponent(options.password);
+											};
+											result += '@';
 										};
-										if (!types.isNothing(options.password)) {
-											result += ':' + (noEscapes ? options.password : _shared.Natives.windowEncodeURIComponent(options.password));
+										result += _shared.Natives.windowEncodeURIComponent(options.domain);
+										if ((options.protocol !== 'file') && !types.isNothing(options.port) && (!options.protocol || !(options.protocol in __Internal__.defaultPorts) || (__Internal__.defaultPorts[options.protocol] !== options.port))) {
+											result += ':' + options.port;
 										};
-										result += '@';
-									}
-									result += (noEscapes ? options.domain : _shared.Natives.windowEncodeURIComponent(options.domain));
-									if (!types.isNothing(options.port)) {
-										result += ':' + options.port;
 									};
 								};
 
 								let path = options.path,
 									file = options.file;
+
+								if (dontValidate) {
+									// We didn't validate...
+									if (types.isString(path)) {
+										path = path.split('/');
+									};
+									if (path) {
+										path = path.filter((name) => !!name);
+									};
+									if (types.isString(file)) {
+										file = file.split('/');
+									};
+									if (file) {
+										if (file.length > 1) {
+											if (!path) {
+												path = [];
+											};
+											const fileName = file.pop();
+											file = file.filter((name) => !!name);
+											tools.append(path, file);
+											file = fileName;
+										} else {
+											file = file[0];
+										};
+									};
+								};
 
 								if (!types.isNothing(isFolder)) {
 									// NOTE: If we are there that's because validation has been disabled.
@@ -3181,38 +3275,48 @@ exports.add = function add(modules) {
 
 								if (path && path.length) {
 									let strPath = '';
-									strPath += tools.trim((noEscapes ? (path || []) : tools.map((path || []), _shared.Natives.windowEncodeURIComponent)), '').join('/');
+									path = tools.filter(path, (name) => !!name);
+									let drive = path[0];
+									if ((options.protocol === 'file') && (drive.length === 2) && (drive[1] === ':')) {
+										// Workaround for Windows ("file:///C:/...")
+										drive = path.shift();
+									} else {
+										drive = '';
+									};
+									if (!noEscapes) {
+										path = tools.map(path, _shared.Natives.windowEncodeURIComponent);
+									};
+									strPath += path.join('/');
 									if (strPath.length > 0) {
 										strPath += '/';
 									};
-									if (options.domain || !options.isRelative || options.isWindows) {
+									if (drive) {
+										strPath = drive + '/' + strPath;
+									};
+									if (options.domain || !options.isRelative) {
 										strPath = '/' + strPath;
 									};
-									if (!noEscapes && options.isWindows) {
-										// Workaround for Windows and IE (must be "/C:/", not "/C%3A/")
-										strPath = tools.replace(strPath, /^\/?([A-Za-z])%3[Aa]/, function(result, g1) {
-											return '/' + g1.toUpperCase() + ':';
-										});
-									};
 									result += strPath;
-								};
-
-								if ((!path || !path.length) && (options.domain || !options.isRelative)) {
+								} else if (options.domain || !options.isRelative) {
 									result += '/';
 								};
+
 								if (file) {
 									result += (noEscapes ? file : _shared.Natives.windowEncodeURIComponent(file));
 								};
 
-								if (!types._instanceof(options.args, files.UrlArguments)) {
-									options.args = files.UrlArguments.parse(options.args);
-								};
-								if (!types.isNothing(options.args.__args)) {
-									result += '?' + options.args.toString(options);
-								};
+								if (!options.protocol || (options.protocol === 'http') || (options.protocol === 'https')) {
+									if (!types._instanceof(options.args, files.UrlArguments)) {
+										// We didn't validate (dontValidate is true)...
+										options.args = _shared.urlArgumentsParser(options.args);
+									};
+									if (!types.isNothing(options.args.__args)) {
+										result += '?' + options.args.toString(options);
+									};
 
-								if (!types.isNothing(options.anchor)) {
-									result += '#' + (noEscapes ? options.anchor : _shared.Natives.windowEncodeURIComponent(options.anchor));
+									if (!types.isNothing(options.anchor)) {
+										result += '#' + _shared.Natives.windowEncodeURIComponent(options.anchor);
+									};
 								};
 
 								return result;
@@ -3269,7 +3373,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 10,
+									revision: 12,
 									params: {
 										location: {
 											type: 'string,Url,Path',
@@ -3299,25 +3403,23 @@ exports.add = function add(modules) {
 									};
 								};
 
-								const data = tools.fill(__Internal__.urlAllKeys, {}, this);
+								const data = tools.fill(__Internal__.urlAllKeys, {}, this, options);
 
-								const thisPath = tools.trim(this.path || [], '');
+								let thisPath = this.path;
 								const thisFile = this.file;
 
 
-								let pathRoot = null;
+								let path = types.get(options, 'path', location.path);
+								if (types.isString(path)) {
+									path = path.split('/');
+								} else {
+									path = tools.append([], path || []); // clone
+								};
 
 								let isRelative = false;
+
 								if (types._instanceof(location, files.Url)) {
 									const domain = types.get(options, 'domain', location.domain);
-									isRelative = !domain && types.get(options, 'isRelative', location.isRelative);
-									if (location.isWindows && (!this.isWindows || (data.path[0] !== thisPath[0]))) {
-										if (dontThrow) {
-											return null;
-										} else {
-											throw new types.ParseError("Drive mismatch.");
-										};
-									};
 									if (domain) {
 										data.protocol = types.get(options, 'protocol', location.protocol);
 										data.user = types.get(options, 'user', location.user);
@@ -3333,63 +3435,75 @@ exports.add = function add(modules) {
 									if (args) {
 										data.args = this.args.combine(args, options);
 									};
+									isRelative = !domain && types.get(options, 'isRelative', location.isRelative);
 								} else { // if (types._instanceof(location, files.Path))
-									const host = types.get(options, 'host', location.host);
-									const drive = types.get(options, 'drive', location.drive);
-									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
-									if (location.root) {
-										pathRoot = tools.trim(location.root, '');
-									};
-									if ((location.os === 'windows') && drive && (!this.isWindows || (drive !== thisPath[0]))) {
-										if (dontThrow) {
-											return null;
-										} else {
-											throw new types.ParseError("Drive mismatch.");
+									const host = types.get(options, 'domain', location.host);
+									let drive = location.drive;
+
+									if (host) {
+										data.domain = host.toLowerCase();
+
+										if (!types.has(options, 'protocol')) {
+											data.protocol = 'file';
+										};
+									} else if (types.has(options, 'domain')) {
+										data.domain = null;
+
+										if (location.host) {
+											drive = null;
 										};
 									};
+
+									if (!types.has(options, 'path')) {
+										tools.prepend(path, location.root);
+
+										if (drive) {
+											path.unshift(host ? drive : drive + ':');
+
+											if (!types.has(options, 'protocol')) {
+												data.protocol = 'file';
+											};
+										};
+									};
+
+									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
 								};
 
-								data.dontThrow = dontThrow;
-								data.isFolder = types.get(options, 'isFolder', null);
-
-								let path = types.get(options, 'path', location.path);
-								if (types.isString(path)) {
-									path = path.split('/');
-								};
-								if (path) {
-									path = tools.trim(path, '');
-								};
+								path = tools.filter(path, (name) => !!name);
 
 								let file = types.get(options, 'file', location.file);
-								if (file && types.isString(file)) {
+								if (types.isString(file)) {
 									file = file.split('/');
 								};
 								if (file && file.length) {
-									const tmp = file.pop();
-									file = tools.trim(file, '');
+									file = tools.filter(file, (name) => !!name);
 									tools.append(path, file);
-									file = tmp;
+									file = path.pop();
 								};
 
-								if (thisFile) {
-									if ((path && path.length) || file) {
-										thisPath.push(thisFile);
-									} else {
-										file = thisFile;
-									};
+								if (thisFile && isRelative) {
+									thisPath = tools.append([], thisPath); // clone
+									thisPath.push(thisFile);
 								};
 
 								if (isRelative) {
-									data.path = tools.append([], thisPath, pathRoot, path);
-								} else if ((pathRoot && pathRoot.length) || (path && path.length)) {
-									data.path = tools.append([], pathRoot, path);
+									data.path = tools.append([], thisPath, path);
 								} else {
-									data.path = [];
+									data.path = path;
 								};
 
 								data.file = file;
 
-								data.extension = types.get(options, 'extension', null);
+								if (!types.has(options, 'extension')) {
+									// Force auto-detect
+									data.extension = null;
+								};
+								if (!types.has(options, 'isFolder')) {
+									// Force auto-detect
+									data.isFolder = null;
+								};
+
+								data.dontThrow = dontThrow;
 
 								const type = types.getType(this);
 								return type.parse(null, data);
@@ -3440,7 +3554,7 @@ exports.add = function add(modules) {
 									path = this.path.slice(0, i + 1);
 								};
 								const type = types.getType(this);
-								return type.parse(null, tools.fill(__Internal__.urlAllKeys, {}, this, {path: path}));
+								return type.parse(null, tools.fill(__Internal__.urlAllKeys, {}, this, {path}));
 							}),
 
 						toFolder: root.DD_DOC(
@@ -3532,7 +3646,7 @@ exports.add = function add(modules) {
 										path = tools.append([], path);
 									};
 
-									path = tools.trim(path, '');
+									path = tools.filter(path, (name) => !!name);
 								};
 
 								if (types.isNothing(args)) {
@@ -3631,23 +3745,7 @@ exports.add = function add(modules) {
 								};
 							};
 
-							if (this.isWindows && !to.isWindows) {
-								if (dontThrow) {
-									return null;
-								} else {
-									throw new types.ParseError("Incompatible OSes.");
-								};
-							};
-
-							if (this.isWindows && (this.path[0] !== to.path[0])) {
-								if (dontThrow) {
-									return null;
-								} else {
-									throw new types.ParseError("Urls must be from the same network share or the same drive.");
-								};
-							};
-
-							if ((this.domain !== to.domain) && (this.port !== to.port)) {
+							if ((this.domain !== to.domain) || (this.port !== to.port)) {
 								if (dontThrow) {
 									return null;
 								} else {
@@ -3701,7 +3799,7 @@ exports.add = function add(modules) {
 							const file = (j < thisAr.length ? thisAr[j] : '');
 
 							const type = types.getType(this);
-							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, isWindows: false, dontThrow}));
+							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, drive: '', dontThrow}));
 						},
 
 						toDataObject: root.DD_DOC(
@@ -3746,11 +3844,7 @@ exports.add = function add(modules) {
 
 								if (functions) {
 									obj.toUrl = function toUrl(/*optional*/options) {
-										if (options) {
-											return type.parse(null, tools.extend({}, this, options));
-										} else {
-											return type.parse(null, this);
-										}
+										return type.parse(null, tools.fill(__Internal__.urlDataKeys, {}, this, options));
 									};
 
 									obj.toString = function toString(/*optional*/options) {
@@ -3766,6 +3860,9 @@ exports.add = function add(modules) {
 							return this.toDataObject(null);
 						},
 
+						isNull: function isNull() {
+							return !this.protocol && !this.domain && (!this.path || !this.path.length) && !this.file && (!this.args || !this.args.__args || !this.args.__args.length) && !this.anchor;
+						},
 					}, __Internal__.urlData, __Internal__.urlOptions)
 				)));
 
