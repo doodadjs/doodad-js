@@ -1540,7 +1540,7 @@ exports.add = function add(modules) {
 								let path;
 								if (count > 0) {
 									path = [];
-									if (this.isRelative) {
+									if (this.isRelative && types.isFinite(count)) {
 										while (count > 0) {
 											path.push('..');
 											count--;
@@ -3544,7 +3544,7 @@ exports.add = function add(modules) {
 								let path;
 								if (count > 0) {
 									path = [];
-									if (this.isRelative) {
+									if (this.isRelative && types.isFinite(count)) {
 										while (count > 0) {
 											path.push('..');
 											count--;
