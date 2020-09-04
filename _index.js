@@ -24,7 +24,7 @@
 
 module.exports = {
 	createRoot: function(/*optional*/modules, /*optional*/options, /*optional*/startup) {
-		const packageDir = '@doodad-js/core/';
+		const packageDir = './';
 		const sourceDir = packageDir + 'src/';
 
 		let config = null;
