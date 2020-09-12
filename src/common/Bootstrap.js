@@ -5787,14 +5787,21 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				description: "Raised on parse error.",
 			}
 		//! END_REPLACE()
-		, types.Error.$inherit({
-			$TYPE_NAME: "ParseError",
-			$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */,
+		, types.Error.$inherit(
+			/*typeProto*/
+			{
+				$TYPE_NAME: "ParseError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('ParseError')), true) */ null /*! END_REPLACE() */,
 
-			[types.ConstructorSymbol](message, /*optional*/params) {
-				return [message || "Parse error.", params];
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Parse error.", params];
+				},
 			},
-		})));
+			/*instanceProto*/
+			{
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),  // Critical error
+			}
+		)));
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
