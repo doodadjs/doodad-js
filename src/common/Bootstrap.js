@@ -5611,7 +5611,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 
 				name: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
 				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),
-				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),    // managed errors (Doodad errors) are not critical by default
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
 
 				parsed: false,
 				parsedStack: null,
@@ -5796,10 +5796,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				[types.ConstructorSymbol](message, /*optional*/params) {
 					return [message || "Parse error.", params];
 				},
-			},
-			/*instanceProto*/
-			{
-				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),  // Critical error
 			}
 		)));
 
@@ -5980,14 +5976,21 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				description: "Raised on cancel.",
 			}
 		//! END_REPLACE()
-		, types.Error.$inherit({
-			$TYPE_NAME: "CanceledError",
-			$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */,
+		, types.Error.$inherit(
+			/*typeProto*/
+			{
+				$TYPE_NAME: "CanceledError",
+				$TYPE_UUI: /*! REPLACE_BY(TO_SOURCE(UUID('CanceledError')), true) */ null /*! END_REPLACE() */,
 
-			[types.ConstructorSymbol](message, /*optional*/params) {
-				return [message || "Operation canceled.", params];
+				[types.ConstructorSymbol](message, /*optional*/params) {
+					return [message || "Operation canceled.", params];
+				},
 			},
-		})));
+			/*instanceProto*/
+			{
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),  // Non-critical error
+			}
+		)));
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6052,8 +6055,10 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			},
 			/*instanceProto*/
 			{
+				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(false)),  // Non-critical error
 				bubble: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
-			})));
+			}
+		)));
 
 	__Internal__.REGISTER(__Internal__.DD_DOC(
 		//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -6095,7 +6100,8 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			/*instanceProto*/
 			{
 				critical: types.NOT_CONFIGURABLE(types.READ_ONLY(true)),
-			})));
+			}
+		)));
 
 	//===================================
 	// DD_DOC
