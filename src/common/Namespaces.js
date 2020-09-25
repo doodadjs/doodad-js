@@ -389,13 +389,21 @@ exports.add = function add(modules) {
 											optional = false,
 											version = null,
 											path = null,
-											autoLoad = defaultAutoLoad;
+											autoLoad = defaultAutoLoad,
+											integrity = null,
+											integrityMin = null,
+											integrityMjs = null,
+											integrityMjsMin = null;
 										if (!types.isString(dep)) {
 											const depType = getEntryType(dep, entryType);
 											path = types.get(dep, 'path', null);
 											optional = types.toBoolean(types.get(dep, 'optional', false));
 											version = types.get(dep, 'version', null);
 											autoLoad = types.get(dep, 'autoLoad', types.isLike(depType, entries.Package) || types.isLike(depType, entries.Application));
+											integrity = types.get(dep, 'integrity', null);
+											integrityMin = types.get(dep, 'integrityMin', null);
+											integrityMjs = types.get(dep, 'integrityMjs', null);
+											integrityMjsMin = types.get(dep, 'integrityMjsMin', null);
 											dep = dep.name;
 										};
 										const depEntry = __Internal__.DD_REGISTRY.get(dep);
@@ -411,12 +419,16 @@ exports.add = function add(modules) {
 												const missingDep = {
 													name: dep,
 													module: __Internal__.getBaseName(dep),
-													version: version,
-													optional: optional,
-													path: path,
+													version,
+													optional,
+													path,
 													consumer: spec.name,
-													versionMismatch: versionMismatch,
-													autoLoad: autoLoad,
+													versionMismatch,
+													autoLoad,
+													integrity,
+													integrityMin,
+													integrityMjs,
+													integrityMjsMin,
 												};
 												if (versionMismatch) {
 													return [missingDep];

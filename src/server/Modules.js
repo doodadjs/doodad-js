@@ -198,9 +198,10 @@ exports.add = function add(mods) {
 						.then(function(location) {
 							const ext = '.' + location.extension;
 
-							const path = (file.module && file.path ? modules.resolve(location) : location).toApiString();
+							const path = (file.module && file.path ? modules.resolve(location) : location);
 
 							if (file.isConfig || ext.endsWith('.json') || ext.endsWith('.json5')) {
+								file.isConfig = true;
 								return config.load(path)
 									.then(function(config) {
 										return {
@@ -210,7 +211,7 @@ exports.add = function add(mods) {
 
 								//! IF_SET("mjs")
 									//! INJECT("} else {")
-									//! INJECT("	return import(path);")
+									//! INJECT("	return import(path.toApiString());")
 									//! INJECT("};")
 								//! END_IF()
 
@@ -218,7 +219,7 @@ exports.add = function add(mods) {
 								} else {
 									return Promise.try(function tryImport() {
 										return {
-											default: __Internal__.require(path)
+											default: __Internal__.require(path.toApiString())
 										};
 									});
 								};
@@ -334,7 +335,8 @@ exports.add = function add(mods) {
 									};
 								});
 								tools.forEach(files, function(file) {
-									if (file && !file.isConfig && (file.extension !== 'json') && (file.extension !== 'json5') && file.exports) {
+									const ext = '.' + file.extension;
+									if (file && !file.isConfig && !ext.endsWith('.json') && !ext.endsWith('.json5') && file.exports) {
 										const def = types.get(file.exports, 'default', null);
 										const add = types.get(file.exports, 'add', types.get(def, 'add', null));
 										if (!types.isFunction(add)) {

@@ -1373,15 +1373,11 @@ exports.add = function add(modules) {
 
 					let loader = null;
 
-					if (types._instanceof(url, files.Path)) {
-						url = files.Url.parse(url);
-					};
+					url = files.parseUrl(url);
 
-					if (types._instanceof(url, files.Url)) {
-						url = url.toString();
-					};
+					const integrity = url.getArg('integrity', true);
 
-					root.DD_ASSERT && root.DD_ASSERT(types.isString(url), "Invalid url.");
+					url = url.toApiString();
 
 					if (url in __Internal__.loadedScripts) {
 						loader = __Internal__.loadedScripts[url];
@@ -1405,6 +1401,9 @@ exports.add = function add(modules) {
 							this.element.type = 'text/javascript';
 							this.element.async = loader.async;
 							this.element.src = url;
+							if (integrity) {
+								this.element.integrity = integrity;
+							};
 						});
 
 						__Internal__.loadedScripts[url] = loader;
