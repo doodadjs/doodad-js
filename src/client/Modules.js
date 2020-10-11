@@ -82,8 +82,10 @@ exports.add = function add(modules) {
 				};
 
 				if (location.isRelative) {
-					location = tools.getCurrentLocation()
-						.removeArgs(['redirects', 'crashReport', 'crashRecovery']) // TODO: Put these hard coded names in a common constant
+					const current = tools.getCurrentLocation();
+					location = current
+						.removeArgs()
+						//.setArgs({sessionId: current.getArg('sessionId', true)}) // TODO: User Sessions
 						.set({file: ''})
 						.combine(__options__.modulesUri)
 						.toFolder()
