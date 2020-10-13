@@ -42,6 +42,12 @@
 			browserify: true
 		},
 		{
+			src: "common/Modules.js",
+			client: true,
+			server: true,
+			browserify: true
+		},
+		{
 			src: "common/Namespaces.js",
 			client: true,
 			server: true,

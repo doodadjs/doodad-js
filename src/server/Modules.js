@@ -44,13 +44,14 @@ exports.add = function add(mods) {
 	mods['Doodad.Modules'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
+			'Doodad.Modules/common',
+			'Doodad.Namespaces',
+			'Doodad.NodeJs/root',
 			'Doodad.Tools',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
 			'Doodad.Tools.JSON5',
 			'Doodad.Types',
-			'Doodad.Namespaces',
-			'Doodad.NodeJs/root',
 		],
 		bootstrap: true,
 

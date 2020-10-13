@@ -34,6 +34,7 @@ exports.add = function add(modules) {
 	modules['Doodad.Modules'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		dependencies: [
+			'Doodad.Modules/common',
 			'Doodad.Tools',
 			'Doodad.Tools.Config',
 			'Doodad.Tools.Files',
@@ -69,30 +70,12 @@ exports.add = function add(modules) {
 			});
 
 
-			const __Internal__ = {
-				getPackageName: function getPackageName(name) {
-					return ((name[0] === '@') ? name.split('/')[1] : name);
-				},
-			};
+			//const __Internal__ = {
+			//};
 
-			// TODO: Replace by native ??? when implemented.
+
 			modules.ADD('resolve', function _resolve(location) {
-				if (!types._instanceof(location, files.Url)) {
-					location = files.Url.parse(location);
-				};
-
-				if (location.isRelative) {
-					const current = tools.getCurrentLocation();
-					location = current
-						.removeArgs()
-						//.setArgs({sessionId: current.getArg('sessionId', true)}) // TODO: User Sessions
-						.set({file: ''})
-						.combine(__options__.modulesUri)
-						.toFolder()
-						.combine(location);
-				};
-
-				return location;
+				return modules.clientResolve(location, {baseUrl: tools.getCurrentLocation(), modulesUri: __options__.modulesUri});
 			});
 
 			modules.ADD('locate', root.DD_DOC(
@@ -125,52 +108,7 @@ exports.add = function add(modules) {
 					const Promise = types.getPromise();
 					return Promise.try(function() {
 						const ddOptions = root.getOptions();
-						const dontForceMin = types.get(options, 'dontForceMin', false) || ddOptions.debug || ddOptions.fromSource;
-						const mjs = types.get(options, 'mjs', false);
-
-						if (path) {
-							path = files.parseUrl(path).removeArgs(['redirects', 'crashReport', 'crashRecovery']); // TODO: Put these hard coded names in a common constant
-						};
-
-						let location;
-						if (module) {
-							if (path) {
-								if (path.isRelative) {
-									location = files.parseUrl(module, {isRelative: true}).toFolder().combine(path);
-								} else {
-									module = null;
-									location = path;
-								};
-							} else {
-								location = files.parseUrl(module, {isRelative: true}).toFolder();
-							}
-						} else {
-							if (path && path.isRelative) {
-								location = tools.getCurrentLocation().set({file: '', args: ''}).combine(path);
-							} else {
-								location = path;
-							};
-						};
-
-						if (location && location.file) {
-							const ext = '.' + location.extension + '.';
-							if (ext.endsWith('.js.') || ext.endsWith('.mjs.')) {
-								if (!dontForceMin && (ext.indexOf('.min.') < 0)) {
-									// Force minified MJS or JS files.
-									location = location.set({extension: 'min.' + location.extension});
-								};
-							};
-						} else if (module && !path) {
-							location = location.set({file: __Internal__.getPackageName(module) + (dontForceMin ? '' : '.min') + (mjs ? '.mjs' : '.js')});
-						};
-
-						const ext2 = '.' + location.extension + '.';
-						const integrity = types.get(options, (ext2.endsWith('.mjs.') ? ((ext2.indexOf('.min.') >= 0) ? 'integrityMjsMin' : 'integrityMjs') : ((ext2.indexOf('.min.') >= 0) ? 'integrityMin' : 'integrity')), null);
-						if (integrity) {
-							location = location.setArgs({integrity});
-						};
-
-						return location;
+						return modules.clientLocate(module, path, tools.extend({}, options, {baseUrl: tools.getCurrentLocation(), debug: ddOptions.debug || ddOptions.fromSource}));
 					});
 				}));
 

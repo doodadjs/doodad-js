@@ -57,6 +57,7 @@ module.exports = {
 		require(sourceDir + "server/NodeJs.js").add(pkgModules);
 		require(sourceDir + "server/NodeJs_Platform.js").add(pkgModules);
 		require(sourceDir + "common/Resources.js").add(pkgModules);
+		require(sourceDir + "common/Modules.js").add(pkgModules);
 
 		const bootstrap = require(sourceDir + "common/Bootstrap.js");
 
