@@ -7969,11 +7969,11 @@ exports.add = function add(modules) {
 							};
 						};
 
-						if (errorEvent && ev && ev.error.critical) {
-							// Don't propagate critical errors and crash the application instead.
-							tools.catchAndExit(ev.error);
-							return false;
-						};
+						//if (errorEvent && ev && ev.error.critical) {
+						//	// Don't propagate critical errors and crash the application instead.
+						//	tools.catchAndExit(ev.error);
+						//	return false;
+						//};
 
 						const evObj = ev && ev.obj,
 							evName = ev && ev.name,
