@@ -764,18 +764,27 @@ exports.add = function add(modules) {
 								};
 
 								if (fileIsString) {
-									file = file.split(dirChar);
+									if (file) {
+										file = file.split(dirChar);
+									}
 								} else if (types.isArray(file)) {
 									file = tools.append([], file);
 								};
+
+								if (file && file.length > 1) {
+									const tmp = file.pop();
+									path = tools.append(path || [], file);
+									file = [tmp];
+								}
 
 								// Get and validate host and drive
 								if (os === 'windows') {
 									// NOTE: "!isRelative" means 'null' or 'false'.
 									if (!isRelative && types.isNothing(host) && types.isNothing(drive)) {
 										if (path) {
+											path = tools.trim(path, '', 1);
 											const hasHost = ((path.length >= 4) && !path[0] && !path[1]);
-											const tmp = tools.trim(path, '', 1)[0];
+											const tmp = path[0];
 											if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
 												if (dirRoot) {
 													if (dontThrow) {
@@ -793,8 +802,9 @@ exports.add = function add(modules) {
 											};
 										};
 										if (dirRoot) {
+											dirRoot = tools.trim(dirRoot, '', 1);
 											const hasHost = ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]);
-											const tmp = tools.trim(dirRoot, '', 1)[0];
+											const tmp = dirRoot[0];
 											if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
 												if (hasHost) {
 													host = dirRoot.splice(0, 3)[2];
