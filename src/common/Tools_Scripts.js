@@ -178,7 +178,7 @@ exports.add = function add(modules) {
 					let ev = null;
 					if (!forceAbort) {
 						try {
-							ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode}});
+							ev = new types.CustomEvent('exit', {cancelable: true, detail: {exitCode}});
 							tools.dispatchEvent(ev); // sync
 						} catch(o) {
 							ev = null;
