@@ -816,8 +816,8 @@ exports.add = function add(modules) {
 				, function destroyAll() {
 					const Promise = types.getPromise();
 					return Promise.map(__Internal__.destroyFunctions, function destroyAllPromise(fn) {
-							return fn(root);
-						}, {concurrency: 5})
+						return fn(root);
+					}, {concurrency: 5})
 						.then(function () {
 							__Internal__.destroyFunctions = [];
 						});
