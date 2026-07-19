@@ -551,13 +551,15 @@ exports.add = function add(modules) {
 								};
 							};
 							if (ok) {
-								return callback(ex);
+								if (callback) {
+									return callback(ex);
+								}
 							} else {
 								throw ex;
 							}
 						});
 					} else {
-						promise = oldCatchCall(this, callback);
+						promise = oldCatchCall(this, callback || function () {});
 					};
 					types.setJsAttribute(promise, _shared.NameSymbol, name, {enumerable: true});
 					return promise;
