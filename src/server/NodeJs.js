@@ -101,7 +101,6 @@ exports.add = function add(mods) {
 			const doodad = root.Doodad,
 				mixIns = doodad.MixIns,
 				extenders = doodad.Extenders,
-				namespaces = doodad.Namespaces,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
@@ -542,8 +541,7 @@ exports.add = function add(mods) {
 
 				err.trapped = true;
 
-				//if (!types._instanceof(err, [tools.ScriptInterruptedError, types.ScriptAbortedError])) {
-				if (err instanceof tools.ScriptInterruptedError) {
+				if (!types._instanceof(err, types.ScriptInterruptedError)) {
 					const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
 					_shared.Natives.consoleError(msg);
 					tools.abortScript(1, true);
