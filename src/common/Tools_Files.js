@@ -105,20 +105,7 @@ exports.add = function add(modules) {
 			_shared.pathParser = function pathParser(path, /*optional*/options) {
 				if (!types.isNothing(path)) {
 					if (!types._instanceof(path, files.Path)) {
-						options = tools.extend({
-							os: 'linux',
-							dirChar: '/',
-						}, options);
-
 						path = files.Path.parse(path, options);
-
-						if (!types.isNothing(path)) {
-							path = path.set({
-								os: null, // switch to default
-								dirChar: null, // switch to default
-								noEscapes: false, // switch to default
-							});
-						};
 					};
 				};
 				return path;
@@ -134,6 +121,12 @@ exports.add = function add(modules) {
 				return _shared.pathParser(path, options);
 			});
 
+			files.ADD('parseLinuxPath', function parsePath(path, /*optional*/options) {
+				options = tools.extend({}, options, {os: 'linux'});
+				path = _shared.pathParser(path, options);
+				return path;
+			});
+
 			files.ADD('parseLocation', function parseLocation(location, /*optional*/options) {
 				if (types.isNothing(location)) {
 					return location;
@@ -141,7 +134,7 @@ exports.add = function add(modules) {
 					if (__Internal__.detectUrlRegexp.test(location)) {
 						return _shared.urlParser(location, options);
 					} else {
-						return _shared.pathParser(location, options);
+						return this.parsePath(location, options);
 					}
 				} else if (types._instanceof(location, [files.Path, files.Url])) {
 					return location;
@@ -374,7 +367,7 @@ exports.add = function add(modules) {
 
 			__Internal__.pathOptions = {
 				os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
-				caseSensitive: types.READ_ONLY( true ),
+				caseSensitive: types.READ_ONLY( null ),
 				dirChar: types.READ_ONLY( '/' ),
 				extension: types.READ_ONLY( null ), // when set, changes 'file'
 				quote: types.READ_ONLY( null ),  // null = auto-detect
@@ -536,16 +529,18 @@ exports.add = function add(modules) {
 									// Auto-set
 									const osInfo = tools.getOS();
 									os = osInfo.type;
-									if (types.isNothing(caseSensitive)) {
-										caseSensitive = osInfo.caseSensitive;
-									};
-									if (types.isNothing(dirChar)) {
-										dirChar = osInfo.dirChar;
-									};
+									caseSensitive = osInfo.caseSensitive;
+									dirChar = osInfo.dirChar;
 								};
 
 								if (types.isNothing(caseSensitive)) {
 									caseSensitive = ((os === 'windows') ? false : true);
+								};
+
+								// Get default shell
+								if (types.isNothing(shell)) {
+									shell = 'api';
+									dirChar = null;
 								};
 
 								// Detect quotes character
@@ -577,11 +572,6 @@ exports.add = function add(modules) {
 											};
 										};
 									};
-								};
-
-								// Get default shell
-								if (types.isNothing(shell)) {
-									shell = 'api';
 								};
 
 								// If quoted, path and root must be quoted
@@ -771,19 +761,13 @@ exports.add = function add(modules) {
 									file = tools.append([], file);
 								};
 
-								if (file && file.length > 1) {
-									const tmp = file.pop();
-									path = tools.append(path || [], file);
-									file = [tmp];
-								}
-
 								// Get and validate host and drive
 								if (os === 'windows') {
 									// NOTE: "!isRelative" means 'null' or 'false'.
 									if (!isRelative && types.isNothing(host) && types.isNothing(drive)) {
 										if (path) {
 											path = tools.trim(path, '', 1);
-											const hasHost = ((path.length >= 4) && !path[0] && !path[1]);
+											const hasHost = ((path.length >= 4) && !path[0] && !path[1]); //  "\\host\share"
 											const tmp = path[0];
 											if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
 												if (dirRoot) {
@@ -1055,6 +1039,30 @@ exports.add = function add(modules) {
 									};
 								};
 
+								if (!types.isNothing(isFolder)) {
+									if (!isFolder) {
+										if (!file && path) {
+											file = [path.pop()];
+										};
+										if (!file && allowTraverse && dirRoot) {
+											file = [dirRoot.pop()];
+										};
+										if (!file) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("Missing file name.");
+											};
+										};
+									};
+								};
+
+								if (file && file.length > 1) {
+									const tmp = file.pop();
+									path = tools.append(path || [], file);
+									file = [tmp];
+								}
+
 								if (file) {
 									if (trailingSlash || !file.length) {
 										file = '';
@@ -1071,28 +1079,10 @@ exports.add = function add(modules) {
 									file = null;
 								};
 
-								if (!types.isNothing(isFolder)) {
-									if (!isFolder) {
-										if (!file && path) {
-											file = path.pop();
-										};
-										if (!file && allowTraverse && dirRoot) {
-											file = dirRoot.pop();
-										};
-										if (!file) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Missing file name.");
-											};
-										};
-									};
-								};
-
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
-									const pos = file.indexOf('.');
+									const pos = file.lastIndexOf('.');
 									if (types.isNothing(extension)) {
 										if (pos >= 0) {
 											extension = file.slice(pos + 1);
@@ -1174,7 +1164,6 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function set(options) {
 								let newOptions = tools.fill(__Internal__.pathAllKeysForSet, {}, this);
-								//delete newOptions.extension;
 								newOptions = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
@@ -1379,7 +1368,7 @@ exports.add = function add(modules) {
 
 								const includePathInRoot = types.get(options, 'includePathInRoot', false);
 
-								const data = tools.fill(__Internal__.pathAllKeys, {}, this, options);
+								let data = tools.fill(__Internal__.pathAllKeys, {}, this, options);
 
 								const thisRoot = this.root;
 								let thisPath = this.path;
@@ -1498,10 +1487,13 @@ exports.add = function add(modules) {
 
 								data.file = locFile;
 
+								data = tools.fill(__Internal__.pathOptionsKeys, data, this);
+
 								if (!types.has(options, 'extension')) {
 									// Force auto-detect
 									data.extension = null;
 								};
+
 								if (!types.has(options, 'isFolder')) {
 									// Force auto-detect
 									data.isFolder = null;
