@@ -3135,22 +3135,40 @@ exports.add = function add(modules) {
 				}));
 
 
-			__Internal__.regExMapping = tools.prepareMappingForEscape(tools.nullObject({
-				'\\': '\\\\',
-				'^': '\\^',
-				'$': '\\$',
-				'*': '\\*',
-				'+': '\\+',
-				'?': '\\?',
-				'(': '\\(',
-				')': '\\)',
-				'|': '\\|',
-				'{': '\\{',
-				'}': '\\}',
-				'[': '\\[',
-				']': '\\]',
-				'.': '\\.',
-			}));
+			__Internal__.regExMapping = tools.prepareMappingForEscape(types.freezeObject([
+				[
+					'\\',
+					'^',
+					'$',
+					'*',
+					'+',
+					'?',
+					'(',
+					')',
+					'|',
+					'{',
+					'}',
+					'[',
+					']',
+					'.'
+				],
+				[
+					'\\\\',
+					'\\^',
+					'\\$',
+					'\\*',
+					'\\+',
+					'\\?',
+					'\\(',
+					'\\)',
+					'\\|',
+					'\\{',
+					'\\}',
+					'\\[',
+					'\\]',
+					'\\.'
+				],
+			]));
 
 			tools.ADD('escapeRegExp', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
