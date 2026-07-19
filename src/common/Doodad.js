@@ -829,6 +829,7 @@ exports.add = function add(modules) {
 						bubbleError = _shared.Natives.functionBindCall(_shared.makeInside(obj, bubbleError, secret));
 					};
 					const callback = function callbackHandler(/*paramarray*/...params) {
+						const obj = orgObj || this;
 						callback.lastError = null;
 						try {
 							if (!obj || !_shared.DESTROYED(obj)) {
