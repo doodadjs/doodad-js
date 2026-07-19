@@ -101,12 +101,11 @@ exports.add = function add(mods) {
 			const doodad = root.Doodad,
 				mixIns = doodad.MixIns,
 				extenders = doodad.Extenders,
-				//namespaces = doodad.Namespaces,
+				namespaces = doodad.Namespaces,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
 				nodejs = doodad.NodeJs,
-				//nodejsMixIns = nodejs.MixIns,
 				nodejsInterfaces = nodejs.Interfaces;
 
 
@@ -543,45 +542,11 @@ exports.add = function add(mods) {
 
 				err.trapped = true;
 
-				let exitCode = 1; // 1 = General error
-				let isAborted = false;
-				try {
-					isAborted = types._instanceof(err, types.ScriptAbortedError);
-				} catch(o) {
-					if (root.getOptions().debug) {
-						types.DEBUGGER();
-					};
-				};
-				if (isAborted) {
-					exitCode = err.exitCode;
-				};
-
-				let ev = null;
-				try {
-					ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode}});
-					tools.dispatchEvent(ev); // sync
-				} catch(o) {
-					ev = null;
-					if (root.getOptions().debug) {
-						types.DEBUGGER();
-					};
-				};
-
-				if (!ev || !ev.canceled) {
-					_shared.Natives.process.exitCode = exitCode;
-
-					if (!isAborted) {
-						try {
-							const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
-							_shared.Natives.consoleError(msg);
-						} catch(o) {
-							if (root.getOptions().debug) {
-								types.DEBUGGER();
-							};
-						};
-					};
-
-					_shared.Natives.processExit();
+				//if (!types._instanceof(err, [tools.ScriptInterruptedError, types.ScriptAbortedError])) {
+				if (err instanceof tools.ScriptInterruptedError) {
+					const msg = "<FATAL ERROR> " + err.message + '\n' + err.stack + '\n';
+					_shared.Natives.consoleError(msg);
+					tools.abortScript(1, true);
 				};
 
 				throw err;

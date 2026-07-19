@@ -46,6 +46,7 @@ exports.add = function add(modules) {
 			//===================================
 
 			const doodad = root.Doodad,
+				namespaces = doodad.Namespaces,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files;
@@ -169,8 +170,33 @@ exports.add = function add(modules) {
 						description: "Emits \"script aborted\" signal.",
 					}
 				//! END_REPLACE()
-				, function abortScript(/*optional*/exitCode) {
-					throw new types.ScriptAbortedError(exitCode);
+				, function abortScript(/*optional*/exitCode, /*optional*/forceAbort) {
+					if (types.isNothing(exitCode)) {
+						exitCode = 0;
+					}
+
+					let ev = null;
+					if (!forceAbort) {
+						try {
+							ev = new types.CustomEvent('exit', {cancelable: true, detail: {error: err, exitCode}});
+							tools.dispatchEvent(ev); // sync
+						} catch(o) {
+							ev = null;
+							if (root.getOptions().debug) {
+								types.DEBUGGER();
+							};
+						};
+					};
+
+					if (!ev || !ev.canceled) {
+						_shared.Natives.process.exitCode = exitCode;
+
+						namespaces.destroyAll();
+
+						throw new types.ScriptAbortedError(exitCode);
+					};
+
+					throw new types.ScriptInterruptedError();
 				}));
 
 			//====================================
@@ -187,7 +213,11 @@ exports.add = function add(modules) {
 						description: "Trap unhandled errors and unhandled Promise rejections.",
 					}
 				//! END_REPLACE()
-				, function trapUnhandledErrors() {
+				, function trapUnhandledErrors(/*optional*/handler) {
+					if (types.isNothing(handler)) {
+						handler = tools.catchAndExit;
+					}
+
 					if (!__Internal__.unhandledRejections) {
 						__Internal__.unhandledRejections = new types.Map();
 
@@ -200,12 +230,12 @@ exports.add = function add(modules) {
 						//};
 
 						const onUnhandled = function(ev) {
-							tools.catchAndExit(ev.detail.error);
+							handler(ev.detail.error);
 						};
 
 						const onRejection = function(ev) {
 							if (ev.detail.reason && ev.detail.reason.critical) {
-								tools.catchAndExit(ev.detail.reason);
+								handler(ev.detail.reason);
 							} else if (__Internal__.unhandledRejections.size < options.unhandledRejectionsMaxSize) {
 								__Internal__.unhandledRejections.set(ev.detail.promise, {
 									reason: ev.detail.reason,
@@ -232,7 +262,7 @@ exports.add = function add(modules) {
 									const promise = item[0],
 										val = item[1];
 									if (_shared.Natives.mathAbs(curTime - val.time) >= options.unhandledRejectionsTimeout) {
-										tools.catchAndExit(val.reason);
+										handler(val.reason);
 										__Internal__.unhandledRejections.delete(promise);
 									};
 								};

@@ -60,6 +60,7 @@ exports.add = function add(modules) {
 				waitCounter: 0,
 				waiting: false,
 				pendingProtection: new types.Set(),
+				destroyFunctions: [],
 
 				OPTIONS_MAX_DEPTH: 15,
 			};
@@ -319,7 +320,6 @@ exports.add = function add(modules) {
 								if (types.isString(entryType)) {
 									const tmp = types.get(entries, entryType);
 									if (tmp && types.baseof(entries.Entry, tmp)) {
-										//spec.type = tmp;
 										return tmp;
 									} else {
 										throw new types.Error("Invalid registry entry type : '~0~'.", [types.toString(entryType).slice(0, 50)]);
@@ -330,7 +330,6 @@ exports.add = function add(modules) {
 									return entryType;
 								}
 							} else {
-								//spec.type = _default || entries.Module;
 								return _default || entries.Module;
 							}
 						};
@@ -584,6 +583,10 @@ exports.add = function add(modules) {
 								if (create) {
 									retval = create(root, opts, _shared);
 								};
+								const destroy = types.get(entry.spec, 'destroy');
+								if (destroy) {
+									__Internal__.destroyFunctions.push(destroy);
+								}
 								if (types.isNothing(retval)) {
 									entry.objectCreating = false;
 									entry.objectCreated = true;
@@ -750,9 +753,6 @@ exports.add = function add(modules) {
 								};
 							};
 
-							//const baseName = __Internal__.getBaseName(entry.spec.name);
-							//options = __Internal__.getModuleOptions(options, baseName);
-
 							if (entry.objectInit) {
 								if (types.isFunction(entry.objectInit)) {
 									const retval = entry.objectInit(options);
@@ -801,6 +801,27 @@ exports.add = function add(modules) {
 						return entry;
 					});
 				});
+
+			namespaces.ADD('destroyAll', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+						},
+						returns: 'Promise',
+						description: "Destroy every namespaces.",
+					}
+				//! END_REPLACE()
+				, function destroyAll() {
+					const Promise = types.getPromise();
+					return Promise.map(__Internal__.destroyFunctions, function destroyAllPromise(fn) {
+							return fn(root);
+						}, {concurrency: 5})
+						.then(function () {
+							__Internal__.destroyFunctions = [];
+						});
+				}));
 
 			namespaces.ADD('load', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
@@ -873,6 +894,7 @@ exports.add = function add(modules) {
 						const doCallback = function _doCallback() {
 							// Create Promise for callback result
 							let cbPromise = null;
+
 							if (callback) {
 								cbPromise = Promise.create(function readyPromise(resolve, reject) {
 									let cbReadyHandler,
@@ -903,13 +925,8 @@ exports.add = function add(modules) {
 								namespaces.dispatchEvent(new types.CustomEvent('ready'));
 							};
 
-							// Returns the callback promise or nothing.
-							if (cbPromise) {
-								// NOTE: Returns "cbPromise". This allows to catch callback errors.
-								return cbPromise;
-							};
-
-							return undefined; // "consistent-return"
+							// NOTE: Returns "cbPromise". This allows to catch callback errors.
+							return cbPromise;
 						};
 
 						const loopCreateModules = function _loopCreateModules(state) {
@@ -1027,107 +1044,6 @@ exports.add = function add(modules) {
 					});
 				}));
 
-			/*
-			namespaces.ADD('clone', root.DD_DOC(
-					//! REPLACE_IF(IS_UNSET('debug'), "null")
-					{
-							author: "Claude Petit",
-							revision: 1,
-							params: {
-								name: {
-									type: 'string',
-									optional: false,
-									description: "Full namespace.",
-								},
-								newName: {
-									type: 'string',
-									optional: true,
-									description: "New namespace. Default is same name.",
-								},
-								targetRoot: {
-									type: 'Root',
-									optional: true,
-									description: "Target root. Default is current root.",
-								},
-								cloneDeps: {
-									type: 'boolean',
-									optional: true,
-									description: "'true' will clone dependencies. 'false' will not clone dependencies. Default is 'false'.",
-								},
-								dontThrow: {
-									type: 'boolean',
-									optional: true,
-									description: "'true' will not throw an error when it happens. 'false' will throw errors. Default is 'false'.",
-								},
-								options: {
-									type: 'object',
-									optional: true,
-									description: "Options.",
-								},
-							},
-							returns: 'Promise(object)',
-							description: "Clones a namespace and returns the entry from the registry when successful. Returns 'null' otherwise.",
-					}
-					//! END_REPLACE()
-			, function clone(name, / *optional* /newName, / *optional* /targetRoot, / *optional* /cloneDeps, / *optional* /dontThrow, / *optional* /options) {
-				if (!newName) {
-					newName = name;
-				};
-				if (!targetRoot) {
-					targetRoot = root;
-				};
-				if (targetRoot === root) {
-					if (newName === name) {
-						if (!dontThrow) {
-							throw new types.Error("A new name must be specified.");
-						};
-						return null;
-					};
-					cloneDeps = false;
-				};
-
-				var targetNamespaces = targetRoot.Namespaces;
-
-				var specs = {};
-
-				var fillSpecs = function fillSpecs(name, / *optional* /newName) {
-					if (!types.has(specs, name)) {
-						var entry = __Internal__.DD_REGISTRY.get(name);
-						if (entry) {
-							var spec = tools.clone(entry.spec);
-							if (newName) {
-								spec.name = newName;
-							};
-							namespace = targetNamespaces.get(spec.name);
-							if (!namespace) {
-								specs[name] = spec;
-								if (cloneDeps) {
-									var deps = (spec.dependencies || []);
-									for (var i = 0; i < deps.length; i++) {
-										fillSpecs(deps[i], null);
-									};
-								};
-							};
-						};
-					};
-				};
-
-				fillSpecs(name, newName);
-
-				return targetNamespaces.load(specs, options)
-					.then(function() {
-						var namespace = targetNamespaces.get(newName);
-						if (!namespace) {
-							if (dontThrow) {
-								return null;
-							} else {
-								throw new types.Error("Failed to clone namespace '~0~'.", [name]);
-							};
-						};
-						return namespace;
-					});
-			}));
-			*/
 
 			//===================================
 			// Objects
@@ -1746,7 +1662,7 @@ exports.add = function add(modules) {
 					{
 						$TYPE_NAME: 'Application',
 						$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('ApplicationEntry')), true) */,
-					}
+					},
 				)));
 
 
