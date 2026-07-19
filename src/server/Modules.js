@@ -111,11 +111,11 @@ exports.add = function add(mods) {
 							pkg.push(newLocation.shift());
 						};
 						const pkgPath =  __Internal__.require.resolve(pkg.join('/') + '/package.json');
+						const path = files.Path.parse(pkgPath).set({file: ''});
 						if (newLocation.length > 0) {
-							const path = files.Path.parse(pkgPath).set({file: ''}).combine(newLocation.join('/'));
-							return path;
+							return path.combine(newLocation.join('/'));
 						};
-						return files.Path.parse(pkgPath).set({file: ''});
+						return path;
 					};
 				};
 				return  files.Path.parse(__Internal__.require.resolve(location.toApiString()));
