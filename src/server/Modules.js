@@ -99,26 +99,37 @@ exports.add = function add(mods) {
 			});
 
 			// TODO: Replace by native ??? when implemented for MJS.
-			modules.ADD('resolve', function _resolve(location) {
-				if (!types._instanceof(location, files.Path)) {
-					location = files.parsePath(location);
+			modules.ADD('resolve', function _resolve(location, /*optional*/options) {
+				if (types.isString(location)) {
+					location = files.parseLocation(location);
+				}
+
+				if (!location.isRelative) {
+					return location;
+				}
+
+				const isResource = types.get(options, 'isResource');
+
+				const path = location.toArray();
+
+				let module = path.shift();
+				if (module[0] === '@') {
+					module += '/' + path.shift();
+				}
+
+				if (isResource && root.serverSide) {
+					const rootOptions = root.getOptions();
+					path.unshift(rootOptions.fromSource ? 'src' : 'build');
 				};
-				if (location.isRelative) {
-					const newLocation = location.toArray();
-					if (newLocation.length > 0) {
-						const pkg = [newLocation.shift()];
-						if (pkg[0] && pkg[0][0] === '@') {
-							pkg.push(newLocation.shift());
-						};
-						const pkgPath =  __Internal__.require.resolve(pkg.join('/') + '/package.json');
-						const path = files.Path.parse(pkgPath).set({file: ''});
-						if (newLocation.length > 0) {
-							return path.combine(newLocation.join('/'));
-						};
-						return path;
-					};
+
+				const pkgRoot =  __Internal__.require.resolve(module + '/package.json');
+
+				const pkgPath = files.Path.parse(pkgRoot).set({file: ''});
+				if (path.length > 0) {
+					return pkgPath.combine(path.join('/'));
 				};
-				return  files.Path.parse(__Internal__.require.resolve(location.toApiString()));
+
+				return pkgPath;
 			});
 
 			modules.ADD('locate', root.DD_DOC(

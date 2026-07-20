@@ -69,16 +69,12 @@ exports.add = function add(modules) {
 					const module = types.get(options, 'module', null);
 					if (module) {
 						location = files.parsePath(module, {isFolder: true});
-						if (root.serverSide) {
-							const rootOptions = root.getOptions();
-							location = location.combine(rootOptions.fromSource ? 'src/' : 'build/');
-						};
 						location = location.combine(file);
 					} else {
 						location = file;
 					};
 
-					return modules.resolve(location);
+					return modules.resolve(location, {isResource: true});
 				}, this);
 			});
 
