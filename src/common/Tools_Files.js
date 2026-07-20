@@ -1082,7 +1082,7 @@ exports.add = function add(modules) {
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
-									const pos = file.lastIndexOf('.');
+									const pos = file.indexOf('.');
 									if (types.isNothing(extension)) {
 										if (pos >= 0) {
 											extension = file.slice(pos + 1);
