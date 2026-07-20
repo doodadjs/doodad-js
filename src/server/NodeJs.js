@@ -2731,6 +2731,47 @@ exports.add = function add(mods) {
 			// Child process extension
 			//===================================
 
+			nodejs.ADD('spawn', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 0,
+						params: {
+							command: {
+								type: 'string',
+								optional: false,
+								description: "File name of the process to spwan.",
+							},
+							args: {
+								type: 'arrayof(string)',
+								optional: true,
+								description: "Process arguments.",
+							},
+							options: {
+								type: 'object',
+								optional: true,
+								description: "Spawn options.",
+							},
+						},
+						returns: 'object',
+						description: "Spwan a process.",
+					}
+				//! END_REPLACE()
+				, function spawn(command, /*optional*/args, /*optional*/options) {
+					const shell = types.get(options, 'shell');
+					if (shell) {
+						// <PRB> Node.Js decided to deprecate shells with arguments !!!
+						if (tools.getOS().name === 'win32') {
+							args = tools.map(args, function(arg) { return arg.includes(' ') ? '"' + arg.reaplceAll('"', '') + '"' : arg; });
+							args = ['/s', '/c', command, ...(args || [])];
+							command = process.env.comspec || 'cmd.exe';
+						}
+						options = tools.extend({}, options, {shell: false});
+					}
+					console.log(command, args, options);
+					return nodeChildProcessSpawn(command, args, options);
+				}));
+
 			nodejs.ADD('forkSync', root.DD_DOC(
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
