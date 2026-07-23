@@ -101,7 +101,7 @@ exports.add = function add(mods) {
 			// TODO: Replace by native ??? when implemented for MJS.
 			modules.ADD('resolve', function _resolve(location, /*optional*/options) {
 				if (types.isString(location)) {
-					location = files.parseLocation(location);
+					location = files.parseLocation(location, options);
 				}
 
 				if (!location.isRelative) {
@@ -110,7 +110,8 @@ exports.add = function add(mods) {
 
 				const isResource = types.get(options, 'isResource');
 
-				const path = location.toArray();
+				const isFolder = location.isFolder,
+					path = location.toArray({trim: true});
 
 				let module = path.shift();
 				if (module[0] === '@') {
@@ -124,9 +125,9 @@ exports.add = function add(mods) {
 
 				const pkgRoot =  __Internal__.require.resolve(module + '/package.json');
 
-				const pkgPath = files.Path.parse(pkgRoot).set({file: ''});
+				const pkgPath = files.parsePath(pkgRoot).set({file: ''});
 				if (path.length > 0) {
-					return pkgPath.combine(path.join('/'));
+					return pkgPath.combine(path, {isFolder});
 				};
 
 				return pkgPath;

@@ -63,7 +63,7 @@ exports.add = function add(modules) {
 			resources.ADD('locate', function locate(fileName, /*optional*/options) {
 				const Promise = types.getPromise();
 				return Promise.try(function tryLocate() {
-					const file = files.parsePath(fileName);
+					const file = files.parsePath(fileName, options);
 					let location;
 
 					const module = types.get(options, 'module', null);
@@ -74,14 +74,14 @@ exports.add = function add(modules) {
 						location = file;
 					};
 
-					return modules.resolve(location, {isResource: true});
+					return modules.resolve(location, tools.extend({}, options, {isResource: true}));
 				}, this);
 			});
 
 			resources.ADD('load', function load(fileName, /*optional*/options) {
 				const Promise = types.getPromise();
 				return Promise.try(function tryLoad() {
-					const path = files.parsePath(fileName);
+					const path = files.parsePath(fileName, {isFolder: false});
 					if (path.isRelative) {
 						return resources.locate(path, options);
 					};
