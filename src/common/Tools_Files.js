@@ -351,7 +351,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 11,
+									revision: 12,
 									params: {
 										path: {
 											type: 'string,array',
@@ -464,8 +464,6 @@ exports.add = function add(modules) {
 									// Auto-set
 									const osInfo = tools.getOS();
 									os = osInfo.type;
-									caseSensitive = osInfo.caseSensitive;
-									dirChar = osInfo.dirChar;
 								};
 
 								if (types.isNothing(caseSensitive)) {
@@ -526,21 +524,21 @@ exports.add = function add(modules) {
 									} else {
 										dirChar = '/';
 									};
-								};
 
-								// Replace alternate folder separators by the first one
-								const seps = [dirChar, '/', '\\']; // NOTE: 'dirChar' is first and will get selected later (see bottom).
-								for (let i = 1; i < seps.length; i++) {
-									const sep = seps[i];
-									if (sep !== dirChar) {
-										if (dirRootIsString) {
-											dirRoot = tools.replace(dirRoot, sep, dirChar, 'g');
-										};
-										if (pathIsString) {
-											path = tools.replace(path, sep, dirChar, 'g');
-										};
-										if (fileIsString) {
-											file = tools.replace(file, sep, dirChar, 'g');
+									// Replace alternate folder separators by the first one
+									const seps = [dirChar, '/', '\\']; // NOTE: 'dirChar' is first and will get selected later (see bottom).
+									for (let i = 1; i < seps.length; i++) {
+										const sep = seps[i];
+										if (sep !== dirChar) {
+											if (dirRootIsString) {
+												dirRoot = tools.replace(dirRoot, sep, dirChar, 'g');
+											};
+											if (pathIsString) {
+												path = tools.replace(path, sep, dirChar, 'g');
+											};
+											if (fileIsString) {
+												file = tools.replace(file, sep, dirChar, 'g');
+											};
 										};
 									};
 								};
