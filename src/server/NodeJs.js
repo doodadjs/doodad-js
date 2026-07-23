@@ -570,8 +570,8 @@ exports.add = function add(mods) {
 				//! END_REPLACE()
 				, function getCurrentLocation() {
 					const args = [],
-						path = files.Path.parse(process.argv[1]),
-						url = files.Url.parse(path);
+						path = files.parsePath(process.argv[1]),
+						url = files.parseUrl(path);
 					for (let i = 2; i < process.argv.length; i++) {
 						args.push(process.argv[i]);
 					};
@@ -609,7 +609,7 @@ exports.add = function add(mods) {
 					};
 
 					if (types.isString(url)) {
-						url = files.Url.parse(url);
+						url = files.parseUrl(url);
 					};
 
 					if (url.protocol !== 'file') {
@@ -624,7 +624,7 @@ exports.add = function add(mods) {
 						args = args && args.split('&');
 					};
 
-					url = files.Path.parse(url).toApiString();
+					url = files.parsePath(url).toApiString();
 
 					// Remove unwanted "node" args
 					const execArgs = tools.filter(process.execArgv, function(arg) {
@@ -775,7 +775,7 @@ exports.add = function add(mods) {
 				//! END_REPLACE()
 				, function getJsScriptFileLoader(file, /*optional*/async, /*optional*/timeout, /*optional*/reload) {
 					if (types._instanceof(file, files.Url)) {
-						file = files.Path.parse(file);
+						file = files.parsePath(file, {isFolder: false});
 					};
 
 					if (types._instanceof(file, files.Path)) {
@@ -805,9 +805,9 @@ exports.add = function add(mods) {
 			//=====================================
 
 			files.ADD('existsSync', function existsSync(path, /*optional*/options) {
-				path = files.parsePath(path);
-
 				const type = types.get(options, 'type', null);
+
+				path = files.parsePath(path);
 
 				try {
 					const stats = nodeFsStatSync(path.toApiString());
@@ -826,10 +826,12 @@ exports.add = function add(mods) {
 			files.ADD('existsAsync', function existsAsync(path, /*optional*/options) {
 				const Promise = types.getPromise();
 
+				const type = types.get(options, 'type', null);
+
 				return Promise.try(function tryExists() {
 					const exists = function exists(path, type) {
 						return Promise.create(function existsPromise(resolve, reject) {
-							nodeFsStat(path, function(ex, stats) {
+							nodeFsStat(path.toApiString(), function(ex, stats) {
 								if (ex) {
 									if (ex.code === 'ENOENT') {
 										resolve(false);
@@ -845,9 +847,7 @@ exports.add = function add(mods) {
 
 					path = files.parsePath(path);
 
-					const type = types.get(options, 'type', null);
-
-					return exists(path.toString(), type);
+					return exists(path, type);
 				});
 			});
 
@@ -883,7 +883,7 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('rmSync', function rmSync(path, /*optional*/options) {
-				path = files.parsePath(path);
+				path = files.parsePath(path, {isFolder: false});
 
 				try {
 					nodeFsUnlinkSync(path.toApiString());
@@ -905,7 +905,7 @@ exports.add = function add(mods) {
 				return Promise.try(function tryRm() {
 					const unlink = function unlink(path) {
 						return Promise.create(function unlinkPromise(resolve, reject) {
-							nodeFsUnlink(path, function(ex) {
+							nodeFsUnlink(path.toApiString(), function(ex) {
 								if (ex) {
 									if (ex.code === 'ENOENT') {
 										resolve(false);
@@ -919,9 +919,9 @@ exports.add = function add(mods) {
 						});
 					};
 
-					path = files.parsePath(path);
+					path = files.parsePath(path, {isFolder: false});
 
-					return unlink(path.toApiString());
+					return unlink(path);
 				});
 			});
 
@@ -959,26 +959,24 @@ exports.add = function add(mods) {
 			files.ADD('rmdirSync', function rmdirSync(path, /*optional*/options) {
 				const force = types.get(options, 'force', false);
 
-				path = files.parsePath(path);
-
-				const pathStr = path.toApiString();
+				path = files.parsePath(path, {isFolder: true});
 
 				try {
-					nodeFsRmdirSync(pathStr);
+					nodeFsRmdirSync(path.toApiString());
 
 				} catch(ex) {
 					if (ex.code === 'ENOENT') {
 						return false;
 
 					} else if ((ex.code === 'ENOTEMPTY') && force) {
-						const dirFiles = nodeFsReaddirSync(pathStr);
+						const dirFiles = nodeFsReaddirSync(path.toApiString());
 
 						const count = dirFiles.length;
 
 						for (let i = 0; i < count; i++) {
 							const dirFile = dirFiles[i];
 
-							const newPath = path.combine(dirFile);
+							const newPath = path.combine(dirFile, {appendFile: true});
 
 							try {
 								nodeFsUnlinkSync(newPath.toApiString());
@@ -1007,7 +1005,7 @@ exports.add = function add(mods) {
 						};
 
 						try {
-							nodeFsRmdirSync(pathStr);
+							nodeFsRmdirSync(path.toApiString());
 
 						} catch(ex) {
 							if (ex.code !== 'ENOENT') {
@@ -1028,7 +1026,7 @@ exports.add = function add(mods) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function tryRmDir() {
-					path = files.parsePath(path);
+					path = files.parsePath(path, {isFolder: true});
 
 					const force = types.get(options, 'force', false),
 						cancelable = types.get(options, 'cancelable', false),
@@ -1044,7 +1042,7 @@ exports.add = function add(mods) {
 
 					const isFolder = function _isFolder(path) {
 						return Promise.create(function stat(resolve, reject) {
-							nodeFsStat(path, function(err, stats) {
+							nodeFsStat(path.toApiString(), function(err, stats) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1056,7 +1054,7 @@ exports.add = function add(mods) {
 
 					const rmdir = function _rmdir(path) {
 						return Promise.create(function doRmDir(resolve, reject) {
-							nodeFsRmdir(path, function(err) {
+							nodeFsRmdir(path.toApiString(), function(err) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1068,7 +1066,7 @@ exports.add = function add(mods) {
 
 					const unlink = function _unlink(path) {
 						return Promise.create(function doUnlink(resolve, reject) {
-							nodeFsUnlink(path, function(err) {
+							nodeFsUnlink(path.toApiString(), function(err) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1080,7 +1078,7 @@ exports.add = function add(mods) {
 
 					const readdir = function _readdir(path) {
 						return Promise.create(function doReadDir(resolve, reject) {
-							nodeFsReaddir(path, function readdirCb(err, names) {
+							nodeFsReaddir(path.toApiString(), function readdirCb(err, names) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1095,16 +1093,15 @@ exports.add = function add(mods) {
 					const loopDeleteContent = function _loopDeleteContent(parent, names, index) {
 						/* eslint consistent-return: "off" */
 						if (index < names.length) {
-							const path = parent.combine(names[index]);
-							const pathStr = path.toApiString();
-							const promise = unlink(pathStr);
+							const path = parent.combine(names[index], {appendFile: true});
+							const promise = unlink(path);
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function manageUnlinkResult(err, dummy) {
 									if (err) {
 										if (err.code === 'ENOENT') {
 											return loopDeleteContent(parent, names, index + 1);
 										} else if ((err.code === 'EISDIR') || (err.code === 'EPERM')) {
-											return isFolder(pathStr)
+											return isFolder(path)
 												.nodeify(function(err2, isFolder) {
 													if (err2) {
 														if (err2.code === 'ENOENT') {
@@ -1133,16 +1130,15 @@ exports.add = function add(mods) {
 					};
 
 					proceed = function _proceed(path) {
-						const pathStr = path.toApiString();
-						return rmdir(pathStr)
+						return rmdir(path)
 							.catch(function catchNotEmpty(err) {
 								if (force && (err.code === 'ENOTEMPTY')) {
-									return readdir(pathStr)
+									return readdir(path)
 										.then(function deletePathContent(names) {
 											return loopDeleteContent(path, names, 0);
 										})
 										.then(function deletePath(dummy) {
-											return rmdir(pathStr);
+											return rmdir(path);
 										});
 								} else {
 									throw err;
@@ -1238,23 +1234,22 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('mkdirSync', function mkdirSync(path, /*optional*/options) {
-				path = files.parsePath(path);
-				path = path.toFolder();
+				path = files.parsePath(path, {isFolder: true});
 
 				const ignoreExists = types.get(options, 'ignoreExists', true),
 					makeParents = types.get(options, 'makeParents', false);
 
 				if (makeParents) {
-					const ar = path.toArray({pathOnly: true, trim: true}),
+					const ar = path.toArray({trim: true}),
 						count = ar.length;
 
 					for (let i = 0; i < ar.length; i++) {
-						const newPathStr = path.toApiString({
+						const newPath = path.set({
 							path: ar.slice(0, i + 1),
 						});
 
 						try {
-							nodeFsMkdirSync(newPathStr);
+							nodeFsMkdirSync(newPath.toApiString());
 
 						} catch(ex) {
 							if ((!ignoreExists && (i === count - 1)) || (ex.code !== 'EEXIST')) {
@@ -1280,15 +1275,14 @@ exports.add = function add(mods) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function mkdirPromise() {
-					path = files.parsePath(path);
-					path = path.toFolder();
+					path = files.parsePath(path, {isFolder: true});
 
 					const ignoreExists = types.get(options, 'ignoreExists', true),
 						makeParents = types.get(options, 'makeParents', false);
 
 					const mkdir = function(path) {
 						return Promise.create(function mkdirPromise(resolve, reject) {
-							nodeFsMkdir(path, function(err) {
+							nodeFsMkdir(path.toApiString(), function(err) {
 								if (err) {
 									if (ignoreExists && (err.code === 'EEXIST')) {
 										resolve();
@@ -1309,11 +1303,11 @@ exports.add = function add(mods) {
 						const createLoop = function _createLoop(index) {
 							return Promise.try(function tryCreateLoop() {
 								if (index < count) {
-									const newPathStr = path.toApiString({
+									const newPath = path.set({
 										path: ar.slice(0, index + 1),
 									});
 
-									return mkdir(newPathStr)
+									return mkdir(newPath)
 										.then(function(result) {
 											return createLoop(index + 1);
 										})
@@ -1331,7 +1325,7 @@ exports.add = function add(mods) {
 						return createLoop(0);
 
 					} else {
-						return mkdir(path.toApiString());
+						return mkdir(path);
 
 					}
 				});
@@ -1371,6 +1365,9 @@ exports.add = function add(mods) {
 			files.ADD('copySync', function copySync(source, destination, /*optional*/options) {
 				/* eslint no-unsafe-finally: "off" */
 
+				source = files.parsePath(source);
+				destination = files.parsePath(destination);
+
 				const bufferLength = types.get(options, 'bufferLength', 16384),
 					preserveTimes = types.get(options, 'preserveTimes', true),
 					override = types.get(options, 'override', false),
@@ -1382,16 +1379,11 @@ exports.add = function add(mods) {
 				let COPY_FILE_BUFFER = null;
 
 				const copyInternal = function _copyInternal(source, destination) {
-					source = files.parsePath(source);
-					destination = files.parsePath(destination);
-
-					const sourceStr = source.toApiString();
-
 					let stats;
 					if (followLinks) {
-						stats = nodeFsStatSync(sourceStr);
+						stats = nodeFsStatSync(source.toApiString());
 					} else {
-						stats = nodeFsLstatSync(sourceStr);
+						stats = nodeFsLstatSync(source.toApiString());
 					};
 
 					if (stats.isSymbolicLink()) {
@@ -1400,14 +1392,12 @@ exports.add = function add(mods) {
 							destination = destination.set({ file: source.file });
 						};
 
-						const linkString = nodeFsReadlinkSync(sourceStr);
+						const linkString = nodeFsReadlinkSync(source.toApiString());
 
-						const destStr = destination.toApiString();
-
-						nodeFsSymlinkSync(linkString, destStr, (stats.isFile() ? 'file' : 'dir'));
+						nodeFsSymlinkSync(linkString, destination.toApiString(), (stats.isFile() ? 'file' : 'dir'));
 
 						if (preserveTimes) {
-							nodeFsUtimesSync(destStr, stats.atime, stats.mtime);
+							nodeFsUtimesSync(destination.toApiString(), stats.atime, stats.mtime);
 						};
 
 					} else if (stats.isFile()) {
@@ -1416,8 +1406,6 @@ exports.add = function add(mods) {
 							destination = destination.set({ file: source.file });
 						};
 
-						const destStr = destination.toApiString();
-
 						if (!COPY_FILE_BUFFER) {
 							COPY_FILE_BUFFER = _shared.Natives.globalBufferAlloc(bufferLength);
 						};
@@ -1425,8 +1413,8 @@ exports.add = function add(mods) {
 						let sourceFd = null,
 							destFd = null;
 						try {
-							sourceFd = nodeFsOpenSync(sourceStr, 'r');
-							destFd = nodeFsOpenSync(destStr, (override ? 'w' : 'wx'));
+							sourceFd = nodeFsOpenSync(source.toApiString(), 'r');
+							destFd = nodeFsOpenSync(destination.toApiString(), (override ? 'w' : 'wx'));
 
 							let bytesRead = 0;
 							do {
@@ -1449,17 +1437,17 @@ exports.add = function add(mods) {
 						};
 
 						if (preserveTimes) {
-							nodeFsUtimesSync(destStr, stats.atime, stats.mtime);
+							nodeFsUtimesSync(destination.toApiString(), stats.atime, stats.mtime);
 						};
 
 					} else if (stats.isDirectory() && recursive) {
 						// Recurse directory
 						files.mkdir(destination, {makeParents: makeParents, async: false});
 
-						const dirFiles = nodeFsReaddirSync(sourceStr);
+						const dirFiles = nodeFsReaddirSync(source.toApiString());
 						for (let i = 0; i < dirFiles.length; i++) {
 							const dirFile = dirFiles[i];
-							copyInternal(source.combine(dirFile), destination.combine(dirFile));
+							copyInternal(source.combine(dirFile, {appendFile: true}), destination.combine(dirFile, {appendFile: true}));
 						};
 
 						if (preserveTimes) {
@@ -1470,9 +1458,9 @@ exports.add = function add(mods) {
 					} else if (!skipInvalid) {
 						// Invalid file system object
 						if (stats.isDirectory()) {
-							throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [sourceStr]);
+							throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
 						} else {
-							throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
+							throw new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
 						}
 					};
 				};
@@ -1484,6 +1472,9 @@ exports.add = function add(mods) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function copyPromise() {
+					source = files.parsePath(source);
+					destination = files.parsePath(destination);
+
 					const bufferLength = types.get(options, 'bufferLength', 16384),
 						preserveTimes = types.get(options, 'preserveTimes', true),
 						override = types.get(options, 'override', false),
@@ -1506,7 +1497,7 @@ exports.add = function add(mods) {
 
 					const stat = function _stat(path) {
 						return Promise.create(function statPromise(resolve, reject) {
-							nodeFsStat(path, function(err, stats) {
+							nodeFsStat(path.toApiString(), function(err, stats) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1518,7 +1509,7 @@ exports.add = function add(mods) {
 
 					const lstat = function _lstat(path) {
 						return Promise.create(function lstatPromise(resolve, reject) {
-							nodeFsLstat(path, function(err, stats) {
+							nodeFsLstat(path.toApiString(), function(err, stats) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1530,7 +1521,7 @@ exports.add = function add(mods) {
 
 					const readlink = function _readlink(path) {
 						return Promise.create(function readlinkPromise(resolve, reject) {
-							nodeFsReadlink(path, function(err, link) {
+							nodeFsReadlink(path.toApiString(), function(err, link) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1542,7 +1533,7 @@ exports.add = function add(mods) {
 
 					const symlink = function _symlink(link, path, type) {
 						return Promise.create(function symlinkPromise(resolve, reject) {
-							nodeFsSymlink(link, path, type, function(err) {
+							nodeFsSymlink(link.toApiString(), path.toApiString(), type, function(err) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1554,7 +1545,7 @@ exports.add = function add(mods) {
 
 					const utimes = function _utimes(path, atime, mtime) {
 						return Promise.create(function utimesPromise(resolve, reject) {
-							nodeFsUtimes(path, atime, mtime, function(err) {
+							nodeFsUtimes(path.toApiString(), atime, mtime, function(err) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1566,7 +1557,7 @@ exports.add = function add(mods) {
 
 					const open = function _open(path, mode) {
 						return Promise.create(function openPromise(resolve, reject) {
-							nodeFsOpen(path, mode, function(err, fd) {
+							nodeFsOpen(path.toApiString(), mode, function(err, fd) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1614,7 +1605,7 @@ exports.add = function add(mods) {
 
 					const readdir = function _readdir(path) {
 						return Promise.create(function readdirPromise(resolve, reject) {
-							nodeFsReaddir(path, function(err, files) {
+							nodeFsReaddir(path.toApiString(), function(err, files) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1626,11 +1617,6 @@ exports.add = function add(mods) {
 
 					const copyInternal = function _copyInternal(source, destination) {
 						return Promise.try(function copyInternalPromise() {
-							source = files.parsePath(source);
-							destination = files.parsePath(destination);
-
-							const sourceStr = source.toApiString();
-
 							const copyLink = function _copyLink(stats) {
 								// TODO: Test me
 								// Copy symbolic link
@@ -1638,14 +1624,13 @@ exports.add = function add(mods) {
 									if (!destination.file) {
 										destination = destination.set({ file: source.file });
 									};
-									const destStr = destination.toApiString();
-									return readlink(sourceStr)
+									return readlink(source)
 										.then(function(link) {
-											return symlink(link, destStr, (stats.isFile() ? 'file' : 'dir'));
+											return symlink(link, destination, (stats.isFile() ? 'file' : 'dir'));
 										})
 										.then(function() {
 											if (preserveTimes) {
-												return utimes(destStr, stats.atime, stats.mtime);
+												return utimes(destination, stats.atime, stats.mtime);
 											};
 										});
 								});
@@ -1670,16 +1655,15 @@ exports.add = function add(mods) {
 									if (!destination.file) {
 										destination = destination.set({ file: source.file });
 									};
-									const destStr = destination.toApiString();
 									if (!COPY_FILE_BUFFER) {
 										COPY_FILE_BUFFER = _shared.Natives.globalBufferAlloc(bufferLength);
 									};
 									let sourceFd = null;
 									let destFd = null;
-									return open(sourceStr, 'r')
+									return open(source, 'r')
 										.then(function(fd) {
 											sourceFd = fd;
-											return open(destStr, (override ? 'w' : 'wx'));
+											return open(destination, (override ? 'w' : 'wx'));
 										})
 										.then(function(fd) {
 											destFd = fd;
@@ -1703,7 +1687,7 @@ exports.add = function add(mods) {
 										})
 										.then(function(dummy) {
 											if (preserveTimes) {
-												return utimes(destStr, stats.atime, stats.mtime);
+												return utimes(destination, stats.atime, stats.mtime);
 											};
 										});
 								});
@@ -1713,7 +1697,7 @@ exports.add = function add(mods) {
 								const promise = Promise.try(function() {
 									const dirFile = dirFiles[index];
 									if (dirFile) {
-										return copyInternal(source.combine(dirFile), destination.combine(dirFile))
+										return copyInternal(source.combine(dirFile, {appendFile: true}), destination.combine(dirFile, {appendFile: true}))
 											.then(function() {
 												return loopDirectoryContent(dirFiles, index + 1);
 											});
@@ -1726,7 +1710,7 @@ exports.add = function add(mods) {
 								// Recurse directory
 								return files.mkdir(destination, {makeParents: makeParents, async: true})
 									.then(function(dummy) {
-										return readdir(sourceStr);
+										return readdir(source);
 									})
 									.then(function(dirFiles) {
 										return loopDirectoryContent(dirFiles, 0);
@@ -1734,16 +1718,16 @@ exports.add = function add(mods) {
 									.then(function(dummy) {
 										if (preserveTimes) {
 											// FIXME: Dates are not correct
-											return utimes(destination.toApiString(), stats.atime, stats.mtime);
+											return utimes(destination, stats.atime, stats.mtime);
 										};
 									});
 							};
 
 							return Promise.try(function() {
 								if (followLinks) {
-									return stat(sourceStr);
+									return stat(source);
 								} else {
-									return lstat(sourceStr);
+									return lstat(source);
 								}
 							})
 								.then(function(stats) {
@@ -1756,9 +1740,9 @@ exports.add = function add(mods) {
 									} else if (!skipInvalid) {
 										// Invalid file system object
 										if (stats.isDirectory()) {
-											throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [sourceStr]);
+											throw new types.Error("The 'recursive' option must be set to copy folder : '~0~'.", [source.toApiString()]);
 										} else {
-											throw new types.Error("Invalid file or folder : '~0~'.", [sourceStr]);
+											throw new types.Error("Invalid file or folder : '~0~'.", [source.toApiString()]);
 										}
 									};
 								});
@@ -1851,14 +1835,14 @@ exports.add = function add(mods) {
 					isFile = stats.isFile(),
 					isLink = !followLinks && stats.isSymbolicLink();
 				let ok = false;
-				if (isFolder && (!type || (type === 'folder'))) {
+				if (isLink && (!type || (type === 'link'))) {
+					ok = true;
+				} else if (isFolder && (!type || (type === 'folder'))) {
 					ok = true;
 				} else if (isFile && (!type || (type === 'file'))) {
 					ok = true;
-				} else if (isLink && (!type || (type === 'link'))) {
-					ok = true;
 				};
-				const path = (isFolder ? base.combine(name, {file: ''}) : ok && base.combine(name));
+				const path = base.combine(name, {isFolder});
 				if (ok) {
 					const file = {
 						name,
@@ -1875,7 +1859,7 @@ exports.add = function add(mods) {
 			};
 
 			files.ADD('readdirSync', function readdirSync(path, /*optional*/options) {
-				path = files.parsePath(path);
+				path = files.parsePath(path, {isFolder: true});
 
 				const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 					relative = types.get(options, 'relative', false),
@@ -1902,7 +1886,7 @@ exports.add = function add(mods) {
 					if (stats) {
 						const newBase = __Internal__.readdirAddFile(result, base, name, stats, followLinks, type);
 						if (newBase) {
-							return proceed(result, path, newBase, depth - 1);
+							return proceed(result, path.set({isFolder: true}), newBase, depth - 1);
 						};
 					};
 				};
@@ -1917,14 +1901,14 @@ exports.add = function add(mods) {
 					return result;
 				};
 
-				return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth);
+				return proceed([], path, (relative ? files.parsePath('./') : path), depth);
 			});
 
 			files.ADD('readdirAsync', function readdirAsync(path, /*optional*/options) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function readdirPromise() {
-					path = files.parsePath(path);
+					path = files.parsePath(path, {isFolder: true});
 
 					const depth = (+types.get(options, 'depth') || 0),  // null|undefined|true|false|NaN|Infinity
 						relative = types.get(options, 'relative', false),
@@ -1952,16 +1936,16 @@ exports.add = function add(mods) {
 								};
 							};
 							if (followLinks) {
-								nodeFsStat(path, statCb);
+								nodeFsStat(path.toApiString(), statCb);
 							} else {
-								nodeFsLstat(path, statCb);
+								nodeFsLstat(path.toApiString(), statCb);
 							};
 						});
 					};
 
 					const readDir = function readDir(path) {
 						return Promise.create(function tryReaddir(resolve, reject) {
-							nodeFsReaddir(path, function readdirCb(err, names) {
+							nodeFsReaddir(path.toApiString(), function readdirCb(err, names) {
 								if (err) {
 									reject(err);
 								} else {
@@ -1977,7 +1961,7 @@ exports.add = function add(mods) {
 						if (index < names.length) {
 							const name = names[index],
 								path = parent.combine(name);
-							const promise = getStats(path.toApiString());
+							const promise = getStats(path);
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.nodeify(function thenAddAndProceed(err, stats) {
 									if (err) {
@@ -1987,7 +1971,7 @@ exports.add = function add(mods) {
 									} else {
 										const newBase = __Internal__.readdirAddFile(result, base, name, stats, followLinks, type);
 										if (newBase) {
-											return proceed(result, path, newBase, depth - 1);
+											return proceed(result, path.set({isFolder: true}), newBase, depth - 1);
 										};
 									};
 								})
@@ -2000,7 +1984,7 @@ exports.add = function add(mods) {
 
 					proceed = function _proceed(result, path, base, depth) {
 						if (depth >= 0) {
-							const promise = readDir(path.toApiString());
+							const promise = readDir(path);
 							return (state.cancelable ? state.cancelable.race(promise) : promise)
 								.then(function thenParseNames(names) {
 									return parseNames(result, path, base, names, 0, depth);
@@ -2010,7 +1994,7 @@ exports.add = function add(mods) {
 					};
 
 					const startCb = function startReaddirAsync() {
-						return proceed([], path, (relative ? files.Path.parse('./', {os: 'linux'}) : path), depth)
+						return proceed([], path, (relative ? files.parsePath('./') : path), depth)
 							.nodeify(function(err, result) {
 								if (state.timeoutId) {
 									state.timeoutId.cancel();
@@ -2086,16 +2070,16 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('getCanonicalSync', function getCanonicalSync(path, /*optional*/options) {
-				path = files.parsePath(path);
+				path = files.parsePath(path, {isFolder: true});
 
 				const stats = nodeFsStatSync(path.toApiString());
+				const isFolder = !stats.isFile();
 
-				const ar = path.toArray({pathOnly: true, trim: true}),
-					base = path.set({path: null, file: null});
+				const ar = path.toArray({trim: true});
 
 				for (let i = ar.length - 1; i >= 0; i--) {
-					const newPath = base.set({path: ar.slice(0, i)}).toApiString(),
-						names = nodeFsReaddirSync(newPath),
+					const newPath = files.parsePath(ar.slice(0, i), {isFolder: true}),
+						names = nodeFsReaddirSync(newPath.toApiString()),
 						name = ar[i],
 						nameLc = name.toLowerCase();
 
@@ -2112,25 +2096,18 @@ exports.add = function add(mods) {
 					ar[i] = resolved;
 				};
 
-				let file = null;
-
-				if (stats.isFile()) {
-					file = ar.pop();
-				};
-
-				return base.set({path: ar, file: file});
+				return files.parsePath(ar, {isFolder});
 			});
 
 			files.ADD('getCanonicalAsync', function getCanonicalAsync(path, /*optional*/options) {
 				const Promise = types.getPromise();
 
 				return Promise.try(function getCanonicalPromise() {
-					path = files.parsePath(path);
+					path = files.parsePath(path, {isFolder: true});
 
 					const stat = function stat(path) {
-						path = path.toApiString();
 						return Promise.create(function doCanonical(resolve, reject) {
-							nodeFsStat(path, function statCb(err, stats) {
+							nodeFsStat(path.toApiString(), function statCb(err, stats) {
 								if (err) {
 									reject(err);
 								} else {
@@ -2141,9 +2118,8 @@ exports.add = function add(mods) {
 					};
 
 					const readdir = function readdir(path) {
-						path = path.toApiString();
 						return Promise.create(function doReadDir(resolve, reject) {
-							nodeFsReaddir(path, function readdirCb(err, names) {
+							nodeFsReaddir(path.toApiString(), function readdirCb(err, names) {
 								if (err) {
 									reject(err);
 								} else {
@@ -2153,9 +2129,9 @@ exports.add = function add(mods) {
 						});
 					};
 
-					const loopAr = function loopAr(base, ar, index) {
+					const loopAr = function loopAr(ar, index) {
 						if (index >= 0) {
-							return readdir(base.set({path: ar.slice(0, index)}))
+							return readdir(files.parsePath(ar.slice(0, index), {isFolder: true}))
 								.then(function resolve(names) {
 									const name = ar[index];
 									let resolved = names.filter(function(n) {
@@ -2168,7 +2144,7 @@ exports.add = function add(mods) {
 										})[0];
 										ar[index] = resolved;
 									};
-									return loopAr(base, ar, index - 1);
+									return loopAr(ar, index - 1);
 								});
 						};
 						return Promise.resolve();
@@ -2177,15 +2153,11 @@ exports.add = function add(mods) {
 					const proceed = function proceed(path) {
 						return stat(path)
 							.then(function startLoop(stats) {
-								const base = path.set({path: null, file: null}),
-									ar = path.toArray({pathOnly: true, trim: true});
-								return loopAr(base, ar, ar.length - 1)
+								const ar = path.toArray({trim: true});
+								return loopAr(ar, ar.length - 1)
 									.then(function assemble() {
-										let file = null;
-										if (stats.isFile()) {
-											file = ar.pop();
-										};
-										return base.set({path: ar, file: file});
+										const isFolder = !stats.isFile();
+										return files.parsePath(ar, {isFolder});
 									});
 							});
 					};
@@ -2252,14 +2224,14 @@ exports.add = function add(mods) {
 
 					if (!stats || !stats.isDirectory()) {
 						// Android or other
-						folder = files.Path.parse(process.cwd(), {isFolder: true}).combine('tmp/', {os: 'linux'});
+						folder = files.parsePath(process.cwd(), {isFolder: true}).combine('tmp');
 						try {
 							files.mkdir(folder);
 						} catch(ex) {
 							// Do nothing
 						};
 					} else {
-						folder = files.Path.parse(folder, {isFolder: true});
+						folder = files.parsePath(folder, {isFolder: true});
 					};
 
 					__Internal__.tmpdir = folder;
@@ -2272,13 +2244,13 @@ exports.add = function add(mods) {
 					path = files.parseLocation(path);
 				};
 
-				const encoding = types.get(options, 'encoding', null);
+				const encoding = types.get(options, 'encoding') || 'utf-8';
 
 				if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
 					if (types._instanceof(path, files.Url)) {
-						path = files.Path.parse(path);
+						path = files.parsePath(path, {isFolder: false});
 					};
-					return nodeFsReadFileSync(path.toApiString(), {encoding: encoding});
+					return nodeFsReadFileSync(path.toApiString(), {encoding});
 				} else {
 					throw new types.NotSupported("HTTP not supported synchronously.");
 				}
@@ -2290,25 +2262,23 @@ exports.add = function add(mods) {
 				return Promise.try(function tryReadFile() {
 					path = files.parseLocation(path);
 
-					const encoding = types.get(options, 'encoding', null),
+					const encoding = types.get(options, 'encoding') || 'utf-8',
 						timeout = types.get(options, 'timeout', 0) || 5000,  // Don't allow "0" (for infinite)
 						maxLength = types.get(options, 'maxLength', 1024 * 1024 * 100);
 
 					if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
 						return Promise.create(function readFile(resolve, reject) {
 							if (types._instanceof(path, files.Url)) {
-								path = files.Path.parse(path);
+								path = files.parsePath(path, {isFolder: false});
 							};
 
-							path = path.toApiString();
-
-							nodeFsStat(path, function(ex, stats) {
+							nodeFsStat(path.toApiString(), function(ex, stats) {
 								if (ex) {
 									reject(ex);
 								} else if (stats.size > maxLength) {
 									reject(new types.Error("File size exceeds maximum length."));
 								} else {
-									nodeFsReadFile(path, {encoding: encoding}, function(ex, data) {
+									nodeFsReadFile(path.toApiString(), {encoding}, function(ex, data) {
 										if (ex) {
 											reject(ex);
 										} else {
@@ -2509,19 +2479,17 @@ exports.add = function add(mods) {
 						};
 
 						if (types._instanceof(path, files.Url)) {
-							path = files.Path.parse(path);
+							path = files.parsePath(path, {isFolder: false});
 						};
 
-						path = path.toApiString();
-
 						return Promise.create(function statFile(resolve, reject) {
-							nodeFsStat(path, function(ex, stats) {
+							nodeFsStat(path.toApiString(), function(ex, stats) {
 								if (ex) {
 									if (ex.code === 'ENOENT') {
 										switch (mode) {
 										case 'forceUpdate':
 										case 'forceAppend':
-											reject(new types.Error("File '~0~' doesn't exists.", [path]));
+											reject(new types.Error("File '~0~' doesn't exists.", [path.toApiString()]));
 											break;
 
 										default:
@@ -2536,7 +2504,7 @@ exports.add = function add(mods) {
 							});
 						})
 							.thenCreate(function writeFile(stats, resolve, reject) {
-								nodeFsWriteFile(path, data, {encoding: encoding, flag: wf}, function(ex) {
+								nodeFsWriteFile(path.toApiString(), data, {encoding: encoding, flag: wf}, function(ex) {
 									if (ex) {
 										reject(ex);
 									} else {
@@ -2622,7 +2590,7 @@ exports.add = function add(mods) {
 
 					if (types._instanceof(path, files.Path) || (types._instanceof(path, files.Url) && ((!path.protocol) || (path.protocol === 'file')))) {
 						if (types._instanceof(path, files.Url)) {
-							path = files.Path.parse(path);
+							path = files.parsePath(path);
 						};
 
 						if (tools.getOptions().noWatch) {
@@ -2708,7 +2676,7 @@ exports.add = function add(mods) {
 					};
 
 					if (types._instanceof(path, files.Url)) {
-						path = files.Path.parse(path);
+						path = files.parsePath(path);
 					};
 					const pathStr = path.toApiString();
 
@@ -2768,7 +2736,6 @@ exports.add = function add(mods) {
 						}
 						options = tools.extend({}, options, {shell: false});
 					}
-					console.log(command, args, options);
 					return nodeChildProcessSpawn(command, args, options);
 				}));
 
