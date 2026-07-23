@@ -456,7 +456,7 @@ exports.add = function add(modules) {
 							//if (!__Internal__.setCurrentLocationPending) {
 							try {
 								let reload = false;
-								let url = files.Url.parse(_shared.Natives.windowLocation.href);
+								let url = files.parseUrl(_shared.Natives.windowLocation.href);
 
 								// TODO: Better user message, with translation
 								_shared.Natives.documentOpen('text/plain', 'replace');
@@ -1060,7 +1060,7 @@ exports.add = function add(modules) {
 					if (_window) {
 						_location = _window.location;
 					};
-					return files.Url.parse(_location.href);
+					return files.parseUrl(_location.href);
 				}));
 
 
@@ -1105,7 +1105,7 @@ exports.add = function add(modules) {
 
 					//if (!__Internal__.setCurrentLocationPending) {
 					if (!types._instanceof(url, files.Url)) {
-						url = files.Url.parse(url);
+						url = files.parseUrl(url);
 					};
 
 					let _location = _shared.Natives.windowLocation;
@@ -1292,7 +1292,7 @@ exports.add = function add(modules) {
 							if (this.tag === 'link') {
 								let url = (this.element.src || this.element.href);
 								if (url) {
-									url = files.Url.parse(url);
+									url = files.parseUrl(url);
 								};
 								if (url) {
 									const waitDownload = this.target.ownerDocument.createElement('img');
@@ -1521,7 +1521,7 @@ exports.add = function add(modules) {
 					};
 
 					if (types._instanceof(url, files.Path)) {
-						url = files.Url.parse(url);
+						url = files.parseUrl(url);
 					};
 
 					if (types._instanceof(url, files.Url)) {
