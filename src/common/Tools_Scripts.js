@@ -97,7 +97,7 @@ exports.add = function add(modules) {
 								"Returns location of the current running script. Multiple usages :\n" +
 								'- Client-side only: root.Doodad.Tools.getCurrentScript(document.currentScript||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
 								'- Client-side and server-side: root.Doodad.Tools.getCurrentScript((root.serverSide?module.filename:document.currentScript)||(function(){try{throw new Error("");}catch(ex){return ex;}})())\n' +
-								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.Files.Path.parse(module.filename)\n',
+								'- Server-side only: Don\'t use this function. Instead, do : root.Doodad.Tools.files.parsePath(module.filename)\n',
 					}
 				//! END_REPLACE()
 				, function getCurrentScript(/*optional*/currentScript) {
@@ -109,7 +109,7 @@ exports.add = function add(modules) {
 						ex = currentScript;
 					} else if (types.isString(currentScript)) {
 						// NodeJs
-						url = files.Path.parse(currentScript);
+						url = files.parsePath(currentScript);
 					} else if (types.isObject(currentScript) && types.isString(currentScript.src)) {
 						// NOTE: currentScript is 'document.currentScript'
 						// Google Chrome 39 Windows: OK
@@ -117,13 +117,13 @@ exports.add = function add(modules) {
 						// IE 11: undefined
 						// Opera 26 Windows: OK
 						// Safari 5: undefined
-						url = files.Url.parse(currentScript.src);
+						url = files.parseUrl(currentScript.src);
 					};
 
 					if (!url) {
 						if (ex && types.isString(ex.sourceURL)) {
 							// Safari
-							url = files.Url.parse(ex.sourceURL);
+							url = files.parseUrl(ex.sourceURL);
 						} else {
 							// Other browsers
 							if (!ex) {
@@ -138,9 +138,9 @@ exports.add = function add(modules) {
 							if (stack && (stack.length > exLevel)) {
 								const trace = stack[exLevel];
 								if (trace.isSystemPath) {
-									url = files.Path.parse(trace.path);
+									url = files.parsePath(trace.path);
 								} else {
-									url = files.Url.parse(trace.path);
+									url = files.parseUrl(trace.path);
 								};
 							};
 						};
