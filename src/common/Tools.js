@@ -2954,6 +2954,37 @@ exports.add = function add(modules) {
 					}
 				}));
 
+			tools.ADD('areSimilar', root.DD_DOC(
+				//! REPLACE_IF(IS_UNSET('debug'), "null")
+					{
+						author: "Claude Petit",
+						revision: 2,
+						params: {
+							obj1: {
+								type: 'arraylike',
+								optional: false,
+								description: "First array to compare with second array.",
+							},
+							obj2: {
+								type: 'arraylike',
+								optional: false,
+								description: "Second array to compare with first array.",
+							},
+						},
+						returns: 'bool',
+						description: "Compare first array with second array and return true if they are similar, otherwise return false.",
+					}
+				//! END_REPLACE()
+				, function areSimilar(obj1, obj2) {
+					if (!types.isArrayLike(obj1) || !types.isArrayLike(obj2)) {
+						return false;
+					};
+					if (obj1.length !== obj2.length) {
+						return false;
+					};
+					return tools.every(obj1, function(item, i) { item === obj2[i]; });
+				}));
+
 			//===================================
 			// Math functions
 			//===================================
