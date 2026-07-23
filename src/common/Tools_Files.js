@@ -130,7 +130,7 @@ exports.add = function add(modules) {
 			files.ADD('parseLocation', function parseLocation(location, /*optional*/options) {
 				if (types.isNothing(location)) {
 					return location;
-				} else if (types.isString(location)) {
+				} else if (types.isString(location) || types.isArray(location)) {
 					if (__Internal__.detectUrlRegexp.test(location)) {
 						return _shared.urlParser(location, options);
 					} else {
@@ -194,7 +194,7 @@ exports.add = function add(modules) {
 				//! REPLACE_IF(IS_UNSET('debug'), "null")
 					{
 						author: "Claude Petit",
-						revision: 1,
+						revision: 2,
 						params: {
 							path: {
 								type: 'string,array',
@@ -217,7 +217,7 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function relativeToAbsolute(path, /*optional*/dirRoot, /*optional*/options) {
-					// WARNING: Paths should be parsed and validated according to the OS and file system and shell before calling this function.
+					// WARNING: Paths should be parsed and validated according to the OS and file system before calling this function.
 
 					if (root.DD_ASSERT) {
 						root.DD_ASSERT(types.isNothing(dirRoot) || types.isArray(dirRoot) || types.isString(dirRoot), "Invalid root.");
@@ -226,34 +226,15 @@ exports.add = function add(modules) {
 
 					const dirChar = types.get(options, 'dirChar', '/');
 
-					if (types.isString(dirRoot)) {
-						dirRoot = dirRoot.split(dirChar);
-					};
-
 					if (types.isString(path)) {
 						path = path.split(dirChar);
 					};
 
-					const dontThrow = types.get(options, 'dontThrow', false),
-						trailing = types.get(options, 'trailing', true);
-
-					const isTrailing = function isTrailing(path) {
-						const len = path.length;
-						return (len > 1) && (path[len - 1] === '');
+					if (types.isString(dirRoot)) {
+						dirRoot = dirRoot.split(dirChar);
 					};
 
-					const rootTrailing = trailing && dirRoot && isTrailing(dirRoot),
-						pathTrailing = trailing && isTrailing(path);
-
-					if (dirRoot) {
-						dirRoot = tools.filter(dirRoot, function (val) {
-							return !!val;
-						});
-					};
-
-					path = tools.filter(path, function (val) {
-						return !!val;
-					});
+					const dontThrow = types.get(options, 'dontThrow', false);
 
 					// Resolve ".." and "."
 					let pos = 0;
@@ -265,20 +246,20 @@ exports.add = function add(modules) {
 						} else if (name === '..') {
 							count = 2;
 						};
-						if (count) {
+						if (count > 0) {
 							let tmp = null;
 							if (pos <= 0) {
 								if (dirRoot && (count > 1)) {
-									if (dirRoot.length) {
+									if (dirRoot.length > 0) {
 										tmp = dirRoot.pop();
-										// "doodad/v0///removeMe/..//" will resolves to "doodad/v0"
 										while (!tmp && dirRoot.length) {
 											tmp = dirRoot.pop();
 											if (tmp === '..') {
 												tmp = dirRoot.pop();
 											};
 										};
-									} else {
+									};
+									if (!tmp) {
 										if (dontThrow) {
 											return null;
 										} else {
@@ -287,7 +268,7 @@ exports.add = function add(modules) {
 									};
 								};
 							};
-							while (count && (pos >= 0)) {
+							while ((count > 0) && (pos >= 0)) {
 								tmp = path.splice(pos, 1)[0];
 								if (tmp) {
 									count--;
@@ -306,55 +287,11 @@ exports.add = function add(modules) {
 						};
 					};
 
-					if (rootTrailing) {
-						dirRoot.push('');
-						if (dirRoot.length === 1) {
-							dirRoot.push('');
-						};
-					};
-
-					if (pathTrailing) {
-						path.push('');
-						if (path.length === 1) {
-							path.push('');
-						};
-					};
-
 					return {
 						dirRoot: dirRoot,
 						path: path,
 					};
 				});
-
-			// Windows
-			// NOTE: "%NAME%" resolves to variable "NAME", but "%" or "%%" are valid names !
-			// NOTE: "^%" resolves to "%", but "^%NAME%" resolves to "%" plus variable "NAME" ! So we can't escape "%".
-			// NOTE: Only special characters "^", "&" can be escaped to a normal char
-			// NOTE: ":" is valid just for the drive letter and can't be escaped to a normal char. So this validation is done by "parsePathWindowsInvalidNamesRegEx".
-
-			__Internal__.windowsShellSpecialCharacters = '\\^&';
-			__Internal__.windowsShellVerySpecialCharacters = ' <>|\\?\\*"/';
-
-			// group 1 = chars to unescape, group 2 = always invalid chars, group 3 = valid chars when escaped
-			__Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\^([^ ' + __Internal__.windowsShellVerySpecialCharacters + '])|([' + __Internal__.windowsShellSpecialCharacters + __Internal__.windowsShellVerySpecialCharacters + ']|%[^%]+%|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
-
-			// group 1 = chars to escape
-			__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.windowsShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
-
-			__Internal__.parsePathWindowsInvalidNamesRegEx = /:|^(com[1-9]|lpt[1-9]|con|nul|prn)$/i;    // <FUTURE> thread level
-
-
-			// Unix-like
-
-			__Internal__.unixShellSpecialCharacters = ' <>|?*"\'&`#;~!-()\\[\\]{}\\\\';
-
-			// group 1 = chars to unescape, group 2 = invalid chars
-			__Internal__.parsePathUnixUnescapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('\\\\(.)|([' + __Internal__.unixShellSpecialCharacters + ']|[\\b]|\\f|\\n|\\r|\\t|\\v)', 'gm');      // <FUTURE> thread level
-
-			// group 1 = chars to escape
-			__Internal__.parsePathUnixEscapeShellReservedCharsRegEx = new _shared.Natives.windowRegExp('([' + __Internal__.unixShellSpecialCharacters + '])', 'gm');     // <FUTURE> thread level
-
-			//__Internal__.parsePathUnixInvalidNamesRegEx = /^()$/i;    // <FUTURE> thread level
 
 			__Internal__.pathData = {
 				drive: types.READ_ONLY( null ),  // For Windows only. null = auto-detect
@@ -362,24 +299,22 @@ exports.add = function add(modules) {
 				root: types.READ_ONLY( null ),   // null = auto-detect
 				path: types.READ_ONLY( null ),
 				file: types.READ_ONLY( null ),   // null = auto-detect. when set, changes 'extension'.
+				extension: types.READ_ONLY( null ), // null = auto-detect. when set, changes 'file'.
 			};
 			__Internal__.pathDataKeys = types.keys(__Internal__.pathData);
 
 			__Internal__.pathOptions = {
-				os: types.READ_ONLY( null ),		// '' = deactivate validation, 'windows', 'unix', 'linux'
+				os: types.READ_ONLY( null ), // null = use current os, '' = deactivate validation, 'windows', 'unix', 'linux'
 				caseSensitive: types.READ_ONLY( null ),
-				dirChar: types.READ_ONLY( '/' ),
-				extension: types.READ_ONLY( null ), // when set, changes 'file'
+				dirChar: types.READ_ONLY( null ), // null = auto-detect
 				quote: types.READ_ONLY( null ),  // null = auto-detect
-				isRelative: types.READ_ONLY( false ),
-				noEscapes: types.READ_ONLY( false ),
-				shell: types.READ_ONLY( null ),  // null = set to default, '' = deactivate validation, 'api' (default), 'dos', 'bash', 'sh'
-				forceDrive: types.READ_ONLY( false ),
+				isRelative: types.READ_ONLY( false ), // null = auto-detect
+				isFolder: types.READ_ONLY( false ), // null = auto-detect
 				allowTraverse: types.READ_ONLY( false ),
 			};
 			__Internal__.pathOptionsKeys = types.keys(__Internal__.pathOptions);
 
-			__Internal__.pathNonStoredKeys = ['dontThrow', 'isFolder'];
+			__Internal__.pathNonStoredKeys = ['dontThrow', 'forceDrive'];
 
 			__Internal__.pathAllKeys = tools.append([], __Internal__.pathDataKeys, __Internal__.pathOptionsKeys);
 			__Internal__.pathAllKeysAndNonStoredKeys = tools.append([], __Internal__.pathAllKeys, __Internal__.pathNonStoredKeys);
@@ -416,7 +351,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 10,
+									revision: 11,
 									params: {
 										path: {
 											type: 'string,array',
@@ -434,14 +369,15 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function parse(path, /*optional*/options) {
-								// WARNING: Validation is incomplete.
-
 								// Flags
-								const dontThrow = types.get(options, 'dontThrow', false);
+								const dontThrow = types.get(options, 'dontThrow', false),
+									hasOs = types.has(options, 'os'),
+									hasCaseSensitive = types.has(options, 'caseSensitive'),
+									hasDirChar = types.has(options, 'dirChar');
 
 								if (types._instanceof(path, files.Path)) {
 									const data = tools.fill(__Internal__.pathAllKeys, {}, path);
-									options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, data, {extension: null}, options);
+									options = tools.extend(data, {extension: null}, options);
 									path = null;
 
 								} else if (types._instanceof(path, files.Url)) {
@@ -465,7 +401,7 @@ exports.add = function add(modules) {
 										} else {
 											drive = drive[0];
 										};
-										options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
+										options = tools.extend({
 											os: 'windows',
 											host,
 											drive,
@@ -473,7 +409,7 @@ exports.add = function add(modules) {
 											extension: null,
 										}, options);
 									} else {
-										options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {
+										options = tools.extend({
 											os: 'linux',
 											file: path.file,
 											extension: null,
@@ -495,26 +431,25 @@ exports.add = function add(modules) {
 
 								// Options
 								let os = types.get(options, 'os', null),  // Default is Auto-set
-									caseSensitive = types.get(options, 'caseSensitive', null), // Default is Auto-set
-									dirChar = types.get(options, 'dirChar', null),  // Default is Auto-set
-									isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
-									shell = types.get(options, 'shell', null), // Default is Auto-set
+									caseSensitive = hasCaseSensitive || !hasOs ? types.get(options, 'caseSensitive', null) : null, // Default is Auto-set
+									dirChar = hasDirChar || !hasOs ? types.get(options, 'dirChar', null) : null,  // Default is Auto-set
 									quote = types.get(options, 'quote', null),  // Default is Auto-detect
-									dirRoot = types.get(options, 'root', null),  // Default is no root
+									host = types.get(options, 'host', null), // Default is Auto-detect
 									drive = types.get(options, 'drive', null),  // Default is Auto-detect
+									dirRoot = types.get(options, 'root', null),  // Default is no root
 									file = types.get(options, 'file', null),  // Default is Auto-detect
-									extension = types.get(options, 'extension', null), // Default is "file" 's extension
-									host = types.get(options, 'host', null); // Default is Auto-detect
-
-								const noEscapes = types.get(options, 'noEscapes', false), // Default is False
-									forceDrive = types.get(options, 'forceDrive', false),  // Default is False
-									allowTraverse = types.get(options, 'allowTraverse', false),  // Default is False
+									extension = file ? types.get(options, 'extension', null) : null, // Default is "file" 's extension
+									isRelative = types.get(options, 'isRelative', null), // Default is Auto-detect
 									isFolder = types.get(options, 'isFolder', null); // Default is Auto-detect
+
+								const forceDrive = types.get(options, 'forceDrive', false),  // Default is False
+									allowTraverse = types.get(options, 'allowTraverse', false);  // Default is False
 
 								path = types.get(options, 'path', path);
 
 								const pathIsString = types.isString(path),
 									fileIsString = types.isString(file),
+									fileIsEmpty = (file === ''),
 									dirRootIsString = types.isString(dirRoot);
 
 								if (!dirRootIsString && !types.isNothing(dirRoot) && !types.isArray(dirRoot)) {
@@ -537,37 +472,20 @@ exports.add = function add(modules) {
 									caseSensitive = ((os === 'windows') ? false : true);
 								};
 
-								// Get default shell
-								if (types.isNothing(shell)) {
-									shell = 'api';
-									dirChar = null;
-								};
-
 								// Detect quotes character
 								if (types.isNothing(quote)) {
 									quote = '';
-									if (shell !== 'api') {
-										const ref = (dirRootIsString ? dirRoot : (pathIsString ? path : ''));
-										if (ref) {
-											if ((os === 'unix') || (os === 'linux') || (os === 'windows')) {
-												// Auto-detect
-												if (path) {
-													const tmp = ref[0];
-													if (
-														(tmp === '"') ||
-														(((os === 'unix') || (os === 'linux')) && (tmp === "'"))
-													) {
-														quote = tmp;
-														if (types.isNothing(shell)) {
-															if (os === 'windows') {
-																shell = 'dos';
-															} else if (os === 'unix') {
-																shell = 'sh';
-															} else {
-																shell = 'bash';
-															};
-														};
-													};
+									const ref = (dirRootIsString ? dirRoot : (pathIsString ? path : ''));
+									if (ref) {
+										if ((os === 'unix') || (os === 'linux') || (os === 'windows')) {
+											// Auto-detect
+											if (path) {
+												const tmp = ref[0];
+												if (
+													(tmp === '"') ||
+													(((os === 'unix') || (os === 'linux')) && (tmp === "'"))
+												) {
+													quote = tmp;
 												};
 											};
 										};
@@ -576,14 +494,14 @@ exports.add = function add(modules) {
 
 								// If quoted, path and root must be quoted
 								if (quote) {
-									if (dirRoot && dirRootIsString && ((path.length < 2) || (dirRoot[0] !== quote) || (dirRoot[dirRoot.length - 1] !== quote))) {
+									if (dirRootIsString && dirRoot && ((path.length < 2) || (dirRoot[0] !== quote) || (dirRoot[dirRoot.length - 1] !== quote))) {
 										if (dontThrow) {
 											return null;
 										} else {
 											throw new types.ParseError("'root' option must be quoted.");
 										};
 									};
-									if (path && pathIsString && ((path.length < 2) || (path[0] !== quote) || (path[path.length - 1] !== quote))) {
+									if (pathIsString && ((path.length < 2) || (path[0] !== quote) || (path[path.length - 1] !== quote))) {
 										if (dontThrow) {
 											return null;
 										} else {
@@ -600,98 +518,6 @@ exports.add = function add(modules) {
 									path = tools.trim(path, quote, 0, 1);
 								};
 
-								// Unescape and validate chars
-								if (!noEscapes && shell && (shell !== 'api')) {
-									const state = {
-										invalid: null,
-									};
-
-									let unescapePath = null;
-
-									if (shell === 'dos') {
-										unescapePath = function unescapePathDos(path) {
-											return tools.replace(path, __Internal__.parsePathWindowsUnescapeShellReservedCharsRegEx, function(matched, g1, g2, pos, str) {
-												if (g1) {
-													// Unescape
-													if (quote) {
-														// Don't unescape when quoted
-														return '^' + g1;
-													} else {
-														return g1;
-													};
-												} else if (g2) {
-													// Invalid characters
-													if (!quote || (g2 === quote)) {
-														state.invalid = g2;
-													} else {
-														// Allow when quoted
-														return g2;
-													};
-												};
-												return undefined; // "consistent-return"
-											});
-										};
-									} else if (shell === 'bash') {
-										unescapePath = function unescapePathBash(path) {
-											return tools.replace(path, __Internal__.parsePathUnixUnescapeShellReservedCharsRegEx, function(matched, g1, g2, pos, str) {
-												if (g1) {
-													// Unescape
-													if (quote) {
-														// Don't unescape when quoted
-														return '\\' + g1;
-													} else {
-														return g1;
-													};
-												} else if (g2) {
-													// Invalid characters
-													if (!quote || (g2 === quote)) {
-														state.invalid = g2;
-													} else {
-														// Allow when quoted
-														return g2;
-													};
-												};
-												return undefined; // "consistent-return"
-											});
-										};
-									};
-
-									if (unescapePath) {
-										const unescapePathArray = function unescapePathArray(path) {
-											for (let i = 0; i < path.length; i++) {
-												path[i] = unescapePath(path[i]);
-											};
-											return path;
-										};
-
-										if (dirRoot) {
-											if (dirRootIsString) {
-												dirRoot = unescapePath(dirRoot);
-											} else {
-												dirRoot = unescapePathArray(dirRoot);
-											};
-										};
-										if (path) {
-											if (pathIsString) {
-												path = unescapePath(path);
-											} else {
-												path = unescapePathArray(path);
-											};
-										};
-										if (file) {
-											file = unescapePath(file);
-										};
-
-										if (state.invalid) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Invalid char: '~0~'.", [state.invalid]);
-											};
-										};
-									};
-								};
-
 								// Detect folder separator
 								if (types.isNothing(dirChar)) {
 									// Auto-set
@@ -700,31 +526,23 @@ exports.add = function add(modules) {
 									} else {
 										dirChar = '/';
 									};
-									if (shell === 'api') {
-										dirChar = [dirChar, '/', '\\']; // NOTE: 'dirChar' is first and will get selected later (see bottom).
-									};
 								};
 
 								// Replace alternate folder separators by the first one
-								if (types.isArray(dirChar)) {
-									const sep = dirChar[0];
-									if (sep) {
-										for (let i = 1; i < dirChar.length; i++) {
-											const char = dirChar[i];
-											if (char && (char !== sep)) {
-												if (dirRootIsString) {
-													dirRoot = tools.replace(dirRoot, char, sep, 'g');
-												};
-												if (pathIsString) {
-													path = tools.replace(path, char, sep, 'g');
-												};
-												if (fileIsString) {
-													file = tools.replace(file, char, sep, 'g');
-												};
-											};
+								const seps = [dirChar, '/', '\\']; // NOTE: 'dirChar' is first and will get selected later (see bottom).
+								for (let i = 1; i < seps.length; i++) {
+									const sep = seps[i];
+									if (sep !== dirChar) {
+										if (dirRootIsString) {
+											dirRoot = tools.replace(dirRoot, sep, dirChar, 'g');
+										};
+										if (pathIsString) {
+											path = tools.replace(path, sep, dirChar, 'g');
+										};
+										if (fileIsString) {
+											file = tools.replace(file, sep, dirChar, 'g');
 										};
 									};
-									dirChar = sep;
 								};
 
 								// A folder separator is required
@@ -736,67 +554,114 @@ exports.add = function add(modules) {
 									};
 								};
 
+								// Trailing slashes.
+								const isTrailing = function(path, isString, side) {
+									if (!types.isNothing(path) && (path.length > 0)) {
+										const pos = side === 'left' ? 0 : path.length - 1;
+										if (isString) {
+											return (path[pos] === dirChar);
+										} else {
+											return (path[pos] === '');
+										};
+									};
+									return false;
+								};
+								let trailingSlashLeft = (isRelative === false);
+								if (!trailingSlashLeft) {
+									if (types.isNothing(dirRoot)) {
+										trailingSlashLeft = isTrailing(path, pathIsString, 'left');
+									} else {
+										trailingSlashLeft = isTrailing(dirRoot, dirRootIsString, 'left');
+									};
+								};
+								let trailingSlashRight = (isFolder === true);
+								if (!trailingSlashRight) {
+									if (!types.isNothing(path) && (path.length > 0)) {
+										trailingSlashRight = isTrailing(path, pathIsString, 'right');
+									} else {
+										trailingSlashRight = isTrailing(dirRoot, dirRootIsString, 'right');
+									};
+								};
+
 								// Split paths
-								if (dirRootIsString) {
-									if (dirRoot) {
+								if (!types.isNothing(dirRoot)) {
+									if (dirRootIsString) {
 										dirRoot = dirRoot.split(dirChar);
+									} else if (types.isArray(dirRoot)) {
+										dirRoot = tools.append([], dirRoot); // clone
+									} else {
+										if (dontThrow) {
+											return null;
+										} else {
+											throw new types.ParseError("'root' must be a string or an array.");
+										};
 									};
-								} else if (types.isArray(dirRoot)) {
-									dirRoot = tools.append([], dirRoot);
-								};
-
-								if (pathIsString) {
-									if (path) {
-										path = path.split(dirChar);
+									dirRoot = tools.filter(dirRoot, function (tmp) { return !!tmp; });
+									if (!dirRoot.length) {
+										dirRoot = null;
 									};
-								} else if (types.isArray(path)) {
-									path = tools.append([], path);
-								};
+								}
 
-								if (fileIsString) {
-									if (file) {
-										file = file.split(dirChar);
-									}
-								} else if (types.isArray(file)) {
-									file = tools.append([], file);
+								if (types.isNothing(path)) {
+									path = [];
+								} else if (pathIsString) {
+									path = path.split(dirChar);
 								};
+								path = tools.filter(path, function (tmp) { return !!tmp; });
+
+								if (types.isNothing(file)) {
+									file = [];
+								} else if (fileIsString) {
+									file = file.split(dirChar);
+								};
+								file = tools.filter(file, function (tmp) { return !!tmp; });
 
 								// Get and validate host and drive
 								if (os === 'windows') {
-									// NOTE: "!isRelative" means 'null' or 'false'.
-									if (!isRelative && types.isNothing(host) && types.isNothing(drive)) {
-										if (path) {
-											path = tools.trim(path, '', 1);
-											const hasHost = ((path.length >= 4) && !path[0] && !path[1]); //  "\\host\share"
-											const tmp = path[0];
-											if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
-												if (dirRoot) {
-													if (dontThrow) {
-														return null;
-													} else {
-														throw new types.ParseError("'path' can't have a network path or a drive letter while 'root' is set.");
-													};
-												};
-												if (hasHost) {
-													host = path.splice(0, 3)[2];
-													drive = path.shift();
-												} else {
-													drive = path.shift()[0];
-												};
-											};
-										};
-										if (dirRoot) {
-											dirRoot = tools.trim(dirRoot, '', 1);
-											const hasHost = ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]);
+									if (types.isNothing(host) && types.isNothing(drive)) {
+										if (!types.isNothing(dirRoot)) {
 											const tmp = dirRoot[0];
-											if (hasHost || (tmp && (tmp.length === 2) && (tmp[1] === ':'))) {
-												if (hasHost) {
-													host = dirRoot.splice(0, 3)[2];
-													drive = dirRoot.shift();
-												} else {
-													drive = dirRoot.shift()[0];
+											if ((dirRoot.length >= 4) && !dirRoot[0] && !dirRoot[1]) {
+												host = dirRoot.splice(0, 3)[2];
+												drive = dirRoot.shift();
+											} else if (tmp && (tmp.length >= 2) && (tmp[1] === ':')) {
+												drive = dirRoot.shift();
+												drive = drive.split(':', 2);
+												const remaining = drive[1];
+												drive = drive[0];
+												if (remaining) {
+													dirRoot.unshift(remaining);
 												};
 											};
+										}
+										const tmp = path[0];
+										if ((path.length >= 4) && !tmp && !path[1]) {
+											if (types.isNothing(host) && types.isNothing(drive)) {
+												host = path.splice(0, 3)[2];
+												drive = path.shift();
+											} else {
+												if (dontThrow) {
+													return null;
+												} else {
+													throw new types.ParseError("'path' can't have a network path or a drive letter while 'root' is set.");
+												};
+											}
+										} else if (tmp && (tmp.length >= 2) && (tmp[1] === ':')) {
+											if (types.isNothing(host) && types.isNothing(drive)) {
+												drive = path.shift();
+												drive = drive.split(':', 2);
+												const remaining = drive[1];
+												drive = drive[0];
+												if (remaining) {
+													path.unshift(remaining);
+												};
+											} else {
+												if (dontThrow) {
+													return null;
+												} else {
+													throw new types.ParseError("'path' can't have a network path or a drive letter while 'root' is set.");
+												};
+											}
 										};
 									};
 								} else {
@@ -809,12 +674,21 @@ exports.add = function add(modules) {
 									};
 								};
 
+								// Detect isRelative.
+								if (types.isNothing(isRelative)) {
+									isRelative = !host && !drive && !trailingSlashLeft;
+								};
+
+								// Validate host and drive.
 								if (os === 'windows') {
 									if (host || drive) {
-										isRelative = false;
-										if (!dirRoot || !dirRoot.length || (dirRoot[0] !== '')) {
-											dirRoot = tools.append([''], dirRoot);
-										};
+										if (isRelative) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new types.ParseError("Path can't be relative with a drive.");
+											};
+										}
 
 										// Validate host
 										if (host) {
@@ -843,7 +717,6 @@ exports.add = function add(modules) {
 										if (host) {
 											// TODO: Validate shared folder
 										} else {
-											//const chr = unicode.codePointAt(drive, 0) || 0;
 											const chr = drive.charCodeAt(0);
 											if ((drive.length !== 1) || (chr < 65) || (chr > 90)) {
 												if (dontThrow) {
@@ -856,35 +729,8 @@ exports.add = function add(modules) {
 									};
 								};
 
-								let trailingSlash = false;
-
-								if (pathIsString && path && path.length) {
-									// Auto-detect
-									const tmp = path[path.length - 1];
-									if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
-										if (types.isNothing(file)) {
-											file = [];
-										};
-										trailingSlash = true;
-									} else {
-										path.pop();
-										if (types.isNothing(file)) {
-											file = [tmp];
-										};
-									};
-								} else if (file && file.length) {
-									const tmp = file[file.length - 1];
-									if ((tmp === '') || (tmp === '.') || (tmp === '..')) {
-										trailingSlash = true;
-									};
-								};
-
-								if (types.isNothing(isRelative)) {
-									// Auto-detect
-									isRelative = !host && !drive && ((!dirRoot || !dirRoot.length || !!dirRoot[0]) && (!path || !path.length || !!path[0]));
-								};
-
-								if ((os === 'windows') && !host && !drive && !isRelative && forceDrive) {
+								// Forced drive
+								if (forceDrive && !isRelative && (os === 'windows') && !host && !drive) {
 									if (dontThrow) {
 										return null;
 									} else {
@@ -892,193 +738,129 @@ exports.add = function add(modules) {
 									};
 								};
 
+								// Resolve path and file.
 								if (!isRelative) {
-									// Resolve file
-									if (file) {
-										// File can traverse path but not root.
-										const abs = __Internal__.relativeToAbsolute(file, path || [], {
-											dirChar: dirChar,
-											dontThrow: dontThrow,
-											trailing: false,
-										});
-										if (!abs) {
-											return null;
-										};
-										path = abs.dirRoot;
-										file = abs.path;
-									};
-
-									// Resolve path
-									if (path) {
-										if (allowTraverse) {
-											// Path can traverse root
-											const abs = __Internal__.relativeToAbsolute(path, dirRoot || [], {
-												dirChar: dirChar,
-												dontThrow: dontThrow,
-												trailing: false,
-											});
-											if (!abs) {
-												return null;
-											};
-											dirRoot = abs.dirRoot;
-											path = abs.path;
-										} else {
-											// Path must not traverse root
-											const abs = __Internal__.relativeToAbsolute(path, [], {
-												dirChar: dirChar,
-												dontThrow: dontThrow,
-												trailing: false,
-											});
-											if (!abs) {
-												return null;
-											};
-											path = abs.path;
-										};
-									};
-								};
-
-								// Resolve root
-								if (dirRoot) {
-									if (isRelative) {
-										// Remove empty names
-										// NOTE: Only root can be relative.
-										dirRoot = tools.filter(dirRoot, function(val, i) {
-											return !!val;
-										});
-										if (!dirRoot.length) {
-											dirRoot = null;
-										};
-									} else {
-										// NOTE: Root must not traverse '/'
-										const abs = __Internal__.relativeToAbsolute(dirRoot, [], {
-											dirChar: dirChar,
-											dontThrow: dontThrow,
-											trailing: false,
-										});
+									// NOTE: Root must not traverse '/'
+									if (!types.isNothing(dirRoot)) {
+										const abs = __Internal__.relativeToAbsolute(dirRoot, [], {dirChar: dirChar,	dontThrow: dontThrow});
 										if (!abs) {
 											return null;
 										};
 										dirRoot = (abs.path.length ? abs.path : null);
 									};
-								};
 
-								// Validate file names
-								if (shell) {
-									const state = {
-										invalid: null,
+									// Resolve path
+									if (allowTraverse) {
+										// Path can traverse root
+										const abs = __Internal__.relativeToAbsolute(path, dirRoot || [], {dirChar: dirChar,	dontThrow: dontThrow});
+										if (!abs) {
+											return null;
+										};
+										dirRoot = abs.dirRoot;
+										path = abs.path;
+									} else {
+										// Path must not traverse root
+										const abs = __Internal__.relativeToAbsolute(path, [], {dirChar: dirChar, dontThrow: dontThrow});
+										if (!abs) {
+											return null;
+										};
+										path = abs.path;
 									};
 
-									let validatePath = null;
+									// File can traverse path but not root.
+									const abs = __Internal__.relativeToAbsolute(file, path, {dirChar: dirChar, dontThrow: dontThrow});
+									if (!abs) {
+										return null;
+									};
+									path = abs.dirRoot;
+									file = abs.path;
+								};
 
-									if (shell === 'dos') {
-										validatePath = function validatePathDos(pathArray) {
-											tools.forEach(pathArray, function(item, pos, items) {
-												// NOTE: DOS trims spaces at the end of path and file names but keeps them at the beginning
-												let tmp = tools.trim(item, ' ', -1);
+								// Validate root, path and file.
+								const validatePath = function validatePathDos(pathArray) {
+									if (types.isNothing(pathArray)) {
+										return true;
+									}
 
-												// NOTE: DOS also trims dots on the end
-												// NOTE: More than two dots resolves to one
-												if (tmp !== '..') {
-													tmp = tools.trim(tmp, '.', -1, tmp.length - 1);
+									for (let pos = 0; pos < pathArray.length; pos++) {
+										const item = pathArray[pos];
+
+										let tmp = tools.trim(item, ' ', -1);
+
+										if (os === 'windows') {
+											if (tmp.indexOf(':') >= 0) {
+												if (dontThrow) {
+													return false;
+												} else {
+													throw new types.ParseError("Invalid path or file name: '~0~'.", [item]);
 												};
-
-												if (!isRelative) {
-													if ((tmp === '.') || (tmp === '..')) {
-														state.invalid = item;
-													};
-												};
-
-												items[pos] = tmp;
-
-												// NOTE: DOS has reserved file names
-												if (__Internal__.parsePathWindowsInvalidNamesRegEx.test(tmp)) {
-													state.invalid = item;
-												};
-											});
+											};
 										};
-										//} else if (shell === 'api') {
-									} else {
+
+										// NOTE: More than two dots resolves to one
+										if (tmp !== '..') {
+											tmp = tools.trim(tmp, '.', -1, tmp.length - 1);
+										};
+
 										if (!isRelative) {
-											validatePath = function validatePathApi(pathArray) {
-												tools.forEach(pathArray, function(item, pos, items) {
-													if ((item === '.') || (item === '..')) {
-														state.invalid = item;
-													};
-												});
+											if ((tmp === '.') || (tmp === '..')) {
+												if (dontThrow) {
+													return false;
+												} else {
+													throw new types.ParseError("Invalid path or file name: '~0~'.", [item]);
+												};
 											};
 										};
-									};
-									//} else {
-									//	// Unix/Linux
-									//	validatePath = function validatePathNix(pathArray) {
-									//		tools.forEach(pathArray, function(item, pos, items) {
-									//			if (!isRelative) {
-									//				if ((item === '.') || (item === '..')) {
-									//					state.invalid = item;
-									//				};
-									//			};
-									//			if (__Internal__.parsePathUnixInvalidNamesRegEx.test(item)) {
-									//				state.invalid = item;
-									//			};
-									//		});
-									//	};
-									//};
 
-									if (validatePath) {
-										validatePath(dirRoot);
-										validatePath(path);
-										validatePath(file);
-
-										if (state.invalid) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Invalid path or file name: '~0~'.", [state.invalid]);
-											};
-										};
+										pathArray[pos] = tmp;
 									};
+
+									return true;
+								};
+								if (!validatePath(dirRoot)) {
+									return null; // dontThrow
+								};
+								if (!validatePath(path)) {
+									return null; // dontThrow
+								};
+								if (!validatePath(file)) {
+									return null; // dontThrow
 								};
 
-								if (!types.isNothing(isFolder)) {
-									if (!isFolder) {
-										if (!file && path) {
-											file = [path.pop()];
-										};
-										if (!file && allowTraverse && dirRoot) {
-											file = [dirRoot.pop()];
-										};
-										if (!file) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Missing file name.");
-											};
-										};
-									};
-								};
-
-								if (file && file.length > 1) {
-									const tmp = file.pop();
-									path = tools.append(path || [], file);
-									file = [tmp];
-								}
-
-								if (file) {
-									if (trailingSlash || !file.length) {
-										file = '';
-									} else if (file.length === 1) {
-										file = file[0];
+								// Get file name.
+								if (file.length > 1) {
+									if (dontThrow) {
+										return null;
 									} else {
+										throw new types.ParseError("Invalid file name.");
+									};
+								} else if (isFolder === true) {
+									// Make it a folder.
+									path = tools.append([], path, file);
+									file = null;
+								} else if (file.length === 0) {
+									if (!fileIsEmpty && !trailingSlashRight && (path.length > 0)) {
+										file = path.pop();
+										isFolder = false;
+									} else if (allowTraverse && !fileIsEmpty && !trailingSlashRight && !types.isNothing(dirRoot) && (dirRoot.length > 0)) {
+										file = dirRoot.pop();
+										isFolder = false;
+									} else if (isFolder === false) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Invalid file name.");
+											throw new types.ParseError("Missing file name.");
 										};
+									} else {
+										file = null;
+										isFolder = true;
 									};
 								} else {
-									file = null;
+									file = file[0];
+									isFolder = false;
 								};
 
+								// Get or set extension.
 								if (types.isNothing(file)) {
 									extension = null;
 								} else {
@@ -1096,37 +878,28 @@ exports.add = function add(modules) {
 											file += '.' + extension;
 										};
 									} else if (pos >= 0) {
-										// Remove trailing '.'
+										// Remove extension
 										file = file.slice(0, pos);
 									};
 								};
 
-								if (isFolder && file) {
-									if (path) {
-										path.push(file);
-									} else {
-										path = [file];
-									};
-									file = '';
-									extension = null;
-								};
+								path = {
+									host: host || '',
+									drive: drive || '',
+									root: dirRoot ? types.freezeObject(dirRoot) : null,
+									path: types.freezeObject(path),
+									file: file || '',
+									extension: file ? extension || '' : null,
 
-								return new this({
 									os,
 									caseSensitive,
 									dirChar,
-									host: host || null,
-									drive: drive || null,
-									root: types.freezeObject(dirRoot || []),
-									path: types.freezeObject(path || []),
-									file: file || '',
-									extension: (file ? extension || '' : null),
-									quote: quote || null,
+									isFolder,
 									isRelative,
-									noEscapes,
-									shell,
-									forceDrive,
-								});
+									quote: quote || '',
+								};
+
+								return new this(path);
 							}),
 
 						fromJSON: function fromJSON(value) {
@@ -1150,7 +923,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										options: {
 											type: 'object',
@@ -1163,8 +936,19 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function set(options) {
-								let newOptions = tools.fill(__Internal__.pathAllKeysForSet, {}, this);
-								newOptions = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, newOptions, options);
+								const extra = {};
+								if (types.has(options, 'os')) {
+									extra.caseSensitive = types.get(options, 'caseSensitive', null);
+									extra.dirChar = types.get(options, 'dirChar', null);
+								};
+								if (types.has(options, 'root') || types.has(options, 'path')) {
+									extra.isRelative = types.get(options, 'isRelative', null);
+								};
+								if (types.has(options, 'file')) {
+									extra.isFolder = types.get(options, 'isFolder', null);
+									extra.extension = types.get(options, 'extension', null);
+								};
+								const newOptions = tools.extend({}, this, extra, options);
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
 							}),
@@ -1173,7 +957,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: {
 										options: {
 											type: 'object',
@@ -1187,124 +971,70 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function toString(/*optional*/options) {
 								// Flags
-								const hasNewOptions = !types.isNothing(options);
-								const dontValidate = types.get(options, 'dontValidate', false);
-								let isFolder = types.get(options, 'isFolder', null);
+								const hasNewOptions = !types.isNothing(options),
+									hasOs = types.has(options, 'os'),
+									hasCaseSensitive = types.has(options, 'caseSensitive'),
+									hasDirChar = types.has(options, 'dirChar');
 
-								if (types.has(options, 'os')) {
-									if (!types.has(options, 'dirChar')) {
+								options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {}, this, options);
+
+								if (hasOs) {
+									if (!hasCaseSensitive) {
+										options.caseSensitive = null;
+									};
+									if (!hasDirChar) {
 										options.dirChar = null;
 									};
 								};
 
-								options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {}, this, options);
-
 								// Validate against the new options.
-								if (hasNewOptions && !dontValidate) {
+								if (hasNewOptions) {
 									// Validate
 									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
-									options.dontThrow = true;  // "parse" will return null when invalid
+									options.dontThrow = !root.serverSide;  // "parse" will return null when invalid
 									const type = types.getType(this);
 									options = type.parse(null, options);
 									if (!options) {
-										// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
-										//throw new files.PathError("Invalid path.");
+										// NOTE: Do not throw exceptions in "toString" because the javascript debugger in Chrome doesn't like it
 										return '';
 									};
-									// No need to execute that.
-									isFolder = null;
 								};
 
+								let path = options.path;
 
-								let dirRoot = options.root,
-									path = options.path,
-									file = options.file;
-
-								const host = options.host,
+								const dirRoot = options.root,
+									file = options.file,
+									host = options.host,
 									drive = options.drive,
-									hasPath = path.length && !path[0].length,
 									dirChar = options.dirChar || this.dirChar,
-									allowTraverse = options.allowTraverse;
+									isRelative = options.isRelative,
+									isFolder = options.isFolder;
 
-								if (dirRoot && types.isString(dirRoot)) {
-									dirRoot = tools.split(dirRoot, dirChar);
-								};
-								if (dirRoot) {
-									dirRoot = tools.filter(dirRoot, (name) => !!name);
-								};
-
-								if (path && types.isString(path)) {
-									path = tools.split(path, dirChar);
-								};
-								if (path) {
-									path = tools.filter(path, (name) => !!name);
-								};
-
-								if (file && types.isString(file)) {
-									file = tools.split(file, dirChar);
-								};
+								// Combine root, path and file.
+								path = tools.append([], dirRoot, path);
 								if (file) {
-									file = tools.filter(file, (name) => !!name);
-									if (path) {
-										tools.append(path, file);
-									} else {
-										path = tools.append([], file);
-									}
-									file = path.pop();
+									path.push(file);
+								}
+
+								// Trailing slashes.
+								if (!isRelative) {
+									path.unshift('');
 								};
+								if (isFolder) {
+									path.push('');
+								}
 
-								if (!types.isNothing(isFolder)) {
-									// NOTE: If we are there that's because validation has been disabled.
-									if (isFolder) {
-										if (file) {
-											if (path) {
-												path.push(file);
-											} else {
-												path = [file];
-											};
-											file = '';
-										};
-									} else {
-										if (!file && path) {
-											file = path.pop();
-										};
-										if (!file && allowTraverse && dirRoot) {
-											file = dirRoot.pop();
-										};
-										//if (!file) {
-										//	// ???
-										//};
-									};
-								};
-
-								path = tools.append([], dirRoot, path, [file || '']);
-
-								if (!options.noEscapes && !options.quote) {
-									if (options.shell === 'bash') {
-										const pathLen = path.length;
-										for (let i = 0; i < pathLen; i++) {
-											path[i] = path[i].replace(__Internal__.parsePathUnixEscapeShellReservedCharsRegEx, "\\$1");
-										};
-									} else if (options.shell === 'dos') {
-										const pathLen = path.length;
-										for (let i = 0; i < pathLen; i++) {
-											path[i] = path[i].replace(__Internal__.parsePathWindowsEscapeShellReservedCharsRegEx, "^$1");
-										};
-									};
-								};
-
+								// Build string.
 								let result = path.join(dirChar);
 
-								if (!options.isRelative || host || drive || hasPath) {
-									result = (dirChar + result);
-								};
-
+								// Insert host and drive.
 								if (host && drive) {
 									result = (dirChar + dirChar + host + dirChar + drive) + result;
 								} else if (drive) {
 									result = (drive + ':') + result;
 								};
 
+								// Insert quotes.
 								if (options.quote) {
 									result = (options.quote + result + options.quote);
 								};
@@ -1329,14 +1059,14 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function toApiString(/*optional*/options) {
-								return this.toString(tools.extend({}, options, {os: null, dirChar: null, shell: 'api'}));
+								return this.toString(tools.extend({}, options, {os: null, dirChar: null, forceDrive: true}));
 							}),
 
 						combine: root.DD_DOC(
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 13,
+									revision: 14,
 									params: {
 										location: {
 											type: 'string,Path,Url',
@@ -1354,157 +1084,130 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function combine(/*optional*/location, /*optional*/options) {
-								const dontThrow = types.get(options, 'dontThrow', false);
+								const hasNewOptions = !types.isNothing(options),
+									allowTraverse = types.get(options, 'allowTraverse', false),
+									dontThrow = types.get(options, 'dontThrow', false),
+									appendFile = types.get(options, 'appendFile', /*null*/ false);
 
-								location = files.parseLocation(location, {dontThrow});
+								if (!types.isNothing(location) && !types._instanceof(location, [files.Path, files.Url])) {
+									location = files.parseLocation(location, {dontThrow});
+								};
 
 								if (types.isNothing(location)) {
 									if (dontThrow) {
 										return null;
 									} else {
-										throw new types.ParseError("Missing location.");
+										throw new files.PathError("Missing location.");
 									};
 								};
 
-								const includePathInRoot = types.get(options, 'includePathInRoot', false);
+								/*if (!this.isFolder && location.isRelative && types.isNothing(appendFile)) {
+									throw new files.PathError("The 'appendFile' option is mandatory to combine from a file path.");
+								};*/
 
-								let data = tools.fill(__Internal__.pathAllKeys, {}, this, options);
+								const isFolder = types.get(options, 'isFolder', location.isFolder);
 
-								const thisRoot = this.root;
-								let thisPath = this.path;
+								options = tools.fill(__Internal__.pathAllKeys, {}, this); // clone
 
-								let locRoot;
-								let locPath;
+								// Validate against the new options.
+								if (hasNewOptions) {
+									// Validate
+									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+									const type = types.getType(this);
+									options = type.parse(null, options);
+									if (!options) {
+										return null;
+									};
+									options = tools.fill(__Internal__.pathAllKeys, {}, options); // clone
+								};
 
-								const locFile = types.get(options, 'file', location.file);
+								const host = options.host,
+									drive = options.drive,
+									file = options.file,
+									locFile = location.file;
 
-								let isRelative = false;
+								let dirRoot = options.root,
+									path = options.path,
+									locRoot = null,
+									locPath = location.path;
+
 								if (types._instanceof(location, files.Path)) {
-									const host = types.get(options, 'host', location.host);
-									const drive = types.get(options, 'drive', location.drive);
-									if ((location.os === 'windows') && (host || drive) && ((this.os !== 'windows') || (host !== this.host) || (drive !== this.drive))) {
+									const locHost = location.host,
+										locDrive = location.drive;
+									if (((locHost || locDrive) && ((locHost !== host) || (locDrive !== drive)))) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Drive mismatch.");
+											throw new files.PathError("Drive mismatch.");
 										}
 									};
-									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
-									locRoot = types.get(options, 'root', location.root);
-									if (types.isString(locRoot)) {
-										locRoot = locRoot.split(data.dirChar);
-									};
-									locPath = types.get(options, 'path', location.path);
-									if (types.isString(locPath)) {
-										locPath = locPath.split(data.dirChar);
+									locRoot = location.root;
+									if (!location.isRelative && !tools.areSimilar(dirRoot || [], locRoot || [])) {
+										if (dontThrow) {
+											return null;
+										} else {
+											throw new files.PathError("Root mismatch.");
+										}
 									};
 								} else { //if (types._instanceof(location, files.Url))
 									if (location.protocol && (location.protocol !== 'file')) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Bad URL protocol.");
+											throw new files.PathError("Bad URL protocol.");
 										}
 									};
-									locRoot = types.get(options, 'root', null);
-									if (types.isString(locRoot)) {
-										locRoot = locRoot.split(data.dirChar);
+									let locDrive = null;
+									const tmp = locPath[0];
+									if (tmp && (tmp.length === 2) && (tmp[1] === ':')) {
+										locDrive = locPath.shift();
+										locDrive = locDrive.split(':', 2);
+										const remaining = locDrive[1];
+										locDrive = locDrive[0].toUpperCase();
+										locPath = tools.append([], remaining, locPath);
 									};
-									locPath = types.get(options, 'path', location.path);
-									if (types.isString(locPath)) {
-										locPath = locPath.split(data.dirChar);
-									};
-									let host;
-									if (types.has(options, 'host')) {
-										host = options.host;
-										data.host = host;
-									} else if (location.protocol === 'file') {
-										host = location.domain;
-										if (host) {
-											data.host = host;
-										};
-									};
-									let drive = null;
-									if (location.protocol === 'file') {
-										if (location.domain || (location.path[0] && (location.path[0].length === 2) && (location.path[0][1] === ':'))) {
-											drive = (location.domain ? location.path[0] : location.path[0][0]);
-											if (!types.has(options, 'path')) {
-												// "locPath" is "location.path", so we must remove the drive from it.
-												locPath = tools.append([], locPath); // clone
-												locPath.shift();
-											};
-										};
-									};
-									if (types.has(options, 'drive')) {
-										drive = options.drive;
-										data.drive = drive;
-									} else if (drive) {
-										data.drive = drive;
-									};
-									isRelative = !host && !drive && types.get(options, 'isRelative', location.isRelative);
-								};
-
-								locRoot = tools.filter(locRoot || [], (name) => !!name);
-								locPath = tools.filter(locPath || [], (name) => !!name);
-
-								let thisFile = this.file;
-								if (thisFile && ((locRoot && locRoot.length) || (locPath && locPath.length) || locFile)) {
-									// Like a call to "toFolder".
-									thisPath = tools.append([], thisPath);
-									thisPath.push(thisFile);
-									thisFile = null;
-								};
-
-								if (includePathInRoot) {
-									if (isRelative) {
-										data.root = tools.append([], thisRoot, thisPath, locRoot);
-										data.path = tools.append([], locPath);
-									} else {
-										if (!data.allowTraverse && (thisRoot.length || thisPath.length)) {
-											if (dontThrow) {
-												return null;
-											} else {
-												throw new types.ParseError("Path overflow.");
-											};
-										};
-										data.root = locRoot;
-										data.path = locPath;
-									};
-								} else if (isRelative) {
-									data.root = thisRoot;
-									data.path = tools.append([], thisPath, locRoot, locPath);
-								} else {
-									if (!data.allowTraverse && thisRoot.length) {
+									if (host && locDrive) {
 										if (dontThrow) {
 											return null;
 										} else {
-											throw new types.ParseError("Path overflow.");
-										};
-									};
-									data.root = [];
-									data.path = tools.append([], locRoot, locPath);
+											throw new files.PathError("Host mismatch.");
+										}
+									}
+									if (drive && locDrive) {
+										if (locDrive !== drive) {
+											if (dontThrow) {
+												return null;
+											} else {
+												throw new files.PathError("Drive mismatch.");
+											}
+										}
+									}
 								};
 
-								data.file = locFile;
-
-								data = tools.fill(__Internal__.pathOptionsKeys, data, this);
-
-								if (!types.has(options, 'extension')) {
-									// Force auto-detect
-									data.extension = null;
+								if (location.isRelative) {
+									dirRoot = tools.append([], dirRoot || [], path, (appendFile === true) && file ? [file] : [], locRoot);
+									path = tools.append([], locPath); // clone
+								} else {
+									path = tools.append([], locRoot, locPath);
 								};
 
-								if (!types.has(options, 'isFolder')) {
-									// Force auto-detect
-									data.isFolder = null;
+								if (locFile) {
+									path.push(locFile);
 								};
 
-								data.dontThrow = dontThrow;
+								options.root = dirRoot;
+								options.path = path;
+								options.file = null; // auto-detect
+								options.extension = null; // auto-detect
+
+								options.allowTraverse = allowTraverse;
+								options.isFolder = isFolder;
+								options.dontThrow = dontThrow;
 
 								const type = types.getType(this);
-								location = type.parse(null, data);
+								path = type.parse(null, options);
 
-								return location;
+								return path;
 							}),
 
 						moveUp: root.DD_DOC(
@@ -1577,7 +1280,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 3,
+									revision: 4,
 									params: null,
 									returns: 'Path',
 									description: "Excludes file from the path and returns a new Path object. Will returns 'null' when there is no file that can be extracted from the path.",
@@ -1586,10 +1289,8 @@ exports.add = function add(modules) {
 							, function toFile() {
 								if (this.file) {
 									return this;
-								} else if (this.path && this.path.length) {
-									return this.set({isFolder: false});
 								} else {
-									return null;
+									return this.set({isFolder: false});
 								};
 							}),
 
@@ -1597,7 +1298,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 6,
+									revision: 7,
 									params: {
 										options: {
 											type: 'object',
@@ -1610,79 +1311,53 @@ exports.add = function add(modules) {
 								}
 							//! END_REPLACE()
 							, function toArray(/*optional*/options) {
-								const isRelative = types.get(options, 'isRelative', this.isRelative),
-									dirChar = types.get(options, 'dirChar', this.dirChar),
-									pathOnly = types.get(options, 'pathOnly', false),
-									trim = types.get(options, 'trim', false),
-									isFolder = types.get(options, 'isFolder', null);
+								let hasNewOptions = !types.isNothing(options);
 
-								let file = types.get(options, 'file', this.file),
-									host = types.get(options, 'host', this.host),
-									drive = types.get(options, 'drive', this.drive),
-									root = types.get(options, 'root', this.root),
-									path = types.get(options, 'path', this.path);
+								const trim = types.get(options, 'trim', false),
+									pathOnly = types.get(options, 'pathOnly', false);
+
+								options = tools.fill(__Internal__.pathAllKeysAndNonStoredKeys, {}, this, options);
 
 								if (pathOnly) {
-									host = null;
-									drive = null;
-									root = null;
+									options.host = '';
+									options.drive = '';
+									options.file = '';
+									options.extension = null;
+									hasNewOptions = true;
 								};
 
-								if (types.isString(root)) {
-									root = root.split(dirChar);
-								};
-								if (types.isArray(root)) {
-									root = tools.filter(root, (name) => !!name);
-								} else {
-									root = null;
-								};
-
-								if (types.isString(path)) {
-									path = path.split(dirChar);
-								};
-
-								if (types.isArray(path)) {
-									path = tools.filter(path, (name) => !!name);
-								} else {
-									path = null;
-								};
-
-								const newPath = tools.append([], root, path);
-
-								if (!types.isNothing(isFolder)) {
-									if (isFolder) {
-										if (file) {
-											newPath.push(file);
-											file = '';
-										};
-									} else {
-										if (!file) {
-											file = newPath.pop();
-										};
+								// Validate against the new options.
+								if (hasNewOptions) {
+									// Validate
+									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
+									const type = types.getType(this);
+									options = type.parse(null, options);
+									if (!options) {
+										return null;
 									};
 								};
 
-								if (file) {
-									newPath.push(file);
-								} else if (!trim) {
-									newPath.push('');
+								const path = tools.append([], options.root, options.path);
+								if (options.file) {
+									path.push(options.file);
+								}
+
+								if (options.host && options.drive) {
+									path.unshift(options.drive); // share name
+									path.unshift('\\\\' + options.host); // host name
+								} else if (options.drive) {
+									path.unshift(options.drive + ':');
+								} else if (!trim && !options.isRelative) {
+									// Trailing slashes.
+									path.unshift('');
 								};
 
-								if (!isRelative) {
-									if (host && drive) {
-										if (trim) {
-											newPath.unshift(host, drive);
-										} else {
-											newPath.unshift('', '', host, drive);
-										};
-									} else if (!host && drive) {
-										newPath.unshift(drive + ':');
-									} else if (!trim && newPath.length) {
-										newPath.unshift('');
-									};
+								// Trailing slashes.
+								if (!trim && !options.file) {
+									path.push('');
 								};
 
-								return newPath;
+								return path;
 							}),
 
 						relative: function relative(to, /*optional*/options) {
@@ -1692,17 +1367,19 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Path is not absolute.");
+									throw new files.PathError("Path is not absolute.");
 								};
 							};
 
-							to = files.parsePath(to, {dontThrow});
+							if (!types.isNothing(to) && !types._instanceof(to, files.Path)) {
+								to = files.parsePath(to, {dontThrow});
+							}
 
 							if (types.isNothing(to)) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Missing target path.");
+									throw new files.PathError("Missing target path.");
 								};
 							};
 
@@ -1710,7 +1387,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Target must be an absolute path.");
+									throw new files.PathError("Target must be an absolute path.");
 								};
 							};
 
@@ -1718,7 +1395,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Incompatible OSes.");
+									throw new files.PathError("Incompatible OSes.");
 								};
 							};
 
@@ -1726,18 +1403,19 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Paths must be from the same network share or the same drive.");
+									throw new files.PathError("Paths must be from the same network share or the same drive.");
 								};
 							};
 
-							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive);
+							const caseSensitive = types.get(options, 'caseSensitive', this.caseSensitive),
+								isFolder = types.get(options, 'isFolder', this.isFolder);
 
-							const thisAr = this.toArray(),
-								toAr = to.toArray({isFolder: true});
+							const thisAr = this.toArray({trim: true}),
+								toAr = to.toArray({trim: true});
 
 							let i = 0;
 
-							for (; (i < thisAr.length - 1) && (i < toAr.length - 1); i++) {
+							while ((i < thisAr.length) && (i < toAr.length)) {
 								if (caseSensitive) {
 									if (thisAr[i] !== toAr[i]) {
 										break;
@@ -1747,13 +1425,14 @@ exports.add = function add(modules) {
 										break;
 									};
 								};
+								i++;
 							};
 
 							const pathAr = [];
 
 							let j = i;
 
-							for (; i < toAr.length - 1; i++) {
+							for (; i < toAr.length; i++) {
 								pathAr.push('..');
 							};
 
@@ -1761,14 +1440,13 @@ exports.add = function add(modules) {
 								pathAr.push('.');
 							};
 
-							for (; j < thisAr.length - 1; j++) {
+							for (; j < thisAr.length; j++) {
 								pathAr.push(thisAr[j]);
 							};
 
-							const file = (j < thisAr.length ? thisAr[j] : '');
-
 							const type = types.getType(this);
-							return type.parse(null, tools.extend(tools.fill(__Internal__.pathOptions, {}, this), {path: pathAr, file, extension: null, isRelative: true, dontThrow}));
+							options = tools.extend({}, {root: null, file: null, extension: null, isRelative: true, isFolder}, options);
+							return type.parse(pathAr, options);
 						},
 
 						toDataObject: root.DD_DOC(
@@ -2356,7 +2034,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 1,
+									revision: 2,
 									params: {
 										args: {
 											type: 'string,UrlArguments,object',
@@ -2541,8 +2219,8 @@ exports.add = function add(modules) {
 								} else if (types._instanceof(url, files.Url)) {
 									const args = types.get(options, 'args', null);
 
-									const data = tools.fill(__Internal__.urlAllKeys, {}, url);
-									options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, data, {host: null, extension: null}, options);
+									options = tools.fill(__Internal__.urlAllKeys, {}, url);
+									options = tools.extend(options, {host: null, extension: null}, options);
 
 									if (types.isJsObject(args)) {
 										options.args = url.args.combine(args, options);
@@ -2557,7 +2235,7 @@ exports.add = function add(modules) {
 										pathTmp.unshift(url.host ? url.drive : url.drive + ':');
 									};
 
-									options = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, {
+									options = tools.extend({
 										protocol: null,
 										host: null,
 										domain: url.host,
@@ -2861,11 +2539,7 @@ exports.add = function add(modules) {
 
 								if (!isRelative) {
 									if (file) {
-										const abs = __Internal__.relativeToAbsolute(file, path || [], {
-											dirChar: '/',
-											dontThrow: dontThrow,
-											trailing: false,
-										});
+										const abs = __Internal__.relativeToAbsolute(file, path || [], {dirChar: '/', dontThrow: dontThrow});
 										if (!abs) {
 											return null;
 										};
@@ -2874,11 +2548,7 @@ exports.add = function add(modules) {
 									};
 
 									if (path) {
-										const abs = __Internal__.relativeToAbsolute(path, [], {
-											dirChar: '/',
-											dontThrow: dontThrow,
-											trailing: false,
-										});
+										const abs = __Internal__.relativeToAbsolute(path, [], {dirChar: '/', dontThrow: dontThrow});
 										if (!abs) {
 											return null;
 										};
@@ -3043,15 +2713,11 @@ exports.add = function add(modules) {
 							//! END_REPLACE()
 							, function set(options) {
 								let newOptions = tools.fill(__Internal__.urlAllKeysForSet, {}, this);
-								//delete newOptions.extension;
-								//delete newOptions.host;
 								if (!types.has(options, 'url')) {
 									newOptions.path = this.path;
 									newOptions.file = this.file;
-									//delete newOptions.path;
-									//delete newOptions.file;
 								};
-								newOptions = tools.fill(__Internal__.urlAllKeysAndNonStoredKeys, newOptions, options);
+								newOptions = tools.extend(newOptions, options);
 								const type = types.getType(this);
 								return type.parse(null, newOptions);
 							}),
@@ -3188,10 +2854,10 @@ exports.add = function add(modules) {
 									// Validate
 									// NOTE: Use "parse" because there is too many validations and we don't want to repeat them
 									const type = types.getType(this);
-									options.dontThrow = true;  // "parse" will return null when invalid
+									options.dontThrow = !root.serverSide;  // "parse" will return null when invalid
 									options = type.parse(null, options);
 									if (!options) {
-										// NOTE: Do not throw exceptions in "toString" because the javascript debugger doesn't like it
+										// NOTE: Do not throw exceptions in "toString" because the Chrome javascript debugger doesn't like it
 										//throw new types.ParseError("Invalid url.");
 										return '';
 									};
@@ -3401,21 +3067,19 @@ exports.add = function add(modules) {
 									if (dontThrow) {
 										return null;
 									} else {
-										throw new types.ParseError("Missing location.");
+										throw new files.PathError("Missing location.");
 									};
 								};
 
 								const data = tools.fill(__Internal__.urlAllKeys, {}, this, options);
 
-								let thisPath = this.path;
-								const thisFile = this.file;
-
+								const thisPath = this.path;
 
 								let path = types.get(options, 'path', location.path);
 								if (types.isString(path)) {
 									path = path.split('/');
 								} else {
-									path = tools.append([], path || []); // clone
+									path = tools.append([], path); // clone
 								};
 
 								let isRelative = false;
@@ -3474,18 +3138,13 @@ exports.add = function add(modules) {
 								path = tools.filter(path, (name) => !!name);
 
 								let file = types.get(options, 'file', location.file);
-								if (types.isString(file)) {
+								if (file && types.isString(file)) {
 									file = file.split('/');
 								};
 								if (file && file.length) {
 									file = tools.filter(file, (name) => !!name);
 									tools.append(path, file);
 									file = path.pop();
-								};
-
-								if (thisFile && isRelative) {
-									thisPath = tools.append([], thisPath); // clone
-									thisPath.push(thisFile);
 								};
 
 								if (isRelative) {
@@ -3725,7 +3384,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Url is not absolute.");
+									throw new files.PathError("Url is not absolute.");
 								};
 							};
 
@@ -3735,7 +3394,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Missing target url.");
+									throw new files.PathError("Missing target url.");
 								};
 							};
 
@@ -3743,7 +3402,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Target must be an absolute url.");
+									throw new files.PathError("Target must be an absolute url.");
 								};
 							};
 
@@ -3751,7 +3410,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Urls must be from the same domain and have the same port number.");
+									throw new files.PathError("Urls must be from the same domain and have the same port number.");
 								};
 							};
 
@@ -3759,7 +3418,7 @@ exports.add = function add(modules) {
 								if (dontThrow) {
 									return null;
 								} else {
-									throw new types.ParseError("Urls must be from the same credentials.");
+									throw new files.PathError("Urls must be from the same credentials.");
 								};
 							};
 
@@ -3801,7 +3460,9 @@ exports.add = function add(modules) {
 							const file = (j < thisAr.length ? thisAr[j] : '');
 
 							const type = types.getType(this);
-							return type.parse(null, tools.extend(tools.fill(__Internal__.urlOptions, {}, this), {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, drive: '', dontThrow}));
+							options = tools.fill(__Internal__.urlOptions, {}, this);
+							options = tools.extend(options, {path: pathAr, file, extension: null, args: this.args, anchor: this.anchor, isRelative: true, drive: '', dontThrow});
+							return type.parse(null, options);
 						},
 
 						toDataObject: root.DD_DOC(
