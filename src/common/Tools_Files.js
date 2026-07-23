@@ -1064,7 +1064,7 @@ exports.add = function add(modules) {
 							//! REPLACE_IF(IS_UNSET('debug'), "null")
 								{
 									author: "Claude Petit",
-									revision: 14,
+									revision: 15,
 									params: {
 										location: {
 											type: 'string,Path,Url',
@@ -1169,8 +1169,8 @@ exports.add = function add(modules) {
 											return null;
 										} else {
 											throw new files.PathError("Host mismatch.");
-										}
-									}
+										};
+									};
 									if (drive && locDrive) {
 										if (locDrive !== drive) {
 											if (dontThrow) {
@@ -1178,14 +1178,22 @@ exports.add = function add(modules) {
 											} else {
 												throw new files.PathError("Drive mismatch.");
 											}
-										}
-									}
+										};
+									};
 								};
 
 								if (location.isRelative) {
 									dirRoot = tools.append([], dirRoot || [], path, (appendFile === true) && file ? [file] : [], locRoot);
 									path = tools.append([], locPath); // clone
 								} else {
+									// TODO: case insensitive or not
+									if (!allowTraverse && !tools.areSimilar(dirRoot || [], locRoot || [])) {
+										if (dontThrow) {
+											return null;
+										} else {
+											throw new files.PathError("Path overflow.");
+										}
+									};
 									path = tools.append([], locRoot, locPath);
 								};
 
