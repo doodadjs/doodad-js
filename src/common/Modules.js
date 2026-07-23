@@ -60,7 +60,7 @@ exports.add = function add(modules) {
 
 			modules.ADD('clientResolve', function clientResolve(location, /*optional*/options) {
 				if (!types._instanceof(location, files.Url)) {
-					location = files.Url.parse(location);
+					location = files.parseUrl(location);
 				};
 
 				let url;
