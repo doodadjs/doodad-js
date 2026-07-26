@@ -1122,6 +1122,7 @@ exports.add = function add(modules) {
 								const host = options.host,
 									drive = options.drive,
 									file = options.file,
+									caseSensitive = options.caseSensitive,
 									locFile = location.file;
 
 								let dirRoot = options.root,
@@ -1186,8 +1187,13 @@ exports.add = function add(modules) {
 									dirRoot = tools.append([], dirRoot || [], path, (appendFile === true) && file ? [file] : [], locRoot);
 									path = tools.append([], locPath); // clone
 								} else {
-									// TODO: case insensitive or not
-									if (!allowTraverse && !tools.areSimilar(dirRoot || [], locRoot || [])) {
+									let ar1 = dirRoot || [];
+									let ar2 = locRoot || [];
+									if (!caseSensitive) {
+										ar1 = tools.map(ar1, function(name) { name.toLowerCase(); });
+										ar2 = tools.map(ar2, function(name) { name.toLowerCase(); });
+									};
+									if (!allowTraverse && !tools.areSimilar(ar1, ar2)) {
 										if (dontThrow) {
 											return null;
 										} else {
