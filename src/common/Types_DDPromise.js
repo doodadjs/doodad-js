@@ -154,10 +154,6 @@ exports.add = function add(modules) {
 					};
 					types.setJsAttribute(Promise.prototype, 'nodeify', asCallback, {configurable: true});
 					types.setJsAttribute(Promise.prototype, 'asCallback', asCallback, {configurable: true});
-				} else if (!types.isFunction(Promise.prototype.asCallback)) {
-					Promise.prototype.asCallback = Promise.prototype.nodeify;
-				} else if (!types.isFunction(Promise.prototype.nodeify)) {
-					Promise.prototype.nodeify = Promise.prototype.asCallback;
 				};
 
 				// Bluebird "finally" polyfill
