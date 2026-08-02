@@ -44,18 +44,10 @@ exports.add = function add(mods) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
 					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO,
 					client = doodad.Client;
 
 						
-				if (!options) {
-					options = {};
-				};
-					
-				
 				const __Internal__ = {
 				};
 
@@ -1335,14 +1327,16 @@ exports.add = function add(mods) {
 				__Internal__.hasIter = false;
 				try {
 					__Internal__.hasIter = types.isSymbol(global.Symbol ? global.Symbol.iterator : undefined);
-				} catch(ex) {
+				} catch {
+					// Do nothing
 				};
 					
 				__Internal__.hasGen = false;
 				try {
 					tools.eval("function*(){}");
 					__Internal__.hasGen = true;
-				} catch(ex) {
+				} catch {
+					// Do nothing
 				};
 				
 				

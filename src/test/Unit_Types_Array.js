@@ -43,18 +43,9 @@ exports.add = function add(mods) {
 			run: function run(root, /*optional*/options) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
-					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 						
-				if (!options) {
-					options = {};
-				};
-
-					
 				const createArray1 = function _createArray1() {
 					const ar1 = [1, 2, 9, 10];
 					ar1.a = 3;
@@ -63,13 +54,6 @@ exports.add = function add(mods) {
 					return ar1;
 				};
 					
-				const createArray2 = function _createArray2() {
-					const ar2 = [1, 2, 3];
-					delete ar2[0];
-					return ar2;
-				};
-					
-
 				test.runCommand(types.has, "Doodad.Types.hasKey", function(command, options) {
 					const ar1 = createArray1();
 					

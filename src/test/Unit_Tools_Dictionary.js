@@ -44,17 +44,9 @@ exports.add = function add(mods) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 						
-				if (!options) {
-					options = {};
-				};
-					
-				
 				const __Internal__ = {
 					symbol1: types.hasSymbolsEnabled() && types.getSymbol("symbol1") || undefined,
 					symbol2: types.hasSymbolsEnabled() && types.getSymbol("symbol2") || undefined,

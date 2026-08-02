@@ -397,7 +397,7 @@ exports.add = function add(modules) {
 				let isAborted = false;
 				try {
 					isAborted = types._instanceof(err, types.ScriptAbortedError);
-				} catch(o) {
+				} catch {
 					if (root.getOptions().debug) {
 						types.DEBUGGER();
 					};
@@ -406,11 +406,11 @@ exports.add = function add(modules) {
 					exitCode = err.exitCode;
 				};
 
-				let ev = null;
+				let ev;
 				try {
 					ev = new types.CustomEvent('exit', {cancelable: false, detail: {error: err, exitCode: exitCode}});
 					tools.dispatchEvent(ev); // sync
-				} catch(o) {
+				} catch {
 					ev = null;
 					if (root.getOptions().debug) {
 						types.DEBUGGER();
@@ -428,7 +428,7 @@ exports.add = function add(modules) {
 							_shared.Natives.documentOpen('text/plain', 'replace');
 							_shared.Natives.documentWrite("");
 							_shared.Natives.documentClose();
-						} catch(o) {
+						} catch {
 							// Do nothing
 						};
 
@@ -436,14 +436,14 @@ exports.add = function add(modules) {
 						if (!isAborted) {
 							try {
 								_shared.Natives.consoleError("<FATAL ERROR> " + err.message + '\n' + err.stack);
-							} catch(o) {
+							} catch {
 								// Do nothing
 							};
 						};
 
 						try {
 							global.console.log("Page exited with code : " + types.toString(exitCode));
-						} catch(o) {
+						} catch {
 							// Do nothing
 						};
 
@@ -477,7 +477,7 @@ exports.add = function add(modules) {
 
 								__Internal__.catchAndExitCalled = true;
 
-							} catch(o) {
+							} catch {
 								//if (root.getOptions().debug) {
 								//	types.DEBUGGER();
 								//};
@@ -498,7 +498,7 @@ exports.add = function add(modules) {
 									_shared.Natives.documentOpen('text/plain', 'replace');
 									_shared.Natives.documentWrite("");
 									_shared.Natives.documentClose();
-								} catch(o) {
+								} catch {
 									// Do nothing
 								};
 							};
@@ -715,7 +715,6 @@ exports.add = function add(modules) {
 					const extender = self[_shared.ExtenderSymbol];
 
 					const createHandler = function(element, eventType) {
-						/* eslint consistent-return: "off" */
 						let ignore = false;
 						return doodad.Callback(self[_shared.ObjectSymbol], function jsEventHandler(ev) {
 							if (!ignore) {
@@ -1111,8 +1110,8 @@ exports.add = function add(modules) {
 					let _location = _shared.Natives.windowLocation;
 					if (_window) {
 						_location = _window.location;
-					} else {
-						_window = global;
+					//} else {
+						//_window = global;
 					};
 
 					const result = url.compare(_location.href);
@@ -2100,7 +2099,7 @@ exports.add = function add(modules) {
 			return function init(/*optional*/options) {
 				try {
 					types.getPromise();
-				} catch(ex) {
+				} catch {
 					if (global.RSVP && types.isFunction(global.RSVP.Promise)) {
 						// tiny Promise/A+ implementation
 						types.setPromise(global.RSVP.Promise);

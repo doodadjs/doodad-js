@@ -1,4 +1,5 @@
-/* global DD_BOOTSTRAP */
+/* eslint no-eval: "off" */
+/* eslint no-debugger: "off" */
 
 //! BEGIN_MODULE()
 
@@ -40,27 +41,19 @@ exports.add = function add(modules) {
 // WARNING: It is NOT to be used with arbitrary expressions.
 // WARNING: Do not declare any variable and parameter inside these functions.
 exports.eval = function _eval(/*expr*/) {
-	/* eslint no-eval: "off" */
-	/* eslint prefer-rest-params: "off" */
-
 	// <PRB> "{...}" and "function ..." need parentheses.
 	return eval('(' + arguments[0] + ')');
 };
 
 exports.evalWithCtx = function evalWithCtx(ctx /*, expr*/) {
-	/* eslint no-eval: "off" */
-	/* eslint prefer-rest-params: "off" */
-
 	// NOTE: "ctx" is to be used by the expression
+	// eslint-disable-next-line  no-useless-assignment
 	ctx = ctx || {}; // force variable to be preserved
 	// <PRB> "{...}" and "function ..." need parentheses.
 	return eval('(' + arguments[1] + ')');
 };
 
 exports.createEval = function createEval(/*locals*/) {
-	/* eslint no-eval: "off" */
-	/* eslint prefer-rest-params: "off" */
-
 	return eval(
 		"(function(" + arguments[0].join(",") + ") {" +
 			"return function(/*expression*/) {" +
@@ -73,15 +66,13 @@ exports.createEval = function createEval(/*locals*/) {
 
 
 exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/_options, /*optional*/startup) {
-	/* eslint global-require: "off" */
-
 	(function checkRuntime() {
 		// <PRB> Firefox's "Function.prototype.toString" bug #1 : "incompatible object" error message raised with some constructors (EventTarget, Node, HTMLElement, ...) ! Don't know how to test for compatibility.
 		try {
 			if (typeof global.Event === 'function') {
 				global.Function.prototype.toString.call(global.Event);
 			};
-		} catch(ex) {
+		} catch {
 			throw new global.Error("Browser version not supported.");
 		};
 
@@ -233,7 +224,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						try {
 							_shared.Natives.stringValueOfCall(obj);
 							return true;
-						} catch(o) {
+						} catch {
 							// Do nothing
 						};
 					} else if (_shared.Natives.objectToStringCall(obj) === '[object String]') {
@@ -413,8 +404,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				}
 			//! END_REPLACE()
 			, function keys(obj) {
-				/* eslint no-restricted-syntax: "off", guard-for-in: "off" */ // for...in
-
 				// Returns enumerable own properties (those not inherited).
 				// Doesn't not include array items.
 				if (types.isNothing(obj)) {
@@ -906,8 +895,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	//===================================
 
 	__Internal__.ADD('DEBUGGER', function DEBUGGER() {
-		/* eslint no-debugger: "off" */
-
 		// Something weird just happened. Please see the call stack.
 
 		// <PRB> "debugger" de-optimizes the function containing it. So we isolate it in "types.DEBUGGER".
@@ -1404,8 +1391,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			}
 		//! END_REPLACE()
 		, function isNumber(obj) {
-			/* eslint no-self-compare: "off" */
-
 			if (types.isNothing(obj)) {
 				return false;
 			};
@@ -1415,7 +1400,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === obj); // Not NaN
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1429,8 +1414,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		}));
 
 	__Internal__.numberIsFinite = function numberIsFinite(num) {
-		/* eslint no-self-compare: "off" */
-
 		if (_shared.Natives.numberIsFinite) {
 			return _shared.Natives.numberIsFinite(num);
 		} else {
@@ -1443,8 +1426,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 	};
 
 	__Internal__.numberIsInteger = function numberIsInteger(num) {
-		/* eslint no-self-compare: "off" */
-
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1485,7 +1466,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsInteger(obj);
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1499,8 +1480,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		}));
 
 	__Internal__.numberIsSafeInteger = function numberIsSafeInteger(num) {
-		/* eslint no-self-compare: "off" */
-
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1546,7 +1525,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsSafeInteger(obj);
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1585,7 +1564,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFinite(obj);
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1624,7 +1603,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return (obj === Infinity) || (obj === -Infinity);
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1638,8 +1617,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		}));
 
 	__Internal__.numberIsFloat = function numberIsFloat(num) {
-		/* eslint no-self-compare: "off" */
-
 		if (num !== num) {
 			// NaN
 			return false;
@@ -1674,7 +1651,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						obj = _shared.Natives.numberValueOfCall(obj);
 						return __Internal__.numberIsFloat(obj);
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1714,7 +1691,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						_shared.Natives.booleanValueOfCall(obj);
 						return true;
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Boolean]') {
@@ -1749,7 +1726,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						_shared.Natives.dateValueOfCall(obj);
 						return true;
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Date]') {
@@ -1804,8 +1781,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			}
 		//! END_REPLACE()
 		, function isNaN(obj) {
-			/* eslint no-self-compare: "off" */
-
 			if (types.isNothing(obj)) {
 				return false;
 			};
@@ -1816,7 +1791,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						obj = _shared.Natives.numberValueOfCall(obj);
 						// Explanation: NaN is the only value not equal to itself.
 						return obj !== obj;
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Number]') {
@@ -1857,7 +1832,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 					try {
 						_shared.Natives.functionToStringCall(obj);
 						return true;
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) === '[object Function]') {
@@ -2368,7 +2343,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			"}", ctx);
 		try {
 			ctx.f();
-		} catch(o) {
+		} catch {
 			__Internal__.hasGetOwnPropertyRestrictionOnCaller = true;
 		};
 	})();
@@ -2485,7 +2460,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 			}
 		//! END_REPLACE()
 		, function getPropertyDescriptor(obj, key) {
-			/* eslint no-cond-assign: "off" */
 			obj = _shared.Natives.windowObject(obj);
 			let proto = obj,
 				descriptor = undefined;
@@ -3125,7 +3099,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				if (obj[_shared.Natives.symbolToStringTag] === 'Symbol') {
 					try {
 						obj = _shared.Natives.symbolValueOfCall(obj);
-					} catch(o) {
+					} catch {
 						return false;
 					};
 				} else if (_shared.Natives.objectToStringCall(obj) !== '[object Symbol]') {
@@ -3138,7 +3112,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 		}));
 
 	if (!__options__.enableSymbols) {
-		// eslint-disable-next-line semi-spacing
 		__Internal__.globalSymbolsUUID = /*! REPLACE_BY(TO_SOURCE(UUID('Symbol')), true) */ tools.generateUUID() /*! END_REPLACE() */;
 	};
 
@@ -5370,7 +5343,6 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 				};
 			};
 
-			/* eslint no-useless-concat: "off" */
 			uuid = (uuid ? /*! REPLACE_BY(TO_SOURCE(UUID('DD_TYPE')), true) */ '__DD_TYPE__' /*! END_REPLACE() */ + '-' + uuid : null);
 
 			const instanceBase = (base ? base.prototype : null);
@@ -6978,6 +6950,7 @@ exports.createRoot = async function createRoot(/*optional*/modules, /*optional*/
 						modules = {};
 					};
 
+					// eslint-disable-next-line  no-unassigned-vars
 					let MODULE_VERSION;
 					//! INJECT("MODULE_VERSION = " + TO_SOURCE(VERSION('@doodad-js/core')) + ";")
 

@@ -42,19 +42,10 @@ exports.add = function add(mods) {
 		proto: {
 			run: function run(root, /*optional*/options) {
 				const doodad = root.Doodad,
-					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
 					test = doodad.Test,
-					unit = test.Tools.Files.Urls,
-					io = doodad.IO,
 					files = tools.Files;
 
-
-				if (!options) {
-					options = {};
-				};
-					
 
 				test.runCommand(function(/*paramarray*/) {
 					return files.Url.parse.apply(files.Url, arguments);

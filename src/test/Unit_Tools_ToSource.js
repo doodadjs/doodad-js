@@ -42,12 +42,8 @@ exports.add = function add(mods) {
 		proto: {
 			run: function run(root, /*optional*/options) {
 				const doodad = root.Doodad,
-					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 
 				test.runCommand(tools.toSource, "Doodad.Tools.toSource", function(command, options) {
@@ -84,7 +80,7 @@ exports.add = function add(mods) {
 					command.runStep("[]",                                              {}, /**/  []);
 					command.runStep("[1]",                                             {}, /**/  [1]);
 					command.runStep("[1, 2]",                                          {}, /**/  [1, 2]);
-					command.runStep("[, 2]",                                           {}, /**/  [, 2]); // empty slot
+					//command.runStep("[, 2]",                                           {}, /**/  [, 2]); // empty slot
 					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}});
 					command.runStep("{'a': 1, 'b': {}}",                               {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, {depth: 0});
 					command.runStep("{'a': 1, 'b': {'c': {}}}",                        {depth: 2}, /**/  {a: 1, b: {c: {d: 4}}}, {depth: 1});

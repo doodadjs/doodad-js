@@ -54,7 +54,6 @@ exports.add = function add(modules) {
 			//! IF(IS_UNSET("serverSide") || IS_UNSET("mjs"))
 				// NOTE: Client-side 'json5' is browserified to "lib/json5/json5.js" and "lib/json5/json5.min.js", and made available in JS through "require".
 				//       Also it works with Node.js and bundlers.
-				/* eslint global-require: "off" */
 				const nodeJSON5 = ((typeof require === 'function') ? require('json5') : undefined);
 			//! END_IF()
 

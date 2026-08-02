@@ -848,7 +848,7 @@ exports.add = function add(modules) {
 							} else {
 								try {
 									doodad.trapException(ex, obj, null);
-								} catch(o) {
+								} catch {
 									types.DEBUGGER();
 								};
 							};
@@ -940,7 +940,7 @@ exports.add = function add(modules) {
 								} else {
 									try {
 										doodad.trapException(ex, obj, null);
-									} catch(o) {
+									} catch {
 										types.DEBUGGER();
 									};
 								};
@@ -1024,7 +1024,7 @@ exports.add = function add(modules) {
 				if (!types.isNothing(obj) && types.isNothing(secret) && __Internal__.isInside(obj)) {
 					secret = _shared.SECRET;
 				};
-				let _insider = null;
+				let _insider;
 				const fnApply = _shared.Natives.functionBindApply(fn);
 				if (types.isNothing(obj)) {
 					_insider = function insider(/*paramarray*/...params) {
@@ -1661,7 +1661,7 @@ exports.add = function add(modules) {
 							} else if (!o.bubble) {
 								try {
 									tools.log(tools.LogLevels.Error, o.toString());
-								} catch(p) {
+								} catch {
 									// Do nothing
 								};
 								types.DEBUGGER();
@@ -2298,8 +2298,6 @@ exports.add = function add(modules) {
 							}
 						//! END_REPLACE()
 						, function init(attr, attributes, forType, attribute, value, generator, isProto, existingAttributes) {
-							/* eslint no-useless-concat: "off" */
-
 							const attrId = generator.vars.add(attr);
 							const valueId = (attr === _shared.AttributesStorageSymbol ? generator.storageId : generator.vars.add(value, attr));
 
@@ -2699,7 +2697,7 @@ exports.add = function add(modules) {
 										// <PRB> Javascript debugger calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 										try {
 											return "Error: " + ex.toString();
-										} catch(o) {
+										} catch {
 											return "Internal error";
 										}
 									} else {
@@ -2835,8 +2833,6 @@ exports.add = function add(modules) {
 							}
 						//! END_REPLACE()
 						, function dispatchTemplate(attr, attribute, callers) {
-							/* eslint consistent-return: "off" */
-
 							const extender = this;
 
 							const _dispatch = function dispatch(/*paramarray*/...params) {
@@ -2984,7 +2980,7 @@ exports.add = function add(modules) {
 										// <PRB> Javascript engine calls "toString" internally. When an exception occurs inside "toString", it calls it again and again !
 										try {
 											retVal = "Error: " + types.toString(ex);
-										} catch(o) {
+										} catch {
 											retVal = "Internal error";
 										};
 									} else {
@@ -3821,20 +3817,21 @@ exports.add = function add(modules) {
 						const srcGet = types.get(srcDesc, 'get', null);
 						const srcSet = types.get(srcDesc, 'set', null);
 						const destGet = types.get(destDesc, 'get', null);
-						const destSet = types.get(destDesc, 'set', null);
+						let destSet = types.get(destDesc, 'set', null);
 
 						if (types.has(destDesc, 'value')) {
-							(function(srcGet, srcSet, destGet, destSet, destVal) {
+							destSet = (function(srcGet, srcSet, destGet, destSet, destVal) {
 								if (srcGet && !destGet) {
-									destGet = function get(value) {
+									return function get(value) {
 										return destVal;
 									};
 								};
 								if (srcSet && !destSet) {
-									destSet = function set(value) {
+									return function set(value) {
 										destVal = value;
 									};
 								};
+								return destSet;
 							})(srcGet, srcSet, destGet, destSet, destDesc.value);
 						};
 
@@ -5497,9 +5494,7 @@ exports.add = function add(modules) {
 
 							} else {
 								retval = [
-									// eslint-disable-next-line array-bracket-spacing
 									/* 0 : data   */ [/*0*/ extender],
-									// eslint-disable-next-line array-bracket-spacing
 									/* 1 : params */ [/*0*/ attr, /*1*/ source, /*2*/ sourceProto, /*3*/ destAttributes, /*4*/ forType, /*5*/ sourceAttribute, /*6*/ destAttribute, /*7*/ sourceIsProto, /*8*/ proto, /*9*/ protoName, /*10*/ extendedAttributes, /*11*/ toInitialize, /*12*/ toExtendLater]
 								];
 							};
@@ -5523,10 +5518,10 @@ exports.add = function add(modules) {
 					sourceTypeProto,
 					sourceInstanceProto;
 
-				let sourceTypeToExtend1 = null,
-					sourceTypeToExtend2 = null,
-					sourceInstanceToExtend1 = null,
-					sourceInstanceToExtend2 = null;
+				let sourceTypeToExtend1,
+					sourceTypeToExtend2,
+					sourceInstanceToExtend1,
+					sourceInstanceToExtend2;
 
 				if (sourceIsClass) {
 					// doodad-js Class
@@ -5825,8 +5820,8 @@ exports.add = function add(modules) {
 							baseIsType = true;
 							baseIsClass = true;
 							baseIsBase = true;
-							baseIsMixIn = false;
-							baseIsInterface = false;
+							//baseIsMixIn = false;
+							//baseIsInterface = false;
 							_implements = new types.Set();
 							typeStorage = tools.nullObject();
 							instanceStorage = tools.nullObject();
@@ -5840,7 +5835,6 @@ exports.add = function add(modules) {
 							instanceToExtendLater = [];
 
 							// Will be passed later to "__Internal__.createType".
-							// eslint-disable-next-line array-bracket-spacing
 							const data = [/*0*/ protoName, /*1*/ typeExtendedAttributes, /*2*/ destTypeAttributes, /*3*/ source, /*4*/ typeStorage, /*5*/ instanceStorage, /*6 type*/ null, /*7*/ base, /*8 _isolated*/ null, /*9*/ _implements, /*10 sourceProto*/ proto, /*11 modifiers*/ 0, /*12*/ sourceUUID, /*13*/ typeToInitialize, /*14*/ instanceToInitialize, /*15*/ typeToExtendLater, /*16*/ instanceToExtendLater, /*17*/ destInstanceAttributes, /*18*/ instanceExtendedAttributes];
 
 							const sourceData = types.getAttributes(source, [_shared.ImplementsSymbol], _shared.SECRET);
@@ -5957,7 +5951,7 @@ exports.add = function add(modules) {
 							let varId;
 							if (types._instanceof(val, generator.DynamicValue)) {
 								const released = generator.__dvarsReleased;
-								let index = 0;
+								let index;
 								if (released.length) {
 									index = released.shift();
 								} else {
@@ -6223,14 +6217,14 @@ exports.add = function add(modules) {
 					baseIsMixIn = baseIsClass && types.isMixIn(baseType),
 					baseIsInterface = baseIsClass && types.isInterface(baseType);
 
-				let _implements = null,
-					_isolated = null,
+				let _implements,
+					_isolated,
 					destTypeAttributes = null,
-					destInstanceAttributes = null,
+					destInstanceAttributes,
 					typeStorage,
 					instanceStorage,
-					typeToExtendLater = null,
-					instanceToExtendLater = null,
+					typeToExtendLater,
+					instanceToExtendLater,
 					baseTypeAttributes = null,
 					baseInstanceAttributes = null,
 					modifiers = 0,
@@ -7620,7 +7614,6 @@ exports.add = function add(modules) {
 										cb = doodad.Callback(obj, cb, true);
 									};
 								};
-								// eslint-disable-next-line array-bracket-spacing
 								stack.push([/*0*/ obj, /*1*/ fn, /*2*/ priority, /*3*/ datas, /*4*/ count, /*5*/ cb]);
 								this[_shared.SortedSymbol] = false;
 								this[_shared.ClonedStackSymbol] = null;
@@ -7942,7 +7935,7 @@ exports.add = function add(modules) {
 
 				const key = (cancellable ? 'y' : 'n') + '|' + (eventTypeName || '');
 
-				let eventFn = null,
+				let eventFn,
 					errorEvent = false;
 
 				if (types.has(__Internal__.EVENT_CACHE, key)) {

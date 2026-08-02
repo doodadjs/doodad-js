@@ -43,18 +43,9 @@ exports.add = function add(mods) {
 			run: function run(root, /*optional*/options) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
-					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 						
-				if (!options) {
-					options = {};
-				};
-					
-
 				const __Internal__ = {
 				};
 

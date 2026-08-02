@@ -115,7 +115,7 @@ exports.add = function add(modules) {
 						// <PRB> Because the TypedArray constructor is not global, "_shared.getTypeSymbol" needs that Symbol.
 						types.setJsAttribute(_shared.Natives.windowTypedArray, _shared.UUIDSymbol, /*! REPLACE_BY(TO_SOURCE(UUID('Native_TypedArray')), true) */ '' /*! END_REPLACE() */, {});
 					};
-				} catch(ex) {
+				} catch {
 					// Do nothing
 				};
 			};

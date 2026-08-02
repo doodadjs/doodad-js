@@ -1526,7 +1526,7 @@ exports.add = function add(modules) {
 				uri = tools.replace(uri || '', /\+/g,  " ");
 				try {
 					return _shared.Natives.windowDecodeURIComponent(uri);
-				} catch(ex) {
+				} catch {
 					// <PRB> decodeURIComponent throws on invalid hex values and on invalid UTF8 sequences.
 					return _shared.Natives.windowUnescape(uri);
 				}
@@ -3094,7 +3094,7 @@ exports.add = function add(modules) {
 									path = tools.append([], path); // clone
 								};
 
-								let isRelative = false;
+								let isRelative;
 
 								if (types._instanceof(location, files.Url)) {
 									const domain = types.get(options, 'domain', location.domain);

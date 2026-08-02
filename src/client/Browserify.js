@@ -65,25 +65,21 @@ exports.add = function add(modules) {
 			// Init
 			//===================================
 			return function init(/*optional*/options) {
-				/* eslint no-useless-concat: "off" */
-				/* eslint global-require: "off" */
-				/* eslint import/no-dynamic-require: "off" */
-
 				try {
 					types.getPromise();
-				} catch(ex) {
+				} catch {
 					let Promise = null;
 					try {
 						const mod = '' + 'rsvp'; // prevents browserify to automaticaly bundle the module
 						Promise = require(mod); // tiny Promise/A+ implementation
-					} catch(o) {
+					} catch {
 						// Do nothing
 					};
 					if (!types.isFunction(Promise)) {
 						try {
 							const mod = '' + 'es6-promise'; // prevents browserify to automaticaly bundle the module
 							Promise = require(mod); // subset of RSVP
-						} catch(o) {
+						} catch {
 							// Do nothing
 						};
 					};

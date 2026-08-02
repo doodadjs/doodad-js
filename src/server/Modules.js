@@ -277,8 +277,6 @@ exports.add = function add(mods) {
 					}
 				//! END_REPLACE()
 				, function load(files, /*optional*/options) {
-					/* eslint consistent-return: "off" */
-
 					const Promise = types.getPromise();
 
 					if (types.isArray(options)) {

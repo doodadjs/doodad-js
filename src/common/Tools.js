@@ -257,7 +257,6 @@ exports.add = function add(modules) {
 							index;
 						const sepLen = separator.length;
 						result = [];
-						// eslint-disable-next-line no-cond-assign
 						while ((limit > 1) && ((index = str.indexOf(separator, last)) >= 0)) {
 							result[result.length] = str.slice(last, index);
 							last = index + sepLen;
@@ -272,7 +271,6 @@ exports.add = function add(modules) {
 						const strLen = str.length;
 						result = [];
 						separator.lastIndex = 0;
-						// eslint-disable-next-line no-cond-assign
 						while ((limit > 1) && (matches = separator.exec(str))) {
 							const index = matches.index;
 							result[result.length] = str.slice(0, index);
@@ -2030,8 +2028,6 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function map(obj, fn, /*optional*/thisObj, /*optional*/start, /*optional*/end, /*optional*/sparsed, /*optional*/includeSymbols) {
-					/* eslint consistent-return: "off" */
-
 					if (!types.isNothing(obj)) {
 						if (types.isNothing(sparsed)) {
 							sparsed = true;
@@ -2135,8 +2131,6 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function forEach(obj, fn, /*optional*/thisObj, /*optional*/sparsed, /*optional*/includeSymbols) {
-					/* eslint consistent-return: "off" */
-
 					root.DD_ASSERT && root.DD_ASSERT(types.isFunction(fn), "Invalid function");
 
 					if (!types.isNothing(obj)) {

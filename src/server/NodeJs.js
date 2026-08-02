@@ -268,8 +268,6 @@ exports.add = function add(mods) {
 			__Internal__.oldDESTROY = _shared.DESTROY;
 			_shared.DESTROY = function DESTROY(obj) {
 				if (types.isObject(obj) && !types.getType(obj)) {
-					/* eslint no-cond-assign: "off" */
-
 					// NOTE: Now, starting from Node v8, 'destroyed' is a getter/setter.
 					if (!obj[__Internal__.symbolDestroyed]) {
 						const isEmitter = types.isEmitterLike(obj);
@@ -304,7 +302,7 @@ exports.add = function add(mods) {
 							};
 						};
 
-						let ws = null;
+						let ws;
 
 
 						// 2) Try "end"
@@ -483,8 +481,6 @@ exports.add = function add(mods) {
 					}
 				//! END_REPLACE()
 				, function callAsync(fn, /*optional*/delay, /*optional*/thisObj, /*optional*/args, /*optional*/cancelable, /*optional*/secret) {
-					/* eslint consistent-return: "off" */
-
 					if (types.isNothing(delay)) {
 						delay = -1;
 					};
@@ -681,8 +677,6 @@ exports.add = function add(mods) {
 					}),
 
 					start: function start() {
-						/* eslint global-require: "off", import/no-dynamic-require: "off" */
-
 						if (this.launched) {
 							if (this.ready) {
 								if (this.failed) {
@@ -1091,7 +1085,6 @@ exports.add = function add(mods) {
 					let proceed;
 
 					const loopDeleteContent = function _loopDeleteContent(parent, names, index) {
-						/* eslint consistent-return: "off" */
 						if (index < names.length) {
 							const path = parent.combine(names[index], {appendFile: true});
 							const promise = unlink(path);
@@ -1363,8 +1356,6 @@ exports.add = function add(mods) {
 				}));
 
 			files.ADD('copySync', function copySync(source, destination, /*optional*/options) {
-				/* eslint no-unsafe-finally: "off" */
-
 				source = files.parsePath(source);
 				destination = files.parsePath(destination);
 
@@ -2218,7 +2209,7 @@ exports.add = function add(mods) {
 
 					try {
 						stats = nodeFsStatSync(folder);
-					} catch(ex) {
+					} catch {
 						// Do nothing
 					};
 
@@ -2227,7 +2218,7 @@ exports.add = function add(mods) {
 						folder = files.parsePath(process.cwd(), {isFolder: true}).combine('tmp');
 						try {
 							files.mkdir(folder);
-						} catch(ex) {
+						} catch {
 							// Do nothing
 						};
 					} else {
@@ -2614,7 +2605,7 @@ exports.add = function add(mods) {
 										if (callback) {
 											try {
 												callback(...args);
-											} catch(ex) {
+											} catch {
 												// Do nothing
 											};
 											if (types.get(callback.__OPTIONS__, 'once', false)) {
@@ -3606,17 +3597,17 @@ exports.add = function add(mods) {
 					try {
 						files.mkdir(name2, {ignoreExists: false});
 						tools.setOptions({caseSensitive: true, secret: _shared.SECRET});
-					} catch(ex) {
+					} catch {
 						tools.setOptions({caseSensitive: false, secret: _shared.SECRET});
 					} finally {
 						try {
 							files.rmdir(name1);
-						} catch(ex) {
+						} catch {
 							// Do nothing
 						};
 						try {
 							files.rmdir(name2);
-						} catch(ex) {
+						} catch {
 							// Do nothing
 						};
 					};

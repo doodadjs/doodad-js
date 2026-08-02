@@ -44,17 +44,9 @@ exports.add = function add(mods) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 						
-				if (!options) {
-					options = {};
-				};
-					
-
 				const createArray1 = function _createArray1() {
 					const ar1 = [1, 2, 9, 10];
 					ar1.a = 3;

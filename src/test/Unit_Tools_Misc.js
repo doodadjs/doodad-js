@@ -44,15 +44,7 @@ exports.add = function add(mods) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
-
-
-				if (!options) {
-					options = {};
-				};
+					test = doodad.Test;
 
 
 				test.runCommand(function(text) {return tools.escapeHtml(text, false)}, "Doodad.Tools.escapeHtml (standard)", function(command, options) {

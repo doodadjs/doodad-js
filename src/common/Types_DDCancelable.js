@@ -154,7 +154,7 @@ exports.add = function add(modules) {
 						return Promise.try(function tryStart() {
 							const state = __Internal__.cancelableStates.get(this);
 							const startCb = state.startCb;
-							let promise = null;
+							let promise;
 							if (startCb) {
 								state.startCb = null;
 								promise = Promise.try(startCb)

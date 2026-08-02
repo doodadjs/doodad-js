@@ -43,18 +43,9 @@ exports.add = function add(mods) {
 			run: function run(root, /*optional*/options) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
-					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
-					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO;
+					test = doodad.Test;
 
 						
-				if (!options) {
-					options = {};
-				};
-					
-
 				test.runCommand(types.toObject, "Doodad.Types.toObject", function(command, options) {
 					command.runStep(types.Undefined, {eval: true, mode: 'is'}, /**/ "undefined");
 					command.runStep(types.Null, {eval: true, mode: 'is'},      /**/ "null");

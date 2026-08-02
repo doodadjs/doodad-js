@@ -90,7 +90,7 @@ exports.add = function add(modules) {
 					.then(function(path) {
 						const watchCb = types.get(options, 'watchCb', null);
 
-						let promise = null;
+						let promise;
 
 						if ((path.extension === 'json') || (path.extension === 'json5')) {
 							promise = config.load(path, options);
@@ -119,7 +119,7 @@ exports.add = function add(modules) {
 						if (watchCb) {
 							try {
 								files.watch(path, watchCb, {once: true});
-							} catch(err) {
+							} catch {
 								// Do nothing
 							};
 

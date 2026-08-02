@@ -44,18 +44,10 @@ exports.add = function add(mods) {
 				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					namespaces = doodad.Namespaces,
 					test = doodad.Test,
-					unit = test.Types.Is,
-					io = doodad.IO,
 					files = tools.Files;
 
 						
-				if (!options) {
-					options = {};
-				};
-
-
 				test.runCommand(function(/*paramarray*/) {
 					return files.Path.parse.apply(files.Path, arguments);
 				}, "Doodad.Tools.Files.Path.parse.test1", function(command, options) {

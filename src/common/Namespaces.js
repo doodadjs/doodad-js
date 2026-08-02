@@ -94,7 +94,6 @@ exports.add = function add(modules) {
 			};
 
 			namespaces.ADD('VersionIdentifiers', types.freezeObject(tools.nullObject({
-				/* eslint object-property-newline: "off" */
 				development: -4, dev: -4, d: -4,
 				alpha: -3, a: -3,
 				beta: -2, b: -2,
@@ -718,8 +717,6 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function initNamespace(entry, /*optional*/options) {
-					/* eslint no-loop-func: "off" */
-
 					const Promise = types.getPromise();
 
 					return Promise.try(function() {

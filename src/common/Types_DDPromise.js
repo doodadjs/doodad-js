@@ -213,7 +213,6 @@ exports.add = function add(modules) {
 									state.start++;
 									return P.resolve(fn(val, key, obj))
 										.then(function(res) {
-											/* eslint consistent-return: "off" */
 											result[key] = res;
 											const pos = state.start;
 											if (pos < len) {
@@ -496,7 +495,7 @@ exports.add = function add(modules) {
 						};
 					};
 					let callback = args[i++];
-					const thisObj = args[i++];
+					const thisObj = args[i]; // args[i++];
 					let name = this[_shared.NameSymbol];
 					if (!name && callback) {
 						name = __Internal__.getPromiseName(callback);
@@ -793,7 +792,7 @@ exports.add = function add(modules) {
 						let isStillDDPromise = false;
 						try {
 							isStillDDPromise = (DDPromise.resolve(0).then(function() {}).catch(function() {}) instanceof DDPromise);
-						} catch(ex) {
+						} catch {
 							// Do nothing
 						};
 

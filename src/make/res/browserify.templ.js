@@ -37,18 +37,19 @@ module.exports = {
 		try {
 			// Generated from 'doodad-js-make'
 			config = require('../config.json');
-		} catch(ex) {
+		} catch {
+			// Do nothing
 		};
 		if (!config) {
 			config = {};
 		};
 		
-		const dev_values = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
+		const devValues = get(options, 'nodeEnvDevValues', get(config.startup, 'nodeEnvDevValues', 'dev,development')).split(','),
 			env = (get(options, 'node_env', get(config, 'node_env')) || process.env.node_env || process.env.NODE_ENV);
 
 		let dev = false;
-		for (let i = 0; i < dev_values.length; i++) {
-			if (dev_values[i] === env) {
+		for (let i = 0; i < devValues.length; i++) {
+			if (devValues[i] === env) {
 				dev = true;
 				break;
 			};

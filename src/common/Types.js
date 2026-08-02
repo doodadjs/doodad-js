@@ -227,7 +227,7 @@ exports.add = function add(modules) {
 				//	"}}})()"
 				//, {Internal: __Internal__});
 
-			} catch(ex) {
+			} catch {
 				// Do nothing
 			};
 
@@ -314,9 +314,9 @@ exports.add = function add(modules) {
 			// Test for my dream to realize !
 			__Internal__.arrowIsBindable = false;
 			try {
-				/* eslint no-extra-bind: "off" */
+				// eslint disable-next-line no-extra-bind */
 				__Internal__.arrowIsBindable = (_shared.Natives.functionBindCall(() => this.doodad, {doodad: 1})() === 1);
-			} catch(ex) {
+			} catch {
 				// Do nothing
 			};
 
@@ -580,7 +580,6 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function isObjectLikeAndNotEmpty(obj) {
-					/* eslint guard-for-in: "off" */ // It's all ok, thanks
 					if (types.isObjectLike(obj)) {
 						obj = _shared.Natives.windowObject(obj);
 						if (types.isArrayLike(obj)) {
@@ -695,9 +694,8 @@ exports.add = function add(modules) {
 					}
 				//! END_REPLACE()
 				, function set(obj, key, value, /*optional*/inherited) {
-					/* eslint consistent-return: "off", no-return-assign: "off" */
 					if (types.isNothing(obj)) {
-						return;
+						return undefined;
 					};
 					obj = _shared.Natives.windowObject(obj);
 					const hasKey = (inherited ? types.hasInherited : types.has);

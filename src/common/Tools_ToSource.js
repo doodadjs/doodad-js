@@ -89,7 +89,6 @@ exports.add = function add(modules) {
 				//! END_REPLACE()
 				, function toSource(obj, /*optional*/options) {
 					let depth = types.get(options, 'depth', null);
-					/* eslint no-cond-assign: "off" */
 					// TODO: "chain" option to generate the prototypes chain with "Object.setPrototypeOf"
 					if (obj === undefined) {
 						return 'undefined';
@@ -104,7 +103,7 @@ exports.add = function add(modules) {
 						if (types.isFunction(obj.valueOf)) {
 							try {
 								val = obj.valueOf();
-							} catch(o) {
+							} catch {
 								// Do nothing
 							};
 						};

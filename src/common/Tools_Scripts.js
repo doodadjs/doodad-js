@@ -180,7 +180,7 @@ exports.add = function add(modules) {
 						try {
 							ev = new types.CustomEvent('exit', {cancelable: true, detail: {exitCode}});
 							tools.dispatchEvent(ev); // sync
-						} catch(o) {
+						} catch {
 							ev = null;
 							if (root.getOptions().debug) {
 								types.DEBUGGER();
@@ -267,7 +267,7 @@ exports.add = function add(modules) {
 									};
 								};
 
-							} catch(o) {
+							} catch {
 								__Internal__.unhandledRejections.clear();
 							};
 

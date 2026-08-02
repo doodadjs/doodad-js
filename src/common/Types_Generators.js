@@ -63,8 +63,8 @@ exports.add = function add(modules) {
 				functionIsGeneratorCall: (types.isFunction(global.Function.prototype.isGenerator) ? _shared.Natives.functionBindCall(global.Function.prototype.isGenerator) : null),
 
 				GeneratorFunction: types.getPrototypeOf(
+					// eslint disable-next-line no-empty-function
 					function* () {
-						/* eslint no-empty-function: "off" */
 					}
 				).constructor,
 			});
